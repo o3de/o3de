@@ -158,7 +158,10 @@ namespace UnitTest
             {
                 // Create & Start a new ToolsApplication if there's no existing one
                 m_app = CreateTestApplication();
-                m_app->Start(AzFramework::Application::Descriptor());
+                AZ::ComponentApplication::StartupParameters startupParameters;
+                startupParameters.m_loadAssetCatalog = false;
+
+                m_app->Start(AzFramework::Application::Descriptor(), startupParameters);
             }
 
             // without this, the user settings component would attempt to save on finalize/shutdown. Since the file is

@@ -99,6 +99,7 @@ namespace O3DE::ProjectManager
         static bool NeedsToBeRemoved(const QModelIndex& modelIndex, bool includeDependencies = false);
         static bool HasRequirement(const QModelIndex& modelIndex);
         static void UpdateDependencies(QAbstractItemModel& model, const QString& gemName, bool isAdded);
+        static void DeactivateDependentGems(QAbstractItemModel& model, const QModelIndex& modelIndex);
         static void SetDownloadStatus(QAbstractItemModel& model, const QModelIndex& modelIndex, GemInfo::DownloadStatus status);
 
         bool DoGemsToBeAddedHaveRequirements() const;
@@ -113,6 +114,7 @@ namespace O3DE::ProjectManager
 
     signals:
         void gemStatusChanged(const QString& gemName, uint32_t numChangedDependencies);
+        void dependencyGemStatusChanged(const QString& gemName);
 
     protected slots: 
         void OnRowsAboutToBeRemoved(const QModelIndex& parent, int first, int last);

@@ -20,8 +20,8 @@ PUSHD %OUTPUT_DIRECTORY%
 REM Override the temporary directory used by wix to the workspace (if we have a WORKSPACE_TMP)
 IF NOT "%WORKSPACE_TMP%"=="" (
     SET "WIX_TEMP=!WORKSPACE_TMP!/wix"
-    IF NOT EXIST "%WIX_TEMP%" (
-        MKDIR "%WIX_TEMP%"
+    IF NOT EXIST "!WIX_TEMP!" (
+        MKDIR "!WIX_TEMP!"
     )
 )
 

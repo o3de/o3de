@@ -68,7 +68,7 @@ namespace AZ::Render
             uint32_t m_filteringSampleCount = 0;
             AZStd::array<float, 2> m_unprojectConstants = { {0, 0} };
             float m_bias;
-            float m_normalShadowBias;
+            float m_normalShadowBias = 0;
             float m_esmExponent = 87.0f;
             float m_padding[3];
         };
@@ -79,7 +79,6 @@ namespace AZ::Render
             ProjectedShadowDescriptor m_desc;
             RPI::ViewPtr m_shadowmapView;
             float m_bias = 0.1f;
-            float m_normalShadowBias = 0.0f;
             ShadowId m_shadowId;
         };
 

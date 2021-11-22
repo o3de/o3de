@@ -6,15 +6,18 @@
  *
  */
 
+#include <Atom/ImageProcessing/ImageObject.h>
+#include <Atom/ImageProcessing/ImageProcessingBus.h>
 #include <AtomToolsFramework/Util/Util.h>
 #include <AzCore/IO/SystemFile.h>
+#include <AzCore/Jobs/JobFunction.h>
 #include <AzCore/StringFunc/StringFunc.h>
 #include <AzCore/Utils/Utils.h>
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzQtComponents/Components/Widgets/FileDialog.h>
+#include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/AssetSelectionModel.h>
-#include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
 
 AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnings spawned by QT
 #include <QApplication>
@@ -24,6 +27,36 @@ AZ_POP_DISABLE_WARNING
 
 namespace AtomToolsFramework
 {
+    void LoadImageAsync(const AZStd::string& path, LoadImageAsyncCallback callback)
+    {
+        AZ::Job* job = AZ::CreateJobFunction(
+            [path, callback]()
+            {
+                ImageProcessingAtom::IImageObjectPtr imageObject;
+                ImageProcessingAtom::ImageProcessingRequestBus::BroadcastResult(
+                    imageObject, &ImageProcessingAtom::ImageProcessingRequests::LoadImagePreview, path);
+
+                if (imageObject)
+                {
+                    AZ::u8* imageBuf = nullptr;
+                    AZ::u32 pitch = 0;
+                    AZ::u32 mip = 0;
+                    imageObject->GetImagePointer(mip, imageBuf, pitch);
+                    const AZ::u32 width = imageObject->GetWidth(mip);
+                    const AZ::u32 height = imageObject->GetHeight(mip);
+
+                    QImage image(imageBuf, width, height, pitch, QImage::Format_RGBA8888);
+
+                    if (callback)
+                    {
+                        callback(image);
+                    }
+                }
+            },
+            true);
+        job->Start();
+    }
+
     QFileInfo GetSaveFileInfo(const QString& initialPath)
     {
         const QFileInfo initialFileInfo(initialPath);

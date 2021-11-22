@@ -5,8 +5,7 @@
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "WindRequestsBus",
-                "category": "PhysX"
+                "name": "Wind"
             },
             "methods": [
                 {
@@ -26,7 +25,7 @@
                         {
                             "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
                             "details": {
-                                "name": "Vector3"
+                                "name": "Global Wind Direction"
                             }
                         }
                     ]
@@ -56,7 +55,7 @@
                         {
                             "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
                             "details": {
-                                "name": "Vector3"
+                                "name": "Wind Direction"
                             }
                         }
                     ]
@@ -86,7 +85,7 @@
                         {
                             "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
                             "details": {
-                                "name": "Vector3"
+                                "name": "Wind Direction"
                             }
                         }
                     ]

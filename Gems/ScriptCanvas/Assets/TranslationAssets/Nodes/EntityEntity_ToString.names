@@ -5,10 +5,9 @@
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "ToString",
+                "name": "To String",
                 "category": "Entity/Entity",
-                "tooltip": "returns a string representation of Source",
-                "subtitle": "Entity"
+                "tooltip": "Returns a string representation of Source"
             },
             "slots": [
                 {
@@ -24,15 +23,15 @@
                     }
                 },
                 {
-                    "key": "DataInput_EntityID: Source",
+                    "key": "DataInput_Source",
                     "details": {
-                        "name": "EntityID: Source"
+                        "name": "Source"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: String",
+                    "key": "DataOutput_Result",
                     "details": {
-                        "name": "Result: String"
+                        "name": "Result"
                     }
                 }
             ]
