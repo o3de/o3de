@@ -326,7 +326,7 @@ def print_repos_data(repos_data: dict) -> int:
                 try:
                     repo_json_data = json.load(s)
                 except json.JSONDecodeError as e:
-                    logger.warn(f'{cache_file} failed to load: {str(e)}')
+                    logger.warning(f'{cache_file} failed to load: {str(e)}')
                 else:
                     print(f'{repo_uri}/repo.json cached as:')
                     print(cache_file)

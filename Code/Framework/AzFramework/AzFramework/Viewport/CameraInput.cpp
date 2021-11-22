@@ -94,27 +94,27 @@ namespace AzFramework
         float y;
         float z;
 
-        // 2.4 Factor as RzRyRx
-        if (orientation.GetElement(2, 0) < 1.0f)
+        // 2.5 Factor as RzRxRy
+        if (orientation.GetElement(2, 1) < 1.0f)
         {
-            if (orientation.GetElement(2, 0) > -1.0f)
+            if (orientation.GetElement(2, 1) > -1.0f)
             {
-                x = AZStd::atan2(orientation.GetElement(2, 1), orientation.GetElement(2, 2));
-                y = AZStd::asin(-orientation.GetElement(2, 0));
-                z = AZStd::atan2(orientation.GetElement(1, 0), orientation.GetElement(0, 0));
+                x = AZStd::asin(orientation.GetElement(2, 1));
+                y = AZStd::atan2(-orientation.GetElement(2, 0), orientation.GetElement(2, 2));
+                z = AZStd::atan2(-orientation.GetElement(0, 1), orientation.GetElement(1, 1));
             }
             else
             {
-                x = 0.0f;
-                y = AZ::Constants::Pi * 0.5f;
-                z = -AZStd::atan2(-orientation.GetElement(2, 1), orientation.GetElement(1, 1));
+                x = -AZ::Constants::Pi * 0.5f;
+                y = 0.0f;
+                z = -AZStd::atan2(orientation.GetElement(0, 2), orientation.GetElement(0, 0));
             }
         }
         else
         {
-            x = 0.0f;
-            y = -AZ::Constants::Pi * 0.5f;
-            z = AZStd::atan2(-orientation.GetElement(1, 2), orientation.GetElement(1, 1));
+            x = AZ::Constants::Pi * 0.5f;
+            y = 0.0f;
+            z = AZStd::atan2(orientation.GetElement(0, 2), orientation.GetElement(0, 0));
         }
 
         return { x, y, z };
@@ -122,12 +122,34 @@ namespace AzFramework
 
     void UpdateCameraFromTransform(Camera& camera, const AZ::Transform& transform)
     {
-        const auto eulerAngles = AzFramework::EulerAngles(AZ::Matrix3x3::CreateFromTransform(transform));
+        UpdateCameraFromTranslationAndRotation(
+            camera, transform.GetTranslation(), AzFramework::EulerAngles(AZ::Matrix3x3::CreateFromTransform(transform)));
+    }
 
+    void UpdateCameraFromTranslationAndRotation(Camera& camera, const AZ::Vector3& translation, const AZ::Vector3& eulerAngles)
+    {
         camera.m_pitch = eulerAngles.GetX();
         camera.m_yaw = eulerAngles.GetZ();
-        camera.m_pivot = transform.GetTranslation();
+        camera.m_pivot = translation;
         camera.m_offset = AZ::Vector3::CreateZero();
+    }
+
+    float SmoothValueTime(const float smoothness, float deltaTime)
+    {
+        // note: the math for the lerp smoothing implementation for camera rotation and translation was inspired by this excellent
+        // article by Scott Lembcke: https://www.gamasutra.com/blogs/ScottLembcke/20180404/316046/Improved_Lerp_Smoothing.php
+        const float rate = AZStd::exp2(smoothness);
+        return AZStd::exp2(-rate * deltaTime);
+    }
+
+    float SmoothValue(const float target, const float current, const float time)
+    {
+        return AZ::Lerp(target, current, time);
+    }
+
+    float SmoothValue(const float target, const float current, const float smoothness, const float deltaTime)
+    {
+        return SmoothValue(target, current, SmoothValueTime(smoothness, deltaTime));
     }
 
     bool CameraSystem::HandleEvents(const InputEvent& event)
@@ -291,6 +313,11 @@ namespace AzFramework
         {
             return false;
         };
+
+        m_constrainPitch = []() constexpr
+        {
+            return true;
+        };
     }
 
     bool RotateCameraInput::HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, [[maybe_unused]] const float scrollDelta)
@@ -312,7 +339,10 @@ namespace AzFramework
         nextCamera.m_yaw -= float(cursorDelta.m_x) * rotateSpeed * Invert(m_invertYawFn());
 
         nextCamera.m_yaw = WrapYawRotation(nextCamera.m_yaw);
-        nextCamera.m_pitch = ClampPitchRotation(nextCamera.m_pitch);
+        if (m_constrainPitch())
+        {
+            nextCamera.m_pitch = ClampPitchRotation(nextCamera.m_pitch);
+        }
 
         return nextCamera;
     }
@@ -726,14 +756,14 @@ namespace AzFramework
 
     Camera SmoothCamera(const Camera& currentCamera, const Camera& targetCamera, const CameraProps& cameraProps, const float deltaTime)
     {
-        const auto clamp_rotation = [](const float angle)
+        const auto clampRotation = [](const float angle)
         {
             return AZStd::fmod(angle + AZ::Constants::TwoPi, AZ::Constants::TwoPi);
         };
 
         // keep yaw in 0 - 360 range
-        float targetYaw = clamp_rotation(targetCamera.m_yaw);
-        const float currentYaw = clamp_rotation(currentCamera.m_yaw);
+        float targetYaw = clampRotation(targetCamera.m_yaw);
+        const float currentYaw = clampRotation(currentCamera.m_yaw);
 
         // return the sign of the float input (-1, 0, 1)
         const auto sign = [](const float value)
@@ -742,21 +772,17 @@ namespace AzFramework
         };
 
         // ensure smooth transition when moving across 0 - 360 boundary
-        const float yawDelta = targetYaw - currentYaw;
-        if (AZStd::abs(yawDelta) >= AZ::Constants::Pi)
+        if (const float yawDelta = targetYaw - currentYaw; AZStd::abs(yawDelta) >= AZ::Constants::Pi)
         {
             targetYaw -= AZ::Constants::TwoPi * sign(yawDelta);
         }
 
         Camera camera;
-        // note: the math for the lerp smoothing implementation for camera rotation and translation was inspired by this excellent
-        // article by Scott Lembcke: https://www.gamasutra.com/blogs/ScottLembcke/20180404/316046/Improved_Lerp_Smoothing.php
         if (cameraProps.m_rotateSmoothingEnabledFn())
         {
-            const float lookRate = AZStd::exp2(cameraProps.m_rotateSmoothnessFn());
-            const float lookTime = AZStd::exp2(-lookRate * deltaTime);
-            camera.m_pitch = AZ::Lerp(targetCamera.m_pitch, currentCamera.m_pitch, lookTime);
-            camera.m_yaw = AZ::Lerp(targetYaw, currentYaw, lookTime);
+            const float lookTime = SmoothValueTime(cameraProps.m_rotateSmoothnessFn(), deltaTime);
+            camera.m_pitch = SmoothValue(targetCamera.m_pitch, currentCamera.m_pitch, lookTime);
+            camera.m_yaw = SmoothValue(targetYaw, currentYaw, lookTime);
         }
         else
         {
@@ -766,8 +792,7 @@ namespace AzFramework
 
         if (cameraProps.m_translateSmoothingEnabledFn())
         {
-            const float moveRate = AZStd::exp2(cameraProps.m_translateSmoothnessFn());
-            const float moveTime = AZStd::exp2(-moveRate * deltaTime);
+            const float moveTime = SmoothValueTime(cameraProps.m_rotateSmoothnessFn(), deltaTime);
             camera.m_pivot = targetCamera.m_pivot.Lerp(currentCamera.m_pivot, moveTime);
             camera.m_offset = targetCamera.m_offset.Lerp(currentCamera.m_offset, moveTime);
         }

@@ -224,8 +224,14 @@ function(ly_setup_target OUTPUT_CONFIGURED_TARGET ALIAS_TARGET_NAME absolute_tar
         if("${target_type}" STREQUAL "STATIC_LIBRARY")
             set(build_deps_target "${build_deps_target};${build_deps_PRIVATE}")
         endif()
-        # But we will also pass the private dependencies as runtime dependencies (note the comment above)
-        set(RUNTIME_DEPENDENCIES_PLACEHOLDER ${build_deps_PRIVATE})
+
+        # But we will also pass the private dependencies as runtime dependencies (as long as they are targets, note the comment above)
+        foreach(build_dep_private IN LISTS build_deps_PRIVATE)
+            if(TARGET ${build_dep_private})
+                list(APPEND RUNTIME_DEPENDENCIES_PLACEHOLDER "${build_dep_private}")
+            endif()
+        endforeach()
+        
         foreach(build_dependency IN LISTS build_deps_target)
             # Skip wrapping produced when targets are not created in the same directory
             if(build_dependency)
@@ -569,9 +575,13 @@ function(ly_setup_runtime_dependencies)
             string(TOUPPER ${conf} UCONF)
             ly_install(CODE
 "function(ly_copy source_file target_directory)
-    cmake_path(GET source_file FILENAME file_name)
-    if(NOT EXISTS \${target_directory}/\${file_name})
-        file(COPY \"\${source_file}\" DESTINATION \"\${target_directory}\" FILE_PERMISSIONS ${LY_COPY_PERMISSIONS})
+    cmake_path(GET source_file FILENAME target_filename)
+    cmake_path(APPEND full_target_directory \"\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}\" \"\${target_directory}\")
+    cmake_path(APPEND target_file \"\${full_target_directory}\" \"\${target_filename}\")
+    if(\"\${source_file}\" IS_NEWER_THAN \"\${target_file}\")
+        message(STATUS \"Copying \${source_file} to \${full_target_directory}...\")
+        file(COPY \"\${source_file}\" DESTINATION \"\${full_target_directory}\" FILE_PERMISSIONS ${LY_COPY_PERMISSIONS} FOLLOW_SYMLINK_CHAIN)
+        file(TOUCH_NOCREATE \"${target_file}\")
     endif()
 endfunction()"
                 COMPONENT ${LY_INSTALL_PERMUTATION_COMPONENT}_${UCONF}
@@ -596,12 +606,7 @@ endfunction()"
         endif()
 
         # runtime dependencies that need to be copied to the output
-        # Anywhere CMAKE_INSTALL_PREFIX is used, it has to be escaped so it is baked into the cmake_install.cmake script instead
-        # of baking the path. This is needed so `cmake --install --prefix <someprefix>` works regardless of the CMAKE_INSTALL_PREFIX
-        # used to generate the solution.
-        # CMAKE_INSTALL_PREFIX is still used when building the INSTALL target
-        set(install_output_folder "\${CMAKE_INSTALL_PREFIX}/${runtime_output_directory}")
-        set(target_file_dir "${install_output_folder}/${target_runtime_output_subdirectory}")
+        set(target_file_dir "${runtime_output_directory}/${target_runtime_output_subdirectory}")
         ly_get_runtime_dependencies(runtime_dependencies ${target})
         foreach(runtime_dependency ${runtime_dependencies})
             unset(runtime_command)

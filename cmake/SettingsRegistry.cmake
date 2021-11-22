@@ -33,6 +33,34 @@ set(gems_json_template [[
 [=[            }]=]
 )
 
+#!ly_detect_cycle_through_visitation: Detects if there is a cycle based on a list of visited
+# items. If the passed item is in the list, then there is a cycle. 
+# \arg:item - item being checked for the cycle
+# \arg:visited_items - list of visited items
+# \arg:visited_items_var - list of visited items variable, "item" will be added to the list
+# \arg:cycle(variable) - empty string if there is no cycle (an empty string in cmake evaluates 
+#     to false). If there is a cycle a cycle dependency string detailing the sequence of items
+#     that produce a cycle, e.g. A --> B --> C --> A
+# 
+function(ly_detect_cycle_through_visitation item visited_items visited_items_var cycle)
+    if(item IN_LIST visited_items)
+        unset(dependency_cycle_loop)
+        foreach(visited_item IN LISTS visited_items)
+            string(APPEND dependency_cycle_loop ${visited_item})
+            if(visited_item STREQUAL item)
+                string(APPEND dependency_cycle_loop " (cycle starts)")
+            endif()
+            string(APPEND dependency_cycle_loop " --> ")
+        endforeach()
+        string(APPEND dependency_cycle_loop "${item} (cycle ends)")
+        set(${cycle} "${dependency_cycle_loop}" PARENT_SCOPE)
+    else()
+        set(cycle "" PARENT_SCOPE) # no cycles
+    endif()
+    list(APPEND visited_items ${item})
+    set(${visited_items_var} "${visited_items}" PARENT_SCOPE)
+endfunction()
+
 #!ly_get_gem_load_dependencies: Retrieves the list of "load" dependencies for a target
 # Visits through only MANUALLY_ADDED_DEPENDENCIES of targets with a GEM_MODULE property
 # to determine which gems a target needs to load
@@ -44,6 +72,13 @@ function(ly_get_gem_load_dependencies ly_GEM_LOAD_DEPENDENCIES ly_TARGET)
     if(NOT TARGET ${ly_TARGET})
         return() # Nothing to do
     endif()
+    # Internally we use a third parameter to pass the list of targets that we have traversed. This is 
+    # used to detect runtime cycles
+    if(ARGC EQUAL 3)
+        set(ly_CYCLE_DETECTION_TARGETS ${ARGV2})
+    else()
+        set(ly_CYCLE_DETECTION_TARGETS "")
+    endif()
 
     # Optimize the search by caching gem load dependencies
     get_property(are_dependencies_cached GLOBAL PROPERTY LY_GEM_LOAD_DEPENDENCIES_${ly_TARGET} SET)
@@ -52,6 +87,13 @@ function(ly_get_gem_load_dependencies ly_GEM_LOAD_DEPENDENCIES ly_TARGET)
         get_property(cached_dependencies GLOBAL PROPERTY LY_GEM_LOAD_DEPENDENCIES_${ly_TARGET})
         set(${ly_GEM_LOAD_DEPENDENCIES} ${cached_dependencies} PARENT_SCOPE)
         return()
+    endif()
+
+    # detect cycles
+    unset(cycle_detected)
+    ly_detect_cycle_through_visitation(${ly_TARGET} "${ly_CYCLE_DETECTION_TARGETS}" ly_CYCLE_DETECTION_TARGETS cycle_detected)
+    if(cycle_detected)
+        message(FATAL_ERROR "Runtime dependency detected: ${cycle_detected}")
     endif()
 
     unset(all_gem_load_dependencies)
@@ -69,7 +111,7 @@ function(ly_get_gem_load_dependencies ly_GEM_LOAD_DEPENDENCIES ly_TARGET)
             # and recurse into its manually added dependencies
             if (is_gem_target)
                 unset(dependencies)
-                ly_get_gem_load_dependencies(dependencies ${dealias_load_dependency})
+                ly_get_gem_load_dependencies(dependencies ${dealias_load_dependency} "${ly_CYCLE_DETECTION_TARGETS}")
                 list(APPEND all_gem_load_dependencies ${dependencies})
                 list(APPEND all_gem_load_dependencies ${dealias_load_dependency})
             endif()

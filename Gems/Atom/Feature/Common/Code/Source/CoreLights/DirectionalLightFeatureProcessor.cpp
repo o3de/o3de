@@ -343,7 +343,6 @@ namespace AZ
                 m_shadowBufferNeedsUpdate = true;
 
                 m_shadowProperties.GetData(index).m_cameraConfigurations[nullptr] = {};
-                m_shadowProperties.GetData(index).m_cameraTransforms[nullptr] = Transform::CreateIdentity();
 
                 const LightHandle handle(index);
                 m_shadowingLightHandle = handle; // only the recent light has shadows.
@@ -495,20 +494,10 @@ namespace AZ
 
         void DirectionalLightFeatureProcessor::SetCameraTransform(
             LightHandle handle,
-            const Transform& cameraTransform,
-            const RPI::RenderPipelineId& renderPipelineId)
+            const Transform&,
+            const RPI::RenderPipelineId&)
         {
             ShadowProperty& property = m_shadowProperties.GetData(handle.GetIndex());
-
-            if (RPI::RenderPipeline* renderPipeline = GetParentScene()->GetRenderPipeline(renderPipelineId).get())
-            {
-                const RPI::View* cameraView = renderPipeline->GetDefaultView().get();
-                property.m_cameraTransforms[cameraView] = cameraTransform;
-            }
-            else
-            {
-                property.m_cameraTransforms[nullptr] = cameraTransform;
-            }
             property.m_shadowmapViewNeedsUpdate = true;
         }
 
@@ -934,17 +923,6 @@ namespace AZ
             return property.m_cameraConfigurations.at(nullptr);
         }
 
-        const Transform& DirectionalLightFeatureProcessor::GetCameraTransform(LightHandle handle, const RPI::View* cameraView) const
-        {
-            const ShadowProperty& property = m_shadowProperties.GetData(handle.GetIndex());
-            const auto findIt = property.m_cameraTransforms.find(cameraView);
-            if (findIt != property.m_cameraTransforms.end())
-            {
-                return findIt->second;
-            }
-            return property.m_cameraTransforms.at(nullptr);
-        }
-
         void DirectionalLightFeatureProcessor::UpdateFrustums(
             LightHandle handle)
         {
@@ -1365,10 +1343,11 @@ namespace AZ
             // If we used an AABB whose Y-direction range is from a segment,
             // the depth value on the shadowmap saturated to 0 or 1,
             // and we could not draw shadow correctly.
+            const Transform cameraTransform = cameraView->GetCameraTransform();
             const Vector3 entireFrustumCenterLight =
-                lightTransform.GetInverseFast() * (GetCameraTransform(handle, cameraView).TransformPoint(property.m_entireFrustumCenterLocal));
+                lightTransform.GetInverseFast() * (cameraTransform.TransformPoint(property.m_entireFrustumCenterLocal));
             const float entireCenterY = entireFrustumCenterLight.GetElement(1);
-            const Vector3 cameraLocationWorld = GetCameraTransform(handle, cameraView).GetTranslation();
+            const Vector3 cameraLocationWorld = cameraTransform.GetTranslation();
             const Vector3 cameraLocationLight = lightTransformInverse * cameraLocationWorld;
             // Extend light view frustum by camera depth far in order to avoid shadow lacking behind camera.
             const float cameraBehindMinY = cameraLocationLight.GetElement(1) - GetCameraConfiguration(handle, cameraView).GetDepthFar();
@@ -1428,8 +1407,8 @@ namespace AZ
                 GetCameraConfiguration(handle, cameraView).GetDepthCenter(depthNear, depthFar),
                 depthFar);
 
-            const Vector3 localCenter{ 0.f, depthCenter, 0.f };
-            return GetCameraTransform(handle, cameraView).TransformPoint(localCenter);
+            const Vector3 localCenter{ 0.f, depthCenter, 0.f };            
+            return cameraView->GetCameraTransform().TransformPoint(localCenter);
         }
 
         float DirectionalLightFeatureProcessor::GetRadius(
@@ -1483,7 +1462,7 @@ namespace AZ
             const ShadowProperty& property = m_shadowProperties.GetData(handle.GetIndex());
             const Vector3& boundaryCenter = GetWorldCenterPosition(handle, cameraView, depthNear, depthFar);
             const CascadeShadowCameraConfiguration& cameraConfiguration = GetCameraConfiguration(handle, cameraView);
-            const Transform& cameraTransform = GetCameraTransform(handle, cameraView);
+            const Transform cameraTransform = cameraView->GetCameraTransform();
             const Vector3& cameraFwd = cameraTransform.GetBasis(1);
             const Vector3& cameraUp = cameraTransform.GetBasis(2);
             const Vector3 cameraToBoundaryCenter = boundaryCenter - cameraTransform.GetTranslation();

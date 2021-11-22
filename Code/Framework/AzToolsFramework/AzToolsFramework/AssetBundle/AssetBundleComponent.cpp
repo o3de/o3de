@@ -202,9 +202,9 @@ namespace AzToolsFramework
         AZ_TracePrintf(logWindowName, "Creating new asset bundle manifest file \"%s\" for source pak \"%s\".\n", AzFramework::AssetBundleManifest::s_manifestFileName, sourcePak.c_str());
         bool manifestSaved = false;
         AZStd::string manifestDirectory;
-        AZStd::vector<AZStd::string> levelDirs;
         AzFramework::StringFunc::Path::GetFullPath(sourcePak.c_str(), manifestDirectory);
-        AssetCatalogRequestBus::BroadcastResult(manifestSaved, &AssetCatalogRequestBus::Events::CreateBundleManifest, outCatalogPath, AZStd::vector<AZStd::string>(), manifestDirectory, AzFramework::AssetBundleManifest::CurrentBundleVersion, levelDirs);
+        AssetCatalogRequestBus::BroadcastResult(manifestSaved, &AssetCatalogRequestBus::Events::CreateBundleManifest, outCatalogPath,
+            AZStd::vector<AZStd::string>(), manifestDirectory, AzFramework::AssetBundleManifest::CurrentBundleVersion, AZStd::vector<AZ::IO::Path>{});
 
         AZStd::string manifestPath;
         AzFramework::StringFunc::Path::Join(manifestDirectory.c_str(), AzFramework::AssetBundleManifest::s_manifestFileName, manifestPath);
@@ -263,7 +263,7 @@ namespace AzToolsFramework
         AZStd::string tempBundleFilePath = bundleFilePath.Native() + "_temp";
 
         AZStd::vector<AZStd::string> dependentBundleNames;
-        AZStd::vector<AZStd::string> levelDirs;
+        AZStd::vector<AZ::IO::Path> levelDirs;
         AZStd::vector<AZStd::pair<AZStd::string, AZStd::string>> bundlePathDeltaCatalogPair;
         bundlePathDeltaCatalogPair.emplace_back(AZStd::make_pair(tempBundleFilePath, DeltaCatalogName));
 
@@ -515,7 +515,7 @@ namespace AzToolsFramework
         return true;
     }
 
-    bool AssetBundleComponent::AddManifestFileToBundles(const AZStd::vector<AZStd::pair<AZStd::string, AZStd::string>>& bundlePathDeltaCatalogPair, const AZStd::vector<AZStd::string>& dependentBundleNames, const AZStd::string& bundleFolder, const AzToolsFramework::AssetBundleSettings& assetBundleSettings, const AZStd::vector<AZStd::string>& levelDirs)
+    bool AssetBundleComponent::AddManifestFileToBundles(const AZStd::vector<AZStd::pair<AZStd::string, AZStd::string>>& bundlePathDeltaCatalogPair, const AZStd::vector<AZStd::string>& dependentBundleNames, const AZStd::string& bundleFolder, const AzToolsFramework::AssetBundleSettings& assetBundleSettings, const AZStd::vector<AZ::IO::Path>& levelDirs)
     {
         if (!MakePath(bundleFolder))
         {

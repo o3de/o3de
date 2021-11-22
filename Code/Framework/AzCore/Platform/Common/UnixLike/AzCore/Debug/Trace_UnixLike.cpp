@@ -13,73 +13,67 @@
 #include <signal.h>
 #include <unistd.h>
 
-namespace AZ
+namespace AZ::Debug::Platform
 {
-    namespace Debug
-    {
-        namespace Platform
-        {
 #if defined(AZ_ENABLE_DEBUG_TOOLS)
-            bool performDebuggerDetection()
+    bool performDebuggerDetection()
+    {
+        AZ::IO::SystemFile processStatusFile;
+        if (!processStatusFile.Open("/proc/self/status", AZ::IO::SystemFile::SF_OPEN_READ_ONLY))
+        {
+            return false;
+        }
+
+        char buffer[4096];
+        AZ::IO::SystemFile::SizeType numRead = processStatusFile.Read(sizeof(buffer), buffer);
+
+        const AZStd::string_view processStatusView(buffer, buffer + numRead);
+        constexpr AZStd::string_view tracerPidString = "TracerPid:";
+        const size_t tracerPidOffset = processStatusView.find(tracerPidString);
+        if (tracerPidOffset == AZStd::string_view::npos)
+        {
+            return false;
+        }
+        for (size_t i = tracerPidOffset + tracerPidString.length(); i < numRead; ++i)
+        {
+            if (!::isspace(processStatusView[i]))
             {
-                AZ::IO::SystemFile processStatusFile;
-                if (!processStatusFile.Open("/proc/self/status", AZ::IO::SystemFile::SF_OPEN_READ_ONLY))
-                {
-                    return false;
-                }
-
-                char buffer[4096];
-                AZ::IO::SystemFile::SizeType numRead = processStatusFile.Read(sizeof(buffer), buffer);
-
-                const AZStd::string_view processStatusView(buffer, buffer + numRead);
-                constexpr AZStd::string_view tracerPidString = "TracerPid:";
-                const size_t tracerPidOffset = processStatusView.find(tracerPidString);
-                if (tracerPidOffset == AZStd::string_view::npos)
-                {
-                    return false;
-                }
-                for (size_t i = tracerPidOffset + tracerPidString.length(); i < numRead; ++i)
-                {
-                    if (!::isspace(processStatusView[i]))
-                    {
-                        return processStatusView[i] != '0';
-                    }
-                }
-                return false;
-            }
-
-            bool IsDebuggerPresent()
-            {
-                static bool s_detectionPerformed = false;
-                static bool s_debuggerDetected = false;
-                if (!s_detectionPerformed)
-                {
-                    s_debuggerDetected = performDebuggerDetection();
-                    s_detectionPerformed = true;
-                }
-                return s_debuggerDetected;
-            }
-
-            bool AttachDebugger()
-            {
-                // Not supported yet
-                AZ_Assert(false, "AttachDebugger() is not supported for Unix platform yet");
-                return false;
-            }
-
-            void HandleExceptions(bool)
-            {}
-
-            void DebugBreak()
-            {
-                raise(SIGINT);
-            }
-#endif // AZ_ENABLE_DEBUG_TOOLS
-
-            void Terminate(int exitCode)
-            {
-                _exit(exitCode);
+                return processStatusView[i] != '0';
             }
         }
+        return false;
     }
-}
+
+    bool IsDebuggerPresent()
+    {
+        static bool s_detectionPerformed = false;
+        static bool s_debuggerDetected = false;
+        if (!s_detectionPerformed)
+        {
+            s_debuggerDetected = performDebuggerDetection();
+            s_detectionPerformed = true;
+        }
+        return s_debuggerDetected;
+    }
+
+    bool AttachDebugger()
+    {
+        // Not supported yet
+        AZ_Assert(false, "AttachDebugger() is not supported for Unix platform yet");
+        return false;
+    }
+
+    void HandleExceptions(bool)
+    {}
+
+    void DebugBreak()
+    {
+        raise(SIGINT);
+    }
+#endif // AZ_ENABLE_DEBUG_TOOLS
+
+    void Terminate(int exitCode)
+    {
+        _exit(exitCode);
+    }
+} // namespace AZ::Debug::Platform
