@@ -92,7 +92,6 @@ set(FILES
     MacSpecific.h
     platform.h
     platform_impl.cpp
-    Win32specific.h
     Win64specific.h
     LyShine/UiAssetTypes.h
     LyShine/Bus/UiCursorBus.h
