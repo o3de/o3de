@@ -52,7 +52,7 @@ namespace ImageProcessingAtom
 
     namespace
     {
-        static constexpr const char* const LogWindow = "Image Processing";
+        [[maybe_unused]] static constexpr const char* const LogWindow = "Image Processing";
     }
 
 #if defined(AZ_TOOLS_EXPAND_FOR_RESTRICTED_PLATFORMS)
