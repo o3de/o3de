@@ -189,6 +189,10 @@ namespace ScriptCanvas
 
 namespace ScriptCanvasEditor
 {
+    SourceHandle::SourceHandle()
+        : m_id(AZ::Uuid::CreateNull())
+    {}
+
     SourceHandle::SourceHandle(const SourceHandle& data, const AZ::Uuid& id, const AZ::IO::Path& path)
         : m_data(data.m_data)
         , m_id(id)
@@ -205,6 +209,22 @@ namespace ScriptCanvasEditor
     {
         m_path.MakePreferred();
         m_id = id;
+    }
+
+    SourceHandle::SourceHandle(const SourceHandle& data, const AZ::IO::Path& path)
+        : m_data(data.m_data)
+        , m_id(AZ::Uuid::CreateNull())
+        , m_path(path)
+    {
+        m_path.MakePreferred();
+    }
+
+    SourceHandle::SourceHandle(ScriptCanvas::DataPtr graph, const AZ::IO::Path& path)
+        : m_data(graph)
+        , m_id(AZ::Uuid::CreateNull())
+        , m_path(path)
+    {
+        m_path.MakePreferred();
     }
 
     bool SourceHandle::AnyEquals(const SourceHandle& other) const

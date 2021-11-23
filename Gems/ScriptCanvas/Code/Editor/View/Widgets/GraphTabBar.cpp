@@ -154,6 +154,7 @@ namespace ScriptCanvasEditor
                 canvasWidget->SetDefaultBorderColor(ScriptCanvasAssetDescription().GetDisplayColorImpl());
                 metaData.m_canvasWidget = canvasWidget;
                 metaData.m_assetId = assetId;
+                metaData.m_fileState = fileState;
                 
                 AZStd::string tabName;
                 AzFramework::StringFunc::Path::GetFileName(assetId.Path().c_str(), tabName);

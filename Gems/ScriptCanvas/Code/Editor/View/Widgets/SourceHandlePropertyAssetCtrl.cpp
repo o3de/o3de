@@ -138,7 +138,7 @@ namespace ScriptCanvasEditor
         (void)index;
         (void)node;
 
-        auto sourceHandle = SourceHandle(nullptr, {}, GUI->GetSelectedSourcePath());
+        auto sourceHandle = SourceHandle(nullptr, GUI->GetSelectedSourcePath());
         auto completeSourceHandle = CompleteDescription(sourceHandle);
         if (completeSourceHandle)
         {

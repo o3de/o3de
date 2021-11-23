@@ -121,6 +121,8 @@ namespace ScriptCanvasEditor
         void SourceFileRemoved(AZStd::string relativePath, AZStd::string scanFolder, AZ::Uuid fileAssetId) override;
         void SourceFileFailed(AZStd::string relativePath, AZStd::string scanFolder, AZ::Uuid fileAssetId) override;
 
+        AZ::u32 OnFileSelectionChanged();
+
         void OnScriptCanvasAssetChanged(const SourceHandle& sourceHandle);
 
         void UpdateName();

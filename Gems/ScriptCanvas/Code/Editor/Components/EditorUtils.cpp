@@ -78,6 +78,19 @@ namespace ScriptCanvasEditor
         return AZStd::nullopt;
     }
 
+    bool CompleteDescriptionInPlace(SourceHandle& source)
+    {
+        if (auto completed = CompleteDescription(source))
+        {
+            source = *completed;
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
     //////////////////////////
     // NodeIdentifierFactory
     //////////////////////////
