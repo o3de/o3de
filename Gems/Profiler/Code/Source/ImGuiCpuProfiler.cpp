@@ -435,6 +435,15 @@ namespace Profiler
         m_tableData.clear();
         m_groupRegionMap.clear();
 
+        // Since we don't serialize the frame boundaries, we will use "Component application simulation tick" from
+        // ComponentApplication::Tick as a heuristic.
+        static AZ::Name::Hash frameBoundaryHash = 0;
+        if (frameBoundaryHash == 0)
+        {
+            AZ::Name frameBoundaryName("Component application simulation tick");
+            frameBoundaryHash = frameBoundaryName.GetHash();
+        }
+
         for (const auto& entry : deserializedData)
         {
             const auto [groupNameItr, wasGroupNameInserted] = m_deserializedStringPool.emplace(entry.m_groupName.GetCStr());
@@ -445,10 +454,6 @@ namespace Profiler
             const CachedTimeRegion newRegion(*groupRegionNameItr, entry.m_stackDepth, entry.m_startTick, entry.m_endTick);
             m_savedData[entry.m_threadId].push_back(newRegion);
 
-            // Since we don't serialize the frame boundaries, we will use "Component application simulation tick" from
-            // ComponentApplication::Tick as a heuristic.
-            // hash operation copied from NameDictionary::CalcHash to avoid using a static AZ::Name
-            const uint32_t frameBoundaryHash = AZStd::hash<AZStd::string_view>()("Component application simulation tick") & 0xFFFFFFFF;
             if (entry.m_regionName.GetHash() == frameBoundaryHash)
             {
                 m_frameEndTicks.push_back(entry.m_endTick);
