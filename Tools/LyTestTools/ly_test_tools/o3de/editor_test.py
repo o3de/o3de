@@ -48,6 +48,7 @@ import ly_test_tools.environment.waiter as waiter
 import ly_test_tools.environment.process_utils as process_utils
 import ly_test_tools.o3de.editor_test
 import ly_test_tools.o3de.editor_test_utils as editor_utils
+import ly_test_tools._internal.pytest_plugin
 
 from ly_test_tools.o3de.asset_processor import AssetProcessor
 from ly_test_tools.launchers.exceptions import WaitTimeoutError
@@ -757,7 +758,7 @@ class EditorTestSuite():
         cmdline = [
             "--runpythontest", test_filename,
             "-logfile", f"@log@/{log_name}",
-            "-project-log-path", editor_utils.retrieve_log_path(run_id, workspace)] + test_cmdline_args
+            "-project-log-path", ly_test_tools._internal.pytest_plugin.output_path] + test_cmdline_args
         editor.args.extend(cmdline)
         editor.start(backupFiles = False, launch_ap = False, configure_settings=False)
 
@@ -782,11 +783,6 @@ class EditorTestSuite():
             editor.kill()
             editor_log_content = editor_utils.retrieve_editor_log_content(run_id, log_name, workspace)
             test_result = Result.Timeout.create(test_spec, output, test_spec.timeout, editor_log_content)
-        finally:
-            log_folder = editor_utils.retrieve_log_path(run_id, workspace)
-            if run_id == 0:
-                log_folder = workspace.paths.project_log()
-            workspace.artifact_manager.save_artifact(log_folder)
     
         editor_log_content = editor_utils.retrieve_editor_log_content(run_id, log_name, workspace)
         results = self._get_results_using_output([test_spec], output, editor_log_content)
@@ -828,7 +824,7 @@ class EditorTestSuite():
         cmdline = [
             "--runpythontest", test_filenames_str,
             "-logfile", f"@log@/{log_name}",
-            "-project-log-path", editor_utils.retrieve_log_path(run_id, workspace)] + test_cmdline_args
+            "-project-log-path", ly_test_tools._internal.pytest_plugin.output_path] + test_cmdline_args
 
         editor.args.extend(cmdline)
         editor.start(backupFiles = False, launch_ap = False, configure_settings=False)
@@ -905,11 +901,6 @@ class EditorTestSuite():
                 results[test_spec_name] = Result.Timeout.create(timed_out_result.test_spec,
                                                                 results[test_spec_name].output,
                                                                 self.timeout_editor_shared_test, result.editor_log)
-        finally:
-            log_folder = editor_utils.retrieve_log_path(run_id, workspace)
-            if run_id == 0:
-                log_folder = workspace.paths.project_log()
-            workspace.artifact_manager.save_artifact(log_folder)
         return results
     
     def _run_single_test(self, request: Request, workspace: AbstractWorkspace, editor: Editor,
