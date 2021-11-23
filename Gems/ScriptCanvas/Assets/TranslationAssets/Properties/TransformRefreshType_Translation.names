@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "TransformRefreshType_Translation",
+            "base": "TransformRefreshType_Translation",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetTransformRefreshType_Translation",
+                    "base": "GetTransformRefreshType_Translation",
                     "details": {
                         "name": "Translation"
                     },

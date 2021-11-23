@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "DitherGradientComponentTypeId",
+            "base": "DitherGradientComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetDitherGradientComponentTypeId",
+                    "base": "GetDitherGradientComponentTypeId",
                     "details": {
                         "name": "Get Dither Gradient Component Type Id"
                     },

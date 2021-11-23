@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "eUiScaleToDeviceMode_NonUniformScale",
+            "base": "eUiScaleToDeviceMode_NonUniformScale",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GeteUiScaleToDeviceMode_NonUniformScale",
+                    "base": "GeteUiScaleToDeviceMode_NonUniformScale",
                     "details": {
                         "name": "Non Uniform Scale"
                     },

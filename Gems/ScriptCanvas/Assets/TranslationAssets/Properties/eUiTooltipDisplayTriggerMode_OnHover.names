@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "eUiTooltipDisplayTriggerMode_OnHover",
+            "base": "eUiTooltipDisplayTriggerMode_OnHover",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GeteUiTooltipDisplayTriggerMode_OnHover",
+                    "base": "GeteUiTooltipDisplayTriggerMode_OnHover",
                     "details": {
                         "name": "On Hover"
                     },

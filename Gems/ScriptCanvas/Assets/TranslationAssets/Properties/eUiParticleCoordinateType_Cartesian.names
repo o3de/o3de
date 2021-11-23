@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "eUiParticleCoordinateType_Cartesian",
+            "base": "eUiParticleCoordinateType_Cartesian",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GeteUiParticleCoordinateType_Cartesian",
+                    "base": "GeteUiParticleCoordinateType_Cartesian",
                     "details": {
                         "name": "Cartesian"
                     },

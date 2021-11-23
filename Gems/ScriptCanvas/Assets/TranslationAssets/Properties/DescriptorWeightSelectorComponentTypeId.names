@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "DescriptorWeightSelectorComponentTypeId",
+            "base": "DescriptorWeightSelectorComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetDescriptorWeightSelectorComponentTypeId",
+                    "base": "GetDescriptorWeightSelectorComponentTypeId",
                     "details": {
                         "name": "Get Descriptor Weight Selector Component Type Id"
                     },

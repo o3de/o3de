@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "DistributionFilterComponentTypeId",
+            "base": "DistributionFilterComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetDistributionFilterComponentTypeId",
+                    "base": "GetDistributionFilterComponentTypeId",
                     "details": {
                         "name": "Get Distribution Filter Component Type Id"
                     },

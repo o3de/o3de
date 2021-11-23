@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "GradientSurfaceDataComponentTypeId",
+            "base": "GradientSurfaceDataComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetGradientSurfaceDataComponentTypeId",
+                    "base": "GetGradientSurfaceDataComponentTypeId",
                     "details": {
                         "name": "Get Gradient Surface Data Component Type Id"
                     },

@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "eUiScaleToDeviceMode_None",
+            "base": "eUiScaleToDeviceMode_None",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GeteUiScaleToDeviceMode_None",
+                    "base": "GeteUiScaleToDeviceMode_None",
                     "details": {
                         "name": "None"
                     },

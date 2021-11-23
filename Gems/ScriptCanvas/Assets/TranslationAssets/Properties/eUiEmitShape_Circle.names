@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "eUiEmitShape_Circle",
+            "base": "eUiEmitShape_Circle",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GeteUiEmitShape_Circle",
+                    "base": "GeteUiEmitShape_Circle",
                     "details": {
                         "name": "Circle"
                     },

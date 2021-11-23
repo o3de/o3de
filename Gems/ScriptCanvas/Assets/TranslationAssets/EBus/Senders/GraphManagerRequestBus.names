@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "GraphManagerRequestBus",
+            "base": "GraphManagerRequestBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
@@ -9,7 +9,7 @@
             },
             "methods": [
                 {
-                    "key": "GetGraph",
+                    "base": "GetGraph",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetGraph"

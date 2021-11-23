@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "BlendOp_Invalid",
+            "base": "BlendOp_Invalid",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetBlendOp_Invalid",
+                    "base": "GetBlendOp_Invalid",
                     "details": {
                         "name": "Get Invalid"
                     },

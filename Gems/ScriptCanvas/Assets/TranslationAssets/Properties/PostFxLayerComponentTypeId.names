@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "PostFxLayerComponentTypeId",
+            "base": "PostFxLayerComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetPostFxLayerComponentTypeId",
+                    "base": "GetPostFxLayerComponentTypeId",
                     "details": {
                         "name": "Get Post Fx Layer Component Type Id"
                     },

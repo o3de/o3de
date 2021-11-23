@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "eUiImageType_Sliced",
+            "base": "eUiImageType_Sliced",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GeteUiImageType_Sliced",
+                    "base": "GeteUiImageType_Sliced",
                     "details": {
                         "name": "Sliced"
                     },

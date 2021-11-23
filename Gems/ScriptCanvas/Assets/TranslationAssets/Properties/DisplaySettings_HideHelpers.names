@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "DisplaySettings_HideHelpers",
+            "base": "DisplaySettings_HideHelpers",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetDisplaySettings_HideHelpers",
+                    "base": "GetDisplaySettings_HideHelpers",
                     "details": {
                         "name": "Get Hide Helpers"
                     },

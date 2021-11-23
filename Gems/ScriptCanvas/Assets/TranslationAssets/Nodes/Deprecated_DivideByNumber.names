@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "{397FA4E6-72E7-51EB-A546-70415FCCE4B0}",
+            "base": "{397FA4E6-72E7-51EB-A546-70415FCCE4B0}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
@@ -12,31 +12,31 @@
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "key": "DataInput_Matrix3x3: Source",
+                    "base": "DataInput_Matrix3x3: Source",
                     "details": {
                         "name": "Matrix3x3: Source"
                     }
                 },
                 {
-                    "key": "DataInput_Number: Divisor",
+                    "base": "DataInput_Number: Divisor",
                     "details": {
                         "name": "Number: Divisor"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Matrix3x3",
+                    "base": "DataOutput_Result: Matrix3x3",
                     "details": {
                         "name": "Result: Matrix3x3"
                     }

@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "ShadowFilterMethod_None",
+            "base": "ShadowFilterMethod_None",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetShadowFilterMethod_None",
+                    "base": "GetShadowFilterMethod_None",
                     "details": {
                         "name": "None"
                     },

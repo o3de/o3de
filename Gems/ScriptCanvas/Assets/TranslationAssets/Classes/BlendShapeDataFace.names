@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "BlendShapeDataFace",
+            "base": "BlendShapeDataFace",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
@@ -9,7 +9,7 @@
             },
             "methods": [
                 {
-                    "key": "GetVertexIndex",
+                    "base": "GetVertexIndex",
                     "context": "BlendShapeDataFace",
                     "entry": {
                         "name": "In",

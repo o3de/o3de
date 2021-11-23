@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "EditorMaterialComponentTypeId",
+            "base": "EditorMaterialComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetEditorMaterialComponentTypeId",
+                    "base": "GetEditorMaterialComponentTypeId",
                     "details": {
                         "name": "Get Editor Material Component Type Id"
                     },

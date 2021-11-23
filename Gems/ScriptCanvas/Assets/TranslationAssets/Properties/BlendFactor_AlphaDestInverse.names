@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "BlendFactor_AlphaDestInverse",
+            "base": "BlendFactor_AlphaDestInverse",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetBlendFactor_AlphaDestInverse",
+                    "base": "GetBlendFactor_AlphaDestInverse",
                     "details": {
                         "name": "Get Alpha Dest Inverse"
                     },

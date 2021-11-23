@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "GradientTransformComponentTypeId",
+            "base": "GradientTransformComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetGradientTransformComponentTypeId",
+                    "base": "GetGradientTransformComponentTypeId",
                     "details": {
                         "name": "Get Gradient Transform Component Type Id"
                     },

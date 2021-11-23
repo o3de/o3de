@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "SystemConfigPlatform_Pc",
+            "base": "SystemConfigPlatform_Pc",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetSystemConfigPlatform_Pc",
+                    "base": "GetSystemConfigPlatform_Pc",
                     "details": {
                         "name": "Pc"
                     },

@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "VertexColor",
+            "base": "VertexColor",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
@@ -9,7 +9,7 @@
             },
             "methods": [
                 {
-                    "key": "Getred",
+                    "base": "Getred",
                     "details": {
                         "name": "Get Red"
                     },
@@ -31,7 +31,7 @@
                     ]
                 },
                 {
-                    "key": "Getgreen",
+                    "base": "Getgreen",
                     "details": {
                         "name": "Get Green"
                     },
@@ -53,7 +53,7 @@
                     ]
                 },
                 {
-                    "key": "Getblue",
+                    "base": "Getblue",
                     "details": {
                         "name": "Get Blue"
                     },
@@ -75,7 +75,7 @@
                     ]
                 },
                 {
-                    "key": "Getalpha",
+                    "base": "Getalpha",
                     "details": {
                         "name": "Get Alpha"
                     },

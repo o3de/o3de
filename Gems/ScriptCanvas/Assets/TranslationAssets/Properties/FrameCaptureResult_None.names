@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "FrameCaptureResult_None",
+            "base": "FrameCaptureResult_None",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetFrameCaptureResult_None",
+                    "base": "GetFrameCaptureResult_None",
                     "details": {
                         "name": "None"
                     },

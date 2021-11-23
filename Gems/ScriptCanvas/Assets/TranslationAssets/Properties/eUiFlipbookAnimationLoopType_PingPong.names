@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "eUiFlipbookAnimationLoopType_PingPong",
+            "base": "eUiFlipbookAnimationLoopType_PingPong",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GeteUiFlipbookAnimationLoopType_PingPong",
+                    "base": "GeteUiFlipbookAnimationLoopType_PingPong",
                     "details": {
                         "name": "Ping Pong"
                     },

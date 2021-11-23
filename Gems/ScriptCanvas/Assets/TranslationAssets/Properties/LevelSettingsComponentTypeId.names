@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "LevelSettingsComponentTypeId",
+            "base": "LevelSettingsComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetLevelSettingsComponentTypeId",
+                    "base": "GetLevelSettingsComponentTypeId",
                     "details": {
                         "name": "Get Level Settings Component Type Id"
                     },

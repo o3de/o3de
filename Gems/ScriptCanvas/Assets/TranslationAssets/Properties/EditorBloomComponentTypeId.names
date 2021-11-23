@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "EditorBloomComponentTypeId",
+            "base": "EditorBloomComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetEditorBloomComponentTypeId",
+                    "base": "GetEditorBloomComponentTypeId",
                     "details": {
                         "name": "Get Editor Bloom Component Type Id"
                     },

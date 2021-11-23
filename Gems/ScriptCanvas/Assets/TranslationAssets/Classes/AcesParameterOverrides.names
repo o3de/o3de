@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "AcesParameterOverrides",
+            "base": "AcesParameterOverrides",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "LoadPreset",
+                    "base": "LoadPreset",
                     "context": "AcesParameterOverrides",
                     "entry": {
                         "name": "In",
@@ -33,7 +33,7 @@
                     ]
                 },
                 {
-                    "key": "GetOutputDeviceTransformType_4000Nits",
+                    "base": "GetOutputDeviceTransformType_4000Nits",
                     "details": {
                         "name": "Get Output Device Transform Type_ 4000 Nits"
                     },
@@ -47,7 +47,7 @@
                     ]
                 },
                 {
-                    "key": "GetOutputDeviceTransformType_2000Nits",
+                    "base": "GetOutputDeviceTransformType_2000Nits",
                     "details": {
                         "name": "Get Output Device Transform Type_ 2000 Nits"
                     },
@@ -61,7 +61,7 @@
                     ]
                 },
                 {
-                    "key": "GetapplyCATD60toD65",
+                    "base": "GetapplyCATD60toD65",
                     "details": {
                         "name": "GetapplyCATD 60toD 65"
                     },
@@ -83,7 +83,7 @@
                     ]
                 },
                 {
-                    "key": "SetapplyCATD60toD65",
+                    "base": "SetapplyCATD60toD65",
                     "details": {
                         "name": "SetapplyCATD 60toD 65"
                     },
@@ -103,7 +103,7 @@
                     ]
                 },
                 {
-                    "key": "GetOutputDeviceTransformType_48Nits",
+                    "base": "GetOutputDeviceTransformType_48Nits",
                     "details": {
                         "name": "Get Output Device Transform Type_ 48 Nits"
                     },
@@ -117,7 +117,7 @@
                     ]
                 },
                 {
-                    "key": "GetOutputDeviceTransformType_NumOutputDeviceTransformTypes",
+                    "base": "GetOutputDeviceTransformType_NumOutputDeviceTransformTypes",
                     "details": {
                         "name": "Get Output Device Transform Type_ Num Output Device Transform Types"
                     },
@@ -131,7 +131,7 @@
                     ]
                 },
                 {
-                    "key": "GetOutputDeviceTransformType_1000Nits",
+                    "base": "GetOutputDeviceTransformType_1000Nits",
                     "details": {
                         "name": "Get Output Device Transform Type_ 1000 Nits"
                     },
@@ -145,7 +145,7 @@
                     ]
                 },
                 {
-                    "key": "GetapplyDesaturation",
+                    "base": "GetapplyDesaturation",
                     "details": {
                         "name": "Getapply Desaturation"
                     },
@@ -167,7 +167,7 @@
                     ]
                 },
                 {
-                    "key": "SetapplyDesaturation",
+                    "base": "SetapplyDesaturation",
                     "details": {
                         "name": "Setapply Desaturation"
                     },
@@ -187,7 +187,7 @@
                     ]
                 },
                 {
-                    "key": "Getpreset",
+                    "base": "Getpreset",
                     "details": {
                         "name": "Getpreset"
                     },
@@ -209,7 +209,7 @@
                     ]
                 },
                 {
-                    "key": "Setpreset",
+                    "base": "Setpreset",
                     "details": {
                         "name": "Setpreset"
                     },
@@ -229,7 +229,7 @@
                     ]
                 },
                 {
-                    "key": "GetalterSurround",
+                    "base": "GetalterSurround",
                     "details": {
                         "name": "Getalter Surround"
                     },
@@ -251,7 +251,7 @@
                     ]
                 },
                 {
-                    "key": "SetalterSurround",
+                    "base": "SetalterSurround",
                     "details": {
                         "name": "Setalter Surround"
                     },
@@ -271,7 +271,7 @@
                     ]
                 },
                 {
-                    "key": "GetoverrideDefaults",
+                    "base": "GetoverrideDefaults",
                     "details": {
                         "name": "Getoverride Defaults"
                     },
@@ -293,7 +293,7 @@
                     ]
                 },
                 {
-                    "key": "SetoverrideDefaults",
+                    "base": "SetoverrideDefaults",
                     "details": {
                         "name": "Setoverride Defaults"
                     },

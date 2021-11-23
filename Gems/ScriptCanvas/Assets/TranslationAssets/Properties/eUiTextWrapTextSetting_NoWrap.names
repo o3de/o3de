@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "eUiTextWrapTextSetting_NoWrap",
+            "base": "eUiTextWrapTextSetting_NoWrap",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GeteUiTextWrapTextSetting_NoWrap",
+                    "base": "GeteUiTextWrapTextSetting_NoWrap",
                     "details": {
                         "name": "No Wrap"
                     },

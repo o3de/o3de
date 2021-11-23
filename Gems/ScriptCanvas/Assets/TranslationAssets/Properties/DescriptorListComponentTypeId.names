@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "DescriptorListComponentTypeId",
+            "base": "DescriptorListComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetDescriptorListComponentTypeId",
+                    "base": "GetDescriptorListComponentTypeId",
                     "details": {
                         "name": "Get Descriptor List Component Type Id"
                     },

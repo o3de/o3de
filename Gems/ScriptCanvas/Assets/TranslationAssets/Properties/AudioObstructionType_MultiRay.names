@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "AudioObstructionType_MultiRay",
+            "base": "AudioObstructionType_MultiRay",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetAudioObstructionType_MultiRay",
+                    "base": "GetAudioObstructionType_MultiRay",
                     "details": {
                         "name": "Multi Ray"
                     },

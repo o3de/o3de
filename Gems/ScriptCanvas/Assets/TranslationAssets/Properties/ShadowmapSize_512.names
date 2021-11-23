@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "ShadowmapSize_512",
+            "base": "ShadowmapSize_512",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetShadowmapSize_512",
+                    "base": "GetShadowmapSize_512",
                     "details": {
                         "name": "512"
                     },

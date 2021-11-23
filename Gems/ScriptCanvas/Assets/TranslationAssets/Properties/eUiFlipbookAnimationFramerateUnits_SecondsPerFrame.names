@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "eUiFlipbookAnimationFramerateUnits_SecondsPerFrame",
+            "base": "eUiFlipbookAnimationFramerateUnits_SecondsPerFrame",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GeteUiFlipbookAnimationFramerateUnits_SecondsPerFrame",
+                    "base": "GeteUiFlipbookAnimationFramerateUnits_SecondsPerFrame",
                     "details": {
                         "name": "Seconds Per Frame"
                     },

@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "eUiScrollerOrientation_Vertical",
+            "base": "eUiScrollerOrientation_Vertical",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GeteUiScrollerOrientation_Vertical",
+                    "base": "GeteUiScrollerOrientation_Vertical",
                     "details": {
                         "name": "Vertical"
                     },

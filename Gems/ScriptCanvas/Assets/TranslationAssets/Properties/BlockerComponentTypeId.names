@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "BlockerComponentTypeId",
+            "base": "BlockerComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetBlockerComponentTypeId",
+                    "base": "GetBlockerComponentTypeId",
                     "details": {
                         "name": "Get Blocker Component Type Id"
                     },

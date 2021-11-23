@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "HDRiSkyboxComponentTypeId",
+            "base": "HDRiSkyboxComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetHDRiSkyboxComponentTypeId",
+                    "base": "GetHDRiSkyboxComponentTypeId",
                     "details": {
                         "name": "GetHD Ri Skybox Component Type Id"
                     },

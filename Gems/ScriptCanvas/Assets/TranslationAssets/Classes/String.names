@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "String",
+            "base": "String",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
@@ -9,7 +9,7 @@
             },
             "methods": [
                 {
-                    "key": "ReplaceString",
+                    "base": "ReplaceString",
                     "context": "String",
                     "entry": {
                         "name": "In",
@@ -59,7 +59,7 @@
                     ]
                 },
                 {
-                    "key": "Join",
+                    "base": "Join",
                     "context": "String",
                     "entry": {
                         "name": "In",
@@ -97,7 +97,7 @@
                     ]
                 },
                 {
-                    "key": "StartsWith",
+                    "base": "StartsWith",
                     "context": "String",
                     "entry": {
                         "name": "In",
@@ -141,7 +141,7 @@
                     ]
                 },
                 {
-                    "key": "ContainsString",
+                    "base": "ContainsString",
                     "context": "String",
                     "entry": {
                         "name": "In",
@@ -191,7 +191,7 @@
                     ]
                 },
                 {
-                    "key": "Split",
+                    "base": "Split",
                     "context": "String",
                     "entry": {
                         "name": "In",
@@ -229,7 +229,7 @@
                     ]
                 },
                 {
-                    "key": "IsValidFindPosition",
+                    "base": "IsValidFindPosition",
                     "context": "String",
                     "entry": {
                         "name": "In",
@@ -261,7 +261,7 @@
                     ]
                 },
                 {
-                    "key": "EndsWith",
+                    "base": "EndsWith",
                     "context": "String",
                     "entry": {
                         "name": "In",

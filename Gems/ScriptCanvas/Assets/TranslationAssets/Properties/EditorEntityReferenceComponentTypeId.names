@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "EditorEntityReferenceComponentTypeId",
+            "base": "EditorEntityReferenceComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetEditorEntityReferenceComponentTypeId",
+                    "base": "GetEditorEntityReferenceComponentTypeId",
                     "details": {
                         "name": "Get Editor Entity Reference Component Type Id"
                     },

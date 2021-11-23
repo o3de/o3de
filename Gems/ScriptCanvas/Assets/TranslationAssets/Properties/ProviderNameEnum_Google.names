@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "ProviderNameEnum_Google",
+            "base": "ProviderNameEnum_Google",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetProviderNameEnum_Google",
+                    "base": "GetProviderNameEnum_Google",
                     "details": {
                         "name": "Google"
                     },

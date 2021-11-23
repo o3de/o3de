@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "SystemConfigPlatform_InvalidPlatform",
+            "base": "SystemConfigPlatform_InvalidPlatform",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetSystemConfigPlatform_InvalidPlatform",
+                    "base": "GetSystemConfigPlatform_InvalidPlatform",
                     "details": {
                         "name": "Invalid Platform"
                     },

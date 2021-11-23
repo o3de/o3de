@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "eUiEmitShape_Quad",
+            "base": "eUiEmitShape_Quad",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GeteUiEmitShape_Quad",
+                    "base": "GeteUiEmitShape_Quad",
                     "details": {
                         "name": "Quad"
                     },

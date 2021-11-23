@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "EditorEntityStartStatus_StartActive",
+            "base": "EditorEntityStartStatus_StartActive",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetEditorEntityStartStatus_StartActive",
+                    "base": "GetEditorEntityStartStatus_StartActive",
                     "details": {
                         "name": "Get Editor Entity Start Status_ Start Active"
                     },

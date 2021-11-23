@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "BlendOp_Subtract",
+            "base": "BlendOp_Subtract",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetBlendOp_Subtract",
+                    "base": "GetBlendOp_Subtract",
                     "details": {
                         "name": "Get Subtract"
                     },

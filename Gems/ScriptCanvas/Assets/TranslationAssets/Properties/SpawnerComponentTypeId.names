@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "SpawnerComponentTypeId",
+            "base": "SpawnerComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetSpawnerComponentTypeId",
+                    "base": "GetSpawnerComponentTypeId",
                     "details": {
                         "name": "Get Spawner Component Type Id"
                     },

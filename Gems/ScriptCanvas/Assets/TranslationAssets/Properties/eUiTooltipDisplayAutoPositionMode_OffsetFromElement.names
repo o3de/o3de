@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "eUiTooltipDisplayAutoPositionMode_OffsetFromElement",
+            "base": "eUiTooltipDisplayAutoPositionMode_OffsetFromElement",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GeteUiTooltipDisplayAutoPositionMode_OffsetFromElement",
+                    "base": "GeteUiTooltipDisplayAutoPositionMode_OffsetFromElement",
                     "details": {
                         "name": "Offset From Element"
                     },

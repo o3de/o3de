@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "SaveShaderVariantListSourceData",
+            "base": "SaveShaderVariantListSourceData",
             "context": "Method",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "SaveShaderVariantListSourceData",
+                    "base": "SaveShaderVariantListSourceData",
                     "context": "Global",
                     "entry": {
                         "name": "In",

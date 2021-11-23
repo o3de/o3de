@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "BlendFactor_AlphaSourceSaturate",
+            "base": "BlendFactor_AlphaSourceSaturate",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetBlendFactor_AlphaSourceSaturate",
+                    "base": "GetBlendFactor_AlphaSourceSaturate",
                     "details": {
                         "name": "Get Alpha Source Saturate"
                     },

@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "eUiImageType_Fixed",
+            "base": "eUiImageType_Fixed",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GeteUiImageType_Fixed",
+                    "base": "GeteUiImageType_Fixed",
                     "details": {
                         "name": "Fixed"
                     },

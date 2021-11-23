@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "PhotometricUnit_Lumen",
+            "base": "PhotometricUnit_Lumen",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetPhotometricUnit_Lumen",
+                    "base": "GetPhotometricUnit_Lumen",
                     "details": {
                         "name": "Lumen"
                     },

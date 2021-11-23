@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "TETRAHEDRON",
+            "base": "TETRAHEDRON",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetTETRAHEDRON",
+                    "base": "GetTETRAHEDRON",
                     "details": {
                         "name": "Tetrahedron"
                     },

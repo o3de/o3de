@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "TransformMode_Translation",
+            "base": "TransformMode_Translation",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetTransformMode_Translation",
+                    "base": "GetTransformMode_Translation",
                     "details": {
                         "name": "Translation"
                     },

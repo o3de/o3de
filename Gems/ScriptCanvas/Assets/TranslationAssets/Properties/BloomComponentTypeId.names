@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "BloomComponentTypeId",
+            "base": "BloomComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetBloomComponentTypeId",
+                    "base": "GetBloomComponentTypeId",
                     "details": {
                         "name": "Get Bloom Component Type Id"
                     },

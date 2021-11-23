@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "eUiScrollBoxSnapMode_Grid",
+            "base": "eUiScrollBoxSnapMode_Grid",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GeteUiScrollBoxSnapMode_Grid",
+                    "base": "GeteUiScrollBoxSnapMode_Grid",
                     "details": {
                         "name": "Grid"
                     },

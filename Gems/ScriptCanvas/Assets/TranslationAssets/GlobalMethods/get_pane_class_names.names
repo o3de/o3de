@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "get_pane_class_names",
+            "base": "get_pane_class_names",
             "context": "Method",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "get_pane_class_names",
+                    "base": "get_pane_class_names",
                     "context": "Global",
                     "entry": {
                         "name": "In",

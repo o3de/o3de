@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "eUiDynamicContentDBColorType_Free",
+            "base": "eUiDynamicContentDBColorType_Free",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GeteUiDynamicContentDBColorType_Free",
+                    "base": "GeteUiDynamicContentDBColorType_Free",
                     "details": {
                         "name": "Color Type Free"
                     },

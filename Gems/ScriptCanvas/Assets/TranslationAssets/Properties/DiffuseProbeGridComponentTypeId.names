@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "DiffuseProbeGridComponentTypeId",
+            "base": "DiffuseProbeGridComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetDiffuseProbeGridComponentTypeId",
+                    "base": "GetDiffuseProbeGridComponentTypeId",
                     "details": {
                         "name": "Get Diffuse Probe Grid Component Type Id"
                     },

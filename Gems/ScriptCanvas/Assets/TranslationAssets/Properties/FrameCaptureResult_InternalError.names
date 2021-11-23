@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "FrameCaptureResult_InternalError",
+            "base": "FrameCaptureResult_InternalError",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetFrameCaptureResult_InternalError",
+                    "base": "GetFrameCaptureResult_InternalError",
                     "details": {
                         "name": "Internal Error"
                     },

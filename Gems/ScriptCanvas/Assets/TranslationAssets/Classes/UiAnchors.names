@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "UiAnchors",
+            "base": "UiAnchors",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
@@ -9,7 +9,7 @@
             },
             "methods": [
                 {
-                    "key": "SetBottom",
+                    "base": "SetBottom",
                     "context": "UiAnchors",
                     "entry": {
                         "name": "In",
@@ -38,7 +38,7 @@
                     ]
                 },
                 {
-                    "key": "SetRight",
+                    "base": "SetRight",
                     "context": "UiAnchors",
                     "entry": {
                         "name": "In",
@@ -67,7 +67,7 @@
                     ]
                 },
                 {
-                    "key": "SetTop",
+                    "base": "SetTop",
                     "context": "UiAnchors",
                     "entry": {
                         "name": "In",
@@ -96,7 +96,7 @@
                     ]
                 },
                 {
-                    "key": "SetLeft",
+                    "base": "SetLeft",
                     "context": "UiAnchors",
                     "entry": {
                         "name": "In",
@@ -125,7 +125,7 @@
                     ]
                 },
                 {
-                    "key": "SetAnchors",
+                    "base": "SetAnchors",
                     "context": "UiAnchors",
                     "entry": {
                         "name": "In",
@@ -172,7 +172,7 @@
                     ]
                 },
                 {
-                    "key": "Getleft",
+                    "base": "Getleft",
                     "details": {
                         "name": "Getleft"
                     },
@@ -194,7 +194,7 @@
                     ]
                 },
                 {
-                    "key": "Setleft",
+                    "base": "Setleft",
                     "details": {
                         "name": "Setleft"
                     },
@@ -214,7 +214,7 @@
                     ]
                 },
                 {
-                    "key": "Gettop",
+                    "base": "Gettop",
                     "details": {
                         "name": "Gettop"
                     },
@@ -236,7 +236,7 @@
                     ]
                 },
                 {
-                    "key": "Settop",
+                    "base": "Settop",
                     "details": {
                         "name": "Settop"
                     },
@@ -256,7 +256,7 @@
                     ]
                 },
                 {
-                    "key": "Getright",
+                    "base": "Getright",
                     "details": {
                         "name": "Getright"
                     },
@@ -278,7 +278,7 @@
                     ]
                 },
                 {
-                    "key": "Setright",
+                    "base": "Setright",
                     "details": {
                         "name": "Setright"
                     },
@@ -298,7 +298,7 @@
                     ]
                 },
                 {
-                    "key": "Getbottom",
+                    "base": "Getbottom",
                     "details": {
                         "name": "Getbottom"
                     },
@@ -320,7 +320,7 @@
                     ]
                 },
                 {
-                    "key": "Setbottom",
+                    "base": "Setbottom",
                     "details": {
                         "name": "Setbottom"
                     },

@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "eUiImageSequenceImageType_StretchedToFill",
+            "base": "eUiImageSequenceImageType_StretchedToFill",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GeteUiImageSequenceImageType_StretchedToFill",
+                    "base": "GeteUiImageSequenceImageType_StretchedToFill",
                     "details": {
                         "name": "Image Type: Stretched To Fill"
                     },

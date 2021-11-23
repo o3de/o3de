@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "DisplaySettings_ShowDimensionFigures",
+            "base": "DisplaySettings_ShowDimensionFigures",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetDisplaySettings_ShowDimensionFigures",
+                    "base": "GetDisplaySettings_ShowDimensionFigures",
                     "details": {
                         "name": "Get Show Dimension Figures"
                     },

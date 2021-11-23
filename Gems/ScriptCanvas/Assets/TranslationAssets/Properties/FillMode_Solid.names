@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "FillMode_Solid",
+            "base": "FillMode_Solid",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetFillMode_Solid",
+                    "base": "GetFillMode_Solid",
                     "details": {
                         "name": "Solid"
                     },

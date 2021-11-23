@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "SystemEntityId",
+            "base": "SystemEntityId",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetSystemEntityId",
+                    "base": "GetSystemEntityId",
                     "details": {
                         "name": "Get System Entity Id"
                     },

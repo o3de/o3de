@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "ProviderNameEnum_AWSCognitoIDP",
+            "base": "ProviderNameEnum_AWSCognitoIDP",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetProviderNameEnum_AWSCognitoIDP",
+                    "base": "GetProviderNameEnum_AWSCognitoIDP",
                     "details": {
                         "name": "AWS Cognito IDP"
                     },

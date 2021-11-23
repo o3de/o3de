@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "DepthOfFieldRequestBus",
+            "base": "DepthOfFieldRequestBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetEnableDebugColoringOverride",
+                    "base": "GetEnableDebugColoringOverride",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Enable Debug Coloring Override"
@@ -32,7 +32,7 @@
                     ]
                 },
                 {
-                    "key": "GetAutoFocusSpeedOverride",
+                    "base": "GetAutoFocusSpeedOverride",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Auto Focus Speed Override"
@@ -54,7 +54,7 @@
                     ]
                 },
                 {
-                    "key": "SetAutoFocusSensitivity",
+                    "base": "SetAutoFocusSensitivity",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Auto Focus Sensitivity"
@@ -76,7 +76,7 @@
                     ]
                 },
                 {
-                    "key": "SetAutoFocusDelayOverride",
+                    "base": "SetAutoFocusDelayOverride",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Auto Focus Delay Override"
@@ -98,7 +98,7 @@
                     ]
                 },
                 {
-                    "key": "GetAutoFocusScreenPosition",
+                    "base": "GetAutoFocusScreenPosition",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Auto Focus Screen Position"
@@ -120,7 +120,7 @@
                     ]
                 },
                 {
-                    "key": "GetEnableDebugColoring",
+                    "base": "GetEnableDebugColoring",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Enable Debug Coloring"
@@ -142,7 +142,7 @@
                     ]
                 },
                 {
-                    "key": "SetFocusDistance",
+                    "base": "SetFocusDistance",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Focus Distance"
@@ -164,7 +164,7 @@
                     ]
                 },
                 {
-                    "key": "SetQualityLevel",
+                    "base": "SetQualityLevel",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Quality Level"
@@ -186,7 +186,7 @@
                     ]
                 },
                 {
-                    "key": "SetCameraEntityId",
+                    "base": "SetCameraEntityId",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Camera Entity Id"
@@ -209,7 +209,7 @@
                     ]
                 },
                 {
-                    "key": "SetAutoFocusDelay",
+                    "base": "SetAutoFocusDelay",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Auto Focus Delay"
@@ -231,7 +231,7 @@
                     ]
                 },
                 {
-                    "key": "GetAutoFocusDelay",
+                    "base": "GetAutoFocusDelay",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Auto Focus Delay"
@@ -253,7 +253,7 @@
                     ]
                 },
                 {
-                    "key": "SetAutoFocusScreenPosition",
+                    "base": "SetAutoFocusScreenPosition",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Auto Focus Screen Position"
@@ -275,7 +275,7 @@
                     ]
                 },
                 {
-                    "key": "GetFNumber",
+                    "base": "GetFNumber",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetF Number"
@@ -297,7 +297,7 @@
                     ]
                 },
                 {
-                    "key": "SetApertureFOverride",
+                    "base": "SetApertureFOverride",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set ApertureF Override"
@@ -319,7 +319,7 @@
                     ]
                 },
                 {
-                    "key": "SetEnabled",
+                    "base": "SetEnabled",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Enabled"
@@ -341,7 +341,7 @@
                     ]
                 },
                 {
-                    "key": "SetAutoFocusScreenPositionOverride",
+                    "base": "SetAutoFocusScreenPositionOverride",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Auto Focus Screen Position Override"
@@ -363,7 +363,7 @@
                     ]
                 },
                 {
-                    "key": "GetQualityLevelOverride",
+                    "base": "GetQualityLevelOverride",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Quality Level Override"
@@ -385,7 +385,7 @@
                     ]
                 },
                 {
-                    "key": "SetAutoFocusSpeedOverride",
+                    "base": "SetAutoFocusSpeedOverride",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Auto Focus Speed Override"
@@ -407,7 +407,7 @@
                     ]
                 },
                 {
-                    "key": "GetEnableAutoFocusOverride",
+                    "base": "GetEnableAutoFocusOverride",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Enable Auto Focus Override"
@@ -429,7 +429,7 @@
                     ]
                 },
                 {
-                    "key": "SetEnableDebugColoring",
+                    "base": "SetEnableDebugColoring",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Enable Debug Coloring"
@@ -451,7 +451,7 @@
                     ]
                 },
                 {
-                    "key": "SetFocusDistanceOverride",
+                    "base": "SetFocusDistanceOverride",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Focus Distance Override"
@@ -473,7 +473,7 @@
                     ]
                 },
                 {
-                    "key": "GetEnableAutoFocus",
+                    "base": "GetEnableAutoFocus",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Enable Auto Focus"
@@ -495,7 +495,7 @@
                     ]
                 },
                 {
-                    "key": "SetApertureF",
+                    "base": "SetApertureF",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set ApertureF"
@@ -517,7 +517,7 @@
                     ]
                 },
                 {
-                    "key": "SetCameraEntityIdOverride",
+                    "base": "SetCameraEntityIdOverride",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Camera Entity Id Override"
@@ -539,7 +539,7 @@
                     ]
                 },
                 {
-                    "key": "GetEnabled",
+                    "base": "GetEnabled",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Enabled"
@@ -561,7 +561,7 @@
                     ]
                 },
                 {
-                    "key": "GetFocusDistance",
+                    "base": "GetFocusDistance",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Focus Distance"
@@ -583,7 +583,7 @@
                     ]
                 },
                 {
-                    "key": "GetEnabledOverride",
+                    "base": "GetEnabledOverride",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Enabled Override"
@@ -605,7 +605,7 @@
                     ]
                 },
                 {
-                    "key": "GetCameraEntityId",
+                    "base": "GetCameraEntityId",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Camera Entity Id"
@@ -628,7 +628,7 @@
                     ]
                 },
                 {
-                    "key": "GetAutoFocusScreenPositionOverride",
+                    "base": "GetAutoFocusScreenPositionOverride",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Auto Focus Screen Position Override"
@@ -650,7 +650,7 @@
                     ]
                 },
                 {
-                    "key": "GetAutoFocusSpeed",
+                    "base": "GetAutoFocusSpeed",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Auto Focus Speed"
@@ -672,7 +672,7 @@
                     ]
                 },
                 {
-                    "key": "SetEnabledOverride",
+                    "base": "SetEnabledOverride",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Enabled Override"
@@ -694,7 +694,7 @@
                     ]
                 },
                 {
-                    "key": "GetAutoFocusSensitivity",
+                    "base": "GetAutoFocusSensitivity",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Auto Focus Sensitivity"
@@ -716,7 +716,7 @@
                     ]
                 },
                 {
-                    "key": "GetAutoFocusDelayOverride",
+                    "base": "GetAutoFocusDelayOverride",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Auto Focus Delay Override"
@@ -738,7 +738,7 @@
                     ]
                 },
                 {
-                    "key": "GetApertureF",
+                    "base": "GetApertureF",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get ApertureF"
@@ -760,7 +760,7 @@
                     ]
                 },
                 {
-                    "key": "GetApertureFOverride",
+                    "base": "GetApertureFOverride",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get ApertureF Override"
@@ -782,7 +782,7 @@
                     ]
                 },
                 {
-                    "key": "SetAutoFocusSensitivityOverride",
+                    "base": "SetAutoFocusSensitivityOverride",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Auto Focus Sensitivity Override"
@@ -804,7 +804,7 @@
                     ]
                 },
                 {
-                    "key": "SetQualityLevelOverride",
+                    "base": "SetQualityLevelOverride",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Quality Level Override"
@@ -826,7 +826,7 @@
                     ]
                 },
                 {
-                    "key": "GetFocusDistanceOverride",
+                    "base": "GetFocusDistanceOverride",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Focus Distance Override"
@@ -848,7 +848,7 @@
                     ]
                 },
                 {
-                    "key": "SetAutoFocusSpeed",
+                    "base": "SetAutoFocusSpeed",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Auto Focus Speed"
@@ -870,7 +870,7 @@
                     ]
                 },
                 {
-                    "key": "SetEnableAutoFocusOverride",
+                    "base": "SetEnableAutoFocusOverride",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Enable Auto Focus Override"
@@ -892,7 +892,7 @@
                     ]
                 },
                 {
-                    "key": "GetQualityLevel",
+                    "base": "GetQualityLevel",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Quality Level"
@@ -914,7 +914,7 @@
                     ]
                 },
                 {
-                    "key": "GetAutoFocusSensitivityOverride",
+                    "base": "GetAutoFocusSensitivityOverride",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Auto Focus Sensitivity Override"
@@ -936,7 +936,7 @@
                     ]
                 },
                 {
-                    "key": "SetEnableDebugColoringOverride",
+                    "base": "SetEnableDebugColoringOverride",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Enable Debug Coloring Override"
@@ -958,7 +958,7 @@
                     ]
                 },
                 {
-                    "key": "SetFNumber",
+                    "base": "SetFNumber",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetF Number"
@@ -980,7 +980,7 @@
                     ]
                 },
                 {
-                    "key": "GetCameraEntityIdOverride",
+                    "base": "GetCameraEntityIdOverride",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Camera Entity Id Override"
@@ -1002,7 +1002,7 @@
                     ]
                 },
                 {
-                    "key": "SetEnableAutoFocus",
+                    "base": "SetEnableAutoFocus",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Enable Auto Focus"
