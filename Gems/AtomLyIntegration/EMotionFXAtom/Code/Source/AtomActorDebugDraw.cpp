@@ -193,13 +193,6 @@ namespace AZ::Render
         return AzFramework::DebugDisplayRequestBus::FindFirstHandler(debugDisplayBus);
     }
 
-    AzFramework::DebugDisplayRequests* AtomActorDebugDraw::GetDebugDisplay(AZ::s32 viewportId)
-    {
-        AzFramework::DebugDisplayRequestBus::BusPtr debugDisplayBus;
-        AzFramework::DebugDisplayRequestBus::Bind(debugDisplayBus, viewportId);
-        return AzFramework::DebugDisplayRequestBus::FindFirstHandler(debugDisplayBus);
-    }
-
     void AtomActorDebugDraw::RenderAABB(EMotionFX::ActorInstance* instance, const AZ::Color& aabbColor)
     {
         RPI::AuxGeomDrawPtr auxGeom = m_auxGeomFeatureProcessor->GetDrawQueue();
@@ -714,7 +707,6 @@ namespace AZ::Render
         AZ::Transform worldTM,
         float size,
         bool selected,
-        bool renderAxis,
         bool renderAxisName)
     {
         const float axisHeight = size * 0.7f;
