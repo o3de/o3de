@@ -18,6 +18,7 @@
 #include <Dependency/TestImpactChangeDependencyList.h>
 #include <Target/Native/TestImpactNativeProductionTargetList.h>
 #include <Target/Native/TestImpactNativeTestTargetList.h>
+#include <Target/Common/TestImpactBuildTargetList.h>
 
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/containers/unordered_set.h>
@@ -34,27 +35,11 @@ namespace TestImpact
             AZStd::vector<AZStd::unique_ptr<NativeTestTargetList::TargetType::Descriptor>>&& testTargetDescriptors,
             AZStd::vector<AZStd::unique_ptr<NativeProductionTargetDescriptor>>&& productionTargetDescriptors);
 
-        //! Gets the total number of production and test targets in the repository.
-        size_t GetNumTargets() const;
+        const BuildTargetList<NativeTestTargetList, NativeProductionTargetList>& GetBuildTargets() const;
 
         //! Gets the total number of unique source files in the repository.
         //! @note This includes autogen output sources.
         size_t GetNumSources() const;
-
-        //! Attempts to get the specified target's specialized type.
-        //! @param name The name of the target to get.
-        //! @returns If found, the pointer to the specialized target, otherwise AZStd::monostate.
-        OptionalSpecializedNativeTarget GetTarget(const AZStd::string& name) const;
-
-        //! Attempts to get the specified target's specialized type or throw TargetException.
-        //! @param name The name of the target to get.
-        SpecializedNativeTarget GetTargetOrThrow(const AZStd::string& name) const;
-
-        //! Get the list of production targets in the repository.
-        const NativeProductionTargetList& GetProductionTargetList() const;
-
-        //! Get the list of test targets in the repository.
-        const NativeTestTargetList& GetTestTargetList() const;
 
         //! Gets the test targets covering the specified production target.
         //! @param productionTarget The production target to retrieve the covering tests for.
@@ -111,12 +96,6 @@ namespace TestImpact
         //! @note The covering targets for the parent test target(s) will not be pruned if those covering targets are removed.
         void ClearSourceCoverage(const AZStd::vector<RepoPath>& paths);
 
-        //! The sorted list of unique production targets in the repository.
-        NativeProductionTargetList m_productionTargets;
-
-        //! The sorted list of unique test targets in the repository.
-        NativeTestTargetList m_testTargets;
-
         //! The dependency map of sources to their parent build targets and covering test targets.
         AZStd::unordered_map<AZStd::string, DependencyData> m_sourceDependencyMap;
 
@@ -129,5 +108,7 @@ namespace TestImpact
 
         //! Mapping of autogen input sources to their generated output sources.
         AZStd::unordered_map<AZStd::string, AZStd::vector<AZStd::string>> m_autogenInputToOutputMap;
+
+        BuildTargetList<NativeTestTargetList, NativeProductionTargetList> m_buildTargets;
     };
 } // namespace TestImpact

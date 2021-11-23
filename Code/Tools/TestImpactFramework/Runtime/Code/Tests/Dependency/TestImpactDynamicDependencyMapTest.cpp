@@ -152,27 +152,27 @@ namespace UnitTest
             MicroRepo::CreateTestTargetDescriptors(), MicroRepo::CreateProductionTargetDescriptors());
 
         // Expect the number of production targets in the dynamic dependency map to match that of those constructed from the descriptors
-        EXPECT_EQ(m_dynamicDependencyMap->GetProductionTargetList().GetNumTargets(), m_productionTargets->GetNumTargets());
+        EXPECT_EQ(m_dynamicDependencyMap->GetBuildTargets().GetProductionTargetList().GetNumTargets(), m_productionTargets->GetNumTargets());
 
         // Expect the number of test targets in the dynamic dependency map to match that of those constructed from the descriptors
-        EXPECT_EQ(m_dynamicDependencyMap->GetTestTargetList().GetNumTargets(), m_testTargets->GetNumTargets());
+        EXPECT_EQ(m_dynamicDependencyMap->GetBuildTargets().GetTestTargetList().GetNumTargets(), m_testTargets->GetNumTargets());
 
         // Expect the total number of build targets in the repository to match the total number of descriptors used to construct those targets
-        EXPECT_EQ(m_dynamicDependencyMap->GetNumTargets(), m_productionTargets->GetNumTargets() + m_testTargets->GetNumTargets());
+        EXPECT_EQ(m_dynamicDependencyMap->GetBuildTargets().GetNumTargets(), m_productionTargets->GetNumTargets() + m_testTargets->GetNumTargets());
 
         // Expect no orphaned source files as each file belongs to at least one parent build target
         const auto orphans = m_dynamicDependencyMap->GetOrphanSourceFiles();
         EXPECT_TRUE(orphans.empty());
 
         // Expect each production target in the dynamic dependency map to match that of the descriptors used to construct those targets
-        for (const auto& productionTarget : m_dynamicDependencyMap->GetProductionTargetList().GetTargets())
+        for (const auto& productionTarget : m_dynamicDependencyMap->GetBuildTargets().GetProductionTargetList().GetTargets())
         {
             const auto* expectedProductionTarget = m_productionTargets->GetTargetOrThrow(productionTarget.GetName());
             ValidateProductionTarget(productionTarget, *expectedProductionTarget);
         }
 
         // Expect each test target in the dynamic dependency map to match that of the descriptors used to construct those targets
-        for (const auto& testTarget : m_dynamicDependencyMap->GetTestTargetList().GetTargets())
+        for (const auto& testTarget : m_dynamicDependencyMap->GetBuildTargets().GetTestTargetList().GetTargets())
         {
             const auto* expectedTestTarget = m_testTargets->GetTargetOrThrow(testTarget.GetName());
             ValidateTestTarget(testTarget, *expectedTestTarget);
@@ -193,7 +193,7 @@ namespace UnitTest
         EXPECT_EQ(m_dynamicDependencyMap->GetNumSources(), CountSources(*m_productionTargets) + CountSources(*m_testTargets) - 1/*THAT SHARED ONE I GUESS!? INVESTIGATE*/);
 
         // Expect each production source's parent to match that of the corresponding source dependency
-        for (const auto& productionTarget : m_dynamicDependencyMap->GetProductionTargetList().GetTargets())
+        for (const auto& productionTarget : m_dynamicDependencyMap->GetBuildTargets().GetProductionTargetList().GetTargets())
         {
             for (const auto& staticSource : productionTarget.GetSources().m_staticSources)
             {
@@ -207,7 +207,7 @@ namespace UnitTest
         }
 
         // Expect each test source's parent to match that of the corresponding source dependency
-        for (const auto& testTarget : m_dynamicDependencyMap->GetTestTargetList().GetTargets())
+        for (const auto& testTarget : m_dynamicDependencyMap->GetBuildTargets().GetTestTargetList().GetTargets())
         {
             for (const auto& staticSource : testTarget.GetSources().m_staticSources)
             {
@@ -235,7 +235,7 @@ namespace UnitTest
         EXPECT_EQ(m_dynamicDependencyMap->GetNumSources(), CountSources(*m_productionTargets) + CountSources(*m_testTargets) - 1);
 
         // Expect each production source's parent to match that of the corresponding source dependency
-        for (const auto& productionTarget : m_dynamicDependencyMap->GetProductionTargetList().GetTargets())
+        for (const auto& productionTarget : m_dynamicDependencyMap->GetBuildTargets().GetProductionTargetList().GetTargets())
         {
             for (const auto& staticSource : productionTarget.GetSources().m_staticSources)
             {
@@ -248,7 +248,7 @@ namespace UnitTest
         }
 
         // Expect each test source's parent to match that of the corresponding source dependency
-        for (const auto& testTarget : m_dynamicDependencyMap->GetTestTargetList().GetTargets())
+        for (const auto& testTarget : m_dynamicDependencyMap->GetBuildTargets().GetTestTargetList().GetTargets())
         {
             for (const auto& staticSource : testTarget.GetSources().m_staticSources)
             {
@@ -285,7 +285,7 @@ namespace UnitTest
                     {
                         ValidateBuildTarget(*parentTarget.GetBuildTarget(), *autogenTarget);
                     }
-            },  m_dynamicDependencyMap->GetTargetOrThrow("Lib B"));
+            },  m_dynamicDependencyMap->GetBuildTargets().GetTargetOrThrow("Lib B"));
         };
 
         // Expect the input source and two output sources for this autogen coupling to refer to the same build data
@@ -345,7 +345,7 @@ namespace UnitTest
         }
 
         // Expect each production source's parent and covering tests to match that of the corresponding source dependency
-        for (const auto& productionTarget : m_dynamicDependencyMap->GetProductionTargetList().GetTargets())
+        for (const auto& productionTarget : m_dynamicDependencyMap->GetBuildTargets().GetProductionTargetList().GetTargets())
         {
             for (const auto& staticSource : productionTarget.GetSources().m_staticSources)
             {
@@ -359,7 +359,7 @@ namespace UnitTest
         }
 
         // Expect each test source's parent and covering tests to match that of the corresponding source dependency
-        for (const auto& testTarget : m_dynamicDependencyMap->GetTestTargetList().GetTargets())
+        for (const auto& testTarget : m_dynamicDependencyMap->GetBuildTargets().GetTestTargetList().GetTargets())
         {
             for (const auto& staticSource : testTarget.GetSources().m_staticSources)
             {
@@ -424,7 +424,7 @@ namespace UnitTest
         sourceCoveringTestList.push_back(TestImpact::SourceCoveringTests(TestImpact::RepoPath("Orphan.h"), AZStd::vector<AZStd::string>{ "Test Aux", "Test Core" }));
 
         // Expect each production source's parent and covering tests to match that of the corresponding source dependency
-        for (const auto& productionTarget : m_dynamicDependencyMap->GetProductionTargetList().GetTargets())
+        for (const auto& productionTarget : m_dynamicDependencyMap->GetBuildTargets().GetProductionTargetList().GetTargets())
         {
             for (const auto& staticSource : productionTarget.GetSources().m_staticSources)
             {
@@ -438,7 +438,7 @@ namespace UnitTest
         }
 
         // Expect each test source's parent and covering tests to match that of the corresponding source dependency
-        for (const auto& testTarget : m_dynamicDependencyMap->GetTestTargetList().GetTargets())
+        for (const auto& testTarget : m_dynamicDependencyMap->GetBuildTargets().GetTestTargetList().GetTargets())
         {
             for (const auto& staticSource : testTarget.GetSources().m_staticSources)
             {
@@ -541,7 +541,7 @@ namespace UnitTest
 
                 // Expect the retrieved build target to match the production target we queried
                 ValidateBuildTarget(*buildTarget, expectedProductionTarget);
-            },  m_dynamicDependencyMap->GetTargetOrThrow(expectedProductionTarget.GetName()));
+            },  m_dynamicDependencyMap->GetBuildTargets().GetTargetOrThrow(expectedProductionTarget.GetName()));
         }
     
         for (const auto& expectedTestTarget : m_testTargets->GetTargets())
@@ -556,7 +556,7 @@ namespace UnitTest
     
                 // Expect the retrieved build target to match the test target we queried
                 ValidateBuildTarget(*buildTarget, expectedTestTarget);
-            },  m_dynamicDependencyMap->GetTargetOrThrow(expectedTestTarget.GetName()));
+            },  m_dynamicDependencyMap->GetBuildTargets().GetTargetOrThrow(expectedTestTarget.GetName()));
         }
     }
     
@@ -582,7 +582,7 @@ namespace UnitTest
             {
                 SUCCEED();
             }
-        },  m_dynamicDependencyMap->GetTarget("invalid"));
+        },  m_dynamicDependencyMap->GetBuildTargets().GetTarget("invalid"));
     }
 
     TEST_F(DynamicDependencyMapFixture, GetBuildTargetOrThrow_ValidBuildTargets_ExpectValidBuildTarget)
@@ -604,7 +604,7 @@ namespace UnitTest
 
                 // Expect the retrieved build target to match the production target we queried
                 ValidateBuildTarget(*buildTarget, expectedProductionTarget);
-            },  m_dynamicDependencyMap->GetTargetOrThrow(expectedProductionTarget.GetName()));
+            },  m_dynamicDependencyMap->GetBuildTargets().GetTargetOrThrow(expectedProductionTarget.GetName()));
         }
         
         for (const auto& expectedTestTarget : m_testTargets->GetTargets())
@@ -616,7 +616,7 @@ namespace UnitTest
 
                 // Expect the retrieved build target to match the test target we queried
                 ValidateBuildTarget(*buildTarget, expectedTestTarget);
-            },  m_dynamicDependencyMap->GetTargetOrThrow(expectedTestTarget.GetName()));
+            },  m_dynamicDependencyMap->GetBuildTargets().GetTargetOrThrow(expectedTestTarget.GetName()));
         }
     }
 
@@ -633,7 +633,7 @@ namespace UnitTest
        try
        {
            // When retrieving a target not in the dynamic dependency map
-           m_dynamicDependencyMap->GetTargetOrThrow("invalid");
+           m_dynamicDependencyMap->GetBuildTargets().GetTargetOrThrow("invalid");
        
            // Do not expect this statement to be reachable
            FAIL();
@@ -663,7 +663,7 @@ namespace UnitTest
         for (const auto& expectedProductionTarget : m_productionTargets->GetTargets())
         {
             // When retrieving the production target in the dynamic dependency map
-            auto productionTarget = m_dynamicDependencyMap->GetTarget(expectedProductionTarget.GetName());
+            auto productionTarget = m_dynamicDependencyMap->GetBuildTargets().GetTarget(expectedProductionTarget.GetName());
 
             // Expect the retrieved production target to match the production target we queried
             AZStd::visit([&expectedProductionTarget](auto&& productionTarget)
@@ -683,7 +683,7 @@ namespace UnitTest
         for (const auto& expectedTestTarget : m_testTargets->GetTargets())
         {
             // When retrieving the test target in the dynamic dependency map
-            auto testTarget = m_dynamicDependencyMap->GetTarget(expectedTestTarget.GetName());
+            auto testTarget = m_dynamicDependencyMap->GetBuildTargets().GetTarget(expectedTestTarget.GetName());
 
             // Expect the retrieved production target to match the production target we queried
             AZStd::visit([&expectedTestTarget](auto&& testTarget)
@@ -712,7 +712,7 @@ namespace UnitTest
             MicroRepo::CreateTestTargetDescriptors(), MicroRepo::CreateProductionTargetDescriptors());
 
         // When retrieving a target not in the dynamic dependency map
-        auto invalidTarget = m_dynamicDependencyMap->GetTarget("invalid");
+        auto invalidTarget = m_dynamicDependencyMap->GetBuildTargets().GetTarget("invalid");
 
         // Expect the retrieved target to be empty
         EXPECT_EQ(invalidTarget.index(), 0);
@@ -731,7 +731,7 @@ namespace UnitTest
         try
         {
             // When retrieving a target not in the dynamic dependency map
-            m_dynamicDependencyMap->GetTargetOrThrow("invalid");
+            m_dynamicDependencyMap->GetBuildTargets().GetTargetOrThrow("invalid");
 
             // Do not expect this statement to be reachable
             FAIL();
@@ -769,7 +769,7 @@ namespace UnitTest
         EXPECT_TRUE(orphans.empty());
 
         // Expect each production source's parent to match that of the corresponding source dependency
-        for (const auto& productionTarget : m_dynamicDependencyMap->GetProductionTargetList().GetTargets())
+        for (const auto& productionTarget : m_dynamicDependencyMap->GetBuildTargets().GetProductionTargetList().GetTargets())
         {
             for (const auto& staticSource : productionTarget.GetSources().m_staticSources)
             {
@@ -797,7 +797,7 @@ namespace UnitTest
         }
 
         // Expect each test source's parent to match that of the corresponding source dependency
-        for (const auto& testTarget : m_dynamicDependencyMap->GetTestTargetList().GetTargets())
+        for (const auto& testTarget : m_dynamicDependencyMap->GetBuildTargets().GetTestTargetList().GetTargets())
         {
             for (const auto& staticSource : testTarget.GetSources().m_staticSources)
             {

@@ -270,7 +270,7 @@ namespace TestImpact
         m_testSelectorAndPrioritizer = AZStd::make_unique<TestSelectorAndPrioritizer>(m_dynamicDependencyMap.get(), DependencyGraphDataMap{});
 
         // Construct the target exclude list from the target configuration data
-        const auto& testTargetList = m_dynamicDependencyMap->GetTestTargetList();
+        const auto& testTargetList = m_dynamicDependencyMap->GetBuildTargets().GetTestTargetList();
         m_regularTestTargetExcludeList =
             ConstructTestTargetExcludeList(testTargetList, AZStd::move(m_config.m_target.m_excludedRegularTestTargets));
         m_instrumentedTestTargetExcludeList =
@@ -393,7 +393,7 @@ namespace TestImpact
         //EnumerateMutatedTestTargets(changeDependencyList);
 
         // The test targets in the main list not in the selected test target set are the test targets not selected for this change list
-        for (const auto& testTarget : m_dynamicDependencyMap->GetTestTargetList().GetTargets())
+        for (const auto& testTarget : m_dynamicDependencyMap->GetBuildTargets().GetTestTargetList().GetTargets())
         {
             if (!selectedTestTargetSet.contains(&testTarget))
             {
@@ -549,7 +549,7 @@ namespace TestImpact
         AZStd::vector<const NativeTestTarget*> excludedTestTargets;
         
         // Separate the test targets into those that are excluded by either the test filter or exclusion list and those that are not
-        for (const auto& testTarget : m_dynamicDependencyMap->GetTestTargetList().GetTargets())
+        for (const auto& testTarget : m_dynamicDependencyMap->GetBuildTargets().GetTestTargetList().GetTargets())
         {
             if (m_regularTestTargetExcludeList->IsTestTargetFullyExcluded(&testTarget))
             {
@@ -890,7 +890,7 @@ namespace TestImpact
         AZStd::vector<const NativeTestTarget*> excludedTestTargets;
 
         // Separate the test targets into those that are excluded by either the test filter or exclusion list and those that are not
-        for (const auto& testTarget : m_dynamicDependencyMap->GetTestTargetList().GetTargets())
+        for (const auto& testTarget : m_dynamicDependencyMap->GetBuildTargets().GetTestTargetList().GetTargets())
         {
             if (m_instrumentedTestTargetExcludeList->IsTestTargetFullyExcluded(&testTarget))
             {

@@ -14,8 +14,7 @@ namespace TestImpact
     DynamicDependencyMap::DynamicDependencyMap(
         AZStd::vector<AZStd::unique_ptr<NativeTestTargetList::TargetType::Descriptor>>&& testTargetDescriptors,
         AZStd::vector<AZStd::unique_ptr<NativeProductionTargetDescriptor>>&& productionTargetDescriptors)
-        : m_productionTargets(AZStd::move(productionTargetDescriptors))
-        , m_testTargets(AZStd::move(testTargetDescriptors))
+        : m_buildTargets(AZStd::move(testTargetDescriptors), AZStd::move(productionTargetDescriptors))
     {
         const auto mapBuildTargetSources = [this](const auto* target)
         {
@@ -44,60 +43,26 @@ namespace TestImpact
             }
         };
 
-        for (const auto& target : m_productionTargets.GetTargets())
+        for (const auto& target : m_buildTargets.GetProductionTargetList().GetTargets())
         {
             mapBuildTargetSources(&target);
         }
 
-        for (const auto& target : m_testTargets.GetTargets())
+        for (const auto& target : m_buildTargets.GetTestTargetList().GetTargets())
         {
             mapBuildTargetSources(&target);
             m_testTargetSourceCoverage[&target] = {};
         }
     }
 
-    size_t DynamicDependencyMap::GetNumTargets() const
+    const BuildTargetList<NativeTestTargetList, NativeProductionTargetList>& DynamicDependencyMap::GetBuildTargets() const
     {
-        return m_productionTargets.GetNumTargets() + m_testTargets.GetNumTargets();
+        return m_buildTargets;
     }
 
     size_t DynamicDependencyMap::GetNumSources() const
     {
         return m_sourceDependencyMap.size();
-    }
-
-    OptionalSpecializedNativeTarget DynamicDependencyMap::GetTarget(const AZStd::string& name) const
-    {
-        if (const auto testTarget = m_testTargets.GetTarget(name);
-            testTarget != nullptr)
-        {
-            return testTarget;
-        }
-        else if (auto productionTarget = m_productionTargets.GetTarget(name);
-            productionTarget != nullptr)
-        {
-            return productionTarget;
-        }
-
-        return AZStd::monostate{};
-    }
-
-    SpecializedNativeTarget DynamicDependencyMap::GetTargetOrThrow(const AZStd::string& name) const
-    {
-        SpecializedNativeTarget buildTarget;
-        AZStd::visit([&buildTarget, &name](auto&& target)
-        {
-            if constexpr (IsProductionTarget<decltype(target)> || IsTestTarget<decltype(target)>)
-            {
-                buildTarget = target;
-            }
-            else
-            {
-                throw(TargetException(AZStd::string::format("Couldn't find target %s", name.c_str()).c_str()));
-            }
-        }, GetTarget(name));
-
-        return buildTarget;
     }
 
     void DynamicDependencyMap::ReplaceSourceCoverageInternal(const SourceCoveringTestsList& sourceCoverageDelta, bool pruneIfNoParentsOrCoverage)
@@ -144,7 +109,7 @@ namespace TestImpact
             // Update the dependency with any new coverage data
             for (const auto& unresolvedTestTarget : sourceCoverage.GetCoveringTestTargets())
             {
-                if (const NativeTestTargetList::TargetType* testTarget = m_testTargets.GetTarget(unresolvedTestTarget);
+                if (const NativeTestTargetList::TargetType* testTarget = m_buildTargets.GetTestTargetList().GetTarget(unresolvedTestTarget);
                     testTarget)
                 {
                     // Source to covering test target mapping
@@ -210,16 +175,6 @@ namespace TestImpact
                 it = m_sourceDependencyMap.erase(it);
             }
         }
-    }
-
-    const NativeProductionTargetList& DynamicDependencyMap::GetProductionTargetList() const
-    {
-        return m_productionTargets;
-    }
-
-    const NativeTestTargetList& DynamicDependencyMap::GetTestTargetList() const
-    {
-        return m_testTargets;
     }
 
     AZStd::vector<const NativeTestTargetList::TargetType*> DynamicDependencyMap::GetCoveringTestTargetsForProductionTarget(
