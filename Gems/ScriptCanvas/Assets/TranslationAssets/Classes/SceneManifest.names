@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "SceneManifest",
+            "base": "SceneManifest",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
@@ -9,7 +9,7 @@
             },
             "methods": [
                 {
-                    "key": "ImportFromJson",
+                    "base": "ImportFromJson",
                     "context": "SceneManifest",
                     "entry": {
                         "name": "In",
@@ -47,7 +47,7 @@
                     ]
                 },
                 {
-                    "key": "ExportToJson",
+                    "base": "ExportToJson",
                     "context": "SceneManifest",
                     "entry": {
                         "name": "In",

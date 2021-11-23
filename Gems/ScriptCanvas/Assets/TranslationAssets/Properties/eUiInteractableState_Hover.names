@@ -1,17 +1,18 @@
 {
     "entries": [
         {
-            "key": "eUiInteractableState_Hover",
+            "base": "eUiInteractableState_Hover",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "e Ui Interactable State_ Hover"
+                "name": "Hover",
+                "category": "Constants/UI/Interactable State"
             },
             "methods": [
                 {
-                    "key": "GeteUiInteractableState_Hover",
+                    "base": "GeteUiInteractableState_Hover",
                     "details": {
-                        "name": "Gete Ui Interactable State_ Hover"
+                        "name": "Hover"
                     },
                     "results": [
                         {

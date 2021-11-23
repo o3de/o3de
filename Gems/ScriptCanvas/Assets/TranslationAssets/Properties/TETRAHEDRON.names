@@ -1,17 +1,18 @@
 {
     "entries": [
         {
-            "key": "TETRAHEDRON",
+            "base": "TETRAHEDRON",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "TETRAHEDRON"
+                "name": "Tetrahedron",
+                "category": "Constants/White Box"
             },
             "methods": [
                 {
-                    "key": "GetTETRAHEDRON",
+                    "base": "GetTETRAHEDRON",
                     "details": {
-                        "name": "GetTETRAHEDRON"
+                        "name": "Tetrahedron"
                     },
                     "results": [
                         {

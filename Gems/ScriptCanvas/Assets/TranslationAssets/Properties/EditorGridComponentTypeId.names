@@ -1,15 +1,16 @@
 {
     "entries": [
         {
-            "key": "EditorGridComponentTypeId",
+            "base": "EditorGridComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Editor Grid Component Type Id"
+                "name": "Editor Grid Component Type Id",
+                "category": "Constants/Editor"
             },
             "methods": [
                 {
-                    "key": "GetEditorGridComponentTypeId",
+                    "base": "GetEditorGridComponentTypeId",
                     "details": {
                         "name": "Get Editor Grid Component Type Id"
                     },

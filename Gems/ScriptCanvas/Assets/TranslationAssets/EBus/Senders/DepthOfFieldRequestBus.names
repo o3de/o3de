@@ -1,556 +1,535 @@
 {
     "entries": [
         {
-            "key": "DepthOfFieldRequestBus",
+            "base": "DepthOfFieldRequestBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "DepthOfFieldRequestBus"
+                "name": "Depth Of Field",
+                "category": "Post Process"
             },
             "methods": [
                 {
-                    "key": "GetEnableDebugColoringOverride",
+                    "base": "GetEnableDebugColoringOverride",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetEnableDebugColoringOverride"
+                        "tooltip": "When signaled, this will invoke Get Enable Debug Coloring Override"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetEnableDebugColoringOverride is invoked"
+                        "tooltip": "Signaled after Get Enable Debug Coloring Override is invoked"
                     },
                     "details": {
-                        "name": "GetEnableDebugColoringOverride"
+                        "name": "Get Enable Debug Coloring Override"
                     },
                     "results": [
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": "bool"
+                                "name": "Enabled"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "GetAutoFocusSpeedOverride",
+                    "base": "GetAutoFocusSpeedOverride",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetAutoFocusSpeedOverride"
+                        "tooltip": "When signaled, this will invoke Get Auto Focus Speed Override"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetAutoFocusSpeedOverride is invoked"
+                        "tooltip": "Signaled after Get Auto Focus Speed Override is invoked"
                     },
                     "details": {
-                        "name": "GetAutoFocusSpeedOverride"
+                        "name": "Get Auto Focus Speed Override"
                     },
                     "results": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "float"
+                                "name": "Auto Focus Speed"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "SetAutoFocusSensitivity",
+                    "base": "SetAutoFocusSensitivity",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetAutoFocusSensitivity"
+                        "tooltip": "When signaled, this will invoke Set Auto Focus Sensitivity"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetAutoFocusSensitivity is invoked"
+                        "tooltip": "Signaled after Set Auto Focus Sensitivity is invoked"
                     },
                     "details": {
-                        "name": "SetAutoFocusSensitivity"
+                        "name": "Set Auto Focus Sensitivity"
                     },
                     "params": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "float"
+                                "name": "Auto Focus Sensitivity"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "SetAutoFocusDelayOverride",
+                    "base": "SetAutoFocusDelayOverride",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetAutoFocusDelayOverride"
+                        "tooltip": "When signaled, this will invoke Set Auto Focus Delay Override"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetAutoFocusDelayOverride is invoked"
+                        "tooltip": "Signaled after Set Auto Focus Delay Override is invoked"
                     },
                     "details": {
-                        "name": "SetAutoFocusDelayOverride"
+                        "name": "Set Auto Focus Delay Override"
                     },
                     "params": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "float"
+                                "name": "Auto Focus Delay"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "GetAutoFocusScreenPosition",
+                    "base": "GetAutoFocusScreenPosition",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetAutoFocusScreenPosition"
+                        "tooltip": "When signaled, this will invoke Get Auto Focus Screen Position"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetAutoFocusScreenPosition is invoked"
+                        "tooltip": "Signaled after Get Auto Focus Screen Position is invoked"
                     },
                     "details": {
-                        "name": "GetAutoFocusScreenPosition"
+                        "name": "Get Auto Focus Screen Position"
                     },
                     "results": [
                         {
                             "typeid": "{3D80F623-C85C-4741-90D0-E4E66164E6BF}",
                             "details": {
-                                "name": "Vector2"
+                                "name": "Auto Focus Screen"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "GetEnableDebugColoring",
+                    "base": "GetEnableDebugColoring",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetEnableDebugColoring"
+                        "tooltip": "When signaled, this will invoke Get Enable Debug Coloring"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetEnableDebugColoring is invoked"
+                        "tooltip": "Signaled after Get Enable Debug Coloring is invoked"
                     },
                     "details": {
-                        "name": "GetEnableDebugColoring"
+                        "name": "Get Enable Debug Coloring"
                     },
                     "results": [
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": "bool"
+                                "name": "Enabled"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "SetFocusDistance",
+                    "base": "SetFocusDistance",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetFocusDistance"
+                        "tooltip": "When signaled, this will invoke Set Focus Distance"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetFocusDistance is invoked"
+                        "tooltip": "Signaled after Set Focus Distance is invoked"
                     },
                     "details": {
-                        "name": "SetFocusDistance"
+                        "name": "Set Focus Distance"
                     },
                     "params": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "float"
+                                "name": "Focus Distance"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "SetQualityLevel",
+                    "base": "SetQualityLevel",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetQualityLevel"
+                        "tooltip": "When signaled, this will invoke Set Quality Level"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetQualityLevel is invoked"
+                        "tooltip": "Signaled after Set Quality Level is invoked"
                     },
                     "details": {
-                        "name": "SetQualityLevel"
+                        "name": "Set Quality Level"
                     },
                     "params": [
                         {
                             "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
                             "details": {
-                                "name": "unsigned int"
+                                "name": "Quality Level"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "SetCameraEntityId",
+                    "base": "SetCameraEntityId",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetCameraEntityId"
+                        "tooltip": "When signaled, this will invoke Set Camera Entity Id"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetCameraEntityId is invoked"
+                        "tooltip": "Signaled after Set Camera Entity Id is invoked"
                     },
                     "details": {
-                        "name": "SetCameraEntityId"
+                        "name": "Set Camera Entity Id"
                     },
                     "params": [
                         {
                             "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
                             "details": {
-                                "name": "EntityId",
+                                "name": "Entity Id",
                                 "tooltip": "Entity Unique Id"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "SetAutoFocusDelay",
+                    "base": "SetAutoFocusDelay",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetAutoFocusDelay"
+                        "tooltip": "When signaled, this will invoke Set Auto Focus Delay"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetAutoFocusDelay is invoked"
+                        "tooltip": "Signaled after Set Auto Focus Delay is invoked"
                     },
                     "details": {
-                        "name": "SetAutoFocusDelay"
+                        "name": "Set Auto Focus Delay"
                     },
                     "params": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "float"
+                                "name": "Auto Focus Delay"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "GetAutoFocusDelay",
+                    "base": "GetAutoFocusDelay",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetAutoFocusDelay"
+                        "tooltip": "When signaled, this will invoke Get Auto Focus Delay"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetAutoFocusDelay is invoked"
+                        "tooltip": "Signaled after Get Auto Focus Delay is invoked"
                     },
                     "details": {
-                        "name": "GetAutoFocusDelay"
+                        "name": "Get Auto Focus Delay"
                     },
                     "results": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "float"
+                                "name": "Auto Focus Delay"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "SetAutoFocusScreenPosition",
+                    "base": "SetAutoFocusScreenPosition",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetAutoFocusScreenPosition"
+                        "tooltip": "When signaled, this will invoke Set Auto Focus Screen Position"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetAutoFocusScreenPosition is invoked"
+                        "tooltip": "Signaled after Set Auto Focus Screen Position is invoked"
                     },
                     "details": {
-                        "name": "SetAutoFocusScreenPosition"
+                        "name": "Set Auto Focus Screen Position"
                     },
                     "params": [
                         {
                             "typeid": "{3D80F623-C85C-4741-90D0-E4E66164E6BF}",
                             "details": {
-                                "name": "Vector2"
+                                "name": "Auto Focus Screen Position"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "GetFNumber",
+                    "base": "GetFNumber",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetFNumber"
+                        "tooltip": "When signaled, this will invoke GetF Number"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetFNumber is invoked"
+                        "tooltip": "Signaled after GetF Number is invoked"
                     },
                     "details": {
-                        "name": "GetFNumber"
+                        "name": "Get F Number"
                     },
                     "results": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "float"
+                                "name": "F Number"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "SetApertureFOverride",
+                    "base": "SetApertureFOverride",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetApertureFOverride"
+                        "tooltip": "When signaled, this will invoke Set ApertureF Override"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetApertureFOverride is invoked"
+                        "tooltip": "Signaled after Set ApertureF Override is invoked"
                     },
                     "details": {
-                        "name": "SetApertureFOverride"
+                        "name": "Set Aperture F Override"
                     },
                     "params": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "float"
+                                "name": "Aperture F"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "SetEnabled",
+                    "base": "SetEnabled",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetEnabled"
+                        "tooltip": "When signaled, this will invoke Set Enabled"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetEnabled is invoked"
+                        "tooltip": "Signaled after Set Enabled is invoked"
                     },
                     "details": {
-                        "name": "SetEnabled"
+                        "name": "Set Enabled"
                     },
                     "params": [
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": "bool"
+                                "name": "Enabled"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "SetAutoFocusScreenPositionOverride",
+                    "base": "SetAutoFocusScreenPositionOverride",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetAutoFocusScreenPositionOverride"
+                        "tooltip": "When signaled, this will invoke Set Auto Focus Screen Position Override"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetAutoFocusScreenPositionOverride is invoked"
+                        "tooltip": "Signaled after Set Auto Focus Screen Position Override is invoked"
                     },
                     "details": {
-                        "name": "SetAutoFocusScreenPositionOverride"
-                    },
-                    "params": [
-                        {
-                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
-                            "details": {
-                                "name": "float"
-                            }
-                        }
-                    ]
-                },
-                {
-                    "key": "GetQualityLevelOverride",
-                    "entry": {
-                        "name": "In",
-                        "tooltip": "When signaled, this will invoke GetQualityLevelOverride"
-                    },
-                    "exit": {
-                        "name": "Out",
-                        "tooltip": "Signaled after GetQualityLevelOverride is invoked"
-                    },
-                    "details": {
-                        "name": "GetQualityLevelOverride"
-                    },
-                    "results": [
-                        {
-                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
-                            "details": {
-                                "name": "bool"
-                            }
-                        }
-                    ]
-                },
-                {
-                    "key": "SetAutoFocusSpeedOverride",
-                    "entry": {
-                        "name": "In",
-                        "tooltip": "When signaled, this will invoke SetAutoFocusSpeedOverride"
-                    },
-                    "exit": {
-                        "name": "Out",
-                        "tooltip": "Signaled after SetAutoFocusSpeedOverride is invoked"
-                    },
-                    "details": {
-                        "name": "SetAutoFocusSpeedOverride"
+                        "name": "Set Auto Focus Screen Position Override"
                     },
                     "params": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "float"
+                                "name": "Auto Focus Screen Position"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "GetEnableAutoFocusOverride",
+                    "base": "GetQualityLevelOverride",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetEnableAutoFocusOverride"
+                        "tooltip": "When signaled, this will invoke Get Quality Level Override"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetEnableAutoFocusOverride is invoked"
+                        "tooltip": "Signaled after Get Quality Level Override is invoked"
                     },
                     "details": {
-                        "name": "GetEnableAutoFocusOverride"
+                        "name": "Get Quality Level Override"
                     },
                     "results": [
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": "bool"
+                                "name": "Quality Level"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "SetEnableDebugColoring",
+                    "base": "SetAutoFocusSpeedOverride",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetEnableDebugColoring"
+                        "tooltip": "When signaled, this will invoke Set Auto Focus Speed Override"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetEnableDebugColoring is invoked"
+                        "tooltip": "Signaled after Set Auto Focus Speed Override is invoked"
                     },
                     "details": {
-                        "name": "SetEnableDebugColoring"
-                    },
-                    "params": [
-                        {
-                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
-                            "details": {
-                                "name": "bool"
-                            }
-                        }
-                    ]
-                },
-                {
-                    "key": "SetFocusDistanceOverride",
-                    "entry": {
-                        "name": "In",
-                        "tooltip": "When signaled, this will invoke SetFocusDistanceOverride"
-                    },
-                    "exit": {
-                        "name": "Out",
-                        "tooltip": "Signaled after SetFocusDistanceOverride is invoked"
-                    },
-                    "details": {
-                        "name": "SetFocusDistanceOverride"
+                        "name": "Set Auto Focus Speed Override"
                     },
                     "params": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "float"
+                                "name": "Auto Focus Speed"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "GetEnableAutoFocus",
+                    "base": "GetEnableAutoFocusOverride",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetEnableAutoFocus"
+                        "tooltip": "When signaled, this will invoke Get Enable Auto Focus Override"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetEnableAutoFocus is invoked"
+                        "tooltip": "Signaled after Get Enable Auto Focus Override is invoked"
                     },
                     "details": {
-                        "name": "GetEnableAutoFocus"
+                        "name": "Get Enable Auto Focus Override"
                     },
                     "results": [
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": "bool"
+                                "name": "Enabled"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "SetApertureF",
+                    "base": "SetEnableDebugColoring",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetApertureF"
+                        "tooltip": "When signaled, this will invoke Set Enable Debug Coloring"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetApertureF is invoked"
+                        "tooltip": "Signaled after Set Enable Debug Coloring is invoked"
                     },
                     "details": {
-                        "name": "SetApertureF"
-                    },
-                    "params": [
-                        {
-                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
-                            "details": {
-                                "name": "float"
-                            }
-                        }
-                    ]
-                },
-                {
-                    "key": "SetCameraEntityIdOverride",
-                    "entry": {
-                        "name": "In",
-                        "tooltip": "When signaled, this will invoke SetCameraEntityIdOverride"
-                    },
-                    "exit": {
-                        "name": "Out",
-                        "tooltip": "Signaled after SetCameraEntityIdOverride is invoked"
-                    },
-                    "details": {
-                        "name": "SetCameraEntityIdOverride"
+                        "name": "Set Enable Debug Coloring"
                     },
                     "params": [
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": "bool"
+                                "name": "Enabled"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "GetEnabled",
+                    "base": "SetFocusDistanceOverride",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetEnabled"
+                        "tooltip": "When signaled, this will invoke Set Focus Distance Override"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetEnabled is invoked"
+                        "tooltip": "Signaled after Set Focus Distance Override is invoked"
                     },
                     "details": {
-                        "name": "GetEnabled"
+                        "name": "Set Focus Distance Override"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Focus Distance"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetEnableAutoFocus",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Enable Auto Focus"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Enable Auto Focus is invoked"
+                    },
+                    "details": {
+                        "name": "Get Enable Auto Focus"
                     },
                     "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Enable"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetApertureF",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set ApertureF"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set ApertureF is invoked"
+                    },
+                    "details": {
+                        "name": "Set Aperture F"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Aperture F"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetCameraEntityIdOverride",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Camera Entity Id Override"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Camera Entity Id Override is invoked"
+                    },
+                    "details": {
+                        "name": "Set Camera Entity Id Override"
+                    },
+                    "params": [
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
@@ -560,436 +539,458 @@
                     ]
                 },
                 {
-                    "key": "GetFocusDistance",
+                    "base": "GetEnabled",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetFocusDistance"
+                        "tooltip": "When signaled, this will invoke Get Enabled"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetFocusDistance is invoked"
+                        "tooltip": "Signaled after Get Enabled is invoked"
                     },
                     "details": {
-                        "name": "GetFocusDistance"
+                        "name": "Get Enabled"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Enabled"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetFocusDistance",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Focus Distance"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Focus Distance is invoked"
+                    },
+                    "details": {
+                        "name": "Get Focus Distance"
                     },
                     "results": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "float"
+                                "name": "Focus Distance"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "GetEnabledOverride",
+                    "base": "GetEnabledOverride",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetEnabledOverride"
+                        "tooltip": "When signaled, this will invoke Get Enabled Override"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetEnabledOverride is invoked"
+                        "tooltip": "Signaled after Get Enabled Override is invoked"
                     },
                     "details": {
-                        "name": "GetEnabledOverride"
+                        "name": "Get Enabled Override"
                     },
                     "results": [
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": "bool"
+                                "name": "Enabled"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "GetCameraEntityId",
+                    "base": "GetCameraEntityId",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetCameraEntityId"
+                        "tooltip": "When signaled, this will invoke Get Camera Entity Id"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetCameraEntityId is invoked"
+                        "tooltip": "Signaled after Get Camera Entity Id is invoked"
                     },
                     "details": {
-                        "name": "GetCameraEntityId"
+                        "name": "Get Camera Entity Id"
                     },
                     "results": [
                         {
                             "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
                             "details": {
-                                "name": "EntityId",
+                                "name": "Entity Id",
                                 "tooltip": "Entity Unique Id"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "GetAutoFocusScreenPositionOverride",
+                    "base": "GetAutoFocusScreenPositionOverride",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetAutoFocusScreenPositionOverride"
+                        "tooltip": "When signaled, this will invoke Get Auto Focus Screen Position Override"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetAutoFocusScreenPositionOverride is invoked"
+                        "tooltip": "Signaled after Get Auto Focus Screen Position Override is invoked"
                     },
                     "details": {
-                        "name": "GetAutoFocusScreenPositionOverride"
+                        "name": "Get Auto Focus Screen Position Override"
                     },
                     "results": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "float"
+                                "name": "Auto Focus Screen Position"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "GetAutoFocusSpeed",
+                    "base": "GetAutoFocusSpeed",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetAutoFocusSpeed"
+                        "tooltip": "When signaled, this will invoke Get Auto Focus Speed"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetAutoFocusSpeed is invoked"
+                        "tooltip": "Signaled after Get Auto Focus Speed is invoked"
                     },
                     "details": {
-                        "name": "GetAutoFocusSpeed"
+                        "name": "Get Auto Focus Speed"
                     },
                     "results": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "float"
+                                "name": "Auto Focus Speed"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "SetEnabledOverride",
+                    "base": "SetEnabledOverride",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetEnabledOverride"
+                        "tooltip": "When signaled, this will invoke Set Enabled Override"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetEnabledOverride is invoked"
+                        "tooltip": "Signaled after Set Enabled Override is invoked"
                     },
                     "details": {
-                        "name": "SetEnabledOverride"
+                        "name": "Set Enabled Override"
                     },
                     "params": [
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": "bool"
+                                "name": "Enabled"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "GetAutoFocusSensitivity",
+                    "base": "GetAutoFocusSensitivity",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetAutoFocusSensitivity"
+                        "tooltip": "When signaled, this will invoke Get Auto Focus Sensitivity"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetAutoFocusSensitivity is invoked"
+                        "tooltip": "Signaled after Get Auto Focus Sensitivity is invoked"
                     },
                     "details": {
-                        "name": "GetAutoFocusSensitivity"
+                        "name": "Get Auto Focus Sensitivity"
                     },
                     "results": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "float"
+                                "name": "Auto Focus Sensitivity"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "GetAutoFocusDelayOverride",
+                    "base": "GetAutoFocusDelayOverride",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetAutoFocusDelayOverride"
+                        "tooltip": "When signaled, this will invoke Get Auto Focus Delay Override"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetAutoFocusDelayOverride is invoked"
+                        "tooltip": "Signaled after Get Auto Focus Delay Override is invoked"
                     },
                     "details": {
-                        "name": "GetAutoFocusDelayOverride"
+                        "name": "Get Auto Focus Delay Override"
                     },
                     "results": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "float"
+                                "name": "Auto Focus Delay"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "GetApertureF",
+                    "base": "GetApertureF",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetApertureF"
+                        "tooltip": "When signaled, this will invoke Get ApertureF"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetApertureF is invoked"
+                        "tooltip": "Signaled after Get ApertureF is invoked"
                     },
                     "details": {
-                        "name": "GetApertureF"
+                        "name": "Get Aperture F"
                     },
                     "results": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "float"
+                                "name": "Aperture F"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "GetApertureFOverride",
+                    "base": "GetApertureFOverride",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetApertureFOverride"
+                        "tooltip": "When signaled, this will invoke Get ApertureF Override"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetApertureFOverride is invoked"
+                        "tooltip": "Signaled after Get ApertureF Override is invoked"
                     },
                     "details": {
-                        "name": "GetApertureFOverride"
+                        "name": "Get Aperture F Override"
                     },
                     "results": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "float"
+                                "name": "Aperture F"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "SetAutoFocusSensitivityOverride",
+                    "base": "SetAutoFocusSensitivityOverride",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetAutoFocusSensitivityOverride"
+                        "tooltip": "When signaled, this will invoke Set Auto Focus Sensitivity Override"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetAutoFocusSensitivityOverride is invoked"
+                        "tooltip": "Signaled after Set Auto Focus Sensitivity Override is invoked"
                     },
                     "details": {
-                        "name": "SetAutoFocusSensitivityOverride"
+                        "name": "Set Auto Focus Sensitivity Override"
                     },
                     "params": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "float"
+                                "name": "Auto Focus Sensitivity"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "SetQualityLevelOverride",
+                    "base": "SetQualityLevelOverride",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetQualityLevelOverride"
+                        "tooltip": "When signaled, this will invoke Set Quality Level Override"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetQualityLevelOverride is invoked"
+                        "tooltip": "Signaled after Set Quality Level Override is invoked"
                     },
                     "details": {
-                        "name": "SetQualityLevelOverride"
-                    },
-                    "params": [
-                        {
-                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
-                            "details": {
-                                "name": "bool"
-                            }
-                        }
-                    ]
-                },
-                {
-                    "key": "GetFocusDistanceOverride",
-                    "entry": {
-                        "name": "In",
-                        "tooltip": "When signaled, this will invoke GetFocusDistanceOverride"
-                    },
-                    "exit": {
-                        "name": "Out",
-                        "tooltip": "Signaled after GetFocusDistanceOverride is invoked"
-                    },
-                    "details": {
-                        "name": "GetFocusDistanceOverride"
-                    },
-                    "results": [
-                        {
-                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
-                            "details": {
-                                "name": "float"
-                            }
-                        }
-                    ]
-                },
-                {
-                    "key": "SetAutoFocusSpeed",
-                    "entry": {
-                        "name": "In",
-                        "tooltip": "When signaled, this will invoke SetAutoFocusSpeed"
-                    },
-                    "exit": {
-                        "name": "Out",
-                        "tooltip": "Signaled after SetAutoFocusSpeed is invoked"
-                    },
-                    "details": {
-                        "name": "SetAutoFocusSpeed"
-                    },
-                    "params": [
-                        {
-                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
-                            "details": {
-                                "name": "float"
-                            }
-                        }
-                    ]
-                },
-                {
-                    "key": "SetEnableAutoFocusOverride",
-                    "entry": {
-                        "name": "In",
-                        "tooltip": "When signaled, this will invoke SetEnableAutoFocusOverride"
-                    },
-                    "exit": {
-                        "name": "Out",
-                        "tooltip": "Signaled after SetEnableAutoFocusOverride is invoked"
-                    },
-                    "details": {
-                        "name": "SetEnableAutoFocusOverride"
+                        "name": "Set Quality Level Override"
                     },
                     "params": [
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": "bool"
+                                "name": "Quality Level"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "GetQualityLevel",
+                    "base": "GetFocusDistanceOverride",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetQualityLevel"
+                        "tooltip": "When signaled, this will invoke Get Focus Distance Override"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetQualityLevel is invoked"
+                        "tooltip": "Signaled after Get Focus Distance Override is invoked"
                     },
                     "details": {
-                        "name": "GetQualityLevel"
+                        "name": "Get Focus Distance Override"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Focus Distance"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetAutoFocusSpeed",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Auto Focus Speed"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Auto Focus Speed is invoked"
+                    },
+                    "details": {
+                        "name": "Set Auto Focus Speed"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Auto Focus Speed"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetEnableAutoFocusOverride",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Enable Auto Focus Override"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Enable Auto Focus Override is invoked"
+                    },
+                    "details": {
+                        "name": "Set Enable Auto Focus Override"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Enable"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetQualityLevel",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Quality Level"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Quality Level is invoked"
+                    },
+                    "details": {
+                        "name": "Get Quality Level"
                     },
                     "results": [
                         {
                             "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
                             "details": {
-                                "name": "unsigned int"
+                                "name": "Quality Level"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "GetAutoFocusSensitivityOverride",
+                    "base": "GetAutoFocusSensitivityOverride",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetAutoFocusSensitivityOverride"
+                        "tooltip": "When signaled, this will invoke Get Auto Focus Sensitivity Override"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetAutoFocusSensitivityOverride is invoked"
+                        "tooltip": "Signaled after Get Auto Focus Sensitivity Override is invoked"
                     },
                     "details": {
-                        "name": "GetAutoFocusSensitivityOverride"
+                        "name": "Get Auto Focus Sensitivity Override"
                     },
                     "results": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "float"
+                                "name": "Auto Focus Sensitivity"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "SetEnableDebugColoringOverride",
+                    "base": "SetEnableDebugColoringOverride",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetEnableDebugColoringOverride"
+                        "tooltip": "When signaled, this will invoke Set Enable Debug Coloring Override"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetEnableDebugColoringOverride is invoked"
+                        "tooltip": "Signaled after Set Enable Debug Coloring Override is invoked"
                     },
                     "details": {
-                        "name": "SetEnableDebugColoringOverride"
+                        "name": "Set Enable Debug Coloring Override"
                     },
                     "params": [
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": "bool"
+                                "name": "Enable"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "SetFNumber",
+                    "base": "SetFNumber",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetFNumber"
+                        "tooltip": "When signaled, this will invoke SetF Number"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetFNumber is invoked"
+                        "tooltip": "Signaled after SetF Number is invoked"
                     },
                     "details": {
-                        "name": "SetFNumber"
+                        "name": "Set F Number"
                     },
                     "params": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "float"
+                                "name": "F Number"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "GetCameraEntityIdOverride",
+                    "base": "GetCameraEntityIdOverride",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetCameraEntityIdOverride"
+                        "tooltip": "When signaled, this will invoke Get Camera Entity Id Override"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetCameraEntityIdOverride is invoked"
+                        "tooltip": "Signaled after Get Camera Entity Id Override is invoked"
                     },
                     "details": {
-                        "name": "GetCameraEntityIdOverride"
+                        "name": "Get Camera Entity Id Override"
                     },
                     "results": [
                         {
@@ -1001,23 +1002,23 @@
                     ]
                 },
                 {
-                    "key": "SetEnableAutoFocus",
+                    "base": "SetEnableAutoFocus",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetEnableAutoFocus"
+                        "tooltip": "When signaled, this will invoke Set Enable Auto Focus"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetEnableAutoFocus is invoked"
+                        "tooltip": "Signaled after Set Enable Auto Focus is invoked"
                     },
                     "details": {
-                        "name": "SetEnableAutoFocus"
+                        "name": "Set Enable Auto Focus"
                     },
                     "params": [
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": "bool"
+                                "name": "Enable"
                             }
                         }
                     ]

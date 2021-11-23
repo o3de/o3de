@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "SpawnerComponentNotificationBus",
+            "base": "SpawnerComponentNotificationBus",
             "context": "EBusHandler",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "OnSpawnBegin",
+                    "base": "OnSpawnBegin",
                     "details": {
                         "name": "On Spawn Begin"
                     },
@@ -24,7 +24,7 @@
                     ]
                 },
                 {
-                    "key": "OnSpawnEnd",
+                    "base": "OnSpawnEnd",
                     "details": {
                         "name": "On Spawn End"
                     },
@@ -38,7 +38,7 @@
                     ]
                 },
                 {
-                    "key": "OnEntitySpawned",
+                    "base": "OnEntitySpawned",
                     "details": {
                         "name": "On Entity Spawned"
                     },
@@ -59,7 +59,7 @@
                     ]
                 },
                 {
-                    "key": "OnSpawnedSliceDestroyed",
+                    "base": "OnSpawnedSliceDestroyed",
                     "details": {
                         "name": "On Spawned Slice Destroyed"
                     },
@@ -73,7 +73,7 @@
                     ]
                 },
                 {
-                    "key": "OnEntitiesSpawned",
+                    "base": "OnEntitiesSpawned",
                     "details": {
                         "name": "On Entities Spawned"
                     },

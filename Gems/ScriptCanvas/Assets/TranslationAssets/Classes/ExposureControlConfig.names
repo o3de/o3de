@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "ExposureControlConfig",
+            "base": "ExposureControlConfig",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
@@ -9,7 +9,7 @@
             },
             "methods": [
                 {
-                    "key": "GetautoExposureSpeedUp",
+                    "base": "GetautoExposureSpeedUp",
                     "details": {
                         "name": "Get Auto Exposure Speed Up"
                     },
@@ -31,7 +31,7 @@
                     ]
                 },
                 {
-                    "key": "SetautoExposureSpeedUp",
+                    "base": "SetautoExposureSpeedUp",
                     "details": {
                         "name": "Set Auto Exposure Speed Up"
                     },
@@ -51,7 +51,7 @@
                     ]
                 },
                 {
-                    "key": "GetautoExposureSpeedDown",
+                    "base": "GetautoExposureSpeedDown",
                     "details": {
                         "name": "Get Auto Exposure Speed Down"
                     },
@@ -73,7 +73,7 @@
                     ]
                 },
                 {
-                    "key": "SetautoExposureSpeedDown",
+                    "base": "SetautoExposureSpeedDown",
                     "details": {
                         "name": "Setauto Exposure Speed Down"
                     },
@@ -93,7 +93,7 @@
                     ]
                 },
                 {
-                    "key": "GetautoExposureMax",
+                    "base": "GetautoExposureMax",
                     "details": {
                         "name": "Get Auto Exposure Max"
                     },
@@ -115,7 +115,7 @@
                     ]
                 },
                 {
-                    "key": "SetautoExposureMax",
+                    "base": "SetautoExposureMax",
                     "details": {
                         "name": "Set Auto Exposure Max"
                     },
@@ -135,7 +135,7 @@
                     ]
                 },
                 {
-                    "key": "GetautoExposureMin",
+                    "base": "GetautoExposureMin",
                     "details": {
                         "name": "Get Auto Exposure Min"
                     },
@@ -157,7 +157,7 @@
                     ]
                 },
                 {
-                    "key": "SetautoExposureMin",
+                    "base": "SetautoExposureMin",
                     "details": {
                         "name": "Set Auto Exposure Min"
                     },
@@ -177,7 +177,7 @@
                     ]
                 },
                 {
-                    "key": "GetexposureControlType",
+                    "base": "GetexposureControlType",
                     "details": {
                         "name": "Get Exposure Control Type"
                     },
@@ -199,7 +199,7 @@
                     ]
                 },
                 {
-                    "key": "SetexposureControlType",
+                    "base": "SetexposureControlType",
                     "details": {
                         "name": "Set Exposure Control Type"
                     },
@@ -219,7 +219,7 @@
                     ]
                 },
                 {
-                    "key": "GetcompensateValue",
+                    "base": "GetcompensateValue",
                     "details": {
                         "name": "Get Compensate Value"
                     },
@@ -241,7 +241,7 @@
                     ]
                 },
                 {
-                    "key": "SetcompensateValue",
+                    "base": "SetcompensateValue",
                     "details": {
                         "name": "Set Compensate Value"
                     },

@@ -1,15 +1,16 @@
 {
     "entries": [
         {
-            "key": "SpawnerComponentTypeId",
+            "base": "SpawnerComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Spawner Component Type Id"
+                "name": "Spawner Component Type Id",
+                "category": "Constants/Editor"
             },
             "methods": [
                 {
-                    "key": "GetSpawnerComponentTypeId",
+                    "base": "GetSpawnerComponentTypeId",
                     "details": {
                         "name": "Get Spawner Component Type Id"
                     },

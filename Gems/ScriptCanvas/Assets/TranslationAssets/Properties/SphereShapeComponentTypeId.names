@@ -1,15 +1,16 @@
 {
     "entries": [
         {
-            "key": "SphereShapeComponentTypeId",
+            "base": "SphereShapeComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Sphere Shape Component Type Id"
+                "name": "Sphere Shape Component Type Id",
+                "category": "Constants/Editor"
             },
             "methods": [
                 {
-                    "key": "GetSphereShapeComponentTypeId",
+                    "base": "GetSphereShapeComponentTypeId",
                     "details": {
                         "name": "Get Sphere Shape Component Type Id"
                     },

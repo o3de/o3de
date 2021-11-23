@@ -1,17 +1,18 @@
 {
     "entries": [
         {
-            "key": "eUiInteractableState_Pressed",
+            "base": "eUiInteractableState_Pressed",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "e Ui Interactable State_ Pressed"
+                "name": "Pressed",
+                "category": "Constants/UI/Interactable State"
             },
             "methods": [
                 {
-                    "key": "GeteUiInteractableState_Pressed",
+                    "base": "GeteUiInteractableState_Pressed",
                     "details": {
-                        "name": "Gete Ui Interactable State_ Pressed"
+                        "name": "Pressed"
                     },
                     "results": [
                         {

@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "TraceMessageBus",
+            "base": "TraceMessageBus",
             "context": "EBusHandler",
             "variant": "",
             "details": {
@@ -9,7 +9,7 @@
             },
             "methods": [
                 {
-                    "key": "OnPreAssert",
+                    "base": "OnPreAssert",
                     "details": {
                         "name": "OnPreAssert"
                     },
@@ -49,7 +49,7 @@
                     ]
                 },
                 {
-                    "key": "OnPreError",
+                    "base": "OnPreError",
                     "details": {
                         "name": "OnPreError"
                     },
@@ -95,7 +95,7 @@
                     ]
                 },
                 {
-                    "key": "OnPreWarning",
+                    "base": "OnPreWarning",
                     "details": {
                         "name": "OnPreWarning"
                     },
@@ -141,7 +141,7 @@
                     ]
                 },
                 {
-                    "key": "OnAssert",
+                    "base": "OnAssert",
                     "details": {
                         "name": "OnAssert"
                     },
@@ -163,7 +163,7 @@
                     ]
                 },
                 {
-                    "key": "OnError",
+                    "base": "OnError",
                     "details": {
                         "name": "OnError"
                     },
@@ -191,7 +191,7 @@
                     ]
                 },
                 {
-                    "key": "OnWarning",
+                    "base": "OnWarning",
                     "details": {
                         "name": "OnWarning"
                     },
@@ -219,7 +219,7 @@
                     ]
                 },
                 {
-                    "key": "OnException",
+                    "base": "OnException",
                     "details": {
                         "name": "OnException"
                     },
@@ -241,7 +241,7 @@
                     ]
                 },
                 {
-                    "key": "OnPrintf",
+                    "base": "OnPrintf",
                     "details": {
                         "name": "OnPrintf"
                     },
@@ -269,7 +269,7 @@
                     ]
                 },
                 {
-                    "key": "OnOutput",
+                    "base": "OnOutput",
                     "details": {
                         "name": "OnOutput"
                     },

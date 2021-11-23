@@ -1,17 +1,18 @@
 {
     "entries": [
         {
-            "key": "eUiImageSequenceImageType_StretchedToFill",
+            "base": "eUiImageSequenceImageType_StretchedToFill",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "e Ui Image Sequence Image Type_ Stretched To Fill"
+                "name": "Image Type: Stretched To Fill",
+                "category": "Constants/UI/Image Sequence"
             },
             "methods": [
                 {
-                    "key": "GeteUiImageSequenceImageType_StretchedToFill",
+                    "base": "GeteUiImageSequenceImageType_StretchedToFill",
                     "details": {
-                        "name": "Gete Ui Image Sequence Image Type_ Stretched To Fill"
+                        "name": "Image Type: Stretched To Fill"
                     },
                     "results": [
                         {

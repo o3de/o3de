@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "InputSystemRequestBus",
+            "base": "InputSystemRequestBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "RecreateEnabledInputDevices",
+                    "base": "RecreateEnabledInputDevices",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Recreate Enabled Input Devices"

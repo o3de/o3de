@@ -1,17 +1,18 @@
 {
     "entries": [
         {
-            "key": "SystemConfigSpec_Low",
+            "base": "SystemConfigSpec_Low",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "System Config Spec_ Low"
+                "name": "Low",
+                "category": "Constants/System Spec"
             },
             "methods": [
                 {
-                    "key": "GetSystemConfigSpec_Low",
+                    "base": "GetSystemConfigSpec_Low",
                     "details": {
-                        "name": "Get System Config Spec_ Low"
+                        "name": "Low"
                     },
                     "results": [
                         {

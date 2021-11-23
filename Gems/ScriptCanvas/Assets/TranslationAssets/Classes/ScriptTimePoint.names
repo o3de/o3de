@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "ScriptTimePoint",
+            "base": "ScriptTimePoint",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
@@ -9,7 +9,7 @@
             },
             "methods": [
                 {
-                    "key": "ToString",
+                    "base": "ToString",
                     "context": "ScriptTimePoint",
                     "entry": {
                         "name": "In",
@@ -40,7 +40,7 @@
                     ]
                 },
                 {
-                    "key": "GetSeconds",
+                    "base": "GetSeconds",
                     "context": "ScriptTimePoint",
                     "entry": {
                         "name": "In",
@@ -71,7 +71,7 @@
                     ]
                 },
                 {
-                    "key": "GetMilliseconds",
+                    "base": "GetMilliseconds",
                     "context": "ScriptTimePoint",
                     "entry": {
                         "name": "In",

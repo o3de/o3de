@@ -1,15 +1,16 @@
 {
     "entries": [
         {
-            "key": "ReferenceGradientComponentTypeId",
+            "base": "ReferenceGradientComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Reference Gradient Component Type Id"
+                "name": "Reference Gradient Component Type Id",
+                "category": "Constants/Editor"
             },
             "methods": [
                 {
-                    "key": "GetReferenceGradientComponentTypeId",
+                    "base": "GetReferenceGradientComponentTypeId",
                     "details": {
                         "name": "Get Reference Gradient Component Type Id"
                     },

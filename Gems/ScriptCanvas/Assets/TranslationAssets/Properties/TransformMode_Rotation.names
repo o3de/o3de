@@ -1,17 +1,18 @@
 {
     "entries": [
         {
-            "key": "TransformMode_Rotation",
+            "base": "TransformMode_Rotation",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Transform Mode_ Rotation"
+                "name": "Rotation",
+                "category": "Constants/Transform/Mode"
             },
             "methods": [
                 {
-                    "key": "GetTransformMode_Rotation",
+                    "base": "GetTransformMode_Rotation",
                     "details": {
-                        "name": "Get Transform Mode_ Rotation"
+                        "name": "Rotation"
                     },
                     "results": [
                         {

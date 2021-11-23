@@ -1,17 +1,18 @@
 {
     "entries": [
         {
-            "key": "LightAttenuationRadiusMode_Automatic",
+            "base": "LightAttenuationRadiusMode_Automatic",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Light Attenuation Radius Mode_ Automatic"
+                "name": "Automatic",
+                "category": "Constants/Light Attenuation Radius Mode"
             },
             "methods": [
                 {
-                    "key": "GetLightAttenuationRadiusMode_Automatic",
+                    "base": "GetLightAttenuationRadiusMode_Automatic",
                     "details": {
-                        "name": "Get Light Attenuation Radius Mode_ Automatic"
+                        "name": "Automatic"
                     },
                     "results": [
                         {

@@ -1,17 +1,18 @@
 {
     "entries": [
         {
-            "key": "eUiFlipbookAnimationLoopType_Linear",
+            "base": "eUiFlipbookAnimationLoopType_Linear",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "e Ui Flipbook Animation Loop Type_ Linear"
+                "name": "Linear",
+                "category": "Constants/UI/Flipbook Animation/Loop Type"
             },
             "methods": [
                 {
-                    "key": "GeteUiFlipbookAnimationLoopType_Linear",
+                    "base": "GeteUiFlipbookAnimationLoopType_Linear",
                     "details": {
-                        "name": "Gete Ui Flipbook Animation Loop Type_ Linear"
+                        "name": "Linear"
                     },
                     "results": [
                         {

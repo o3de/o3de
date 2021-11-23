@@ -1,7 +1,7 @@
 {
     "entries" : [
         {
-            "key": "EBusSenderBusId",
+            "base": "EBusSenderBusId",
             "context": "Globals",
             "details": {
                 "name": "Source",
@@ -9,7 +9,7 @@
             }
         },
         {
-            "key": "EBusHandlerBusId",
+            "base": "EBusHandlerBusId",
             "context": "Globals",
             "details": 
             {
@@ -18,7 +18,7 @@
             }
         },
         {
-            "key": "MissingFunction",
+            "base": "MissingFunction",
             "context": "Globals",
             "details": 
             {

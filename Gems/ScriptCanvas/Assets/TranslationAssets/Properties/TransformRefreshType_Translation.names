@@ -1,17 +1,18 @@
 {
     "entries": [
         {
-            "key": "TransformRefreshType_Translation",
+            "base": "TransformRefreshType_Translation",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Transform Refresh Type_ Translation"
+                "name": "Translation",
+                "category": "Constants/Transform/Refresh Type"
             },
             "methods": [
                 {
-                    "key": "GetTransformRefreshType_Translation",
+                    "base": "GetTransformRefreshType_Translation",
                     "details": {
-                        "name": "Get Transform Refresh Type_ Translation"
+                        "name": "Translation"
                     },
                     "results": [
                         {

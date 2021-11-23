@@ -1,15 +1,16 @@
 {
     "entries": [
         {
-            "key": "EditorDiffuseGlobalIlluminationComponentTypeId",
+            "base": "EditorDiffuseGlobalIlluminationComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Editor Diffuse Global Illumination Component Type Id"
+                "name": "Editor Diffuse Global Illumination Component Type Id",
+                "category": "Constants/Editor/Component Type Id"
             },
             "methods": [
                 {
-                    "key": "GetEditorDiffuseGlobalIlluminationComponentTypeId",
+                    "base": "GetEditorDiffuseGlobalIlluminationComponentTypeId",
                     "details": {
                         "name": "Get Editor Diffuse Global Illumination Component Type Id"
                     },

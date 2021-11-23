@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "AtomToolsDocumentSystemRequestBus",
+            "base": "AtomToolsDocumentSystemRequestBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "SaveDocument",
+                    "base": "SaveDocument",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Save Document"
@@ -40,7 +40,7 @@
                     ]
                 },
                 {
-                    "key": "SaveDocumentAsChild",
+                    "base": "SaveDocumentAsChild",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Save Document As Child"
@@ -76,7 +76,7 @@
                     ]
                 },
                 {
-                    "key": "OpenDocument",
+                    "base": "OpenDocument",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Open Document"
@@ -106,7 +106,7 @@
                     ]
                 },
                 {
-                    "key": "CreateDocumentFromFile",
+                    "base": "CreateDocumentFromFile",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Create Document From File"
@@ -142,7 +142,7 @@
                     ]
                 },
                 {
-                    "key": "CloseDocument",
+                    "base": "CloseDocument",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Close Document"
@@ -172,7 +172,7 @@
                     ]
                 },
                 {
-                    "key": "CloseAllDocuments",
+                    "base": "CloseAllDocuments",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Close All Documents"
@@ -194,7 +194,7 @@
                     ]
                 },
                 {
-                    "key": "CloseAllDocumentsExcept",
+                    "base": "CloseAllDocumentsExcept",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Close All Documents Except"
@@ -224,7 +224,7 @@
                     ]
                 },
                 {
-                    "key": "CreateDocument",
+                    "base": "CreateDocument",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Create Document"
@@ -246,7 +246,7 @@
                     ]
                 },
                 {
-                    "key": "DestroyDocument",
+                    "base": "DestroyDocument",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Destroy Document"
@@ -276,7 +276,7 @@
                     ]
                 },
                 {
-                    "key": "SaveDocumentAsCopy",
+                    "base": "SaveDocumentAsCopy",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Save Document As Copy"
@@ -312,7 +312,7 @@
                     ]
                 },
                 {
-                    "key": "SaveAllDocuments",
+                    "base": "SaveAllDocuments",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Save All Documents"

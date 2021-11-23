@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "{BAD6C904-6078-49E8-B461-CA4410B785A4}",
+            "base": "{BAD6C904-6078-49E8-B461-CA4410B785A4}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
@@ -12,7 +12,7 @@
             },
             "slots": [
                 {
-                    "key": "DataInput_Delay",
+                    "base": "DataInput_Delay",
                     "details": {
                         "name": "Delay"
                     }

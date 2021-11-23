@@ -1,17 +1,18 @@
 {
     "entries": [
         {
-            "key": "CullMode_None",
+            "base": "CullMode_None",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Cull Mode_ None"
+                "name": "None",
+                "category": "Constants/Cull Mode"
             },
             "methods": [
                 {
-                    "key": "GetCullMode_None",
+                    "base": "GetCullMode_None",
                     "details": {
-                        "name": "Get Cull Mode_ None"
+                        "name": "Get None"
                     },
                     "results": [
                         {

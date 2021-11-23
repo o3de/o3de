@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "NodeIndex",
+            "base": "NodeIndex",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
@@ -9,7 +9,7 @@
             },
             "methods": [
                 {
-                    "key": "Equal",
+                    "base": "Equal",
                     "context": "NodeIndex",
                     "entry": {
                         "name": "In",
@@ -47,7 +47,7 @@
                     ]
                 },
                 {
-                    "key": "ToString",
+                    "base": "ToString",
                     "context": "NodeIndex",
                     "entry": {
                         "name": "In",
@@ -79,7 +79,7 @@
                     ]
                 },
                 {
-                    "key": "IsValid",
+                    "base": "IsValid",
                     "context": "NodeIndex",
                     "entry": {
                         "name": "In",
@@ -111,7 +111,7 @@
                     ]
                 },
                 {
-                    "key": "Distance",
+                    "base": "Distance",
                     "context": "NodeIndex",
                     "entry": {
                         "name": "In",
@@ -149,7 +149,7 @@
                     ]
                 },
                 {
-                    "key": "AsNumber",
+                    "base": "AsNumber",
                     "context": "NodeIndex",
                     "entry": {
                         "name": "In",
