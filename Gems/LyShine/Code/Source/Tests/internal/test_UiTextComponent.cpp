@@ -3512,7 +3512,7 @@ void UiTextComponent::UnitTestLocalization(CLyShine* lyshine, IConsoleCmdArgs* /
 
     if (!pLocMan || !pLocMan->InitLocalizationData(localizationXml.c_str()) || !pLocMan->LoadLocalizationDataByTag("init"))
     {
-        AZ_Assert(false, "Faile to load localization");
+        AZ_Assert(false, "Failed to load localization");
     }
 
     ComponentGetSetTextTestsLoc(lyshine);
