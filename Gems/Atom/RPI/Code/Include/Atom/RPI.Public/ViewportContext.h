@@ -16,6 +16,8 @@
 
 namespace AZ
 {
+    class Matrix3x4;
+
     namespace RPI
     {
         class ViewportContextManager;
