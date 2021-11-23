@@ -5,7 +5,7 @@
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "UiCanvasManagerBus",
+                "name": "UI Canvas Manager",
                 "category": "UI"
             },
             "methods": [

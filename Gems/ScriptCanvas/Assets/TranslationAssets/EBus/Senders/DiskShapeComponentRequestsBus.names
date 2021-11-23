@@ -5,7 +5,7 @@
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "DiskShapeComponentRequestsBus"
+                "name": "Disk Shape Component"
             },
             "methods": [
                 {
