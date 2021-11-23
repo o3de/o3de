@@ -335,6 +335,11 @@ namespace ScriptCanvas
         return &m_datum;
     }
 
+    Datum& GraphVariable::ModDatum()
+    {
+        return m_datum;
+    }
+
     void GraphVariable::ConfigureDatumView(ModifiableDatumView& datumView)
     {
         datumView.ConfigureView((*this));

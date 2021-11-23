@@ -30,11 +30,10 @@ namespace ScriptCanvasBuilder
 
     void BuildVariableOverrides::CopyPreviousOverriddenValues(const BuildVariableOverrides& source)
     {
-        auto isEqual = [](const ScriptCanvas::GraphVariable& overrideValue, const ScriptCanvas::GraphVariable& candidate)
+        auto isEqual = [](const ScriptCanvas::GraphVariable& lhs, const ScriptCanvas::GraphVariable& rhs)
         {
-            return candidate.GetVariableId() == overrideValue.GetVariableId()
-                || (candidate.GetVariableName() == overrideValue.GetVariableName()
-                    && candidate.GetDataType() == overrideValue.GetDataType());
+            return (lhs.GetVariableId() == rhs.GetVariableId() && lhs.GetDataType() == rhs.GetDataType())
+                || (lhs.GetVariableName() == rhs.GetVariableName() && lhs.GetDataType() == rhs.GetDataType());
         };
 
         auto copyPreviousIfFound = [isEqual](ScriptCanvas::GraphVariable& overriddenValue, const AZStd::vector<ScriptCanvas::GraphVariable>& source)
@@ -44,7 +43,7 @@ namespace ScriptCanvasBuilder
 
             if (iter != source.end())
             {
-                overriddenValue.DeepCopy(*iter);
+                overriddenValue.ModDatum().DeepCopyDatum(*iter->GetDatum());
                 overriddenValue.SetScriptInputControlVisibility(AZ::Edit::PropertyVisibility::Hide);
                 overriddenValue.SetAllowSignalOnChange(false);
                 return true;
@@ -61,6 +60,15 @@ namespace ScriptCanvasBuilder
             {
                 // the variable in question may have been previously unused, and is now used, so copy the previous value over
                 copyPreviousIfFound(overriddenValue, source.m_overridesUnused);
+            }
+        }
+
+        for (auto& overriddenValue : m_overridesUnused)
+        {
+            if (!copyPreviousIfFound(overriddenValue, source.m_overridesUnused))
+            {
+                // the variable in question may have been previously used, and is now unused, so copy the previous value over
+                copyPreviousIfFound(overriddenValue, source.m_overrides);
             }
         }
 

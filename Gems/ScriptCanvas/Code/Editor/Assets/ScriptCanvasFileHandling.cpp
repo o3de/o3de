@@ -23,7 +23,8 @@
 #include <ScriptCanvas/Components/EditorGraph.h>
 #include <ScriptCanvas/Core/SerializationListener.h>
 #include <ScriptCanvas/Asset/RuntimeAsset.h>
- 
+#include <ScriptCanvas/Libraries/Math/MathNodeUtilities.h>
+
 namespace ScriptCanvasFileHandlingCpp
 {
     void AppendTabs(AZStd::string& result, size_t depth)
@@ -135,26 +136,19 @@ namespace ScriptCanvasEditor
             return AZ::Failure(AZStd::string::format("LoadEditorAssetTree failed to describe graph from %s", handle.ToString().c_str()));
         }
 
-        auto loadAssetOutcome = LoadFromFile(handle.Path().c_str());
-        if (!loadAssetOutcome.IsSuccess())
+        if (!handle.Get())
         {
-            return AZ::Failure(AZStd::string::format("LoadEditorAssetTree failed to load graph from %s: %s"
-                , handle.ToString().c_str(), loadAssetOutcome.GetError().c_str()));
-        }
-                
-        AZStd::vector<SourceHandle> dependentAssets;
-
-        auto filterCB = [&dependentAssets](const AZ::Data::AssetFilterInfo& filterInfo)->bool
-        {
-            if (filterInfo.m_assetType == azrtti_typeid<ScriptCanvas::SubgraphInterfaceAsset>()
-                || filterInfo.m_assetType == azrtti_typeid<ScriptCanvasEditor::ScriptCanvasAsset>())
+            auto loadAssetOutcome = LoadFromFile(handle.Path().c_str());
+            if (!loadAssetOutcome.IsSuccess())
             {
-                dependentAssets.push_back(SourceHandle(nullptr, filterInfo.m_assetId.m_guid, {}));
+                return AZ::Failure(AZStd::string::format("LoadEditorAssetTree failed to load graph from %s: %s"
+                    , handle.ToString().c_str(), loadAssetOutcome.GetError().c_str()));
             }
 
-            return true;
-        };
+            handle = SourceHandle(loadAssetOutcome.GetValue(), handle.Id(), handle.Path().c_str());
+        }
 
+        AZStd::vector<SourceHandle> dependentAssets;
         const auto subgraphInterfaceAssetTypeID = azrtti_typeid<AZ::Data::Asset<ScriptCanvas::SubgraphInterfaceAsset>>();
         
         auto beginElementCB = [&subgraphInterfaceAssetTypeID, &dependentAssets]
@@ -170,12 +164,13 @@ namespace ScriptCanvasEditor
                     // if ptr is a pointer-to-pointer, cast its value to a void* (or const void*) and dereference to get to the actual object pointer.
                     instance = *(void**)(instance);
                 }
+            }
 
-                if (classData->m_typeId == subgraphInterfaceAssetTypeID)
-                {
-                    auto id = reinterpret_cast<AZ::Data::Asset<ScriptCanvas::SubgraphInterfaceAsset>*>(instance)->GetId();
-                    dependentAssets.push_back(SourceHandle(nullptr, id.m_guid, {}));
-                }
+            if (classData->m_typeId == subgraphInterfaceAssetTypeID)
+            {
+                auto asset = reinterpret_cast<AZ::Data::Asset<ScriptCanvas::SubgraphInterfaceAsset>*>(instance);
+                auto id = asset->GetId();
+                dependentAssets.push_back(SourceHandle(nullptr, id.m_guid, {}));
             }
 
             return true;
@@ -183,7 +178,10 @@ namespace ScriptCanvasEditor
 
         AZ::SerializeContext* serializeContext = nullptr;
         AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationRequests::GetSerializeContext);
-        serializeContext->EnumerateObject( handle.Get(), beginElementCB, nullptr, AZ::SerializeContext::ENUM_ACCESS_FOR_READ);
+        AZ_Assert(serializeContext, "LoadEditorAssetTree() ailed to retrieve serialize context!");
+
+        const ScriptCanvasEditor::Graph* graph = handle.Get();
+        serializeContext->EnumerateObject(graph, beginElementCB, nullptr, AZ::SerializeContext::ENUM_ACCESS_FOR_READ);
 
         EditorAssetTree result;
 
@@ -204,8 +202,7 @@ namespace ScriptCanvasEditor
             result.SetParent(*parent);
         }
 
-        result.m_asset = loadAssetOutcome.TakeValue();
-
+        result.m_asset = AZStd::move(handle);
         return AZ::Success(result);
     }
 
@@ -252,6 +249,10 @@ namespace ScriptCanvasEditor
 
         if (auto entity = scriptCanvasData->GetScriptCanvasEntity())
         {
+            AZ_Assert(entity->GetState() == AZ::Entity::State::Constructed, "Entity loaded in bad state");
+            AZ::u64 entityId =
+                aznumeric_caster(ScriptCanvas::MathNodeUtilities::GetRandomIntegral<AZ::s64>(1, std::numeric_limits<AZ::s64>::max()));
+            entity->SetId(AZ::EntityId(entityId));
             entity->Init();
             entity->Activate();
 

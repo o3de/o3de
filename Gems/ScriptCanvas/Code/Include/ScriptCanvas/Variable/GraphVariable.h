@@ -127,6 +127,8 @@ namespace ScriptCanvas
 
         const Datum*    GetDatum() const;
 
+        Datum& ModDatum();
+
         bool IsComponentProperty() const;
 
         void ConfigureDatumView(ModifiableDatumView& accessController);
