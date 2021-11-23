@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "eUiFillType_None",
+            "base": "eUiFillType_None",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GeteUiFillType_None",
+                    "base": "GeteUiFillType_None",
                     "details": {
                         "name": "None"
                     },

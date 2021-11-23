@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "StencilOp_DecrementSaturate",
+            "base": "StencilOp_DecrementSaturate",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetStencilOp_DecrementSaturate",
+                    "base": "GetStencilOp_DecrementSaturate",
                     "details": {
                         "name": "Decrement Saturate"
                     },

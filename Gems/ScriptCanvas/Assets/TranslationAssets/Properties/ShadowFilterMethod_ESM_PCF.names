@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "ShadowFilterMethod_ESM_PCF",
+            "base": "ShadowFilterMethod_ESM_PCF",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetShadowFilterMethod_ESM_PCF",
+                    "base": "GetShadowFilterMethod_ESM_PCF",
                     "details": {
                         "name": "ESM_PCF"
                     },

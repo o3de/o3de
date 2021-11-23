@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "ImageGradientComponentTypeId",
+            "base": "ImageGradientComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetImageGradientComponentTypeId",
+                    "base": "GetImageGradientComponentTypeId",
                     "details": {
                         "name": "Get Image Gradient Component Type Id"
                     },

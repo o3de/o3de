@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "MathVector4_VM",
+            "base": "MathVector4_VM",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
@@ -9,7 +9,7 @@
             },
             "methods": [
                 {
-                    "key": "SetW",
+                    "base": "SetW",
                     "context": "MathVector4_VM",
                     "entry": {
                         "name": "In",
@@ -47,7 +47,7 @@
                     ]
                 },
                 {
-                    "key": "SetX",
+                    "base": "SetX",
                     "context": "MathVector4_VM",
                     "entry": {
                         "name": "In",
@@ -85,7 +85,7 @@
                     ]
                 },
                 {
-                    "key": "IsNormalized",
+                    "base": "IsNormalized",
                     "context": "MathVector4_VM",
                     "entry": {
                         "name": "In",
@@ -123,7 +123,7 @@
                     ]
                 },
                 {
-                    "key": "LengthSquared",
+                    "base": "LengthSquared",
                     "context": "MathVector4_VM",
                     "entry": {
                         "name": "In",
@@ -155,7 +155,7 @@
                     ]
                 },
                 {
-                    "key": "MultiplyByNumber",
+                    "base": "MultiplyByNumber",
                     "context": "MathVector4_VM",
                     "entry": {
                         "name": "In",
@@ -193,7 +193,7 @@
                     ]
                 },
                 {
-                    "key": "Negate",
+                    "base": "Negate",
                     "context": "MathVector4_VM",
                     "entry": {
                         "name": "In",
@@ -225,7 +225,7 @@
                     ]
                 },
                 {
-                    "key": "Dot",
+                    "base": "Dot",
                     "context": "MathVector4_VM",
                     "entry": {
                         "name": "In",
@@ -263,7 +263,7 @@
                     ]
                 },
                 {
-                    "key": "FromValues",
+                    "base": "FromValues",
                     "context": "MathVector4_VM",
                     "entry": {
                         "name": "In",
@@ -313,7 +313,7 @@
                     ]
                 },
                 {
-                    "key": "IsFinite",
+                    "base": "IsFinite",
                     "context": "MathVector4_VM",
                     "entry": {
                         "name": "In",
@@ -345,7 +345,7 @@
                     ]
                 },
                 {
-                    "key": "Length",
+                    "base": "Length",
                     "context": "MathVector4_VM",
                     "entry": {
                         "name": "In",
@@ -377,7 +377,7 @@
                     ]
                 },
                 {
-                    "key": "MultiplyByVector",
+                    "base": "MultiplyByVector",
                     "context": "MathVector4_VM",
                     "entry": {
                         "name": "In",
@@ -415,7 +415,7 @@
                     ]
                 },
                 {
-                    "key": "DirectionTo",
+                    "base": "DirectionTo",
                     "context": "MathVector4_VM",
                     "entry": {
                         "name": "In",
@@ -459,7 +459,7 @@
                     ]
                 },
                 {
-                    "key": "DivideByVector",
+                    "base": "DivideByVector",
                     "context": "MathVector4_VM",
                     "entry": {
                         "name": "In",
@@ -497,7 +497,7 @@
                     ]
                 },
                 {
-                    "key": "LengthReciprocal",
+                    "base": "LengthReciprocal",
                     "context": "MathVector4_VM",
                     "entry": {
                         "name": "In",
@@ -529,7 +529,7 @@
                     ]
                 },
                 {
-                    "key": "SetZ",
+                    "base": "SetZ",
                     "context": "MathVector4_VM",
                     "entry": {
                         "name": "In",
@@ -567,7 +567,7 @@
                     ]
                 },
                 {
-                    "key": "Normalize",
+                    "base": "Normalize",
                     "context": "MathVector4_VM",
                     "entry": {
                         "name": "In",
@@ -599,7 +599,7 @@
                     ]
                 },
                 {
-                    "key": "DivideByNumber",
+                    "base": "DivideByNumber",
                     "context": "MathVector4_VM",
                     "entry": {
                         "name": "In",
@@ -637,7 +637,7 @@
                     ]
                 },
                 {
-                    "key": "IsClose",
+                    "base": "IsClose",
                     "context": "MathVector4_VM",
                     "entry": {
                         "name": "In",
@@ -681,7 +681,7 @@
                     ]
                 },
                 {
-                    "key": "IsZero",
+                    "base": "IsZero",
                     "context": "MathVector4_VM",
                     "entry": {
                         "name": "In",
@@ -719,7 +719,7 @@
                     ]
                 },
                 {
-                    "key": "Add",
+                    "base": "Add",
                     "context": "MathVector4_VM",
                     "entry": {
                         "name": "In",
@@ -757,7 +757,7 @@
                     ]
                 },
                 {
-                    "key": "GetElement",
+                    "base": "GetElement",
                     "context": "MathVector4_VM",
                     "entry": {
                         "name": "In",
@@ -795,7 +795,7 @@
                     ]
                 },
                 {
-                    "key": "Reciprocal",
+                    "base": "Reciprocal",
                     "context": "MathVector4_VM",
                     "entry": {
                         "name": "In",
@@ -827,7 +827,7 @@
                     ]
                 },
                 {
-                    "key": "Subtract",
+                    "base": "Subtract",
                     "context": "MathVector4_VM",
                     "entry": {
                         "name": "In",
@@ -865,7 +865,7 @@
                     ]
                 },
                 {
-                    "key": "Absolute",
+                    "base": "Absolute",
                     "context": "MathVector4_VM",
                     "entry": {
                         "name": "In",
@@ -897,7 +897,7 @@
                     ]
                 },
                 {
-                    "key": "SetY",
+                    "base": "SetY",
                     "context": "MathVector4_VM",
                     "entry": {
                         "name": "In",

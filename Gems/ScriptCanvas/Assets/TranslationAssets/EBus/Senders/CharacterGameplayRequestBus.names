@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "CharacterGameplayRequestBus",
+            "base": "CharacterGameplayRequestBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
@@ -9,7 +9,7 @@
             },
             "methods": [
                 {
-                    "key": "GetFallingVelocity",
+                    "base": "GetFallingVelocity",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Falling Velocity"
@@ -31,7 +31,7 @@
                     ]
                 },
                 {
-                    "key": "GetGravityMultiplier",
+                    "base": "GetGravityMultiplier",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Gravity Multiplier"
@@ -53,7 +53,7 @@
                     ]
                 },
                 {
-                    "key": "SetGravityMultiplier",
+                    "base": "SetGravityMultiplier",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Gravity Multiplier"
@@ -75,7 +75,7 @@
                     ]
                 },
                 {
-                    "key": "IsOnGround",
+                    "base": "IsOnGround",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Is On Ground"
@@ -97,7 +97,7 @@
                     ]
                 },
                 {
-                    "key": "SetFallingVelocity",
+                    "base": "SetFallingVelocity",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Falling Velocity"

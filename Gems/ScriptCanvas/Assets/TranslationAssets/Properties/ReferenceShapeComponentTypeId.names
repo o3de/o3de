@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "ReferenceShapeComponentTypeId",
+            "base": "ReferenceShapeComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetReferenceShapeComponentTypeId",
+                    "base": "GetReferenceShapeComponentTypeId",
                     "details": {
                         "name": "Get Reference Shape Component Type Id"
                     },

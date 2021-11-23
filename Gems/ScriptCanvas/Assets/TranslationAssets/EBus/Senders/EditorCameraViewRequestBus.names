@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "EditorCameraViewRequestBus",
+            "base": "EditorCameraViewRequestBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
@@ -9,7 +9,7 @@
             },
             "methods": [
                 {
-                    "key": "ToggleCameraAsActiveView",
+                    "base": "ToggleCameraAsActiveView",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke ToggleCameraAsActiveView"

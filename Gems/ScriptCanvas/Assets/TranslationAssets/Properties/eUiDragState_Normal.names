@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "eUiDragState_Normal",
+            "base": "eUiDragState_Normal",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GeteUiDragState_Normal",
+                    "base": "GeteUiDragState_Normal",
                     "details": {
                         "name": "Normal"
                     },

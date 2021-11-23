@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "TickRequestBus",
+            "base": "TickRequestBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
@@ -9,7 +9,7 @@
             },
             "methods": [
                 {
-                    "key": "GetTickDeltaTime",
+                    "base": "GetTickDeltaTime",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Tick Delta Time"
@@ -31,7 +31,7 @@
                     ]
                 },
                 {
-                    "key": "GetTimeAtCurrentTick",
+                    "base": "GetTimeAtCurrentTick",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Time At Current Tick"

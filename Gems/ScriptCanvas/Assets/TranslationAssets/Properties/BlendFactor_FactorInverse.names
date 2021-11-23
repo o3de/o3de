@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "BlendFactor_FactorInverse",
+            "base": "BlendFactor_FactorInverse",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetBlendFactor_FactorInverse",
+                    "base": "GetBlendFactor_FactorInverse",
                     "details": {
                         "name": "Get Factor Inverse"
                     },

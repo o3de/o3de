@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "SurfaceSlopeFilterComponentTypeId",
+            "base": "SurfaceSlopeFilterComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetSurfaceSlopeFilterComponentTypeId",
+                    "base": "GetSurfaceSlopeFilterComponentTypeId",
                     "details": {
                         "name": "Get Surface Slope Filter Component Type Id"
                     },

@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "UiParticleEmitterComponent",
+            "base": "UiParticleEmitterComponent",
             "context": "BehaviorClass",
             "variant": "",
             "details": {

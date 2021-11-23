@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "eUiTextOverflowMode_Ellipsis",
+            "base": "eUiTextOverflowMode_Ellipsis",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GeteUiTextOverflowMode_Ellipsis",
+                    "base": "GeteUiTextOverflowMode_Ellipsis",
                     "details": {
                         "name": "Ellipsis"
                     },

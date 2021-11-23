@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "ReferenceShapeConfig",
+            "base": "ReferenceShapeConfig",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
@@ -9,7 +9,7 @@
             },
             "methods": [
                 {
-                    "key": "shapeEntityId",
+                    "base": "shapeEntityId",
                     "details": {
                         "name": "ReferenceShapeConfig::shapeEntityId::Getter"
                     },
@@ -32,7 +32,7 @@
                     ]
                 },
                 {
-                    "key": "shapeEntityId",
+                    "base": "shapeEntityId",
                     "details": {
                         "name": "ReferenceShapeConfig::shapeEntityId::Setter"
                     },

@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "ShaderSemantic",
+            "base": "ShaderSemantic",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "ToString",
+                    "base": "ToString",
                     "context": "ShaderSemantic",
                     "entry": {
                         "name": "In",
@@ -33,7 +33,7 @@
                     ]
                 },
                 {
-                    "key": "Getname",
+                    "base": "Getname",
                     "details": {
                         "name": "Getname"
                     },
@@ -55,7 +55,7 @@
                     ]
                 },
                 {
-                    "key": "Setname",
+                    "base": "Setname",
                     "details": {
                         "name": "Setname"
                     },
@@ -75,7 +75,7 @@
                     ]
                 },
                 {
-                    "key": "Getindex",
+                    "base": "Getindex",
                     "details": {
                         "name": "Getindex"
                     },
@@ -97,7 +97,7 @@
                     ]
                 },
                 {
-                    "key": "Setindex",
+                    "base": "Setindex",
                     "details": {
                         "name": "Setindex"
                     },

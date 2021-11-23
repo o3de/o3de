@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "AZ::SceneAPI::DataTypes::IMeshData::Face",
+            "base": "AZ::SceneAPI::DataTypes::IMeshData::Face",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetVertexIndex",
+                    "base": "GetVertexIndex",
                     "context": "AZ::SceneAPI::DataTypes::IMeshData::Face",
                     "entry": {
                         "name": "In",

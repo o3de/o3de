@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "ShapeType_Heightfield",
+            "base": "ShapeType_Heightfield",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetShapeType_Heightfield",
+                    "base": "GetShapeType_Heightfield",
                     "details": {
                         "name": "Get Shape Type: Heightfield",
                         "subtitle": "Shape Type"

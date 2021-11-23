@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "eUiFillEdgeOrigin_Top",
+            "base": "eUiFillEdgeOrigin_Top",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -11,7 +11,7 @@
             },
             "methods": [
                 {
-                    "key": "GeteUiFillEdgeOrigin_Top",
+                    "base": "GeteUiFillEdgeOrigin_Top",
                     "details": {
                         "name": "Top"
                     },

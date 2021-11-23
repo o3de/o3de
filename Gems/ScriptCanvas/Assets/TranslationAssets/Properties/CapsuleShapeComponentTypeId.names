@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "CapsuleShapeComponentTypeId",
+            "base": "CapsuleShapeComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetCapsuleShapeComponentTypeId",
+                    "base": "GetCapsuleShapeComponentTypeId",
                     "details": {
                         "name": "Get Capsule Shape Component Type Id"
                     },

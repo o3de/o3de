@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "InvalidParameterIndex",
+            "base": "InvalidParameterIndex",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetInvalidParameterIndex",
+                    "base": "GetInvalidParameterIndex",
                     "details": {
                         "name": "Get Invalid Parameter Index"
                     },

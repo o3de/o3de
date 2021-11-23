@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "EditorDepthOfFieldComponentTypeId",
+            "base": "EditorDepthOfFieldComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetEditorDepthOfFieldComponentTypeId",
+                    "base": "GetEditorDepthOfFieldComponentTypeId",
                     "details": {
                         "name": "Get Editor Depth Of Field Component Type Id"
                     },

@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "ShapeChangeReasons_ShapeChanged",
+            "base": "ShapeChangeReasons_ShapeChanged",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetShapeChangeReasons_ShapeChanged",
+                    "base": "GetShapeChangeReasons_ShapeChanged",
                     "details": {
                         "name": "Get Shape Change Reasons_ Shape Changed"
                     },

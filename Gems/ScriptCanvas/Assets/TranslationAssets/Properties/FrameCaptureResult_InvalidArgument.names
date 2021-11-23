@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "FrameCaptureResult_InvalidArgument",
+            "base": "FrameCaptureResult_InvalidArgument",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetFrameCaptureResult_InvalidArgument",
+                    "base": "GetFrameCaptureResult_InvalidArgument",
                     "details": {
                         "name": "Invalid Argument"
                     },

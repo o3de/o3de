@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "StencilOp_Invalid",
+            "base": "StencilOp_Invalid",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetStencilOp_Invalid",
+                    "base": "GetStencilOp_Invalid",
                     "details": {
                         "name": "Invalid"
                     },

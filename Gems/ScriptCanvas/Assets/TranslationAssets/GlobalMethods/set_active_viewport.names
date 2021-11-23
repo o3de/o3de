@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "set_active_viewport",
+            "base": "set_active_viewport",
             "context": "Method",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "set_active_viewport",
+                    "base": "set_active_viewport",
                     "context": "Global",
                     "entry": {
                         "name": "In",

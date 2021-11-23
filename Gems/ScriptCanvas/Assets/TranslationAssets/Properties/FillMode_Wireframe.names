@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "FillMode_Wireframe",
+            "base": "FillMode_Wireframe",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetFillMode_Wireframe",
+                    "base": "GetFillMode_Wireframe",
                     "details": {
                         "name": "Wireframe"
                     },

@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "StencilOp_Replace",
+            "base": "StencilOp_Replace",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetStencilOp_Replace",
+                    "base": "GetStencilOp_Replace",
                     "details": {
                         "name": "Replace"
                     },

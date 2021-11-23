@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "InvertGradientComponentTypeId",
+            "base": "InvertGradientComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetInvertGradientComponentTypeId",
+                    "base": "GetInvertGradientComponentTypeId",
                     "details": {
                         "name": "Get Invert Gradient Component Type Id"
                     },

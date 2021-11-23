@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "eUiHAlign_Right",
+            "base": "eUiHAlign_Right",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GeteUiHAlign_Right",
+                    "base": "GeteUiHAlign_Right",
                     "details": {
                         "name": "Horizontal Align: Right"
                     },

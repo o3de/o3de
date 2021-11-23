@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "BlendShapeData",
+            "base": "BlendShapeData",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
@@ -9,7 +9,7 @@
             },
             "methods": [
                 {
-                    "key": "GetUV",
+                    "base": "GetUV",
                     "context": "BlendShapeData",
                     "entry": {
                         "name": "In",
@@ -52,7 +52,7 @@
                     ]
                 },
                 {
-                    "key": "GetTangent",
+                    "base": "GetTangent",
                     "context": "BlendShapeData",
                     "entry": {
                         "name": "In",
@@ -89,7 +89,7 @@
                     ]
                 },
                 {
-                    "key": "GetBitangent",
+                    "base": "GetBitangent",
                     "context": "BlendShapeData",
                     "entry": {
                         "name": "In",
@@ -126,7 +126,7 @@
                     ]
                 },
                 {
-                    "key": "GetColor",
+                    "base": "GetColor",
                     "context": "BlendShapeData",
                     "entry": {
                         "name": "In",

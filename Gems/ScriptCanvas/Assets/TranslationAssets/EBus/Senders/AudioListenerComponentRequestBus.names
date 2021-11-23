@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "AudioListenerComponentRequestBus",
+            "base": "AudioListenerComponentRequestBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "SetRotationEntity",
+                    "base": "SetRotationEntity",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Rotation Entity"
@@ -34,7 +34,7 @@
                     ]
                 },
                 {
-                    "key": "SetPositionEntity",
+                    "base": "SetPositionEntity",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Position Entity"
@@ -58,7 +58,7 @@
                     ]
                 },
                 {
-                    "key": "SetFullTransformEntity",
+                    "base": "SetFullTransformEntity",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Full Transform Entity"
@@ -82,7 +82,7 @@
                     ]
                 },
                 {
-                    "key": "SetListenerEnabled",
+                    "base": "SetListenerEnabled",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Listener Enabled"

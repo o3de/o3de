@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "EditorReflectionProbeComponentTypeId",
+            "base": "EditorReflectionProbeComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetEditorReflectionProbeComponentTypeId",
+                    "base": "GetEditorReflectionProbeComponentTypeId",
                     "details": {
                         "name": "Get Editor Reflection Probe Component Type Id"
                     },

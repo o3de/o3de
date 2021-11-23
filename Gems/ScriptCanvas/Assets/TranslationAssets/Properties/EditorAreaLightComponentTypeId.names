@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "EditorAreaLightComponentTypeId",
+            "base": "EditorAreaLightComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetEditorAreaLightComponentTypeId",
+                    "base": "GetEditorAreaLightComponentTypeId",
                     "details": {
                         "name": "Get Editor Area Light Component Type Id"
                     },

@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "EditorEntityContextRequestBus",
+            "base": "EditorEntityContextRequestBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
@@ -9,7 +9,7 @@
             },
             "methods": [
                 {
-                    "key": "GetEditorEntityContextId",
+                    "base": "GetEditorEntityContextId",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetEditorEntityContextId"

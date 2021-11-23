@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "BlendFactor_AlphaSource1Inverse",
+            "base": "BlendFactor_AlphaSource1Inverse",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetBlendFactor_AlphaSource1Inverse",
+                    "base": "GetBlendFactor_AlphaSource1Inverse",
                     "details": {
                         "name": "Get Alpha Source 1 Inverse"
                     },

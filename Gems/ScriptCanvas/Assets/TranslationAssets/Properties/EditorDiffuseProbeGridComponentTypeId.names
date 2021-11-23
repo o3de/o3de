@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "EditorDiffuseProbeGridComponentTypeId",
+            "base": "EditorDiffuseProbeGridComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetEditorDiffuseProbeGridComponentTypeId",
+                    "base": "GetEditorDiffuseProbeGridComponentTypeId",
                     "details": {
                         "name": "Get Editor Diffuse Probe Grid Component Type Id"
                     },

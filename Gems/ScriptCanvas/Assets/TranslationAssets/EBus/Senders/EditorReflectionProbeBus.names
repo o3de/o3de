@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "EditorReflectionProbeBus",
+            "base": "EditorReflectionProbeBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
@@ -9,7 +9,7 @@
             },
             "methods": [
                 {
-                    "key": "BakeReflectionProbe",
+                    "base": "BakeReflectionProbe",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke BakeReflectionProbe"

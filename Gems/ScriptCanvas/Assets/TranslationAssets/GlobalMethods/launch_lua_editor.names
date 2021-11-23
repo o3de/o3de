@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "launch_lua_editor",
+            "base": "launch_lua_editor",
             "context": "Method",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "launch_lua_editor",
+                    "base": "launch_lua_editor",
                     "context": "Global",
                     "entry": {
                         "name": "In",

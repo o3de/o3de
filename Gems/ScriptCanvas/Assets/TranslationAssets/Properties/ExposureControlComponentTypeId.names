@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "ExposureControlComponentTypeId",
+            "base": "ExposureControlComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetExposureControlComponentTypeId",
+                    "base": "GetExposureControlComponentTypeId",
                     "details": {
                         "name": "Get Exposure Control Component Type Id"
                     },

@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "delete_track",
+            "base": "delete_track",
             "context": "Method",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "delete_track",
+                    "base": "delete_track",
                     "context": "Global",
                     "entry": {
                         "name": "In",

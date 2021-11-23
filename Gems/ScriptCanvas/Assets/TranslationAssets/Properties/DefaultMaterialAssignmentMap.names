@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "DefaultMaterialAssignmentMap",
+            "base": "DefaultMaterialAssignmentMap",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetDefaultMaterialAssignmentMap",
+                    "base": "GetDefaultMaterialAssignmentMap",
                     "details": {
                         "name": "Get Default Material Assignment Map"
                     },

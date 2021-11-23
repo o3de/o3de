@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "AreaBlenderComponentTypeId",
+            "base": "AreaBlenderComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetAreaBlenderComponentTypeId",
+                    "base": "GetAreaBlenderComponentTypeId",
                     "details": {
                         "name": "Get Area Blender Component Type Id"
                     },

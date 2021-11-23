@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "DefaultLodType",
+            "base": "DefaultLodType",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetDefaultLodType",
+                    "base": "GetDefaultLodType",
                     "details": {
                         "name": "Get Default Lod Type"
                     },

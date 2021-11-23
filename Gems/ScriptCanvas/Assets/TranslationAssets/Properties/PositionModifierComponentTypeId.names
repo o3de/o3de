@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "PositionModifierComponentTypeId",
+            "base": "PositionModifierComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetPositionModifierComponentTypeId",
+                    "base": "GetPositionModifierComponentTypeId",
                     "details": {
                         "name": "Get Position Modifier Component Type Id"
                     },

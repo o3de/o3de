@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "BlendOp_Add",
+            "base": "BlendOp_Add",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetBlendOp_Add",
+                    "base": "GetBlendOp_Add",
                     "details": {
                         "name": "Get Add"
                     },

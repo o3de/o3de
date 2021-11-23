@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "EditorLookModificationComponentTypeId",
+            "base": "EditorLookModificationComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetEditorLookModificationComponentTypeId",
+                    "base": "GetEditorLookModificationComponentTypeId",
                     "details": {
                         "name": "Get Editor Look Modification Component Type Id"
                     },

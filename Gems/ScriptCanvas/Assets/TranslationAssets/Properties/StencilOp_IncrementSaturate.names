@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "StencilOp_IncrementSaturate",
+            "base": "StencilOp_IncrementSaturate",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetStencilOp_IncrementSaturate",
+                    "base": "GetStencilOp_IncrementSaturate",
                     "details": {
                         "name": "Increment Saturate"
                     },

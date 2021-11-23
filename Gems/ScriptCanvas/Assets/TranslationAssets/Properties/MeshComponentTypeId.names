@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "MeshComponentTypeId",
+            "base": "MeshComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetMeshComponentTypeId",
+                    "base": "GetMeshComponentTypeId",
                     "details": {
                         "name": "Get Mesh Component Type Id"
                     },

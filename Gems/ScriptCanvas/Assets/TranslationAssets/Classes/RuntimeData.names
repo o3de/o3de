@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "RuntimeData",
+            "base": "RuntimeData",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
@@ -9,7 +9,7 @@
             },
             "methods": [
                 {
-                    "key": "GetRequiredAssets",
+                    "base": "GetRequiredAssets",
                     "context": "RuntimeData",
                     "entry": {
                         "name": "In",
