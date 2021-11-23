@@ -16,9 +16,7 @@
 #include "BaseObject.h"
 
 #include "IMovieSystem.h"
-#include "IEntityObjectListener.h"
 #include "Gizmo.h"
-#include "CryListenerSet.h"
 #include "StatObjBus.h"
 
 #include <QObject>
@@ -219,9 +217,6 @@ public:
     }
 
     static void StoreUndoEntityLink(CSelectionGroup* pGroup);
-
-    void RegisterListener(IEntityObjectListener* pListener);
-    void UnregisterListener(IEntityObjectListener* pListener);
 
 protected:
     template <typename T>
@@ -433,7 +428,6 @@ private:
     void ForceVariableUpdate();
 
     AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
-    CListenerSet<IEntityObjectListener*> m_listeners;
     std::vector< std::pair<IVariable*, IVariable::OnSetCallback*> > m_callbacks;
     AZStd::fixed_vector< IVariable::OnSetCallback, VariableCallbackIndex::Count > m_onSetCallbacksCache;
     AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING

@@ -858,13 +858,16 @@ void CSystem::Warning(EValidatorModule module, EValidatorSeverity severity, int 
 }
 
 //////////////////////////////////////////////////////////////////////////
-int CSystem::ShowMessage(const char* text, const char* caption, unsigned int uType)
+void CSystem::ShowMessage(const char* text, const char* caption, unsigned int uType)
 {
     if (m_pUserCallback)
     {
-        return m_pUserCallback->ShowMessage(text, caption, uType);
+        m_pUserCallback->ShowMessage(text, caption, uType);
     }
-    return CryMessageBox(text, caption, uType);
+    else
+    {
+        CryMessageBox(text, caption, uType);
+    }
 }
 
 inline const char* ValidatorModuleToString(EValidatorModule module)
@@ -943,20 +946,16 @@ void CSystem::WarningV(EValidatorModule module, EValidatorSeverity severity, int
     }
     char szBuffer[MAX_WARNING_LENGTH];
     vsnprintf_s(szBuffer, sizeof(szBuffer), sizeof(szBuffer) - 1, format, args);
+    AZStd::fixed_string<MAX_WARNING_LENGTH> fmt = szBuffer;
 
     if (file && *file)
     {
-        AZStd::fixed_string<MAX_WARNING_LENGTH> fmt = szBuffer;
         fmt += " [File=";
         fmt += file;
         fmt += "]";
 
-        m_env.pLog->LogWithType(ltype, flags | VALIDATOR_FLAG_SKIP_VALIDATOR, "%s", fmt.c_str());
     }
-    else
-    {
-        m_env.pLog->LogWithType(ltype, flags | VALIDATOR_FLAG_SKIP_VALIDATOR, "%s", szBuffer);
-    }
+    m_env.pLog->LogWithType(ltype, flags | VALIDATOR_FLAG_SKIP_VALIDATOR, "%s", fmt.c_str());
 
     if (bDbgBreak && g_cvars.sys_error_debugbreak)
     {
@@ -1455,7 +1454,6 @@ bool CSystem::HandleMessage([[maybe_unused]] HWND hWnd, UINT uMsg, WPARAM wParam
 }
 
 #endif
-}
 
 ILevelSystem* CSystem::GetILevelSystem()
 {

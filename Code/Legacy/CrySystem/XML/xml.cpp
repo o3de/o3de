@@ -1247,9 +1247,7 @@ bool CXmlNode::saveToFile(const char* fileName)
 
 bool CXmlNode::saveToFile([[maybe_unused]] const char* fileName, size_t chunkSize, AZ::IO::HandleType fileHandle)
 {
-#ifdef WIN32
-    CrySetFileAttributes(fileName, 0x00000080);  // FILE_ATTRIBUTE_NORMAL
-#endif //WIN32
+    CrySetFileAttributes(fileName, FILE_ATTRIBUTE_NORMAL);
 
     if (chunkSize < 256 * 1024)   // make at least 256k
     {

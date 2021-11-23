@@ -52,7 +52,7 @@ public:
     void Warning([[maybe_unused]] EValidatorModule module, [[maybe_unused]] EValidatorSeverity severity, [[maybe_unused]] int flags, [[maybe_unused]] const char* file, [[maybe_unused]] const char* format, ...) override {}
 
     MOCK_METHOD3(ShowMessage,
-        int(const char* text, const char* caption, unsigned int uType));
+        void(const char* text, const char* caption, unsigned int uType));
     MOCK_METHOD1(CheckLogVerbosity,
         bool(int verbosity));
     MOCK_METHOD0(GetILevelSystem,

@@ -288,8 +288,6 @@ private:
     // next available sequenceId
     uint32 m_nextSequenceId;
 
-    void ShowPlayedSequencesDebug();
-
 public:
     static float m_mov_cameraPrecacheTime;
 #if !defined(_RELEASE)

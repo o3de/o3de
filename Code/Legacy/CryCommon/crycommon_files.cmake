@@ -13,7 +13,6 @@ set(FILES
     IConsole.h
     IEntityRenderState.h
     IFont.h
-    IFunctorBase.h
     IGem.h
     IIndexedMesh.h
     ILevelSystem.h

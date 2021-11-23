@@ -16,6 +16,8 @@
 #include <IFileUtil.h>
 #include "Undo/IUndoObject.h"
 
+#include <QMessageBox>
+
 //////////////////////////////////////////////////////////////////////////
 // Undo functionality for libraries.
 //////////////////////////////////////////////////////////////////////////
@@ -260,7 +262,7 @@ bool CBaseLibrary::SaveLibrary(const char* name, bool saveEmptyLibrary)
     {
         QByteArray filenameUtf8 = fileName.toUtf8();
         AZStd::string strMessage = AZStd::string::format("The file %s is read-only and the save of the library couldn't be performed. Try to remove the \"read-only\" flag or check-out the file and then try again.", filenameUtf8.data());
-        CryMessageBox(strMessage.c_str(), "Saving Error", MB_OK | MB_ICONWARNING);
+        QMessageBox::warning(nullptr,"Saving Error",strMessage.c_str());
     }
     return bRes;
 }

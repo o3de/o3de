@@ -227,7 +227,7 @@ public:
     // Validator Warning.
     void WarningV(EValidatorModule module, EValidatorSeverity severity, int flags, const char* file, const char* format, va_list args) override;
     void Warning(EValidatorModule module, EValidatorSeverity severity, int flags, const char* file, const char* format, ...) override;
-    int ShowMessage(const char* text, const char* caption, unsigned int uType) override;
+    void ShowMessage(const char* text, const char* caption, unsigned int uType) override;
     bool CheckLogVerbosity(int verbosity) override;
 
     //! Return pointer to user defined callback.

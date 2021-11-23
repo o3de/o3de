@@ -67,7 +67,6 @@ typedef unsigned __int64 ULONG_PTR, * PULONG_PTR;
 typedef ULONG_PTR DWORD_PTR, * PDWORD_PTR;
 
 int64 CryGetTicks();
-int64 CryGetTicksPerSec();
 
 #ifndef SAFE_DELETE
 #define SAFE_DELETE(p) { if (p) { delete (p); (p) = NULL; } \

@@ -280,13 +280,6 @@ int64 CryGetTicks()
     QueryPerformanceCounter(&li);
     return li.QuadPart;
 }
-
-int64 CryGetTicksPerSec()
-{
-    LARGE_INTEGER li;
-    QueryPerformanceFrequency(&li);
-    return li.QuadPart;
-}
 #endif
 
 

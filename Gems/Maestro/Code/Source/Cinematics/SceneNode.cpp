@@ -935,14 +935,10 @@ void CAnimSceneNode::ApplySequenceKey(IAnimTrack* pTrack, [[maybe_unused]] int n
         IAnimSequence* pSequence = GetSequenceFromSequenceKey(key);
         if (pSequence)
         {
-            float startTime = -FLT_MAX;
-            float endTime = -FLT_MAX;
 
             if (key.bOverrideTimes)
             {
                 key.fDuration = (key.fEndTime - key.fStartTime) > 0.0f ? (key.fEndTime - key.fStartTime) : 0.0f;
-                startTime = key.fStartTime;
-                endTime = key.fEndTime;
             }
             else
             {

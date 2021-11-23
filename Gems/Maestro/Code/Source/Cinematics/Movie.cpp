@@ -980,48 +980,6 @@ void CMovieSystem::StillUpdate()
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CMovieSystem::ShowPlayedSequencesDebug()
-{
-    float y = 10.0f;
-    std::vector<const char*> names;
-
-    for (PlayingSequences::iterator it = m_playingSequences.begin(); it != m_playingSequences.end(); ++it)
-    {
-        PlayingSequence& playingSequence = *it;
-
-        if (playingSequence.sequence == NULL)
-        {
-            continue;
-        }
-
-        y += 16.0f;
-
-        for (int i = 0; i < playingSequence.sequence->GetNodeCount(); ++i)
-        {
-            // Checks nodes which happen to be in several sequences.
-            // Those can be a bug, since several sequences may try to control the same entity.
-            const char* name = playingSequence.sequence->GetNode(i)->GetName();
-            bool alreadyThere = false;
-            for (size_t k = 0; k < names.size(); ++k)
-            {
-                if (strcmp(names[k], name) == 0)
-                {
-                    alreadyThere = true;
-                    break;
-                }
-            }
-
-            if (alreadyThere == false)
-            {
-                names.push_back(name);
-            }
-        }
-
-        y += 32.0f;
-    }
-}
-
-//////////////////////////////////////////////////////////////////////////
 void CMovieSystem::PreUpdate(float deltaTime)
 {
     // Sequences can be spawned in game via a dynamic slice, so process newly activated sequences to see
@@ -1157,13 +1115,6 @@ void CMovieSystem::UpdateInternal(const float deltaTime, const bool bPreUpdate)
             playingSequence.sequence->OnLoop();
         }
     }
-
-#if !defined(_RELEASE)
-    if (m_mov_DebugEvents)
-    {
-        ShowPlayedSequencesDebug();
-    }
-#endif //#if !defined(_RELEASE)
 
     // Stop queued sequences.
     for (int i = 0; i < (int)stopSequences.size(); i++)

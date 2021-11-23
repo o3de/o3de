@@ -163,7 +163,6 @@ namespace
 
 //////////////////////////////////////////////////////////////////////////
 CEntityObject::CEntityObject()
-    : m_listeners(1)
 {
     m_bLoadFailed = false;
 
@@ -294,11 +293,6 @@ void CEntityObject::Done()
 
     ReleaseEventTargets();
     RemoveAllEntityLinks();
-
-    for (CListenerSet<IEntityObjectListener*>::Notifier notifier(m_listeners); notifier.IsValid(); notifier.Next())
-    {
-        notifier->OnDone();
-    }
 
     CBaseObject::Done();
 }
@@ -680,11 +674,6 @@ void CEntityObject::SetName(const QString& name)
 
     CBaseObject::SetName(name);
 
-    CListenerSet<IEntityObjectListener*> listeners = m_listeners;
-    for (CListenerSet<IEntityObjectListener*>::Notifier notifier(listeners); notifier.IsValid(); notifier.Next())
-    {
-        notifier->OnNameChanged(name.toUtf8().data());
-    }
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -697,10 +686,6 @@ void CEntityObject::SetSelected(bool bSelect)
         UpdateLightProperty();
     }
 
-    for (CListenerSet<IEntityObjectListener*>::Notifier notifier(m_listeners); notifier.IsValid(); notifier.Next())
-    {
-        notifier->OnSelectionChanged(bSelect);
-    }
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -2169,16 +2154,6 @@ void CEntityObject::StoreUndoEntityLink(CSelectionGroup* pGroup)
     {
         CUndo::Record(new CUndoEntityLink(pGroup));
     }
-}
-
-void CEntityObject::RegisterListener(IEntityObjectListener* pListener)
-{
-    m_listeners.Add(pListener);
-}
-
-void CEntityObject::UnregisterListener(IEntityObjectListener* pListener)
-{
-    m_listeners.Remove(pListener);
 }
 
 template <typename T>
