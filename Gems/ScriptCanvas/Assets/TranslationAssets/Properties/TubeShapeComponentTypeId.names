@@ -6,7 +6,7 @@
             "variant": "",
             "details": {
                 "name": "Tube Shape Component Type Id",
-                "category": "Constants/Transform"
+                "category": "Constants/Editor"
             },
             "methods": [
                 {

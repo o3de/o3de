@@ -5,14 +5,14 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Provider Name Enum_AWS CognitoIDP",
+                "name": "AWS Cognito IDP",
                 "category": "Constants/Provider Name"
             },
             "methods": [
                 {
                     "key": "GetProviderNameEnum_AWSCognitoIDP",
                     "details": {
-                        "name": "Get Provider Name Enum_AWS CognitoIDP"
+                        "name": "AWS Cognito IDP"
                     },
                     "results": [
                         {

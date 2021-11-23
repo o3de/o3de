@@ -5,14 +5,14 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "eSSB_ Leave Time",
-                "category": "Constants/SSB"
+                "name": "Leave Time",
+                "category": "Constants/UI/Animation/Sequence Stop Behavior"
             },
             "methods": [
                 {
                     "key": "GeteSSB_LeaveTime",
                     "details": {
-                        "name": "GeteSSB_ Leave Time"
+                        "name": "Leave Time"
                     },
                     "results": [
                         {

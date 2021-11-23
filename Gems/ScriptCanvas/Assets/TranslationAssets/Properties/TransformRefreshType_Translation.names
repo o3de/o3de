@@ -5,14 +5,14 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Transform Refresh Type_ Translation",
-                "category": "Constants/Transform"
+                "name": "Translation",
+                "category": "Constants/Transform/Refresh Type"
             },
             "methods": [
                 {
                     "key": "GetTransformRefreshType_Translation",
                     "details": {
-                        "name": "Get Transform Refresh Type_ Translation"
+                        "name": "Translation"
                     },
                     "results": [
                         {

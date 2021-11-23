@@ -5,14 +5,14 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Material Property Visibility_ Hidden",
-                "category": "Constants/Material Property"
+                "name": "Hidden",
+                "category": "Constants/Material Property Visibility"
             },
             "methods": [
                 {
                     "key": "GetMaterialPropertyVisibility_Hidden",
                     "details": {
-                        "name": "Get Material Property Visibility_ Hidden"
+                        "name": "Hidden"
                     },
                     "results": [
                         {

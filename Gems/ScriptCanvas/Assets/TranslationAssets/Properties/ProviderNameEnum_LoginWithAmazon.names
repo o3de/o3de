@@ -5,14 +5,14 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Provider Name Enum_ Login With Amazon",
+                "name": "Amazon",
                 "category": "Constants/Provider Name"
             },
             "methods": [
                 {
                     "key": "GetProviderNameEnum_LoginWithAmazon",
                     "details": {
-                        "name": "Get Provider Name Enum_ Login With Amazon"
+                        "name": "Amazon"
                     },
                     "results": [
                         {

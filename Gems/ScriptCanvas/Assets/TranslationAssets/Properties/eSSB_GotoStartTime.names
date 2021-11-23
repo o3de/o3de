@@ -5,14 +5,14 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "eSSB_ Goto Start Time",
-                "category": "Constants/SSB"
+                "name": "Goto Start Time",
+                "category": "Constants/UI/Animation/Sequence Stop Behavior"
             },
             "methods": [
                 {
                     "key": "GeteSSB_GotoStartTime",
                     "details": {
-                        "name": "GeteSSB_ Goto Start Time"
+                        "name": "Goto Start Time"
                     },
                     "results": [
                         {
