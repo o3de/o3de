@@ -5,14 +5,14 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Frame Capture Result_ Success",
+                "name": "Success",
                 "category": "Constants/Frame Capture Result"
             },
             "methods": [
                 {
                     "key": "GetFrameCaptureResult_Success",
                     "details": {
-                        "name": "Get Frame Capture Result_ Success"
+                        "name": "Success"
                     },
                     "results": [
                         {

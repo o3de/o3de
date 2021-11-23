@@ -5,14 +5,14 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Image Sequence Image Type_ Fixed",
-                "category": "Constants/UI"
+                "name": "Image Type: Fixed",
+                "category": "Constants/UI/Image Sequence"
             },
             "methods": [
                 {
                     "key": "GeteUiImageSequenceImageType_Fixed",
                     "details": {
-                        "name": "Get Image Sequence Image Type_ Fixed"
+                        "name": "Image Type: Fixed"
                     },
                     "results": [
                         {

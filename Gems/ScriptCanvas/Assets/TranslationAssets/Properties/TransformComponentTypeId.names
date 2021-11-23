@@ -6,7 +6,7 @@
             "variant": "",
             "details": {
                 "name": "Transform Component Type Id",
-                "category": "Constants/Transform"
+                "category": "Constants/Editor"
             },
             "methods": [
                 {

@@ -5,14 +5,14 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "System Config Platform_ Osx Metal",
+                "name": "Osx Metal",
                 "category": "Constants/System Configuration"
             },
             "methods": [
                 {
                     "key": "GetSystemConfigPlatform_OsxMetal",
                     "details": {
-                        "name": "Get System Config Platform_ Osx Metal"
+                        "name": "Osx Metal"
                     },
                     "results": [
                         {

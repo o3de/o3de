@@ -5,14 +5,14 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "eSSB_ Goto End Time",
-                "category": "Constants/SSB"
+                "name": "Goto End Time",
+                "category": "Constants/UI/Animation/Sequence Stop Behavior"
             },
             "methods": [
                 {
                     "key": "GeteSSB_GotoEndTime",
                     "details": {
-                        "name": "GeteSSB_ Goto End Time"
+                        "name": "Goto End Time"
                     },
                     "results": [
                         {

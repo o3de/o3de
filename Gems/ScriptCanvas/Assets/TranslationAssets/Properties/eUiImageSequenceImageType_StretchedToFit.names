@@ -5,14 +5,14 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Image Sequence Image Type_ Stretched To Fit",
-                "category": "Constants/UI"
+                "name": "Image Type: Stretched To Fit",
+                "category": "Constants/UI/Image Sequence"
             },
             "methods": [
                 {
                     "key": "GeteUiImageSequenceImageType_StretchedToFit",
                     "details": {
-                        "name": "Get Image Sequence Image Type_ Stretched To Fit"
+                        "name": "Image Type: Stretched To Fit"
                     },
                     "results": [
                         {

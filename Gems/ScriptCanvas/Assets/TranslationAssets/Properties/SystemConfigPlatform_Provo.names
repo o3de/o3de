@@ -5,14 +5,14 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "System Config Platform_ Provo",
+                "name": "Provo",
                 "category": "Constants/System Configuration"
             },
             "methods": [
                 {
                     "key": "GetSystemConfigPlatform_Provo",
                     "details": {
-                        "name": "Get System Config Platform_ Provo"
+                        "name": "Provo"
                     },
                     "results": [
                         {
