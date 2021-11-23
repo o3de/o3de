@@ -483,8 +483,6 @@ set(FILES
     Commands/EntityStateCommand.h
     Commands/SelectionCommand.cpp
     Commands/SelectionCommand.h
-    Commands/EntityTransformCommand.cpp
-    Commands/EntityTransformCommand.h
     Commands/PreemptiveUndoCache.cpp
     Commands/PreemptiveUndoCache.h
     Commands/BaseSliceCommand.cpp
