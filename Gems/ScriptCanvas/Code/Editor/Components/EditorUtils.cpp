@@ -33,7 +33,7 @@ namespace ScriptCanvasEditor
 {
     AZStd::optional<SourceHandle> CompleteDescription(const SourceHandle& source)
     {
-        if (source.IsValidDescription())
+        if (source.IsDescriptionValid())
         {
             return source;
         }

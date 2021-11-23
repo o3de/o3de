@@ -118,7 +118,7 @@ namespace ScriptCanvasEditor
         SourceHandle Modifier::LoadAsset()
         {
             auto& handle = ModCurrentAsset();
-            if (!handle.IsValid())
+            if (!handle.IsGraphValid())
             {
                 auto outcome = LoadFromFile(handle.Path().c_str());
                 if (outcome.IsSuccess())
@@ -158,7 +158,7 @@ namespace ScriptCanvasEditor
 
             ModelNotificationsBus::Broadcast(&ModelNotificationsTraits::OnUpgradeModificationBegin, m_config, ModCurrentAsset());
 
-            if (auto asset = LoadAsset(); asset.IsValid())
+            if (auto asset = LoadAsset(); asset.IsGraphValid())
             {
                 ModificationNotificationsBus::Handler::BusConnect();
                 m_modifyState = ModifyState::InProgress;

@@ -48,6 +48,9 @@ namespace ScriptCanvasEditor
         EditorScriptCanvasComponent(const SourceHandle& sourceHandle);
         ~EditorScriptCanvasComponent() override;
 
+        // sets the soure but does not attempt to load anything;
+        void InitializeSource(const SourceHandle& sourceHandle);
+
         //=====================================================================
         // AZ::Component
         void Init() override;

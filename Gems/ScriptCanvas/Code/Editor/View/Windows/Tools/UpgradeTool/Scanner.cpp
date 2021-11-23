@@ -132,7 +132,7 @@ namespace ScriptCanvasEditor
             }
             else
             {
-                if (auto asset = LoadAsset(); asset.IsValid())
+                if (auto asset = LoadAsset(); asset.IsGraphValid())
                 {
                     VE_LOG("Scanner: Loaded: %s ", ModCurrentAsset().Path().c_str());
                     FilterAsset(asset);

@@ -235,7 +235,7 @@ namespace ScriptCanvasEditor
                 if (tabdata.isValid())
                 {
                     auto tabAssetId = tabdata.value<GraphTabMetadata>();
-                    if (tabAssetId.m_assetId.IsValid()
+                    if (tabAssetId.m_assetId.IsGraphValid()
                     && tabAssetId.m_assetId.Get()->GetGraphCanvasGraphId() == graphCanvasGraphId)
                     {
                         return tabAssetId.m_assetId.Get()->GetScriptCanvasId();

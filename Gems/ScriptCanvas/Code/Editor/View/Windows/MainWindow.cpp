@@ -251,7 +251,7 @@ namespace ScriptCanvasEditor
                     if (fileState == Tracker::ScriptCanvasFileState::MODIFIED || fileState == Tracker::ScriptCanvasFileState::UNMODIFIED)
                     {
                         ScriptCanvasEditor::SourceHandle sourceId = GetSourceAssetId(assetId);
-                        if (sourceId.IsValid())
+                        if (sourceId.IsGraphValid())
                         {
                             EditorSettings::EditorWorkspace::WorkspaceAssetSaveData assetSaveData;
                             assetSaveData.m_assetId = sourceId;
@@ -267,13 +267,13 @@ namespace ScriptCanvasEditor
                 }
 
                 // The assetId needs to be the file AssetId to restore the workspace
-                if (focusedAssetId.IsValid())
+                if (focusedAssetId.IsGraphValid())
                 {
                     focusedAssetId = GetSourceAssetId(focusedAssetId);
                 }
 
                 // If our currently focused asset won't be restored, just show the first element.
-                if (!focusedAssetId.IsValid())
+                if (!focusedAssetId.IsGraphValid())
                 {
                     if (!activeAssets.empty())
                     {
@@ -643,7 +643,7 @@ namespace ScriptCanvasEditor
         QTimer::singleShot(0, [this]() {
             SetDefaultLayout();
 
-            if (m_activeGraph.IsValid())
+            if (m_activeGraph.IsGraphValid())
             {
                 m_queuedFocusOverride = m_activeGraph;
             }
@@ -824,7 +824,7 @@ namespace ScriptCanvasEditor
     void MainWindow::SignalActiveSceneChanged(ScriptCanvasEditor::SourceHandle assetId)
     {
         AZ::EntityId graphId;
-        if (assetId.IsValid())
+        if (assetId.IsGraphValid())
         {
             EditorGraphRequestBus::EventResult(graphId, assetId.Get()->GetScriptCanvasId(), &EditorGraphRequests::GetGraphCanvasGraphId);
         }
@@ -1199,17 +1199,23 @@ namespace ScriptCanvasEditor
             return AZ::Success(outTabIndex);
         }
 
-        outTabIndex = CreateAssetTab(fileAssetId, fileState);
+        auto loadedGraph = LoadFromFile(fileAssetId.Path().c_str());
+        if (!loadedGraph.IsSuccess())
+        {
+            return AZ::Failure(AZStd::string("Failed to load graph at %s", fileAssetId.Path().c_str()));
+        }
+
+        outTabIndex = CreateAssetTab(loadedGraph.GetValue(), fileState);
 
         if (!m_isRestoringWorkspace)
         {
-            SetActiveAsset(fileAssetId);
+            SetActiveAsset(loadedGraph.GetValue());
         }
 
         if (outTabIndex >= 0)
         {
-            AddRecentFile(fileAssetId.Path().c_str());
-            OpenScriptCanvasAssetImplementation(fileAssetId, fileState);
+            AddRecentFile(loadedGraph.GetValue().Path().c_str());
+            OpenScriptCanvasAssetImplementation(loadedGraph.GetValue(), fileState);
             return AZ::Success(outTabIndex);
         }
         else
@@ -1221,12 +1227,12 @@ namespace ScriptCanvasEditor
     AZ::Outcome<int, AZStd::string> MainWindow::OpenScriptCanvasAssetImplementation(const SourceHandle& scriptCanvasAsset, Tracker::ScriptCanvasFileState fileState, int tabIndex)
     {
         const ScriptCanvasEditor::SourceHandle& fileAssetId = scriptCanvasAsset;
-        if (!fileAssetId.IsValid())
+        if (!fileAssetId.IsDescriptionValid())
         {
             return AZ::Failure(AZStd::string("Unable to open asset with invalid asset id"));
         }
 
-        if (!scriptCanvasAsset.IsValid())
+        if (!scriptCanvasAsset.IsDescriptionValid())
         {
             if (!m_isRestoringWorkspace)
             {
@@ -1282,7 +1288,7 @@ namespace ScriptCanvasEditor
 
     AZ::Outcome<int, AZStd::string> MainWindow::OpenScriptCanvasAsset(ScriptCanvasEditor::SourceHandle scriptCanvasAssetId, Tracker::ScriptCanvasFileState fileState, int tabIndex)
     {
-        if (scriptCanvasAssetId.IsValid())
+        if (scriptCanvasAssetId.IsGraphValid())
         {
             return OpenScriptCanvasAssetImplementation(scriptCanvasAssetId, fileState, tabIndex);
         }
@@ -1303,7 +1309,7 @@ namespace ScriptCanvasEditor
         m_assetCreationRequests.erase(assetId);
         GeneralAssetNotificationBus::Event(assetId, &GeneralAssetNotifications::OnAssetUnloaded);
 
-        if (assetId.IsValid())
+        if (assetId.IsGraphValid())
         {
             // Disconnect scene and asset editor buses
             GraphCanvas::SceneNotificationBus::MultiHandler::BusDisconnect(assetId.Get()->GetScriptCanvasId());
@@ -1379,7 +1385,7 @@ namespace ScriptCanvasEditor
     void MainWindow::OpenFile(const char* fullPath)
     {
         auto tabIndex = m_tabBar->FindTabByPath(fullPath);
-        if (tabIndex.IsValid())
+        if (tabIndex.IsGraphValid())
         {
             SetActiveAsset(tabIndex);
             return;
@@ -1699,7 +1705,7 @@ namespace ScriptCanvasEditor
 
     bool MainWindow::SaveAssetImpl(const ScriptCanvasEditor::SourceHandle& inMemoryAssetId, Save save)
     {
-        if (!inMemoryAssetId.IsValid())
+        if (!inMemoryAssetId.IsGraphValid())
         {
             return false;
         }
@@ -2446,7 +2452,7 @@ namespace ScriptCanvasEditor
     {
         AZ::EntityId graphId{};
 
-        if (m_activeGraph.IsValid())
+        if (m_activeGraph.IsGraphValid())
         {
             EditorGraphRequestBus::EventResult
                 ( graphId, m_activeGraph.Get()->GetScriptCanvasId(), &EditorGraphRequests::GetGraphCanvasGraphId);
@@ -2471,7 +2477,7 @@ namespace ScriptCanvasEditor
     {
         AZ::EntityId graphId{};
 
-        if (assetId.IsValid())
+        if (assetId.IsGraphValid())
         {
             EditorGraphRequestBus::EventResult
                 ( graphId, assetId.Get()->GetScriptCanvasId(), &EditorGraphRequests::GetGraphCanvasGraphId);
@@ -2482,7 +2488,7 @@ namespace ScriptCanvasEditor
 
     ScriptCanvas::ScriptCanvasId MainWindow::FindScriptCanvasIdByAssetId(const ScriptCanvasEditor::SourceHandle& assetId) const
     {
-        return assetId.IsValid() ? assetId.Get()->GetScriptCanvasId() : ScriptCanvas::ScriptCanvasId{};
+        return assetId.IsGraphValid() ? assetId.Get()->GetScriptCanvasId() : ScriptCanvas::ScriptCanvasId{};
     }
 
     ScriptCanvas::ScriptCanvasId MainWindow::GetScriptCanvasId(const GraphCanvas::GraphId& graphCanvasGraphId) const
@@ -2548,14 +2554,14 @@ namespace ScriptCanvasEditor
     {
         // Disconnect previous asset
         AZ::EntityId previousScriptCanvasSceneId;
-        if (previousAsset.IsValid())
+        if (previousAsset.IsGraphValid())
         {
             previousScriptCanvasSceneId = previousAsset.Get()->GetScriptCanvasId();
             GraphCanvas::SceneNotificationBus::MultiHandler::BusDisconnect(previousScriptCanvasSceneId);
         }
 
         AZ::EntityId nextAssetGraphCanvasId;
-        if (nextAsset.IsValid())
+        if (nextAsset.IsGraphValid())
         {
             // Connect the next asset
             EditorGraphRequestBus::EventResult(nextAssetGraphCanvasId, nextAsset.Get()->GetScriptCanvasId(), &EditorGraphRequests::GetGraphCanvasGraphId);
@@ -2583,7 +2589,7 @@ namespace ScriptCanvasEditor
 
         AssetHelpers::PrintInfo("SetActiveAsset : from: %s to %s", m_activeGraph.ToString().c_str(), fileAssetId.ToString().c_str());
 
-        if (fileAssetId.IsValid())
+        if (fileAssetId.IsGraphValid())
         {
             if (m_tabBar->FindTab(fileAssetId) >= 0)
             {
@@ -2596,7 +2602,7 @@ namespace ScriptCanvasEditor
             }
         }
 
-        if (m_activeGraph.IsValid())
+        if (m_activeGraph.IsGraphValid())
         {
             // If we are saving the asset, the Id may have changed from the in-memory to the file asset Id, in that case,
             // there's no need to hide the view or remove the widget
@@ -2609,7 +2615,7 @@ namespace ScriptCanvasEditor
             }
         }
 
-        if (fileAssetId.IsValid())
+        if (fileAssetId.IsGraphValid())
         {
             ScriptCanvasEditor::SourceHandle previousAssetId = m_activeGraph;
             m_activeGraph = fileAssetId;
@@ -2631,7 +2637,7 @@ namespace ScriptCanvasEditor
 
     void MainWindow::RefreshActiveAsset()
     {
-        if (m_activeGraph.IsValid())
+        if (m_activeGraph.IsGraphValid())
         {
             AssetHelpers::PrintInfo("RefreshActiveAsset : m_activeGraph (%s)", m_activeGraph.ToString().c_str());
             if (auto view = m_tabBar->ModOrCreateTabView(m_tabBar->FindTab(m_activeGraph)))
@@ -2762,7 +2768,7 @@ namespace ScriptCanvasEditor
         if (m_isClosingTabs)
         {
             if (m_tabBar->count() == 0
-                || (m_tabBar->count() == 1 && m_skipTabOnClose.IsValid()))
+                || (m_tabBar->count() == 1 && m_skipTabOnClose.IsGraphValid()))
             {
                 m_isClosingTabs = false;
                 m_skipTabOnClose.Clear();
@@ -3003,7 +3009,7 @@ namespace ScriptCanvasEditor
         bool hasCopiableSelection = false;
         bool hasSelection = false;
 
-        if (m_activeGraph.IsValid())
+        if (m_activeGraph.IsGraphValid())
         {
             if (graphCanvasGraphId.IsValid())
             {
@@ -3396,17 +3402,17 @@ namespace ScriptCanvasEditor
         {
             m_isRestoringWorkspace = false;
 
-            if (m_queuedFocusOverride.IsValid())
+            if (m_queuedFocusOverride.IsGraphValid())
             {
                 SetActiveAsset(m_queuedFocusOverride);
                 m_queuedFocusOverride.Clear();
             }
-            else if (lastFocusAsset.IsValid())
+            else if (lastFocusAsset.IsGraphValid())
             {
                 SetActiveAsset(lastFocusAsset);
             }
 
-            if (!m_activeGraph.IsValid())
+            if (!m_activeGraph.IsGraphValid())
             {
                 if (m_tabBar->count() > 0)
                 {
@@ -3429,7 +3435,7 @@ namespace ScriptCanvasEditor
 
     void MainWindow::UpdateAssignToSelectionState()
     {
-        bool buttonEnabled = m_activeGraph.IsValid();
+        bool buttonEnabled = m_activeGraph.IsGraphValid();
 
         if (buttonEnabled)
         {
@@ -3789,7 +3795,7 @@ namespace ScriptCanvasEditor
 
         OnFileNew();
 
-        if (m_activeGraph.IsValid())
+        if (m_activeGraph.IsGraphValid())
         {
             graphId = GetActiveGraphCanvasGraphId();
         }
