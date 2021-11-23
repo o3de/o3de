@@ -5,7 +5,8 @@
             "context": "BehaviorClass",
             "variant": "",
             "details": {
-                "name": "Blend Shape Data"
+                "name": "Blend Shape Data",
+                "category": "Rendering"
             },
             "methods": [
                 {
