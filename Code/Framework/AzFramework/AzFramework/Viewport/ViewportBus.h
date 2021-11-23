@@ -15,6 +15,7 @@
 namespace AZ
 {
     class Matrix4x4;
+    class Matrix3x4;
     class Transform;
     class ReflectContext;
 } // namespace AZ
