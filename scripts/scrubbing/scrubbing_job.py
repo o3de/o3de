@@ -9,7 +9,7 @@
 import os
 import sys
 cur_dir = cur_dir = os.path.dirname(os.path.abspath(__file__))
-sys.path.insert(0, os.path.abspath(f'{cur_dir}/../build/package'))
+sys.path.insert(0, os.path.abspath(f'{cur_dir}/../util'))
 import util
 
 # Run validator

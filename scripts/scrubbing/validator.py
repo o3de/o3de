@@ -29,7 +29,8 @@ else:
     from io import StringIO
 
 import validator_data_LEGAL_REVIEW_REQUIRED # pull in the data we need to configure this tool
-sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', 'build', 'package'))
+cur_dir = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, os.path.abspath(f'{cur_dir}/../util'))
 from glob_to_regex import generate_include_exclude_regexes
 
 class Validator(object):
