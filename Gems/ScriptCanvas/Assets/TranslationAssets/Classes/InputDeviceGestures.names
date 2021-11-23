@@ -1,18 +1,18 @@
 {
     "entries": [
         {
-            "base": "InputDeviceTouch",
+            "base": "InputDeviceGestures",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
-                "name": "Input Device Touch",
+                "name": "Input Device Gestures",
                 "category": "Input"
             },
             "methods": [
                 {
-                    "base": "touch_index_7",
+                    "base": "gesture_swipe",
                     "details": {
-                        "name": "touch_index_ 7"
+                        "name": "gesture_swipe"
                     },
                     "results": [
                         {
@@ -24,9 +24,9 @@
                     ]
                 },
                 {
-                    "base": "touch_index_8",
+                    "base": "gesture_rotate",
                     "details": {
-                        "name": "touch_index_ 8"
+                        "name": "gesture_rotate"
                     },
                     "results": [
                         {
@@ -38,9 +38,9 @@
                     ]
                 },
                 {
-                    "base": "touch_index_6",
+                    "base": "gesture_hold",
                     "details": {
-                        "name": "touch_index_ 6"
+                        "name": "gesture_hold"
                     },
                     "results": [
                         {
@@ -52,9 +52,9 @@
                     ]
                 },
                 {
-                    "base": "touch_index_5",
+                    "base": "gesture_pinch",
                     "details": {
-                        "name": "touch_index_ 5"
+                        "name": "gesture_pinch"
                     },
                     "results": [
                         {
@@ -66,9 +66,9 @@
                     ]
                 },
                 {
-                    "base": "touch_index_3",
+                    "base": "gesture_double_press",
                     "details": {
-                        "name": "touch_index_ 3"
+                        "name": "gesture_double_press"
                     },
                     "results": [
                         {
@@ -80,51 +80,9 @@
                     ]
                 },
                 {
-                    "base": "touch_index_4",
+                    "base": "gesture_drag",
                     "details": {
-                        "name": "touch_index_ 4"
-                    },
-                    "results": [
-                        {
-                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
-                            "details": {
-                                "name": "char"
-                            }
-                        }
-                    ]
-                },
-                {
-                    "base": "touch_index_2",
-                    "details": {
-                        "name": "touch_index_ 2"
-                    },
-                    "results": [
-                        {
-                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
-                            "details": {
-                                "name": "char"
-                            }
-                        }
-                    ]
-                },
-                {
-                    "base": "touch_index_0",
-                    "details": {
-                        "name": "touch_index_ 0"
-                    },
-                    "results": [
-                        {
-                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
-                            "details": {
-                                "name": "char"
-                            }
-                        }
-                    ]
-                },
-                {
-                    "base": "touch_index_9",
-                    "details": {
-                        "name": "touch_index_ 9"
+                        "name": "gesture_drag"
                     },
                     "results": [
                         {
@@ -145,20 +103,6 @@
                             "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
                             "details": {
                                 "name": "Name"
-                            }
-                        }
-                    ]
-                },
-                {
-                    "base": "touch_index_1",
-                    "details": {
-                        "name": "touch_index_ 1"
-                    },
-                    "results": [
-                        {
-                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
-                            "details": {
-                                "name": "char"
                             }
                         }
                     ]
