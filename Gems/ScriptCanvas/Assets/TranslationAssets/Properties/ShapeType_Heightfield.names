@@ -5,20 +5,21 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Shape Type_ Heightfield",
-                "category": "Constants/Shape Type"
+                "name": "Get Shape Type: Heightfield",
+                "category": "Constants/Physics"
             },
             "methods": [
                 {
                     "key": "GetShapeType_Heightfield",
                     "details": {
-                        "name": "Get Shape Type_ Heightfield"
+                        "name": "Get Shape Type: Heightfield",
+                        "subtitle": "Shape Type"
                     },
                     "results": [
                         {
                             "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
                             "details": {
-                                "name": "int"
+                                "name": "Shape Type"
                             }
                         }
                     ]

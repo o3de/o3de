@@ -5,14 +5,14 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Material Property Visibility_ Disabled",
-                "category": "Constants/Material Property"
+                "name": "Disabled",
+                "category": "Constants/Material Property Visibility"
             },
             "methods": [
                 {
                     "key": "GetMaterialPropertyVisibility_Disabled",
                     "details": {
-                        "name": "Get Material Property Visibility_ Disabled"
+                        "name": "Disabled"
                     },
                     "results": [
                         {

@@ -5,14 +5,14 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Transform Refresh Type_ Orientation",
-                "category": "Constants/Transform"
+                "name": "Orientation",
+                "category": "Constants/Transform/Refresh Type"
             },
             "methods": [
                 {
                     "key": "GetTransformRefreshType_Orientation",
                     "details": {
-                        "name": "Get Transform Refresh Type_ Orientation"
+                        "name": "Orientation"
                     },
                     "results": [
                         {

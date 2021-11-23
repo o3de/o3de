@@ -12,7 +12,7 @@
                 {
                     "key": "GetFloatEpsilon",
                     "details": {
-                        "name": "Get Float Epsilon"
+                        "name": "Float Epsilon"
                     },
                     "results": [
                         {

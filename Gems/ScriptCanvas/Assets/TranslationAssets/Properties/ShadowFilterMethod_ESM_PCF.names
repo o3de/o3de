@@ -5,14 +5,14 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Shadow Filter Method_ESM_PCF",
-                "category": "Constants/Shadowmap"
+                "name": "ESM_PCF",
+                "category": "Constants/Shadowmap/Filter"
             },
             "methods": [
                 {
                     "key": "GetShadowFilterMethod_ESM_PCF",
                     "details": {
-                        "name": "Get Shadow Filter Method_ESM_PCF"
+                        "name": "ESM_PCF"
                     },
                     "results": [
                         {
