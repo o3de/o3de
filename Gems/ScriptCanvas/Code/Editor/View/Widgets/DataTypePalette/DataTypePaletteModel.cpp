@@ -16,7 +16,6 @@
 #include <AzCore/Serialization/Utils.h>
 #include <AzCore/UserSettings/UserSettings.h>
 
-#include <GraphCanvas/Types/TranslationTypes.h>
 #include <GraphCanvas/Components/SceneBus.h>
 #include <GraphCanvas/Components/StyleBus.h>
 
