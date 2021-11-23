@@ -239,12 +239,14 @@ namespace AzToolsFramework
         , m_isInIsolationMode(false)
     {
         ToolsApplicationRequests::Bus::Handler::BusConnect();
+        AzToolsFramework::Prefab::PrefabPublicNotificationBus::Handler::BusConnect();
 
         m_undoCache.RegisterToUndoCacheInterface();
     }
 
     ToolsApplication::~ToolsApplication()
     {
+        AzToolsFramework::Prefab::PrefabPublicNotificationBus::Handler::BusDisconnect();
         ToolsApplicationRequests::Bus::Handler::BusDisconnect();
         Stop();
     }
@@ -566,6 +568,12 @@ namespace AzToolsFramework
     void ToolsApplication::MarkEntitySelected(AZ::EntityId entityId)
     {
         AZ_PROFILE_FUNCTION(AzToolsFramework);
+
+        if (m_freezeSelectionUpdates)
+        {
+            return;
+        }
+
         AZ_Assert(entityId.IsValid(), "Invalid entity Id being marked as selected.");
 
         EntityIdList::iterator foundIter = AZStd::find(m_selectedEntities.begin(), m_selectedEntities.end(), entityId);
@@ -584,6 +592,11 @@ namespace AzToolsFramework
     void ToolsApplication::MarkEntitiesSelected(const EntityIdList& entitiesToSelect)
     {
         AZ_PROFILE_FUNCTION(AzToolsFramework);
+
+        if (m_freezeSelectionUpdates)
+        {
+            return;
+        }
 
         EntityIdList entitiesSelected;
         entitiesSelected.reserve(entitiesToSelect.size());
@@ -608,6 +621,12 @@ namespace AzToolsFramework
     void ToolsApplication::MarkEntityDeselected(AZ::EntityId entityId)
     {
         AZ_PROFILE_FUNCTION(AzToolsFramework);
+
+        if (m_freezeSelectionUpdates)
+        {
+            return;
+        }
+
         auto foundIter = AZStd::find(m_selectedEntities.begin(), m_selectedEntities.end(), entityId);
         if (foundIter != m_selectedEntities.end())
         {
@@ -624,6 +643,11 @@ namespace AzToolsFramework
     void ToolsApplication::MarkEntitiesDeselected(const EntityIdList& entitiesToDeselect)
     {
         AZ_PROFILE_FUNCTION(AzToolsFramework);
+
+        if (m_freezeSelectionUpdates)
+        {
+            return;
+        }
 
         ToolsApplicationEvents::Bus::Broadcast(&ToolsApplicationEvents::BeforeEntitySelectionChanged);
 
@@ -678,6 +702,11 @@ namespace AzToolsFramework
     void ToolsApplication::SetSelectedEntities(const EntityIdList& selectedEntities)
     {
         AZ_PROFILE_FUNCTION(AzToolsFramework);
+
+        if (m_freezeSelectionUpdates)
+        {
+            return;
+        }
 
         // We're setting the selection set as a batch from an external caller.
         // * Filter out any unselectable entities
@@ -1567,6 +1596,16 @@ namespace AzToolsFramework
 #endif
             m_currentBatchUndo = nullptr;
         }
+    }
+
+    void ToolsApplication::OnPrefabInstancePropagationBegin()
+    {
+        m_freezeSelectionUpdates = true;
+    }
+
+    void ToolsApplication::OnPrefabInstancePropagationEnd()
+    {
+        m_freezeSelectionUpdates = false;
     }
 
     void ToolsApplication::CreateUndosForDirtyEntities()

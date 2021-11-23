@@ -10,6 +10,7 @@ cmake_policy(SET CMP0012 NEW) # new policy for the if that evaluates a boolean o
 
 function(ly_copy source_file target_directory)
     cmake_path(GET source_file FILENAME target_filename)
+    cmake_PATH(GET source_file EXTENSION target_filename_ext)
     cmake_path(APPEND target_file "${target_directory}" "${target_filename}")
     cmake_path(COMPARE "${source_file}" EQUAL "${target_file}" same_location)
     if(NOT ${same_location})
