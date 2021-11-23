@@ -39,7 +39,6 @@ def add_material_component(entity_id):
         raise RuntimeError("UpdateComponentForEntity for editor_material_component failed")
 
 def update_manifest(scene):
-    import json
     import uuid, os
     import azlmbr.scene as sceneApi
     import azlmbr.scene.graph
@@ -49,9 +48,9 @@ def update_manifest(scene):
     # Get a list of all the mesh nodes, as well as all the nodes
     mesh_name_list, all_node_paths = get_mesh_node_names(graph)
     scene_manifest = sceneData.SceneManifest()
-    
+
     clean_filename = scene.sourceFilename.replace('.', '_')
-    
+
     # Compute the filename of the scene file
     source_basepath = scene.watchFolder
     source_relative_path = os.path.dirname(os.path.relpath(clean_filename, source_basepath))
@@ -131,23 +130,8 @@ def update_manifest(scene):
         created_entities.append(entity_id)
 
     # Create a prefab with all our entities
-    prefab_filename = source_filename_only + ".prefab"
-    created_template_id = azlmbr.prefab.PrefabSystemScriptingBus(azlmbr.bus.Broadcast, "CreatePrefab", created_entities, prefab_filename)
-
-    if created_template_id == azlmbr.prefab.InvalidTemplateId:
-        raise RuntimeError("CreatePrefab {} failed".format(prefab_filename))
-
-    # Convert the prefab to a JSON string
-    output = azlmbr.prefab.PrefabLoaderScriptingBus(azlmbr.bus.Broadcast, "SaveTemplateToString", created_template_id)
-
-    if output.IsSuccess():
-        jsonString = output.GetValue()
-        uuid = azlmbr.math.Uuid_CreateRandom().ToString()
-        jsonResult = json.loads(jsonString)
-        # Add a PrefabGroup to the manifest and store the JSON on it
-        scene_manifest.add_prefab_group(source_filename_only, uuid, jsonResult)
-    else:
-        raise RuntimeError("SaveTemplateToString failed for template id {}, prefab {}".format(created_template_id, prefab_filename))
+    
+    create_prefab(scene_manifest, source_filename_only, created_entities)
 
     # Convert the manifest to a JSON string and return it
     new_manifest = scene_manifest.export()

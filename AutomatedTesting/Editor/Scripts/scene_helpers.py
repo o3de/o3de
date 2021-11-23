@@ -1,4 +1,5 @@
-import traceback, logging
+import traceback, logging, json
+import azlmbr.bus
 
 def log_exception_traceback():
     data = traceback.format_exc()
@@ -39,3 +40,22 @@ def get_mesh_node_names(sceneGraph):
             node = azlmbr.scene.graph.NodeIndex()
 
     return meshDataList, paths
+    
+def create_prefab(scene_manifest, prefab_name, entities):
+    prefab_filename = prefab_name + ".prefab"
+    created_template_id = azlmbr.prefab.PrefabSystemScriptingBus(azlmbr.bus.Broadcast, "CreatePrefab", entities, prefab_filename)
+
+    if created_template_id is None or created_template_id == azlmbr.prefab.InvalidTemplateId:
+        raise RuntimeError("CreatePrefab {} failed".format(prefab_filename))
+
+    # Convert the prefab to a JSON string
+    output = azlmbr.prefab.PrefabLoaderScriptingBus(azlmbr.bus.Broadcast, "SaveTemplateToString", created_template_id)
+
+    if output is not None and output.IsSuccess():
+        jsonString = output.GetValue()
+        uuid = azlmbr.math.Uuid_CreateRandom().ToString()
+        jsonResult = json.loads(jsonString)
+        # Add a PrefabGroup to the manifest and store the JSON on it
+        scene_manifest.add_prefab_group(prefab_name, uuid, jsonResult)
+    else:
+        raise RuntimeError("SaveTemplateToString failed for template id {}, prefab {}".format(created_template_id, prefab_filename))

@@ -15,8 +15,7 @@ from scene_helpers import *
 #
 
 def update_manifest(scene):
-    import json
-    import uuid, os
+    import uuid
     import azlmbr.scene as sceneApi
     import azlmbr.scene.graph
     from scene_api import scene_data as sceneData
@@ -24,10 +23,11 @@ def update_manifest(scene):
     graph = sceneData.SceneGraph(scene.graph)
     # Get a list of all the mesh nodes, as well as all the nodes
     mesh_name_list, all_node_paths = get_mesh_node_names(graph)
+    mesh_name_list.sort(key=lambda node: str.casefold(node.get_path()))
     scene_manifest = sceneData.SceneManifest()
-    
+
     clean_filename = scene.sourceFilename.replace('.', '_')
-    
+
     # Compute the filename of the scene file
     source_basepath = scene.watchFolder
     source_relative_path = os.path.dirname(os.path.relpath(clean_filename, source_basepath))
@@ -62,7 +62,7 @@ def update_manifest(scene):
     # Create a LOD rule
     lod_rule = scene_manifest.mesh_group_add_lod_rule(mesh_group)
 
-    # Loop all the mesh nodes after the first 
+    # Loop all the mesh nodes after the first
     for x in mesh_path_list[1:]:
         # Add a new LOD level
         lod = scene_manifest.lod_rule_add_lod(lod_rule)
@@ -73,6 +73,25 @@ def update_manifest(scene):
         for y in mesh_path_list:
             if y != x:
                 scene_manifest.lod_unselect_node(lod, y)
+
+    # Create an editor entity
+    entity_id = azlmbr.entity.EntityUtilityBus(azlmbr.bus.Broadcast, "CreateEditorReadyEntity", mesh_group_name)
+    # Add an EditorMeshComponent to the entity
+    editor_mesh_component = azlmbr.entity.EntityUtilityBus(azlmbr.bus.Broadcast, "GetOrAddComponentByTypeName", entity_id, "AZ::Render::EditorMeshComponent")
+    # Set the ModelAsset assetHint to the relative path of the input asset + the name of the MeshGroup we just created + the azmodel extension
+    # The MeshGroup we created will be output as a product in the asset's path named mesh_group_name.azmodel
+    # The assetHint will be converted to an AssetId later during prefab loading
+    json_update = json.dumps({
+        "Controller": { "Configuration": { "ModelAsset": {
+            "assetHint": os.path.join(source_relative_path, mesh_group_name) + ".azmodel" }}}
+        });
+    # Apply the JSON above to the component we created
+    result = azlmbr.entity.EntityUtilityBus(azlmbr.bus.Broadcast, "UpdateComponentForEntity", entity_id, editor_mesh_component, json_update)
+
+    if not result:
+        raise RuntimeError("UpdateComponentForEntity failed for Mesh component")
+
+    create_prefab(scene_manifest, source_filename_only, [entity_id])
 
     # Convert the manifest to a JSON string and return it
     new_manifest = scene_manifest.export()
