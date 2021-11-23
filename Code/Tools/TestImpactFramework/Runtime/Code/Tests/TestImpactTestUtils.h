@@ -14,10 +14,10 @@
 #include <Artifact/Dynamic/TestImpactCoverage.h>
 #include <Artifact/Dynamic/TestImpactTestEnumerationSuite.h>
 #include <Artifact/Dynamic/TestImpactTestRunSuite.h>
-#include <Artifact/Static/TestImpactBuildTargetDescriptor.h>
-#include <Artifact/Static/TestImpactProductionTargetDescriptor.h>
-#include <Artifact/Static/TestImpactTestTargetDescriptor.h>
-#include <Artifact/Static/TestImpacttestTargetMeta.h>
+#include <Artifact/Static/TestImpactNativeTargetDescriptor.h>
+#include <Artifact/Static/TestImpactNativeProductionTargetDescriptor.h>
+#include <Artifact/Static/TestImpactNativeTestTargetDescriptor.h>
+#include <Artifact/Static/TestImpactNativeTestTargetMeta.h>
 #include <Dependency/TestImpactSourceCoveringTestsList.h>
 #include <Process/TestImpactProcess.h>
 #include <TestEngine/Common/Enumeration/TestImpactTestEnumeration.h>

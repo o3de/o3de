@@ -8,7 +8,7 @@
 
 #include <TestImpactFramework/TestImpactUtils.h>
 
-#include <Artifact/Factory/TestImpactTestTargetMetaMapFactory.h>
+#include <Artifact/Factory/TestImpactNativeTestTargetMetaMapFactory.h>
 #include <Artifact/TestImpactArtifactException.h>
 
 #include <AzCore/JSON/document.h>

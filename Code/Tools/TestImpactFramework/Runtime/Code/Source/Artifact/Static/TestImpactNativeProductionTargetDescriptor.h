@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <Artifact/Static/TestImpactBuildTargetDescriptor.h>
+#include <Artifact/Static/TestImpactNativeTargetDescriptor.h>
 
 namespace TestImpact
 {

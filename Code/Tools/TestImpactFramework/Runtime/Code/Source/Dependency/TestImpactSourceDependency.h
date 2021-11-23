@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <Target/TestImpactBuildTarget.h>
+#include <Target/Native/TestImpactNativeTarget.h>
 
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/containers/unordered_map.h>

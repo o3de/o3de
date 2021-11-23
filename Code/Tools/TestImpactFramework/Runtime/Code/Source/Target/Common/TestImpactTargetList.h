@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <Target/TestImpactTargetException.h>
+#include <Target/Common/TestImpactTargetException.h>
 
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/optional.h>

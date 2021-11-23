@@ -12,8 +12,8 @@
 
 #include <TestImpactTestUtils.h>
 
-#include <Artifact/Factory/TestImpactBuildTargetDescriptorFactory.h>
-#include <Artifact/Static/TestImpactTargetDescriptorCompiler.h>
+#include <Artifact/Factory/TestImpactNativeTargetDescriptorFactory.h>
+#include <Artifact/Static/TestImpactNativeTargetDescriptorCompiler.h>
 #include <Dependency/TestImpactDynamicDependencyMap.h>
 
 #include <unordered_map>

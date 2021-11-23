@@ -8,8 +8,8 @@
 
 #pragma once
 
-#include <Artifact/Static/TestImpactBuildTargetDescriptor.h>
-#include <Target/TestImpactTarget.h>
+#include <Artifact/Static/TestImpactNativeTargetDescriptor.h>
+#include <Target/Common/TestImpactTarget.h>
 
 #include <AzCore/std/containers/variant.h>
 

@@ -30,7 +30,7 @@ namespace TestImpact
                 else
                 {
                     // This is a new entry on the dependency map so create an entry with this parent target and no covering targets
-                    m_sourceDependencyMap.emplace(source.String(), DependencyData{ {target}, {} });
+                    m_sourceDependencyMap.emplace(source.String(), DependencyData{ { target }, { /* No covering test targets */ } });
                 }
             }
 

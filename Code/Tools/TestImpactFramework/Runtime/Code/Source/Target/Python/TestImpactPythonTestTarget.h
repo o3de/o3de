@@ -8,38 +8,32 @@
 
 #pragma once
 
-#include <Artifact/Static/TestImpactTestTargetDescriptor.h>
-#include <Target/TestImpactBuildTarget.h>
+#include <Artifact/Static/TestImpactPythonTestTargetDescriptor.h>
+#include <Target/Common/TestImpactTarget.h>
 
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 
 namespace TestImpact
 {
     //! Build target specialization for test targets (build targets containing test code and no production code).
-    class TestTarget
-        : public BuildTarget
+    class TestScriptTarget
+        : public Target
     {
     public:
-        using Descriptor = TestTargetDescriptor;
+        using Descriptor = TestScriptTargetDescriptor;
 
-        TestTarget(AZStd::unique_ptr<Descriptor> descriptor);
+        TestScriptTarget(AZStd::unique_ptr<Descriptor> descriptor);
 
-        //! Returns the test target suite.
+        //! Returns the test script target suite.
         const AZStd::string& GetSuite() const;
 
-        //! Returns the launcher custom arguments.
-        const AZStd::string& GetCustomArgs() const;
+        //! Returns the path in the source tree to the test script.
+        const RepoPath& GetScriptPath() const;
 
         //! Returns the test run timeout.
         AZStd::chrono::milliseconds GetTimeout() const;
 
-        //! Returns the test target launch method.
-        LaunchMethod GetLaunchMethod() const;
-
     private:
         AZStd::unique_ptr<Descriptor> m_descriptor;
     };
-
-    template<typename Target>
-    inline constexpr bool IsTestTarget = AZStd::is_same_v<TestTarget, AZStd::remove_const_t<AZStd::remove_pointer_t<AZStd::decay_t<Target>>>>;
 } // namespace TestImpact

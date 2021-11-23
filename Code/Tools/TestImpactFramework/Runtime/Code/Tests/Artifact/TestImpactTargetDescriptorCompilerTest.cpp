@@ -8,7 +8,7 @@
 
 #include <TestImpactTestUtils.h>
 
-#include <Artifact/Static/TestImpactTargetDescriptorCompiler.h>
+#include <Artifact/Static/TestImpactNativeTargetDescriptorCompiler.h>
 #include <Artifact/TestImpactArtifactException.h>
 
 #include <AzCore/UnitTest/TestTypes.h>

@@ -8,9 +8,9 @@
 
 #pragma once
 
-#include <Artifact/Static/TestImpactProductionTargetDescriptor.h>
-#include <Artifact/Static/TestImpactTestTargetDescriptor.h>
-#include <Artifact/Static/TestImpactTestTargetMeta.h>
+#include <Artifact/Static/TestImpactNativeProductionTargetDescriptor.h>
+#include <Artifact/Static/TestImpactNativeTestTargetDescriptor.h>
+#include <Artifact/Static/TestImpactNativeTestTargetMeta.h>
 
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>

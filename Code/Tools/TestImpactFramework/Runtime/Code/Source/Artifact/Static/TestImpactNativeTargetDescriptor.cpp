@@ -6,15 +6,13 @@
  *
  */
 
-#include <Artifact/Static/TestImpactTestScriptTargetDescriptor.h>
+#include <Artifact/Static/TestImpactNativeTargetDescriptor.h>
 
 namespace TestImpact
 {
-    TestScriptTargetDescriptor::TestScriptTargetDescriptor(
-        TargetDescriptor&& targetDescriptor, TestSuiteMeta&& testSuiteMeta, const RepoPath& scriptPath)
+    BuildTargetDescriptor::BuildTargetDescriptor(TargetDescriptor&& targetDescriptor, const AZStd::string& outputName)
         : TargetDescriptor(AZStd::move(targetDescriptor))
-        , m_testSuiteMeta(AZStd::move(testSuiteMeta))
-        , m_scriptPath(scriptPath)
+        , m_outputName(outputName)
     {
     }
 } // namespace TestImpact

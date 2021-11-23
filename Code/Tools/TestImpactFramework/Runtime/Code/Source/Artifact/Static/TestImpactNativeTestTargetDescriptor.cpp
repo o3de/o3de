@@ -6,7 +6,7 @@
  *
  */
 
-#include <Artifact/Static/TestImpactTestTargetDescriptor.h>
+#include <Artifact/Static/TestImpactNativeTestTargetDescriptor.h>
 
 namespace TestImpact
 {

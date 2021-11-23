@@ -8,7 +8,7 @@
 
 #include <TestImpactFramework/TestImpactRuntime.h>
 
-#include <Artifact/Factory/TestImpactBuildTargetDescriptorFactory.h>
+#include <Artifact/Factory/TestImpactNativeTargetDescriptorFactory.h>
 #include <Artifact/TestImpactArtifactException.h>
 
 #include <AzCore/JSON/document.h>

@@ -6,7 +6,7 @@
  *
  */
 
-#include <Target/TestImpactTarget.h>
+#include <Target/Common/TestImpactTarget.h>
 
 namespace TestImpact
 {

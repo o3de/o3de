@@ -8,7 +8,7 @@
 
 #include <TestImpactFramework/TestImpactUtils.h>
 
-#include <Artifact/Factory/TestImpactTestScriptTargetDescriptorFactory.h>
+#include <Artifact/Factory/TestImpactPythonTestTargetDescriptorFactory.h>
 #include <Artifact/TestImpactArtifactException.h>
 
 #include <AzCore/JSON/document.h>

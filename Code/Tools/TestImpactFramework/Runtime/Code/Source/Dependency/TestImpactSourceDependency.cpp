@@ -9,9 +9,9 @@
 #pragma once
 
 #include <Dependency/TestImpactSourceDependency.h>
-#include <Target/TestImpactBuildTarget.h>
-#include <Target/TestImpactProductionTarget.h>
-#include <Target/TestImpactTestTarget.h>
+#include <Target/native/TestImpactNativeTarget.h>
+#include <Target/native/TestImpactNativeProductionTarget.h>
+#include <Target/native/TestImpactNativeTestTarget.h>
 
 namespace TestImpact
 {

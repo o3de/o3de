@@ -6,7 +6,7 @@
  *
  */
 
-#include <Target/TestImpactTestTarget.h>
+#include <Target/Native/TestImpactNativeTestTarget.h>
 #include <TestEngine/Native/Job/TestImpactNativeTestJobInfoGenerator.h>
 #include <TestEngine/Native/Job/TestImpactNativeTestTargetExtension.h>
 

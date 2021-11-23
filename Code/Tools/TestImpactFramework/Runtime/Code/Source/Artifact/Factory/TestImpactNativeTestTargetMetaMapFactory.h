@@ -9,7 +9,7 @@
 #pragma once
 
 #include <TestImpactFramework/TestImpactTestSequence.h>
-#include <Artifact/Static/TestImpactTestTargetMeta.h>
+#include <Artifact/Static/TestImpactNativeTestTargetMeta.h>
 
 namespace TestImpact
 {

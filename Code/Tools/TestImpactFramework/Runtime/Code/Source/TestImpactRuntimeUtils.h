@@ -12,11 +12,11 @@
 #include <TestImpactFramework/TestImpactClientTestSelection.h>
 #include <TestImpactFramework/TestImpactClientSequenceReport.h>
 
-#include <Artifact/Static/TestImpactTestTargetMeta.h>
-#include <Artifact/Static/TestImpactBuildTargetDescriptor.h>
+#include <Artifact/Static/TestImpactNativeTestTargetMeta.h>
+#include <Artifact/Static/TestImpactNativeTargetDescriptor.h>
 #include <Dependency/TestImpactDynamicDependencyMap.h>
 #include <Dependency/TestImpactSourceCoveringTestsList.h>
-#include <Target/TestImpactTestTarget.h>
+#include <Target/Native/TestImpactNativeTestTarget.h>
 #include <TestEngine/Common/Enumeration/TestImpactTestEnumeration.h>
 #include <TestEngine/TestImpactTestEngineInstrumentedRun.h>
 #include <TestImpactTestTargetExclusionList.h>

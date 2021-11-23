@@ -9,7 +9,7 @@
 #include <Dependency/TestImpactDependencyException.h>
 #include <Dependency/TestImpactDynamicDependencyMap.h>
 #include <Dependency/TestImpactTestSelectorAndPrioritizer.h>
-#include <Target/TestImpactTestTarget.h>
+#include <Target/Native/TestImpactNativeTestTarget.h>
 
 namespace TestImpact
 {

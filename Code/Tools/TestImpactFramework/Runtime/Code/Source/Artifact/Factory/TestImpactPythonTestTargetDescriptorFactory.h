@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <Artifact/Static/TestImpactTestScriptTargetDescriptor.h>
+#include <Artifact/Static/TestImpactPythonTestTargetDescriptor.h>
 #include <TestImpactFramework/TestImpactTestSequence.h>
 
 #include <AzCore/std/containers/vector.h>

@@ -25,33 +25,33 @@ set(FILES
     Include/TestImpactFramework/TestImpactClientSequenceReportSerializer.h
     Include/TestImpactFramework/TestImpactSequenceReportException.h
     Source/Artifact/TestImpactArtifactException.h
-    Source/Artifact/Factory/TestImpactBuildTargetDescriptorFactory.cpp
-    Source/Artifact/Factory/TestImpactBuildTargetDescriptorFactory.h
-    Source/Artifact/Factory/TestImpactTestScriptTargetDescriptorFactory.cpp
-    Source/Artifact/Factory/TestImpactTestScriptTargetDescriptorFactory.h
+    Source/Artifact/Factory/TestImpactNativeTargetDescriptorFactory.cpp
+    Source/Artifact/Factory/TestImpactNativeTargetDescriptorFactory.h
+    Source/Artifact/Factory/TestImpactPythonTestTargetDescriptorFactory.cpp
+    Source/Artifact/Factory/TestImpactPythonTestTargetDescriptorFactory.h
     Source/Artifact/Factory/TestImpactTestEnumerationSuiteFactory.cpp
     Source/Artifact/Factory/TestImpactTestEnumerationSuiteFactory.h
     Source/Artifact/Factory/TestImpactTestRunSuiteFactory.cpp
     Source/Artifact/Factory/TestImpactTestRunSuiteFactory.h
-    Source/Artifact/Factory/TestImpactTestTargetMetaMapFactory.cpp
-    Source/Artifact/Factory/TestImpactTestTargetMetaMapFactory.h
+    Source/Artifact/Factory/TestImpactNativeTestTargetMetaMapFactory.cpp
+    Source/Artifact/Factory/TestImpactNativeTestTargetMetaMapFactory.h
     Source/Artifact/Factory/TestImpactModuleCoverageFactory.cpp
     Source/Artifact/Factory/TestImpactModuleCoverageFactory.h
     Source/Artifact/Factory/TestImpactDependencyGraphDataFactory.cpp
     Source/Artifact/Factory/TestImpactDependencyGraphDataFactory.h
-    Source/Artifact/Static/TestImpactBuildTargetDescriptor.cpp
-    Source/Artifact/Static/TestImpactBuildTargetDescriptor.h
-    Source/Artifact/Static/TestImpactTargetDescriptorCompiler.cpp
-    Source/Artifact/Static/TestImpactTargetDescriptorCompiler.h
-    Source/Artifact/Static/TestImpactProductionTargetDescriptor.cpp
-    Source/Artifact/Static/TestImpactProductionTargetDescriptor.h
+    Source/Artifact/Static/TestImpactNativeTargetDescriptor.cpp
+    Source/Artifact/Static/TestImpactNativeTargetDescriptor.h
+    Source/Artifact/Static/TestImpactNativeTargetDescriptorCompiler.cpp
+    Source/Artifact/Static/TestImpactNativeTargetDescriptorCompiler.h
+    Source/Artifact/Static/TestImpactNativeProductionTargetDescriptor.cpp
+    Source/Artifact/Static/TestImpactNativeProductionTargetDescriptor.h
     Source/Artifact/Static/TestImpactTestSuiteMeta.h
-    Source/Artifact/Static/TestImpactTestTargetMeta.h
-    Source/Artifact/Static/TestImpactTestTargetDescriptor.cpp
-    Source/Artifact/Static/TestImpactTestTargetDescriptor.h
+    Source/Artifact/Static/TestImpactNativeTestTargetMeta.h
+    Source/Artifact/Static/TestImpactNativeTestTargetDescriptor.cpp
+    Source/Artifact/Static/TestImpactNativeTestTargetDescriptor.h
     Source/Artifact/Static/TestImpactTargetDescriptor.h
-    Source/Artifact/Static/TestImpactTestScriptTargetDescriptor.cpp
-    Source/Artifact/Static/TestImpactTestScriptTargetDescriptor.h
+    Source/Artifact/Static/TestImpactPythonTestTargetDescriptor.cpp
+    Source/Artifact/Static/TestImpactPythonTestTargetDescriptor.h
     Source/Artifact/Static/TestImpactDependencyGraphData.h
     Source/Artifact/Dynamic/TestImpactTestEnumerationSuite.h
     Source/Artifact/Dynamic/TestImpactTestRunSuite.h
@@ -83,21 +83,22 @@ set(FILES
     Source/Dependency/TestImpactSourceCoveringTestsList.cpp
     Source/Dependency/TestImpactSourceCoveringTestsSerializer.cpp
     Source/Dependency/TestImpactSourceCoveringTestsSerializer.h
-    Source/Target/TestImpactTarget.cpp
-    Source/Target/TestImpactTarget.h
-    Source/Target/TestImpactBuildTarget.cpp
-    Source/Target/TestImpactBuildTarget.h
-    Source/Target/TestImpactTargetList.h
-    Source/Target/TestImpactProductionTarget.cpp
-    Source/Target/TestImpactProductionTarget.h
-    Source/Target/TestImpactProductionTargetList.h
-    Source/Target/TestImpactTestScriptTarget.cpp
-    Source/Target/TestImpactTestScriptTarget.h
-    Source/Target/TestImpactTestScriptTargetList.h
-    Source/Target/TestImpactTargetException.h
-    Source/Target/TestImpactTestTarget.cpp
-    Source/Target/TestImpactTestTarget.h
-    Source/Target/TestImpactTestTargetList.h
+    Source/Target/Common/TestImpactTarget.cpp
+    Source/Target/Common/TestImpactTarget.h
+    Source/Target/Common/TestImpactTargetList.h
+    Source/Target/Common/TestImpactBuildSystemTargetList.h
+    Source/Target/Common/TestImpactTargetException.h
+    Source/Target/Native/TestImpactNativeTarget.cpp
+    Source/Target/Native/TestImpactNativeTarget.h
+    Source/Target/Native/TestImpactNativeProductionTarget.cpp
+    Source/Target/Native/TestImpactNativeProductionTarget.h
+    Source/Target/Native/TestImpactNativeProductionTargetList.h
+    Source/Target/Native/TestImpactNativeTestTarget.cpp
+    Source/Target/Native/TestImpactNativeTestTarget.h
+    Source/Target/Native/TestImpactNativeTestTargetList.h
+    Source/Target/Python/TestImpactPythonTestTarget.cpp
+    Source/Target/Python/TestImpactPythonTestTarget.h
+    Source/Target/Python/TestImpactPythonTestTargetList.h
     Source/TestEngine/Common/TestImpactErrorCodeChecker.cpp
     Source/TestEngine/Common/TestImpactErrorCodeChecker.h
     Source/TestEngine/Common/Job/TestImpactTestJobRunner.h

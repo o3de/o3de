@@ -8,8 +8,8 @@
 
 #pragma once
 
-#include <Artifact/Static/TestImpactProductionTargetDescriptor.h>
-#include <Target/TestImpactBuildTarget.h>
+#include <Artifact/Static/TestImpactNativeProductionTargetDescriptor.h>
+#include <Target/native/TestImpactNativeTarget.h>
 
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 

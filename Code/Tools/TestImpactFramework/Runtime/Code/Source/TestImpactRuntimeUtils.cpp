@@ -10,9 +10,9 @@
 #include <TestImpactFramework/TestImpactRuntimeException.h>
 
 #include <TestImpactRuntimeUtils.h>
-#include <Artifact/Factory/TestImpactTestTargetMetaMapFactory.h>
-#include <Artifact/Factory/TestImpactBuildTargetDescriptorFactory.h>
-#include <Artifact/Static/TestImpactTargetDescriptorCompiler.h>
+#include <Artifact/Factory/TestImpactNativeTestTargetMetaMapFactory.h>
+#include <Artifact/Factory/TestImpactNativeTargetDescriptorFactory.h>
+#include <Artifact/Static/TestImpactNativeTargetDescriptorCompiler.h>
 
 #include <filesystem>
 

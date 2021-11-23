@@ -6,7 +6,7 @@
  *
  */
 
-#include "TestImpactTestScriptTarget.h"
+#include <Target/Python/TestImpactPythonTestTarget.h>
 
 namespace TestImpact
 {

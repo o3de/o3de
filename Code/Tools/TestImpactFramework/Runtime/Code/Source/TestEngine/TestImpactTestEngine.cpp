@@ -8,7 +8,7 @@
 
 #include <TestImpactFramework/TestImpactUtils.h>
 
-#include <Target/TestImpactTestTarget.h>
+#include <Target/Native/TestImpactnativeTestTarget.h>
 #include <TestEngine/TestImpactTestEngineException.h>
 #include <TestEngine/TestImpactTestEngine.h>
 #include <TestEngine/Common/TestImpactErrorCodeChecker.h>

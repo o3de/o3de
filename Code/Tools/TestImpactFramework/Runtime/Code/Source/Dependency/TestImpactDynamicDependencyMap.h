@@ -11,14 +11,13 @@
 #include <TestImpactFramework/TestImpactChangeList.h>
 #include <TestImpactFramework/TestImpactPolicy.h>
 
-#include <Artifact/Static/TestImpactProductionTargetDescriptor.h>
-#include <Artifact/Static/TestImpactTestTargetDescriptor.h>
+#include <Artifact/Static/TestImpactNativeProductionTargetDescriptor.h>
+#include <Artifact/Static/TestImpactNativeTestTargetDescriptor.h>
 #include <Dependency/TestImpactSourceCoveringTestsList.h>
 #include <Dependency/TestImpactSourceDependency.h>
 #include <Dependency/TestImpactChangeDependencyList.h>
-#include <Target/TestImpactProductionTargetList.h>
-#include <Target/TestImpactTestTargetList.h>
-#include <Target/TestImpactTestScriptTargetList.h>
+#include <Target/Native/TestImpactNativeProductionTargetList.h>
+#include <Target/Native/TestImpactNativeTestTargetList.h>
 
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/containers/unordered_set.h>

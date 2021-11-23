@@ -8,8 +8,8 @@
 
 #pragma once
 
-#include <Target/TestImpactTargetList.h>
-#include <Target/TestImpactProductionTarget.h>
+#include <Target/Common/TestImpactTargetList.h>
+#include <Target/Native/TestImpactNativeProductionTarget.h>
 
 namespace TestImpact
 {
