@@ -6,19 +6,19 @@
             "variant": "",
             "details": {
                 "name": "Spawner Config",
-                "category": "Spawner"
+                "category": "Gameplay/Spawner"
             },
             "methods": [
                 {
                     "base": "GetspawnOnActivate",
                     "details": {
-                        "name": "Getspawn On Activate"
+                        "name": "Get Spawn On Activate"
                     },
                     "params": [
                         {
                             "typeid": "{D4D68E8E-9031-448F-9D56-B5575CF4833C}",
                             "details": {
-                                "name": "Spawner Config*"
+                                "name": "Spawner Config"
                             }
                         }
                     ],
@@ -34,13 +34,13 @@
                 {
                     "base": "SetspawnOnActivate",
                     "details": {
-                        "name": "Setspawn On Activate"
+                        "name": "Set Spawn On Activate"
                     },
                     "params": [
                         {
                             "typeid": "{D4D68E8E-9031-448F-9D56-B5575CF4833C}",
                             "details": {
-                                "name": "Spawner Config*"
+                                "name": "Spawner Config"
                             }
                         },
                         {
@@ -54,13 +54,13 @@
                 {
                     "base": "GetdestroyOnDeactivate",
                     "details": {
-                        "name": "Getdestroy On Deactivate"
+                        "name": "Get Destroy On Deactivate"
                     },
                     "params": [
                         {
                             "typeid": "{D4D68E8E-9031-448F-9D56-B5575CF4833C}",
                             "details": {
-                                "name": "Spawner Config*"
+                                "name": "Spawner Config"
                             }
                         }
                     ],
@@ -76,13 +76,13 @@
                 {
                     "base": "SetdestroyOnDeactivate",
                     "details": {
-                        "name": "Setdestroy On Deactivate"
+                        "name": "Set Destroy On Deactivate"
                     },
                     "params": [
                         {
                             "typeid": "{D4D68E8E-9031-448F-9D56-B5575CF4833C}",
                             "details": {
-                                "name": "Spawner Config*"
+                                "name": "Spawner Config"
                             }
                         },
                         {

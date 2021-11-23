@@ -5,7 +5,8 @@
             "context": "BehaviorClass",
             "variant": "",
             "details": {
-                "name": "Shader Semantic"
+                "name": "Shader Semantic",
+                "category": "Rendering"
             },
             "methods": [
                 {
