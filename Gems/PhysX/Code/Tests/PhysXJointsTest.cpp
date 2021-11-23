@@ -267,8 +267,6 @@ namespace PhysX
         EXPECT_GT(followerEndPosition.GetZ(), followerPosition.GetZ());
     }
 
-// for some reason TYPED_TEST_CASE with the fixture is not working on Android + Linux
-#ifdef ENABLE_JOINTS_TYPED_TEST_CASE
     template<class JointConfigurationType>
     class PhysXJointsApiTest : public PhysX::GenericPhysicsInterfaceTest
     {
@@ -347,5 +345,4 @@ namespace PhysX
 
         EXPECT_GT(childCurrentPos.GetX(), this->m_childInitialPos.GetX());
     }
-#endif // ENABLE_JOINTS_TYPED_TEST_CASE
 }
