@@ -1,0 +1,28 @@
+{
+    "entries": [
+        {
+            "key": "EditorSsaoComponentTypeId",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "Editor Ssao Component Type Id"
+            },
+            "methods": [
+                {
+                    "key": "GetEditorSsaoComponentTypeId",
+                    "details": {
+                        "name": "Get Editor Ssao Component Type Id"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}",
+                            "details": {
+                                "name": "AZ:: Uuid"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

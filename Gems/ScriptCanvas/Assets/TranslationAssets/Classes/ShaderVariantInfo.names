@@ -1,0 +1,12 @@
+{
+    "entries": [
+        {
+            "key": "ShaderVariantInfo",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "ShaderVariantInfo"
+            }
+        }
+    ]
+}

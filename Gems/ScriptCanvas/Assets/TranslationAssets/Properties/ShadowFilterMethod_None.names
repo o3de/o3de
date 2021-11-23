@@ -1,0 +1,28 @@
+{
+    "entries": [
+        {
+            "key": "ShadowFilterMethod_None",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "Shadow Filter Method_ None"
+            },
+            "methods": [
+                {
+                    "key": "GetShadowFilterMethod_None",
+                    "details": {
+                        "name": "Get Shadow Filter Method_ None"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
+                            "details": {
+                                "name": "unsigned int"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

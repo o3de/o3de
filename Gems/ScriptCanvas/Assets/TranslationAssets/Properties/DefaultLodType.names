@@ -1,0 +1,28 @@
+{
+    "entries": [
+        {
+            "key": "DefaultLodType",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "Default Lod Type"
+            },
+            "methods": [
+                {
+                    "key": "GetDefaultLodType",
+                    "details": {
+                        "name": "Get Default Lod Type"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72B9409A-7D1A-4831-9CFE-FCB3FADD3426}",
+                            "details": {
+                                "name": "unsigned char"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

@@ -59,9 +59,6 @@ class EditorSingleTest_WithFileOverrides(EditorSingleTest):
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
 class TestAutomationWithPrefabSystemEnabled(EditorTestSuite):
 
-    global_extra_cmdline_args = ['-BatchMode', '-autotest_mode',
-                                 'extra_cmdline_args=["--regset=/Amazon/Preferences/EnablePrefabSystem=true"]']
-
     @staticmethod
     def get_number_parallel_editors():
         return 16
@@ -80,6 +77,8 @@ class TestAutomationWithPrefabSystemEnabled(EditorTestSuite):
 @pytest.mark.parametrize("launcher_platform", ['windows_editor'])
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
 class TestAutomation(EditorTestSuite):
+
+    enable_prefab_system = False
 
     @staticmethod
     def get_number_parallel_editors():

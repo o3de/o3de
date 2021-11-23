@@ -1,0 +1,28 @@
+{
+    "entries": [
+        {
+            "key": "BlendFactor_AlphaDestInverse",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "Blend Factor_ Alpha Dest Inverse"
+            },
+            "methods": [
+                {
+                    "key": "GetBlendFactor_AlphaDestInverse",
+                    "details": {
+                        "name": "Get Blend Factor_ Alpha Dest Inverse"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

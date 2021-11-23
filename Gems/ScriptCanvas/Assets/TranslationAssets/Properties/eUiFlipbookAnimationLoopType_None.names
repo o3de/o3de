@@ -1,0 +1,28 @@
+{
+    "entries": [
+        {
+            "key": "eUiFlipbookAnimationLoopType_None",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "e Ui Flipbook Animation Loop Type_ None"
+            },
+            "methods": [
+                {
+                    "key": "GeteUiFlipbookAnimationLoopType_None",
+                    "details": {
+                        "name": "Gete Ui Flipbook Animation Loop Type_ None"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

@@ -1,0 +1,28 @@
+{
+    "entries": [
+        {
+            "key": "MaterialPropertyGroupVisibility_Hidden",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "Material Property Group Visibility_ Hidden"
+            },
+            "methods": [
+                {
+                    "key": "GetMaterialPropertyGroupVisibility_Hidden",
+                    "details": {
+                        "name": "Get Material Property Group Visibility_ Hidden"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

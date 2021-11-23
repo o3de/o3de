@@ -1,0 +1,28 @@
+{
+    "entries": [
+        {
+            "key": "eUiVerticalOrder_TopToBottom",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "e Ui Vertical Order_ Top To Bottom"
+            },
+            "methods": [
+                {
+                    "key": "GeteUiVerticalOrder_TopToBottom",
+                    "details": {
+                        "name": "Gete Ui Vertical Order_ Top To Bottom"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

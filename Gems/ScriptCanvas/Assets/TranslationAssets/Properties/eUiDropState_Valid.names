@@ -1,0 +1,28 @@
+{
+    "entries": [
+        {
+            "key": "eUiDropState_Valid",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "e Ui Drop State_ Valid"
+            },
+            "methods": [
+                {
+                    "key": "GeteUiDropState_Valid",
+                    "details": {
+                        "name": "Gete Ui Drop State_ Valid"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

@@ -42,12 +42,14 @@ class AtomComponentProperties:
         Bloom component properties. Requires PostFX Layer component.
           - 'requires' a list of component names as strings required by this component.
             Use editor_entity_utils EditorEntity.add_components(list) to add this list of requirements.\n
+          - 'Enable Bloom' Toggle active state of the component True/False
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """
         properties = {
             'name': 'Bloom',
             'requires': [AtomComponentProperties.postfx_layer()],
+            'Enable Bloom': 'Controller|Configuration|Enable Bloom',
         }
         return properties[property]
 
@@ -55,11 +57,13 @@ class AtomComponentProperties:
     def camera(property: str = 'name') -> str:
         """
         Camera component properties.
+          - 'Field of view': Sets the value for the camera's FOV (Field of View) in degrees, i.e. 60.0
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """
         properties = {
             'name': 'Camera',
+            'Field of view': 'Controller|Configuration|Field of view'
         }
         return properties[property]
 
@@ -83,12 +87,14 @@ class AtomComponentProperties:
         Deferred Fog component properties. Requires PostFX Layer component.
           - 'requires' a list of component names as strings required by this component.
             Use editor_entity_utils EditorEntity.add_components(list) to add this list of requirements.\n
+          - 'Enable Deferred Fog' Toggle active state of the component True/False
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """
         properties = {
             'name': 'Deferred Fog',
             'requires': [AtomComponentProperties.postfx_layer()],
+            'Enable Deferred Fog': 'Controller|Configuration|Enable Deferred Fog',
         }
         return properties[property]
 
@@ -111,7 +117,7 @@ class AtomComponentProperties:
         return properties[property]
 
     @staticmethod
-    def diffuse_probe(property: str = 'name') -> str:
+    def diffuse_probe_grid(property: str = 'name') -> str:
         """
         Diffuse Probe Grid component properties. Requires one of 'shapes'.
           - 'shapes' a list of supported shapes as component names.
@@ -198,11 +204,13 @@ class AtomComponentProperties:
     def grid(property: str = 'name') -> str:
         """
         Grid component properties.
+          - 'Secondary Grid Spacing': The spacing value for the secondary grid, i.e. 1.0
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """
         properties = {
             'name': 'Grid',
+            'Secondary Grid Spacing': 'Controller|Configuration|Secondary Grid Spacing',
         }
         return properties[property]
 
@@ -212,6 +220,7 @@ class AtomComponentProperties:
         HDR Color Grading component properties. Requires PostFX Layer component.
           - 'requires' a list of component names as strings required by this component.
             Use editor_entity_utils EditorEntity.add_components(list) to add this list of requirements.\n
+          - 'Enable HDR color grading' Toggle active state of the component True/False
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """
@@ -226,11 +235,13 @@ class AtomComponentProperties:
     def hdri_skybox(property: str = 'name') -> str:
         """
         HDRi Skybox component properties.
+          - 'Cubemap Texture': Asset.id for the cubemap texture to set.
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """
         properties = {
             'name': 'HDRi Skybox',
+            'Cubemap Texture': 'Controller|Configuration|Cubemap Texture',
         }
         return properties[property]
 
@@ -254,12 +265,16 @@ class AtomComponentProperties:
         Look Modification component properties. Requires PostFX Layer component.
           - 'requires' a list of component names as strings required by this component.
             Use editor_entity_utils EditorEntity.add_components(list) to add this list of requirements.\n
+          - 'Enable look modification' Toggle active state of the component True/False
+          - 'Color Grading LUT' Asset.id for the LUT used for affecting level look.
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """
         properties = {
             'name': 'Look Modification',
             'requires': [AtomComponentProperties.postfx_layer()],
+            'Enable look modification': 'Controller|Configuration|Enable look modification',
+            'Color Grading LUT': 'Controller|Configuration|Color Grading LUT',
         }
         return properties[property]
 
@@ -269,12 +284,14 @@ class AtomComponentProperties:
         Material component properties. Requires one of Actor OR Mesh component.
           - 'requires' a list of component names as strings required by this component.
             Only one of these is required at a time for this component.\n
+          - 'Material Asset': the material Asset.id of the material.
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """
         properties = {
             'name': 'Material',
             'requires': [AtomComponentProperties.actor(), AtomComponentProperties.mesh()],
+            'Material Asset': 'Default Material|Material Asset',
         }
         return properties[property]
 

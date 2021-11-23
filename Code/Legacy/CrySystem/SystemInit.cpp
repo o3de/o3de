@@ -12,7 +12,6 @@
 
 #if defined(AZ_RESTRICTED_PLATFORM) || defined(AZ_TOOLS_EXPAND_FOR_RESTRICTED_PLATFORMS)
 #undef AZ_RESTRICTED_SECTION
-#define SYSTEMINIT_CPP_SECTION_1 1
 #define SYSTEMINIT_CPP_SECTION_2 2
 #define SYSTEMINIT_CPP_SECTION_3 3
 #define SYSTEMINIT_CPP_SECTION_4 4
@@ -31,7 +30,6 @@
 #define SYSTEMINIT_CPP_SECTION_17 17
 #endif
 
-#include "CryLibrary.h"
 #include "CryPath.h"
 
 #include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
@@ -70,9 +68,6 @@
 #include "windows.h"
 #include <float.h>
 
-// To enable profiling with vtune (https://software.intel.com/en-us/intel-vtune-amplifier-xe), make sure the line below is not commented out
-//#define  PROFILE_WITH_VTUNE
-
 #endif //WIN32
 
 #include <IRenderer.h>
@@ -83,7 +78,6 @@
 #include <ICmdLine.h>
 #include <IProcess.h>
 #include <LyShine/ILyShine.h>
-#include <HMDBus.h>
 
 #include <AzFramework/Archive/Archive.h>
 #include "XConsole.h"
@@ -93,7 +87,6 @@
 #include "SystemEventDispatcher.h"
 #include "LevelSystem/LevelSystem.h"
 #include "LevelSystem/SpawnableLevelSystem.h"
-#include "ViewSystem/ViewSystem.h"
 #include <CrySystemBus.h>
 #include <AzCore/Jobs/JobFunction.h>
 #include <AzCore/Jobs/JobManagerBus.h>
@@ -171,48 +164,12 @@ void CryEngineSignalHandler(int signal)
 
 #define LOCALIZATION_TRANSLATIONS_LIST_FILE_NAME "Libs/Localization/localization.xml"
 
-//////////////////////////////////////////////////////////////////////////
-#if defined(WIN32) || defined(LINUX) || defined(APPLE)
-#   define DLL_MODULE_INIT_ISYSTEM "ModuleInitISystem"
-#   define DLL_MODULE_SHUTDOWN_ISYSTEM "ModuleShutdownISystem"
-#   define DLL_INITFUNC_RENDERER "PackageRenderConstructor"
-#   define DLL_INITFUNC_SOUND "CreateSoundSystem"
-#   define DLL_INITFUNC_FONT "CreateCryFontInterface"
-#   define DLL_INITFUNC_3DENGINE "CreateCry3DEngine"
-#   define DLL_INITFUNC_UI "CreateLyShineInterface"
-#define AZ_RESTRICTED_SECTION_IMPLEMENTED
-#elif defined(AZ_RESTRICTED_PLATFORM)
-#define AZ_RESTRICTED_SECTION SYSTEMINIT_CPP_SECTION_1
-#include AZ_RESTRICTED_FILE(SystemInit_cpp)
-#endif
-#if defined(AZ_RESTRICTED_SECTION_IMPLEMENTED)
-#undef AZ_RESTRICTED_SECTION_IMPLEMENTED
-#else
-#   define DLL_MODULE_INIT_ISYSTEM (LPCSTR)2
-#   define DLL_MODULE_SHUTDOWN_ISYSTEM (LPCSTR)3
-#   define DLL_INITFUNC_RENDERER  (LPCSTR)1
-#   define DLL_INITFUNC_RENDERER  (LPCSTR)1
-#   define DLL_INITFUNC_SOUND     (LPCSTR)1
-#   define DLL_INITFUNC_PHYSIC    (LPCSTR)1
-#   define DLL_INITFUNC_FONT      (LPCSTR)1
-#   define DLL_INITFUNC_3DENGINE  (LPCSTR)1
-#   define DLL_INITFUNC_UI        (LPCSTR)1
-#endif
-
 #define AZ_TRACE_SYSTEM_WINDOW AZ::Debug::Trace::GetDefaultSystemWindow()
 
 #ifdef WIN32
 extern HMODULE gDLLHandle;
 #endif
 
-namespace
-{
-#if defined(AZ_PLATFORM_WINDOWS)
-    // on windows, we lock our cache using a lockfile.  On other platforms this is not necessary since devices like ios, android, consoles cannot
-    // run more than one game process that uses the same folder anyway.
-    HANDLE g_cacheLock = INVALID_HANDLE_VALUE;
-#endif
-}
 
 //static int g_sysSpecChanged = false;
 
@@ -292,96 +249,6 @@ static void CmdCrashTest(IConsoleCmdArgs* pArgs)
 }
 AZ_POP_DISABLE_WARNING
 
-//////////////////////////////////////////////////////////////////////////
-struct SysSpecOverrideSink
-    : public ILoadConfigurationEntrySink
-{
-    virtual void OnLoadConfigurationEntry(const char* szKey, const char* szValue, const char* szGroup)
-    {
-        ICVar* pCvar = gEnv->pConsole->GetCVar(szKey);
-
-        if (pCvar)
-        {
-            const bool wasNotInConfig = ((pCvar->GetFlags() & VF_WASINCONFIG) == 0);
-            bool applyCvar = wasNotInConfig;
-            if (applyCvar == false)
-            {
-                // Special handling for sys_spec_full
-                if (azstricmp(szKey, "sys_spec_full") == 0)
-                {
-                    // If it is set to 0 then ignore this request to set to something else
-                    // If it is set to 0 then the user wants to changes system spec settings in system.cfg
-                    if (pCvar->GetIVal() != 0)
-                    {
-                        applyCvar = true;
-                    }
-                }
-                else
-                {
-                    // This could bypass the restricted cvar checks that exist elsewhere depending on
-                    // the calling code so we also need check here before setting.
-                    bool isConst = pCvar->IsConstCVar();
-                    bool isCheat = ((pCvar->GetFlags() & (VF_CHEAT | VF_CHEAT_NOCHECK | VF_CHEAT_ALWAYS_CHECK)) != 0);
-                    bool isReadOnly = ((pCvar->GetFlags() & VF_READONLY) != 0);
-                    bool isDeprecated = ((pCvar->GetFlags() & VF_DEPRECATED) != 0);
-                    bool allowApplyCvar = true;
-
-                    if ((isConst || isCheat || isReadOnly) || isDeprecated)
-                    {
-                        allowApplyCvar = !isDeprecated && (gEnv->pSystem->IsDevMode()) || (gEnv->IsEditor());
-                    }
-
-                    if ((allowApplyCvar) || ALLOW_CONST_CVAR_MODIFICATIONS)
-                    {
-                        applyCvar = true;
-                    }
-                }
-            }
-
-            if (applyCvar)
-            {
-                pCvar->Set(szValue);
-            }
-            else
-            {
-                CryLogAlways("NOT VF_WASINCONFIG Ignoring cvar '%s' new value '%s' old value '%s' group '%s'", szKey, szValue, pCvar->GetString(), szGroup);
-            }
-        }
-        else
-        {
-            CryLogAlways("Can't find cvar '%s' value '%s' group '%s'", szKey, szValue, szGroup);
-        }
-    }
-};
-
-#if !defined(CONSOLE)
-struct SysSpecOverrideSinkConsole
-    : public ILoadConfigurationEntrySink
-{
-    virtual void OnLoadConfigurationEntry(const char* szKey, const char* szValue, const char* szGroup)
-    {
-        // Ignore platform-specific cvars that should just be executed on the console
-        if (azstricmp(szGroup, "Platform") == 0)
-        {
-            return;
-        }
-
-        ICVar* pCvar = gEnv->pConsole->GetCVar(szKey);
-        if (pCvar)
-        {
-            pCvar->Set(szValue);
-        }
-        else
-        {
-            // If the cvar doesn't exist, calling this function only saves the value in case it's registered later where
-            // at that point it will be set from the stored value. This is required because otherwise registering the
-            // cvar bypasses any callbacks and uses values directly from the cvar group files.
-            gEnv->pConsole->LoadConfigVar(szKey, szValue);
-        }
-    }
-};
-#endif
-
 static ESystemConfigPlatform GetDevicePlatform()
 {
 #if defined(AZ_PLATFORM_WINDOWS) || defined(AZ_PLATFORM_LINUX)
@@ -404,64 +271,6 @@ static ESystemConfigPlatform GetDevicePlatform()
     return CONFIG_INVALID_PLATFORM;
 #endif
 }
-
-//////////////////////////////////////////////////////////////////////////
-#if !defined(AZ_MONOLITHIC_BUILD)
-
-AZStd::unique_ptr<AZ::DynamicModuleHandle> CSystem::LoadDynamiclibrary(const char* dllName) const
-{
-    AZStd::unique_ptr<AZ::DynamicModuleHandle> handle = AZ::DynamicModuleHandle::Create(dllName);
-
-    bool libraryLoaded = handle->Load(false);
-    // We need to inject the environment first thing so that allocators are available immediately
-    InjectEnvironmentFunction injectEnv = handle->GetFunction<InjectEnvironmentFunction>(INJECT_ENVIRONMENT_FUNCTION);
-    if (injectEnv)
-    {
-        auto env = AZ::Environment::GetInstance();
-        injectEnv(env);
-    }
-
-    if (!libraryLoaded)
-    {
-        handle.release();
-    }
-    return handle;
-}
-
-//////////////////////////////////////////////////////////////////////////
-AZStd::unique_ptr<AZ::DynamicModuleHandle> CSystem::LoadDLL(const char* dllName)
-{
-    AZ_TracePrintf(AZ_TRACE_SYSTEM_WINDOW, "Loading DLL: %s", dllName);
-
-    AZStd::unique_ptr<AZ::DynamicModuleHandle> handle = LoadDynamiclibrary(dllName);
-
-    if (!handle)
-    {
-#if defined(LINUX) || defined(APPLE)
-        AZ_Assert(false, "Error loading dylib: %s, error :  %s\n", dllName, dlerror());
-#else
-        AZ_Assert(false, "Error loading dll: %s, error code %d", dllName, GetLastError());
-#endif
-        return handle;
-    }
-
-    //////////////////////////////////////////////////////////////////////////
-    // After loading DLL initialize it by calling ModuleInitISystem
-    //////////////////////////////////////////////////////////////////////////
-    AZStd::string moduleName = PathUtil::GetFileName(dllName);
-
-    typedef void*(*PtrFunc_ModuleInitISystem)(ISystem* pSystem, const char* moduleName);
-    PtrFunc_ModuleInitISystem pfnModuleInitISystem = handle->GetFunction<PtrFunc_ModuleInitISystem>(DLL_MODULE_INIT_ISYSTEM);
-    if (pfnModuleInitISystem)
-    {
-        pfnModuleInitISystem(this, moduleName.c_str());
-    }
-
-    return handle;
-}
-
-// TODO:DLL  #endif //#if defined(AZ_HAS_DLL_SUPPORT) && !defined(AZ_MONOLITHIC_BUILD)
-#endif //if !defined(AZ_MONOLITHIC_BUILD)
 
 /////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////
@@ -522,9 +331,6 @@ bool CSystem::InitFileSystem()
         m_pUserCallback->OnInitProgress("Initializing File System...");
     }
 
-    // get the DirectInstance FileIOBase which should be the AZ::LocalFileIO
-    m_env.pFileIO = AZ::IO::FileIOBase::GetDirectInstance();
-
     m_env.pCryPak = AZ::Interface<AZ::IO::IArchive>::Get();
     m_env.pFileIO = AZ::IO::FileIOBase::GetInstance();
     AZ_Assert(m_env.pCryPak, "CryPak has not been initialized on AZ::Interface");
@@ -548,33 +354,6 @@ bool CSystem::InitFileSystem()
 
 void CSystem::ShutdownFileSystem()
 {
-#if defined(AZ_PLATFORM_WINDOWS)
-    if (g_cacheLock != INVALID_HANDLE_VALUE)
-    {
-        CloseHandle(g_cacheLock);
-        g_cacheLock = INVALID_HANDLE_VALUE;
-    }
-#endif
-
-    using namespace AZ::IO;
-
-    FileIOBase* directInstance = FileIOBase::GetDirectInstance();
-    FileIOBase* pakInstance = FileIOBase::GetInstance();
-
-    if (directInstance == m_env.pFileIO)
-    {
-        // we only mess with file io if we own the instance that we installed.
-        // if we dont' own the instance, then we never configured fileIO and we should not alter it.
-        delete directInstance;
-        FileIOBase::SetDirectInstance(nullptr);
-
-        if (pakInstance != directInstance)
-        {
-            delete pakInstance;
-            FileIOBase::SetInstance(nullptr);
-        }
-    }
-
     m_env.pFileIO = nullptr;
 }
 
@@ -649,33 +428,6 @@ bool CSystem::InitAudioSystem(const SSystemInitParams& initParams)
     }
 
     return result;
-}
-
-//////////////////////////////////////////////////////////////////////////
-bool CSystem::InitVTuneProfiler()
-{
-#ifdef PROFILE_WITH_VTUNE
-
-    WIN_HMODULE hModule = LoadDLL("VTuneApi.dll");
-    if (!hModule)
-    {
-        return false;
-    }
-
-        VTPause = (VTuneFunction) CryGetProcAddress(hModule, "VTPause");
-        VTResume = (VTuneFunction) CryGetProcAddress(hModule, "VTResume");
-        if (!VTPause || !VTResume)
-        {
-        AZ_Assert(false, "VTune did not initialize correctly.")
-        return false;
-    }
-    else
-    {
-        AZ_TracePrintf(AZ_TRACE_SYSTEM_WINDOW, "VTune API Initialized");
-    }
-#endif //PROFILE_WITH_VTUNE
-
-    return true;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1309,17 +1061,6 @@ AZ_POP_DISABLE_WARNING
                                                             AzFramework::SystemCursorState::ConstrainedAndHidden);
         }
 
-        //////////////////////////////////////////////////////////////////////////
-        // TIME
-        //////////////////////////////////////////////////////////////////////////
-        AZ_Printf(AZ_TRACE_SYSTEM_WINDOW, "Time initialization");
-        if (!m_Time.Init())
-        {
-            AZ_Assert(false, "Failed to initialize CTimer instance.");
-            return false;
-        }
-        m_Time.ResetTimer();
-
         // CONSOLE
         //////////////////////////////////////////////////////////////////////////
         if (!InitConsole())
@@ -1354,12 +1095,6 @@ AZ_POP_DISABLE_WARNING
 
         InlineInitializationProcessing("CSystem::Init Level System");
 
-        //////////////////////////////////////////////////////////////////////////
-        // VIEW SYSTEM (must be created after m_pLevelSystem)
-        m_pViewSystem = new LegacyViewSystem::CViewSystem(this);
-
-        InlineInitializationProcessing("CSystem::Init View System");
-
         if (m_env.pLyShine)
         {
             m_env.pLyShine->PostInit();
@@ -1392,12 +1127,6 @@ AZ_POP_DISABLE_WARNING
 #endif
 
     InlineInitializationProcessing("CSystem::Init End");
-
-    if (gEnv->IsDedicated())
-    {
-        SCVarsClientConfigSink CVarsClientConfigSink;
-        LoadConfiguration("client.cfg", &CVarsClientConfigSink);
-    }
 
     // Send out EBus event
     EBUS_EVENT(CrySystemEventBus, OnCrySystemInitialized, *this, startupParams);
@@ -1456,20 +1185,6 @@ static AZStd::string ConcatPath(const char* szPart1, const char* szPart2)
     ret += szPart2;
 
     return ret;
-}
-
-// Helper to maintain backwards compatibility with our CVar but not force our new code to
-// pull in CryCommon by routing through an environment variable
-void CmdSetAwsLogLevel(IConsoleCmdArgs* pArgs)
-{
-    static const char* const logLevelEnvVar = "sys_SetLogLevel";
-    static AZ::EnvironmentVariable<int> logVar = AZ::Environment::CreateVariable<int>(logLevelEnvVar);
-    if (pArgs->GetArgCount() > 1)
-    {
-        int logLevel = atoi(pArgs->GetArg(1));
-        *logVar = logLevel;
-        AZ_TracePrintf("AWSLogging", "Log level set to %d", *logVar);
-    }
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1554,8 +1269,6 @@ void CSystem::CreateSystemVars()
 #define AZ_RESTRICTED_SECTION SYSTEMINIT_CPP_SECTION_12
 #include AZ_RESTRICTED_FILE(SystemInit_cpp)
 #endif
-
-    REGISTER_CVAR2("sys_vtune", &g_cvars.sys_vtune, 0, VF_NULL, "");
 
 #if defined(AZ_RESTRICTED_PLATFORM)
 #define AZ_RESTRICTED_SECTION SYSTEMINIT_CPP_SECTION_17
@@ -1684,8 +1397,6 @@ void CSystem::CreateSystemVars()
     // Since the UI Canvas Editor is incomplete, we have a variable to enable it.
     // By default it is now enabled. Modify system.cfg or game.cfg to disable it
     REGISTER_INT("sys_enableCanvasEditor", 1, VF_NULL, "Enables the UI Canvas Editor");
-
-    REGISTER_COMMAND("sys_SetLogLevel", CmdSetAwsLogLevel, 0, "Set AWS log level [0 - 6].");
 }
 
 //////////////////////////////////////////////////////////////////////////

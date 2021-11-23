@@ -1,0 +1,28 @@
+{
+    "entries": [
+        {
+            "key": "TransformMode_Translation",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "Transform Mode_ Translation"
+            },
+            "methods": [
+                {
+                    "key": "GetTransformMode_Translation",
+                    "details": {
+                        "name": "Get Transform Mode_ Translation"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

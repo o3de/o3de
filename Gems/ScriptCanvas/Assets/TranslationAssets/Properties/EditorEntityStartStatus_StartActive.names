@@ -1,0 +1,28 @@
+{
+    "entries": [
+        {
+            "key": "EditorEntityStartStatus_StartActive",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "Editor Entity Start Status_ Start Active"
+            },
+            "methods": [
+                {
+                    "key": "GetEditorEntityStartStatus_StartActive",
+                    "details": {
+                        "name": "Get Editor Entity Start Status_ Start Active"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

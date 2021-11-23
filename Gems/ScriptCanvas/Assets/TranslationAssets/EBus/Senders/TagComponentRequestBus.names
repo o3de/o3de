@@ -1,0 +1,89 @@
+{
+    "entries": [
+        {
+            "key": "TagComponentRequestBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "Requests",
+                "category": "Gameplay/Tag"
+            },
+            "methods": [
+                {
+                    "key": "HasTag",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Has Tag"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Has Tag is invoked"
+                    },
+                    "details": {
+                        "name": "Has Tag"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{9F4E062E-06A0-46D4-85DF-E0DA96467D3A}",
+                            "details": {
+                                "name": "Tag"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Has Tag"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "AddTag",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Add Tag"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Add Tag is invoked"
+                    },
+                    "details": {
+                        "name": "Add Tag"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{9F4E062E-06A0-46D4-85DF-E0DA96467D3A}",
+                            "details": {
+                                "name": "Tag"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "RemoveTag",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Remove Tag"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Remove Tag is invoked"
+                    },
+                    "details": {
+                        "name": "Remove Tag"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{9F4E062E-06A0-46D4-85DF-E0DA96467D3A}",
+                            "details": {
+                                "name": "Tag"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

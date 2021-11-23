@@ -31,7 +31,7 @@ namespace AzNetworking
 
     AZ_CVAR(bool, net_UdpTimeoutConnections, true, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Boolean value on whether we should timeout Udp connections");
     AZ_CVAR(AZ::TimeMs, net_UdpPacketTimeSliceMs, AZ::TimeMs{ 8 }, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "The number of milliseconds to allow for packet processing");
-    AZ_CVAR(AZ::TimeMs, net_UdpHeartbeatTimeMs, AZ::TimeMs{ 2 * 1000 }, nullptr, AZ::ConsoleFunctorFlags::Null, "Udp connection heartbeat frequency");
+    AZ_CVAR(uint32_t, net_UdpUnackedHeartbeats, 5, nullptr, AZ::ConsoleFunctorFlags::Null, "The number of heartbeats to attempt to send to keep a connection alive before giving up");
     AZ_CVAR(AZ::TimeMs, net_UdpDefaultTimeoutMs, AZ::TimeMs{ 10 * 1000 }, nullptr, AZ::ConsoleFunctorFlags::Null, "Time in milliseconds before we timeout an idle Udp connection");
     AZ_CVAR(AZ::TimeMs, net_MinPacketTimeoutMs, AZ::TimeMs{ 200 }, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Minimum time to wait before timing out an unacked packet");
     AZ_CVAR(int32_t, net_MaxTimeoutsPerFrame, 1000, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Maximum number of packet timeouts to allow to process in a single frame");
@@ -139,7 +139,8 @@ namespace AzNetworking
         }
 
         const ConnectionId connectionId = m_connectionSet.GetNextConnectionId();
-        const TimeoutId timeoutId = m_connectionTimeoutQueue.RegisterItem(aznumeric_cast<uint64_t>(connectionId), m_timeoutMs);
+        const AZ::TimeMs timeoutTimeMs = m_timeoutMs / static_cast<AZ::TimeMs>(static_cast<int32_t>(net_UdpUnackedHeartbeats));
+        const TimeoutId timeoutId = m_connectionTimeoutQueue.RegisterItem(aznumeric_cast<uint64_t>(connectionId), timeoutTimeMs);
 
         AZStd::unique_ptr<UdpConnection> connection = AZStd::make_unique<UdpConnection>(connectionId, remoteAddress, *this, ConnectionRole::Connector);
         UdpPacketEncodingBuffer dtlsData;
@@ -277,6 +278,7 @@ namespace AzNetworking
                 }
 
                 timeoutItem->UpdateTimeoutTime(startTimeMs);
+                connection->m_timeoutCounter = 0;
 
                 PacketDispatchResult handledPacket = PacketDispatchResult::Failure;
                 if (header.GetPacketType() < aznumeric_cast<PacketType>(CorePackets::PacketType::MAX))
@@ -319,16 +321,10 @@ namespace AzNetworking
         const AZ::TimeMs receiveTimeMs = AZ::GetElapsedTimeMs() - startTimeMs;
 
         // Time out any stale client connections
-        {
-            ConnectionTimeoutFunctor functor(*this);
-            m_connectionTimeoutQueue.UpdateTimeouts(functor);
-        }
+        m_connectionTimeoutQueue.UpdateTimeouts([this](TimeoutQueue::TimeoutItem& item) { return HandleConnectionTimeout(item); });
 
         // Time out any packets that haven't been acked within our timeout window
-        {
-            PacketTimeoutFunctor functor(*this);
-            m_packetTimeoutQueue.UpdateTimeouts(functor, static_cast<int32_t>(net_MaxTimeoutsPerFrame));
-        }
+        m_packetTimeoutQueue.UpdateTimeouts([this](TimeoutQueue::TimeoutItem& item) { return HandlePacketTimeout(item); }, static_cast<int32_t>(net_MaxTimeoutsPerFrame));
 
         // Delete any connections we've disconnected
         for (RemovedConnection& removedConnection : m_removedConnections)
@@ -709,21 +705,14 @@ namespace AzNetworking
     {
         // Packets involved in handshake are InitiateConnection, ConnectionHandshake and FragmentedPackets of ConnectionHandshake
         return packetType == aznumeric_cast<PacketType>(CorePackets::PacketType::InitiateConnectionPacket) ||
-            packetType == aznumeric_cast<PacketType>(CorePackets::PacketType::ConnectionHandshakePacket) ||
-            (packetType == aznumeric_cast<PacketType>(CorePackets::PacketType::FragmentedPacket) && endpoint.IsConnecting());
+               packetType == aznumeric_cast<PacketType>(CorePackets::PacketType::ConnectionHandshakePacket) ||
+              (packetType == aznumeric_cast<PacketType>(CorePackets::PacketType::FragmentedPacket) && endpoint.IsConnecting());
     }
 
-
-    UdpNetworkInterface::ConnectionTimeoutFunctor::ConnectionTimeoutFunctor(UdpNetworkInterface& networkInterface)
-        : m_networkInterface(networkInterface)
-    {
-        ;
-    }
-
-    TimeoutResult UdpNetworkInterface::ConnectionTimeoutFunctor::HandleTimeout(TimeoutQueue::TimeoutItem& item)
+    TimeoutResult UdpNetworkInterface::HandleConnectionTimeout(TimeoutQueue::TimeoutItem& item)
     {
         const ConnectionId connectionId = ConnectionId(aznumeric_cast<uint32_t>(item.m_userData));
-        UdpConnection* udpConnection = static_cast<UdpConnection*>(m_networkInterface.m_connectionSet.GetConnection(connectionId));
+        UdpConnection* udpConnection = static_cast<UdpConnection*>(m_connectionSet.GetConnection(connectionId));
 
         if (udpConnection == nullptr)
         {
@@ -731,22 +720,23 @@ namespace AzNetworking
             return TimeoutResult::Delete;
         }
 
-        if (udpConnection->GetConnectionState() == ConnectionState::Connecting)
+        if ((udpConnection->GetConnectionState() == ConnectionState::Connecting)
+         && udpConnection->GetDtlsEndpoint().IsConnecting())
         {
-            if (udpConnection->GetDtlsEndpoint().IsConnecting())
-            {
-                // DTLS prefers we resend data lost over the wire with fresh SSL IDs so account for that here
-                UdpPacketEncodingBuffer dtlsData;
-                udpConnection->ProcessHandshakeData(dtlsData);
-                return TimeoutResult::Refresh;
-            }
+            // DTLS prefers we resend data lost over the wire with fresh SSL IDs so account for that here
+            UdpPacketEncodingBuffer dtlsData;
+            udpConnection->ProcessHandshakeData(dtlsData);
+            return TimeoutResult::Refresh;
         }
 
-        if (udpConnection->GetConnectionRole() == ConnectionRole::Connector)
+        if ((udpConnection->GetConnectionRole() == ConnectionRole::Connector)
+         && (udpConnection->m_timeoutCounter < net_UdpUnackedHeartbeats))
         {
-            udpConnection->SendUnreliablePacket(CorePackets::HeartbeatPacket());
+            // Set the request response flag to true since we want a response to keep the connection alive
+            udpConnection->SendUnreliablePacket(CorePackets::HeartbeatPacket(true));
+            ++udpConnection->m_timeoutCounter;
         }
-        else if (net_UdpTimeoutConnections && (m_networkInterface.GetTimeoutMs() > AZ::TimeMs{ 0 }))
+        else if (net_UdpTimeoutConnections && (GetTimeoutMs() > AZ::Time::ZeroTimeMs))
         {
             udpConnection->Disconnect(DisconnectReason::Timeout, TerminationEndpoint::Local);
             return TimeoutResult::Delete;
@@ -755,19 +745,13 @@ namespace AzNetworking
         return TimeoutResult::Refresh;
     }
 
-    UdpNetworkInterface::PacketTimeoutFunctor::PacketTimeoutFunctor(UdpNetworkInterface& networkInterface)
-        : m_networkInterface(networkInterface)
-    {
-        ;
-    }
-
-    TimeoutResult UdpNetworkInterface::PacketTimeoutFunctor::HandleTimeout(TimeoutQueue::TimeoutItem& item)
+    TimeoutResult UdpNetworkInterface::HandlePacketTimeout(TimeoutQueue::TimeoutItem& item)
     {
         ConnectionId    connectionId;
         PacketId        packetId;
         ReliabilityType reliability;
         DecodeTimeoutId(item.m_userData, connectionId, packetId, reliability);
-        UdpConnection* connection = static_cast<UdpConnection*>(m_networkInterface.m_connectionSet.GetConnection(connectionId));
+        UdpConnection* connection = static_cast<UdpConnection*>(m_connectionSet.GetConnection(connectionId));
 
         if (connection == nullptr)
         {
@@ -782,16 +766,14 @@ namespace AzNetworking
         case PacketTimeoutResult::Acked:
             // Packet was already acked, just discard this timeout entry
             return TimeoutResult::Delete;
-
         case PacketTimeoutResult::Pending:
             // Packet timed out before we received any info about it's sequence from the remote endpoint
             // The connection latency may have increased, and our Rtt metrics may still be adjusting..
             // Just throw it back into the timeout queue
             return TimeoutResult::Refresh;
-
         case PacketTimeoutResult::Lost:
             // Packet timed out and was not acked, so we consider it lost
-            m_networkInterface.m_connectionListener.OnPacketLost(connection, packetId);
+            m_connectionListener.OnPacketLost(connection, packetId);
             break;
         }
 

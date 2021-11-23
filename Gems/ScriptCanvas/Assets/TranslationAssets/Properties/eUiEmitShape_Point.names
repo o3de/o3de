@@ -1,0 +1,28 @@
+{
+    "entries": [
+        {
+            "key": "eUiEmitShape_Point",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "e Ui Emit Shape_ Point"
+            },
+            "methods": [
+                {
+                    "key": "GeteUiEmitShape_Point",
+                    "details": {
+                        "name": "Gete Ui Emit Shape_ Point"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

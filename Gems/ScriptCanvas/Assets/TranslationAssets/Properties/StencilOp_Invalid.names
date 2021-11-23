@@ -1,0 +1,28 @@
+{
+    "entries": [
+        {
+            "key": "StencilOp_Invalid",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "Stencil Op_ Invalid"
+            },
+            "methods": [
+                {
+                    "key": "GetStencilOp_Invalid",
+                    "details": {
+                        "name": "Get Stencil Op_ Invalid"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

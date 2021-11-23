@@ -1,0 +1,46 @@
+{
+    "entries": [
+        {
+            "key": "{317BA61D-AEEA-566E-A113-2384C5BDADD6}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "Multiply By Number",
+                "category": "Math/Vector4",
+                "tooltip": "Returns the vector Source with each element multiplied by Multipler"
+            },
+            "slots": [
+                {
+                    "key": "Input_In",
+                    "details": {
+                        "name": "In"
+                    }
+                },
+                {
+                    "key": "Output_Out",
+                    "details": {
+                        "name": "Out"
+                    }
+                },
+                {
+                    "key": "DataInput_Source",
+                    "details": {
+                        "name": "Source"
+                    }
+                },
+                {
+                    "key": "DataInput_Multiplier",
+                    "details": {
+                        "name": "Multiplier"
+                    }
+                },
+                {
+                    "key": "DataOutput_Result",
+                    "details": {
+                        "name": "Result"
+                    }
+                }
+            ]
+        }
+    ]
+}

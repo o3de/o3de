@@ -1,0 +1,28 @@
+{
+    "entries": [
+        {
+            "key": "eUiTextShrinkToFit_Uniform",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "e Ui Text Shrink To Fit_ Uniform"
+            },
+            "methods": [
+                {
+                    "key": "GeteUiTextShrinkToFit_Uniform",
+                    "details": {
+                        "name": "Gete Ui Text Shrink To Fit_ Uniform"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

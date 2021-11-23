@@ -1,0 +1,28 @@
+{
+    "entries": [
+        {
+            "key": "FrameCaptureResult_None",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "Frame Capture Result_ None"
+            },
+            "methods": [
+                {
+                    "key": "GetFrameCaptureResult_None",
+                    "details": {
+                        "name": "Get Frame Capture Result_ None"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

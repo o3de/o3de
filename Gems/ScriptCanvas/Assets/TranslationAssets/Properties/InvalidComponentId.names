@@ -1,0 +1,28 @@
+{
+    "entries": [
+        {
+            "key": "InvalidComponentId",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "Invalid Component Id"
+            },
+            "methods": [
+                {
+                    "key": "GetInvalidComponentId",
+                    "details": {
+                        "name": "Get Invalid Component Id"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{D6597933-47CD-4FC8-B911-63F3E2B0993A}",
+                            "details": {
+                                "name": "AZ::u 64"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

@@ -1,0 +1,206 @@
+{
+    "entries": [
+        {
+            "key": "MaterialAssignmentId",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "MaterialAssignmentId"
+            },
+            "methods": [
+                {
+                    "key": "ToString",
+                    "context": "MaterialAssignmentId",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke ToString"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after ToString is invoked"
+                    },
+                    "details": {
+                        "name": "MaterialAssignmentId::ToString",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
+                            "details": {
+                                "name": "AZ::Render::MaterialAssignmentId*"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZStd::basic_string<char, AZStd::char_traits<char>, allocator>"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "IsAssetOnly",
+                    "context": "MaterialAssignmentId",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke IsAssetOnly"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after IsAssetOnly is invoked"
+                    },
+                    "details": {
+                        "name": "MaterialAssignmentId::IsAssetOnly",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
+                            "details": {
+                                "name": "AZ::Render::MaterialAssignmentId*"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "IsSlotIdOnly",
+                    "context": "MaterialAssignmentId",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke IsSlotIdOnly"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after IsSlotIdOnly is invoked"
+                    },
+                    "details": {
+                        "name": "MaterialAssignmentId::IsSlotIdOnly",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
+                            "details": {
+                                "name": "AZ::Render::MaterialAssignmentId*"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "IsLodAndSlotId",
+                    "context": "MaterialAssignmentId",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke IsLodAndSlotId"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after IsLodAndSlotId is invoked"
+                    },
+                    "details": {
+                        "name": "MaterialAssignmentId::IsLodAndSlotId",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
+                            "details": {
+                                "name": "AZ::Render::MaterialAssignmentId*"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "IsDefault",
+                    "context": "MaterialAssignmentId",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke IsDefault"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after IsDefault is invoked"
+                    },
+                    "details": {
+                        "name": "MaterialAssignmentId::IsDefault",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
+                            "details": {
+                                "name": "AZ::Render::MaterialAssignmentId*"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "IsLodAndAsset",
+                    "context": "MaterialAssignmentId",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke IsLodAndAsset"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after IsLodAndAsset is invoked"
+                    },
+                    "details": {
+                        "name": "MaterialAssignmentId::IsLodAndAsset",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
+                            "details": {
+                                "name": "AZ::Render::MaterialAssignmentId*"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

@@ -162,5 +162,50 @@
       "SCRIPT_PATH": "scripts/build/package/package.py",
       "SCRIPT_PARAMETERS": "--platform Mac --type all"
     }
+  },
+  "install_profile": {
+    "TAGS": [],
+    "COMMAND": "build_mac.sh",
+    "PARAMETERS": {
+        "CONFIGURATION": "profile",
+        "OUTPUT_DIRECTORY": "build/mac",
+        "CMAKE_OPTIONS": "-G Xcode -DLY_DISABLE_TEST_MODULES=TRUE",
+        "CMAKE_LY_PROJECTS": "",
+        "CMAKE_TARGET": "install"
+    }
+  },
+  "install_profile_pipe": {
+    "TAGS": [
+      "nightly-incremental",
+      "nightly-clean"
+    ],
+    "PIPELINE_ENV": {
+      "PROJECT_REPOSITORY_NAME": "TestProject"
+    },
+    "steps": [
+      "install_profile",
+      "project_generate",
+      "project_engineinstall_profile"
+    ]
+  },
+  "project_generate": {
+    "TAGS": [],
+    "COMMAND": "python_mac.sh",
+    "PARAMETERS": {
+      "SCRIPT_PATH": "install/O3DE_SDK.app/Contents/Engine/scripts/o3de.py",
+      "SCRIPT_PARAMETERS": "create-project -pp ${WORKSPACE}/${PROJECT_REPOSITORY_NAME} --force"
+    }
+  },
+  "project_engineinstall_profile": {
+    "TAGS": [],
+    "COMMAND": "build_mac.sh",
+    "PARAMETERS": {
+      "COMMAND_CWD": "${WORKSPACE}/${PROJECT_REPOSITORY_NAME}",
+      "CONFIGURATION": "profile",
+      "OUTPUT_DIRECTORY": "build/mac",
+      "CMAKE_OPTIONS": "-G Xcode -DCMAKE_MODULE_PATH=${WORKSPACE}/o3de/install/O3DE_SDK.app/Contents/Engine/cmake",
+      "CMAKE_LY_PROJECTS": "",
+      "CMAKE_TARGET": "ALL_BUILD"
+    }
   }
 }

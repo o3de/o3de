@@ -10,11 +10,12 @@
 
 if(NOT PROJECT_NAME)
     cmake_minimum_required(VERSION 3.20)
+    include(cmake/CompilerSettings.cmake)
     project(${Name}
         LANGUAGES C CXX
         VERSION 1.0.0.0
     )
-    include(EngineFinder.cmake OPTIONAL)
+    include(cmake/EngineFinder.cmake OPTIONAL)
     find_package(o3de REQUIRED)
     o3de_initialize()
 else()

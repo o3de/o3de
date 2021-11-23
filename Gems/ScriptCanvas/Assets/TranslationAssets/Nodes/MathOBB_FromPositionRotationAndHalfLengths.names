@@ -1,0 +1,52 @@
+{
+    "entries": [
+        {
+            "key": "{6F7A0335-C2D2-53A3-BF18-B3735DBFF8AA}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "From Position Rotation And Half Lengths",
+                "category": "Math/Oriented Bounding Box",
+                "tooltip": "returns an Oriented Bounding Box from the position, rotation and half lengths"
+            },
+            "slots": [
+                {
+                    "key": "Input_In",
+                    "details": {
+                        "name": "In"
+                    }
+                },
+                {
+                    "key": "Output_Out",
+                    "details": {
+                        "name": "Out"
+                    }
+                },
+                {
+                    "key": "DataInput_Position",
+                    "details": {
+                        "name": "Position"
+                    }
+                },
+                {
+                    "key": "DataInput_Rotation",
+                    "details": {
+                        "name": "Rotation"
+                    }
+                },
+                {
+                    "key": "DataInput_HalfLengths",
+                    "details": {
+                        "name": "Half Lengths"
+                    }
+                },
+                {
+                    "key": "DataOutput_Result",
+                    "details": {
+                        "name": "Result"
+                    }
+                }
+            ]
+        }
+    ]
+}

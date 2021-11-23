@@ -1,0 +1,28 @@
+{
+    "entries": [
+        {
+            "key": "ShapeChangeReasons_TransformChanged",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "Shape Change Reasons_ Transform Changed"
+            },
+            "methods": [
+                {
+                    "key": "GetShapeChangeReasons_TransformChanged",
+                    "details": {
+                        "name": "Get Shape Change Reasons_ Transform Changed"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

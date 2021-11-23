@@ -1,0 +1,28 @@
+{
+    "entries": [
+        {
+            "key": "FrameCaptureResult_InvalidArgument",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "Frame Capture Result_ Invalid Argument"
+            },
+            "methods": [
+                {
+                    "key": "GetFrameCaptureResult_InvalidArgument",
+                    "details": {
+                        "name": "Get Frame Capture Result_ Invalid Argument"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

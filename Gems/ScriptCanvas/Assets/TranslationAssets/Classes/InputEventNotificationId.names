@@ -1,0 +1,255 @@
+{
+    "entries": [
+        {
+            "key": "InputEventNotificationId",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "Input",
+                "category": "Gameplay"
+            },
+            "methods": [
+                {
+                    "key": "ToString",
+                    "context": "InputEventNotificationId",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke To String"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after To String is invoked"
+                    },
+                    "details": {
+                        "name": "To String"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{9E0F0801-348B-4FF9-AF9B-858D59404968}",
+                            "details": {
+                                "name": "Input Event Notification Id"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "String"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "Equal",
+                    "context": "InputEventNotificationId",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Equal"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Equal is invoked"
+                    },
+                    "details": {
+                        "name": "Equal"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{9E0F0801-348B-4FF9-AF9B-858D59404968}",
+                            "details": {
+                                "name": "Input Event Notification Id"
+                            }
+                        },
+                        {
+                            "typeid": "{9E0F0801-348B-4FF9-AF9B-858D59404968}",
+                            "details": {
+                                "name": "Input Event Notification Id"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Equal"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "Clone",
+                    "context": "InputEventNotificationId",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Clone"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Clone is invoked"
+                    },
+                    "details": {
+                        "name": "Clone"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{9E0F0801-348B-4FF9-AF9B-858D59404968}",
+                            "details": {
+                                "name": "Input Event Notification Id"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{9E0F0801-348B-4FF9-AF9B-858D59404968}",
+                            "details": {
+                                "name": "Input Event Notification Id"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "CreateInputEventNotificationId",
+                    "context": "InputEventNotificationId",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Create Input Event Notification Id"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Create Input Event Notification Id is invoked"
+                    },
+                    "details": {
+                        "name": "Create Input Event Notification Id"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
+                            "details": {
+                                "name": "Local User Id"
+                            }
+                        },
+                        {
+                            "typeid": "{7114E998-A8B4-519B-9342-A86D1587B4F7}",
+                            "details": {
+                                "name": "Value"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{9E0F0801-348B-4FF9-AF9B-858D59404968}",
+                            "details": {
+                                "name": "Input Event Notification Id"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetactionNameCrc",
+                    "details": {
+                        "name": "Get Action Name Tag"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{9E0F0801-348B-4FF9-AF9B-858D59404968}",
+                            "details": {
+                                "name": "Input Event Notification Id"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{9F4E062E-06A0-46D4-85DF-E0DA96467D3A}",
+                            "details": {
+                                "name": "Tag"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetactionNameCrc",
+                    "details": {
+                        "name": "Set Action Name Tag"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{9E0F0801-348B-4FF9-AF9B-858D59404968}",
+                            "details": {
+                                "name": "Input Event Notification Id"
+                            }
+                        },
+                        {
+                            "typeid": "{9F4E062E-06A0-46D4-85DF-E0DA96467D3A}",
+                            "details": {
+                                "name": "Tag"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetlocalUserId",
+                    "details": {
+                        "name": "Get Local User Id"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{9E0F0801-348B-4FF9-AF9B-858D59404968}",
+                            "details": {
+                                "name": "Input Event Notification Id"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
+                            "details": {
+                                "name": "Local User Id"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetlocalUserId",
+                    "details": {
+                        "name": "Set Local User Id"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{9E0F0801-348B-4FF9-AF9B-858D59404968}",
+                            "details": {
+                                "name": "Input Event Notification Id"
+                            }
+                        },
+                        {
+                            "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
+                            "details": {
+                                "name": "Local User Id"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetactionName",
+                    "details": {
+                        "name": "Set Action Name"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{9E0F0801-348B-4FF9-AF9B-858D59404968}",
+                            "details": {
+                                "name": "Input Event Notification Id"
+                            }
+                        },
+                        {
+                            "typeid": "{7114E998-A8B4-519B-9342-A86D1587B4F7}",
+                            "details": {
+                                "name": "Action Name"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

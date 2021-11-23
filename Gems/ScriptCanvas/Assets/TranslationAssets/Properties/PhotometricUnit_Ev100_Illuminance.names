@@ -1,0 +1,28 @@
+{
+    "entries": [
+        {
+            "key": "PhotometricUnit_Ev100_Illuminance",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "Photometric Unit_ Ev 100_ Illuminance"
+            },
+            "methods": [
+                {
+                    "key": "GetPhotometricUnit_Ev100_Illuminance",
+                    "details": {
+                        "name": "Get Photometric Unit_ Ev 100_ Illuminance"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

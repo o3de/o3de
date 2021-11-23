@@ -1,0 +1,43 @@
+{
+    "entries": [
+        {
+            "key": "LyShineExamplesCppExampleBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "UI Examples",
+                "category": "UI"
+            },
+            "methods": [
+                {
+                    "key": "CreateCanvas",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Create Canvas"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Create Canvas is invoked"
+                    },
+                    "details": {
+                        "name": "Create Canvas"
+                    }
+                },
+                {
+                    "key": "DestroyCanvas",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Destroy Canvas"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Destroy Canvas is invoked"
+                    },
+                    "details": {
+                        "name": "Destroy Canvas"
+                    }
+                }
+            ]
+        }
+    ]
+}

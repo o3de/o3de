@@ -1,0 +1,28 @@
+{
+    "entries": [
+        {
+            "key": "eUiImageSequenceImageType_StretchedToFit",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "e Ui Image Sequence Image Type_ Stretched To Fit"
+            },
+            "methods": [
+                {
+                    "key": "GeteUiImageSequenceImageType_StretchedToFit",
+                    "details": {
+                        "name": "Gete Ui Image Sequence Image Type_ Stretched To Fit"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

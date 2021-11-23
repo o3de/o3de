@@ -1,0 +1,28 @@
+{
+    "entries": [
+        {
+            "key": "DepthWriteMask_All",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "Depth Write Mask_ All"
+            },
+            "methods": [
+                {
+                    "key": "GetDepthWriteMask_All",
+                    "details": {
+                        "name": "Get Depth Write Mask_ All"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

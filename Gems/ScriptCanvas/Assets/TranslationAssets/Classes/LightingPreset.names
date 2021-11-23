@@ -1,0 +1,434 @@
+{
+    "entries": [
+        {
+            "key": "LightingPreset",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "Lighting Preset"
+            },
+            "methods": [
+                {
+                    "key": "GetshadowCatcherOpacity",
+                    "details": {
+                        "name": "Get Shadow Catcher Opacity"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6EEACBC0-2D97-414C-8E87-088E7BA231A9}",
+                            "details": {
+                                "name": "Lighting Preset"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Shadow Catcher Opacity"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetshadowCatcherOpacity",
+                    "details": {
+                        "name": "Set Shadow Catcher Opacity"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6EEACBC0-2D97-414C-8E87-088E7BA231A9}",
+                            "details": {
+                                "name": "Lighting Preset"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Shadow Catcher Opacity"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetskyboxExposure",
+                    "details": {
+                        "name": "Get Skybox Exposure"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6EEACBC0-2D97-414C-8E87-088E7BA231A9}",
+                            "details": {
+                                "name": "Lighting Preset"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Skybox Exposure"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetskyboxExposure",
+                    "details": {
+                        "name": "Set Skybox Exposure"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6EEACBC0-2D97-414C-8E87-088E7BA231A9}",
+                            "details": {
+                                "name": "Lighting Preset"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Skybox Exposure"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "Getlights",
+                    "details": {
+                        "name": "Get Lights"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6EEACBC0-2D97-414C-8E87-088E7BA231A9}",
+                            "details": {
+                                "name": "Lighting Preset"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{33492660-D9A8-5E84-9CFB-03CBCD87919F}",
+                            "details": {
+                                "name": "Light Configs"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "Setlights",
+                    "details": {
+                        "name": "Set Lights"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6EEACBC0-2D97-414C-8E87-088E7BA231A9}",
+                            "details": {
+                                "name": "Lighting Preset"
+                            }
+                        },
+                        {
+                            "typeid": "{33492660-D9A8-5E84-9CFB-03CBCD87919F}",
+                            "details": {
+                                "name": "Light Configs"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetiblExposure",
+                    "details": {
+                        "name": "Get IBL Exposure"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6EEACBC0-2D97-414C-8E87-088E7BA231A9}",
+                            "details": {
+                                "name": "Lighting Preset"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "IBL Exposure"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetiblExposure",
+                    "details": {
+                        "name": "Set IBL Exposure"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6EEACBC0-2D97-414C-8E87-088E7BA231A9}",
+                            "details": {
+                                "name": "Lighting Preset"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "IBL Exposure"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetskyboxImageAsset",
+                    "details": {
+                        "name": "Get Skybox Image Asset"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6EEACBC0-2D97-414C-8E87-088E7BA231A9}",
+                            "details": {
+                                "name": "Lighting Preset"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{403A7CFE-B218-5D57-8540-BD58E734BCFE}",
+                            "details": {
+                                "name": "Skybox Image Asset"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetskyboxImageAsset",
+                    "details": {
+                        "name": "Set Skybox Image Asset"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6EEACBC0-2D97-414C-8E87-088E7BA231A9}",
+                            "details": {
+                                "name": "Lighting Preset"
+                            }
+                        },
+                        {
+                            "typeid": "{403A7CFE-B218-5D57-8540-BD58E734BCFE}",
+                            "details": {
+                                "name": "Skybox Image Asset"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetiblSpecularImageAsset",
+                    "details": {
+                        "name": "Get IBL Specular Image Asset"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6EEACBC0-2D97-414C-8E87-088E7BA231A9}",
+                            "details": {
+                                "name": "Lighting Preset"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{403A7CFE-B218-5D57-8540-BD58E734BCFE}",
+                            "details": {
+                                "name": "IBL Specular Image Asset"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetiblSpecularImageAsset",
+                    "details": {
+                        "name": "Set IBL Specular Image Asset"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6EEACBC0-2D97-414C-8E87-088E7BA231A9}",
+                            "details": {
+                                "name": "Lighting Preset"
+                            }
+                        },
+                        {
+                            "typeid": "{403A7CFE-B218-5D57-8540-BD58E734BCFE}",
+                            "details": {
+                                "name": "IBL Specular Image Asset"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetdisplayName",
+                    "details": {
+                        "name": "Get Display Name"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6EEACBC0-2D97-414C-8E87-088E7BA231A9}",
+                            "details": {
+                                "name": "Lighting Preset"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Display Name"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetdisplayName",
+                    "details": {
+                        "name": "Set Display Name"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6EEACBC0-2D97-414C-8E87-088E7BA231A9}",
+                            "details": {
+                                "name": "Lighting Preset"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Display Name"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetalternateSkyboxImageAsset",
+                    "details": {
+                        "name": "Get Alternate Skybox Image Asset"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6EEACBC0-2D97-414C-8E87-088E7BA231A9}",
+                            "details": {
+                                "name": "Lighting Preset"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{403A7CFE-B218-5D57-8540-BD58E734BCFE}",
+                            "details": {
+                                "name": "Alternate Skybox Image Asset"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetalternateSkyboxImageAsset",
+                    "details": {
+                        "name": "Set Alternate Skybox Image Asset"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6EEACBC0-2D97-414C-8E87-088E7BA231A9}",
+                            "details": {
+                                "name": "Lighting Preset"
+                            }
+                        },
+                        {
+                            "typeid": "{403A7CFE-B218-5D57-8540-BD58E734BCFE}",
+                            "details": {
+                                "name": "Alternate Skybox Image Asset"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetiblDiffuseImageAsset",
+                    "details": {
+                        "name": "Get IBL Diffuse Image Asset"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6EEACBC0-2D97-414C-8E87-088E7BA231A9}",
+                            "details": {
+                                "name": "Lighting Preset"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{403A7CFE-B218-5D57-8540-BD58E734BCFE}",
+                            "details": {
+                                "name": "IBL Diffuse Image Asset"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetiblDiffuseImageAsset",
+                    "details": {
+                        "name": "Set IBL Diffuse Image Asset"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6EEACBC0-2D97-414C-8E87-088E7BA231A9}",
+                            "details": {
+                                "name": "Lighting Preset"
+                            }
+                        },
+                        {
+                            "typeid": "{403A7CFE-B218-5D57-8540-BD58E734BCFE}",
+                            "details": {
+                                "name": "IBL Diffuse Image Asset"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "Getexposure",
+                    "details": {
+                        "name": "Get Exposure"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6EEACBC0-2D97-414C-8E87-088E7BA231A9}",
+                            "details": {
+                                "name": "Lighting Preset"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{C6FD75F7-58BA-46CE-8FBA-2D64CB4ECFF9}",
+                            "details": {
+                                "name": "Exposure Control Config"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "Setexposure",
+                    "details": {
+                        "name": "Set Exposure"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6EEACBC0-2D97-414C-8E87-088E7BA231A9}",
+                            "details": {
+                                "name": "Lighting Preset"
+                            }
+                        },
+                        {
+                            "typeid": "{C6FD75F7-58BA-46CE-8FBA-2D64CB4ECFF9}",
+                            "details": {
+                                "name": "Exposure Control Config"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

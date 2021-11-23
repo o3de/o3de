@@ -62,6 +62,14 @@ TEST_F(AWSCognitoAuthorizationControllerTest, Initialize_Success)
     ASSERT_TRUE(m_mockController->m_cognitoIdentityPoolId == AWSClientAuthUnitTest::TEST_RESOURCE_NAME_ID);
 }
 
+TEST_F(AWSCognitoAuthorizationControllerTest, Initialize_Success_GetAWSAccountEmpty)
+{
+    EXPECT_CALL(m_awsResourceMappingRequestBusMock, GetResourceNameId(testing::_)).Times(2);
+    EXPECT_CALL(m_awsResourceMappingRequestBusMock, GetDefaultAccountId()).Times(1).WillOnce(testing::Return(""));
+    EXPECT_CALL(m_awsResourceMappingRequestBusMock, GetDefaultRegion()).Times(1);
+    ASSERT_TRUE(m_mockController->Initialize());
+}
+
 TEST_F(AWSCognitoAuthorizationControllerTest, RequestAWSCredentials_WithLogins_Success)
 {
     AWSClientAuth::AuthenticationTokens tokens(
@@ -121,7 +129,7 @@ TEST_F(AWSCognitoAuthorizationControllerTest, MultipleCalls_UsesCacheCredentials
     m_mockController->RequestAWSCredentialsAsync();
 }
 
-TEST_F(AWSCognitoAuthorizationControllerTest, RequestAWSCredentials_Fail_GetIdError)
+TEST_F(AWSCognitoAuthorizationControllerTest, RequestAWSCredentials_Fail_GetIdError) // fail
 {
     AWSClientAuth::AuthenticationTokens cognitoTokens(
         AWSClientAuthUnitTest::TEST_TOKEN, AWSClientAuthUnitTest::TEST_TOKEN, AWSClientAuthUnitTest::TEST_TOKEN,
@@ -140,7 +148,9 @@ TEST_F(AWSCognitoAuthorizationControllerTest, RequestAWSCredentials_Fail_GetIdEr
     EXPECT_CALL(*m_cognitoIdentityClientMock, GetCredentialsForIdentity(testing::_)).Times(0);
     EXPECT_CALL(m_awsCognitoAuthorizationNotificationsBusMock, OnRequestAWSCredentialsSuccess(testing::_)).Times(0);
     EXPECT_CALL(m_awsCognitoAuthorizationNotificationsBusMock, OnRequestAWSCredentialsFail(testing::_)).Times(1);
+    AZ_TEST_START_TRACE_SUPPRESSION;
     m_mockController->RequestAWSCredentialsAsync();
+    AZ_TEST_STOP_TRACE_SUPPRESSION_NO_COUNT;
 }
 
 TEST_F(AWSCognitoAuthorizationControllerTest, RequestAWSCredentials_Fail_GetCredentialsForIdentityError)
@@ -174,7 +184,9 @@ TEST_F(AWSCognitoAuthorizationControllerTest, RequestAWSCredentials_Fail_GetCred
     EXPECT_CALL(*m_cognitoIdentityClientMock, GetCredentialsForIdentity(testing::_)).Times(1).WillOnce(testing::Return(outcome));
     EXPECT_CALL(m_awsCognitoAuthorizationNotificationsBusMock, OnRequestAWSCredentialsSuccess(testing::_)).Times(0);
     EXPECT_CALL(m_awsCognitoAuthorizationNotificationsBusMock, OnRequestAWSCredentialsFail(testing::_)).Times(1);
+    AZ_TEST_START_TRACE_SUPPRESSION;
     m_mockController->RequestAWSCredentialsAsync();
+    AZ_TEST_STOP_TRACE_SUPPRESSION_NO_COUNT;
 }
 
 TEST_F(AWSCognitoAuthorizationControllerTest, AddRemoveLogins_Succuess)
@@ -321,7 +333,7 @@ TEST_F(AWSCognitoAuthorizationControllerTest, GetCredentialsProvider_NoPersisted
     EXPECT_TRUE(actualCredentialsProvider == m_mockController->m_cognitoCachingAnonymousCredentialsProvider);
 }
 
-TEST_F(AWSCognitoAuthorizationControllerTest, GetCredentialsProvider_NoPersistedLogins_NoAnonymousCredentials_ResultNullPtr)
+TEST_F(AWSCognitoAuthorizationControllerTest, GetCredentialsProvider_NoPersistedLogins_NoAnonymousCredentials_ResultNullPtr) // fails
 {
     Aws::Client::AWSError<Aws::CognitoIdentity::CognitoIdentityErrors> error;
     error.SetExceptionName(AWSClientAuthUnitTest::TEST_EXCEPTION);
@@ -331,8 +343,10 @@ TEST_F(AWSCognitoAuthorizationControllerTest, GetCredentialsProvider_NoPersisted
     EXPECT_CALL(*m_cognitoIdentityClientMock, GetCredentialsForIdentity(testing::_)).Times(0);
 
     std::shared_ptr<Aws::Auth::AWSCredentialsProvider> actualCredentialsProvider;
+    AZ_TEST_START_TRACE_SUPPRESSION;
     AWSCore::AWSCredentialRequestBus::BroadcastResult(
         actualCredentialsProvider, &AWSCore::AWSCredentialRequests::GetCredentialsProvider);
+    AZ_TEST_STOP_TRACE_SUPPRESSION_NO_COUNT;
     EXPECT_TRUE(actualCredentialsProvider == nullptr);
 }
 
@@ -429,13 +443,5 @@ TEST_F(AWSCognitoAuthorizationControllerTest, Initialize_Fail_GetResourceNameEmp
 {
     EXPECT_CALL(m_awsResourceMappingRequestBusMock, GetResourceNameId(testing::_)).Times(1).WillOnce(testing::Return(""));
     EXPECT_CALL(m_awsResourceMappingRequestBusMock, GetDefaultAccountId()).Times(1);
-    ASSERT_FALSE(m_mockController->Initialize());
-}
-
-TEST_F(AWSCognitoAuthorizationControllerTest, Initialize_Fail_GetAWSAccountEmpty)
-{
-    EXPECT_CALL(m_awsResourceMappingRequestBusMock, GetResourceNameId(testing::_)).Times(1);
-    EXPECT_CALL(m_awsResourceMappingRequestBusMock, GetDefaultAccountId()).Times(1).WillOnce(testing::Return(""));
-    EXPECT_CALL(m_awsResourceMappingRequestBusMock, GetDefaultRegion()).Times(0);
     ASSERT_FALSE(m_mockController->Initialize());
 }

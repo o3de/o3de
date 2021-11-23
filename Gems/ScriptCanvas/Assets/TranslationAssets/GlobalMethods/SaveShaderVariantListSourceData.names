@@ -1,0 +1,53 @@
+{
+    "entries": [
+        {
+            "key": "SaveShaderVariantListSourceData",
+            "context": "Method",
+            "variant": "",
+            "details": {
+                "name": "",
+                "category": "Globals"
+            },
+            "methods": [
+                {
+                    "key": "SaveShaderVariantListSourceData",
+                    "context": "Global",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SaveShaderVariantListSourceData"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SaveShaderVariantListSourceData is invoked"
+                    },
+                    "details": {
+                        "name": "SaveShaderVariantListSourceData",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "const AZStd::basic_string<char, AZStd::char_traits<char>, alloc"
+                            }
+                        },
+                        {
+                            "typeid": "{F8679938-6D3F-47CC-A078-3D6EC0011366}",
+                            "details": {
+                                "name": "const AZ::RPI::ShaderVariantListSourceData&"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

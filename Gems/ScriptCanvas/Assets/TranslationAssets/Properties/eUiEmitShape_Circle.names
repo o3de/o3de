@@ -1,0 +1,28 @@
+{
+    "entries": [
+        {
+            "key": "eUiEmitShape_Circle",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "e Ui Emit Shape_ Circle"
+            },
+            "methods": [
+                {
+                    "key": "GeteUiEmitShape_Circle",
+                    "details": {
+                        "name": "Gete Ui Emit Shape_ Circle"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

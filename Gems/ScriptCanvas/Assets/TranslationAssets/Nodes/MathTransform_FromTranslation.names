@@ -1,0 +1,40 @@
+{
+    "entries": [
+        {
+            "key": "{DFCF0A6F-9907-52B1-BBF3-632CB929C1B1}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "From Translation",
+                "category": "Math/Transform",
+                "tooltip": "Returns a translation matrix and the rotation set to zero"
+            },
+            "slots": [
+                {
+                    "key": "Input_In",
+                    "details": {
+                        "name": "In"
+                    }
+                },
+                {
+                    "key": "Output_Out",
+                    "details": {
+                        "name": "Out"
+                    }
+                },
+                {
+                    "key": "DataInput_Translation",
+                    "details": {
+                        "name": "Translation"
+                    }
+                },
+                {
+                    "key": "DataOutput_Result",
+                    "details": {
+                        "name": "Result"
+                    }
+                }
+            ]
+        }
+    ]
+}

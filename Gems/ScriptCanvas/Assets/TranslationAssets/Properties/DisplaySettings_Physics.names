@@ -1,0 +1,28 @@
+{
+    "entries": [
+        {
+            "key": "DisplaySettings_Physics",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "Display Settings_ Physics"
+            },
+            "methods": [
+                {
+                    "key": "GetDisplaySettings_Physics",
+                    "details": {
+                        "name": "Get Display Settings_ Physics"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

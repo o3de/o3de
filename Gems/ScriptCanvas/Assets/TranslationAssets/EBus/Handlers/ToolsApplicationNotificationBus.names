@@ -1,0 +1,44 @@
+{
+    "entries": [
+        {
+            "key": "ToolsApplicationNotificationBus",
+            "context": "EBusHandler",
+            "variant": "",
+            "details": {
+                "name": "ToolsApplicationNotificationBus"
+            },
+            "methods": [
+                {
+                    "key": "EntityRegistered",
+                    "details": {
+                        "name": "EntityRegistered"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "EntityId",
+                                "tooltip": "Entity Unique Id"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "EntityDeregistered",
+                    "details": {
+                        "name": "EntityDeregistered"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "EntityId",
+                                "tooltip": "Entity Unique Id"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

@@ -1,0 +1,195 @@
+{
+    "entries": [
+        {
+            "key": "Specializations",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "Specializations",
+                "category": "Registry"
+            },
+            "methods": [
+                {
+                    "key": "GetPriority",
+                    "context": "Specializations",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Priority"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Priority is invoked"
+                    },
+                    "details": {
+                        "name": "Get Priority",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EB6B8ADF-ABAA-4D22-B596-127F9C611740}",
+                            "details": {
+                                "name": "Specializations Proxy"
+                            }
+                        },
+                        {
+                            "typeid": "{7114E998-A8B4-519B-9342-A86D1587B4F7}",
+                            "details": {
+                                "name": "Specialization"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{D6597933-47CD-4FC8-B911-63F3E2B0993A}",
+                            "details": {
+                                "name": "Priority"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetCount",
+                    "context": "Specializations",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Count"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Count is invoked"
+                    },
+                    "details": {
+                        "name": "Get Count"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EB6B8ADF-ABAA-4D22-B596-127F9C611740}",
+                            "details": {
+                                "name": "Specializations Proxy"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{D6597933-47CD-4FC8-B911-63F3E2B0993A}",
+                            "details": {
+                                "name": "Count"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "Contains",
+                    "context": "Specializations",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Contains"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Contains is invoked"
+                    },
+                    "details": {
+                        "name": "Contains"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EB6B8ADF-ABAA-4D22-B596-127F9C611740}",
+                            "details": {
+                                "name": "Specializations Proxy"
+                            }
+                        },
+                        {
+                            "typeid": "{7114E998-A8B4-519B-9342-A86D1587B4F7}",
+                            "details": {
+                                "name": "Specialization"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Contains"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "Append",
+                    "context": "Specializations",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Append"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Append is invoked"
+                    },
+                    "details": {
+                        "name": "Append"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EB6B8ADF-ABAA-4D22-B596-127F9C611740}",
+                            "details": {
+                                "name": "Specializations Proxy"
+                            }
+                        },
+                        {
+                            "typeid": "{7114E998-A8B4-519B-9342-A86D1587B4F7}",
+                            "details": {
+                                "name": "Specialization"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Success"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetSpecialization",
+                    "context": "Specializations",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Specialization"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Specialization is invoked"
+                    },
+                    "details": {
+                        "name": "Get Specialization"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EB6B8ADF-ABAA-4D22-B596-127F9C611740}",
+                            "details": {
+                                "name": "Specializations Proxy"
+                            }
+                        },
+                        {
+                            "typeid": "{D6597933-47CD-4FC8-B911-63F3E2B0993A}",
+                            "details": {
+                                "name": "Index"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{7114E998-A8B4-519B-9342-A86D1587B4F7}",
+                            "details": {
+                                "name": "Specialization"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

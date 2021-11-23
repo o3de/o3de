@@ -1,0 +1,28 @@
+{
+    "entries": [
+        {
+            "key": "eUiTextOverflowMode_Ellipsis",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "e Ui Text Overflow Mode_ Ellipsis"
+            },
+            "methods": [
+                {
+                    "key": "GeteUiTextOverflowMode_Ellipsis",
+                    "details": {
+                        "name": "Gete Ui Text Overflow Mode_ Ellipsis"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

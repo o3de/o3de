@@ -2180,20 +2180,9 @@ namespace AzToolsFramework
 
     void EntityOutlinerItemDelegate::PaintAncestorForegrounds(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
     {
-        // Go through ancestors and add them to the stack
-        AZStd::stack<QModelIndex> handlerStack;
-
+        // Ancestor foregrounds are painted on top of the childrens'.
         for (QModelIndex ancestorIndex = index.parent(); ancestorIndex.isValid(); ancestorIndex = ancestorIndex.parent())
         {
-            handlerStack.push(ancestorIndex);
-        }
-
-        // Apply the ancestor overrides from top to bottom
-        while (!handlerStack.empty())
-        {
-            QModelIndex ancestorIndex = handlerStack.top();
-            handlerStack.pop();
-
             AZ::EntityId ancestorEntityId(ancestorIndex.data(EntityOutlinerListModel::EntityIdRole).value<AZ::u64>());
             auto ancestorUiHandler = m_editorEntityFrameworkInterface->GetHandler(ancestorEntityId);
 

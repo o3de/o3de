@@ -1,0 +1,28 @@
+{
+    "entries": [
+        {
+            "key": "JsonPatch",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "Json Patch"
+            },
+            "methods": [
+                {
+                    "key": "GetJsonPatch",
+                    "details": {
+                        "name": "Get Json Patch"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

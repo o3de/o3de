@@ -1,0 +1,28 @@
+{
+    "entries": [
+        {
+            "key": "BlendFactor_Invalid",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "Blend Factor_ Invalid"
+            },
+            "methods": [
+                {
+                    "key": "GetBlendFactor_Invalid",
+                    "details": {
+                        "name": "Get Blend Factor_ Invalid"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

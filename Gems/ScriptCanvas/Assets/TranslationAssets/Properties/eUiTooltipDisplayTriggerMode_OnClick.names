@@ -1,0 +1,28 @@
+{
+    "entries": [
+        {
+            "key": "eUiTooltipDisplayTriggerMode_OnClick",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "e Ui Tooltip Display Trigger Mode_ On Click"
+            },
+            "methods": [
+                {
+                    "key": "GeteUiTooltipDisplayTriggerMode_OnClick",
+                    "details": {
+                        "name": "Gete Ui Tooltip Display Trigger Mode_ On Click"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

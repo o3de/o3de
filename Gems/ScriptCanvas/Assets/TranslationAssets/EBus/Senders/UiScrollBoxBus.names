@@ -1,0 +1,722 @@
+{
+    "entries": [
+        {
+            "key": "UiScrollBoxBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "UiScrollBoxBus",
+                "category": "UI"
+            },
+            "methods": [
+                {
+                    "key": "FindClosestContentChildElement",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Find Closest Content Child Element"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Find Closest Content Child Element is invoked"
+                    },
+                    "details": {
+                        "name": "Find Closest Content Child Element",
+                        "tooltip": "Finds the child of the content element that is closest to the content anchors at the current scroll offset (the currently selected child)"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "EntityId",
+                                "tooltip": "Entity Unique Id"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetHorizontalScrollBarVisibility",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Horizontal Scroll Bar Visibility"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Horizontal Scroll Bar Visibility is invoked"
+                    },
+                    "details": {
+                        "name": "Get Horizontal Scroll Bar Visibility",
+                        "tooltip": "Gets the visibility behavior for the horizontal scroll bar of the scroll box"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetVerticalScrollBarEntity",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Vertical Scroll Bar Entity"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Vertical Scroll Bar Entity is invoked"
+                    },
+                    "details": {
+                        "name": "Get Vertical Scroll Bar Entity",
+                        "tooltip": "Gets the vertical scroll bar element for the scroll box"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "EntityId",
+                                "tooltip": "Entity Unique Id"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetHorizontalScrollBarVisibility",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Horizontal Scroll Bar Visibility"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Horizontal Scroll Bar Visibility is invoked"
+                    },
+                    "details": {
+                        "name": "Set Horizontal Scroll Bar Visibility",
+                        "tooltip": "Sets the visibility behavior for the horizontal scroll bar of the scroll box"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "Visibility",
+                                "tooltip": "The visibility behavior (0=Always Show, 1=Auto Hide, 2=Auto Hide and Resize Viewport)"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetScrollOffsetChangingActionName",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Scroll Offset Changing Action Name"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Scroll Offset Changing Action Name is invoked"
+                    },
+                    "details": {
+                        "name": "Set Scroll Offset Changing Action Name",
+                        "tooltip": "Sets the name of the action triggered while the scroll box is being dragged"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Name",
+                                "tooltip": "The name of the action triggered while the scroll box is being dragged"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetScrollOffsetChangingActionName",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Scroll Offset Changing Action Name"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Scroll Offset Changing Action Name is invoked"
+                    },
+                    "details": {
+                        "name": "Get Scroll Offset Changing Action Name",
+                        "tooltip": "Gets the name of the action triggered while the scroll box is being dragged"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZStd::string"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetHorizontalScrollBarEntity",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Horizontal Scroll Bar Entity"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Horizontal Scroll Bar Entity is invoked"
+                    },
+                    "details": {
+                        "name": "Get Horizontal Scroll Bar Entity",
+                        "tooltip": "Gets the horizontal scroll bar element for the scroll box"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "EntityId",
+                                "tooltip": "Entity Unique Id"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "HasHorizontalContentToScroll",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Has Horizontal Content To Scroll"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Has Horizontal Content To Scroll is invoked"
+                    },
+                    "details": {
+                        "name": "Has Horizontal Content To Scroll",
+                        "tooltip": "Returns whether there is content to scroll horizontally"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetContentEntity",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Content Entity"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Content Entity is invoked"
+                    },
+                    "details": {
+                        "name": "Set Content Entity",
+                        "tooltip": "Sets the content element for the scroll box"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Content EntityID",
+                                "tooltip": "The content element for the scroll box"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetIsScrollingConstrained",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Is Scrolling Constrained"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Is Scrolling Constrained is invoked"
+                    },
+                    "details": {
+                        "name": "Is Scrolling Constrained",
+                        "tooltip": "Returns whether the scroll box restricts scrolling to the content area"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "HasVerticalContentToScroll",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Has Vertical Content To Scroll"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Has Vertical Content To Scroll is invoked"
+                    },
+                    "details": {
+                        "name": "Has Vertical Content To Scroll",
+                        "tooltip": "Returns whether there is content to scroll vertically"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetIsVerticalScrollingEnabled",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Is Vertical Scrolling Enabled"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Is Vertical Scrolling Enabled is invoked"
+                    },
+                    "details": {
+                        "name": "Is Vertical Scrolling Enabled",
+                        "tooltip": "Returns whether the scroll box allows vertical scrolling"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetVerticalScrollBarVisibility",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Vertical Scroll Bar Visibility"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Vertical Scroll Bar Visibility is invoked"
+                    },
+                    "details": {
+                        "name": "Get Vertical Scroll Bar Visibility",
+                        "tooltip": "Gets the visibility behavior for the vertical scroll bar of the scroll box"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetIsHorizontalScrollingEnabled",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Is Horizontal Scrolling Enabled"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Is Horizontal Scrolling Enabled is invoked"
+                    },
+                    "details": {
+                        "name": "Set Is Horizontal Scrolling Enabled",
+                        "tooltip": "Sets whether the scroll box allows horizontal scrolling"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Horizontal Scrolling",
+                                "tooltip": "Indicates whether the scroll box allows horizontal scrolling"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetNormalizedScrollValue",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Normalized Scroll Value"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Normalized Scroll Value is invoked"
+                    },
+                    "details": {
+                        "name": "Get Normalized Scroll Value",
+                        "tooltip": "Returns the scroll value normalized to [0-1]"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{3D80F623-C85C-4741-90D0-E4E66164E6BF}",
+                            "details": {
+                                "name": "Vector2"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetScrollOffset",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Scroll Offset"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Scroll Offset is invoked"
+                    },
+                    "details": {
+                        "name": "Set Scroll Offset",
+                        "tooltip": "Sets the scroll offset of the scroll box"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3D80F623-C85C-4741-90D0-E4E66164E6BF}",
+                            "details": {
+                                "name": "Scroll Offset",
+                                "tooltip": "The scroll offset of the scroll box"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetHorizontalScrollBarEntity",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Horizontal Scroll Bar Entity"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Horizontal Scroll Bar Entity is invoked"
+                    },
+                    "details": {
+                        "name": "Set Horizontal Scroll Bar Entity",
+                        "tooltip": "Sets the horizontal scroll bar element for the scroll box"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Horizontal Scroll Bar EntityID",
+                                "tooltip": "The horizontal scroll bar element for the scroll box"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetScrollOffset",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Scroll Offset"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Scroll Offset is invoked"
+                    },
+                    "details": {
+                        "name": "Get Scroll Offset",
+                        "tooltip": "Gets the scroll offset of the scroll box. The scroll offset is the offset from the content element's anchor point to the content element's pivot"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{3D80F623-C85C-4741-90D0-E4E66164E6BF}",
+                            "details": {
+                                "name": "Vector2"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetScrollOffsetChangedActionName",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Scroll Offset Changed Action Name"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Scroll Offset Changed Action Name is invoked"
+                    },
+                    "details": {
+                        "name": "Get Scroll Offset Changed Action Name",
+                        "tooltip": "Gets the name of the action triggered when the scroll box drag is completed"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZStd::string"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetVerticalScrollBarVisibility",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Vertical Scroll Bar Visibility"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Vertical Scroll Bar Visibility is invoked"
+                    },
+                    "details": {
+                        "name": "Set Vertical Scroll Bar Visibility",
+                        "tooltip": "Sets the visibility behavior for the vertical scroll bar of the scroll box"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "Visibility",
+                                "tooltip": "The visibility behavior (0=Always Show, 1=Auto Hide, 2=Auto Hide and Resize Viewport)"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetIsHorizontalScrollingEnabled",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Is Horizontal Scrolling Enabled"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Is Horizontal Scrolling Enabled is invoked"
+                    },
+                    "details": {
+                        "name": "Is Horizontal Scrolling Enabled",
+                        "tooltip": "Returns whether the scroll box allows horizontal scrolling"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetIsScrollingConstrained",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Is Scrolling Constrained"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Is Scrolling Constrained is invoked"
+                    },
+                    "details": {
+                        "name": "Set Is Scrolling Constrained",
+                        "tooltip": "Sets whether the scroll box restricts scrolling to the content area"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Constrained",
+                                "tooltip": "Indicates whether the scroll box restricts scrolling to the content area"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetSnapGrid",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Snap Grid"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Snap Grid is invoked"
+                    },
+                    "details": {
+                        "name": "Set Snap Grid",
+                        "tooltip": "Sets the snapping grid of the scroll box. The scroll offset will be snapped to multiples of these values"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3D80F623-C85C-4741-90D0-E4E66164E6BF}",
+                            "details": {
+                                "name": "Grid Spacing",
+                                "tooltip": "The grid spacing. The scroll offset will be snapped to multiples of these values"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetIsVerticalScrollingEnabled",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Is Vertical Scrolling Enabled"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Is Vertical Scrolling Enabled is invoked"
+                    },
+                    "details": {
+                        "name": "Set Is Vertical Scrolling Enabled",
+                        "tooltip": "Sets whether the scroll box allows vertical scrolling"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Vertical Scrolling",
+                                "tooltip": "Indicates whether the scroll box allows vertical scrolling"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetSnapGrid",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Snap Grid"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Snap Grid is invoked"
+                    },
+                    "details": {
+                        "name": "Get Snap Grid",
+                        "tooltip": "Gets the snapping grid of the scroll box. The scroll offset will be snapped to multiples of these values"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{3D80F623-C85C-4741-90D0-E4E66164E6BF}",
+                            "details": {
+                                "name": "Vector2"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetSnapMode",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Snap Mode"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Snap Mode is invoked"
+                    },
+                    "details": {
+                        "name": "Get Snap Mode",
+                        "tooltip": "Gets the snap mode for the scroll box"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetScrollOffsetChangedActionName",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Scroll Offset Changed Action Name"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Scroll Offset Changed Action Name is invoked"
+                    },
+                    "details": {
+                        "name": "Set Scroll Offset Changed Action Name",
+                        "tooltip": "Sets the name of the action triggered when the scroll box drag is completed"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Name",
+                                "tooltip": "The name of the action triggered when the scroll box drag is completed"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetVerticalScrollBarEntity",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Vertical Scroll Bar Entity"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Vertical Scroll Bar Entity is invoked"
+                    },
+                    "details": {
+                        "name": "Set Vertical Scroll Bar Entity",
+                        "tooltip": "Sets the vertical scroll bar element for the scroll box"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Vertical Scroll Bar EntityID",
+                                "tooltip": "The vertical scroll bar element for the scroll box"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetContentEntity",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Content Entity"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Content Entity is invoked"
+                    },
+                    "details": {
+                        "name": "Get Content Entity",
+                        "tooltip": "Gets the content element for the scroll box"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "EntityId",
+                                "tooltip": "Entity Unique Id"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetSnapMode",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Snap Mode"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Snap Mode is invoked"
+                    },
+                    "details": {
+                        "name": "Set Snap Mode",
+                        "tooltip": "Sets the snap mode for the scroll box"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "Snap Mode",
+                                "tooltip": "The snap mode for the scroll box (0=None, 1=Children, 2=Grid)"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

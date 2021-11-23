@@ -1,0 +1,28 @@
+{
+    "entries": [
+        {
+            "key": "eUiNavigationMode_None",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "e Ui Navigation Mode_ None"
+            },
+            "methods": [
+                {
+                    "key": "GeteUiNavigationMode_None",
+                    "details": {
+                        "name": "Gete Ui Navigation Mode_ None"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

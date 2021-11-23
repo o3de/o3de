@@ -1,0 +1,28 @@
+{
+    "entries": [
+        {
+            "key": "LookModificationComponentTypeId",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "Look Modification Component Type Id"
+            },
+            "methods": [
+                {
+                    "key": "GetLookModificationComponentTypeId",
+                    "details": {
+                        "name": "Get Look Modification Component Type Id"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}",
+                            "details": {
+                                "name": "AZ:: Uuid"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

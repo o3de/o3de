@@ -1,0 +1,28 @@
+{
+    "entries": [
+        {
+            "key": "StencilOp_Replace",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "Stencil Op_ Replace"
+            },
+            "methods": [
+                {
+                    "key": "GetStencilOp_Replace",
+                    "details": {
+                        "name": "Get Stencil Op_ Replace"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

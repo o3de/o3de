@@ -1,0 +1,28 @@
+{
+    "entries": [
+        {
+            "key": "eUiDropState_Normal",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "e Ui Drop State_ Normal"
+            },
+            "methods": [
+                {
+                    "key": "GeteUiDropState_Normal",
+                    "details": {
+                        "name": "Gete Ui Drop State_ Normal"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

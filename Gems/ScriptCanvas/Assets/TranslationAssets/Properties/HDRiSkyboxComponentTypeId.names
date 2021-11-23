@@ -1,0 +1,28 @@
+{
+    "entries": [
+        {
+            "key": "HDRiSkyboxComponentTypeId",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "HD Ri Skybox Component Type Id"
+            },
+            "methods": [
+                {
+                    "key": "GetHDRiSkyboxComponentTypeId",
+                    "details": {
+                        "name": "GetHD Ri Skybox Component Type Id"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}",
+                            "details": {
+                                "name": "AZ:: Uuid"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

@@ -1,0 +1,28 @@
+{
+    "entries": [
+        {
+            "key": "eUiTextWrapTextSetting_NoWrap",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "e Ui Text Wrap Text Setting_ No Wrap"
+            },
+            "methods": [
+                {
+                    "key": "GeteUiTextWrapTextSetting_NoWrap",
+                    "details": {
+                        "name": "Gete Ui Text Wrap Text Setting_ No Wrap"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

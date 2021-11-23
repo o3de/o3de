@@ -1,0 +1,28 @@
+{
+    "entries": [
+        {
+            "key": "eUiScaleToDeviceMode_UniformScaleToFit",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "e Ui Scale To Device Mode_ Uniform Scale To Fit"
+            },
+            "methods": [
+                {
+                    "key": "GeteUiScaleToDeviceMode_UniformScaleToFit",
+                    "details": {
+                        "name": "Gete Ui Scale To Device Mode_ Uniform Scale To Fit"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

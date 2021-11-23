@@ -1,0 +1,28 @@
+{
+    "entries": [
+        {
+            "key": "DefaultMaterialAssignmentMap",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "Default Material Assignment Map"
+            },
+            "methods": [
+                {
+                    "key": "GetDefaultMaterialAssignmentMap",
+                    "details": {
+                        "name": "Get Default Material Assignment Map"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{50F6716F-698B-5A6C-AACD-940597FDEC24}",
+                            "details": {
+                                "name": "AZ Std::unordered_map"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

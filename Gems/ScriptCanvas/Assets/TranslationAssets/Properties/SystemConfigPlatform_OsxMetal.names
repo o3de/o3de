@@ -1,0 +1,28 @@
+{
+    "entries": [
+        {
+            "key": "SystemConfigPlatform_OsxMetal",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "System Config Platform_ Osx Metal"
+            },
+            "methods": [
+                {
+                    "key": "GetSystemConfigPlatform_OsxMetal",
+                    "details": {
+                        "name": "Get System Config Platform_ Osx Metal"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

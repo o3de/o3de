@@ -1,0 +1,950 @@
+{
+    "entries": [
+        {
+            "key": "TransformBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "Transform",
+                "category": "Entity"
+            },
+            "methods": [
+                {
+                    "key": "SetLocalUniformScale",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Local Uniform Scale"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Local Uniform Scale is invoked"
+                    },
+                    "details": {
+                        "name": "Set Local Uniform Scale"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Local Uniform Scale"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetLocalRotationQuaternion",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Local Rotation Quaternion"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Local Rotation Quaternion is invoked"
+                    },
+                    "details": {
+                        "name": "Set Local Rotation Quaternion"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{73103120-3DD3-4873-BAB3-9713FA2804FB}",
+                            "details": {
+                                "name": "Quaternion"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetLocalRotation",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Local Rotation"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Local Rotation is invoked"
+                    },
+                    "details": {
+                        "name": "Get Local Rotation"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Angles (Radians)"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetLocalTM",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Local Transform"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Local Transform is invoked"
+                    },
+                    "details": {
+                        "name": "Get Local Transform",
+                        "tooltip": "Returns the entity's local transform, not including the parent transform"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{5D9958E9-9F1E-4985-B532-FFFDE75FEDFD}",
+                            "details": {
+                                "name": "Transform"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetEntityAndAllDescendants",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Entity And All Descendants"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Entity And All Descendants is invoked"
+                    },
+                    "details": {
+                        "name": "Get Entity And All Descendants"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{4841CFF0-7A5C-519C-BD16-D3625E99605E}",
+                            "details": {
+                                "name": "Entity and Descendants"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetLocalZ",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Local Z"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Local Z is invoked"
+                    },
+                    "details": {
+                        "name": "Set Local Z"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Z"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetAllDescendants",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get All Descendants"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get All Descendants is invoked"
+                    },
+                    "details": {
+                        "name": "Get All Descendants"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{4841CFF0-7A5C-519C-BD16-D3625E99605E}",
+                            "details": {
+                                "name": "Descendants"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetLocalAndWorld",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Local And World"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Local And World is invoked"
+                    },
+                    "details": {
+                        "name": "Get Local And World Transforms"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{5D9958E9-9F1E-4985-B532-FFFDE75FEDFD}",
+                            "details": {
+                                "name": "Local"
+                            }
+                        },
+                        {
+                            "typeid": "{5D9958E9-9F1E-4985-B532-FFFDE75FEDFD}",
+                            "details": {
+                                "name": "World"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "RotateAroundLocalZ",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Rotate Around Local Z"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Rotate Around Local Z is invoked"
+                    },
+                    "details": {
+                        "name": "Rotate Around Local Z"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Angle (Radians)"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetWorldRotationQuaternion",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get World Rotation Quaternion"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get World Rotation Quaternion is invoked"
+                    },
+                    "details": {
+                        "name": "Get World Rotation Quaternion"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{73103120-3DD3-4873-BAB3-9713FA2804FB}",
+                            "details": {
+                                "name": "Quaternion"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "RotateAroundLocalX",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Rotate Around Local X"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Rotate Around Local X is invoked"
+                    },
+                    "details": {
+                        "name": "Rotate Around Local X"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Angle (Radians)"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetParent",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Parent"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Parent is invoked"
+                    },
+                    "details": {
+                        "name": "Set Parent"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Parent",
+                                "tooltip": "Entity Unique Id"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetLocalZ",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Local Z"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Local Z is invoked"
+                    },
+                    "details": {
+                        "name": "Get Local Z"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Z"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetLocalRotation",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Local Rotation"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetLocalRotation is invoked"
+                    },
+                    "details": {
+                        "name": "Set Local Rotation"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Euler Angles (Radians)"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetLocalX",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Local X"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Local X is invoked"
+                    },
+                    "details": {
+                        "name": "Set Local X"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "X"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetLocalRotationQuaternion",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Local Rotation Quaternion"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Local Rotation Quaternion is invoked"
+                    },
+                    "details": {
+                        "name": "Get Local Rotation Quaternion"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{73103120-3DD3-4873-BAB3-9713FA2804FB}",
+                            "details": {
+                                "name": "Quaternion"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetWorldX",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get World X"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get World X is invoked"
+                    },
+                    "details": {
+                        "name": "Get World X"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "X"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetWorldTranslation",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set World Translation"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set World Translation is invoked"
+                    },
+                    "details": {
+                        "name": "Set World Translation"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "World Translation"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "MoveEntity",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Move Entity"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Move Entity is invoked"
+                    },
+                    "details": {
+                        "name": "Move Entity"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Offset"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetChildren",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Children"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Children is invoked"
+                    },
+                    "details": {
+                        "name": "Get Children"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{4841CFF0-7A5C-519C-BD16-D3625E99605E}",
+                            "details": {
+                                "name": "Children"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetParentRelative",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Parent Relative"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Parent Relative is invoked"
+                    },
+                    "details": {
+                        "name": "Set Parent Relative"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Parent",
+                                "tooltip": "Entity Unique Id"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetWorldTM",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set World Transform"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set World Transform is invoked"
+                    },
+                    "details": {
+                        "name": "Set World Transform"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{5D9958E9-9F1E-4985-B532-FFFDE75FEDFD}",
+                            "details": {
+                                "name": "Transform"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetWorldRotationQuaternion",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set World Rotation Quaternion"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set World Rotation Quaternion is invoked"
+                    },
+                    "details": {
+                        "name": "Set World Rotation Quaternion"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{73103120-3DD3-4873-BAB3-9713FA2804FB}",
+                            "details": {
+                                "name": "Quaternion"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetWorldX",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set World X"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set World X is invoked"
+                    },
+                    "details": {
+                        "name": "Set World X"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "X"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetWorldY",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get World Y"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get World Y is invoked"
+                    },
+                    "details": {
+                        "name": "Get World Y"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Y"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetLocalUniformScale",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Local Uniform Scale"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Local Uniform Scale is invoked"
+                    },
+                    "details": {
+                        "name": "Get Local Uniform Scale"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Uniform Scale"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetWorldZ",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set World Z"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set World Z is invoked"
+                    },
+                    "details": {
+                        "name": "Set World Z"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Z"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetLocalTM",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Local Transform"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Local Transform is invoked"
+                    },
+                    "details": {
+                        "name": "Set Local Transform"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{5D9958E9-9F1E-4985-B532-FFFDE75FEDFD}",
+                            "details": {
+                                "name": "Transform"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetLocalTranslation",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Local Translation"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Local Translation is invoked"
+                    },
+                    "details": {
+                        "name": "Set Local Translation"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Translation"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetLocalScale",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Local Scale"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Local Scale is invoked"
+                    },
+                    "details": {
+                        "name": "Get Local Scale"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Scale"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetWorldY",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set World Y"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set World Y is invoked"
+                    },
+                    "details": {
+                        "name": "Set World Y"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Y"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "RotateAroundLocalY",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Rotate Around Local Y"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Rotate Around Local Y is invoked"
+                    },
+                    "details": {
+                        "name": "Rotate Around Local Y"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Euler Angle (Radians)"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetLocalTranslation",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Local Translation"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Local Translation is invoked"
+                    },
+                    "details": {
+                        "name": "Get Local Translation"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Translation"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetWorldRotation",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get World Rotation"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get World Rotation is invoked"
+                    },
+                    "details": {
+                        "name": "Get World Rotation"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Euler Angles (Radians)",
+                                "tooltip": "Euler angles (Pitch, Yaw, Roll), in radians"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetWorldZ",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get World Z"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get World Z is invoked"
+                    },
+                    "details": {
+                        "name": "Get World Z"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Z"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetLocalY",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Local Y"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Local Y is invoked"
+                    },
+                    "details": {
+                        "name": "Get Local Y"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Y"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetWorldTranslation",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get World Translation"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get World Translation is invoked"
+                    },
+                    "details": {
+                        "name": "Get World Translation"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Translation"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetLocalY",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Local Y"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Local Y is invoked"
+                    },
+                    "details": {
+                        "name": "Set Local Y"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Y"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetLocalX",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Local X"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Local X is invoked"
+                    },
+                    "details": {
+                        "name": "Get Local X"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "X"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetWorldTM",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get World Transform"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get World Transform is invoked"
+                    },
+                    "details": {
+                        "name": "Get World Transform"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{5D9958E9-9F1E-4985-B532-FFFDE75FEDFD}",
+                            "details": {
+                                "name": "Transform"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetParentId",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Parent Id"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Parent Id is invoked"
+                    },
+                    "details": {
+                        "name": "Get Parent Id"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Parent Id",
+                                "tooltip": "Entity Unique Id"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "IsStaticTransform",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Is Static Transform"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Is Static Transform is invoked"
+                    },
+                    "details": {
+                        "name": "Is Static Transform"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Is Static Transform"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

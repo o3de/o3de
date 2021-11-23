@@ -1,0 +1,28 @@
+{
+    "entries": [
+        {
+            "key": "eUiTextShrinkToFit_WidthOnly",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "e Ui Text Shrink To Fit_ Width Only"
+            },
+            "methods": [
+                {
+                    "key": "GeteUiTextShrinkToFit_WidthOnly",
+                    "details": {
+                        "name": "Gete Ui Text Shrink To Fit_ Width Only"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

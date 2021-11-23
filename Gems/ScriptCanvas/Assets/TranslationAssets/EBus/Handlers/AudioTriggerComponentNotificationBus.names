@@ -1,0 +1,31 @@
+{
+    "entries": [
+        {
+            "key": "AudioTriggerComponentNotificationBus",
+            "context": "EBusHandler",
+            "variant": "",
+            "details": {
+                "name": "Audio Trigger",
+                "category": "Audio"
+            },
+            "methods": [
+                {
+                    "key": "OnTriggerFinished",
+                    "details": {
+                        "name": "On Trigger Finished",
+                        "tooltip": "Executes when an audio trigger has finished playing (the sound has ended)."
+                    },
+                    "params": [
+                        {
+                            "typeid": "{D6597933-47CD-4FC8-B911-63F3E2B0993A}",
+                            "details": {
+                                "name": "Trigger ID",
+                                "tooltip": "The ID of the trigger that was successfully executed"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

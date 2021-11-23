@@ -1,0 +1,28 @@
+{
+    "entries": [
+        {
+            "key": "PhotometricUnit_Unknown",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "Photometric Unit_ Unknown"
+            },
+            "methods": [
+                {
+                    "key": "GetPhotometricUnit_Unknown",
+                    "details": {
+                        "name": "Get Photometric Unit_ Unknown"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

@@ -1,0 +1,28 @@
+{
+    "entries": [
+        {
+            "key": "TransformPivot_Object",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "Transform Pivot_ Object"
+            },
+            "methods": [
+                {
+                    "key": "GetTransformPivot_Object",
+                    "details": {
+                        "name": "Get Transform Pivot_ Object"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

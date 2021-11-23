@@ -38,6 +38,7 @@ namespace SandboxEditor
     constexpr AZStd::string_view CameraTranslateSmoothingSetting = "/Amazon/Preferences/Editor/Camera/TranslateSmoothing";
     constexpr AZStd::string_view CameraRotateSmoothingSetting = "/Amazon/Preferences/Editor/Camera/RotateSmoothing";
     constexpr AZStd::string_view CameraCaptureCursorLookSetting = "/Amazon/Preferences/Editor/Camera/CaptureCursorLook";
+    constexpr AZStd::string_view CameraDefaultOrbitDistanceSetting = "/Amazon/Preferences/Editor/Camera/DefaultOrbitDistance";
     constexpr AZStd::string_view CameraTranslateForwardIdSetting = "/Amazon/Preferences/Editor/Camera/CameraTranslateForwardId";
     constexpr AZStd::string_view CameraTranslateBackwardIdSetting = "/Amazon/Preferences/Editor/Camera/CameraTranslateBackwardId";
     constexpr AZStd::string_view CameraTranslateLeftIdSetting = "/Amazon/Preferences/Editor/Camera/CameraTranslateLeftId";
@@ -114,15 +115,15 @@ namespace SandboxEditor
         return AZStd::make_unique<EditorViewportSettingsCallbacksImpl>();
     }
 
-    AZ::Vector3 DefaultEditorCameraPosition()
+    AZ::Vector3 CameraDefaultEditorPosition()
     {
-        float xPosition = aznumeric_cast<float>(GetRegistry(CameraDefaultStartingPositionX, 0.0));
-        float yPosition = aznumeric_cast<float>(GetRegistry(CameraDefaultStartingPositionY, -10.0));
-        float zPosition = aznumeric_cast<float>(GetRegistry(CameraDefaultStartingPositionZ, 4.0));
-        return AZ::Vector3(xPosition, yPosition, zPosition);
+        return AZ::Vector3(
+            aznumeric_cast<float>(GetRegistry(CameraDefaultStartingPositionX, 0.0)),
+            aznumeric_cast<float>(GetRegistry(CameraDefaultStartingPositionY, -10.0)),
+            aznumeric_cast<float>(GetRegistry(CameraDefaultStartingPositionZ, 4.0)));
     }
 
-    void SetDefaultCameraEditorPosition(const AZ::Vector3 defaultCameraPosition)
+    void SetCameraDefaultEditorPosition(const AZ::Vector3& defaultCameraPosition)
     {
         SetRegistry(CameraDefaultStartingPositionX, defaultCameraPosition.GetX());
         SetRegistry(CameraDefaultStartingPositionY, defaultCameraPosition.GetY());
@@ -357,6 +358,16 @@ namespace SandboxEditor
     void SetCameraCaptureCursorForLook(const bool capture)
     {
         SetRegistry(CameraCaptureCursorLookSetting, capture);
+    }
+
+    float CameraDefaultOrbitDistance()
+    {
+        return aznumeric_cast<float>(GetRegistry(CameraDefaultOrbitDistanceSetting, 20.0));
+    }
+
+    void SetCameraDefaultOrbitDistance(const float distance)
+    {
+        SetRegistry(CameraDefaultOrbitDistanceSetting, distance);
     }
 
     AzFramework::InputChannelId CameraTranslateForwardChannelId()

@@ -1,0 +1,28 @@
+{
+    "entries": [
+        {
+            "key": "CullMode_Invalid",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "Cull Mode_ Invalid"
+            },
+            "methods": [
+                {
+                    "key": "GetCullMode_Invalid",
+                    "details": {
+                        "name": "Get Cull Mode_ Invalid"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

@@ -1,0 +1,117 @@
+{
+    "entries": [
+        {
+            "key": "SimulatedBodyComponentRequestBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "Simulated Body"
+            },
+            "methods": [
+                {
+                    "key": "GetAabb",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get AABB"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get AABB is invoked"
+                    },
+                    "details": {
+                        "name": "Get AABB"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A54C2B36-D5B8-46A1-A529-4EBDBD2450E7}",
+                            "details": {
+                                "name": "AABB"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "IsPhysicsEnabled",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke IsPhysicsEnabled"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after IsPhysicsEnabled is invoked"
+                    },
+                    "details": {
+                        "name": "Is Physics Enabled"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Enabled"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "RayCast",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke RayCast"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after RayCast is invoked"
+                    },
+                    "details": {
+                        "name": "Ray Cast"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{53EAD088-A391-48F1-8370-2A1DBA31512F}",
+                            "details": {
+                                "name": "RayCast Request",
+                                "tooltip": "Parameters for raycast"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{7A7201B9-67B5-438B-B4EB-F3EEBB78C617}",
+                            "details": {
+                                "name": "Scene Query Hit"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "DisablePhysics",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Disable Physics"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Disable Physics is invoked"
+                    },
+                    "details": {
+                        "name": "Disable Physics"
+                    }
+                },
+                {
+                    "key": "EnablePhysics",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke EnablePhysics"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after EnablePhysics is invoked"
+                    },
+                    "details": {
+                        "name": "Enable Physics"
+                    }
+                }
+            ]
+        }
+    ]
+}

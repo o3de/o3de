@@ -1,0 +1,45 @@
+{
+    "entries": [
+        {
+            "key": "start_process_detached",
+            "context": "Method",
+            "variant": "",
+            "details": {
+                "name": "",
+                "category": "Globals"
+            },
+            "methods": [
+                {
+                    "key": "start_process_detached",
+                    "context": "Global",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke start_process_detached"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after start_process_detached is invoked"
+                    },
+                    "details": {
+                        "name": "start_process_detached",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "const char*"
+                            }
+                        },
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "const char*"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

@@ -1,0 +1,28 @@
+{
+    "entries": [
+        {
+            "key": "TransformPivot_Center",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "Transform Pivot_ Center"
+            },
+            "methods": [
+                {
+                    "key": "GetTransformPivot_Center",
+                    "details": {
+                        "name": "Get Transform Pivot_ Center"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

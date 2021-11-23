@@ -44,7 +44,7 @@ namespace Multiplayer
 
         HostFrameId m_hostFrameId = HostFrameId{ 0 };
         HostFrameId m_unalteredFrameId = HostFrameId{ 0 };
-        AZ::TimeMs m_hostTimeMs = AZ::TimeMs{ 0 };
+        AZ::TimeMs m_hostTimeMs = AZ::Time::ZeroTimeMs;
         float m_hostBlendFactor = DefaultBlendFactor;
         AzNetworking::ConnectionId m_rewindingConnectionId = AzNetworking::InvalidConnectionId;
     };

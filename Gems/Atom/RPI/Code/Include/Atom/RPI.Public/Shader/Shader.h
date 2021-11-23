@@ -52,9 +52,8 @@ namespace AZ
          */
         class Shader final
             : public Data::InstanceData
-            , public Data::AssetBus::Handler
+            , public Data::AssetBus::MultiHandler
             , public ShaderVariantFinderNotificationBus::Handler
-            , public ShaderReloadNotificationBus::Handler
         {
             friend class ShaderSystem;
         public:
@@ -167,15 +166,6 @@ namespace AZ
             void OnShaderVariantTreeAssetReady(Data::Asset<ShaderVariantTreeAsset> /*shaderVariantTreeAsset*/, bool /*isError*/) override {};
             void OnShaderVariantAssetReady(Data::Asset<ShaderVariantAsset> shaderVariantAsset, bool IsError) override;
             ///////////////////////////////////////////////////////////////////
-            
-            ///////////////////////////////////////////////////////////////////
-            // ShaderReloadNotificationBus overrides...
-            void OnShaderAssetReinitialized(const Data::Asset<ShaderAsset>& shaderAsset) override;
-            // Note we don't need OnShaderVariantReinitialized because the Shader class doesn't do anything with the data inside
-            // the ShaderVariant object. The only thing we might want to do is propagate the message upward, but that's unnecessary
-            // because the ShaderReloadNotificationBus uses the Shader's AssetId as the ID for all messages including those from the variants.
-            // And of course we don't need to handle OnShaderReinitialized because this *is* this Shader.
-            ///////////////////////////////////////////////////////////////////
 
             //! A strong reference to the shader asset.
             Data::Asset<ShaderAsset> m_asset;
@@ -208,6 +198,12 @@ namespace AZ
 
             //! PipelineLibrary file name
             char m_pipelineLibraryPath[AZ_MAX_PATH_LEN] = { 0 };
+
+            //! During OnAssetReloaded, the internal references to ShaderVariantAsset inside
+            //! ShaderAsset are not updated correctly. We store here a reference to the root ShaderVariantAsset
+            //! when it got reloaded, later when We get OnAssetReloaded for the ShaderAsset We update its internal
+            //! reference to the root variant asset.
+            Data::Asset<ShaderVariantAsset> m_reloadedRootShaderVariantAsset;
         };
     }
 }

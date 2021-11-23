@@ -1,0 +1,339 @@
+{
+    "entries": [
+        {
+            "key": "AtomToolsDocumentSystemRequestBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "Document",
+                "category": "Atom Tools"
+            },
+            "methods": [
+                {
+                    "key": "SaveDocument",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Save Document"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Save Document is invoked"
+                    },
+                    "details": {
+                        "name": "Save Document"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}",
+                            "details": {
+                                "name": "Document Id"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Success"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SaveDocumentAsChild",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Save Document As Child"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Save Document As Child is invoked"
+                    },
+                    "details": {
+                        "name": "Save Document As Child"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}",
+                            "details": {
+                                "name": "Document Id"
+                            }
+                        },
+                        {
+                            "typeid": "{7114E998-A8B4-519B-9342-A86D1587B4F7}",
+                            "details": {
+                                "name": "Target Path"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Success"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "OpenDocument",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Open Document"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Open Document is invoked"
+                    },
+                    "details": {
+                        "name": "Open Document"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{7114E998-A8B4-519B-9342-A86D1587B4F7}",
+                            "details": {
+                                "name": "Source Path"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}",
+                            "details": {
+                                "name": "Document Id"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "CreateDocumentFromFile",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Create Document From File"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Create Document From File is invoked"
+                    },
+                    "details": {
+                        "name": "Create Document From File"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{7114E998-A8B4-519B-9342-A86D1587B4F7}",
+                            "details": {
+                                "name": "Source Path"
+                            }
+                        },
+                        {
+                            "typeid": "{7114E998-A8B4-519B-9342-A86D1587B4F7}",
+                            "details": {
+                                "name": "Target Path"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}",
+                            "details": {
+                                "name": "Document Id"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "CloseDocument",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Close Document"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Close Document is invoked"
+                    },
+                    "details": {
+                        "name": "Close Document"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}",
+                            "details": {
+                                "name": "Document Id"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Success"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "CloseAllDocuments",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Close All Documents"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Close All Documents is invoked"
+                    },
+                    "details": {
+                        "name": "Close All Documents"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Success"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "CloseAllDocumentsExcept",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Close All Documents Except"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Close All Documents Except is invoked"
+                    },
+                    "details": {
+                        "name": "Close All Documents Except"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}",
+                            "details": {
+                                "name": "Document Id"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Success"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "CreateDocument",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Create Document"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Create Document is invoked"
+                    },
+                    "details": {
+                        "name": "Create Document"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}",
+                            "details": {
+                                "name": "Document Id"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "DestroyDocument",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Destroy Document"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Destroy Document is invoked"
+                    },
+                    "details": {
+                        "name": "Destroy Document"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}",
+                            "details": {
+                                "name": "Document Id"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Success"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SaveDocumentAsCopy",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Save Document As Copy"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Save Document As Copy is invoked"
+                    },
+                    "details": {
+                        "name": "Save Document As Copy"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}",
+                            "details": {
+                                "name": "Document Id"
+                            }
+                        },
+                        {
+                            "typeid": "{7114E998-A8B4-519B-9342-A86D1587B4F7}",
+                            "details": {
+                                "name": "Target Path"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Success"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SaveAllDocuments",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Save All Documents"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Save All Documents is invoked"
+                    },
+                    "details": {
+                        "name": "Save All Documents"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Success"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

@@ -1,0 +1,98 @@
+{
+    "entries": [
+        {
+            "key": "AxisType",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "Axis Type"
+            },
+            "methods": [
+                {
+                    "key": "GetZNegative",
+                    "details": {
+                        "name": "Get -Z"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72B9409A-7D1A-4831-9CFE-FCB3FADD3426}",
+                            "details": {
+                                "name": "-Z"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetZPositive",
+                    "details": {
+                        "name": "Get +Z"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72B9409A-7D1A-4831-9CFE-FCB3FADD3426}",
+                            "details": {
+                                "name": "+Z"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetYPositive",
+                    "details": {
+                        "name": "Get +Y"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72B9409A-7D1A-4831-9CFE-FCB3FADD3426}",
+                            "details": {
+                                "name": "+Y"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetXNegative",
+                    "details": {
+                        "name": "Get -X"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72B9409A-7D1A-4831-9CFE-FCB3FADD3426}",
+                            "details": {
+                                "name": "-X"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetXPositive",
+                    "details": {
+                        "name": "Get +X"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72B9409A-7D1A-4831-9CFE-FCB3FADD3426}",
+                            "details": {
+                                "name": "+X"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetYNegative",
+                    "details": {
+                        "name": "Get -Y"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72B9409A-7D1A-4831-9CFE-FCB3FADD3426}",
+                            "details": {
+                                "name": "-Y"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

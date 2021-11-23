@@ -1,0 +1,174 @@
+{
+    "entries": [
+        {
+            "key": "BlendShapeData",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "Blend Shape Data"
+            },
+            "methods": [
+                {
+                    "key": "GetUV",
+                    "context": "BlendShapeData",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get UV"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get UV is invoked"
+                    },
+                    "details": {
+                        "name": "Get UV"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{FF875C22-2E4F-4CE3-BA49-09BF78C70A09}",
+                            "details": {
+                                "name": "Blend Shape Data"
+                            }
+                        },
+                        {
+                            "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
+                            "details": {
+                                "name": "Vertex Index"
+                            }
+                        },
+                        {
+                            "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
+                            "details": {
+                                "name": "UV Set Index"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{3D80F623-C85C-4741-90D0-E4E66164E6BF}",
+                            "details": {
+                                "name": "UV"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetTangent",
+                    "context": "BlendShapeData",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Tangent"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Tangent is invoked"
+                    },
+                    "details": {
+                        "name": "Get Tangent"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{FF875C22-2E4F-4CE3-BA49-09BF78C70A09}",
+                            "details": {
+                                "name": "Blend Shape Data"
+                            }
+                        },
+                        {
+                            "typeid": "{D6597933-47CD-4FC8-B911-63F3E2B0993A}",
+                            "details": {
+                                "name": "Index"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{0CE9FA36-1E3A-4C06-9254-B7C73A732053}",
+                            "details": {
+                                "name": "Tangents"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetBitangent",
+                    "context": "BlendShapeData",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Bitangent"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Bitangent is invoked"
+                    },
+                    "details": {
+                        "name": "Get Bi-Tangent"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{FF875C22-2E4F-4CE3-BA49-09BF78C70A09}",
+                            "details": {
+                                "name": "Blend Shape Data"
+                            }
+                        },
+                        {
+                            "typeid": "{D6597933-47CD-4FC8-B911-63F3E2B0993A}",
+                            "details": {
+                                "name": "Index"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Bi-Tangent"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetColor",
+                    "context": "BlendShapeData",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Color"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Color is invoked"
+                    },
+                    "details": {
+                        "name": "Get Color"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{FF875C22-2E4F-4CE3-BA49-09BF78C70A09}",
+                            "details": {
+                                "name": "Blend Shape Data"
+                            }
+                        },
+                        {
+                            "typeid": "{72B9409A-7D1A-4831-9CFE-FCB3FADD3426}",
+                            "details": {
+                                "name": "Color Set Index"
+                            }
+                        },
+                        {
+                            "typeid": "{72B9409A-7D1A-4831-9CFE-FCB3FADD3426}",
+                            "details": {
+                                "name": "Color Index"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{937E3BF8-5204-4D40-A8DA-C8F083C89F9F}",
+                            "details": {
+                                "name": "Color"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

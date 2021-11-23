@@ -1,0 +1,28 @@
+{
+    "entries": [
+        {
+            "key": "SystemConfigSpec_Medium",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "System Config Spec_ Medium"
+            },
+            "methods": [
+                {
+                    "key": "GetSystemConfigSpec_Medium",
+                    "details": {
+                        "name": "Get System Config Spec_ Medium"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

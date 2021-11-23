@@ -1,0 +1,28 @@
+{
+    "entries": [
+        {
+            "key": "eUiScrollBoxSnapMode_Grid",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "e Ui Scroll Box Snap Mode_ Grid"
+            },
+            "methods": [
+                {
+                    "key": "GeteUiScrollBoxSnapMode_Grid",
+                    "details": {
+                        "name": "Gete Ui Scroll Box Snap Mode_ Grid"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

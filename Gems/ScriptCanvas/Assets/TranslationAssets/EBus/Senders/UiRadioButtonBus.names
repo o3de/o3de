@@ -1,0 +1,299 @@
+{
+    "entries": [
+        {
+            "key": "UiRadioButtonBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "UiRadioButtonBus",
+                "category": "UI"
+            },
+            "methods": [
+                {
+                    "key": "SetChangedActionName",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Changed Action Name"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Changed Action Name is invoked"
+                    },
+                    "details": {
+                        "name": "Set Changed Action Name",
+                        "tooltip": "Sets the name of the action triggered when the radio button state changes"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Name",
+                                "tooltip": "The name of the action triggered when the radio button state changes"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetChangedActionName",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Changed Action Name"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Changed Action Name is invoked"
+                    },
+                    "details": {
+                        "name": "Get Changed Action Name",
+                        "tooltip": "Gets the name of the action triggered when the radio button state changes"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZStd::string"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetCheckedEntity",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Checked Entity"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Checked Entity is invoked"
+                    },
+                    "details": {
+                        "name": "Set Checked Entity",
+                        "tooltip": "Sets the child element to show when the radio button is checked"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Checked EntityID",
+                                "tooltip": "The child element to show when the radio button is checked"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetUncheckedEntity",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Unchecked Entity"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Unchecked Entity is invoked"
+                    },
+                    "details": {
+                        "name": "Set Unchecked Entity",
+                        "tooltip": "Sets the child element to show when the radio button is unchecked"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Unchecked EntityID",
+                                "tooltip": "The child element to show when the radio button is unchecked"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetTurnOnActionName",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Turn On Action Name"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Turn On Action Name is invoked"
+                    },
+                    "details": {
+                        "name": "Set Turn On Action Name",
+                        "tooltip": "Sets the name of the action triggered when the radio button is checked"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Name",
+                                "tooltip": "The name of the action triggered when the radio button is checked"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetTurnOffActionName",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Turn Off Action Name"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Turn Off Action Name is invoked"
+                    },
+                    "details": {
+                        "name": "Get Turn Off Action Name",
+                        "tooltip": "Gets the name of the action triggered when the radio button is unchecked"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZStd::string"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetGroup",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Group"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Group is invoked"
+                    },
+                    "details": {
+                        "name": "Get Group",
+                        "tooltip": "Gets the group of the radio button"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "EntityId",
+                                "tooltip": "Entity Unique Id"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetState",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get State"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get State is invoked"
+                    },
+                    "details": {
+                        "name": "Get State",
+                        "tooltip": "Returns whether the radio button is checked"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetCheckedEntity",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Checked Entity"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Checked Entity is invoked"
+                    },
+                    "details": {
+                        "name": "Get Checked Entity",
+                        "tooltip": "Gets the child element that is shown when the radio button is checked"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "EntityId",
+                                "tooltip": "Entity Unique Id"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetUncheckedEntity",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Unchecked Entity"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Unchecked Entity is invoked"
+                    },
+                    "details": {
+                        "name": "Get Unchecked Entity",
+                        "tooltip": "Gets the child element that is shown when the radio button is unchecked"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "EntityId",
+                                "tooltip": "Entity Unique Id"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetTurnOnActionName",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Turn On Action Name"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Turn On Action Name is invoked"
+                    },
+                    "details": {
+                        "name": "Get Turn On Action Name",
+                        "tooltip": "Gets the name of the action triggered when the radio button is checked"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZStd::string"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetTurnOffActionName",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Turn Off Action Name"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Turn Off Action Name is invoked"
+                    },
+                    "details": {
+                        "name": "Set Turn Off Action Name",
+                        "tooltip": "Sets the name of the action triggered when the radio button is unchecked"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Name",
+                                "tooltip": "The name of the action triggered when the radio button is unchecked"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

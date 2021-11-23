@@ -1138,10 +1138,6 @@ bool DisplayContext::IsVisible(const AABB& bounds)
             return true;
         }
     }
-    else
-    {
-        return camera->IsAABBVisible_F(AABB(bounds.min, bounds.max));
-    }
     return false;
 }
 

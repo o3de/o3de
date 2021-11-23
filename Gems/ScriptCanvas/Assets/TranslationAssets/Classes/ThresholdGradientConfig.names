@@ -1,0 +1,12 @@
+{
+    "entries": [
+        {
+            "key": "ThresholdGradientConfig",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "ThresholdGradientConfig"
+            }
+        }
+    ]
+}

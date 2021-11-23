@@ -10,7 +10,6 @@
 #pragma once
 
 #if !defined(Q_MOC_RUN)
-#include <Cry_Camera.h>
 
 #include <QSet>
 
@@ -38,6 +37,7 @@
 
 #include <AzFramework/Windowing/WindowBus.h>
 #include <AzFramework/Visibility/EntityVisibilityQuery.h>
+#include <AzFramework/Viewport/ViewportBus.h>
 
 // forward declarations.
 class CBaseObject;
@@ -86,6 +86,7 @@ AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
 AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
 class SANDBOX_API EditorViewportWidget final
     : public QtViewport
+    , public AzFramework::ViewportBorderRequestBus::Handler
     , private IEditorNotifyListener
     , private IUndoManagerListener
     , private Camera::EditorCameraRequestBus::Handler
@@ -119,6 +120,9 @@ public:
     // These methods are made public in the derived class because they are called with an object whose static type is known to be this class type.
     void SetFOV(float fov) override;
     float GetFOV() const override;
+
+    // AzFramework::ViewportBorderRequestBus overrides ...
+    AZStd::optional<AzFramework::ViewportBorderPadding> GetViewportBorderPadding() const override;
 
 private:
     ////////////////////////////////////////////////////////////////////////
@@ -161,13 +165,11 @@ private:
         Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers, const QPoint& point) override;
     void SetViewportId(int id) override;
     QPoint WorldToView(const Vec3& wp) const override;
-    QPoint WorldToViewParticleEditor(const Vec3& wp, int width, int height) const override;
     Vec3 WorldToView3D(const Vec3& wp, int nFlags = 0) const override;
     Vec3 ViewToWorld(const QPoint& vp, bool* collideWithTerrain = nullptr, bool onlyTerrain = false, bool bSkipVegetation = false, bool bTestRenderMesh = false, bool* collideWithObject = nullptr) const override;
     void ViewToWorldRay(const QPoint& vp, Vec3& raySrc, Vec3& rayDir) const override;
     Vec3 ViewToWorldNormal(const QPoint& vp, bool onlyTerrain, bool bTestRenderMesh = false) override;
     float GetScreenScaleFactor(const Vec3& worldPoint) const override;
-    float GetScreenScaleFactor(const CCamera& camera, const Vec3& object_position) override;
     float GetAspectRatio() const override;
     bool HitTest(const QPoint& point, HitContext& hitInfo) override;
     bool IsBoundsVisible(const AABB& box) const override;
@@ -203,7 +205,6 @@ private:
     void* GetSystemCursorConstraintWindow() const override;
 
     // AzToolsFramework::MainEditorViewportInteractionRequestBus overrides ...
-    AZ::EntityId PickEntity(const AzFramework::ScreenPoint& point) override;
     AZ::Vector3 PickTerrain(const AzFramework::ScreenPoint& point) override;
     float TerrainHeight(const AZ::Vector2& position) override;
     bool ShowingWorldSpace() override;
@@ -270,7 +271,8 @@ private:
 
     bool CheckRespondToInput() const;
 
-    void BuildDragDropContext(AzQtComponents::ViewportDragContext& context, const QPoint& pt) override;
+    void BuildDragDropContext(
+        AzQtComponents::ViewportDragContext& context, AzFramework::ViewportId viewportId, const QPoint& point) override;
 
     void SetAsActiveViewport();
     void PushDisableRendering();
@@ -301,8 +303,8 @@ private:
     const DisplayContext& GetDisplayContext() const { return m_displayContext; }
     CBaseObject* GetCameraObject() const;
 
-    void UnProjectFromScreen(float sx, float sy, float sz, float* px, float* py, float* pz) const;
-    void ProjectToScreen(float ptx, float pty, float ptz, float* sx, float* sy, float* sz) const;
+    void UnProjectFromScreen(float sx, float sy, float* px, float* py, float* pz) const;
+    void ProjectToScreen(float ptx, float pty, float ptz, float* sx, float* sy) const;
 
     AZ::RPI::ViewPtr GetCurrentAtomView() const;
 

@@ -1,0 +1,28 @@
+{
+    "entries": [
+        {
+            "key": "TransformRefreshType_Orientation",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "Transform Refresh Type_ Orientation"
+            },
+            "methods": [
+                {
+                    "key": "GetTransformRefreshType_Orientation",
+                    "details": {
+                        "name": "Get Transform Refresh Type_ Orientation"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

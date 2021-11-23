@@ -1,0 +1,28 @@
+{
+    "entries": [
+        {
+            "key": "BlendOp_SubtractReverse",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "Blend Op_ Subtract Reverse"
+            },
+            "methods": [
+                {
+                    "key": "GetBlendOp_SubtractReverse",
+                    "details": {
+                        "name": "Get Blend Op_ Subtract Reverse"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

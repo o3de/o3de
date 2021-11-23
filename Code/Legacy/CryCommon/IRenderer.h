@@ -9,7 +9,6 @@
 
 #pragma once
 
-#include "Cry_Camera.h"
 #include "VertexFormats.h"
 
 #include <AzCore/Casting/numeric_cast.h>

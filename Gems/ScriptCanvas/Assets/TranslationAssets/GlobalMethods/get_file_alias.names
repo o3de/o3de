@@ -1,0 +1,47 @@
+{
+    "entries": [
+        {
+            "key": "get_file_alias",
+            "context": "Method",
+            "variant": "",
+            "details": {
+                "name": "",
+                "category": "Globals"
+            },
+            "methods": [
+                {
+                    "key": "get_file_alias",
+                    "context": "Global",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke get_file_alias"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after get_file_alias is invoked"
+                    },
+                    "details": {
+                        "name": "get_file_alias",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZStd::basic_string<char, AZStd::char_traits<char>, allocator>"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZStd::basic_string<char, AZStd::char_traits<char>, allocator>"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

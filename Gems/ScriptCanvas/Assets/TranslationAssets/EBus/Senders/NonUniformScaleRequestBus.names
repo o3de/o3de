@@ -1,0 +1,58 @@
+{
+    "entries": [
+        {
+            "key": "NonUniformScaleRequestBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "Non Uniform Scale"
+            },
+            "methods": [
+                {
+                    "key": "GetScale",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Scale"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Scale is invoked"
+                    },
+                    "details": {
+                        "name": "Get Scale"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Scale"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetScale",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Scale"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Scale is invoked"
+                    },
+                    "details": {
+                        "name": "Set Scale"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Scale"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

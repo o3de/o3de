@@ -1,0 +1,159 @@
+{
+    "entries": [
+        {
+            "key": "SimpleStateComponentRequestBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "Simple State",
+                "category": "Gameplay"
+            },
+            "methods": [
+                {
+                    "key": "GetNumStates",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Num States"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Num States is invoked"
+                    },
+                    "details": {
+                        "name": "Get Num States"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
+                            "details": {
+                                "name": "State Count"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetToLastState",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set To Last State"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set To Last State is invoked"
+                    },
+                    "details": {
+                        "name": "Set To Last State"
+                    }
+                },
+                {
+                    "key": "SetToPreviousState",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set To Previous State"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set To Previous State is invoked"
+                    },
+                    "details": {
+                        "name": "Set To Previous State"
+                    }
+                },
+                {
+                    "key": "SetToFirstState",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set To First State"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set To First State is invoked"
+                    },
+                    "details": {
+                        "name": "Set To First State"
+                    }
+                },
+                {
+                    "key": "SetToNextState",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set To Next State"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set To Next State is invoked"
+                    },
+                    "details": {
+                        "name": "Set To Next State"
+                    }
+                },
+                {
+                    "key": "SetStateByIndex",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set State By Index"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set State By Index is invoked"
+                    },
+                    "details": {
+                        "name": "Set State By Index"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
+                            "details": {
+                                "name": "Index"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetState",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set State"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set State is invoked"
+                    },
+                    "details": {
+                        "name": "Set State"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "State Name"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetCurrentState",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Current State"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Current State is invoked"
+                    },
+                    "details": {
+                        "name": "Get Current State"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "State Name"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

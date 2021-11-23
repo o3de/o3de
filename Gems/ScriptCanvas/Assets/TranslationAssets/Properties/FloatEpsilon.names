@@ -1,0 +1,28 @@
+{
+    "entries": [
+        {
+            "key": "FloatEpsilon",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "Float Epsilon"
+            },
+            "methods": [
+                {
+                    "key": "GetFloatEpsilon",
+                    "details": {
+                        "name": "Get Float Epsilon"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

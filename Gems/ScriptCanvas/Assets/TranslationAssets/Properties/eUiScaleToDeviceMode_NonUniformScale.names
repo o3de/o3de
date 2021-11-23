@@ -1,0 +1,28 @@
+{
+    "entries": [
+        {
+            "key": "eUiScaleToDeviceMode_NonUniformScale",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "e Ui Scale To Device Mode_ Non Uniform Scale"
+            },
+            "methods": [
+                {
+                    "key": "GeteUiScaleToDeviceMode_NonUniformScale",
+                    "details": {
+                        "name": "Gete Ui Scale To Device Mode_ Non Uniform Scale"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

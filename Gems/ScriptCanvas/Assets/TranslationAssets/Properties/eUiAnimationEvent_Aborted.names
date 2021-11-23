@@ -1,0 +1,28 @@
+{
+    "entries": [
+        {
+            "key": "eUiAnimationEvent_Aborted",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "e Ui Animation Event_ Aborted"
+            },
+            "methods": [
+                {
+                    "key": "GeteUiAnimationEvent_Aborted",
+                    "details": {
+                        "name": "Gete Ui Animation Event_ Aborted"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

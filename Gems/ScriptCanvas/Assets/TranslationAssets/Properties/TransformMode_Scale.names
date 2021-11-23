@@ -1,0 +1,28 @@
+{
+    "entries": [
+        {
+            "key": "TransformMode_Scale",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "Transform Mode_ Scale"
+            },
+            "methods": [
+                {
+                    "key": "GetTransformMode_Scale",
+                    "details": {
+                        "name": "Get Transform Mode_ Scale"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

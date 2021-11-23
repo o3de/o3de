@@ -1,0 +1,108 @@
+{
+    "entries": [
+        {
+            "key": "{233C84A7-44DE-A948-D65C-46C11F1F7162}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "Delay",
+                "category": "Timing",
+                "tooltip": "While active, will signal the output at the given interval.",
+                "subtitle": "Timing"
+            },
+            "slots": [
+                {
+                    "key": "Input_Start",
+                    "details": {
+                        "name": "Start",
+                        "tooltip": "When signaled, execution is delayed at this node according to the specified properties."
+                    }
+                },
+                {
+                    "key": "DataInput_Start: Time",
+                    "details": {
+                        "name": "Start: Time"
+                    }
+                },
+                {
+                    "key": "DataInput_Start: Loop",
+                    "details": {
+                        "name": "Start: Loop"
+                    }
+                },
+                {
+                    "key": "DataInput_Start: Hold",
+                    "details": {
+                        "name": "Start: Hold"
+                    }
+                },
+                {
+                    "key": "Output_On Start",
+                    "details": {
+                        "name": "On Start",
+                        "tooltip": "When signaled, execution is delayed at this node according to the specified properties."
+                    }
+                },
+                {
+                    "key": "Input_Reset",
+                    "details": {
+                        "name": "Reset",
+                        "tooltip": "When signaled, execution is delayed at this node according to the specified properties."
+                    }
+                },
+                {
+                    "key": "DataInput_Reset: Time",
+                    "details": {
+                        "name": "Reset: Time"
+                    }
+                },
+                {
+                    "key": "DataInput_Reset: Loop",
+                    "details": {
+                        "name": "Reset: Loop"
+                    }
+                },
+                {
+                    "key": "DataInput_Reset: Hold",
+                    "details": {
+                        "name": "Reset: Hold"
+                    }
+                },
+                {
+                    "key": "Output_On Reset",
+                    "details": {
+                        "name": "On Reset",
+                        "tooltip": "When signaled, execution is delayed at this node according to the specified properties."
+                    }
+                },
+                {
+                    "key": "Input_Cancel",
+                    "details": {
+                        "name": "Cancel",
+                        "tooltip": "Cancels the current delay."
+                    }
+                },
+                {
+                    "key": "Output_On Cancel",
+                    "details": {
+                        "name": "On Cancel",
+                        "tooltip": "Cancels the current delay."
+                    }
+                },
+                {
+                    "key": "Output_Done",
+                    "details": {
+                        "name": "Done",
+                        "tooltip": "Signaled when the delay reaches zero."
+                    }
+                },
+                {
+                    "key": "DataOutput_Elapsed",
+                    "details": {
+                        "name": "Elapsed"
+                    }
+                }
+            ]
+        }
+    ]
+}

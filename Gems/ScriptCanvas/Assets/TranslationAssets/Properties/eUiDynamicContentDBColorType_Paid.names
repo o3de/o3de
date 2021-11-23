@@ -1,0 +1,28 @@
+{
+    "entries": [
+        {
+            "key": "eUiDynamicContentDBColorType_Paid",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "e Ui Dynamic ContentDB Color Type_ Paid"
+            },
+            "methods": [
+                {
+                    "key": "GeteUiDynamicContentDBColorType_Paid",
+                    "details": {
+                        "name": "Gete Ui Dynamic ContentDB Color Type_ Paid"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

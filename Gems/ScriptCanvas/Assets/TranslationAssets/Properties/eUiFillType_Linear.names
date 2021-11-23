@@ -1,0 +1,28 @@
+{
+    "entries": [
+        {
+            "key": "eUiFillType_Linear",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "e Ui Fill Type_ Linear"
+            },
+            "methods": [
+                {
+                    "key": "GeteUiFillType_Linear",
+                    "details": {
+                        "name": "Gete Ui Fill Type_ Linear"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

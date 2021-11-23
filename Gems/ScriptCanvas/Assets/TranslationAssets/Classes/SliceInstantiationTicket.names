@@ -1,0 +1,113 @@
+{
+    "entries": [
+        {
+            "key": "SliceInstantiationTicket",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "Slice Instantiation Ticket"
+            },
+            "methods": [
+                {
+                    "key": "Equal",
+                    "context": "SliceInstantiationTicket",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Equal"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Equal is invoked"
+                    },
+                    "details": {
+                        "name": "Equal"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{E6E7C0C5-07C9-44BB-A38C-930431948667}",
+                            "details": {
+                                "name": "Slice Instantiation Ticket*"
+                            }
+                        },
+                        {
+                            "typeid": "{E6E7C0C5-07C9-44BB-A38C-930431948667}",
+                            "details": {
+                                "name": "const  Slice Instantiation Ticket&"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Equal"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "ToString",
+                    "context": "SliceInstantiationTicket",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke To String"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after To String is invoked"
+                    },
+                    "details": {
+                        "name": "To String"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{E6E7C0C5-07C9-44BB-A38C-930431948667}",
+                            "details": {
+                                "name": "Slice Instantiation Ticket*"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "String"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "IsValid",
+                    "context": "SliceInstantiationTicket",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Is Valid"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Is Valid is invoked"
+                    },
+                    "details": {
+                        "name": "Is Valid"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{E6E7C0C5-07C9-44BB-A38C-930431948667}",
+                            "details": {
+                                "name": "Slice Instantiation Ticket*"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Is Valid"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

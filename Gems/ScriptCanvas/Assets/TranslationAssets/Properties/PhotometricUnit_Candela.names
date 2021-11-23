@@ -1,0 +1,28 @@
+{
+    "entries": [
+        {
+            "key": "PhotometricUnit_Candela",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "Photometric Unit_ Candela"
+            },
+            "methods": [
+                {
+                    "key": "GetPhotometricUnit_Candela",
+                    "details": {
+                        "name": "Get Photometric Unit_ Candela"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

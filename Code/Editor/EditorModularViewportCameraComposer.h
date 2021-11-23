@@ -9,6 +9,8 @@
 #pragma once
 
 #include <AtomToolsFramework/Viewport/ModularViewportCameraController.h>
+#include <AzCore/Component/TickBus.h>
+#include <AzFramework/Entity/EntityDebugDisplayBus.h>
 #include <AzFramework/Viewport/CameraInput.h>
 #include <AzToolsFramework/API/EditorCameraBus.h>
 #include <EditorModularViewportCameraComposerBus.h>
@@ -20,6 +22,8 @@ namespace SandboxEditor
     class EditorModularViewportCameraComposer
         : private EditorModularViewportCameraComposerNotificationBus::Handler
         , private Camera::EditorCameraNotificationBus::Handler
+        , private AzFramework::ViewportDebugDisplayEventBus::Handler
+        , private AZ::TickBus::Handler
     {
     public:
         SANDBOX_API explicit EditorModularViewportCameraComposer(AzFramework::ViewportId viewportId);
@@ -29,6 +33,12 @@ namespace SandboxEditor
         SANDBOX_API AZStd::shared_ptr<AtomToolsFramework::ModularViewportCameraController> CreateModularViewportCameraController();
 
     private:
+        // AzFramework::ViewportDebugDisplayEventBus overrides ...
+        void DisplayViewport(const AzFramework::ViewportInfo& viewportInfo, AzFramework::DebugDisplayRequests& debugDisplay) override;
+
+        // AZ::TickBus overrides ...
+        void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
+
         //! Setup all internal camera inputs.
         void SetupCameras();
 
@@ -52,5 +62,9 @@ namespace SandboxEditor
         AZStd::shared_ptr<AzFramework::FocusCameraInput> m_orbitFocusCamera;
 
         AzFramework::ViewportId m_viewportId;
+
+        float m_defaultOrbitOpacity = 0.0f; //!< The default orbit axes opacity (to fade in and out).
+        AZ::Vector3 m_defaultOrbitPoint = AZ::Vector3::CreateZero(); //!< The orbit point to use when no entity is selected.
+        bool m_defaultOrbiting = false; //!< Is the camera default orbiting (orbiting when there's no selected entity).
     };
 } // namespace SandboxEditor

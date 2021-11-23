@@ -1,0 +1,966 @@
+{
+    "entries": [
+        {
+            "key": "Math",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "Functions",
+                "category": "Math"
+            },
+            "methods": [
+                {
+                    "key": "DivideByNumber",
+                    "context": "Math",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke DivideByNumber"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after DivideByNumber is invoked"
+                    },
+                    "details": {
+                        "name": "Divide By Number",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "X"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Y"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Result"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "Round",
+                    "context": "Math",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Round"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Round is invoked"
+                    },
+                    "details": {
+                        "name": "Round",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Value"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Result"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "Sqrt",
+                    "context": "Math",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Sqrt"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Sqrt is invoked"
+                    },
+                    "details": {
+                        "name": "Sqrt",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Value"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Result"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "Mod",
+                    "context": "Math",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Mod"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Mod is invoked"
+                    },
+                    "details": {
+                        "name": "Mod",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "A"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "B"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Value"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "Ceil",
+                    "context": "Math",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Ceil"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Ceil is invoked"
+                    },
+                    "details": {
+                        "name": "Ceil",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Value"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Result"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "IsEven",
+                    "context": "Math",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke IsEven"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after IsEven is invoked"
+                    },
+                    "details": {
+                        "name": "Is Even",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "Value"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Is Event"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "IsClose",
+                    "context": "Math",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke IsClose"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after IsClose is invoked"
+                    },
+                    "details": {
+                        "name": "Is Close",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{110C4B14-11A8-4E9D-8638-5051013A56AC}",
+                            "details": {
+                                "name": "A"
+                            }
+                        },
+                        {
+                            "typeid": "{110C4B14-11A8-4E9D-8638-5051013A56AC}",
+                            "details": {
+                                "name": "B"
+                            }
+                        },
+                        {
+                            "typeid": "{110C4B14-11A8-4E9D-8638-5051013A56AC}",
+                            "details": {
+                                "name": "Tolerance"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Is Close"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "ArcSin",
+                    "context": "Math",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke ArcSin"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after ArcSin is invoked"
+                    },
+                    "details": {
+                        "name": "Arc Sin",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Value"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Result"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "ArcTan",
+                    "context": "Math",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke ArcTan"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after ArcTan is invoked"
+                    },
+                    "details": {
+                        "name": "Arc Tan",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Value"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Result"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "Max",
+                    "context": "Math",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Max"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Max is invoked"
+                    },
+                    "details": {
+                        "name": "Max",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "A"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "B"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Result"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "Tan",
+                    "context": "Math",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Tan"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Tan is invoked"
+                    },
+                    "details": {
+                        "name": "Tan",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Value"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Result"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "ArcTan2",
+                    "context": "Math",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke ArcTan2"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after ArcTan2 is invoked"
+                    },
+                    "details": {
+                        "name": "Arc Tan 2",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "A"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "B"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Result"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "Floor",
+                    "context": "Math",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Floor"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Floor is invoked"
+                    },
+                    "details": {
+                        "name": "Floor",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Value"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Result"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "Min",
+                    "context": "Math",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Min"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Min is invoked"
+                    },
+                    "details": {
+                        "name": "Min",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "A"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "B"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Result"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "Lerp",
+                    "context": "Math",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Lerp"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Lerp is invoked"
+                    },
+                    "details": {
+                        "name": "Lerp",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "A"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "B"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Time"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Result"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "LerpInverse",
+                    "context": "Math",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke LerpInverse"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after LerpInverse is invoked"
+                    },
+                    "details": {
+                        "name": "LerpInverse",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "A"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "B"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Time"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Result"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "IsOdd",
+                    "context": "Math",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke IsOdd"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after IsOdd is invoked"
+                    },
+                    "details": {
+                        "name": "Is Odd",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "Value"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Is Odd"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "Abs",
+                    "context": "Math",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Abs"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Abs is invoked"
+                    },
+                    "details": {
+                        "name": "Abs"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Value"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Result"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "RadToDeg",
+                    "context": "Math",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke RadToDeg"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after RadToDeg is invoked"
+                    },
+                    "details": {
+                        "name": "Radians To Degrees",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Radians"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Degrees"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "Sin",
+                    "context": "Math",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Sin"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Sin is invoked"
+                    },
+                    "details": {
+                        "name": "Sin",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Value"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Result"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "Cos",
+                    "context": "Math",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Cos"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Cos is invoked"
+                    },
+                    "details": {
+                        "name": "Cos",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Value"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Result"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "ArcCos",
+                    "context": "Math",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke ArcCos"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after ArcCos is invoked"
+                    },
+                    "details": {
+                        "name": "Arc Cos",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Value"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Result"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "Sign",
+                    "context": "Math",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Sign"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Sign is invoked"
+                    },
+                    "details": {
+                        "name": "Sign",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Value"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Result"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "Clamp",
+                    "context": "Math",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Clamp"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Clamp is invoked"
+                    },
+                    "details": {
+                        "name": "Clamp",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Value"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Minimum"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Maximum"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Result"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetSinCos",
+                    "context": "Math",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetSinCos"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetSinCos is invoked"
+                    },
+                    "details": {
+                        "name": "Get Sin Cos",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Value"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Sin"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Cos"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "DegToRad",
+                    "context": "Math",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke DegToRad"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after DegToRad is invoked"
+                    },
+                    "details": {
+                        "name": "Degrees To Radians",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Degrees"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Radians"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "Pow",
+                    "context": "Math",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Pow"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Pow is invoked"
+                    },
+                    "details": {
+                        "name": "Pow",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Value"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Exponent"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Result"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

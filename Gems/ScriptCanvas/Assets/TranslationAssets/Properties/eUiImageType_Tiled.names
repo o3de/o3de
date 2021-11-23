@@ -1,0 +1,28 @@
+{
+    "entries": [
+        {
+            "key": "eUiImageType_Tiled",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "e Ui Image Type_ Tiled"
+            },
+            "methods": [
+                {
+                    "key": "GeteUiImageType_Tiled",
+                    "details": {
+                        "name": "Gete Ui Image Type_ Tiled"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

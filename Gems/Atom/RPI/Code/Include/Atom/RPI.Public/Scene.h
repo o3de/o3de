@@ -48,14 +48,6 @@ namespace AZ
         // Callback function to modify values of a ShaderResourceGroup
         using ShaderResourceGroupCallback = AZStd::function<void(ShaderResourceGroup*)>;
 
-        //! A structure for ticks which contains system time and game time.
-        struct TickTimeInfo
-        {
-            float m_currentGameTime;
-            float m_gameDeltaTime = 0;
-        };
-
-
         class Scene final
             : public SceneRequestBus::Handler
         {
@@ -179,12 +171,14 @@ namespace AZ
                         
             // Cpu simulation which runs all active FeatureProcessor Simulate() functions.
             // @param jobPolicy if it's JobPolicy::Parallel, the function will spawn a job thread for each FeatureProcessor's simulation.
-            void Simulate(const TickTimeInfo& tickInfo, RHI::JobPolicy jobPolicy);
+            // @param simulationTime the number of seconds since the application started
+            void Simulate(RHI::JobPolicy jobPolicy, float simulationTime);
 
             // Collect DrawPackets from FeatureProcessors
             // @param jobPolicy if it's JobPolicy::Parallel, the function will spawn a job thread for each FeatureProcessor's
             // PrepareRender.
-            void PrepareRender(const TickTimeInfo& tickInfo, RHI::JobPolicy jobPolicy);
+            // @param simulationTime the number of seconds since the application started; this is the same time value that was passed to Simulate()
+            void PrepareRender(RHI::JobPolicy jobPolicy, float simulationTime);
 
             // Function called when the current frame is finished rendering.
             void OnFrameEnd();
@@ -266,6 +260,7 @@ namespace AZ
             // Registry which allocates draw filter tag for RenderPipeline
             RHI::Ptr<RHI::DrawFilterTagRegistry> m_drawFilterTagRegistry;
 
+            RHI::ShaderInputConstantIndex m_timeInputIndex;
             float m_simulationTime;
         };
 

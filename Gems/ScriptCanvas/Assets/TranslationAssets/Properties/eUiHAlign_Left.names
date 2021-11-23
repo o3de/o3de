@@ -1,0 +1,28 @@
+{
+    "entries": [
+        {
+            "key": "eUiHAlign_Left",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "e UiH Align_ Left"
+            },
+            "methods": [
+                {
+                    "key": "GeteUiHAlign_Left",
+                    "details": {
+                        "name": "Gete UiH Align_ Left"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

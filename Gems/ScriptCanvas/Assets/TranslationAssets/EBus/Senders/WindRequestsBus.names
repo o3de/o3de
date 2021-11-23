@@ -1,0 +1,96 @@
+{
+    "entries": [
+        {
+            "key": "WindRequestsBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "Wind"
+            },
+            "methods": [
+                {
+                    "key": "GetGlobalWind",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Global Wind"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Global Wind is invoked"
+                    },
+                    "details": {
+                        "name": "Get Global Wind"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Global Wind Direction"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetWindAtPosition",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Wind At Position"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Wind At Position is invoked"
+                    },
+                    "details": {
+                        "name": "Get Wind At Position"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Position"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Wind Direction"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetWindInsideAabb",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Wind Inside AABB"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Wind Inside AABB is invoked"
+                    },
+                    "details": {
+                        "name": "Get Wind Inside AABB"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A54C2B36-D5B8-46A1-A529-4EBDBD2450E7}",
+                            "details": {
+                                "name": "AABB"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Wind Direction"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

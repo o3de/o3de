@@ -1,0 +1,28 @@
+{
+    "entries": [
+        {
+            "key": "eUiInteractableState_Disabled",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "e Ui Interactable State_ Disabled"
+            },
+            "methods": [
+                {
+                    "key": "GeteUiInteractableState_Disabled",
+                    "details": {
+                        "name": "Gete Ui Interactable State_ Disabled"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

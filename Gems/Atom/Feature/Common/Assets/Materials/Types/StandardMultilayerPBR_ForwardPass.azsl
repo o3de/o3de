@@ -153,7 +153,7 @@ struct StandardMaterialInputs
 
     float2 m_vertexUv[UvSetCount];
     float3x3 m_uvMatrix;
-    float m_normal;
+    float3 m_normal;
     float3 m_tangents[UvSetCount];
     float3 m_bitangents[UvSetCount];
 

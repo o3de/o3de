@@ -1,0 +1,28 @@
+{
+    "entries": [
+        {
+            "key": "SystemConfigPlatform_Provo",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "System Config Platform_ Provo"
+            },
+            "methods": [
+                {
+                    "key": "GetSystemConfigPlatform_Provo",
+                    "details": {
+                        "name": "Get System Config Platform_ Provo"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

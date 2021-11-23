@@ -1,0 +1,28 @@
+{
+    "entries": [
+        {
+            "key": "PhotometricUnit_Nit",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "Photometric Unit_ Nit"
+            },
+            "methods": [
+                {
+                    "key": "GetPhotometricUnit_Nit",
+                    "details": {
+                        "name": "Get Photometric Unit_ Nit"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

@@ -1,0 +1,28 @@
+{
+    "entries": [
+        {
+            "key": "eUiHorizontalOrder_LeftToRight",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "e Ui Horizontal Order_ Left To Right"
+            },
+            "methods": [
+                {
+                    "key": "GeteUiHorizontalOrder_LeftToRight",
+                    "details": {
+                        "name": "Gete Ui Horizontal Order_ Left To Right"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

@@ -1,0 +1,243 @@
+{
+    "entries": [
+        {
+            "key": "AudioSystemComponentRequestBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "Audio System",
+                "category": "Audio"
+            },
+            "methods": [
+                {
+                    "key": "LevelUnloadAudio",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke LevelUnloadAudio"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after LevelUnloadAudio is invoked"
+                    },
+                    "details": {
+                        "name": "Level Unload Audio"
+                    }
+                },
+                {
+                    "key": "LevelLoadAudio",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke LevelLoadAudio"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after LevelLoadAudio is invoked"
+                    },
+                    "details": {
+                        "name": "Level Load Audio"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{7114E998-A8B4-519B-9342-A86D1587B4F7}",
+                            "details": {
+                                "name": "Level Name"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GlobalKillAudioTrigger",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Global Kill Audio Trigger"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Global Kill Audio Trigger is invoked"
+                    },
+                    "details": {
+                        "name": "Global Kill Audio Trigger"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "Trigger Name"
+                            }
+                        },
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Callback Owner",
+                                "tooltip": "Entity Unique Id"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GlobalSetAudioRtpc",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Global Set Audio RTPC"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Global Set Audio RTPC is invoked"
+                    },
+                    "details": {
+                        "name": "Global Set Audio RTPC"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "RTPC Name"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Value"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GlobalSetAudioSwitchState",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Global Set Audio Switch State"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Global Set Audio Switch State is invoked"
+                    },
+                    "details": {
+                        "name": "Global Set Audio Switch State"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "Switch Name"
+                            }
+                        },
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "State Name"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GlobalRefreshAudio",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GlobalRefreshAudio"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GlobalRefreshAudio is invoked"
+                    },
+                    "details": {
+                        "name": "Global Refresh Audio"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{7114E998-A8B4-519B-9342-A86D1587B4F7}",
+                            "details": {
+                                "name": "Level Name"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GlobalMuteAudio",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Global Mute Audio"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Global Mute Audio is invoked"
+                    },
+                    "details": {
+                        "name": "Global Mute Audio"
+                    }
+                },
+                {
+                    "key": "GlobalExecuteAudioTrigger",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Global Execute Audio Trigger"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Global Execute Audio Trigger is invoked"
+                    },
+                    "details": {
+                        "name": "Global Execute Audio Trigger"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "Trigger Name"
+                            }
+                        },
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Callback Owner",
+                                "tooltip": "Entity Unique Id"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GlobalStopAllSounds",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Global Stop All Sounds"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Global Stop All Sounds is invoked"
+                    },
+                    "details": {
+                        "name": "Global Stop All Sounds"
+                    }
+                },
+                {
+                    "key": "GlobalUnmuteAudio",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Global Unmute Audio"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Global Unmute Audio is invoked"
+                    },
+                    "details": {
+                        "name": "Global Unmute Audio"
+                    }
+                },
+                {
+                    "key": "GlobalResetAudioRtpcs",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Global Reset Audio RTPCs"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Global Reset Audio RTPCs is invoked"
+                    },
+                    "details": {
+                        "name": "Global Reset Audio RTPCs"
+                    }
+                }
+            ]
+        }
+    ]
+}

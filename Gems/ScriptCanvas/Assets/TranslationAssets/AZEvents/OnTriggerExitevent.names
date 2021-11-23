@@ -1,0 +1,62 @@
+{
+    "entries": [
+        {
+            "key": "On Trigger Exit event",
+            "context": "AZEventHandler",
+            "variant": "",
+            "details": {
+                "name": "On Trigger Exit event"
+            },
+            "slots": [
+                {
+                    "key": "Simulated Body Handle",
+                    "details": {
+                        "name": "Simulated Body Handle"
+                    }
+                },
+                {
+                    "key": "Trigger Event",
+                    "details": {
+                        "name": "Trigger Event"
+                    }
+                },
+                {
+                    "key": "On Trigger Exit event",
+                    "details": {
+                        "name": "On Trigger Exit event"
+                    }
+                },
+                {
+                    "key": "Connect",
+                    "details": {
+                        "name": "Connect"
+                    }
+                },
+                {
+                    "key": "Disconnect",
+                    "details": {
+                        "name": "Disconnect"
+                    }
+                },
+                {
+                    "key": "On Connected",
+                    "details": {
+                        "name": "On Connected"
+                    }
+                },
+                {
+                    "key": "On Disconnected",
+                    "details": {
+                        "name": "On Disconnected"
+                    }
+                },
+                {
+                    "key": "OnEvent",
+                    "details": {
+                        "name": "OnEvent"
+                    }
+                }
+            ]
+        }
+    ]
+}

@@ -1,0 +1,279 @@
+{
+    "entries": [
+        {
+            "key": "CharacterControllerRequestBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "Character",
+                "category": "PhysX"
+            },
+            "methods": [
+                {
+                    "key": "SetSlopeLimitDegrees",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Slope Limit Degrees"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Slope Limit Degrees is invoked"
+                    },
+                    "details": {
+                        "name": "Set Slope Limit Degrees"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Slope Limit"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetSlopeLimitDegrees",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Slope Limit Degrees"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Slope Limit Degrees is invoked"
+                    },
+                    "details": {
+                        "name": "Get Slope Limit Degrees"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Slope Limit"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetMaximumSpeed",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Maximum Speed"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Maximum Speed is invoked"
+                    },
+                    "details": {
+                        "name": "Set Maximum Speed"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Maximum Speed"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetUpDirection",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Up Direction"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Up Direction is invoked"
+                    },
+                    "details": {
+                        "name": "Get Up Direction"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Up"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "AddVelocity",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Add Velocity"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Add Velocity is invoked"
+                    },
+                    "details": {
+                        "name": "Add Velocity"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Velocity"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetBasePosition",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Base Position"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Base Position is invoked"
+                    },
+                    "details": {
+                        "name": "Set Base Position"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Position"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetCenterPosition",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Center Position"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Center Position is invoked"
+                    },
+                    "details": {
+                        "name": "Get Center Position"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Position"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetStepHeight",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Step Height"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Step Height is invoked"
+                    },
+                    "details": {
+                        "name": "Get Step Height"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Step Height"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetBasePosition",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Base Position"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Base Position is invoked"
+                    },
+                    "details": {
+                        "name": "Get Base Position"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Position"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetStepHeight",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Step Height"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Step Height is invoked"
+                    },
+                    "details": {
+                        "name": "Set Step Height"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Step Height"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetMaximumSpeed",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Maximum Speed"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Maximum Speed is invoked"
+                    },
+                    "details": {
+                        "name": "Get Maximum Speed"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Maximum Speed"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetVelocity",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Velocity"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Velocity is invoked"
+                    },
+                    "details": {
+                        "name": "Get Velocity"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Velocity"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

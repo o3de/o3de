@@ -1,0 +1,29 @@
+{
+    "entries": [
+        {
+            "key": "SystemEntityId",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "System Entity Id"
+            },
+            "methods": [
+                {
+                    "key": "GetSystemEntityId",
+                    "details": {
+                        "name": "Get System Entity Id"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Entity Id",
+                                "tooltip": "Entity Unique Id"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

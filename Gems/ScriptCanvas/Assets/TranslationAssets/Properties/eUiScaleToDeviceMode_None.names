@@ -1,0 +1,28 @@
+{
+    "entries": [
+        {
+            "key": "eUiScaleToDeviceMode_None",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "e Ui Scale To Device Mode_ None"
+            },
+            "methods": [
+                {
+                    "key": "GeteUiScaleToDeviceMode_None",
+                    "details": {
+                        "name": "Gete Ui Scale To Device Mode_ None"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

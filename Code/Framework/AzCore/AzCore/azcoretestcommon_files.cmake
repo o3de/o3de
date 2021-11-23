@@ -12,5 +12,6 @@ set(FILES
     UnitTest/UnitTest.h
     UnitTest/TestTypes.h
     UnitTest/Mocks/MockFileIOBase.h
+    UnitTest/Mocks/MockITime.h
     UnitTest/Mocks/MockSettingsRegistry.h
 )

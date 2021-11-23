@@ -1,0 +1,28 @@
+{
+    "entries": [
+        {
+            "key": "eUiLayoutGridStartingDirection_HorizontalOrder",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "e Ui Layout Grid Starting Direction_ Horizontal Order"
+            },
+            "methods": [
+                {
+                    "key": "GeteUiLayoutGridStartingDirection_HorizontalOrder",
+                    "details": {
+                        "name": "Gete Ui Layout Grid Starting Direction_ Horizontal Order"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

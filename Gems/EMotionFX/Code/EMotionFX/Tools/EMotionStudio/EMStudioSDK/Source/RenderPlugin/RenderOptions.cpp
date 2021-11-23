@@ -545,6 +545,7 @@ namespace EMStudio
             ->Attribute(AZ::Edit::Attributes::ChangeNotify, &RenderOptions::OnLineSkeletonColorChangedCallback)
             ->DataElement(AZ::Edit::UIHandlers::Default, &RenderOptions::m_skeletonColor, "Solid skeleton color",
                 "Solid skeleton color.")
+            ->Attribute(AZ_CRC("AlphaChannel", 0xa0cab5cf), true)
             ->Attribute(AZ::Edit::Attributes::ChangeNotify, &RenderOptions::OnSkeletonColorChangedCallback)
             ->DataElement(AZ::Edit::UIHandlers::Default, &RenderOptions::m_selectionColor, "Selection gizmo color",
                 "Selection gizmo color")
@@ -1062,6 +1063,7 @@ namespace EMStudio
         settings.m_vertexNormalsScale = m_vertexNormalsScale;
         settings.m_faceNormalsScale = m_faceNormalsScale;
         settings.m_tangentsScale = m_tangentsScale;
+        settings.m_nodeOrientationScale = m_nodeOrientationScale;
 
         settings.m_vertexNormalsColor = m_vertexNormalsColor;
         settings.m_faceNormalsColor = m_faceNormalsColor;
@@ -1072,6 +1074,17 @@ namespace EMStudio
         settings.m_staticAABBColor = m_staticAABBColor;
         settings.m_skeletonColor = m_skeletonColor;
         settings.m_lineSkeletonColor = m_lineSkeletonColor;
+
+        settings.m_hitDetectionColliderColor = m_hitDetectionColliderColor;
+        settings.m_selectedHitDetectionColliderColor = m_selectedHitDetectionColliderColor;
+        settings.m_ragdollColliderColor = m_ragdollColliderColor;
+        settings.m_selectedRagdollColliderColor = m_selectedRagdollColliderColor;
+        settings.m_violatedJointLimitColor = m_violatedJointLimitColor;
+        settings.m_clothColliderColor = m_clothColliderColor;
+        settings.m_selectedClothColliderColor = m_selectedClothColliderColor;
+        settings.m_simulatedObjectColliderColor = m_simulatedObjectColliderColor;
+        settings.m_selectedSimulatedObjectColliderColor = m_selectedSimulatedObjectColliderColor;
+        settings.m_jointNameColor = m_nodeNameColor;
     }
 
     void RenderOptions::OnGridUnitSizeChangedCallback() const
@@ -1100,6 +1113,7 @@ namespace EMStudio
     void RenderOptions::OnNodeOrientationScaleChangedCallback() const
     {
         PluginOptionsNotificationsBus::Event(s_nodeOrientationScaleOptionName, &PluginOptionsNotificationsBus::Events::OnOptionChanged, s_nodeOrientationScaleOptionName);
+        CopyToRenderActorSettings(EMotionFX::GetRenderActorSettings());
     }
 
     void RenderOptions::OnScaleBonesOnLengthChangedCallback() const
@@ -1258,6 +1272,7 @@ namespace EMStudio
     void RenderOptions::OnSkeletonColorChangedCallback() const
     {
         PluginOptionsNotificationsBus::Event(s_skeletonColorOptionName, &PluginOptionsNotificationsBus::Events::OnOptionChanged, s_skeletonColorOptionName);
+        CopyToRenderActorSettings(EMotionFX::GetRenderActorSettings());
     }
 
     void RenderOptions::OnSelectionColorChangedCallback() const
@@ -1273,6 +1288,7 @@ namespace EMStudio
     void RenderOptions::OnNodeNameColorChangedCallback() const
     {
         PluginOptionsNotificationsBus::Event(s_nodeNameColorOptionName, &PluginOptionsNotificationsBus::Events::OnOptionChanged, s_nodeNameColorOptionName);
+        CopyToRenderActorSettings(EMotionFX::GetRenderActorSettings());
     }
 
     void RenderOptions::OnGridColorChangedCallback() const

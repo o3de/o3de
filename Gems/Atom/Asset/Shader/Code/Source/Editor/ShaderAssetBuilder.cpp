@@ -162,7 +162,7 @@ namespace AZ
             // has the same value, because later the ShaderVariantTreeAsset job will fetch this value from the local ShaderAsset
             // which could cross platforms (i.e. building an android ShaderVariantTreeAsset on PC would fetch the tiemstamp from
             // the PC's ShaderAsset).
-            AZStd::sys_time_t shaderAssetBuildTimestamp = AZStd::GetTimeNowMicroSecond();
+            AZ::u64 shaderAssetBuildTimestamp = AZStd::GetTimeUTCMilliSecond();
 
             // Need to get the name of the azsl file from the .shader source asset, to be able to declare a dependency to SRG Layout Job.
             // and the macro options to preprocess.
@@ -229,8 +229,8 @@ namespace AZ
             }  // for all request.m_enabledPlatforms
 
             AZ_TracePrintf(
-                ShaderAssetBuilderName, "CreateJobs for %s took %llu microseconds", shaderAssetSourceFileFullPath.c_str(),
-                AZStd::GetTimeNowMicroSecond() - shaderAssetBuildTimestamp);
+                ShaderAssetBuilderName, "CreateJobs for %s took %llu milliseconds", shaderAssetSourceFileFullPath.c_str(),
+                AZStd::GetTimeUTCMilliSecond() - shaderAssetBuildTimestamp);
 
             response.m_result = AssetBuilderSDK::CreateJobsResultCode::Success;
         }
@@ -355,8 +355,8 @@ namespace AZ
                 return;
             }
 
-            // Get the time stamp string as sys_time_t, and also convert back to string to make sure it was converted correctly.
-            AZStd::sys_time_t shaderAssetBuildTimestamp = 0;
+            // Get the time stamp string as u64, and also convert back to string to make sure it was converted correctly.
+            AZ::u64 shaderAssetBuildTimestamp = 0;
             auto shaderAssetBuildTimestampIterator = request.m_jobDescription.m_jobParameters.find(ShaderAssetBuildTimestampParam);
             if (shaderAssetBuildTimestampIterator != request.m_jobDescription.m_jobParameters.end())
             {

@@ -1,0 +1,28 @@
+{
+    "entries": [
+        {
+            "key": "MultiPositionBehaviorType_Separate",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "Multi Position Behavior Type_ Separate"
+            },
+            "methods": [
+                {
+                    "key": "GetMultiPositionBehaviorType_Separate",
+                    "details": {
+                        "name": "Get Multi Position Behavior Type_ Separate"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
+                            "details": {
+                                "name": "unsigned int"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

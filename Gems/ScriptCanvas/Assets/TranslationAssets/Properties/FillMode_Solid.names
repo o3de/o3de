@@ -1,0 +1,28 @@
+{
+    "entries": [
+        {
+            "key": "FillMode_Solid",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "Fill Mode_ Solid"
+            },
+            "methods": [
+                {
+                    "key": "GetFillMode_Solid",
+                    "details": {
+                        "name": "Get Fill Mode_ Solid"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

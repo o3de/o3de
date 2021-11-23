@@ -76,6 +76,12 @@ foreach(project_name project_path IN ZIP_LISTS LY_PROJECTS_TARGET_NAME LY_PROJEC
             Legacy::CrySystem
         )
 
+        if(PAL_TRAIT_BUILD_SERVER_SUPPORTED)
+            set(server_runtime_dependencies
+                Legacy::CrySystem
+            )
+        endif()
+
     endif()
 
     ################################################################################

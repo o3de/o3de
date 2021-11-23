@@ -1,0 +1,196 @@
+{
+    "entries": [
+        {
+            "key": "PolygonPrismShapeComponentRequestBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "Polygon Prism"
+            },
+            "methods": [
+                {
+                    "key": "ClearVertices",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke ClearVertices"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after ClearVertices is invoked"
+                    },
+                    "details": {
+                        "name": "Clear Vertices"
+                    }
+                },
+                {
+                    "key": "InsertVertex",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke InsertVertex"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after InsertVertex is invoked"
+                    },
+                    "details": {
+                        "name": "Insert Vertex"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{D6597933-47CD-4FC8-B911-63F3E2B0993A}",
+                            "details": {
+                                "name": "Index"
+                            }
+                        },
+                        {
+                            "typeid": "{3D80F623-C85C-4741-90D0-E4E66164E6BF}",
+                            "details": {
+                                "name": "Vertex"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Inserted"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "UpdateVertex",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke UpdateVertex"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after UpdateVertex is invoked"
+                    },
+                    "details": {
+                        "name": "Update Vertex"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{D6597933-47CD-4FC8-B911-63F3E2B0993A}",
+                            "details": {
+                                "name": "Index"
+                            }
+                        },
+                        {
+                            "typeid": "{3D80F623-C85C-4741-90D0-E4E66164E6BF}",
+                            "details": {
+                                "name": "Vertex"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Updated"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "AddVertex",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke AddVertex"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after AddVertex is invoked"
+                    },
+                    "details": {
+                        "name": "Add Vertex"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3D80F623-C85C-4741-90D0-E4E66164E6BF}",
+                            "details": {
+                                "name": "Vertex"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetPolygonPrism",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetPolygonPrism"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetPolygonPrism is invoked"
+                    },
+                    "details": {
+                        "name": "Get Polygon Prism"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{2E879A16-9143-5862-A5B3-EDED931C60BC}",
+                            "details": {
+                                "name": "Polygon Prism"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetHeight",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetHeight"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetHeight is invoked"
+                    },
+                    "details": {
+                        "name": "Set Height"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Height"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "RemoveVertex",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke RemoveVertex"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after RemoveVertex is invoked"
+                    },
+                    "details": {
+                        "name": "Remove Vertex"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{D6597933-47CD-4FC8-B911-63F3E2B0993A}",
+                            "details": {
+                                "name": "Index"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Removed"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

@@ -73,7 +73,6 @@ unsigned int g_EnableMultipleAssert = 0;//set to something else than 0 if to ena
 #include <unistd.h>
 #include <utime.h>
 #include <dirent.h>
-#include "CryLibrary.h"
 #endif
 
 #if defined(APPLE)

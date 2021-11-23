@@ -25,7 +25,7 @@ namespace AzFramework
     public:
         ////////////////////////////////////////////////////////////////////////////////////////////
         //! The id used to identify the primary touch input device
-        static const InputDeviceId Id;
+        static constexpr inline InputDeviceId Id{"touch"};
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         //! Check whether an input device id identifies a touch device (regardless of index)

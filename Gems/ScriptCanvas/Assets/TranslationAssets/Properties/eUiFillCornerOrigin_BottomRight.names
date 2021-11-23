@@ -1,0 +1,28 @@
+{
+    "entries": [
+        {
+            "key": "eUiFillCornerOrigin_BottomRight",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "e Ui Fill Corner Origin_ Bottom Right"
+            },
+            "methods": [
+                {
+                    "key": "GeteUiFillCornerOrigin_BottomRight",
+                    "details": {
+                        "name": "Gete Ui Fill Corner Origin_ Bottom Right"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

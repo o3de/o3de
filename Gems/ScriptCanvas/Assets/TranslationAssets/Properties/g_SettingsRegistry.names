@@ -1,0 +1,28 @@
+{
+    "entries": [
+        {
+            "key": "g_SettingsRegistry",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "g_ Settings Registry"
+            },
+            "methods": [
+                {
+                    "key": "Getg_SettingsRegistry",
+                    "details": {
+                        "name": "Getg_ Settings Registry"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{795C80A0-D243-473B-972A-C32CA487BAA5}",
+                            "details": {
+                                "name": "Settings Registry Script Proxy"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

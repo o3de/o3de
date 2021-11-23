@@ -1,0 +1,308 @@
+{
+    "entries": [
+        {
+            "key": "MathUtils",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "Utilities",
+                "category": "Math"
+            },
+            "methods": [
+                {
+                    "key": "ConvertEulerDegreesToQuaternion",
+                    "context": "MathUtils",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Convert Euler Angles To Quaternion"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Convert Euler Angles To Quaternion is invoked"
+                    },
+                    "details": {
+                        "name": "Convert Euler Angles To Quaternion"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Angles (Degrees)"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{73103120-3DD3-4873-BAB3-9713FA2804FB}",
+                            "details": {
+                                "name": "Quaternion"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "ConvertEulerDegreesToTransformPrecise",
+                    "context": "MathUtils",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Convert Euler Angles To Transform (Precise)"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Convert Euler Angles To Transform (Precise) is invoked"
+                    },
+                    "details": {
+                        "name": "Convert Euler Angles To Transform (Precise)",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Angles (Degrees)"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{5D9958E9-9F1E-4985-B532-FFFDE75FEDFD}",
+                            "details": {
+                                "name": "Transform"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "ConvertEulerDegreesToTransform",
+                    "context": "MathUtils",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Convert Euler Angles To Transform"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Convert Euler Angles To Transform is invoked"
+                    },
+                    "details": {
+                        "name": "Convert Euler Angles To Transform"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Angles (Degrees)"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{5D9958E9-9F1E-4985-B532-FFFDE75FEDFD}",
+                            "details": {
+                                "name": "Transform"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "ConvertQuaternionToEulerRadians",
+                    "context": "MathUtils",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Convert Quaternion To Euler Angles (Radians)"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Convert Quaternion To Euler Angles (Radians) is invoked"
+                    },
+                    "details": {
+                        "name": "Convert Quaternion To Euler Angles (Radians)"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{73103120-3DD3-4873-BAB3-9713FA2804FB}",
+                            "details": {
+                                "name": "Quaternion"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Angles (Radians)"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "CreateLookAt",
+                    "context": "MathUtils",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Create Look At"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Create Look At is invoked"
+                    },
+                    "details": {
+                        "name": "Create Look At"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "From"
+                            }
+                        },
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "To"
+                            }
+                        },
+                        {
+                            "typeid": "{72B9409A-7D1A-4831-9CFE-FCB3FADD3426}",
+                            "details": {
+                                "name": "Axis",
+                                "tooltip": "0: X+, 1: X-, 2: Y+, 3: Y-, 4: Z+, 5: Z-"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{5D9958E9-9F1E-4985-B532-FFFDE75FEDFD}",
+                            "details": {
+                                "name": "Transform"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "ConvertTransformToEulerRadians",
+                    "context": "MathUtils",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Convert Transform To Euler Angles (Radians)"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Convert Transform To Euler Angles (Radians) is invoked"
+                    },
+                    "details": {
+                        "name": "Convert Transform To Euler Angles (Radians)"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{5D9958E9-9F1E-4985-B532-FFFDE75FEDFD}",
+                            "details": {
+                                "name": "Transform"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Angles (Radians)"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "ConvertQuaternionToEulerDegrees",
+                    "context": "MathUtils",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Convert Quaternion To Euler Angles (Degrees)"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Convert Quaternion To Euler Angles (Degrees) is invoked"
+                    },
+                    "details": {
+                        "name": "Convert Quaternion To Euler Angles (Degrees)"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{73103120-3DD3-4873-BAB3-9713FA2804FB}",
+                            "details": {
+                                "name": "Quaternion"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Angles (Degrees)"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "ConvertTransformToEulerDegrees",
+                    "context": "MathUtils",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Convert Transform To Euler Angles (Degrees)"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Convert Transform To Euler Angles (Degrees) is invoked"
+                    },
+                    "details": {
+                        "name": "Convert Transform To Euler Angles (Degrees)"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{5D9958E9-9F1E-4985-B532-FFFDE75FEDFD}",
+                            "details": {
+                                "name": "Transform"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Angles (Degrees)"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "ConvertEulerRadiansToQuaternion",
+                    "context": "MathUtils",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Convert Euler Angles (Radians) To Quaternion"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Convert Euler Angles (Radians) To Quaternion is invoked"
+                    },
+                    "details": {
+                        "name": "Convert Euler Angles (Radians) To Quaternion"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Angles (Radians)"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{73103120-3DD3-4873-BAB3-9713FA2804FB}",
+                            "details": {
+                                "name": "Quaternion"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

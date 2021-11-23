@@ -28,6 +28,8 @@ struct IInitializeUIInfo;
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Math/Vector3.h>
 
+#include <AzCore/Module/DynamicModuleHandle.h>
+
 class ThreadedOnErrorHandler : public QObject
 {
     Q_OBJECT
@@ -124,11 +126,6 @@ public:
         return s_pakModifyMutex;
     }
 
-    inline HMODULE GetGameModule() const
-    {
-        return m_gameDll;
-    }
-
 private:
     void SetGameMode(bool inGame);
     void SwitchToInGame();
@@ -150,8 +147,7 @@ private:
     AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
     Matrix34 m_playerViewTM;
     struct SSystemUserCallback* m_pSystemUserCallback;
-    HMODULE m_hSystemHandle;
-    HMODULE m_gameDll;
+    AZStd::unique_ptr<AZ::DynamicModuleHandle> m_hSystemHandle;
     enum EPendingGameMode
     {
         ePGM_NotPending,

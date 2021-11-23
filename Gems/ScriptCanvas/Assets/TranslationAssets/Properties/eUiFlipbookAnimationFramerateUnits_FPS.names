@@ -1,0 +1,28 @@
+{
+    "entries": [
+        {
+            "key": "eUiFlipbookAnimationFramerateUnits_FPS",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "e Ui Flipbook Animation Framerate Units_FPS"
+            },
+            "methods": [
+                {
+                    "key": "GeteUiFlipbookAnimationFramerateUnits_FPS",
+                    "details": {
+                        "name": "Gete Ui Flipbook Animation Framerate Units_FPS"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

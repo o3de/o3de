@@ -1,0 +1,92 @@
+{
+    "entries": [
+        {
+            "key": "PerformanceStatisticsEBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "PerformanceStatisticsEBus"
+            },
+            "methods": [
+                {
+                    "key": "TrackPerFrameStop",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke TrackPerFrameStop"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after TrackPerFrameStop is invoked"
+                    },
+                    "details": {
+                        "name": "TrackPerFrameStop"
+                    }
+                },
+                {
+                    "key": "TrackPerFrameStart",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke TrackPerFrameStart"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after TrackPerFrameStart is invoked"
+                    },
+                    "details": {
+                        "name": "TrackPerFrameStart"
+                    }
+                },
+                {
+                    "key": "TrackAccumulatedStart",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke TrackAccumulatedStart"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after TrackAccumulatedStart is invoked"
+                    },
+                    "details": {
+                        "name": "TrackAccumulatedStart"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "TrackAccumulatedStop",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke TrackAccumulatedStop"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after TrackAccumulatedStop is invoked"
+                    },
+                    "details": {
+                        "name": "TrackAccumulatedStop"
+                    }
+                },
+                {
+                    "key": "ClearSnaphotStatistics",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke ClearSnaphotStatistics"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after ClearSnaphotStatistics is invoked"
+                    },
+                    "details": {
+                        "name": "ClearSnaphotStatistics"
+                    }
+                }
+            ]
+        }
+    ]
+}

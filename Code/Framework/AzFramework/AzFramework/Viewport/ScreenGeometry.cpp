@@ -24,6 +24,10 @@ namespace AzFramework
             serializeContext->Class<ScreenVector>()->
                 Field("X", &ScreenVector::m_x)->
                 Field("Y", &ScreenVector::m_y);
+
+            serializeContext->Class<ScreenSize>()->
+                Field("Width", &ScreenSize::m_width)->
+                Field("Height", &ScreenSize::m_height);
         }
     }
 } // namespace AzFramework

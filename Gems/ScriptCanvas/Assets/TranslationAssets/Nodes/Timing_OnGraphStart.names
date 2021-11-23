@@ -1,0 +1,24 @@
+{
+    "entries": [
+        {
+            "key": "{F200B22A-5903-483A-BF63-5241BC03632B}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "On Graph Start",
+                "category": "Timing",
+                "tooltip": "Starts executing the graph when the entity that owns the graph is fully activated.",
+                "subtitle": "Timing"
+            },
+            "slots": [
+                {
+                    "key": "Output_Out",
+                    "details": {
+                        "name": "Out",
+                        "tooltip": "Signaled when the entity that owns this graph is fully activated."
+                    }
+                }
+            ]
+        }
+    ]
+}

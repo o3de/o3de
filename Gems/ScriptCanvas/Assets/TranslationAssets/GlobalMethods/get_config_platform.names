@@ -1,0 +1,39 @@
+{
+    "entries": [
+        {
+            "key": "get_config_platform",
+            "context": "Method",
+            "variant": "",
+            "details": {
+                "name": "",
+                "category": "Globals"
+            },
+            "methods": [
+                {
+                    "key": "get_config_platform",
+                    "context": "Global",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke get_config_platform"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after get_config_platform is invoked"
+                    },
+                    "details": {
+                        "name": "get_config_platform",
+                        "category": "Other"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

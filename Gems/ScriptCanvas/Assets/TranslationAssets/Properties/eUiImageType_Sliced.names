@@ -1,0 +1,28 @@
+{
+    "entries": [
+        {
+            "key": "eUiImageType_Sliced",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "e Ui Image Type_ Sliced"
+            },
+            "methods": [
+                {
+                    "key": "GeteUiImageType_Sliced",
+                    "details": {
+                        "name": "Gete Ui Image Type_ Sliced"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}
