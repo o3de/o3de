@@ -8,7 +8,7 @@
 
 import binascii
 import fnmatch
-import os.path
+import pathlib
 import re
 from typing import Type, List
 
@@ -24,7 +24,7 @@ class CrcValidator(CommitValidator):
                     if VERBOSE: print(f'{file_name}::{self.__class__.__name__} SKIPPED - Validation pattern excluded on path.')
                     break
             else:
-                if os.path.splitext(file_name)[1].lower() not in SOURCE_FILE_EXTENSIONS:
+                if pathlib.Path(file_name).suffix.lower() not in SOURCE_FILE_EXTENSIONS:
                     if VERBOSE: print(f'{file_name}::{self.__class__.__name__} SKIPPED - File excluded based on extension.')
                     continue
                 
