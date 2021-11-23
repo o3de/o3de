@@ -8,10 +8,13 @@
 
 #include "TestColliderComponent.h"
 
+#include <AzManipulatorTestFramework/IndirectManipulatorViewportInteraction.h>
+#include <AzManipulatorTestFramework/AzManipulatorTestFrameworkTestHelpers.h>
 #include <AZTestShared/Math/MathTestHelpers.h>
 #include <AzToolsFramework/UnitTest/AzToolsFrameworkTestHelpers.h>
 #include <AzToolsFramework/ViewportSelection/EditorInteractionSystemViewportSelectionRequestBus.h>
 #include <AzToolsFramework/ViewportSelection/EditorDefaultSelection.h>
+#include <AzToolsFramework/ViewPortSelection/EditorSelectionUtil.h>
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 #include <AzToolsFramework/ViewportUi/ViewportUiManager.h>
 #include <Tests/Viewport/ViewportUiManagerTests.cpp>
@@ -385,5 +388,53 @@ namespace UnitTest
         // Then the component mode is set to Offset.
         PhysX::ColliderComponentModeRequestBus::BroadcastResult(subMode, &PhysX::ColliderComponentModeRequests::GetCurrentMode);
         EXPECT_EQ(PhysX::ColliderComponentModeRequests::SubMode::Dimensions, subMode);
+    }
+
+    using PhysXColliderComponentModeManipulatorTest =
+        UnitTest::IndirectCallManipulatorViewportInteractionFixtureMixin<PhysXColliderComponentModeTest>;
+
+    TEST_F(PhysXColliderComponentModeManipulatorTest, AssetScaleManipulatorsScaleInCorrectDirection)
+    {
+        auto colliderEntity = CreateColliderComponent();
+        colliderEntity->FindComponent<TestColliderComponentMode>()->SetShapeType(Physics::ShapeType::PhysicsAsset);
+        colliderEntity->FindComponent<TestColliderComponentMode>()->SetAssetScale(AZ::Vector3::CreateOne());
+        EnterComponentMode<TestColliderComponentMode>();
+        PhysX::ColliderComponentModeRequestBus::Broadcast(&PhysX::ColliderComponentModeRequests::SetCurrentMode,
+            PhysX::ColliderComponentModeRequests::SubMode::Dimensions);
+
+        // position the camera so the X axis manipulator will be flipped
+        AzFramework::SetCameraTransform(
+            m_cameraState,
+            AZ::Transform::CreateFromQuaternionAndTranslation(
+                AZ::Quaternion::CreateRotationZ(-AZ::Constants::QuarterPi), AZ::Vector3(-5.0f, -5.0f, 0.0f)));
+
+        // select a point in world space slightly displaced from the position of the entity in the negative x direction
+        // in order to grab the X manipulator
+        const float x = 0.1f;
+        const float xDelta = 0.1f;
+        const AZ::Vector3 worldStart(-x, 0.0f, 0.0f);
+
+        // position in world space to drag to
+        const AZ::Vector3 worldEnd(-(x + xDelta), 0.0f, 0.0f);
+
+        const auto screenStart = AzFramework::WorldToScreen(worldStart, m_cameraState);
+        const auto screenEnd = AzFramework::WorldToScreen(worldEnd, m_cameraState);
+
+        m_actionDispatcher
+            ->CameraState(m_cameraState)
+            // move the mouse to interact with the x scale manipulator
+            ->MousePosition(screenStart)
+            // drag to move the manipulator
+            ->MouseLButtonDown()
+            ->MousePosition(screenEnd)
+            ->MouseLButtonUp();
+
+        const auto WorldToScreenMultiplier = 1.0f / AzToolsFramework::CalculateScreenToWorldMultiplier(worldStart, m_cameraState);
+        const auto assetScale = colliderEntity->FindComponent<TestColliderComponentMode>()->GetAssetScale();
+        // need quite a large tolerance because using screen co-ordinates limits precision
+        const float tolerance = 0.01f;
+        EXPECT_NEAR(assetScale.GetX(), 1.0f + xDelta * WorldToScreenMultiplier, tolerance);
+        EXPECT_NEAR(assetScale.GetY(), 1.0f, tolerance);
+        EXPECT_NEAR(assetScale.GetZ(), 1.0f, tolerance);
     }
 } // namespace UnitTest

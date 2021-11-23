@@ -67,13 +67,13 @@ namespace UnitTest
 
     private:
         AzToolsFramework::ComponentModeFramework::ComponentModeDelegate m_componentModeDelegate;
-        AZ::Vector3 m_offset;
-        AZ::Quaternion m_rotation;
-        AZ::Transform m_transform;
-        Physics::ShapeType m_shapeType;
-        float m_sphereRadius;
-        float m_capsuleHeight;
-        float m_capsuleRadius;
-        AZ::Vector3 m_assetScale;
+        AZ::Vector3 m_offset = AZ::Vector3::CreateZero();
+        AZ::Quaternion m_rotation = AZ::Quaternion::CreateIdentity();
+        AZ::Transform m_transform = AZ::Transform::CreateIdentity();
+        Physics::ShapeType m_shapeType = Physics::ShapeType::PhysicsAsset;
+        float m_sphereRadius = 0.5f;
+        float m_capsuleHeight = 1.0f;
+        float m_capsuleRadius = 0.25f;
+        AZ::Vector3 m_assetScale = AZ::Vector3::CreateOne();
     };
 } // namespace UnitTest
