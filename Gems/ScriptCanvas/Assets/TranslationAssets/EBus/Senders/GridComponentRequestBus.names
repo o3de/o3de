@@ -5,7 +5,7 @@
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "GridComponentRequestBus"
+                "name": "Grid Component"
             },
             "methods": [
                 {

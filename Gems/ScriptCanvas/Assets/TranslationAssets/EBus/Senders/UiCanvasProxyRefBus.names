@@ -5,7 +5,7 @@
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "UiCanvasProxyRefBus",
+                "name": "UI Canvas Proxy Ref",
                 "category": "UI"
             },
             "methods": [

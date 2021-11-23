@@ -5,7 +5,7 @@
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "UiDynamicContentDatabaseBus",
+                "name": "UI Dynamic Content Database",
                 "category": "UI/LyShine Examples"
             },
             "methods": [

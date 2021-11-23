@@ -5,7 +5,7 @@
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "UiInteractableActionsBus",
+                "name": "UI Interactable Actions",
                 "category": "UI"
             },
             "methods": [

@@ -845,13 +845,13 @@ namespace ScriptCanvasEditorTools
 
                 AZStd::string argumentKey = parameter->m_typeId.ToString<AZStd::string>();
                 AZStd::string argumentName = parameter->m_name;
-                AZStd::string argumentDescription = "";
+                AZStd::string argumentDescription;
 
                 Helpers::GetTypeNameAndDescription(parameter->m_typeId, argumentName, argumentDescription);
 
                 const AZStd::string* argName = behaviorMethod->GetArgumentName(argIndex);
                 argument.m_typeId = argumentKey;
-                argument.m_details.m_name = argName ? *argName : argumentName;
+                argument.m_details.m_name = (argName && !argName->empty()) ? *argName : argumentName;
                 argument.m_details.m_category = "";
                 argument.m_details.m_tooltip = argumentDescription;
 
@@ -869,13 +869,13 @@ namespace ScriptCanvasEditorTools
 
             AZStd::string resultKey = resultParameter->m_typeId.ToString<AZStd::string>();
             AZStd::string resultName = resultParameter->m_name;
-            AZStd::string resultDescription = "";
+            AZStd::string resultDescription;
 
             Helpers::GetTypeNameAndDescription(resultParameter->m_typeId, resultName, resultDescription);
 
             const AZStd::string* resName = behaviorMethod->GetArgumentName(0);
             result.m_typeId = resultKey;
-            result.m_details.m_name = resName ? *resName : resultName;
+            result.m_details.m_name = (resName && !resName->empty()) ? *resName : resultName;
             result.m_details.m_tooltip = resultDescription;
 
             SplitCamelCase(result.m_details.m_name);

@@ -5,7 +5,7 @@
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "HDRColorGradingRequestBus"
+                "name": "HDR Color Grading"
             },
             "methods": [
                 {
