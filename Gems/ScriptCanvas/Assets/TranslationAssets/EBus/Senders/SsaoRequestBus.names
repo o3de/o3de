@@ -5,21 +5,22 @@
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "SSAO"
+                "name": "SSAO",
+                "category": "Rendering"
             },
             "methods": [
                 {
                     "base": "SetBlurDepthFalloffStrength",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetBlurDepthFalloffStrength"
+                        "tooltip": "When signaled, this will invoke Set Blur Depth Falloff Strength"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetBlurDepthFalloffStrength is invoked"
+                        "tooltip": "Signaled after Set Blur Depth Falloff Strength is invoked"
                     },
                     "details": {
-                        "name": "SetBlurDepthFalloffStrength"
+                        "name": "Set Blur Depth Falloff Strength"
                     },
                     "params": [
                         {
@@ -34,14 +35,14 @@
                     "base": "SetBlurDepthFalloffThreshold",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetBlurDepthFalloffThreshold"
+                        "tooltip": "When signaled, this will invoke Set Blur Depth Falloff Threshold"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetBlurDepthFalloffThreshold is invoked"
+                        "tooltip": "Signaled after Set Blur Depth Falloff Threshold is invoked"
                     },
                     "details": {
-                        "name": "SetBlurDepthFalloffThreshold"
+                        "name": "Set Blur Depth Falloff Threshold"
                     },
                     "params": [
                         {
@@ -56,14 +57,14 @@
                     "base": "SetEnableDownsampleOverride",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetEnableDownsampleOverride"
+                        "tooltip": "When signaled, this will invoke Set Enable Downsample Override"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetEnableDownsampleOverride is invoked"
+                        "tooltip": "Signaled after Set Enable Downsample Override is invoked"
                     },
                     "details": {
-                        "name": "SetEnableDownsampleOverride"
+                        "name": "Set Enable Downsample Override"
                     },
                     "params": [
                         {
@@ -78,14 +79,14 @@
                     "base": "SetEnableBlurOverride",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetEnableBlurOverride"
+                        "tooltip": "When signaled, this will invoke Set Enable Blur Override"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetEnableBlurOverride is invoked"
+                        "tooltip": "Signaled after Set Enable Blur Override is invoked"
                     },
                     "details": {
-                        "name": "SetEnableBlurOverride"
+                        "name": "Set Enable Blur Override"
                     },
                     "params": [
                         {
@@ -100,14 +101,14 @@
                     "base": "GetEnabledOverride",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetEnabledOverride"
+                        "tooltip": "When signaled, this will invoke Get Enabled Override"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetEnabledOverride is invoked"
+                        "tooltip": "Signaled after Get Enabled Override is invoked"
                     },
                     "details": {
-                        "name": "GetEnabledOverride"
+                        "name": "Get Enabled Override"
                     },
                     "results": [
                         {
@@ -122,14 +123,14 @@
                     "base": "GetSamplingRadius",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetSamplingRadius"
+                        "tooltip": "When signaled, this will invoke Get Sampling Radius"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetSamplingRadius is invoked"
+                        "tooltip": "Signaled after Get Sampling Radius is invoked"
                     },
                     "details": {
-                        "name": "GetSamplingRadius"
+                        "name": "Get Sampling Radius"
                     },
                     "results": [
                         {
@@ -144,14 +145,14 @@
                     "base": "SetBlurDepthFalloffStrengthOverride",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetBlurDepthFalloffStrengthOverride"
+                        "tooltip": "When signaled, this will invoke Set Blur Depth Falloff Strength Override"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetBlurDepthFalloffStrengthOverride is invoked"
+                        "tooltip": "Signaled after Set Blur Depth Falloff Strength Override is invoked"
                     },
                     "details": {
-                        "name": "SetBlurDepthFalloffStrengthOverride"
+                        "name": "Set Blur Depth Falloff Strength Override"
                     },
                     "params": [
                         {
@@ -166,14 +167,14 @@
                     "base": "GetBlurDepthFalloffThresholdOverride",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetBlurDepthFalloffThresholdOverride"
+                        "tooltip": "When signaled, this will invoke Get Blur Depth Falloff Threshold Override"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetBlurDepthFalloffThresholdOverride is invoked"
+                        "tooltip": "Signaled after Get Blur Depth Falloff Threshold Override is invoked"
                     },
                     "details": {
-                        "name": "GetBlurDepthFalloffThresholdOverride"
+                        "name": "Get Blur Depth Falloff Threshold Override"
                     },
                     "results": [
                         {
@@ -188,14 +189,14 @@
                     "base": "GetBlurDepthFalloffThreshold",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetBlurDepthFalloffThreshold"
+                        "tooltip": "When signaled, this will invoke Get Blur Depth Falloff Threshold"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetBlurDepthFalloffThreshold is invoked"
+                        "tooltip": "Signaled after Get Blur Depth Falloff Threshold is invoked"
                     },
                     "details": {
-                        "name": "GetBlurDepthFalloffThreshold"
+                        "name": "Get Blur Depth Falloff Threshold"
                     },
                     "results": [
                         {
@@ -210,14 +211,14 @@
                     "base": "GetSamplingRadiusOverride",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetSamplingRadiusOverride"
+                        "tooltip": "When signaled, this will invoke Get Sampling Radius Override"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetSamplingRadiusOverride is invoked"
+                        "tooltip": "Signaled after Get Sampling Radius Override is invoked"
                     },
                     "details": {
-                        "name": "GetSamplingRadiusOverride"
+                        "name": "Get Sampling Radius Override"
                     },
                     "results": [
                         {
@@ -232,14 +233,14 @@
                     "base": "SetStrengthOverride",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetStrengthOverride"
+                        "tooltip": "When signaled, this will invoke Set Strength Override"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetStrengthOverride is invoked"
+                        "tooltip": "Signaled after Set Strength Override is invoked"
                     },
                     "details": {
-                        "name": "SetStrengthOverride"
+                        "name": "Set Strength Override"
                     },
                     "params": [
                         {
@@ -254,14 +255,14 @@
                     "base": "GetStrength",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetStrength"
+                        "tooltip": "When signaled, this will invoke Get Strength"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetStrength is invoked"
+                        "tooltip": "Signaled after Get Strength is invoked"
                     },
                     "details": {
-                        "name": "GetStrength"
+                        "name": "Get Strength"
                     },
                     "results": [
                         {
@@ -276,14 +277,14 @@
                     "base": "GetEnabled",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetEnabled"
+                        "tooltip": "When signaled, this will invoke Get Enabled"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetEnabled is invoked"
+                        "tooltip": "Signaled after Get Enabled is invoked"
                     },
                     "details": {
-                        "name": "GetEnabled"
+                        "name": "Get Enabled"
                     },
                     "results": [
                         {
@@ -298,14 +299,14 @@
                     "base": "GetEnableDownsample",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetEnableDownsample"
+                        "tooltip": "When signaled, this will invoke Get Enable Downsample"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetEnableDownsample is invoked"
+                        "tooltip": "Signaled after Get Enable Downsample is invoked"
                     },
                     "details": {
-                        "name": "GetEnableDownsample"
+                        "name": "Get Enable Downsample"
                     },
                     "results": [
                         {
@@ -320,14 +321,14 @@
                     "base": "GetBlurDepthFalloffStrength",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetBlurDepthFalloffStrength"
+                        "tooltip": "When signaled, this will invoke Get Blur Depth Falloff Strength"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetBlurDepthFalloffStrength is invoked"
+                        "tooltip": "Signaled after Get Blur Depth Falloff Strength is invoked"
                     },
                     "details": {
-                        "name": "GetBlurDepthFalloffStrength"
+                        "name": "Get Blur Depth Falloff Strength"
                     },
                     "results": [
                         {
@@ -342,14 +343,14 @@
                     "base": "SetBlurConstFalloff",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetBlurConstFalloff"
+                        "tooltip": "When signaled, this will invoke Set Blur Const Falloff"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetBlurConstFalloff is invoked"
+                        "tooltip": "Signaled after Set Blur Const Falloff is invoked"
                     },
                     "details": {
-                        "name": "SetBlurConstFalloff"
+                        "name": "Set Blur Const Falloff"
                     },
                     "params": [
                         {
@@ -364,14 +365,14 @@
                     "base": "GetEnableDownsampleOverride",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetEnableDownsampleOverride"
+                        "tooltip": "When signaled, this will invoke Get Enable Downsample Override"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetEnableDownsampleOverride is invoked"
+                        "tooltip": "Signaled after Get Enable Downsample Override is invoked"
                     },
                     "details": {
-                        "name": "GetEnableDownsampleOverride"
+                        "name": "Get Enable Downsample Override"
                     },
                     "results": [
                         {
@@ -386,14 +387,14 @@
                     "base": "GetEnableBlurOverride",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetEnableBlurOverride"
+                        "tooltip": "When signaled, this will invoke Get Enable Blur Override"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetEnableBlurOverride is invoked"
+                        "tooltip": "Signaled after Get Enable Blur Override is invoked"
                     },
                     "details": {
-                        "name": "GetEnableBlurOverride"
+                        "name": "Get Enable Blur Override"
                     },
                     "results": [
                         {
@@ -408,14 +409,14 @@
                     "base": "SetSamplingRadiusOverride",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetSamplingRadiusOverride"
+                        "tooltip": "When signaled, this will invoke Set Sampling Radius Override"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetSamplingRadiusOverride is invoked"
+                        "tooltip": "Signaled after Set Sampling Radius Override is invoked"
                     },
                     "details": {
-                        "name": "SetSamplingRadiusOverride"
+                        "name": "Set Sampling Radius Override"
                     },
                     "params": [
                         {
@@ -430,14 +431,14 @@
                     "base": "SetSamplingRadius",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetSamplingRadius"
+                        "tooltip": "When signaled, this will invoke Set Sampling Radius"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetSamplingRadius is invoked"
+                        "tooltip": "Signaled after Set Sampling Radius is invoked"
                     },
                     "details": {
-                        "name": "SetSamplingRadius"
+                        "name": "Set Sampling Radius"
                     },
                     "params": [
                         {
@@ -452,14 +453,14 @@
                     "base": "SetStrength",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetStrength"
+                        "tooltip": "When signaled, this will invoke Set Strength"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetStrength is invoked"
+                        "tooltip": "Signaled after Set Strength is invoked"
                     },
                     "details": {
-                        "name": "SetStrength"
+                        "name": "Set Strength"
                     },
                     "params": [
                         {
@@ -474,14 +475,14 @@
                     "base": "SetEnabled",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetEnabled"
+                        "tooltip": "When signaled, this will invoke Set Enabled"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetEnabled is invoked"
+                        "tooltip": "Signaled after Set Enabled is invoked"
                     },
                     "details": {
-                        "name": "SetEnabled"
+                        "name": "Set Enabled"
                     },
                     "params": [
                         {
@@ -496,14 +497,14 @@
                     "base": "GetStrengthOverride",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetStrengthOverride"
+                        "tooltip": "When signaled, this will invoke Get Strength Override"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetStrengthOverride is invoked"
+                        "tooltip": "Signaled after Get Strength Override is invoked"
                     },
                     "details": {
-                        "name": "GetStrengthOverride"
+                        "name": "Get Strength Override"
                     },
                     "results": [
                         {
@@ -518,14 +519,14 @@
                     "base": "GetEnableBlur",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetEnableBlur"
+                        "tooltip": "When signaled, this will invoke Get Enable Blur"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetEnableBlur is invoked"
+                        "tooltip": "Signaled after Get Enable Blur is invoked"
                     },
                     "details": {
-                        "name": "GetEnableBlur"
+                        "name": "Get Enable Blur"
                     },
                     "results": [
                         {
@@ -540,14 +541,14 @@
                     "base": "SetEnableDownsample",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetEnableDownsample"
+                        "tooltip": "When signaled, this will invoke Set Enable Downsample"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetEnableDownsample is invoked"
+                        "tooltip": "Signaled after Set Enable Downsample is invoked"
                     },
                     "details": {
-                        "name": "SetEnableDownsample"
+                        "name": "Set Enable Downsample"
                     },
                     "params": [
                         {
@@ -562,14 +563,14 @@
                     "base": "SetBlurDepthFalloffThresholdOverride",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetBlurDepthFalloffThresholdOverride"
+                        "tooltip": "When signaled, this will invoke Set Blur Depth Falloff Threshold Override"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetBlurDepthFalloffThresholdOverride is invoked"
+                        "tooltip": "Signaled after Set Blur Depth Falloff Threshold Override is invoked"
                     },
                     "details": {
-                        "name": "SetBlurDepthFalloffThresholdOverride"
+                        "name": "Set Blur Depth Falloff Threshold Override"
                     },
                     "params": [
                         {
@@ -584,14 +585,14 @@
                     "base": "SetBlurConstFalloffOverride",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetBlurConstFalloffOverride"
+                        "tooltip": "When signaled, this will invoke Set Blur Const Falloff Override"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetBlurConstFalloffOverride is invoked"
+                        "tooltip": "Signaled after Set Blur Const Falloff Override is invoked"
                     },
                     "details": {
-                        "name": "SetBlurConstFalloffOverride"
+                        "name": "Set Blur Const Falloff Override"
                     },
                     "params": [
                         {
@@ -606,14 +607,14 @@
                     "base": "GetBlurConstFalloff",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetBlurConstFalloff"
+                        "tooltip": "When signaled, this will invoke Get Blur Const Falloff"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetBlurConstFalloff is invoked"
+                        "tooltip": "Signaled after Get Blur Const Falloff is invoked"
                     },
                     "details": {
-                        "name": "GetBlurConstFalloff"
+                        "name": "Get Blur Const Falloff"
                     },
                     "results": [
                         {
@@ -628,14 +629,14 @@
                     "base": "SetEnabledOverride",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetEnabledOverride"
+                        "tooltip": "When signaled, this will invoke Set Enabled Override"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetEnabledOverride is invoked"
+                        "tooltip": "Signaled after Set Enabled Override is invoked"
                     },
                     "details": {
-                        "name": "SetEnabledOverride"
+                        "name": "Set Enabled Override"
                     },
                     "params": [
                         {
@@ -650,14 +651,14 @@
                     "base": "SetEnableBlur",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetEnableBlur"
+                        "tooltip": "When signaled, this will invoke Set Enable Blur"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetEnableBlur is invoked"
+                        "tooltip": "Signaled after Set Enable Blur is invoked"
                     },
                     "details": {
-                        "name": "SetEnableBlur"
+                        "name": "Set Enable Blur"
                     },
                     "params": [
                         {
@@ -672,14 +673,14 @@
                     "base": "GetBlurConstFalloffOverride",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetBlurConstFalloffOverride"
+                        "tooltip": "When signaled, this will invoke Get Blur Const Falloff Override"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetBlurConstFalloffOverride is invoked"
+                        "tooltip": "Signaled after Get Blur Const Falloff Override is invoked"
                     },
                     "details": {
-                        "name": "GetBlurConstFalloffOverride"
+                        "name": "Get Blur Const Falloff Override"
                     },
                     "results": [
                         {
@@ -694,14 +695,14 @@
                     "base": "GetBlurDepthFalloffStrengthOverride",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetBlurDepthFalloffStrengthOverride"
+                        "tooltip": "When signaled, this will invoke Get Blur Depth Falloff Strength Override"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetBlurDepthFalloffStrengthOverride is invoked"
+                        "tooltip": "Signaled after Get Blur Depth Falloff Strength Override is invoked"
                     },
                     "details": {
-                        "name": "GetBlurDepthFalloffStrengthOverride"
+                        "name": "Get Blur Depth Falloff Strength Override"
                     },
                     "results": [
                         {

@@ -5,8 +5,95 @@
             "context": "BehaviorClass",
             "variant": "",
             "details": {
-                "name": "SpawnerConfig"
-            }
+                "name": "Spawner Config",
+                "category": "Spawner"
+            },
+            "methods": [
+                {
+                    "base": "GetspawnOnActivate",
+                    "details": {
+                        "name": "Getspawn On Activate"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{D4D68E8E-9031-448F-9D56-B5575CF4833C}",
+                            "details": {
+                                "name": "Spawner Config*"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetspawnOnActivate",
+                    "details": {
+                        "name": "Setspawn On Activate"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{D4D68E8E-9031-448F-9D56-B5575CF4833C}",
+                            "details": {
+                                "name": "Spawner Config*"
+                            }
+                        },
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetdestroyOnDeactivate",
+                    "details": {
+                        "name": "Getdestroy On Deactivate"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{D4D68E8E-9031-448F-9D56-B5575CF4833C}",
+                            "details": {
+                                "name": "Spawner Config*"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetdestroyOnDeactivate",
+                    "details": {
+                        "name": "Setdestroy On Deactivate"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{D4D68E8E-9031-448F-9D56-B5575CF4833C}",
+                            "details": {
+                                "name": "Spawner Config*"
+                            }
+                        },
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

@@ -1,80 +1,80 @@
 {
     "entries": [
         {
-            "base": "OutputDeviceTransformType",
+            "base": "Render::ShadowmapSize",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
-                "name": "Output Device Transform Type",
+                "name": "Shadowmap Size",
                 "category": "Rendering"
             },
             "methods": [
                 {
-                    "base": "GetOutputDeviceTransformType_NumOutputDeviceTransformTypes",
+                    "base": "GetShadowmapSize_512",
                     "details": {
-                        "name": "Get Output Device Transform Type_ Num Output Device Transform Types"
+                        "name": "Get Shadowmap Size_ 512"
                     },
                     "results": [
                         {
-                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
                             "details": {
-                                "name": "int"
+                                "name": "unsigned int"
                             }
                         }
                     ]
                 },
                 {
-                    "base": "GetOutputDeviceTransformType_4000Nits",
+                    "base": "GetShadowmapSize_1024",
                     "details": {
-                        "name": "Get Output Device Transform Type_ 4000 Nits"
+                        "name": "Get Shadowmap Size_ 1024"
                     },
                     "results": [
                         {
-                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
                             "details": {
-                                "name": "int"
+                                "name": "unsigned int"
                             }
                         }
                     ]
                 },
                 {
-                    "base": "GetOutputDeviceTransformType_2000Nits",
+                    "base": "GetShadowmapSize_2048",
                     "details": {
-                        "name": "Get Output Device Transform Type_ 2000 Nits"
+                        "name": "Get Shadowmap Size_ 2048"
                     },
                     "results": [
                         {
-                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
                             "details": {
-                                "name": "int"
+                                "name": "unsigned int"
                             }
                         }
                     ]
                 },
                 {
-                    "base": "GetOutputDeviceTransformType_100Nits",
+                    "base": "GetShadowmapSize_256",
                     "details": {
-                        "name": "Get Output Device Transform Type_ 100 Nits"
+                        "name": "Get Shadowmap Size_ 256"
                     },
                     "results": [
                         {
-                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
                             "details": {
-                                "name": "int"
+                                "name": "unsigned int"
                             }
                         }
                     ]
                 },
                 {
-                    "base": "GetOutputDeviceTransformType_48Nits",
+                    "base": "GetShadowmapSize_None",
                     "details": {
-                        "name": "Get Output Device Transform Type_ 48 Nits"
+                        "name": "Get Shadowmap Size_ None"
                     },
                     "results": [
                         {
-                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
                             "details": {
-                                "name": "int"
+                                "name": "unsigned int"
                             }
                         }
                     ]
