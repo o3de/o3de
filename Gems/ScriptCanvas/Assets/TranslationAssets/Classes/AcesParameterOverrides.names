@@ -5,7 +5,8 @@
             "context": "BehaviorClass",
             "variant": "",
             "details": {
-                "name": "AcesParameterOverrides"
+                "name": "Aces Parameter Overrides",
+                "category": "Rendering"
             },
             "methods": [
                 {
@@ -13,21 +14,300 @@
                     "context": "AcesParameterOverrides",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke LoadPreset"
+                        "tooltip": "When signaled, this will invoke Load Preset"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after LoadPreset is invoked"
+                        "tooltip": "Signaled after Load Preset is invoked"
                     },
                     "details": {
-                        "name": "AcesParameterOverrides::LoadPreset",
-                        "category": "Other"
+                        "name": "Load Preset"
                     },
                     "params": [
                         {
                             "typeid": "{3EE8C0D4-3792-46C0-B91C-B89A81C36B91}",
                             "details": {
-                                "name": "AcesParameterOverrides*"
+                                "name": "Aces Parameter Overrides"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetOutputDeviceTransformType_4000Nits",
+                    "details": {
+                        "name": "Get Output Device Transform Type_ 4000 Nits"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetOutputDeviceTransformType_2000Nits",
+                    "details": {
+                        "name": "Get Output Device Transform Type_ 2000 Nits"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetapplyCATD60toD65",
+                    "details": {
+                        "name": "GetapplyCATD 60toD 65"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3EE8C0D4-3792-46C0-B91C-B89A81C36B91}",
+                            "details": {
+                                "name": ""
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": ""
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetapplyCATD60toD65",
+                    "details": {
+                        "name": "SetapplyCATD 60toD 65"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3EE8C0D4-3792-46C0-B91C-B89A81C36B91}",
+                            "details": {
+                                "name": ""
+                            }
+                        },
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": ""
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetOutputDeviceTransformType_48Nits",
+                    "details": {
+                        "name": "Get Output Device Transform Type_ 48 Nits"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetOutputDeviceTransformType_NumOutputDeviceTransformTypes",
+                    "details": {
+                        "name": "Get Output Device Transform Type_ Num Output Device Transform Types"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetOutputDeviceTransformType_1000Nits",
+                    "details": {
+                        "name": "Get Output Device Transform Type_ 1000 Nits"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetapplyDesaturation",
+                    "details": {
+                        "name": "Getapply Desaturation"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3EE8C0D4-3792-46C0-B91C-B89A81C36B91}",
+                            "details": {
+                                "name": ""
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": ""
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetapplyDesaturation",
+                    "details": {
+                        "name": "Setapply Desaturation"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3EE8C0D4-3792-46C0-B91C-B89A81C36B91}",
+                            "details": {
+                                "name": ""
+                            }
+                        },
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": ""
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "Getpreset",
+                    "details": {
+                        "name": "Getpreset"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3EE8C0D4-3792-46C0-B91C-B89A81C36B91}",
+                            "details": {
+                                "name": ""
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{B94085B7-C0D4-466A-A791-188A4559EC8D}",
+                            "details": {
+                                "name": ""
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "Setpreset",
+                    "details": {
+                        "name": "Setpreset"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3EE8C0D4-3792-46C0-B91C-B89A81C36B91}",
+                            "details": {
+                                "name": ""
+                            }
+                        },
+                        {
+                            "typeid": "{B94085B7-C0D4-466A-A791-188A4559EC8D}",
+                            "details": {
+                                "name": ""
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetalterSurround",
+                    "details": {
+                        "name": "Getalter Surround"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3EE8C0D4-3792-46C0-B91C-B89A81C36B91}",
+                            "details": {
+                                "name": ""
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": ""
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetalterSurround",
+                    "details": {
+                        "name": "Setalter Surround"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3EE8C0D4-3792-46C0-B91C-B89A81C36B91}",
+                            "details": {
+                                "name": ""
+                            }
+                        },
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": ""
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetoverrideDefaults",
+                    "details": {
+                        "name": "Getoverride Defaults"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3EE8C0D4-3792-46C0-B91C-B89A81C36B91}",
+                            "details": {
+                                "name": ""
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": ""
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetoverrideDefaults",
+                    "details": {
+                        "name": "Setoverride Defaults"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3EE8C0D4-3792-46C0-B91C-B89A81C36B91}",
+                            "details": {
+                                "name": ""
+                            }
+                        },
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": ""
                             }
                         }
                     ]
