@@ -642,8 +642,6 @@ set(FILES
     AssetBrowser/Previewer/PreviewerFrame.h
     Archive/ArchiveComponent.h
     Archive/ArchiveComponent.cpp
-    Archive/NullArchiveComponent.h
-    Archive/NullArchiveComponent.cpp
     Archive/ArchiveAPI.h
     UI/PropertyEditor/Model/AssetCompleterModel.h
     UI/PropertyEditor/Model/AssetCompleterModel.cpp
