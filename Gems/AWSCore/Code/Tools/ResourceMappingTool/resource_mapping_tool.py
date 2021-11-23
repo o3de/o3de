@@ -10,6 +10,7 @@ import logging
 import sys
 
 from utils import environment_utils
+from utils import json_utils
 from utils import file_utils
 
 # arguments setup
@@ -73,6 +74,15 @@ if __name__ == "__main__":
             app.setStyleSheet(style_sheet)
     except FileNotFoundError:
         logger.warning("Failed to load style sheet for resource mapping tool")
+
+    try:
+        schema_path: str = file_utils.join_path(file_utils.get_parent_directory_path(__file__),
+                                                'resource_mapping_schema.json')
+        json_utils.load_resource_mapping_json_schema(schema_path)
+    except (FileNotFoundError, ValueError, KeyError) as e:
+        logger.error(f"Failed to load schema file {e}")
+        environment_utils.cleanup_qt_environment()
+        exit(-1)
 
     logger.info("Initializing configuration manager ...")
     configuration_manager: ConfigurationManager = ConfigurationManager()
