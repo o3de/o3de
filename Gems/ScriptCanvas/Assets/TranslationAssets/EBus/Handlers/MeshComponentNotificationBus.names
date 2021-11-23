@@ -5,13 +5,14 @@
             "context": "EBusHandler",
             "variant": "",
             "details": {
-                "name": "MeshComponentNotificationBus"
+                "name": "Mesh",
+                "category": "Rendering"
             },
             "methods": [
                 {
                     "key": "OnModelReady",
                     "details": {
-                        "name": "OnModelReady"
+                        "name": "On Model Ready"
                     },
                     "params": [
                         {
