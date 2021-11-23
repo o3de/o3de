@@ -10,11 +10,14 @@
 #include <Dependency/TestImpactDynamicDependencyMap.h>
 #include <Dependency/TestImpactTestSelectorAndPrioritizer.h>
 #include <Target/Native/TestImpactNativeTestTarget.h>
+#include <Target/Native/TestImpactNativeTestTargetList.h>
+#include <Target/Native/TestImpactNativeProductionTargetList.h>
 
 namespace TestImpact
 {
     TestSelectorAndPrioritizer::TestSelectorAndPrioritizer(
-        const DynamicDependencyMap* dynamicDependencyMap, DependencyGraphDataMap&& dependencyGraphDataMap)
+        const DynamicDependencyMap<NativeTestTargetList, NativeProductionTargetList>* dynamicDependencyMap,
+        DependencyGraphDataMap&& dependencyGraphDataMap)
         : m_dynamicDependencyMap(dynamicDependencyMap)
         , m_dependencyGraphDataMap(AZStd::move(dependencyGraphDataMap))
     {

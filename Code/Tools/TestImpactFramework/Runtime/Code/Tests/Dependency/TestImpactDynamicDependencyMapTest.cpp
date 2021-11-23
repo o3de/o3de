@@ -16,6 +16,8 @@
 #include <Dependency/TestImpactDependencyException.h>
 #include <Dependency/TestImpactDynamicDependencyMap.h>
 #include <Target/Common/TestImpactBuildTargetList.h>
+#include <Target/Native/TestImpactNativeTestTargetList.h>
+#include <Target/Native/TestImpactNativeProductionTargetList.h>
 
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
@@ -25,6 +27,9 @@ namespace UnitTest
 {
     namespace
     {
+        using NativeBuildTargetList = TestImpact::BuildTargetList<TestImpact::NativeTestTargetList, TestImpact::NativeProductionTargetList>;
+        using NativeDynamicDependencyMap = TestImpact::DynamicDependencyMap<TestImpact::NativeTestTargetList, TestImpact::NativeProductionTargetList>;
+
         void ValidateBuildTarget(const TestImpact::NativeTarget& target, const TestImpact::NativeTarget& expectedTarget)
         {
             EXPECT_EQ(target.GetName(), expectedTarget.GetName());
@@ -96,9 +101,8 @@ namespace UnitTest
     class DynamicDependencyMapFixture : public AllocatorsTestFixture
     {
     protected:
-        using NativeBuildTargetList = TestImpact::BuildTargetList<TestImpact::NativeTestTargetList, TestImpact::NativeProductionTargetList>;
         AZStd::unique_ptr<NativeBuildTargetList> m_buildTargets;
-        AZStd::unique_ptr<TestImpact::DynamicDependencyMap> m_dynamicDependencyMap;
+        AZStd::unique_ptr<NativeDynamicDependencyMap> m_dynamicDependencyMap;
         AZStd::unique_ptr<TestImpact::NativeProductionTargetList> m_productionTargets;
         AZStd::unique_ptr<TestImpact::NativeTestTargetList> m_testTargets;
     };
@@ -110,7 +114,7 @@ namespace UnitTest
             // When constructing a dynamic dependency map with no production targets
             m_buildTargets = AZStd::make_unique<NativeBuildTargetList>(
                 MicroRepo::CreateTestTargetDescriptors(), AZStd::vector<AZStd::unique_ptr<TestImpact::NativeProductionTargetDescriptor>>{});
-            m_dynamicDependencyMap = AZStd::make_unique<TestImpact::DynamicDependencyMap>(m_buildTargets.get());
+            m_dynamicDependencyMap = AZStd::make_unique<NativeDynamicDependencyMap>(m_buildTargets.get());
 
             // Do not expect this statement to be reachable
             FAIL();
@@ -132,7 +136,7 @@ namespace UnitTest
             // When constructing a dynamic dependency map with no test targets
             m_buildTargets = AZStd::make_unique<NativeBuildTargetList>(
                 AZStd::vector<AZStd::unique_ptr<TestImpact::NativeTestTargetDescriptor>>{}, MicroRepo::CreateProductionTargetDescriptors());
-            m_dynamicDependencyMap = AZStd::make_unique<TestImpact::DynamicDependencyMap>(m_buildTargets.get());
+            m_dynamicDependencyMap = AZStd::make_unique<NativeDynamicDependencyMap>(m_buildTargets.get());
 
             // Do not expect this statement to be reachable
             FAIL();
@@ -156,7 +160,7 @@ namespace UnitTest
         // When constructing a dynamic dependency map with valid production and test targets
         m_buildTargets = AZStd::make_unique<NativeBuildTargetList>(
             MicroRepo::CreateTestTargetDescriptors(), MicroRepo::CreateProductionTargetDescriptors());
-        m_dynamicDependencyMap = AZStd::make_unique<TestImpact::DynamicDependencyMap>(m_buildTargets.get());
+        m_dynamicDependencyMap = AZStd::make_unique<NativeDynamicDependencyMap>(m_buildTargets.get());
 
         // Expect the number of production targets in the dynamic dependency map to match that of those constructed from the descriptors
         EXPECT_EQ(
@@ -199,7 +203,7 @@ namespace UnitTest
         // When constructing a dynamic dependency map with valid production and test targets
         m_buildTargets = AZStd::make_unique<NativeBuildTargetList>(
             MicroRepo::CreateTestTargetDescriptors(), MicroRepo::CreateProductionTargetDescriptors());
-        m_dynamicDependencyMap = AZStd::make_unique<TestImpact::DynamicDependencyMap>(m_buildTargets.get());
+        m_dynamicDependencyMap = AZStd::make_unique<NativeDynamicDependencyMap>(m_buildTargets.get());
 
         // Expect the number of sources in the dynamic dependency map to match the total number of sources in the descriptors
         EXPECT_EQ(
@@ -246,7 +250,7 @@ namespace UnitTest
         // When constructing a dynamic dependency map with valid production and test targets
         m_buildTargets = AZStd::make_unique<NativeBuildTargetList>(
             MicroRepo::CreateTestTargetDescriptors(), MicroRepo::CreateProductionTargetDescriptors());
-        m_dynamicDependencyMap = AZStd::make_unique<TestImpact::DynamicDependencyMap>(m_buildTargets.get());
+        m_dynamicDependencyMap = AZStd::make_unique<NativeDynamicDependencyMap>(m_buildTargets.get());
 
         // Expect the number of sources in the dynamic dependency map to match the total number of sources in the descriptors
         EXPECT_EQ(m_dynamicDependencyMap->GetNumSources(), CountSources(*m_productionTargets) + CountSources(*m_testTargets) - 1);
@@ -289,7 +293,7 @@ namespace UnitTest
         // Given a dynamic dependency map with valid production and test targets
         m_buildTargets = AZStd::make_unique<NativeBuildTargetList>(
             MicroRepo::CreateTestTargetDescriptors(), MicroRepo::CreateProductionTargetDescriptors());
-        m_dynamicDependencyMap = AZStd::make_unique<TestImpact::DynamicDependencyMap>(m_buildTargets.get());
+        m_dynamicDependencyMap = AZStd::make_unique<NativeDynamicDependencyMap>(m_buildTargets.get());
 
         const auto validateAutogenSource = [this](const AZStd::string& path)
         {
@@ -325,7 +329,7 @@ namespace UnitTest
         // Given a dynamic dependency map with valid production and test targets
         m_buildTargets = AZStd::make_unique<NativeBuildTargetList>(
             MicroRepo::CreateTestTargetDescriptors(), MicroRepo::CreateProductionTargetDescriptors());
-        m_dynamicDependencyMap = AZStd::make_unique<TestImpact::DynamicDependencyMap>(m_buildTargets.get());
+        m_dynamicDependencyMap = AZStd::make_unique<NativeDynamicDependencyMap>(m_buildTargets.get());
 
         // Given a list of source covering test targets representing the test coverage of the repository
         const auto sourceCoveringTests = MicroRepo::CreateSourceCoveringTestList();
@@ -410,7 +414,7 @@ namespace UnitTest
         // Given a dynamic dependency map with valid production and test targets
         m_buildTargets = AZStd::make_unique<NativeBuildTargetList>(
             MicroRepo::CreateTestTargetDescriptors(), MicroRepo::CreateProductionTargetDescriptors());
-        m_dynamicDependencyMap = AZStd::make_unique<TestImpact::DynamicDependencyMap>(m_buildTargets.get());
+        m_dynamicDependencyMap = AZStd::make_unique<NativeDynamicDependencyMap>(m_buildTargets.get());
 
         // Given a list of source covering test targets with two covered sources that will have no parents in the dependency map
         auto sourceCoveringTestList = MicroRepo::CreateSourceCoveringTestList();
@@ -496,7 +500,7 @@ namespace UnitTest
         // Given a dynamic dependency map with valid production and test targets
         m_buildTargets = AZStd::make_unique<NativeBuildTargetList>(
             MicroRepo::CreateTestTargetDescriptors(), MicroRepo::CreateProductionTargetDescriptors());
-        m_dynamicDependencyMap = AZStd::make_unique<TestImpact::DynamicDependencyMap>(m_buildTargets.get());
+        m_dynamicDependencyMap = AZStd::make_unique<NativeDynamicDependencyMap>(m_buildTargets.get());
 
         // Given a list of source covering test targets representing the test coverage of the repository
         const auto sourceCoveringTestList = MicroRepo::CreateSourceCoveringTestList();
@@ -519,7 +523,7 @@ namespace UnitTest
         // When constructing a dynamic dependency map with valid production and test targets
         m_buildTargets = AZStd::make_unique<NativeBuildTargetList>(
             MicroRepo::CreateTestTargetDescriptors(), MicroRepo::CreateProductionTargetDescriptors());
-        m_dynamicDependencyMap = AZStd::make_unique<TestImpact::DynamicDependencyMap>(m_buildTargets.get());
+        m_dynamicDependencyMap = AZStd::make_unique<NativeDynamicDependencyMap>(m_buildTargets.get());
 
         // When retrieving a source not in the dynamic dependency map
         auto invalidSourceDependency = m_dynamicDependencyMap->GetSourceDependency("invalid");
@@ -537,7 +541,7 @@ namespace UnitTest
         // When constructing a dynamic dependency map with valid production and test targets
         m_buildTargets = AZStd::make_unique<NativeBuildTargetList>(
             MicroRepo::CreateTestTargetDescriptors(), MicroRepo::CreateProductionTargetDescriptors());
-        m_dynamicDependencyMap = AZStd::make_unique<TestImpact::DynamicDependencyMap>(m_buildTargets.get());
+        m_dynamicDependencyMap = AZStd::make_unique<NativeDynamicDependencyMap>(m_buildTargets.get());
 
         try
         {
@@ -566,7 +570,7 @@ namespace UnitTest
         // Given a dynamic dependency map with valid production and test targets
         m_buildTargets = AZStd::make_unique<NativeBuildTargetList>(
             MicroRepo::CreateTestTargetDescriptors(), MicroRepo::CreateProductionTargetDescriptors());
-        m_dynamicDependencyMap = AZStd::make_unique<TestImpact::DynamicDependencyMap>(m_buildTargets.get());
+        m_dynamicDependencyMap = AZStd::make_unique<NativeDynamicDependencyMap>(m_buildTargets.get());
 
         for (const auto& expectedProductionTarget : m_productionTargets->GetTargets())
         {
@@ -612,7 +616,7 @@ namespace UnitTest
         // Given a dynamic dependency map with valid production and test targets
         m_buildTargets = AZStd::make_unique<NativeBuildTargetList>(
             MicroRepo::CreateTestTargetDescriptors(), MicroRepo::CreateProductionTargetDescriptors());
-        m_dynamicDependencyMap = AZStd::make_unique<TestImpact::DynamicDependencyMap>(m_buildTargets.get());
+        m_dynamicDependencyMap = AZStd::make_unique<NativeDynamicDependencyMap>(m_buildTargets.get());
 
         AZStd::visit(
             [](auto&& invalidTarget)
@@ -640,7 +644,7 @@ namespace UnitTest
         // Given a dynamic dependency map with valid production and test targets
         m_buildTargets = AZStd::make_unique<NativeBuildTargetList>(
             MicroRepo::CreateTestTargetDescriptors(), MicroRepo::CreateProductionTargetDescriptors());
-        m_dynamicDependencyMap = AZStd::make_unique<TestImpact::DynamicDependencyMap>(m_buildTargets.get());
+        m_dynamicDependencyMap = AZStd::make_unique<NativeDynamicDependencyMap>(m_buildTargets.get());
 
         for (const auto& expectedProductionTarget : m_productionTargets->GetTargets())
         {
@@ -680,7 +684,7 @@ namespace UnitTest
         // Given a dynamic dependency map with valid production and test targets
         m_buildTargets = AZStd::make_unique<NativeBuildTargetList>(
             MicroRepo::CreateTestTargetDescriptors(), MicroRepo::CreateProductionTargetDescriptors());
-        m_dynamicDependencyMap = AZStd::make_unique<TestImpact::DynamicDependencyMap>(m_buildTargets.get());
+        m_dynamicDependencyMap = AZStd::make_unique<NativeDynamicDependencyMap>(m_buildTargets.get());
 
         try
         {
@@ -709,7 +713,7 @@ namespace UnitTest
         // Given a dynamic dependency map with valid production and test targets
         m_buildTargets = AZStd::make_unique<NativeBuildTargetList>(
             MicroRepo::CreateTestTargetDescriptors(), MicroRepo::CreateProductionTargetDescriptors());
-        m_dynamicDependencyMap = AZStd::make_unique<TestImpact::DynamicDependencyMap>(m_buildTargets.get());
+        m_dynamicDependencyMap = AZStd::make_unique<NativeDynamicDependencyMap>(m_buildTargets.get());
 
         for (const auto& expectedProductionTarget : m_productionTargets->GetTargets())
         {
@@ -763,7 +767,7 @@ namespace UnitTest
         // Given a dynamic dependency map with valid production and test targets
         m_buildTargets = AZStd::make_unique<NativeBuildTargetList>(
             MicroRepo::CreateTestTargetDescriptors(), MicroRepo::CreateProductionTargetDescriptors());
-        m_dynamicDependencyMap = AZStd::make_unique<TestImpact::DynamicDependencyMap>(m_buildTargets.get());
+        m_dynamicDependencyMap = AZStd::make_unique<NativeDynamicDependencyMap>(m_buildTargets.get());
 
         // When retrieving a target not in the dynamic dependency map
         auto invalidTarget = m_dynamicDependencyMap->GetBuildTargets()->GetTarget("invalid");
@@ -781,7 +785,7 @@ namespace UnitTest
         // Given a dynamic dependency map with valid production and test targets
         m_buildTargets = AZStd::make_unique<NativeBuildTargetList>(
             MicroRepo::CreateTestTargetDescriptors(), MicroRepo::CreateProductionTargetDescriptors());
-        m_dynamicDependencyMap = AZStd::make_unique<TestImpact::DynamicDependencyMap>(m_buildTargets.get());
+        m_dynamicDependencyMap = AZStd::make_unique<NativeDynamicDependencyMap>(m_buildTargets.get());
 
         try
         {
@@ -813,7 +817,7 @@ namespace UnitTest
         // When constructing a dynamic dependency map with valid production and test targets
         m_buildTargets = AZStd::make_unique<NativeBuildTargetList>(
             MicroRepo::CreateTestTargetDescriptorsWithSharedSources(), MicroRepo::CreateProductionTargetDescriptorsWithSharedSources());
-        m_dynamicDependencyMap = AZStd::make_unique<TestImpact::DynamicDependencyMap>(m_buildTargets.get());
+        m_dynamicDependencyMap = AZStd::make_unique<NativeDynamicDependencyMap>(m_buildTargets.get());
 
         // Expect the number of sources in the dynamic dependency map to match the total number of sources in the descriptors
         EXPECT_EQ(m_dynamicDependencyMap->GetNumSources(), CountSources(*m_productionTargets) + CountSources(*m_testTargets) - 3);

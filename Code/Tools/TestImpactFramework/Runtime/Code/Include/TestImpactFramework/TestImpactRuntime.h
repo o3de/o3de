@@ -26,7 +26,6 @@
 namespace TestImpact
 {
     class ChangeDependencyList;
-    class DynamicDependencyMap;
     class TestSelectorAndPrioritizer;
     class TestEngine;
     class NativeTestTarget;
@@ -38,6 +37,9 @@ namespace TestImpact
 
     template<typename TestTargetList, typename ProductionTargetList>
     class BuildTargetList;
+
+    template<typename TestTargetList, typename ProductionTargetList>
+    class DynamicDependencyMap;
 
     //! Callback for a test sequence that isn't using test impact analysis to determine selected tests.
     //! @parm suiteType The test suite to select tests from.
@@ -233,7 +235,7 @@ namespace TestImpact
         Policy::TargetOutputCapture m_targetOutputCapture;
         size_t m_maxConcurrency = 0;
         AZStd::unique_ptr<BuildTargetList<NativeTestTargetList, NativeProductionTargetList>> m_buildTargets;
-        AZStd::unique_ptr<DynamicDependencyMap> m_dynamicDependencyMap;
+        AZStd::unique_ptr<DynamicDependencyMap<NativeTestTargetList, NativeProductionTargetList>> m_dynamicDependencyMap;
         AZStd::unique_ptr<TestSelectorAndPrioritizer> m_testSelectorAndPrioritizer;
         AZStd::unique_ptr<TestEngine> m_testEngine;
         AZStd::unique_ptr<TestTargetExclusionList> m_regularTestTargetExcludeList;

@@ -17,10 +17,12 @@
 
 namespace TestImpact
 {
-    template<typename TestTargetList, typename ProductionTargetList>
+    template<typename TestTargetListType, typename ProductionTargetListType>
     class BuildTargetList
     {
     public:
+        using TestTargetList = TestTargetListType;
+        using ProductionTargetList = ProductionTargetListType;
         using TestTarget = typename TestTargetList::TargetType;
         using ProductionTarget = typename ProductionTargetList::TargetType;
         using Target = BuildTarget<TestTarget, ProductionTarget>;
