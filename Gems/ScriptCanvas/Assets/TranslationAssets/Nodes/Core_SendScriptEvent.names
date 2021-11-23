@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "{64A97CC3-2BEA-4B47-809B-6C7DA34FD00F}",
+            "base": "{64A97CC3-2BEA-4B47-809B-6C7DA34FD00F}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
@@ -11,14 +11,14 @@
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In",
                     "details": {
                         "name": "In",
                         "tooltip": "Fires the specified ScriptEvent when signaled"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out",
                     "details": {
                         "name": "Out",
                         "tooltip": "Trigged after the ScriptEvent has been signaled and returns"

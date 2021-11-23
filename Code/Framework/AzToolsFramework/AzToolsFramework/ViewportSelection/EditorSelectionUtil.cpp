@@ -18,9 +18,6 @@
 
 namespace AzToolsFramework
 {
-    // default ray length for picking in the viewport
-    static const float EditorPickRayLength = 1000.0f;
-
     AZ::Vector3 CalculateCenterOffset(const AZ::EntityId entityId, const EditorTransformComponentSelectionRequests::Pivot pivot)
     {
         if (Centered(pivot))

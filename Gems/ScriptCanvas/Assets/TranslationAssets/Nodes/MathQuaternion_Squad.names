@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "{E7275C69-D728-5468-9402-C4FBA1ADDA97}",
+            "base": "{E7275C69-D728-5468-9402-C4FBA1ADDA97}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
@@ -11,49 +11,49 @@
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "key": "DataInput_From",
+                    "base": "DataInput_From",
                     "details": {
                         "name": "From"
                     }
                 },
                 {
-                    "key": "DataInput_To",
+                    "base": "DataInput_To",
                     "details": {
                         "name": "To"
                     }
                 },
                 {
-                    "key": "DataInput_In",
+                    "base": "DataInput_In",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "key": "DataInput_Out",
+                    "base": "DataInput_Out",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "key": "DataInput_T",
+                    "base": "DataInput_T",
                     "details": {
                         "name": "T"
                     }
                 },
                 {
-                    "key": "DataOutput_Result",
+                    "base": "DataOutput_Result",
                     "details": {
                         "name": "Result"
                     }

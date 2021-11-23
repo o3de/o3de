@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "UiRadioButtonGroupNotificationBus",
+            "base": "UiRadioButtonGroupNotificationBus",
             "context": "EBusHandler",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "OnRadioButtonGroupStateChange",
+                    "base": "OnRadioButtonGroupStateChange",
                     "details": {
                         "name": "On Radio Button Group State Change",
                         "tooltip": "Executes when the radio button group state has changed"

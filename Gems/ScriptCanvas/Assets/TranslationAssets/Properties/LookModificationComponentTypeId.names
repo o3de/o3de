@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "LookModificationComponentTypeId",
+            "base": "LookModificationComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "LookModificationComponentTypeId::Getter",
-                "category": "Constants"
-            }
+                "name": "Look Modification Component Type Id",
+                "category": "Constants/Editor"
+            },
+            "methods": [
+                {
+                    "base": "GetLookModificationComponentTypeId",
+                    "details": {
+                        "name": "Get Look Modification Component Type Id"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}",
+                            "details": {
+                                "name": "AZ:: Uuid"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

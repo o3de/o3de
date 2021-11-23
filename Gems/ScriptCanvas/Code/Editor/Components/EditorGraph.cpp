@@ -1078,9 +1078,11 @@ namespace ScriptCanvasEditor
         return CanCreateConnectionBetween(scSourceEndpoint, scTargetEndpoint).IsSuccess();
     }
 
-    AZStd::string Graph::GetDataTypeString(const AZ::Uuid& typeId)
+    AZStd::string Graph::GetDataTypeString(const AZ::Uuid&)
     {
-        return TranslationHelper::GetSafeTypeName(ScriptCanvas::Data::FromAZType(typeId));
+        // This is used by the default tooltip setting in GraphCanvas, returning an empty string
+        // in order for tooltips to be fully controlled by ScriptCanvas
+        return {};
     }
 
     void Graph::OnRemoveUnusedNodes()

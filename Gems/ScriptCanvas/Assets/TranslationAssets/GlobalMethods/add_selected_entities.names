@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "add_selected_entities",
+            "base": "add_selected_entities",
             "context": "Method",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "add_selected_entities",
+                    "base": "add_selected_entities",
                     "context": "Global",
                     "entry": {
                         "name": "In",

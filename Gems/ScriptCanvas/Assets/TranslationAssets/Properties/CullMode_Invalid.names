@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "CullMode_Invalid",
+            "base": "CullMode_Invalid",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "CullMode_Invalid::Getter",
-                "category": "Constants"
-            }
+                "name": "Invalid",
+                "category": "Constants/Cull Mode"
+            },
+            "methods": [
+                {
+                    "base": "GetCullMode_Invalid",
+                    "details": {
+                        "name": "Get Invalid"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

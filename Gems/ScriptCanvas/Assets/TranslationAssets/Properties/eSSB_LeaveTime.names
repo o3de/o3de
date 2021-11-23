@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "eSSB_LeaveTime",
+            "base": "eSSB_LeaveTime",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "eSSB_LeaveTime::Getter",
-                "category": "Constants"
-            }
+                "name": "Leave Time",
+                "category": "Constants/UI/Animation/Sequence Stop Behavior"
+            },
+            "methods": [
+                {
+                    "base": "GeteSSB_LeaveTime",
+                    "details": {
+                        "name": "Leave Time"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

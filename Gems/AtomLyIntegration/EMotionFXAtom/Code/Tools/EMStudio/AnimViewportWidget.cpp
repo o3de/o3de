@@ -55,13 +55,13 @@ namespace EMStudio
 
     void AnimViewportWidget::Reinit(bool resetCamera)
     {
+        m_renderer->Reinit();
+        m_renderer->UpdateActorRenderFlag(m_renderFlags);
+
         if (resetCamera)
         {
             ResetCamera();
         }
-
-        m_renderer->Reinit();
-        m_renderer->UpdateActorRenderFlag(m_renderFlags);
     }
 
     EMotionFX::ActorRenderFlagBitset AnimViewportWidget::GetRenderFlags() const

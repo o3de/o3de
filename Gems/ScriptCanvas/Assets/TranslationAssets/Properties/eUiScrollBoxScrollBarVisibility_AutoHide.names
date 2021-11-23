@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "eUiScrollBoxScrollBarVisibility_AutoHide",
+            "base": "eUiScrollBoxScrollBarVisibility_AutoHide",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "eUiScrollBoxScrollBarVisibility_AutoHide::Getter",
-                "category": "Constants"
-            }
+                "name": "Auto Hide",
+                "category": "Constants/UI/Scroll Box Scroll Bar Visibility"
+            },
+            "methods": [
+                {
+                    "base": "GeteUiScrollBoxScrollBarVisibility_AutoHide",
+                    "details": {
+                        "name": "Auto Hide"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

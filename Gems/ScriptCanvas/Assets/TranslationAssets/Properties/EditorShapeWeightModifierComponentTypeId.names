@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "EditorShapeWeightModifierComponentTypeId",
+            "base": "EditorShapeWeightModifierComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "EditorShapeWeightModifierComponentTypeId::Getter",
-                "category": "Constants"
-            }
+                "name": "Editor Shape Weight Modifier Component Type Id",
+                "category": "Constants/Editor"
+            },
+            "methods": [
+                {
+                    "base": "GetEditorShapeWeightModifierComponentTypeId",
+                    "details": {
+                        "name": "Get Editor Shape Weight Modifier Component Type Id"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}",
+                            "details": {
+                                "name": "AZ:: Uuid"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

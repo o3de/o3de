@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "DefaultPhysicsSceneName",
+            "base": "DefaultPhysicsSceneName",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "DefaultPhysicsSceneName::Getter",
-                "category": "Constants"
-            }
+                "name": "Default Physics Scene Name",
+                "category": "Constants/Defaults"
+            },
+            "methods": [
+                {
+                    "base": "GetDefaultPhysicsSceneName",
+                    "details": {
+                        "name": "Get Default Physics Scene Name"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

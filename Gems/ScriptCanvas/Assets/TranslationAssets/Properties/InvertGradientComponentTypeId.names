@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "InvertGradientComponentTypeId",
+            "base": "InvertGradientComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "InvertGradientComponentTypeId::Getter",
-                "category": "Constants"
-            }
+                "name": "Invert Gradient Component Type Id",
+                "category": "Constants/Editor"
+            },
+            "methods": [
+                {
+                    "base": "GetInvertGradientComponentTypeId",
+                    "details": {
+                        "name": "Get Invert Gradient Component Type Id"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}",
+                            "details": {
+                                "name": "AZ:: Uuid"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

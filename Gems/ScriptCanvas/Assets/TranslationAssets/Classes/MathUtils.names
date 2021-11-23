@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "MathUtils",
+            "base": "MathUtils",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "ConvertEulerDegreesToQuaternion",
+                    "base": "ConvertEulerDegreesToQuaternion",
                     "context": "MathUtils",
                     "entry": {
                         "name": "In",
@@ -41,7 +41,7 @@
                     ]
                 },
                 {
-                    "key": "ConvertEulerDegreesToTransformPrecise",
+                    "base": "ConvertEulerDegreesToTransformPrecise",
                     "context": "MathUtils",
                     "entry": {
                         "name": "In",
@@ -73,7 +73,7 @@
                     ]
                 },
                 {
-                    "key": "ConvertEulerDegreesToTransform",
+                    "base": "ConvertEulerDegreesToTransform",
                     "context": "MathUtils",
                     "entry": {
                         "name": "In",
@@ -104,7 +104,7 @@
                     ]
                 },
                 {
-                    "key": "ConvertQuaternionToEulerRadians",
+                    "base": "ConvertQuaternionToEulerRadians",
                     "context": "MathUtils",
                     "entry": {
                         "name": "In",
@@ -135,7 +135,7 @@
                     ]
                 },
                 {
-                    "key": "CreateLookAt",
+                    "base": "CreateLookAt",
                     "context": "MathUtils",
                     "entry": {
                         "name": "In",
@@ -179,7 +179,7 @@
                     ]
                 },
                 {
-                    "key": "ConvertTransformToEulerRadians",
+                    "base": "ConvertTransformToEulerRadians",
                     "context": "MathUtils",
                     "entry": {
                         "name": "In",
@@ -210,7 +210,7 @@
                     ]
                 },
                 {
-                    "key": "ConvertQuaternionToEulerDegrees",
+                    "base": "ConvertQuaternionToEulerDegrees",
                     "context": "MathUtils",
                     "entry": {
                         "name": "In",
@@ -241,7 +241,7 @@
                     ]
                 },
                 {
-                    "key": "ConvertTransformToEulerDegrees",
+                    "base": "ConvertTransformToEulerDegrees",
                     "context": "MathUtils",
                     "entry": {
                         "name": "In",
@@ -272,7 +272,7 @@
                     ]
                 },
                 {
-                    "key": "ConvertEulerRadiansToQuaternion",
+                    "base": "ConvertEulerRadiansToQuaternion",
                     "context": "MathUtils",
                     "entry": {
                         "name": "In",

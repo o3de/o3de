@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "InputDeviceMotion",
+            "base": "InputDeviceMotion",
             "context": "BehaviorClass",
             "variant": "",
             "details": {

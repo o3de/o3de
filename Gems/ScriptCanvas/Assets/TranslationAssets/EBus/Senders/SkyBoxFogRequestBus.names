@@ -1,25 +1,26 @@
 {
     "entries": [
         {
-            "key": "SkyBoxFogRequestBus",
+            "base": "SkyBoxFogRequestBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "SkyBoxFogRequestBus"
+                "name": "Sky Box Fog",
+                "category": "Rendering"
             },
             "methods": [
                 {
-                    "key": "GetBottomHeight",
+                    "base": "GetBottomHeight",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetBottomHeight"
+                        "tooltip": "When signaled, this will invoke Get Bottom Height"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetBottomHeight is invoked"
+                        "tooltip": "Signaled after Get Bottom Height is invoked"
                     },
                     "details": {
-                        "name": "GetBottomHeight"
+                        "name": "Get Bottom Height"
                     },
                     "results": [
                         {
@@ -31,17 +32,17 @@
                     ]
                 },
                 {
-                    "key": "GetColor",
+                    "base": "GetColor",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetColor"
+                        "tooltip": "When signaled, this will invoke Get Color"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetColor is invoked"
+                        "tooltip": "Signaled after Get Color is invoked"
                     },
                     "details": {
-                        "name": "GetColor"
+                        "name": "Get Color"
                     },
                     "results": [
                         {
@@ -53,17 +54,17 @@
                     ]
                 },
                 {
-                    "key": "SetBottomHeight",
+                    "base": "SetBottomHeight",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetBottomHeight"
+                        "tooltip": "When signaled, this will invoke Set Bottom Height"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetBottomHeight is invoked"
+                        "tooltip": "Signaled after Set Bottom Height is invoked"
                     },
                     "details": {
-                        "name": "SetBottomHeight"
+                        "name": "Set Bottom Height"
                     },
                     "params": [
                         {
@@ -75,17 +76,17 @@
                     ]
                 },
                 {
-                    "key": "SetColor",
+                    "base": "SetColor",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetColor"
+                        "tooltip": "When signaled, this will invoke Set Color"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetColor is invoked"
+                        "tooltip": "Signaled after Set Color is invoked"
                     },
                     "details": {
-                        "name": "SetColor"
+                        "name": "Set Color"
                     },
                     "params": [
                         {
@@ -97,17 +98,17 @@
                     ]
                 },
                 {
-                    "key": "GetTopHeight",
+                    "base": "GetTopHeight",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetTopHeight"
+                        "tooltip": "When signaled, this will invoke Get Top Height"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetTopHeight is invoked"
+                        "tooltip": "Signaled after Get Top Height is invoked"
                     },
                     "details": {
-                        "name": "GetTopHeight"
+                        "name": "Get Top Height"
                     },
                     "results": [
                         {
@@ -119,17 +120,17 @@
                     ]
                 },
                 {
-                    "key": "IsEnabled",
+                    "base": "IsEnabled",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke IsEnabled"
+                        "tooltip": "When signaled, this will invoke Is Enabled"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after IsEnabled is invoked"
+                        "tooltip": "Signaled after Is Enabled is invoked"
                     },
                     "details": {
-                        "name": "IsEnabled"
+                        "name": "Is Enabled"
                     },
                     "results": [
                         {
@@ -141,17 +142,17 @@
                     ]
                 },
                 {
-                    "key": "SetTopHeight",
+                    "base": "SetTopHeight",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetTopHeight"
+                        "tooltip": "When signaled, this will invoke Set Top Height"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetTopHeight is invoked"
+                        "tooltip": "Signaled after Set Top Height is invoked"
                     },
                     "details": {
-                        "name": "SetTopHeight"
+                        "name": "Set Top Height"
                     },
                     "params": [
                         {
@@ -163,17 +164,17 @@
                     ]
                 },
                 {
-                    "key": "SetEnabled",
+                    "base": "SetEnabled",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetEnabled"
+                        "tooltip": "When signaled, this will invoke Set Enabled"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetEnabled is invoked"
+                        "tooltip": "Signaled after Set Enabled is invoked"
                     },
                     "details": {
-                        "name": "SetEnabled"
+                        "name": "Set Enabled"
                     },
                     "params": [
                         {

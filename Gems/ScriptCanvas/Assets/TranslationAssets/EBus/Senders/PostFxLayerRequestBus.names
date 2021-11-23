@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "PostFxLayerRequestBus",
+            "base": "PostFxLayerRequestBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
@@ -9,7 +9,7 @@
             },
             "methods": [
                 {
-                    "key": "SetPriority",
+                    "base": "SetPriority",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetPriority"
@@ -31,7 +31,7 @@
                     ]
                 },
                 {
-                    "key": "GetPriority",
+                    "base": "GetPriority",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetPriority"
@@ -53,7 +53,7 @@
                     ]
                 },
                 {
-                    "key": "SetOverrideFactor",
+                    "base": "SetOverrideFactor",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetOverrideFactor"
@@ -75,7 +75,7 @@
                     ]
                 },
                 {
-                    "key": "GetOverrideFactor",
+                    "base": "GetOverrideFactor",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetOverrideFactor"

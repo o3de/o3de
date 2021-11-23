@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "SmoothStepGradientRequestBus",
+            "base": "SmoothStepGradientRequestBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
@@ -9,7 +9,7 @@
             },
             "methods": [
                 {
-                    "key": "GetGradientSampler",
+                    "base": "GetGradientSampler",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetGradientSampler"

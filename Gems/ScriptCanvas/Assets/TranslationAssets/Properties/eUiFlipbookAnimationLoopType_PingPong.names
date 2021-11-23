@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "eUiFlipbookAnimationLoopType_PingPong",
+            "base": "eUiFlipbookAnimationLoopType_PingPong",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "eUiFlipbookAnimationLoopType_PingPong::Getter",
-                "category": "Constants"
-            }
+                "name": "Ping Pong",
+                "category": "Constants/UI/Flipbook Animation/Loop Type"
+            },
+            "methods": [
+                {
+                    "base": "GeteUiFlipbookAnimationLoopType_PingPong",
+                    "details": {
+                        "name": "Ping Pong"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

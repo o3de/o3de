@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "ShapeAreaFalloffGradientComponent",
+            "base": "ShapeAreaFalloffGradientComponent",
             "context": "BehaviorClass",
             "variant": "",
             "details": {

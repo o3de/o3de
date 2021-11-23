@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "eUiParticleCoordinateType_Polar",
+            "base": "eUiParticleCoordinateType_Polar",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "eUiParticleCoordinateType_Polar::Getter",
-                "category": "Constants"
-            }
+                "name": "Polar",
+                "category": "Constants/UI/Particle Coordinate Type"
+            },
+            "methods": [
+                {
+                    "base": "GeteUiParticleCoordinateType_Polar",
+                    "details": {
+                        "name": "Polar"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

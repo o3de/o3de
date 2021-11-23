@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "UiImageSequenceBus",
+            "base": "UiImageSequenceBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetImageType",
+                    "base": "GetImageType",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Image Type"
@@ -33,7 +33,7 @@
                     ]
                 },
                 {
-                    "key": "SetImageType",
+                    "base": "SetImageType",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Image Type"

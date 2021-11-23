@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "PosterizeGradientComponentTypeId",
+            "base": "PosterizeGradientComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "PosterizeGradientComponentTypeId::Getter",
-                "category": "Constants"
-            }
+                "name": "Posterize Gradient Component Type Id",
+                "category": "Constants/Editor"
+            },
+            "methods": [
+                {
+                    "base": "GetPosterizeGradientComponentTypeId",
+                    "details": {
+                        "name": "Get Posterize Gradient Component Type Id"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}",
+                            "details": {
+                                "name": "AZ:: Uuid"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

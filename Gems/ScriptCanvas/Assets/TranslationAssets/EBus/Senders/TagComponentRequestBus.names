@@ -1,16 +1,16 @@
 {
     "entries": [
         {
-            "key": "TagComponentRequestBus",
+            "base": "TagComponentRequestBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "TagComponentRequestBus",
-                "category": "Gameplay"
+                "name": "Requests",
+                "category": "Gameplay/Tag"
             },
             "methods": [
                 {
-                    "key": "HasTag",
+                    "base": "HasTag",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Has Tag"
@@ -20,15 +20,13 @@
                         "tooltip": "Signaled after Has Tag is invoked"
                     },
                     "details": {
-                        "name": "Has Tag",
-                        "tooltip": "Returns true if an entity has a specified tag"
+                        "name": "Has Tag"
                     },
                     "params": [
                         {
                             "typeid": "{9F4E062E-06A0-46D4-85DF-E0DA96467D3A}",
                             "details": {
-                                "name": "Tag",
-                                "tooltip": "The tag to check if the source entity has"
+                                "name": "Tag"
                             }
                         }
                     ],
@@ -36,14 +34,13 @@
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": "bool",
-                                "tooltip": "The tag to check if the source entity has"
+                                "name": "Has Tag"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "AddTag",
+                    "base": "AddTag",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Add Tag"
@@ -53,21 +50,19 @@
                         "tooltip": "Signaled after Add Tag is invoked"
                     },
                     "details": {
-                        "name": "Add Tag",
-                        "tooltip": "Adds a tag to an entity if it didn't already have it"
+                        "name": "Add Tag"
                     },
                     "params": [
                         {
                             "typeid": "{9F4E062E-06A0-46D4-85DF-E0DA96467D3A}",
                             "details": {
-                                "name": "Tag",
-                                "tooltip": "The tag to add to the entity"
+                                "name": "Tag"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "RemoveTag",
+                    "base": "RemoveTag",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Remove Tag"
@@ -77,15 +72,13 @@
                         "tooltip": "Signaled after Remove Tag is invoked"
                     },
                     "details": {
-                        "name": "Remove Tag",
-                        "tooltip": "Removes a tag from an entity if it had it"
+                        "name": "Remove Tag"
                     },
                     "params": [
                         {
                             "typeid": "{9F4E062E-06A0-46D4-85DF-E0DA96467D3A}",
                             "details": {
-                                "name": "Tag",
-                                "tooltip": "The tag to remove from the entity"
+                                "name": "Tag"
                             }
                         }
                     ]

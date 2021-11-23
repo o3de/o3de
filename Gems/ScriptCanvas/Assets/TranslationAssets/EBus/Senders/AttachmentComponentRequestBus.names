@@ -1,16 +1,16 @@
 {
     "entries": [
         {
-            "key": "AttachmentComponentRequestBus",
+            "base": "AttachmentComponentRequestBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "AttachmentComponentRequestBus",
+                "name": "Attachment",
                 "category": "Animation"
             },
             "methods": [
                 {
-                    "key": "Attach",
+                    "base": "Attach",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Attach"
@@ -20,35 +20,32 @@
                         "tooltip": "Signaled after Attach is invoked"
                     },
                     "details": {
-                        "name": "Attach",
-                        "tooltip": "Attaches the entity"
+                        "name": "Attach"
                     },
                     "params": [
                         {
                             "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
                             "details": {
-                                "name": "Target",
-                                "tooltip": "ID of entity to attach to"
+                                "name": "Target Entity Id",
+                                "tooltip": "The Entity to attach"
                             }
                         },
                         {
                             "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
                             "details": {
-                                "name": "Bone",
-                                "tooltip": "Name of bone on entity to attach to. If bone is not found, then attach to target entity's transform origin"
+                                "name": "Target Bone Name"
                             }
                         },
                         {
                             "typeid": "{5D9958E9-9F1E-4985-B532-FFFDE75FEDFD}",
                             "details": {
-                                "name": "Offset",
-                                "tooltip": "Attachment's offset from target"
+                                "name": "Offset Transform"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "Detach",
+                    "base": "Detach",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Detach"
@@ -58,30 +55,27 @@
                         "tooltip": "Signaled after Detach is invoked"
                     },
                     "details": {
-                        "name": "Detach",
-                        "tooltip": "Detaches the entity"
+                        "name": "Detach"
                     }
                 },
                 {
-                    "key": "SetAttachmentOffset",
+                    "base": "SetAttachmentOffset",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke Set Offset"
+                        "tooltip": "When signaled, this will invoke SetAttachmentOffset"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after Set Offset is invoked"
+                        "tooltip": "Signaled after SetAttachmentOffset is invoked"
                     },
                     "details": {
-                        "name": "Set Offset",
-                        "tooltip": "Sets the offset of the attachment"
+                        "name": "Set Attachment Offset"
                     },
                     "params": [
                         {
                             "typeid": "{5D9958E9-9F1E-4985-B532-FFFDE75FEDFD}",
                             "details": {
-                                "name": "Offset",
-                                "tooltip": "Attachment's offset from target"
+                                "name": "Offset Transform"
                             }
                         }
                     ]

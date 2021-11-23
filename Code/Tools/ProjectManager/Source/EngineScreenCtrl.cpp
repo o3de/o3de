@@ -72,12 +72,7 @@ namespace O3DE::ProjectManager
 
     bool EngineScreenCtrl::ContainsScreen(ProjectManagerScreen screen)
     {
-        if (screen == m_engineSettingsScreen->GetScreenEnum() || screen == m_gemRepoScreen->GetScreenEnum())
-        {
-            return true;
-        }
-
-        return false;
+        return screen == m_engineSettingsScreen->GetScreenEnum() || screen == m_gemRepoScreen->GetScreenEnum();
     }
 
     void EngineScreenCtrl::NotifyCurrentScreen()

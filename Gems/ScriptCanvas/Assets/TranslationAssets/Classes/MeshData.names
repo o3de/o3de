@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "MeshData",
+            "base": "MeshData",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
@@ -9,7 +9,7 @@
             },
             "methods": [
                 {
-                    "key": "GetVertexIndex",
+                    "base": "GetVertexIndex",
                     "context": "MeshData",
                     "entry": {
                         "name": "In",
@@ -53,7 +53,7 @@
                     ]
                 },
                 {
-                    "key": "GetPosition",
+                    "base": "GetPosition",
                     "context": "MeshData",
                     "entry": {
                         "name": "In",
@@ -91,7 +91,7 @@
                     ]
                 },
                 {
-                    "key": "GetFaceInfo",
+                    "base": "GetFaceInfo",
                     "context": "MeshData",
                     "entry": {
                         "name": "In",
@@ -129,7 +129,7 @@
                     ]
                 },
                 {
-                    "key": "HasNormalData",
+                    "base": "HasNormalData",
                     "context": "MeshData",
                     "entry": {
                         "name": "In",
@@ -161,7 +161,7 @@
                     ]
                 },
                 {
-                    "key": "GetNormal",
+                    "base": "GetNormal",
                     "context": "MeshData",
                     "entry": {
                         "name": "In",
@@ -199,7 +199,7 @@
                     ]
                 },
                 {
-                    "key": "GetUsedPointIndexForControlPoint",
+                    "base": "GetUsedPointIndexForControlPoint",
                     "context": "MeshData",
                     "entry": {
                         "name": "In",
@@ -237,7 +237,7 @@
                     ]
                 },
                 {
-                    "key": "GetVertexCount",
+                    "base": "GetVertexCount",
                     "context": "MeshData",
                     "entry": {
                         "name": "In",
@@ -269,7 +269,7 @@
                     ]
                 },
                 {
-                    "key": "GetFaceCount",
+                    "base": "GetFaceCount",
                     "context": "MeshData",
                     "entry": {
                         "name": "In",
@@ -301,7 +301,7 @@
                     ]
                 },
                 {
-                    "key": "GetUsedControlPointCount",
+                    "base": "GetUsedControlPointCount",
                     "context": "MeshData",
                     "entry": {
                         "name": "In",
@@ -333,7 +333,7 @@
                     ]
                 },
                 {
-                    "key": "GetFaceMaterialId",
+                    "base": "GetFaceMaterialId",
                     "context": "MeshData",
                     "entry": {
                         "name": "In",
@@ -371,7 +371,7 @@
                     ]
                 },
                 {
-                    "key": "GetControlPointIndex",
+                    "base": "GetControlPointIndex",
                     "context": "MeshData",
                     "entry": {
                         "name": "In",

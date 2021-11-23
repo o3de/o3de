@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "exit",
+            "base": "exit",
             "context": "Method",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "exit",
+                    "base": "exit",
                     "context": "Global",
                     "entry": {
                         "name": "In",

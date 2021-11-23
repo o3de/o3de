@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "IBlendShapeData",
+            "base": "IBlendShapeData",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
@@ -9,7 +9,7 @@
             },
             "methods": [
                 {
-                    "key": "GetNormal",
+                    "base": "GetNormal",
                     "context": "IBlendShapeData",
                     "entry": {
                         "name": "In",
@@ -47,7 +47,7 @@
                     ]
                 },
                 {
-                    "key": "GetFaceVertexIndex",
+                    "base": "GetFaceVertexIndex",
                     "context": "IBlendShapeData",
                     "entry": {
                         "name": "In",
@@ -91,7 +91,7 @@
                     ]
                 },
                 {
-                    "key": "GetFaceInfo",
+                    "base": "GetFaceInfo",
                     "context": "IBlendShapeData",
                     "entry": {
                         "name": "In",
@@ -129,7 +129,7 @@
                     ]
                 },
                 {
-                    "key": "GetPosition",
+                    "base": "GetPosition",
                     "context": "IBlendShapeData",
                     "entry": {
                         "name": "In",
@@ -167,7 +167,7 @@
                     ]
                 },
                 {
-                    "key": "GetUsedPointIndexForControlPoint",
+                    "base": "GetUsedPointIndexForControlPoint",
                     "context": "IBlendShapeData",
                     "entry": {
                         "name": "In",
@@ -205,7 +205,7 @@
                     ]
                 },
                 {
-                    "key": "GetVertexCount",
+                    "base": "GetVertexCount",
                     "context": "IBlendShapeData",
                     "entry": {
                         "name": "In",
@@ -237,7 +237,7 @@
                     ]
                 },
                 {
-                    "key": "GetFaceCount",
+                    "base": "GetFaceCount",
                     "context": "IBlendShapeData",
                     "entry": {
                         "name": "In",
@@ -269,7 +269,7 @@
                     ]
                 },
                 {
-                    "key": "GetControlPointIndex",
+                    "base": "GetControlPointIndex",
                     "context": "IBlendShapeData",
                     "entry": {
                         "name": "In",
@@ -307,7 +307,7 @@
                     ]
                 },
                 {
-                    "key": "GetUsedControlPointCount",
+                    "base": "GetUsedControlPointCount",
                     "context": "IBlendShapeData",
                     "entry": {
                         "name": "In",

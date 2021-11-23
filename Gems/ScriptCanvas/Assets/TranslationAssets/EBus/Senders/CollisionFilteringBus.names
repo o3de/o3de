@@ -1,16 +1,15 @@
 {
     "entries": [
         {
-            "key": "CollisionFilteringBus",
+            "base": "CollisionFilteringBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "CollisionFilteringBus",
-                "category": "PhysX"
+                "name": "Collision Filtering"
             },
             "methods": [
                 {
-                    "key": "ToggleCollisionLayer",
+                    "base": "ToggleCollisionLayer",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Toggle Collision Layer"
@@ -20,35 +19,31 @@
                         "tooltip": "Signaled after Toggle Collision Layer is invoked"
                     },
                     "details": {
-                        "name": "Toggle Collision Layer",
-                        "tooltip": "Toggles a collision layer on or off on a collision group."
+                        "name": "Toggle Collision Layer"
                     },
                     "params": [
                         {
                             "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
                             "details": {
-                                "name": "Layer Name",
-                                "tooltip": "The name of the layer to toggle. The layer name must exist in the PhysX Configuration otherwise this node will have no effect."
+                                "name": "Layer Name"
                             }
                         },
                         {
                             "typeid": "{9F4E062E-06A0-46D4-85DF-E0DA96467D3A}",
                             "details": {
-                                "name": "Collider Tag",
-                                "tooltip": "Use this to target a specific collider on the entity. If left blank, all colliders will be updated."
+                                "name": "Collider Tag"
                             }
                         },
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": "Enabled",
-                                "tooltip": "Toggles the layer on or off"
+                                "name": "Enabled"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "SetCollisionGroup",
+                    "base": "SetCollisionGroup",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Collision Group"
@@ -58,28 +53,25 @@
                         "tooltip": "Signaled after Set Collision Group is invoked"
                     },
                     "details": {
-                        "name": "Set Collision Group",
-                        "tooltip": "Sets the collision group on a collider"
+                        "name": "Set Collision Group"
                     },
                     "params": [
                         {
                             "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
                             "details": {
-                                "name": "Group Name",
-                                "tooltip": "The name of the group to set. The group name must exist in the PhysX Configuration otherwise this node will have no effect."
+                                "name": "Group Name"
                             }
                         },
                         {
                             "typeid": "{9F4E062E-06A0-46D4-85DF-E0DA96467D3A}",
                             "details": {
-                                "name": "Collider Tag",
-                                "tooltip": "Use this to target a specific collider on the entity. If left blank, all colliders will be updated."
+                                "name": "Collider Tag"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "GetCollisionGroupName",
+                    "base": "GetCollisionGroupName",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Collision Group Name"
@@ -89,20 +81,19 @@
                         "tooltip": "Signaled after Get Collision Group Name is invoked"
                     },
                     "details": {
-                        "name": "Get Collision Group Name",
-                        "tooltip": "Gets the collision group on an entity. Note: multiple colliders on an entity are not supported."
+                        "name": "Get Collision Group Name"
                     },
                     "results": [
                         {
                             "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
                             "details": {
-                                "name": "AZStd::string"
+                                "name": "Name"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "GetCollisionLayerName",
+                    "base": "GetCollisionLayerName",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Collision Layer Name"
@@ -112,20 +103,19 @@
                         "tooltip": "Signaled after Get Collision Layer Name is invoked"
                     },
                     "details": {
-                        "name": "Get Collision Layer Name",
-                        "tooltip": "Gets the collision layer on an entity. Note: multiple colliders on an entity are not supported."
+                        "name": "Get Collision Layer Name"
                     },
                     "results": [
                         {
                             "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
                             "details": {
-                                "name": "AZStd::string"
+                                "name": "Name"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "SetCollisionLayer",
+                    "base": "SetCollisionLayer",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Collision Layer"
@@ -135,22 +125,19 @@
                         "tooltip": "Signaled after Set Collision Layer is invoked"
                     },
                     "details": {
-                        "name": "Set Collision Layer",
-                        "tooltip": "Sets the collision layer on a collider"
+                        "name": "Set Collision Layer"
                     },
                     "params": [
                         {
                             "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
                             "details": {
-                                "name": "Layer Name",
-                                "tooltip": "The name of the layer to set. The layer name must exist in the PhysX Configuration otherwise this node will have no effect."
+                                "name": "Layer Name"
                             }
                         },
                         {
                             "typeid": "{9F4E062E-06A0-46D4-85DF-E0DA96467D3A}",
                             "details": {
-                                "name": "Collider Tag",
-                                "tooltip": "Use this to target a specific collider on the entity. If left blank, all colliders will be updated."
+                                "name": "Collider Tag"
                             }
                         }
                     ]

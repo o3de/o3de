@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "CullMode_Front",
+            "base": "CullMode_Front",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "CullMode_Front::Getter",
-                "category": "Constants"
-            }
+                "name": "Front",
+                "category": "Constants/Cull Mode"
+            },
+            "methods": [
+                {
+                    "base": "GetCullMode_Front",
+                    "details": {
+                        "name": "Get Front"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

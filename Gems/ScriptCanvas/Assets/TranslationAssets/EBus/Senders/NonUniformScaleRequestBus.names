@@ -1,16 +1,15 @@
 {
     "entries": [
         {
-            "key": "NonUniformScaleRequestBus",
+            "base": "NonUniformScaleRequestBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "NonUniformScaleRequestBus",
-                "category": "Entity"
+                "name": "Non Uniform Scale"
             },
             "methods": [
                 {
-                    "key": "GetScale",
+                    "base": "GetScale",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Scale"
@@ -26,13 +25,13 @@
                         {
                             "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
                             "details": {
-                                "name": "Vector3"
+                                "name": "Scale"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "SetScale",
+                    "base": "SetScale",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Scale"
@@ -48,7 +47,7 @@
                         {
                             "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
                             "details": {
-                                "name": "Non-uniform Scale"
+                                "name": "Scale"
                             }
                         }
                     ]
