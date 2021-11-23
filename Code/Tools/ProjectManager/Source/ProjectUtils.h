@@ -47,7 +47,6 @@ namespace O3DE::ProjectManager
         AZ::Outcome<QString, QString> ExecuteCommandResult(
             const QString& cmd,
             const QStringList& arguments,
-            const QProcessEnvironment& processEnv,
             int commandTimeoutSeconds = ProjectCommandLineTimeoutSeconds);
 
         /**
@@ -61,10 +60,9 @@ namespace O3DE::ProjectManager
         AZ::Outcome<QString, QString> ExecuteCommandResultModalDialog(
             const QString& cmd,
             const QStringList& arguments,
-            const QProcessEnvironment& processEnv,
             const QString& title);
 
-        AZ::Outcome<QProcessEnvironment, QString> GetCommandLineProcessEnvironment();
+        AZ::Outcome<void, QString> SetupCommandLineProcessEnvironment();
         AZ::Outcome<QString, QString> GetProjectBuildPath(const QString& projectPath);
         AZ::Outcome<void, QString> OpenCMakeGUI(const QString& projectPath);
         AZ::Outcome<QString, QString> RunGetPythonScript(const QString& enginePath);

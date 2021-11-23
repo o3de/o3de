@@ -27,6 +27,6 @@ namespace Terrain
         static constexpr const char* const s_componentDescription = "Defines a terrain region for use by the terrain system";
         static constexpr const char* const s_icon = "Editor/Icons/Components/TerrainLayerSpawner.svg";
         static constexpr const char* const s_viewportIcon = "Editor/Icons/Components/Viewport/TerrainLayerSpawner.svg";
-        static constexpr const char* const s_helpUrl = "";
+        static constexpr const char* const s_helpUrl = "https://o3de.org/docs/user-guide/components/reference/terrain/layer_spawner/";
     };
 }
