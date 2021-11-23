@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "DiffuseGlobalIlluminationComponentTypeId",
+            "base": "DiffuseGlobalIlluminationComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetDiffuseGlobalIlluminationComponentTypeId",
+                    "base": "GetDiffuseGlobalIlluminationComponentTypeId",
                     "details": {
                         "name": "Get Diffuse Global Illumination Component Type Id"
                     },

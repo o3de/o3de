@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "{ECFDD30E-A16D-4435-97B7-B2A4DF3C543A}",
+            "base": "{ECFDD30E-A16D-4435-97B7-B2A4DF3C543A}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {

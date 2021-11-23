@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "eUiParticleInitialDirectionType_RelativeToEmitterCenter",
+            "base": "eUiParticleInitialDirectionType_RelativeToEmitterCenter",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GeteUiParticleInitialDirectionType_RelativeToEmitterCenter",
+                    "base": "GeteUiParticleInitialDirectionType_RelativeToEmitterCenter",
                     "details": {
                         "name": "Relative To Emitter Center"
                     },

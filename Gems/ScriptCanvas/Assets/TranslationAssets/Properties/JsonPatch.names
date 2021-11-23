@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "JsonPatch",
+            "base": "JsonPatch",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetJsonPatch",
+                    "base": "GetJsonPatch",
                     "details": {
                         "name": "Get Json Patch"
                     },

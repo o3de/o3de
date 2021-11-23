@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "eUiFlipbookAnimationLoopType_Linear",
+            "base": "eUiFlipbookAnimationLoopType_Linear",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GeteUiFlipbookAnimationLoopType_Linear",
+                    "base": "GeteUiFlipbookAnimationLoopType_Linear",
                     "details": {
                         "name": "Linear"
                     },

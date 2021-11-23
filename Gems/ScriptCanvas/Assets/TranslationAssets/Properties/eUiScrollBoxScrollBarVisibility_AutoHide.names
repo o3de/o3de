@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "eUiScrollBoxScrollBarVisibility_AutoHide",
+            "base": "eUiScrollBoxScrollBarVisibility_AutoHide",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GeteUiScrollBoxScrollBarVisibility_AutoHide",
+                    "base": "GeteUiScrollBoxScrollBarVisibility_AutoHide",
                     "details": {
                         "name": "Auto Hide"
                     },

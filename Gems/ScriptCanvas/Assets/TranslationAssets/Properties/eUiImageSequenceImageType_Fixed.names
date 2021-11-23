@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "eUiImageSequenceImageType_Fixed",
+            "base": "eUiImageSequenceImageType_Fixed",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GeteUiImageSequenceImageType_Fixed",
+                    "base": "GeteUiImageSequenceImageType_Fixed",
                     "details": {
                         "name": "Image Type: Fixed"
                     },

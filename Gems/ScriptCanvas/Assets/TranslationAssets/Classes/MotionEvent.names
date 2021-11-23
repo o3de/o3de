@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "MotionEvent",
+            "base": "MotionEvent",
             "context": "BehaviorClass",
             "variant": "",
             "details": {

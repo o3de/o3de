@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "CullMode_Invalid",
+            "base": "CullMode_Invalid",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetCullMode_Invalid",
+                    "base": "GetCullMode_Invalid",
                     "details": {
                         "name": "Get Invalid"
                     },

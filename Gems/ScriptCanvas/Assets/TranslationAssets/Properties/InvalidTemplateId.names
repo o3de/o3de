@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "InvalidTemplateId",
+            "base": "InvalidTemplateId",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetInvalidTemplateId",
+                    "base": "GetInvalidTemplateId",
                     "details": {
                         "name": "Get Invalid Template Id"
                     },

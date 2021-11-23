@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "TransformPivot_Center",
+            "base": "TransformPivot_Center",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetTransformPivot_Center",
+                    "base": "GetTransformPivot_Center",
                     "details": {
                         "name": "Center"
                     },

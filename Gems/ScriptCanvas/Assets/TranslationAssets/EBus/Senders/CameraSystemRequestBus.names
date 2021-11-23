@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "CameraSystemRequestBus",
+            "base": "CameraSystemRequestBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
@@ -9,7 +9,7 @@
             },
             "methods": [
                 {
-                    "key": "GetActiveCamera",
+                    "base": "GetActiveCamera",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Active Camera"

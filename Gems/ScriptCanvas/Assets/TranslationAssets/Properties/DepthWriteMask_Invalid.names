@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "DepthWriteMask_Invalid",
+            "base": "DepthWriteMask_Invalid",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetDepthWriteMask_Invalid",
+                    "base": "GetDepthWriteMask_Invalid",
                     "details": {
                         "name": "Invalid"
                     },

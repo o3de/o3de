@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "DeferredFogComponentTypeId",
+            "base": "DeferredFogComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetDeferredFogComponentTypeId",
+                    "base": "GetDeferredFogComponentTypeId",
                     "details": {
                         "name": "Get Deferred Fog Component Type Id"
                     },

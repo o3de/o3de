@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "DecalRequestBus",
+            "base": "DecalRequestBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetMaterial",
+                    "base": "GetMaterial",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Material"
@@ -32,7 +32,7 @@
                     ]
                 },
                 {
-                    "key": "GetSortKey",
+                    "base": "GetSortKey",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Sort Key"
@@ -54,7 +54,7 @@
                     ]
                 },
                 {
-                    "key": "SetSortKey",
+                    "base": "SetSortKey",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Sort Key"
@@ -76,7 +76,7 @@
                     ]
                 },
                 {
-                    "key": "SetMaterial",
+                    "base": "SetMaterial",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Material"
@@ -98,7 +98,7 @@
                     ]
                 },
                 {
-                    "key": "SetAttenuationAngle",
+                    "base": "SetAttenuationAngle",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Attenuation Angle"
@@ -120,7 +120,7 @@
                     ]
                 },
                 {
-                    "key": "GetOpacity",
+                    "base": "GetOpacity",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Opacity"
@@ -142,7 +142,7 @@
                     ]
                 },
                 {
-                    "key": "SetOpacity",
+                    "base": "SetOpacity",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Opacity"
@@ -164,7 +164,7 @@
                     ]
                 },
                 {
-                    "key": "GetAttenuationAngle",
+                    "base": "GetAttenuationAngle",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Attenuation Angle"

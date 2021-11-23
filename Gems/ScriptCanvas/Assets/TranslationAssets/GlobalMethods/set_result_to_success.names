@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "set_result_to_success",
+            "base": "set_result_to_success",
             "context": "Method",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "set_result_to_success",
+                    "base": "set_result_to_success",
                     "context": "Global",
                     "entry": {
                         "name": "In",

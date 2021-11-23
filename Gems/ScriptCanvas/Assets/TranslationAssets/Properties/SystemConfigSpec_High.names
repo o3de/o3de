@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "SystemConfigSpec_High",
+            "base": "SystemConfigSpec_High",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetSystemConfigSpec_High",
+                    "base": "GetSystemConfigSpec_High",
                     "details": {
                         "name": "High"
                     },

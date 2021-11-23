@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "SmoothStepGradientComponentTypeId",
+            "base": "SmoothStepGradientComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetSmoothStepGradientComponentTypeId",
+                    "base": "GetSmoothStepGradientComponentTypeId",
                     "details": {
                         "name": "Get Smooth Step Gradient Component Type Id"
                     },

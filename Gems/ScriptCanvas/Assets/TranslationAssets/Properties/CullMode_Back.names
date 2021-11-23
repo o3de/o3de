@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "CullMode_Back",
+            "base": "CullMode_Back",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetCullMode_Back",
+                    "base": "GetCullMode_Back",
                     "details": {
                         "name": "Get Back"
                     },

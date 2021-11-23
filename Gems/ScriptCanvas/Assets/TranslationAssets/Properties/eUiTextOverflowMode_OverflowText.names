@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "eUiTextOverflowMode_OverflowText",
+            "base": "eUiTextOverflowMode_OverflowText",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GeteUiTextOverflowMode_OverflowText",
+                    "base": "GeteUiTextOverflowMode_OverflowText",
                     "details": {
                         "name": "Overflow Text"
                     },

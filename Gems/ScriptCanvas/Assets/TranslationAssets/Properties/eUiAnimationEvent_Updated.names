@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "eUiAnimationEvent_Updated",
+            "base": "eUiAnimationEvent_Updated",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GeteUiAnimationEvent_Updated",
+                    "base": "GeteUiAnimationEvent_Updated",
                     "details": {
                         "name": "Updated"
                     },

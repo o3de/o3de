@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "ProviderNameEnum_LoginWithAmazon",
+            "base": "ProviderNameEnum_LoginWithAmazon",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetProviderNameEnum_LoginWithAmazon",
+                    "base": "GetProviderNameEnum_LoginWithAmazon",
                     "details": {
                         "name": "Amazon"
                     },

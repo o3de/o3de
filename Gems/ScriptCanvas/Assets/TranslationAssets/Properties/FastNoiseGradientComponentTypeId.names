@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "FastNoiseGradientComponentTypeId",
+            "base": "FastNoiseGradientComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetFastNoiseGradientComponentTypeId",
+                    "base": "GetFastNoiseGradientComponentTypeId",
                     "details": {
                         "name": "Get Fast Noise Gradient Component Type Id"
                     },

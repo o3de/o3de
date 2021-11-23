@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "MaterialComponentTypeId",
+            "base": "MaterialComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetMaterialComponentTypeId",
+                    "base": "GetMaterialComponentTypeId",
                     "details": {
                         "name": "Get Material Component Type Id"
                     },

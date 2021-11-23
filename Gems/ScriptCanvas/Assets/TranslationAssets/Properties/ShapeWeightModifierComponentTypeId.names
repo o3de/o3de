@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "ShapeWeightModifierComponentTypeId",
+            "base": "ShapeWeightModifierComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetShapeWeightModifierComponentTypeId",
+                    "base": "GetShapeWeightModifierComponentTypeId",
                     "details": {
                         "name": "Get Shape Weight Modifier Component Type Id"
                     },

@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "SystemConfigPlatform_Android",
+            "base": "SystemConfigPlatform_Android",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetSystemConfigPlatform_Android",
+                    "base": "GetSystemConfigPlatform_Android",
                     "details": {
                         "name": "Android"
                     },

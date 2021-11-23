@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "InvalidComponentId",
+            "base": "InvalidComponentId",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetInvalidComponentId",
+                    "base": "GetInvalidComponentId",
                     "details": {
                         "name": "Get Invalid Component Id"
                     },

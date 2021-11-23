@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "SurfaceSlopeGradientComponentTypeId",
+            "base": "SurfaceSlopeGradientComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetSurfaceSlopeGradientComponentTypeId",
+                    "base": "GetSurfaceSlopeGradientComponentTypeId",
                     "details": {
                         "name": "Get Surface Slope Gradient Component Type Id"
                     },

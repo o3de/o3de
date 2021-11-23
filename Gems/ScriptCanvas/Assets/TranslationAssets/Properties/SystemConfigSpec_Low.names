@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "SystemConfigSpec_Low",
+            "base": "SystemConfigSpec_Low",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetSystemConfigSpec_Low",
+                    "base": "GetSystemConfigSpec_Low",
                     "details": {
                         "name": "Low"
                     },

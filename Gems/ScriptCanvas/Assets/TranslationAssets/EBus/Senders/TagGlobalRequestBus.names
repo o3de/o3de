@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "TagGlobalRequestBus",
+            "base": "TagGlobalRequestBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "RequestTaggedEntities",
+                    "base": "RequestTaggedEntities",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Request Tagged Entities"

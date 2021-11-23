@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "SystemConfigPlatform_Mac",
+            "base": "SystemConfigPlatform_Mac",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetSystemConfigPlatform_Mac",
+                    "base": "GetSystemConfigPlatform_Mac",
                     "details": {
                         "name": "Mac"
                     },

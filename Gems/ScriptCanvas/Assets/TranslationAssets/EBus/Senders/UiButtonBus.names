@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "UiButtonBus",
+            "base": "UiButtonBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetOnClickActionName",
+                    "base": "GetOnClickActionName",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get On Click Action Name"
@@ -33,7 +33,7 @@
                     ]
                 },
                 {
-                    "key": "SetOnClickActionName",
+                    "base": "SetOnClickActionName",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set On Click Action Name"

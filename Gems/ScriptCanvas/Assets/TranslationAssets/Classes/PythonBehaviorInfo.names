@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "PythonBehaviorInfo",
+            "base": "PythonBehaviorInfo",
             "context": "BehaviorClass",
             "variant": "",
             "details": {

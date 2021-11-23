@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "eUiTooltipDisplayAutoPositionMode_OffsetFromMouse",
+            "base": "eUiTooltipDisplayAutoPositionMode_OffsetFromMouse",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GeteUiTooltipDisplayAutoPositionMode_OffsetFromMouse",
+                    "base": "GeteUiTooltipDisplayAutoPositionMode_OffsetFromMouse",
                     "details": {
                         "name": "Offset From Mouse"
                     },

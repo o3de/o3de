@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "MultiPositionBehaviorType_Blended",
+            "base": "MultiPositionBehaviorType_Blended",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetMultiPositionBehaviorType_Blended",
+                    "base": "GetMultiPositionBehaviorType_Blended",
                     "details": {
                         "name": "Blended"
                     },

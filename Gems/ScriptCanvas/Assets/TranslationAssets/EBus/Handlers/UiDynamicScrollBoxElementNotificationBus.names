@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "UiDynamicScrollBoxElementNotificationBus",
+            "base": "UiDynamicScrollBoxElementNotificationBus",
             "context": "EBusHandler",
             "variant": "",
             "details": {
@@ -11,7 +11,7 @@
             },
             "methods": [
                 {
-                    "key": "OnElementBecomingVisible",
+                    "base": "OnElementBecomingVisible",
                     "details": {
                         "name": "On Element Becoming Visible",
                         "tooltip": "Executes when a child of the scroll box is about to become visible. Use this event to populate the child with data for display"
@@ -34,7 +34,7 @@
                     ]
                 },
                 {
-                    "key": "OnPrepareElementForSizeCalculation",
+                    "base": "OnPrepareElementForSizeCalculation",
                     "details": {
                         "name": "On Prepare Element For Size Calculation",
                         "tooltip": "Executes when elements have variable sizes and are set to auto calculate. Used with lists that are not divided into sections"
@@ -57,7 +57,7 @@
                     ]
                 },
                 {
-                    "key": "OnElementInSectionBecomingVisible",
+                    "base": "OnElementInSectionBecomingVisible",
                     "details": {
                         "name": "On Element In Section Becoming Visible",
                         "tooltip": "Executes when an element in a section is about to become visible. Used to populate the element with data for display. Used with lists that are divided into sections"
@@ -87,7 +87,7 @@
                     ]
                 },
                 {
-                    "key": "OnPrepareElementInSectionForSizeCalculation",
+                    "base": "OnPrepareElementInSectionForSizeCalculation",
                     "details": {
                         "name": "On Prepare Element In Section For Size Calculation",
                         "tooltip": "Executes when elements in sections have variable sizes and are set to auto calculate. Used with lists that are divided into sections"
@@ -117,7 +117,7 @@
                     ]
                 },
                 {
-                    "key": "OnSectionHeaderBecomingVisible",
+                    "base": "OnSectionHeaderBecomingVisible",
                     "details": {
                         "name": "On Section Header Becoming Visible",
                         "tooltip": "Executes when a header is about to become visible. Used to populate the header with data for display. Used with lists that are divided into sections"
@@ -140,7 +140,7 @@
                     ]
                 },
                 {
-                    "key": "OnPrepareSectionHeaderForSizeCalculation",
+                    "base": "OnPrepareSectionHeaderForSizeCalculation",
                     "details": {
                         "name": "On Prepare Section Header For Size Calculation",
                         "tooltip": "Executes when headers have variable sizes and are set to auto calculate. Used with lists that are divided into sections"

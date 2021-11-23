@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "eUiInteractableState_Normal",
+            "base": "eUiInteractableState_Normal",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GeteUiInteractableState_Normal",
+                    "base": "GeteUiInteractableState_Normal",
                     "details": {
                         "name": "Normal"
                     },

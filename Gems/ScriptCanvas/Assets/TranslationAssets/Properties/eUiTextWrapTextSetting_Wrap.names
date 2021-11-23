@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "eUiTextWrapTextSetting_Wrap",
+            "base": "eUiTextWrapTextSetting_Wrap",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GeteUiTextWrapTextSetting_Wrap",
+                    "base": "GeteUiTextWrapTextSetting_Wrap",
                     "details": {
                         "name": "Wrap"
                     },

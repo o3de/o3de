@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "AudioObstructionType_Ignore",
+            "base": "AudioObstructionType_Ignore",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetAudioObstructionType_Ignore",
+                    "base": "GetAudioObstructionType_Ignore",
                     "details": {
                         "name": "Ignore"
                     },

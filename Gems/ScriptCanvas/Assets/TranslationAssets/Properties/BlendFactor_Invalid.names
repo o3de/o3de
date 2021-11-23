@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "BlendFactor_Invalid",
+            "base": "BlendFactor_Invalid",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetBlendFactor_Invalid",
+                    "base": "GetBlendFactor_Invalid",
                     "details": {
                         "name": "Get Invalid"
                     },

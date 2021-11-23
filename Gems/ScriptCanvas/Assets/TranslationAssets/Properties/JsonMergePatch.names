@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "JsonMergePatch",
+            "base": "JsonMergePatch",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetJsonMergePatch",
+                    "base": "GetJsonMergePatch",
                     "details": {
                         "name": "Get Json Merge Patch"
                     },

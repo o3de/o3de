@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "TransformPivot_Object",
+            "base": "TransformPivot_Object",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetTransformPivot_Object",
+                    "base": "GetTransformPivot_Object",
                     "details": {
                         "name": "Object"
                     },

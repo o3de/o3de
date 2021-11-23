@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "AudioPreloadComponentLoadType_Auto",
+            "base": "AudioPreloadComponentLoadType_Auto",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetAudioPreloadComponentLoadType_Auto",
+                    "base": "GetAudioPreloadComponentLoadType_Auto",
                     "details": {
                         "name": "Load Type Auto"
                     },

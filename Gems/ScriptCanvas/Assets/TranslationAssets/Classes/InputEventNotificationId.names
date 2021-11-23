@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "InputEventNotificationId",
+            "base": "InputEventNotificationId",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "ToString",
+                    "base": "ToString",
                     "context": "InputEventNotificationId",
                     "entry": {
                         "name": "In",
@@ -41,7 +41,7 @@
                     ]
                 },
                 {
-                    "key": "Equal",
+                    "base": "Equal",
                     "context": "InputEventNotificationId",
                     "entry": {
                         "name": "In",
@@ -78,7 +78,7 @@
                     ]
                 },
                 {
-                    "key": "Clone",
+                    "base": "Clone",
                     "context": "InputEventNotificationId",
                     "entry": {
                         "name": "In",
@@ -109,7 +109,7 @@
                     ]
                 },
                 {
-                    "key": "CreateInputEventNotificationId",
+                    "base": "CreateInputEventNotificationId",
                     "context": "InputEventNotificationId",
                     "entry": {
                         "name": "In",
@@ -146,7 +146,7 @@
                     ]
                 },
                 {
-                    "key": "GetactionNameCrc",
+                    "base": "GetactionNameCrc",
                     "details": {
                         "name": "Get Action Name Tag"
                     },
@@ -168,7 +168,7 @@
                     ]
                 },
                 {
-                    "key": "SetactionNameCrc",
+                    "base": "SetactionNameCrc",
                     "details": {
                         "name": "Set Action Name Tag"
                     },
@@ -188,7 +188,7 @@
                     ]
                 },
                 {
-                    "key": "GetlocalUserId",
+                    "base": "GetlocalUserId",
                     "details": {
                         "name": "Get Local User Id"
                     },
@@ -210,7 +210,7 @@
                     ]
                 },
                 {
-                    "key": "SetlocalUserId",
+                    "base": "SetlocalUserId",
                     "details": {
                         "name": "Set Local User Id"
                     },
@@ -230,7 +230,7 @@
                     ]
                 },
                 {
-                    "key": "SetactionName",
+                    "base": "SetactionName",
                     "details": {
                         "name": "Set Action Name"
                     },

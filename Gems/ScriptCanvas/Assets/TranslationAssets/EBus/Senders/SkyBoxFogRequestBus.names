@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "SkyBoxFogRequestBus",
+            "base": "SkyBoxFogRequestBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetBottomHeight",
+                    "base": "GetBottomHeight",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Bottom Height"
@@ -32,7 +32,7 @@
                     ]
                 },
                 {
-                    "key": "GetColor",
+                    "base": "GetColor",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Color"
@@ -54,7 +54,7 @@
                     ]
                 },
                 {
-                    "key": "SetBottomHeight",
+                    "base": "SetBottomHeight",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Bottom Height"
@@ -76,7 +76,7 @@
                     ]
                 },
                 {
-                    "key": "SetColor",
+                    "base": "SetColor",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Color"
@@ -98,7 +98,7 @@
                     ]
                 },
                 {
-                    "key": "GetTopHeight",
+                    "base": "GetTopHeight",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Top Height"
@@ -120,7 +120,7 @@
                     ]
                 },
                 {
-                    "key": "IsEnabled",
+                    "base": "IsEnabled",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Is Enabled"
@@ -142,7 +142,7 @@
                     ]
                 },
                 {
-                    "key": "SetTopHeight",
+                    "base": "SetTopHeight",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Top Height"
@@ -164,7 +164,7 @@
                     ]
                 },
                 {
-                    "key": "SetEnabled",
+                    "base": "SetEnabled",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Enabled"

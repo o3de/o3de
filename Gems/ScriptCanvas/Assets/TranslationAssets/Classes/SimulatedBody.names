@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "SimulatedBody",
+            "base": "SimulatedBody",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
@@ -9,7 +9,7 @@
             },
             "methods": [
                 {
-                    "key": "GetOnCollisionEndEvent",
+                    "base": "GetOnCollisionEndEvent",
                     "context": "SimulatedBody",
                     "entry": {
                         "name": "In",
@@ -41,7 +41,7 @@
                     ]
                 },
                 {
-                    "key": "GetOnCollisionPersistEvent",
+                    "base": "GetOnCollisionPersistEvent",
                     "context": "SimulatedBody",
                     "entry": {
                         "name": "In",
@@ -73,7 +73,7 @@
                     ]
                 },
                 {
-                    "key": "GetOnTriggerEnterEvent",
+                    "base": "GetOnTriggerEnterEvent",
                     "context": "SimulatedBody",
                     "entry": {
                         "name": "In",
@@ -105,7 +105,7 @@
                     ]
                 },
                 {
-                    "key": "GetOnCollisionBeginEvent",
+                    "base": "GetOnCollisionBeginEvent",
                     "context": "SimulatedBody",
                     "entry": {
                         "name": "In",
@@ -137,7 +137,7 @@
                     ]
                 },
                 {
-                    "key": "GetOnTriggerExitEvent",
+                    "base": "GetOnTriggerExitEvent",
                     "context": "SimulatedBody",
                     "entry": {
                         "name": "In",

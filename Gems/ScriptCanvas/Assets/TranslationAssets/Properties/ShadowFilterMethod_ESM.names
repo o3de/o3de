@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "ShadowFilterMethod_ESM",
+            "base": "ShadowFilterMethod_ESM",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetShadowFilterMethod_ESM",
+                    "base": "GetShadowFilterMethod_ESM",
                     "details": {
                         "name": "ESM"
                     },
