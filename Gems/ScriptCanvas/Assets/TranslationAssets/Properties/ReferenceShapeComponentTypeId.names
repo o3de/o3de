@@ -5,7 +5,8 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Reference Shape Component Type Id"
+                "name": "Reference Shape Component Type Id",
+                "category": "Constants/Editor"
             },
             "methods": [
                 {

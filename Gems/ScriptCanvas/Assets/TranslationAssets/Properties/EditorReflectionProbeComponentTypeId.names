@@ -5,7 +5,8 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Editor Reflection Probe Component Type Id"
+                "name": "Editor Reflection Probe Component Type Id",
+                "category": "Constants/Editor"
             },
             "methods": [
                 {

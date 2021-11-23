@@ -5,7 +5,8 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Disk Shape Component Type Id"
+                "name": "Disk Shape Component Type Id",
+                "category": "Constants/Editor"
             },
             "methods": [
                 {

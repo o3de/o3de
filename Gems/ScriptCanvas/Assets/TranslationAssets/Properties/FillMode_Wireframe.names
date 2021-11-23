@@ -5,7 +5,8 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Fill Mode_ Wireframe"
+                "name": "Fill Mode_ Wireframe",
+                "category": "Constants/Fill Mode"
             },
             "methods": [
                 {

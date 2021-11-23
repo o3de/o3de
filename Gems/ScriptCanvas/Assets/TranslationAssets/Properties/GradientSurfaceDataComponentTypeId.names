@@ -5,7 +5,8 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Gradient Surface Data Component Type Id"
+                "name": "Gradient Surface Data Component Type Id",
+                "category": "Constants/Editor"
             },
             "methods": [
                 {

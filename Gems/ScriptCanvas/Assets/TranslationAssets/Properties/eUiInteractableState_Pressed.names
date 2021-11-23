@@ -5,13 +5,14 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "e Ui Interactable State_ Pressed"
+                "name": "Interactable State_ Pressed",
+                "category": "Constants/UI"
             },
             "methods": [
                 {
                     "key": "GeteUiInteractableState_Pressed",
                     "details": {
-                        "name": "Gete Ui Interactable State_ Pressed"
+                        "name": "Get Interactable State_ Pressed"
                     },
                     "results": [
                         {

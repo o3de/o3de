@@ -5,13 +5,14 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Blend Op_ Maximum"
+                "name": "Maximum",
+                "category": "Constants/Blend Operation"
             },
             "methods": [
                 {
                     "key": "GetBlendOp_Maximum",
                     "details": {
-                        "name": "Get Blend Op_ Maximum"
+                        "name": "Get Maximum"
                     },
                     "results": [
                         {

@@ -5,13 +5,14 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "e Ui Interactable State_ Hover"
+                "name": "Interactable State_ Hover",
+                "category": "Constants/UI"
             },
             "methods": [
                 {
                     "key": "GeteUiInteractableState_Hover",
                     "details": {
-                        "name": "Gete Ui Interactable State_ Hover"
+                        "name": "Get Interactable State_ Hover"
                     },
                     "results": [
                         {

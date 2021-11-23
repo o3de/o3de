@@ -5,7 +5,8 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Json Patch"
+                "name": "Json Patch",
+                "category": "Constants/Json"
             },
             "methods": [
                 {

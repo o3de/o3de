@@ -5,13 +5,14 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "e Ui Scroll Box Snap Mode_ Children"
+                "name": "Scroll Box Snap Mode_ Children",
+                "category": "Constants/UI"
             },
             "methods": [
                 {
                     "key": "GeteUiScrollBoxSnapMode_Children",
                     "details": {
-                        "name": "Gete Ui Scroll Box Snap Mode_ Children"
+                        "name": "Get Scroll Box Snap Mode_ Children"
                     },
                     "results": [
                         {

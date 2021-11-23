@@ -5,13 +5,14 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Stencil Op_ Replace"
+                "name": "Replace",
+                "category": "Constants/Stencil Op"
             },
             "methods": [
                 {
                     "key": "GetStencilOp_Replace",
                     "details": {
-                        "name": "Get Stencil Op_ Replace"
+                        "name": "Replace"
                     },
                     "results": [
                         {

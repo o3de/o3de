@@ -5,13 +5,14 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Stencil Op_ Keep"
+                "name": "Keep",
+                "category": "Constants/Stencil Op"
             },
             "methods": [
                 {
                     "key": "GetStencilOp_Keep",
                     "details": {
-                        "name": "Get Stencil Op_ Keep"
+                        "name": "Keep"
                     },
                     "results": [
                         {

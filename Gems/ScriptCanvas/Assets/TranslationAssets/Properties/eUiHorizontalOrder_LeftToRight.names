@@ -5,13 +5,14 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "e Ui Horizontal Order_ Left To Right"
+                "name": "Left To Right",
+                "category": "Constants/UI/Order/Horizontal"
             },
             "methods": [
                 {
                     "key": "GeteUiHorizontalOrder_LeftToRight",
                     "details": {
-                        "name": "Gete Ui Horizontal Order_ Left To Right"
+                        "name": "Left To Right"
                     },
                     "results": [
                         {

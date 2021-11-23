@@ -5,7 +5,8 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Fill Mode_ Invalid"
+                "name": "Fill Mode_ Invalid",
+                "category": "Constants/Fill Mode"
             },
             "methods": [
                 {

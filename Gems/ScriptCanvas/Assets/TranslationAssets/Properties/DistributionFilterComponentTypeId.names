@@ -5,7 +5,8 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Distribution Filter Component Type Id"
+                "name": "Distribution Filter Component Type Id",
+                "category": "Constants/Editor"
             },
             "methods": [
                 {

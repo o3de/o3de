@@ -5,7 +5,8 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Editor Shape Weight Modifier Component Type Id"
+                "name": "Editor Shape Weight Modifier Component Type Id",
+                "category": "Constants/Editor"
             },
             "methods": [
                 {

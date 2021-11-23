@@ -5,7 +5,8 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Descriptor Weight Selector Component Type Id"
+                "name": "Descriptor Weight Selector Component Type Id",
+                "category": "Constants/Editor"
             },
             "methods": [
                 {

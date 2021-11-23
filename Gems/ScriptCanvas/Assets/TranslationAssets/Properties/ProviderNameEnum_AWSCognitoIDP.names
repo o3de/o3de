@@ -5,7 +5,8 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Provider Name Enum_AWS CognitoIDP"
+                "name": "Provider Name Enum_AWS CognitoIDP",
+                "category": "Constants/Provider Name"
             },
             "methods": [
                 {

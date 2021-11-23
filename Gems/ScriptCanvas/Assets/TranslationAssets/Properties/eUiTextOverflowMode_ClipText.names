@@ -5,13 +5,14 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "e Ui Text Overflow Mode_ Clip Text"
+                "name": "Text Overflow Mode_ Clip Text",
+                "category": "Constants/UI"
             },
             "methods": [
                 {
                     "key": "GeteUiTextOverflowMode_ClipText",
                     "details": {
-                        "name": "Gete Ui Text Overflow Mode_ Clip Text"
+                        "name": "Get Text Overflow Mode_ Clip Text"
                     },
                     "results": [
                         {

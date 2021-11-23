@@ -5,7 +5,8 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Material Property Group Visibility_ Enabled"
+                "name": "Material Property Group Visibility_ Enabled",
+                "category": "Constants/Material Property"
             },
             "methods": [
                 {

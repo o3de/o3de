@@ -5,13 +5,14 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Cull Mode_ Front"
+                "name": "Front",
+                "category": "Constants/Cull Mode"
             },
             "methods": [
                 {
                     "key": "GetCullMode_Front",
                     "details": {
-                        "name": "Get Cull Mode_ Front"
+                        "name": "Get Front"
                     },
                     "results": [
                         {

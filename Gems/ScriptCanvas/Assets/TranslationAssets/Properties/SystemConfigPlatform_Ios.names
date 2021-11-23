@@ -5,7 +5,8 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "System Config Platform_ Ios"
+                "name": "System Config Platform_ Ios",
+                "category": "Constants/System Configuration"
             },
             "methods": [
                 {

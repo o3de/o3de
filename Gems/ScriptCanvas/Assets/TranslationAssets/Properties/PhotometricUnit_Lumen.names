@@ -5,7 +5,8 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Photometric Unit_ Lumen"
+                "name": "Photometric Unit_ Lumen",
+                "category": "Constants/Photometric Unit"
             },
             "methods": [
                 {

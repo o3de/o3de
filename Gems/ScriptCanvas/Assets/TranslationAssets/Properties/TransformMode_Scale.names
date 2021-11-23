@@ -5,7 +5,8 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Transform Mode_ Scale"
+                "name": "Transform Mode_ Scale",
+                "category": "Constants/Transform"
             },
             "methods": [
                 {

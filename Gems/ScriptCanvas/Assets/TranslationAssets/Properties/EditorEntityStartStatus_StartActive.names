@@ -5,7 +5,8 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Editor Entity Start Status_ Start Active"
+                "name": "Editor Entity Start Status_ Start Active",
+                "category": "Constants/Editor"
             },
             "methods": [
                 {

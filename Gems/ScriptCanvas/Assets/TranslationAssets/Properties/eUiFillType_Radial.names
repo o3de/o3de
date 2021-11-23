@@ -5,13 +5,14 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "e Ui Fill Type_ Radial"
+                "name": "Radial",
+                "category": "Constants/UI/Fill Type"
             },
             "methods": [
                 {
                     "key": "GeteUiFillType_Radial",
                     "details": {
-                        "name": "Gete Ui Fill Type_ Radial"
+                        "name": "Radial"
                     },
                     "results": [
                         {

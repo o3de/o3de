@@ -5,7 +5,8 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Default Physics Scene Id"
+                "name": "Default Physics Scene Id",
+                "category": "Constants/Defaults"
             },
             "methods": [
                 {

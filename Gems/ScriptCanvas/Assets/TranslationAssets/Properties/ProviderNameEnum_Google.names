@@ -5,7 +5,8 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Provider Name Enum_ Google"
+                "name": "Provider Name Enum_ Google",
+                "category": "Constants/Provider Name"
             },
             "methods": [
                 {

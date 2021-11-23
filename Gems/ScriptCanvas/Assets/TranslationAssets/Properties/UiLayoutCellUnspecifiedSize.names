@@ -5,13 +5,14 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Ui Layout Cell Unspecified Size"
+                "name": "Cell Unspecified Size",
+                "category": "Constants/UI/Ui Layout"
             },
             "methods": [
                 {
                     "key": "GetUiLayoutCellUnspecifiedSize",
                     "details": {
-                        "name": "Get Ui Layout Cell Unspecified Size"
+                        "name": "Layout Cell Unspecified Size"
                     },
                     "results": [
                         {

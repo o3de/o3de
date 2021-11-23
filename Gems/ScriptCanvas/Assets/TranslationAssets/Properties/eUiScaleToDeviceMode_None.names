@@ -5,13 +5,14 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "e Ui Scale To Device Mode_ None"
+                "name": "Scale To Device Mode_ None",
+                "category": "Constants/UI"
             },
             "methods": [
                 {
                     "key": "GeteUiScaleToDeviceMode_None",
                     "details": {
-                        "name": "Gete Ui Scale To Device Mode_ None"
+                        "name": "Get Scale To Device Mode_ None"
                     },
                     "results": [
                         {

@@ -5,7 +5,8 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Shadow Filter Method_ESM"
+                "name": "Shadow Filter Method_ESM",
+                "category": "Constants/Shadowmap"
             },
             "methods": [
                 {

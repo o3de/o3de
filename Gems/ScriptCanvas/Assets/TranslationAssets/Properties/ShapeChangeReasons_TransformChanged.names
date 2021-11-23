@@ -5,7 +5,8 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Shape Change Reasons_ Transform Changed"
+                "name": "Shape Change Reasons_ Transform Changed",
+                "category": "Constants/Editor"
             },
             "methods": [
                 {

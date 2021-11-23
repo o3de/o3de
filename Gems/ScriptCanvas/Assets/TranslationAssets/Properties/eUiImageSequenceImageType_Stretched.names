@@ -5,13 +5,14 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "e Ui Image Sequence Image Type_ Stretched"
+                "name": "Image Sequence Image Type_ Stretched",
+                "category": "Constants/UI"
             },
             "methods": [
                 {
                     "key": "GeteUiImageSequenceImageType_Stretched",
                     "details": {
-                        "name": "Gete Ui Image Sequence Image Type_ Stretched"
+                        "name": "Get Image Sequence Image Type_ Stretched"
                     },
                     "results": [
                         {

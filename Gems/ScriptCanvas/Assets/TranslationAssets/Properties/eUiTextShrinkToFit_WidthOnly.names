@@ -5,13 +5,14 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "e Ui Text Shrink To Fit_ Width Only"
+                "name": "Text Shrink To Fit_ Width Only",
+                "category": "Constants/UI"
             },
             "methods": [
                 {
                     "key": "GeteUiTextShrinkToFit_WidthOnly",
                     "details": {
-                        "name": "Gete Ui Text Shrink To Fit_ Width Only"
+                        "name": "Get Text Shrink To Fit_ Width Only"
                     },
                     "results": [
                         {

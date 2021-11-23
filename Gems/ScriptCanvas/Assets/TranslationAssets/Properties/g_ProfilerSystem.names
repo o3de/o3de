@@ -5,7 +5,8 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "g_ Profiler System"
+                "name": "g_ Profiler System",
+                "category": "Constants/Profiler"
             },
             "methods": [
                 {
