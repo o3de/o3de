@@ -105,9 +105,6 @@ set(FILES
     Debug/TraceContextSingleStackHandler.cpp
     Debug/TraceContextMultiStackHandler.h
     Debug/TraceContextMultiStackHandler.cpp
-    Debug/TraceContextBufferedFormatter.cpp
-    Debug/TraceContextBufferedFormatter.inl
-    Debug/TraceContextBufferedFormatter.h
     Debug/TraceContextLogFormatter.cpp
     Debug/TraceContextLogFormatter.h
     Component/EditorComponentAPIBus.h
