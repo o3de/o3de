@@ -24,11 +24,11 @@ namespace UnitTest
         {
             AllocatorsTestFixture::SetUp();
 
-            m_buildTargetDescriptors.emplace_back(TestImpact::BuildTargetDescriptor{{"TestTargetA", "", ""}, {}});
-            m_buildTargetDescriptors.emplace_back(TestImpact::BuildTargetDescriptor{{"TestTargetB", "", ""}, {}});
-            m_buildTargetDescriptors.emplace_back(TestImpact::BuildTargetDescriptor{{"ProductionTargetA", "", ""}, {}});
-            m_buildTargetDescriptors.emplace_back(TestImpact::BuildTargetDescriptor{{"ProductionTargetB", "", ""}, {}});
-            m_buildTargetDescriptors.emplace_back(TestImpact::BuildTargetDescriptor{{"ProductionTargetC", "", ""}, {}});
+            m_buildTargetDescriptors.emplace_back(TestImpact::BuildTargetDescriptor{TestImpact::TargetDescriptor{"TestTargetA", "", }, {""}});
+            m_buildTargetDescriptors.emplace_back(TestImpact::BuildTargetDescriptor{TestImpact::TargetDescriptor{"TestTargetB", "", }, {""}});
+            m_buildTargetDescriptors.emplace_back(TestImpact::BuildTargetDescriptor{TestImpact::TargetDescriptor{"ProductionTargetA", "", }, {""}});
+            m_buildTargetDescriptors.emplace_back(TestImpact::BuildTargetDescriptor{TestImpact::TargetDescriptor{"ProductionTargetB", "", }, {""}});
+            m_buildTargetDescriptors.emplace_back(TestImpact::BuildTargetDescriptor{TestImpact::TargetDescriptor{"ProductionTargetC", "", }, {""}});
 
             m_testTargetMetaMap.emplace("TestTargetA", TestImpact::TestTargetMeta{TestImpact::TestSuiteMeta{"", AZStd::chrono::milliseconds{0}}, "", TestImpact::LaunchMethod::TestRunner});
             m_testTargetMetaMap.emplace("TestTargetB", TestImpact::TestTargetMeta{TestImpact::TestSuiteMeta{"", AZStd::chrono::milliseconds{0}}, "", TestImpact::LaunchMethod::StandAlone});
@@ -41,13 +41,13 @@ namespace UnitTest
 
     TestImpact::ProductionTargetDescriptor ConstructProductionTargetDescriptor(const AZStd::string& name)
     {
-        return TestImpact::ProductionTargetDescriptor{TestImpact::BuildTargetDescriptor{{name, "", ""}, {{}, {}}}};
+        return TestImpact::ProductionTargetDescriptor{TestImpact::BuildTargetDescriptor{TestImpact::TargetDescriptor{name, "", }, {""}}};
     }
 
     TestImpact::TestTargetDescriptor ConstructTestTargetDescriptor(const AZStd::string& name, TestImpact::LaunchMethod launchMethod)
     {
         return TestImpact::TestTargetDescriptor{
-            TestImpact::BuildTargetDescriptor{ { name, "", "" }, { {}, {} } },
+            TestImpact::BuildTargetDescriptor{TestImpact::TargetDescriptor{name, "", }, {""}},
             TestImpact::TestTargetMeta{ TestImpact::TestSuiteMeta{ "", AZStd::chrono::milliseconds{ 0 } }, "", launchMethod }
         };
     }

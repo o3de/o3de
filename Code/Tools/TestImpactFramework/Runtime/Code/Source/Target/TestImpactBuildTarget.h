@@ -9,9 +9,9 @@
 #pragma once
 
 #include <Artifact/Static/TestImpactBuildTargetDescriptor.h>
+#include <Target/TestImpactTarget.h>
 
 #include <AzCore/std/containers/variant.h>
-#include <AzCore/std/string/string.h>
 
 namespace TestImpact
 {
@@ -33,22 +33,13 @@ namespace TestImpact
 
     //! Representation of a generic build target in the repository.
     class BuildTarget
+        : public Target
     {
     public:
         BuildTarget(BuildTargetDescriptor* descriptor, SpecializedBuildTargetType type);
-        virtual ~BuildTarget() = default;
-
-        //! Returns the build target name.
-        const AZStd::string& GetName() const;
 
         //! Returns the build target's compiled binary name.
         const AZStd::string& GetOutputName() const;
-
-        //! Returns the path in the source tree to the build target location.
-        const RepoPath& GetPath() const;
-
-        //! Returns the build target's sources.
-        const TargetSources& GetSources() const;
 
         //! Returns the build target type.
         SpecializedBuildTargetType GetSpecializedBuildTargetType() const;

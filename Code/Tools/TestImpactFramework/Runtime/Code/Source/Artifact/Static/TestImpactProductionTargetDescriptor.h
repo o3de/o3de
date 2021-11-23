@@ -16,6 +16,7 @@ namespace TestImpact
     struct ProductionTargetDescriptor
         : public BuildTargetDescriptor
     {
+        ProductionTargetDescriptor() = default;
         ProductionTargetDescriptor(BuildTargetDescriptor&& buildTarget);
     };
 } // namespace TestImpact

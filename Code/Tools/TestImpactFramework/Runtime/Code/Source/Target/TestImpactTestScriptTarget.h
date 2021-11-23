@@ -9,19 +9,20 @@
 #pragma once
 
 #include <Artifact/Static/TestImpactTestScriptTargetDescriptor.h>
+#include <Target/TestImpactTarget.h>
+
+#include <AzCore/std/smart_ptr/unique_ptr.h>
 
 namespace TestImpact
 {
     //! Build target specialization for test targets (build targets containing test code and no production code).
     class TestScriptTarget
+        : public Target
     {
     public:
         using Descriptor = TestScriptTargetDescriptor;
 
-        TestScriptTarget(Descriptor&& descriptor);
-
-        //! Returns the test script target name.
-        const AZStd::string& GetName() const;
+        TestScriptTarget(AZStd::unique_ptr<Descriptor> descriptor);
 
         //! Returns the test script target suite.
         const AZStd::string& GetSuite() const;
@@ -33,6 +34,6 @@ namespace TestImpact
         AZStd::chrono::milliseconds GetTimeout() const;
 
     private:
-        const Descriptor m_testScriptTargetDescriptor;
+        AZStd::unique_ptr<Descriptor> m_descriptor;
     };
 } // namespace TestImpact

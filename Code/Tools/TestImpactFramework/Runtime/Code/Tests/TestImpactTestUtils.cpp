@@ -132,10 +132,7 @@ namespace UnitTest
         const AZStd::vector<TestImpact::RepoPath>& staticSources,
         const TestImpact::AutogenSources& autogenSources)
     {
-        TestImpact::BuildTargetDescriptor targetDescriptor;
-        targetDescriptor.m_buildMetaData = {name, outputName, path};
-        targetDescriptor.m_sources = {staticSources, autogenSources};
-        return targetDescriptor;
+        return TestImpact::BuildTargetDescriptor(TestImpact::TargetDescriptor{ name, path, TestImpact::TargetSources{ staticSources, autogenSources } }, outputName);
     }
 
     TestImpact::TestEnumerationSuite GenerateParamterizedSuite(
@@ -1651,13 +1648,13 @@ namespace UnitTest
             });
     }
 
-    bool operator==(const TestImpact::BuildMetaData& lhs, const TestImpact::BuildMetaData& rhs)
+    bool operator==(const TestImpact::TargetDescriptor& lhs, const TestImpact::TargetDescriptor& rhs)
     {
         if (lhs.m_name != rhs.m_name)
         {
             return false;
         }
-        else if (lhs.m_outputName != rhs.m_outputName)
+        else if (!(lhs.m_sources == rhs.m_sources))
         {
             return false;
         }
@@ -1707,7 +1704,8 @@ namespace UnitTest
 
     bool operator==(const TestImpact::BuildTargetDescriptor& lhs, const TestImpact::BuildTargetDescriptor& rhs)
     {
-        return lhs.m_buildMetaData == rhs.m_buildMetaData && lhs.m_sources == rhs.m_sources;
+        return lhs.m_outputName == rhs.m_outputName &&
+            static_cast<const TestImpact::TargetDescriptor&>(lhs) == static_cast<const TestImpact::TargetDescriptor&>(rhs);
     }
 
     bool operator==(const TestImpact::TestSuiteMeta& lhs, const TestImpact::TestSuiteMeta& rhs)
@@ -1740,12 +1738,13 @@ namespace UnitTest
 
     bool operator==(const TestImpact::ProductionTargetDescriptor& lhs, const TestImpact::ProductionTargetDescriptor& rhs)
     {
-        return lhs.m_buildMetaData == rhs.m_buildMetaData;
+        return static_cast<const TestImpact::BuildTargetDescriptor&>(lhs) == static_cast<const TestImpact::BuildTargetDescriptor&>(rhs);
     }
 
     bool operator==(const TestImpact::TestTargetDescriptor& lhs, const TestImpact::TestTargetDescriptor& rhs)
     {
-        return lhs.m_buildMetaData == rhs.m_buildMetaData && lhs.m_sources == rhs.m_sources && lhs.m_testMetaData == rhs.m_testMetaData;
+        return static_cast<const TestImpact::BuildTargetDescriptor&>(lhs) == static_cast<const TestImpact::BuildTargetDescriptor&>(rhs) &&
+            lhs.m_testMetaData == rhs.m_testMetaData;
     }
 
     bool operator==(const TestImpact::LineCoverage& lhs, const TestImpact::LineCoverage& rhs)

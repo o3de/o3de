@@ -102,14 +102,14 @@ namespace TestImpact
         }
 
         const auto& target = buildTarget[Keys[TargetKey]];
-        buildTargetDescriptor.m_buildMetaData.m_name = target[Keys[NameKey]].GetString();
-        buildTargetDescriptor.m_buildMetaData.m_outputName = target[Keys[OutputNameKey]].GetString();
-        buildTargetDescriptor.m_buildMetaData.m_path = target["path"].GetString();
+        buildTargetDescriptor.m_name = target[Keys[NameKey]].GetString();
+        buildTargetDescriptor.m_outputName = target[Keys[OutputNameKey]].GetString();
+        buildTargetDescriptor.m_path = target["path"].GetString();
 
-        AZ_TestImpact_Eval(!buildTargetDescriptor.m_buildMetaData.m_name.empty(), ArtifactException, "Target name cannot be empty");
+        AZ_TestImpact_Eval(!buildTargetDescriptor.m_name.empty(), ArtifactException, "Target name cannot be empty");
         AZ_TestImpact_Eval(
-            !buildTargetDescriptor.m_buildMetaData.m_outputName.empty(), ArtifactException, "Target output name cannot be empty");
-        AZ_TestImpact_Eval(!buildTargetDescriptor.m_buildMetaData.m_path.empty(), ArtifactException, "Target path cannot be empty");
+            !buildTargetDescriptor.m_outputName.empty(), ArtifactException, "Target output name cannot be empty");
+        AZ_TestImpact_Eval(!buildTargetDescriptor.m_path.empty(), ArtifactException, "Target path cannot be empty");
 
         const auto& sources = buildTarget[Keys[SourcesKey]];
         const auto& staticSources = sources[Keys[StaticKey]].GetArray();

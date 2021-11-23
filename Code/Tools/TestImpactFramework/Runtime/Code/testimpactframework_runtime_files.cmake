@@ -49,6 +49,8 @@ set(FILES
     Source/Artifact/Static/TestImpactTestTargetMeta.h
     Source/Artifact/Static/TestImpactTestTargetDescriptor.cpp
     Source/Artifact/Static/TestImpactTestTargetDescriptor.h
+    Source/Artifact/Static/TestImpactTargetDescriptor.h
+    Source/Artifact/Static/TestImpactTestScriptTargetDescriptor.cpp
     Source/Artifact/Static/TestImpactTestScriptTargetDescriptor.h
     Source/Artifact/Static/TestImpactDependencyGraphData.h
     Source/Artifact/Dynamic/TestImpactTestEnumerationSuite.h
@@ -81,6 +83,8 @@ set(FILES
     Source/Dependency/TestImpactSourceCoveringTestsList.cpp
     Source/Dependency/TestImpactSourceCoveringTestsSerializer.cpp
     Source/Dependency/TestImpactSourceCoveringTestsSerializer.h
+    Source/Target/TestImpactTarget.cpp
+    Source/Target/TestImpactTarget.h
     Source/Target/TestImpactBuildTarget.cpp
     Source/Target/TestImpactBuildTarget.h
     Source/Target/TestImpactTargetList.h

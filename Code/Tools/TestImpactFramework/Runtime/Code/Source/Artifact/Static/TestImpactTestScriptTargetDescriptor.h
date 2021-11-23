@@ -8,17 +8,19 @@
 
 #pragma once
 
-#include <TestImpactFramework/TestImpactRepoPath.h>
-
+#include <Artifact/Static/TestImpactTargetDescriptor.h>
 #include <Artifact/Static/TestImpactTestSuiteMeta.h>
 
 namespace TestImpact
 {
     //! Artifact produced by the target artifact compiler that represents a test build target in the repository.
     struct TestScriptTargetDescriptor
+        : public TargetDescriptor
     {
-        AZStd::string m_name; //!< Python test name.
-        TestSuiteMeta m_suiteMeta;
+        TestScriptTargetDescriptor() = default;
+        TestScriptTargetDescriptor(TargetDescriptor&& targetDescriptor, TestSuiteMeta&& testSuiteMeta, const RepoPath& scriptPath);
+
+        TestSuiteMeta m_testSuiteMeta;
         RepoPath m_scriptPath; //!< Path to the Python script for this test (relative to repository root).
     };
 } // namespace TestImpact

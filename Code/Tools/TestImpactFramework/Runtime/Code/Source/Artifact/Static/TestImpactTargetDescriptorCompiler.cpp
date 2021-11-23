@@ -26,7 +26,7 @@ namespace TestImpact
         for (auto&& buildTarget : buildTargets)
         {
             // If this build target has an associated test artifact then it is a test target, otherwise it is a production target
-            if (auto&& testTargetMeta = testTargetMetaMap.find(buildTarget.m_buildMetaData.m_name);
+            if (auto&& testTargetMeta = testTargetMetaMap.find(buildTarget.m_name);
                 testTargetMeta != testTargetMetaMap.end())
             {
                 testTargets.emplace_back(AZStd::make_unique<TestTargetDescriptor>(AZStd::move(buildTarget), AZStd::move(testTargetMeta->second)));

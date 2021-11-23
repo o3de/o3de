@@ -203,7 +203,7 @@ namespace UnitTest
     bool operator==(const TestImpact::TestRun& lhs, const TestImpact::TestRun& rhs);
     bool CheckTestRunsAreEqualIgnoreDurations(const TestImpact::TestRun& lhs, const TestImpact::TestRun& rhs);
 
-    bool operator==(const TestImpact::BuildMetaData& lhs, const TestImpact::BuildMetaData& rhs);
+    bool operator==(const TestImpact::TargetDescriptor& lhs, const TestImpact::TargetDescriptor& rhs);
     bool operator==(const TestImpact::TargetSources& lhs, const TestImpact::TargetSources& rhs);
     bool operator==(const TestImpact::BuildTargetDescriptor& lhs, const TestImpact::BuildTargetDescriptor& rhs);
     bool operator==(const TestImpact::TestSuiteMeta& lhs, const TestImpact::TestSuiteMeta& rhs);

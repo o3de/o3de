@@ -15,8 +15,6 @@ namespace UnitTest
         AZStd::unique_ptr<TestImpact::BuildTargetDescriptor> CreateBuildTargetDescriptor(
             const AZStd::string& name, const AZStd::vector<TestImpact::RepoPath>& staticSources, const TestImpact::AutogenSources& autogenSources = {})
         {
-            TestImpact::BuildMetaData buildMetaData;
-            buildMetaData.m_name = name;
             TestImpact::TargetSources targetSources;
             targetSources.m_staticSources = staticSources;
             targetSources.m_autogenSources = autogenSources;
@@ -28,7 +26,7 @@ namespace UnitTest
                 }
             }
 
-            return AZStd::make_unique<TestImpact::BuildTargetDescriptor>(AZStd::move(buildMetaData), AZStd::move(targetSources));
+            return AZStd::make_unique<TestImpact::BuildTargetDescriptor>(TestImpact::BuildTargetDescriptor{TestImpact::TargetDescriptor{name, "", AZStd::move(targetSources) }, {""}});
         }
 
         AZStd::vector<AZStd::unique_ptr<TestImpact::ProductionTargetDescriptor>> CreateProductionTargetDescriptors()

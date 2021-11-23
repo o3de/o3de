@@ -10,28 +10,24 @@
 
 namespace TestImpact
 {
-    TestScriptTarget::TestScriptTarget(TestScriptTarget::Descriptor&& descriptor)
-        : m_testScriptTargetDescriptor(AZStd::move(descriptor))
+    TestScriptTarget::TestScriptTarget(AZStd::unique_ptr<Descriptor> descriptor)
+        : Target(descriptor.get())
+        , m_descriptor(AZStd::move(descriptor))
     {
-    }
-
-    const AZStd::string& TestScriptTarget::GetName() const
-    {
-        return m_testScriptTargetDescriptor.m_name;
     }
 
     const AZStd::string& TestScriptTarget::GetSuite() const
     {
-        return m_testScriptTargetDescriptor.m_suiteMeta.m_name;
+        return m_descriptor->m_testSuiteMeta.m_name;
     }
 
     const RepoPath& TestScriptTarget::GetScriptPath() const
     {
-        return m_testScriptTargetDescriptor.m_scriptPath;
+        return m_descriptor->m_scriptPath;
     }
 
     AZStd::chrono::milliseconds TestScriptTarget::GetTimeout() const
     {
-        return m_testScriptTargetDescriptor.m_suiteMeta.m_timeout;
+        return m_descriptor->m_testSuiteMeta.m_timeout;
     }
 } // namespace TestImpact

@@ -58,14 +58,14 @@ namespace TestImpact
             descriptors.begin(), descriptors.end(),
             [](const AZStd::unique_ptr<typename Target::Descriptor>& lhs, const AZStd::unique_ptr<typename Target::Descriptor>& rhs)
         {
-                return lhs->m_buildMetaData.m_name < rhs->m_buildMetaData.m_name;
+                return lhs->m_name < rhs->m_name;
         });
 
         const auto duplicateElement = AZStd::adjacent_find(
             descriptors.begin(), descriptors.end(),
             [](const AZStd::unique_ptr<typename Target::Descriptor>& lhs, const AZStd::unique_ptr<typename Target::Descriptor>& rhs)
         {
-                return lhs->m_buildMetaData.m_name == rhs->m_buildMetaData.m_name;
+                return lhs->m_name == rhs->m_name;
         });
 
         AZ_TestImpact_Eval(duplicateElement == descriptors.end(), TargetException, "Target list contains duplicate targets");

@@ -60,8 +60,8 @@ namespace TestImpact
                 if (const auto suiteName = suite[Keys[SuiteKey]].GetString();
                     strcmp(SuiteTypeAsString(suiteType).c_str(), suiteName) == 0)
                 {
-                    testScriptTargetDescriptor.m_suiteMeta.m_name = suiteName;
-                    testScriptTargetDescriptor.m_suiteMeta.m_timeout = AZStd::chrono::seconds{ suite[Keys[TimeoutKey]].GetUint() };
+                    testScriptTargetDescriptor.m_testSuiteMeta.m_name = suiteName;
+                    testScriptTargetDescriptor.m_testSuiteMeta.m_timeout = AZStd::chrono::seconds{ suite[Keys[TimeoutKey]].GetUint() };
                     testScriptTargetDescriptor.m_name = test[Keys[NameKey]].GetString();
                     testScriptTargetDescriptor.m_scriptPath = test[Keys[ScriptKey]].GetString();
 
