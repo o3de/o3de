@@ -95,7 +95,8 @@ def EntityOutliner_EntityOrdering():
         entity_outliner_model.dropMimeData(
             mime_data, QtCore.Qt.MoveAction, target_row, 0, target_index.parent()
         )
-        QtWidgets.QApplication.processEvents()
+        # Wait after move to let events (i.e. prefab propagation) process
+        general.idle_wait(1.0)
 
     # Move an entity before another entity in the order by dragging the source above the target
     move_entity_before = lambda source_name, target_name: _move_entity(
@@ -119,24 +120,24 @@ def EntityOutliner_EntityOrdering():
 
         # Our new entity should be given a name with a number automatically
         new_entity = f"Entity{i+1}"
-        # The new entity should be added to the top of its parent entity
-        expected_order = [new_entity] + expected_order
+        # The new entity should be added to the bottom of its parent entity
+        expected_order = expected_order + [new_entity]
 
         verify_entities_sorted(expected_order)
 
-    # 3) Move "Entity1" to the top of the order
-    move_entity_before("Entity1", "Entity5")
-    expected_order = ["Entity1", "Entity5", "Entity4", "Entity3", "Entity2"]
+    # 3) Move "Entity5" to the top of the order
+    move_entity_before("Entity5", "Entity1")
+    expected_order = ["Entity5", "Entity1", "Entity2", "Entity3", "Entity4"]
     verify_entities_sorted(expected_order)
 
-    # 4) Move "Entity4" to the bottom of the order
-    move_entity_after("Entity4", "Entity2")
-    expected_order = ["Entity1", "Entity5", "Entity3", "Entity2", "Entity4"]
+    # 4) Move "Entity2" to the bottom of the order
+    move_entity_after("Entity2", "Entity4")
+    expected_order = ["Entity5", "Entity1", "Entity3", "Entity4", "Entity2"]
     verify_entities_sorted(expected_order)
 
     # 5) Add another new entity, ensure the rest of the order is unchanged
     create_entity()
-    expected_order = ["Entity6", "Entity1", "Entity5", "Entity3", "Entity2", "Entity4"]
+    expected_order = ["Entity5", "Entity1", "Entity3", "Entity4", "Entity2", "Entity6"]
     verify_entities_sorted(expected_order)
 
 

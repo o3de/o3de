@@ -1,17 +1,18 @@
 {
     "entries": [
         {
-            "key": "MultiPositionBehaviorType_Blended",
+            "base": "MultiPositionBehaviorType_Blended",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Multi Position Behavior Type_ Blended"
+                "name": "Blended",
+                "category": "Constants/Multi Position Behavior Type"
             },
             "methods": [
                 {
-                    "key": "GetMultiPositionBehaviorType_Blended",
+                    "base": "GetMultiPositionBehaviorType_Blended",
                     "details": {
-                        "name": "Get Multi Position Behavior Type_ Blended"
+                        "name": "Blended"
                     },
                     "results": [
                         {

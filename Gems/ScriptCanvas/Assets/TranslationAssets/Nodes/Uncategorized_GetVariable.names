@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "{8225BE35-4C45-4A32-94D9-3DE114F6F5AF}",
+            "base": "{8225BE35-4C45-4A32-94D9-3DE114F6F5AF}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
@@ -10,14 +10,14 @@
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In",
                     "details": {
                         "name": "In",
                         "tooltip": "When signaled sends the property referenced by this node to a Data Output slot"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out",
                     "details": {
                         "name": "Out",
                         "tooltip": "Signaled after the referenced property has been pushed to the Data Output slot"

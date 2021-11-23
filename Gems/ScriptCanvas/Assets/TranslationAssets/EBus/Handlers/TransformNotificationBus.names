@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "TransformNotificationBus",
+            "base": "TransformNotificationBus",
             "context": "EBusHandler",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "OnTransformChanged",
+                    "base": "OnTransformChanged",
                     "details": {
                         "name": "On Transform Changed",
                         "tooltip": "Signals that the local or world transform of the entity changed"
@@ -33,7 +33,7 @@
                     ]
                 },
                 {
-                    "key": "OnParentChanged",
+                    "base": "OnParentChanged",
                     "details": {
                         "name": "On Parent Changed",
                         "tooltip": "Signals that the parent of the entity changed"
@@ -56,7 +56,7 @@
                     ]
                 },
                 {
-                    "key": "OnChildAdded",
+                    "base": "OnChildAdded",
                     "details": {
                         "name": "On Child Added",
                         "tooltip": "Signals that a child was added to the entity"
@@ -72,7 +72,7 @@
                     ]
                 },
                 {
-                    "key": "OnChildRemoved",
+                    "base": "OnChildRemoved",
                     "details": {
                         "name": "On Child Removed",
                         "tooltip": "Signals that a child was removed from the entity"

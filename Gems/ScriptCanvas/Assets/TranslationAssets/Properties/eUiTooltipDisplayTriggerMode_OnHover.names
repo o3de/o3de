@@ -1,17 +1,18 @@
 {
     "entries": [
         {
-            "key": "eUiTooltipDisplayTriggerMode_OnHover",
+            "base": "eUiTooltipDisplayTriggerMode_OnHover",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "e Ui Tooltip Display Trigger Mode_ On Hover"
+                "name": "On Hover",
+                "category": "Constants/UI/Tooltip Display Trigger Mode"
             },
             "methods": [
                 {
-                    "key": "GeteUiTooltipDisplayTriggerMode_OnHover",
+                    "base": "GeteUiTooltipDisplayTriggerMode_OnHover",
                     "details": {
-                        "name": "Gete Ui Tooltip Display Trigger Mode_ On Hover"
+                        "name": "On Hover"
                     },
                     "results": [
                         {

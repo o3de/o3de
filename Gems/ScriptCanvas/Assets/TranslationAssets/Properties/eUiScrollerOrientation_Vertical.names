@@ -1,17 +1,18 @@
 {
     "entries": [
         {
-            "key": "eUiScrollerOrientation_Vertical",
+            "base": "eUiScrollerOrientation_Vertical",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "e Ui Scroller Orientation_ Vertical"
+                "name": "Vertical",
+                "category": "Constants/UI/Scroller Orientation"
             },
             "methods": [
                 {
-                    "key": "GeteUiScrollerOrientation_Vertical",
+                    "base": "GeteUiScrollerOrientation_Vertical",
                     "details": {
-                        "name": "Gete Ui Scroller Orientation_ Vertical"
+                        "name": "Vertical"
                     },
                     "results": [
                         {

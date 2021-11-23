@@ -1,15 +1,16 @@
 {
     "entries": [
         {
-            "key": "EditorEntityStartStatus_EditorOnly",
+            "base": "EditorEntityStartStatus_EditorOnly",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Editor Entity Start Status_ Editor Only"
+                "name": "Editor Entity Start Status_ Editor Only",
+                "category": "Constants/Editor"
             },
             "methods": [
                 {
-                    "key": "GetEditorEntityStartStatus_EditorOnly",
+                    "base": "GetEditorEntityStartStatus_EditorOnly",
                     "details": {
                         "name": "Get Editor Entity Start Status_ Editor Only"
                     },

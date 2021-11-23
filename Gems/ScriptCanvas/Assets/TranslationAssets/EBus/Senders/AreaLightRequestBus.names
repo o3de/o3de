@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "AreaLightRequestBus",
+            "base": "AreaLightRequestBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "SetFilteringSampleCount",
+                    "base": "SetFilteringSampleCount",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Filtering Sample Count"
@@ -33,7 +33,7 @@
                     ]
                 },
                 {
-                    "key": "SetIntensity",
+                    "base": "SetIntensity",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Intensity"
@@ -56,7 +56,7 @@
                     ]
                 },
                 {
-                    "key": "SetEsmExponent",
+                    "base": "SetEsmExponent",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Esm Exponent"
@@ -79,7 +79,7 @@
                     ]
                 },
                 {
-                    "key": "GetOuterShutterAngle",
+                    "base": "GetOuterShutterAngle",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Outer Shutter Angle"
@@ -102,7 +102,7 @@
                     ]
                 },
                 {
-                    "key": "GetInnerShutterAngle",
+                    "base": "GetInnerShutterAngle",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Inner Shutter Angle"
@@ -125,7 +125,7 @@
                     ]
                 },
                 {
-                    "key": "SetColor",
+                    "base": "SetColor",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Color"
@@ -148,7 +148,7 @@
                     ]
                 },
                 {
-                    "key": "SetShadowBias",
+                    "base": "SetShadowBias",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Shadow Bias"
@@ -170,7 +170,7 @@
                     ]
                 },
                 {
-                    "key": "SetShadowFilterMethod",
+                    "base": "SetShadowFilterMethod",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Shadow Filter Method"
@@ -194,7 +194,7 @@
                     ]
                 },
                 {
-                    "key": "GetEsmExponent",
+                    "base": "GetEsmExponent",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Esm Exponent"
@@ -217,7 +217,7 @@
                     ]
                 },
                 {
-                    "key": "SetInnerShutterAngle",
+                    "base": "SetInnerShutterAngle",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Inner Shutter Angle"
@@ -240,7 +240,7 @@
                     ]
                 },
                 {
-                    "key": "SetEnableShadow",
+                    "base": "SetEnableShadow",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Enable Shadow"
@@ -263,7 +263,7 @@
                     ]
                 },
                 {
-                    "key": "SetUseFastApproximation",
+                    "base": "SetUseFastApproximation",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Use Fast Approximation"
@@ -286,7 +286,7 @@
                     ]
                 },
                 {
-                    "key": "GetUseFastApproximation",
+                    "base": "GetUseFastApproximation",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Use Fast Approximation"
@@ -309,7 +309,7 @@
                     ]
                 },
                 {
-                    "key": "GetFilteringSampleCount",
+                    "base": "GetFilteringSampleCount",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Filtering Sample Count"
@@ -332,7 +332,7 @@
                     ]
                 },
                 {
-                    "key": "GetEnableShadow",
+                    "base": "GetEnableShadow",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Enable Shadow"
@@ -355,7 +355,7 @@
                     ]
                 },
                 {
-                    "key": "GetShadowFilterMethod",
+                    "base": "GetShadowFilterMethod",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Shadow Filter Method"
@@ -379,7 +379,7 @@
                     ]
                 },
                 {
-                    "key": "GetIntensityMode",
+                    "base": "GetIntensityMode",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Intensity Mode"
@@ -403,7 +403,7 @@
                     ]
                 },
                 {
-                    "key": "GetShadowBias",
+                    "base": "GetShadowBias",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Shadow Bias"
@@ -426,7 +426,7 @@
                     ]
                 },
                 {
-                    "key": "SetAttenuationRadiusMode",
+                    "base": "SetAttenuationRadiusMode",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Attenuation Radius Mode"
@@ -451,7 +451,7 @@
                     ]
                 },
                 {
-                    "key": "SetEmitsLightBothDirections",
+                    "base": "SetEmitsLightBothDirections",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Emits Light Both Directions"
@@ -473,7 +473,7 @@
                     ]
                 },
                 {
-                    "key": "SetEnableShutters",
+                    "base": "SetEnableShutters",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Enable Shutters"
@@ -495,7 +495,7 @@
                     ]
                 },
                 {
-                    "key": "GetShadowmapMaxSize",
+                    "base": "GetShadowmapMaxSize",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Shadowmap Max Size"
@@ -518,7 +518,7 @@
                     ]
                 },
                 {
-                    "key": "GetEmitsLightBothDirections",
+                    "base": "GetEmitsLightBothDirections",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Emits Light Both Directions"
@@ -540,7 +540,7 @@
                     ]
                 },
                 {
-                    "key": "SetOuterShutterAngle",
+                    "base": "SetOuterShutterAngle",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Outer Shutter Angle"
@@ -563,7 +563,7 @@
                     ]
                 },
                 {
-                    "key": "SetAttenuationRadius",
+                    "base": "SetAttenuationRadius",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Attenuation Radius"
@@ -586,7 +586,7 @@
                     ]
                 },
                 {
-                    "key": "GetAttenuationRadius",
+                    "base": "GetAttenuationRadius",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Attenuation Radius"
@@ -609,7 +609,7 @@
                     ]
                 },
                 {
-                    "key": "GetEnableShutters",
+                    "base": "GetEnableShutters",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Enable Shutters"
@@ -632,7 +632,7 @@
                     ]
                 },
                 {
-                    "key": "GetColor",
+                    "base": "GetColor",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Color"
@@ -654,7 +654,7 @@
                     ]
                 },
                 {
-                    "key": "ConvertToIntensityMode",
+                    "base": "ConvertToIntensityMode",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Convert To Intensity Mode"
@@ -678,7 +678,7 @@
                     ]
                 },
                 {
-                    "key": "SetShadowmapMaxSize",
+                    "base": "SetShadowmapMaxSize",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Shadowmap Max Size"
@@ -700,7 +700,7 @@
                     ]
                 },
                 {
-                    "key": "GetIntensity",
+                    "base": "GetIntensity",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Intensity"

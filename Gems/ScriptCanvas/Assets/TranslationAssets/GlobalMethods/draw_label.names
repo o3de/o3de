@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "draw_label",
+            "base": "draw_label",
             "context": "Method",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "draw_label",
+                    "base": "draw_label",
                     "context": "Global",
                     "entry": {
                         "name": "In",

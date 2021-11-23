@@ -1,17 +1,18 @@
 {
     "entries": [
         {
-            "key": "DisplaySettings_NoCollision",
+            "base": "DisplaySettings_NoCollision",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Display Settings_ No Collision"
+                "name": "No Collision",
+                "category": "Constants/Display Settings"
             },
             "methods": [
                 {
-                    "key": "GetDisplaySettings_NoCollision",
+                    "base": "GetDisplaySettings_NoCollision",
                     "details": {
-                        "name": "Get Display Settings_ No Collision"
+                        "name": "Get No Collision"
                     },
                     "results": [
                         {

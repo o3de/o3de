@@ -1,15 +1,16 @@
 {
     "entries": [
         {
-            "key": "LevelSettingsComponentTypeId",
+            "base": "LevelSettingsComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Level Settings Component Type Id"
+                "name": "Level Settings Component Type Id",
+                "category": "Constants/Editor"
             },
             "methods": [
                 {
-                    "key": "GetLevelSettingsComponentTypeId",
+                    "base": "GetLevelSettingsComponentTypeId",
                     "details": {
                         "name": "Get Level Settings Component Type Id"
                     },

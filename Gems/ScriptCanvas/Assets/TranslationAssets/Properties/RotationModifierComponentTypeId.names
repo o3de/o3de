@@ -1,15 +1,16 @@
 {
     "entries": [
         {
-            "key": "RotationModifierComponentTypeId",
+            "base": "RotationModifierComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Rotation Modifier Component Type Id"
+                "name": "Rotation Modifier Component Type Id",
+                "category": "Constants/Editor"
             },
             "methods": [
                 {
-                    "key": "GetRotationModifierComponentTypeId",
+                    "base": "GetRotationModifierComponentTypeId",
                     "details": {
                         "name": "Get Rotation Modifier Component Type Id"
                     },

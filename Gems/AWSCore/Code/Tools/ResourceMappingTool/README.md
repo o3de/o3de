@@ -39,6 +39,16 @@ Follow cmake instructions to configure your project, for example:
       ```
       $ python\python.cmd debug Gems\AWSCore\Code\Tools\ResourceMappingTool\resource_mapping_tool.py --binaries_path <PATH_TO_BUILD_FOLDER>\bin\debug\AWSCoreEditorQtBin
       ```
+   * Linux
+      * release mode
+      ```
+      $ python/python.sh Gems/AWSCore/Code/Tools/ResourceMappingTool/resource_mapping_tool.py --binaries_path <PATH_TO_BUILD_FOLDER>/bin/profile/AWSCoreEditorQtBin
+      ```
+      * debug mode
+      ```
+      $ python/python.sh Gems/AWSCore/Code/Tools/ResourceMappingTool/resource_mapping_tool.py --binaries_path <PATH_TO_BUILD_FOLDER>/bin/debug/AWSCoreEditorQtBin
+      ```
+      
 * Note - Editor is integrated with the same engine python environment to launch Resource Mapping Tool. If it is failed to launch the tool
 in Editor, please follow above steps to make sure expected scripts/binaries are present.
 

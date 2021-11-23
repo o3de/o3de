@@ -1,17 +1,18 @@
 {
     "entries": [
         {
-            "key": "TransformPivot_Object",
+            "base": "TransformPivot_Object",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Transform Pivot_ Object"
+                "name": "Object",
+                "category": "Constants/Transform/Pivot"
             },
             "methods": [
                 {
-                    "key": "GetTransformPivot_Object",
+                    "base": "GetTransformPivot_Object",
                     "details": {
-                        "name": "Get Transform Pivot_ Object"
+                        "name": "Object"
                     },
                     "results": [
                         {

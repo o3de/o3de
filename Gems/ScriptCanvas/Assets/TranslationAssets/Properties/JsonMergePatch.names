@@ -1,15 +1,16 @@
 {
     "entries": [
         {
-            "key": "JsonMergePatch",
+            "base": "JsonMergePatch",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Json Merge Patch"
+                "name": "Json Merge Patch",
+                "category": "Constants/Json"
             },
             "methods": [
                 {
-                    "key": "GetJsonMergePatch",
+                    "base": "GetJsonMergePatch",
                     "details": {
                         "name": "Get Json Merge Patch"
                     },

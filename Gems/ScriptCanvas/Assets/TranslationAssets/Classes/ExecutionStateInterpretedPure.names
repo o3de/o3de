@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "ExecutionStateInterpretedPure",
+            "base": "ExecutionStateInterpretedPure",
             "context": "BehaviorClass",
             "variant": "",
             "details": {

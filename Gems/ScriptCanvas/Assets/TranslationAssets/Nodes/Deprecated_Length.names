@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "{F269F2DB-F2D8-515D-BA5C-4C9E28A725E3}",
+            "base": "{F269F2DB-F2D8-515D-BA5C-4C9E28A725E3}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
@@ -12,25 +12,25 @@
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "key": "DataInput_Quaternion: Source",
+                    "base": "DataInput_Quaternion: Source",
                     "details": {
                         "name": "Quaternion: Source"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Number",
+                    "base": "DataOutput_Result: Number",
                     "details": {
                         "name": "Result: Number"
                     }

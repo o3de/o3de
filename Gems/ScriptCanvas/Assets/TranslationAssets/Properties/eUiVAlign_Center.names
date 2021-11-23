@@ -1,17 +1,18 @@
 {
     "entries": [
         {
-            "key": "eUiVAlign_Center",
+            "base": "eUiVAlign_Center",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "e UiV Align_ Center"
+                "name": "Vertical Align Center",
+                "category": "Constants/UI/Align"
             },
             "methods": [
                 {
-                    "key": "GeteUiVAlign_Center",
+                    "base": "GeteUiVAlign_Center",
                     "details": {
-                        "name": "Gete UiV Align_ Center"
+                        "name": "Vertical Align: Center"
                     },
                     "results": [
                         {

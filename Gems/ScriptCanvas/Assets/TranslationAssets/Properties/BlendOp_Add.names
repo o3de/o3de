@@ -1,17 +1,18 @@
 {
     "entries": [
         {
-            "key": "BlendOp_Add",
+            "base": "BlendOp_Add",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Blend Op_ Add"
+                "name": "Add",
+                "category": "Constants/Blend Operation"
             },
             "methods": [
                 {
-                    "key": "GetBlendOp_Add",
+                    "base": "GetBlendOp_Add",
                     "details": {
-                        "name": "Get Blend Op_ Add"
+                        "name": "Get Add"
                     },
                     "results": [
                         {

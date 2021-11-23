@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "get_game_folder",
+            "base": "get_game_folder",
             "context": "Method",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "get_game_folder",
+                    "base": "get_game_folder",
                     "context": "Global",
                     "entry": {
                         "name": "In",

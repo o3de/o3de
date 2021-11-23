@@ -1,15 +1,16 @@
 {
     "entries": [
         {
-            "key": "EditorHairComponentTypeId",
+            "base": "EditorHairComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Editor Hair Component Type Id"
+                "name": "Editor Hair Component Type Id",
+                "category": "Constants/Editor"
             },
             "methods": [
                 {
-                    "key": "GetEditorHairComponentTypeId",
+                    "base": "GetEditorHairComponentTypeId",
                     "details": {
                         "name": "Get Editor Hair Component Type Id"
                     },

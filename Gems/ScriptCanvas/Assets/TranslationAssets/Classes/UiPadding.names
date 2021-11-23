@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "UiPadding",
+            "base": "UiPadding",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "SetPadding",
+                    "base": "SetPadding",
                     "context": "UiPadding",
                     "entry": {
                         "name": "In",
@@ -63,7 +63,7 @@
                     ]
                 },
                 {
-                    "key": "SetBottom",
+                    "base": "SetBottom",
                     "context": "UiPadding",
                     "entry": {
                         "name": "In",
@@ -95,7 +95,7 @@
                     ]
                 },
                 {
-                    "key": "SetRight",
+                    "base": "SetRight",
                     "context": "UiPadding",
                     "entry": {
                         "name": "In",
@@ -127,7 +127,7 @@
                     ]
                 },
                 {
-                    "key": "SetTop",
+                    "base": "SetTop",
                     "context": "UiPadding",
                     "entry": {
                         "name": "In",
@@ -159,7 +159,7 @@
                     ]
                 },
                 {
-                    "key": "SetLeft",
+                    "base": "SetLeft",
                     "context": "UiPadding",
                     "entry": {
                         "name": "In",

@@ -1,17 +1,18 @@
 {
     "entries": [
         {
-            "key": "eUiFillType_RadialEdge",
+            "base": "eUiFillType_RadialEdge",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "e Ui Fill Type_ Radial Edge"
+                "name": "Radial Edge",
+                "category": "Constants/UI/Fill Type"
             },
             "methods": [
                 {
-                    "key": "GeteUiFillType_RadialEdge",
+                    "base": "GeteUiFillType_RadialEdge",
                     "details": {
-                        "name": "Gete Ui Fill Type_ Radial Edge"
+                        "name": "Radial Edge"
                     },
                     "results": [
                         {

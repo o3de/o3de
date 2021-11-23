@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "LookAtNotification",
+            "base": "LookAtNotification",
             "context": "EBusHandler",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "OnTargetChanged",
+                    "base": "OnTargetChanged",
                     "details": {
                         "name": "On Target Changed"
                     },

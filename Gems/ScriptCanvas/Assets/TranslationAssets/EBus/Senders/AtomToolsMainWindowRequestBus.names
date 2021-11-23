@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "AtomToolsMainWindowRequestBus",
+            "base": "AtomToolsMainWindowRequestBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "UnlockViewportRenderTargetSize",
+                    "base": "UnlockViewportRenderTargetSize",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Unlock Viewport Render Target Size"
@@ -24,7 +24,7 @@
                     }
                 },
                 {
-                    "key": "GetDockWidgetNames",
+                    "base": "GetDockWidgetNames",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Dock Widget Names"
@@ -46,7 +46,7 @@
                     ]
                 },
                 {
-                    "key": "ResizeViewportRenderTarget",
+                    "base": "ResizeViewportRenderTarget",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Resize Viewport Render Target"
@@ -74,7 +74,7 @@
                     ]
                 },
                 {
-                    "key": "SetDockWidgetVisible",
+                    "base": "SetDockWidgetVisible",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Dock Widget Visible"
@@ -102,7 +102,7 @@
                     ]
                 },
                 {
-                    "key": "IsDockWidgetVisible",
+                    "base": "IsDockWidgetVisible",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Is Dock Widget Visible"
@@ -132,7 +132,7 @@
                     ]
                 },
                 {
-                    "key": "LockViewportRenderTargetSize",
+                    "base": "LockViewportRenderTargetSize",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Lock Viewport Render Target Size"
@@ -160,7 +160,7 @@
                     ]
                 },
                 {
-                    "key": "ActivateWindow",
+                    "base": "ActivateWindow",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Activate Window"

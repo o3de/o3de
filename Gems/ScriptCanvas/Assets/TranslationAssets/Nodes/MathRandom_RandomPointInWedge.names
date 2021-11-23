@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "{A2D614BC-1636-5F54-868A-BF5544910967}",
+            "base": "{A2D614BC-1636-5F54-868A-BF5544910967}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
@@ -11,55 +11,55 @@
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "key": "DataInput_Origin",
+                    "base": "DataInput_Origin",
                     "details": {
                         "name": "Origin"
                     }
                 },
                 {
-                    "key": "DataInput_Direction",
+                    "base": "DataInput_Direction",
                     "details": {
                         "name": "Direction"
                     }
                 },
                 {
-                    "key": "DataInput_Normal",
+                    "base": "DataInput_Normal",
                     "details": {
                         "name": "Normal"
                     }
                 },
                 {
-                    "key": "DataInput_Radius",
+                    "base": "DataInput_Radius",
                     "details": {
                         "name": "Radius"
                     }
                 },
                 {
-                    "key": "DataInput_Height",
+                    "base": "DataInput_Height",
                     "details": {
                         "name": "Height"
                     }
                 },
                 {
-                    "key": "DataInput_Angle",
+                    "base": "DataInput_Angle",
                     "details": {
                         "name": "Angle"
                     }
                 },
                 {
-                    "key": "DataOutput_Result",
+                    "base": "DataOutput_Result",
                     "details": {
                         "name": "Result"
                     }

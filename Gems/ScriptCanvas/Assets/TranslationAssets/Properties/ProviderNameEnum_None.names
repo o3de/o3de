@@ -1,17 +1,18 @@
 {
     "entries": [
         {
-            "key": "ProviderNameEnum_None",
+            "base": "ProviderNameEnum_None",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Provider Name Enum_ None"
+                "name": "None",
+                "category": "Constants/Provider Name"
             },
             "methods": [
                 {
-                    "key": "GetProviderNameEnum_None",
+                    "base": "GetProviderNameEnum_None",
                     "details": {
-                        "name": "Get Provider Name Enum_ None"
+                        "name": "None"
                     },
                     "results": [
                         {

@@ -1,17 +1,18 @@
 {
     "entries": [
         {
-            "key": "MaterialPropertyVisibility_Disabled",
+            "base": "MaterialPropertyVisibility_Disabled",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Material Property Visibility_ Disabled"
+                "name": "Disabled",
+                "category": "Constants/Material Property Visibility"
             },
             "methods": [
                 {
-                    "key": "GetMaterialPropertyVisibility_Disabled",
+                    "base": "GetMaterialPropertyVisibility_Disabled",
                     "details": {
-                        "name": "Get Material Property Visibility_ Disabled"
+                        "name": "Disabled"
                     },
                     "results": [
                         {

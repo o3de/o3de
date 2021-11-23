@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "{399A2608-77E3-41F9-90FA-58A9B6E0E34D}",
+            "base": "{399A2608-77E3-41F9-90FA-58A9B6E0E34D}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
@@ -11,26 +11,26 @@
             },
             "slots": [
                 {
-                    "key": "DataInput_Ticks",
+                    "base": "DataInput_Ticks",
                     "details": {
                         "name": "Ticks"
                     }
                 },
                 {
-                    "key": "DataInput_Tick Order",
+                    "base": "DataInput_Tick Order",
                     "details": {
                         "name": "Tick Order"
                     }
                 },
                 {
-                    "key": "Input_In",
+                    "base": "Input_In",
                     "details": {
                         "name": "In",
                         "tooltip": "When signaled, execution is delayed at this node for the specified amount of frames."
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out",
                     "details": {
                         "name": "Out",
                         "tooltip": "Signaled after waiting for the specified amount of frames."

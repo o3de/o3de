@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "{07875A9A-81DF-59BA-95E8-3BB5D3E7CF0E}",
+            "base": "{07875A9A-81DF-59BA-95E8-3BB5D3E7CF0E}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
@@ -11,31 +11,31 @@
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "key": "DataInput_Normal",
+                    "base": "DataInput_Normal",
                     "details": {
                         "name": "Normal"
                     }
                 },
                 {
-                    "key": "DataOutput_Tangent",
+                    "base": "DataOutput_Tangent",
                     "details": {
                         "name": "Tangent"
                     }
                 },
                 {
-                    "key": "DataOutput_Bitangent",
+                    "base": "DataOutput_Bitangent",
                     "details": {
                         "name": "Bitangent"
                     }

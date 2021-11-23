@@ -33,6 +33,7 @@
 
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzQtComponents/Utilities/DesktopUtilities.h>
+#include <Source/Translation/TranslationSerializer.h>
 
 namespace ScriptCanvasEditorTools
 {
@@ -848,8 +849,9 @@ namespace ScriptCanvasEditorTools
 
                 Helpers::GetTypeNameAndDescription(parameter->m_typeId, argumentName, argumentDescription);
 
+                const AZStd::string* argName = behaviorMethod->GetArgumentName(argIndex);
                 argument.m_typeId = argumentKey;
-                argument.m_details.m_name = behaviorMethod->GetArgumentName(argIndex)  ? *behaviorMethod->GetArgumentName(argIndex) : argumentName;
+                argument.m_details.m_name = argName ? *argName : argumentName;
                 argument.m_details.m_category = "";
                 argument.m_details.m_tooltip = argumentDescription;
 
@@ -871,8 +873,9 @@ namespace ScriptCanvasEditorTools
 
             Helpers::GetTypeNameAndDescription(resultParameter->m_typeId, resultName, resultDescription);
 
+            const AZStd::string* resName = behaviorMethod->GetArgumentName(0);
             result.m_typeId = resultKey;
-            result.m_details.m_name = behaviorMethod->GetArgumentName(0) ? *behaviorMethod->GetArgumentName(0) : resultName;
+            result.m_details.m_name = resName ? *resName : resultName;
             result.m_details.m_tooltip = resultDescription;
 
             SplitCamelCase(result.m_details.m_name);
@@ -1093,13 +1096,13 @@ namespace ScriptCanvasEditorTools
             rapidjson_ly::Value value(rapidjson_ly::kStringType);
 
             value.SetString(entrySource.m_key.c_str(), document.GetAllocator());
-            entry.AddMember("key", value, document.GetAllocator());
+            entry.AddMember(GraphCanvas::Schema::Field::key, value, document.GetAllocator());
 
             value.SetString(entrySource.m_context.c_str(), document.GetAllocator());
-            entry.AddMember("context", value, document.GetAllocator());
+            entry.AddMember(GraphCanvas::Schema::Field::context, value, document.GetAllocator());
 
             value.SetString(entrySource.m_variant.c_str(), document.GetAllocator());
-            entry.AddMember("variant", value, document.GetAllocator());
+            entry.AddMember(GraphCanvas::Schema::Field::variant, value, document.GetAllocator());
 
             rapidjson_ly::Value details(rapidjson_ly::kObjectType);
             value.SetString(entrySource.m_details.m_name.c_str(), document.GetAllocator());
@@ -1120,12 +1123,12 @@ namespace ScriptCanvasEditorTools
                     rapidjson_ly::Value theMethod(rapidjson_ly::kObjectType);
 
                     value.SetString(methodSource.m_key.c_str(), document.GetAllocator());
-                    theMethod.AddMember("key", value, document.GetAllocator());
+                    theMethod.AddMember(GraphCanvas::Schema::Field::key, value, document.GetAllocator());
 
                     if (!methodSource.m_context.empty())
                     {
                         value.SetString(methodSource.m_context.c_str(), document.GetAllocator());
-                        theMethod.AddMember("context", value, document.GetAllocator());
+                        theMethod.AddMember(GraphCanvas::Schema::Field::context, value, document.GetAllocator());
                     }
 
                     if (!methodSource.m_entry.m_name.empty())
@@ -1233,7 +1236,7 @@ namespace ScriptCanvasEditorTools
                     rapidjson_ly::Value theSlot(rapidjson_ly::kObjectType);
 
                     value.SetString(slotSource.m_key.c_str(), document.GetAllocator());
-                    theSlot.AddMember("key", value, document.GetAllocator());
+                    theSlot.AddMember(GraphCanvas::Schema::Field::key, value, document.GetAllocator());
 
                     rapidjson_ly::Value sloDetails(rapidjson_ly::kObjectType);
                     if (!slotSource.m_details.m_name.empty())

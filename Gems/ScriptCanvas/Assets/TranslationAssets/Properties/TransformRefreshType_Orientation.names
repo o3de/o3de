@@ -1,17 +1,18 @@
 {
     "entries": [
         {
-            "key": "TransformRefreshType_Orientation",
+            "base": "TransformRefreshType_Orientation",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Transform Refresh Type_ Orientation"
+                "name": "Orientation",
+                "category": "Constants/Transform/Refresh Type"
             },
             "methods": [
                 {
-                    "key": "GetTransformRefreshType_Orientation",
+                    "base": "GetTransformRefreshType_Orientation",
                     "details": {
-                        "name": "Get Transform Refresh Type_ Orientation"
+                        "name": "Orientation"
                     },
                     "results": [
                         {

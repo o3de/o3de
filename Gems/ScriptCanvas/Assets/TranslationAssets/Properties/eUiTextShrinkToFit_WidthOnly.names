@@ -1,17 +1,18 @@
 {
     "entries": [
         {
-            "key": "eUiTextShrinkToFit_WidthOnly",
+            "base": "eUiTextShrinkToFit_WidthOnly",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "e Ui Text Shrink To Fit_ Width Only"
+                "name": "Width Only",
+                "category": "Constants/UI/Text Shrink To Fit"
             },
             "methods": [
                 {
-                    "key": "GeteUiTextShrinkToFit_WidthOnly",
+                    "base": "GeteUiTextShrinkToFit_WidthOnly",
                     "details": {
-                        "name": "Gete Ui Text Shrink To Fit_ Width Only"
+                        "name": "Width Only"
                     },
                     "results": [
                         {

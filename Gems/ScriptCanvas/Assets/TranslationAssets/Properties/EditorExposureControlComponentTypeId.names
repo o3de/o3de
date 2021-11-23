@@ -1,15 +1,16 @@
 {
     "entries": [
         {
-            "key": "EditorExposureControlComponentTypeId",
+            "base": "EditorExposureControlComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Editor Exposure Control Component Type Id"
+                "name": "Editor Exposure Control Component Type Id",
+                "category": "Constants/Editor"
             },
             "methods": [
                 {
-                    "key": "GetEditorExposureControlComponentTypeId",
+                    "base": "GetEditorExposureControlComponentTypeId",
                     "details": {
                         "name": "Get Editor Exposure Control Component Type Id"
                     },

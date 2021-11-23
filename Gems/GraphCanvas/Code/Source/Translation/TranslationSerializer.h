@@ -23,4 +23,17 @@ namespace GraphCanvas
         AZ::JsonSerializationResult::Result Store(rapidjson::Value& outputValue, const void* inputValue,
             const void* defaultValue, const AZ::Uuid& valueTypeId, AZ::JsonSerializerContext& context) override;
     };
+
+    namespace Schema
+    {
+        namespace Field
+        {
+            // Moved away from "key" due to some strict filtering on secrets
+            static constexpr char deprecated_key[] = "key";
+            static constexpr char key[] = "base";
+            static constexpr char context[] = "context";
+            static constexpr char variant[] = "variant";
+            static constexpr char entries[] = "entries";
+        }
+    }
 }

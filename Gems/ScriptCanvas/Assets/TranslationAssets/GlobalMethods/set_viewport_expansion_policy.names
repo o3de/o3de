@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "set_viewport_expansion_policy",
+            "base": "set_viewport_expansion_policy",
             "context": "Method",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "set_viewport_expansion_policy",
+                    "base": "set_viewport_expansion_policy",
                     "context": "Global",
                     "entry": {
                         "name": "In",

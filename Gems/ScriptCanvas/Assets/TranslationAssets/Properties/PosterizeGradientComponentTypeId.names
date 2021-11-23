@@ -1,15 +1,16 @@
 {
     "entries": [
         {
-            "key": "PosterizeGradientComponentTypeId",
+            "base": "PosterizeGradientComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Posterize Gradient Component Type Id"
+                "name": "Posterize Gradient Component Type Id",
+                "category": "Constants/Editor"
             },
             "methods": [
                 {
-                    "key": "GetPosterizeGradientComponentTypeId",
+                    "base": "GetPosterizeGradientComponentTypeId",
                     "details": {
                         "name": "Get Posterize Gradient Component Type Id"
                     },

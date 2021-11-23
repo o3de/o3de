@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "{364F5AC9-8351-44B6-A069-03367B21F7AA}",
+            "base": "{364F5AC9-8351-44B6-A069-03367B21F7AA}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
@@ -11,21 +11,21 @@
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In",
                     "details": {
                         "name": "In",
                         "tooltip": "When signaled, execution is delayed at this node for the specified amount of times."
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out",
                     "details": {
                         "name": "Out",
                         "tooltip": "Signaled after waiting for the specified amount of times."
                     }
                 },
                 {
-                    "key": "DataInput_Delay",
+                    "base": "DataInput_Delay",
                     "details": {
                         "name": "Delay"
                     }

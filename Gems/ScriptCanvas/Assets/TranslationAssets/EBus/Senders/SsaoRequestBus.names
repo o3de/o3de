@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "SsaoRequestBus",
+            "base": "SsaoRequestBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
@@ -9,7 +9,7 @@
             },
             "methods": [
                 {
-                    "key": "SetBlurDepthFalloffStrength",
+                    "base": "SetBlurDepthFalloffStrength",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetBlurDepthFalloffStrength"
@@ -31,7 +31,7 @@
                     ]
                 },
                 {
-                    "key": "SetBlurDepthFalloffThreshold",
+                    "base": "SetBlurDepthFalloffThreshold",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetBlurDepthFalloffThreshold"
@@ -53,7 +53,7 @@
                     ]
                 },
                 {
-                    "key": "SetEnableDownsampleOverride",
+                    "base": "SetEnableDownsampleOverride",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetEnableDownsampleOverride"
@@ -75,7 +75,7 @@
                     ]
                 },
                 {
-                    "key": "SetEnableBlurOverride",
+                    "base": "SetEnableBlurOverride",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetEnableBlurOverride"
@@ -97,7 +97,7 @@
                     ]
                 },
                 {
-                    "key": "GetEnabledOverride",
+                    "base": "GetEnabledOverride",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetEnabledOverride"
@@ -119,7 +119,7 @@
                     ]
                 },
                 {
-                    "key": "GetSamplingRadius",
+                    "base": "GetSamplingRadius",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetSamplingRadius"
@@ -141,7 +141,7 @@
                     ]
                 },
                 {
-                    "key": "SetBlurDepthFalloffStrengthOverride",
+                    "base": "SetBlurDepthFalloffStrengthOverride",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetBlurDepthFalloffStrengthOverride"
@@ -163,7 +163,7 @@
                     ]
                 },
                 {
-                    "key": "GetBlurDepthFalloffThresholdOverride",
+                    "base": "GetBlurDepthFalloffThresholdOverride",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetBlurDepthFalloffThresholdOverride"
@@ -185,7 +185,7 @@
                     ]
                 },
                 {
-                    "key": "GetBlurDepthFalloffThreshold",
+                    "base": "GetBlurDepthFalloffThreshold",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetBlurDepthFalloffThreshold"
@@ -207,7 +207,7 @@
                     ]
                 },
                 {
-                    "key": "GetSamplingRadiusOverride",
+                    "base": "GetSamplingRadiusOverride",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetSamplingRadiusOverride"
@@ -229,7 +229,7 @@
                     ]
                 },
                 {
-                    "key": "SetStrengthOverride",
+                    "base": "SetStrengthOverride",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetStrengthOverride"
@@ -251,7 +251,7 @@
                     ]
                 },
                 {
-                    "key": "GetStrength",
+                    "base": "GetStrength",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetStrength"
@@ -273,7 +273,7 @@
                     ]
                 },
                 {
-                    "key": "GetEnabled",
+                    "base": "GetEnabled",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetEnabled"
@@ -295,7 +295,7 @@
                     ]
                 },
                 {
-                    "key": "GetEnableDownsample",
+                    "base": "GetEnableDownsample",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetEnableDownsample"
@@ -317,7 +317,7 @@
                     ]
                 },
                 {
-                    "key": "GetBlurDepthFalloffStrength",
+                    "base": "GetBlurDepthFalloffStrength",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetBlurDepthFalloffStrength"
@@ -339,7 +339,7 @@
                     ]
                 },
                 {
-                    "key": "SetBlurConstFalloff",
+                    "base": "SetBlurConstFalloff",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetBlurConstFalloff"
@@ -361,7 +361,7 @@
                     ]
                 },
                 {
-                    "key": "GetEnableDownsampleOverride",
+                    "base": "GetEnableDownsampleOverride",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetEnableDownsampleOverride"
@@ -383,7 +383,7 @@
                     ]
                 },
                 {
-                    "key": "GetEnableBlurOverride",
+                    "base": "GetEnableBlurOverride",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetEnableBlurOverride"
@@ -405,7 +405,7 @@
                     ]
                 },
                 {
-                    "key": "SetSamplingRadiusOverride",
+                    "base": "SetSamplingRadiusOverride",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetSamplingRadiusOverride"
@@ -427,7 +427,7 @@
                     ]
                 },
                 {
-                    "key": "SetSamplingRadius",
+                    "base": "SetSamplingRadius",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetSamplingRadius"
@@ -449,7 +449,7 @@
                     ]
                 },
                 {
-                    "key": "SetStrength",
+                    "base": "SetStrength",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetStrength"
@@ -471,7 +471,7 @@
                     ]
                 },
                 {
-                    "key": "SetEnabled",
+                    "base": "SetEnabled",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetEnabled"
@@ -493,7 +493,7 @@
                     ]
                 },
                 {
-                    "key": "GetStrengthOverride",
+                    "base": "GetStrengthOverride",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetStrengthOverride"
@@ -515,7 +515,7 @@
                     ]
                 },
                 {
-                    "key": "GetEnableBlur",
+                    "base": "GetEnableBlur",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetEnableBlur"
@@ -537,7 +537,7 @@
                     ]
                 },
                 {
-                    "key": "SetEnableDownsample",
+                    "base": "SetEnableDownsample",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetEnableDownsample"
@@ -559,7 +559,7 @@
                     ]
                 },
                 {
-                    "key": "SetBlurDepthFalloffThresholdOverride",
+                    "base": "SetBlurDepthFalloffThresholdOverride",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetBlurDepthFalloffThresholdOverride"
@@ -581,7 +581,7 @@
                     ]
                 },
                 {
-                    "key": "SetBlurConstFalloffOverride",
+                    "base": "SetBlurConstFalloffOverride",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetBlurConstFalloffOverride"
@@ -603,7 +603,7 @@
                     ]
                 },
                 {
-                    "key": "GetBlurConstFalloff",
+                    "base": "GetBlurConstFalloff",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetBlurConstFalloff"
@@ -625,7 +625,7 @@
                     ]
                 },
                 {
-                    "key": "SetEnabledOverride",
+                    "base": "SetEnabledOverride",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetEnabledOverride"
@@ -647,7 +647,7 @@
                     ]
                 },
                 {
-                    "key": "SetEnableBlur",
+                    "base": "SetEnableBlur",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetEnableBlur"
@@ -669,7 +669,7 @@
                     ]
                 },
                 {
-                    "key": "GetBlurConstFalloffOverride",
+                    "base": "GetBlurConstFalloffOverride",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetBlurConstFalloffOverride"
@@ -691,7 +691,7 @@
                     ]
                 },
                 {
-                    "key": "GetBlurDepthFalloffStrengthOverride",
+                    "base": "GetBlurDepthFalloffStrengthOverride",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetBlurDepthFalloffStrengthOverride"

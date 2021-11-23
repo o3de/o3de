@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "TagComponentRequestBus",
+            "base": "TagComponentRequestBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "HasTag",
+                    "base": "HasTag",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Has Tag"
@@ -40,7 +40,7 @@
                     ]
                 },
                 {
-                    "key": "AddTag",
+                    "base": "AddTag",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Add Tag"
@@ -62,7 +62,7 @@
                     ]
                 },
                 {
-                    "key": "RemoveTag",
+                    "base": "RemoveTag",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Remove Tag"
