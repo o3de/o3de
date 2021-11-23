@@ -142,14 +142,14 @@ namespace O3DE::ProjectManager
                     // Directory existence is checked in this case
                     buildConfigurationPath /= "bin";
                     if (editorPath = (buildConfigurationPath
-                        / AZ_BUILD_CONFIGURATION_TYPE / "Editor.app/Contents/MacOS");
-                        AZ::IO::SystemFile::IsDirectory(editorPath.c_str()))
+                        / AZ_BUILD_CONFIGURATION_TYPE / "Editor.app/Contents/MacOS/Editor");
+                        AZ::IO::SystemFile::Exists(editorPath.c_str()))
                     {
                         return editorPath;
                     }
                     else if (editorPath = (buildConfigurationPath / AZ_TRAIT_OS_PLATFORM_CODENAME
-                        / AZ_BUILD_CONFIGURATION_TYPE / "Editor.app/Contents/MacOS");
-                        AZ::IO::SystemFile::IsDirectory(editorPath.c_str()))
+                        / AZ_BUILD_CONFIGURATION_TYPE / "Editor.app/Contents/MacOS/Editor");
+                        AZ::IO::SystemFile::Exists(editorPath.c_str()))
                     {
                         return editorPath;
                     }
@@ -159,9 +159,9 @@ namespace O3DE::ProjectManager
             // Fall back to locating the Editor.app bundle which should exists
             // outside of the current O3DE.app bundle
             editorPath = (AZ::IO::FixedMaxPath(AZ::Utils::GetExecutableDirectory()) /
-                "../../../Editor.app/Contents/MacOS").LexicallyNormal();
+                "../../../Editor.app/Contents/MacOS/Editor").LexicallyNormal();
 
-            if (!AZ::IO::SystemFile::IsDirectory(editorPath.c_str()))
+            if (!AZ::IO::SystemFile::Exists(editorPath.c_str()))
             {
                 // Attempt to search the O3DE.app global settings registry for an InstalledBinaryFolder
                 // key which indicates the relative path to an SDK binary directory on MacOS
@@ -175,12 +175,12 @@ namespace O3DE::ProjectManager
                             settingsRegistry->Get(engineRootFolder.Native(),
                             AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder))
                         {
-                            editorPath = engineRootFolder / installedBinariesPath / "Editor.app/Contents/MacOS";
+                            editorPath = engineRootFolder / installedBinariesPath / "Editor.app/Contents/MacOS/Editor";
                         }
                     }
                 }
 
-                if (!AZ::IO::SystemFile::IsDirectory(editorPath.c_str()))
+                if (!AZ::IO::SystemFile::Exists(editorPath.c_str()))
                 {
                     AZ_Error("ProjectManager", false, "Unable to find the Editor app bundle!");
                     return {};
