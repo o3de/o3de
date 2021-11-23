@@ -78,7 +78,27 @@ namespace O3DE::ProjectManager
          */
         AZ::Outcome<QString, QString> CreateDesktopShortcut(const QString& filename, const QString& targetPath, const QStringList& arguments);
         
-        AZ::IO::FixedMaxPath GetEditorDirectory();
+        /**
+         * Lookup the location of an Editor executable executable that can be used with the
+         * supplied project path
+         * First the method attempts to locate a build directory with the project path
+         * via querying the <project-path>/user/Registry/Platform/<platform>/build_path.setreg
+         * Once that is done a path is formed to locate the Editor executable within the that build
+         * directory.
+         * Two paths will checked for the existence of an Editor
+         * - "<project-build-directory>/bin/$<CONFIG>/Editor"
+         * - "<project-build-directory>/bin/<platform>/$<CONFIG>/Editor"
+         * Where <platform> is the current platform the O3DE executable is running on and $<CONFIG> is the
+         * current build configuration the O3DE executable
+         *
+         * If neiether of the above paths contain an Editor application, then a path to the Editor
+         * is formed by combinding the O3DE executable directory with the filename of Editor
+         * - "<executable-directory>/Editor"
+         *
+         * @param projectPath Path to the root of the project
+         * @return path of the Editor Executable if found or an empty path if not
+         */
+        AZ::IO::FixedMaxPath GetEditorExecutablePath(const AZ::IO::PathView& projectPath);
 
     } // namespace ProjectUtils
 } // namespace O3DE::ProjectManager

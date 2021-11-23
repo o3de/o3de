@@ -23,8 +23,6 @@
 #include <AzFramework/Process/ProcessCommon.h>
 #include <AzFramework/Process/ProcessWatcher.h>
 #include <AzCore/Utils/Utils.h>
-#include <AzCore/Settings/SettingsRegistryImpl.h>
-#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -410,57 +408,22 @@ namespace O3DE::ProjectManager
         }
     }
 
-    static AZ::IO::FixedMaxPath GetEditorPathForProject(const AZ::IO::FixedMaxPath& projectPath)
-    {
-        AZ::SettingsRegistryImpl settingsRegistry;
-        AZ::IO::FixedMaxPath buildPathSetregPath = projectPath / AZ::SettingsRegistryInterface::DevUserRegistryFolder
-            / "Platform" / AZ_TRAIT_OS_PLATFORM_CODENAME / "build_path.setreg";
-        if (AZ::IO::SystemFile::Exists(buildPathSetregPath.c_str()))
-        {
-            // Merge the build_path.setreg into the local SettingsRegistry instance
-            if (AZ::IO::FixedMaxPath projectBuildPath;
-                settingsRegistry.MergeSettingsFile(buildPathSetregPath.Native(), AZ::SettingsRegistryInterface::Format::JsonMergePatch)
-                && settingsRegistry.Get(projectBuildPath.Native(), AZ::SettingsRegistryMergeUtils::ProjectBuildPath))
-            {
-                // Make a local Settings Registry will be used to merge the build_path.setreg for the supplied projectPath
-                AZ::IO::FixedMaxPath buildConfigurationPath = (projectPath / projectBuildPath).LexicallyNormal();
-
-                // First try <project-build-path>/bin/$<CONFIG> and if that path doesn't exist
-                // try <project-build-path>/bin/$<PLATFORM>/$<CONFIG>
-                buildConfigurationPath /= "bin";
-                if (AZ::IO::FixedMaxPath editorPath = (buildConfigurationPath / AZ_BUILD_CONFIGURATION_TYPE / "Editor").
-                    ReplaceExtension(AZ_TRAIT_OS_EXECUTABLE_EXTENSION);
-                    AZ::IO::SystemFile::Exists(editorPath.c_str()))
-                {
-                    return editorPath;
-                }
-                else if (editorPath = (buildConfigurationPath / AZ_TRAIT_OS_PLATFORM_CODENAME / AZ_BUILD_CONFIGURATION_TYPE / "Editor").
-                    ReplaceExtension(AZ_TRAIT_OS_EXECUTABLE_EXTENSION);
-                    AZ::IO::SystemFile::Exists(editorPath.c_str()))
-                {
-                    return editorPath;
-                }
-            }
-        }
-
-        return {};
-    }
     void ProjectsScreen::HandleOpenProject(const QString& projectPath)
     {
         if (!projectPath.isEmpty())
         {
             if (!WarnIfInBuildQueue(projectPath))
             {
-                // First attempt to launch the Editor.exe witin the project build directory if it exists
                 AZ::IO::FixedMaxPath fixedProjectPath = projectPath.toUtf8().constData();
-                AZ::IO::FixedMaxPath editorExecutablePath = GetEditorPathForProject(fixedProjectPath);
-
+                AZ::IO::FixedMaxPath editorExecutablePath = ProjectUtils::GetEditorExecutablePath(fixedProjectPath);
                 if (editorExecutablePath.empty())
                 {
-                    AZ::IO::FixedMaxPath executableDirectory = ProjectUtils::GetEditorDirectory();
-                    AZStd::string executableFilename = "Editor";
-                    editorExecutablePath = executableDirectory / (executableFilename + AZ_TRAIT_OS_EXECUTABLE_EXTENSION);
+                    AZ_Error("ProjectManager", false, "Failed to locate editor");
+                    QMessageBox::critical(
+                        this, tr("Error"), tr("Failed to locate the Editor, please verify that it is built."));
+                    return;
                 }
+
                 auto cmdPath = AZ::IO::FixedMaxPathString::format(
                     "%s --regset=\"/Amazon/AzCore/Bootstrap/project_path=%s\"", editorExecutablePath.c_str(),
                     fixedProjectPath.c_str());

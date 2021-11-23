@@ -1,6 +1,6 @@
 /*
  * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -11,8 +11,9 @@
 #include <QStandardPaths>
 #include <QDir>
 
-#include <AzCore/Utils/Utils.h>
+#include <AzCore/Settings/SettingsRegistryImpl.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
+#include <AzCore/Utils/Utils.h>
 
 namespace O3DE::ProjectManager
 {
@@ -21,7 +22,7 @@ namespace O3DE::ProjectManager
         AZ::Outcome<QProcessEnvironment, QString> GetCommandLineProcessEnvironment()
         {
             // For CMake on Mac, if its installed through home-brew, then it will be installed
-            // under /usr/local/bin, which may not be in the system PATH environment. 
+            // under /usr/local/bin, which may not be in the system PATH environment.
             // Add that path for the command line process so that it will be able to locate
             // a home-brew installed version of CMake
             QProcessEnvironment currentEnvironment(QProcessEnvironment::systemEnvironment());
@@ -65,11 +66,11 @@ namespace O3DE::ProjectManager
 
 
             return AZ::Success(xcodeBuilderVersionNumber);
-        }       
+        }
 
         AZ::Outcome<void, QString> OpenCMakeGUI(const QString& projectPath)
         {
-            const QString cmakeHelp = QObject::tr("Please verify you've installed CMake.app from " 
+            const QString cmakeHelp = QObject::tr("Please verify you've installed CMake.app from "
                             "<a href=\"https://cmake.org\">cmake.org</a> or, if using HomeBrew, "
                             "have installed it with <pre>brew install --cask cmake</pre>");
             QString cmakeAppPath = QStandardPaths::locate(QStandardPaths::ApplicationsLocation, "CMake.app", QStandardPaths::LocateDirectory);
@@ -87,7 +88,7 @@ namespace O3DE::ProjectManager
 
             QProcess process;
 
-            // if the project build path is relative, it should be relative to the project path 
+            // if the project build path is relative, it should be relative to the project path
             process.setWorkingDirectory(projectPath);
             process.setProgram("open");
             process.setArguments({"-a", "CMake", "--args", "-S", projectPath, "-B", projectBuildPath});
@@ -98,7 +99,7 @@ namespace O3DE::ProjectManager
 
             return AZ::Success();
         }
-        
+
         AZ::Outcome<QString, QString> RunGetPythonScript(const QString& engineRoot)
         {
             return ExecuteCommandResultModalDialog(
@@ -108,21 +109,64 @@ namespace O3DE::ProjectManager
                 QObject::tr("Running get_python script..."));
         }
 
-        AZ::IO::FixedMaxPath GetEditorDirectory()
+        AZ::IO::FixedMaxPath GetEditorExecutablePath(const AZ::IO::PathView& projectPath)
         {
-            AZ::IO::FixedMaxPath executableDirectory = AZ::Utils::GetExecutableDirectory();
-            AZ::IO::FixedMaxPath editorPath{ executableDirectory };
-            editorPath /= "../../../Editor.app/Contents/MacOS";
-            editorPath = editorPath.LexicallyNormal();
+            AZ::IO::FixedMaxPath editorPath;
+            AZ::IO::FixedMaxPath fixedProjectPath{ projectPath };
+
+            // First attempt to launch the Editor.exe within the project build directory if it exists
+            AZ::IO::FixedMaxPath buildPathSetregPath = fixedProjectPath
+            / AZ::SettingsRegistryInterface::DevUserRegistryFolder
+                / "Platform" / AZ_TRAIT_OS_PLATFORM_CODENAME / "build_path.setreg";
+            if (AZ::IO::SystemFile::Exists(buildPathSetregPath.c_str()))
+            {
+                AZ::SettingsRegistryImpl localRegistry;
+                // Merge the build_path.setreg into the local SettingsRegistry instance
+                if (AZ::IO::FixedMaxPath projectBuildPath;
+                    localRegistry.MergeSettingsFile(buildPathSetregPath.Native(),
+                        AZ::SettingsRegistryInterface::Format::JsonMergePatch)
+                    && localRegistry.Get(projectBuildPath.Native(), AZ::SettingsRegistryMergeUtils::ProjectBuildPath))
+                {
+                    //  local Settings Registry will be used to merge the build_path.setreg for the supplied projectPath
+                    AZ::IO::FixedMaxPath buildConfigurationPath = (fixedProjectPath / projectBuildPath).LexicallyNormal();
+
+                    // First try "<project-build-path>/bin/$<CONFIG>/Editor.app/Contents/MacOS"
+                    // Followed by "<project-build-path>/bin/$<PLATFORM>/$<CONFIG>/Editor.app/Contents/MacOS"
+                    // Directory existence is checked in this case
+                    buildConfigurationPath /= "bin";
+                    if (editorPath = (buildConfigurationPath
+                        / AZ_BUILD_CONFIGURATION_TYPE / "Editor.app/Contents/MacOS");
+                        AZ::IO::SystemFile::IsDirectory(editorPath.c_str()))
+                    {
+                        return editorPath;
+                    }
+                    else if (editorPath = (buildConfigurationPath / AZ_TRAIT_OS_PLATFORM_CODENAME
+                        / AZ_BUILD_CONFIGURATION_TYPE / "Editor.app/Contents/MacOS");
+                        AZ::IO::SystemFile::IsDirectory(editorPath.c_str()))
+                    {
+                        return editorPath;
+                    }
+                }
+            }
+
+            // Fall back to locating the Editor.app bundle which should exists
+            // outside of the current O3DE.app bundle
+            editorPath = (AZ::IO::FixedMaxPath(AZ::Utils::GetExecutableDirectory()) /
+                "../../../Editor.app/Contents/MacOS").LexicallyNormal();
+
             if (!AZ::IO::SystemFile::IsDirectory(editorPath.c_str()))
             {
+                // Attempt to search the O3DE.app global settings registry for an InstalledBinaryFolder
+                // key which indicates the relative path to an SDK binary directory on MacOS
                 if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
                 {
                     if (AZ::IO::FixedMaxPath installedBinariesPath;
-                        settingsRegistry->Get(installedBinariesPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_InstalledBinaryFolder))
+                        settingsRegistry->Get(installedBinariesPath.Native(),
+                        AZ::SettingsRegistryMergeUtils::FilePathKey_InstalledBinaryFolder))
                     {
                         if (AZ::IO::FixedMaxPath engineRootFolder;
-                            settingsRegistry->Get(engineRootFolder.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder))
+                            settingsRegistry->Get(engineRootFolder.Native(),
+                            AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder))
                         {
                             editorPath = engineRootFolder / installedBinariesPath / "Editor.app/Contents/MacOS";
                         }
@@ -132,6 +176,7 @@ namespace O3DE::ProjectManager
                 if (!AZ::IO::SystemFile::IsDirectory(editorPath.c_str()))
                 {
                     AZ_Error("ProjectManager", false, "Unable to find the Editor app bundle!");
+                    return {};
                 }
             }
 
