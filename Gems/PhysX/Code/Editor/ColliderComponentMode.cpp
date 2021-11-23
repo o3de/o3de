@@ -160,8 +160,7 @@ namespace PhysX
 
     void ColliderComponentMode::SetCurrentMode(SubMode newMode)
     {
-        auto subMode = m_subModes.find(newMode);
-        AZ_Assert(subMode != m_subModes.end(), "Submode not found:%d", newMode);
+        AZ_Assert(m_subModes.find(newMode) != m_subModes.end(), "Submode not found:%d", newMode);
         m_subModes[m_subMode]->Teardown(GetEntityComponentIdPair());
         m_subMode = newMode;
         m_subModes[m_subMode]->Setup(GetEntityComponentIdPair());
