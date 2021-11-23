@@ -60,6 +60,9 @@ ly_create_alias(
 )
 
 if (PAL_TRAIT_BUILD_HOST_TOOLS)
+
+    include(${CMAKE_CURRENT_SOURCE_DIR}/Platform/${PAL_PLATFORM_NAME}/PAL_traits_editor_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
+
     ly_add_target(
         NAME AWSCore.Editor.Static STATIC
         NAMESPACE Gem
@@ -97,25 +100,31 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
                 Gem::AWSCore.Editor.Static
     )
 
-    # This target is not a real gem module
-    # It is not meant to be loaded by the ModuleManager in C++
-    ly_add_target(
-        NAME AWSCore.ResourceMappingTool MODULE
-        NAMESPACE Gem
-        OUTPUT_SUBDIRECTORY AWSCoreEditorQtBin
-        FILES_CMAKE
-            awscore_resourcemappingtool_files.cmake
-        INCLUDE_DIRECTORIES
-            PRIVATE
-                Include/Private
-        BUILD_DEPENDENCIES
-            PRIVATE
-                Gem::AWSCore.Editor.Static
-        RUNTIME_DEPENDENCIES
-            3rdParty::pyside2
+    if (PAL_TRAIT_ENABLE_RESOURCE_MAPPING_TOOL)
 
-    )
-    ly_add_dependencies(AWSCore.Editor AWSCore.ResourceMappingTool)
+        # This target is not a real gem module
+        # It is not meant to be loaded by the ModuleManager in C++
+        ly_add_target(
+            NAME AWSCore.ResourceMappingTool MODULE
+            NAMESPACE Gem
+            OUTPUT_SUBDIRECTORY AWSCoreEditorQtBin
+            FILES_CMAKE
+                awscore_resourcemappingtool_files.cmake
+            INCLUDE_DIRECTORIES
+                PRIVATE
+                    Include/Private
+            BUILD_DEPENDENCIES
+                PRIVATE
+                    Gem::AWSCore.Editor.Static
+            RUNTIME_DEPENDENCIES
+                3rdParty::pyside2
+
+        )
+        ly_add_dependencies(AWSCore.Editor AWSCore.ResourceMappingTool)
+
+        ly_install_directory(DIRECTORIES Tools/ResourceMappingTool)
+        
+    endif()
 
     # Builders and Tools (such as the Editor use AWSCore.Editor) use the .Editor module above.
     ly_create_alias(
