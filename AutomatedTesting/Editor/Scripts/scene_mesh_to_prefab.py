@@ -5,7 +5,7 @@
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
-import os, traceback, binascii, sys, json, pathlib
+import os, traceback, binascii, sys, json, pathlib, logging
 import azlmbr.math
 import azlmbr.bus
 
@@ -15,9 +15,9 @@ import azlmbr.bus
 
 
 def log_exception_traceback():
-    exc_type, exc_value, exc_tb = sys.exc_info()
-    data = traceback.format_exception(exc_type, exc_value, exc_tb)
-    print(str(data))
+    data = traceback.format_exc()
+    logger = logging.getLogger('python')
+    logger.error(data)
 
 def get_mesh_node_names(sceneGraph):
     import azlmbr.scene as sceneApi
