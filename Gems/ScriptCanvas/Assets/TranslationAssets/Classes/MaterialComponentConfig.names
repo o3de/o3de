@@ -12,7 +12,7 @@
                 {
                     "key": "Getmaterials",
                     "details": {
-                        "name": "Getmaterials"
+                        "name": "Get Materials"
                     },
                     "params": [
                         {
@@ -27,7 +27,7 @@
                         {
                             "typeid": "{50F6716F-698B-5A6C-AACD-940597FDEC24}",
                             "details": {
-                                "name": ""
+                                "name": "Material Assignment Map"
                             }
                         }
                     ]
@@ -35,7 +35,7 @@
                 {
                     "key": "Setmaterials",
                     "details": {
-                        "name": "Setmaterials"
+                        "name": "Set Materials"
                     },
                     "params": [
                         {
@@ -48,7 +48,7 @@
                         {
                             "typeid": "{50F6716F-698B-5A6C-AACD-940597FDEC24}",
                             "details": {
-                                "name": ""
+                                "name": "Material Assignment Map"
                             }
                         }
                     ]
