@@ -26,32 +26,32 @@ namespace TestImpact
         //! Attempts to get the specified build target.
         //! @param name The name of the build target to get.
         //! @returns If found, the pointer to the specified build target, otherwise nullptr.
-        const BuildTarget* GetBuildTarget(const AZStd::string& name) const;
+        const NativeTarget* GetBuildTarget(const AZStd::string& name) const;
 
         //! Attempts to get the specified build target or throw TargetException.
         //! @param name The name of the build target to get.
-        const BuildTarget* GetBuildTargetOrThrow(const AZStd::string& name) const;
+        const NativeTarget* GetBuildTargetOrThrow(const AZStd::string& name) const;
 
         //! Attempts to get the specified target's specialized type.
         //! @param name The name of the target to get.
         //! @returns If found, the pointer to the specialized target, otherwise AZStd::monostate.
-        OptionalSpecializedBuildTarget GetSpecializedBuildTarget(const AZStd::string& name) const;
+        OptionalSpecializedNativeTarget GetSpecializedBuildTarget(const AZStd::string& name) const;
 
         //! Attempts to get the specified target's specialized type or throw TargetException.
         //! @param name The name of the target to get.
-        SpecializedBuildTarget GetSpecializedBuildTargetOrThrow(const AZStd::string& name) const;
+        SpecializedNativeTarget GetSpecializedBuildTargetOrThrow(const AZStd::string& name) const;
 
         //! Get the list of production targets in the repository.
-        const ProductionTargetList& GetProductionTargetList() const;
+        const NativeProductionTargetList& GetProductionTargetList() const;
 
         //! Get the list of test targets in the repository.
-        const TestTargetList& GetTestTargetList() const;
+        const NativeTestTargetList& GetTestTargetList() const;
 
     private:
         //! The sorted list of unique production targets in the repository.
-        ProductionTargetList m_productionTargets;
+        NativeProductionTargetList m_productionTargets;
 
         //! The sorted list of unique test targets in the repository.
-        TestTargetList m_testTargets;
+        NativeTestTargetList m_testTargets;
     };
 } // namespace TestImpact

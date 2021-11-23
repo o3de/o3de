@@ -15,7 +15,7 @@
 
 namespace TestImpact
 {
-    TestTargetMetaMap TestTargetMetaMapFactory(const AZStd::string& masterTestListData, SuiteType suiteType)
+    NativeTestTargetMetaMap NativeTestTargetMetaMapFactory(const AZStd::string& masterTestListData, SuiteType suiteType)
     {
         // Keys for pertinent JSON node and attribute names
         constexpr const char* Keys[] =
@@ -50,7 +50,7 @@ namespace TestImpact
 
         AZ_TestImpact_Eval(!masterTestListData.empty(), ArtifactException, "Test meta-data cannot be empty");
 
-        TestTargetMetaMap testMetas;
+        NativeTestTargetMetaMap testMetas;
         rapidjson::Document masterTestList;
 
         if (masterTestList.Parse(masterTestListData.c_str()).HasParseError())
@@ -61,7 +61,7 @@ namespace TestImpact
         const auto tests = masterTestList[Keys[GoogleKey]][Keys[TestKey]][Keys[TestsKey]].GetArray();
         for (const auto& test : tests)
         {
-            TestTargetMeta testMeta;
+            NativeTestTargetMeta testMeta;
             const auto testSuites = test[Keys[TestSuitesKey]].GetArray();
             for (const auto& suite : testSuites)
             {

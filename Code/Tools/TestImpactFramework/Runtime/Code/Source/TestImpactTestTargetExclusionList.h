@@ -14,22 +14,22 @@
 
 namespace TestImpact
 {
-    class TestTarget;
+    class NativeTestTarget;
 
     class TestTargetExclusionList
     {
     public:
         //!
-        TestTargetExclusionList(AZStd::unordered_map<const TestTarget*, AZStd::vector<AZStd::string>>&& excludedTestTargets);
+        TestTargetExclusionList(AZStd::unordered_map<const NativeTestTarget*, AZStd::vector<AZStd::string>>&& excludedTestTargets);
 
         //!
-        const AZStd::unordered_map<const TestTarget*, AZStd::vector<AZStd::string>>& GetExcludedTargets() const;
+        const AZStd::unordered_map<const NativeTestTarget*, AZStd::vector<AZStd::string>>& GetExcludedTargets() const;
 
         //!
-        const AZStd::vector<AZStd::string>* GetExcludedTestsForTarget(const TestTarget* testTarget) const;
+        const AZStd::vector<AZStd::string>* GetExcludedTestsForTarget(const NativeTestTarget* testTarget) const;
 
         //!
-        bool IsTestTargetFullyExcluded(const TestTarget* testTarget) const;
+        bool IsTestTargetFullyExcluded(const NativeTestTarget* testTarget) const;
 
         //! Returns the number of excluded test targets in the list.
         size_t GetNumTargets() const;
@@ -37,6 +37,6 @@ namespace TestImpact
         bool IsEmpty() const;
 
     private:
-        AZStd::unordered_map<const TestTarget*, AZStd::vector<AZStd::string>> m_excludedTestTargets;
+        AZStd::unordered_map<const NativeTestTarget*, AZStd::vector<AZStd::string>> m_excludedTestTargets;
     };
 } // namespace TestImpact

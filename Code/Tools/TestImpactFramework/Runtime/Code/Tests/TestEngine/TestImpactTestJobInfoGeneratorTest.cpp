@@ -39,7 +39,7 @@
 //
 //    TEST_F(TestJobInfoGeneratorFixture, FOO)
 //    {
-//        TestImpact::TestTarget testTarget(TestImpact::TestTargetDescriptor(
+//        TestImpact::NativeTestTarget testTarget(TestImpact::TestTargetDescriptor(
 //            {
 //                TestImpact::BuildMetaData
 //                {

@@ -29,7 +29,7 @@ namespace TestImpact
     class DynamicDependencyMap;
     class TestSelectorAndPrioritizer;
     class TestEngine;
-    class TestTarget;
+    class NativeTestTarget;
     class SourceCoveringTestsList;
     class TestEngineInstrumentedRun;
     class TestTargetExclusionList;
@@ -189,7 +189,7 @@ namespace TestImpact
         //! @param changeList The change list for which the covering tests and enumeration cache updates will be generated for.
         //! @param testPrioritizationPolicy The test prioritization strategy to use for the selected test targets.
         //! @returns The pair of selected test targets and discarded test targets.
-        AZStd::pair<AZStd::vector<const TestTarget*>, AZStd::vector<const TestTarget*>> SelectCoveringTestTargets(
+        AZStd::pair<AZStd::vector<const NativeTestTarget*>, AZStd::vector<const NativeTestTarget*>> SelectCoveringTestTargets(
             const ChangeList& changeList,
             Policy::TestPrioritization testPrioritizationPolicy);
 
@@ -232,8 +232,8 @@ namespace TestImpact
         AZStd::unique_ptr<TestEngine> m_testEngine;
         AZStd::unique_ptr<TestTargetExclusionList> m_regularTestTargetExcludeList;
         AZStd::unique_ptr<TestTargetExclusionList> m_instrumentedTestTargetExcludeList;
-        AZStd::unordered_set<const TestTarget*> m_testTargetShardList;
-        AZStd::unordered_set<const TestTarget*> m_previouslyFailingTestTargets;
+        AZStd::unordered_set<const NativeTestTarget*> m_testTargetShardList;
+        AZStd::unordered_set<const NativeTestTarget*> m_previouslyFailingTestTargets;
         bool m_hasImpactAnalysisData = false;
     };
 } // namespace TestImpact

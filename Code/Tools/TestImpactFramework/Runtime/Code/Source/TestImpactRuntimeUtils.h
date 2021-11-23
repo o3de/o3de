@@ -28,24 +28,24 @@ namespace TestImpact
     //! Construct a dynamic dependency map from the build target descriptors and test target metas.
     AZStd::unique_ptr<DynamicDependencyMap> ConstructDynamicDependencyMap(
         SuiteType suiteFilter,
-        const BuildTargetDescriptorConfig& buildTargetDescriptorConfig,
+        const NativeTargetDescriptorConfig& NativeTargetDescriptorConfig,
         const TestTargetMetaConfig& testTargetMetaConfig);
 
     //! Constructs the resolved test target exclude list from the specified list of targets and unresolved test target exclude list.
     AZStd::unique_ptr<TestTargetExclusionList> ConstructTestTargetExcludeList(
-        const TestTargetList& testTargets,
+        const NativeTestTargetList& testTargets,
         AZStd::vector<TargetConfig::ExcludedTarget>&& excludedTestTargets);
 
     //! Selects the test targets from the specified list of test targets that are not in the specified test target exclusion list.
     //! @param testTargetExcludeList The test target exclusion list to lookup.
     //! @param testTargets The list of test targets to select from.
     //! @returns The subset of test targets in the specified list that are not on the target exclude list.
-    AZStd::pair<AZStd::vector<const TestTarget*>, AZStd::vector<const TestTarget*>> SelectTestTargetsByExcludeList(
+    AZStd::pair<AZStd::vector<const NativeTestTarget*>, AZStd::vector<const NativeTestTarget*>> SelectTestTargetsByExcludeList(
         const TestTargetExclusionList& testTargetExcludeList,
-        const AZStd::vector<const TestTarget*>& testTargets);
+        const AZStd::vector<const NativeTestTarget*>& testTargets);
 
     //! Extracts the name information from the specified test targets.
-    AZStd::vector<AZStd::string> ExtractTestTargetNames(const AZStd::vector<const TestTarget*>& testTargets);
+    AZStd::vector<AZStd::string> ExtractTestTargetNames(const AZStd::vector<const NativeTestTarget*>& testTargets);
 
     //! Generates the test suites from the specified test engine job information.
     //! @tparam TestJob The test engine job type.

@@ -147,13 +147,13 @@ namespace UnitTest
 
     namespace MicroRepo
     {
-        AZStd::vector<AZStd::unique_ptr<TestImpact::ProductionTargetDescriptor>> CreateProductionTargetDescriptors();
+        AZStd::vector<AZStd::unique_ptr<TestImpact::NativeProductionTargetDescriptor>> CreateProductionTargetDescriptors();
 
-        AZStd::vector<AZStd::unique_ptr<TestImpact::TestTargetDescriptor>> CreateTestTargetDescriptors();
+        AZStd::vector<AZStd::unique_ptr<TestImpact::NativeTestTargetDescriptor>> CreateTestTargetDescriptors();
 
-        AZStd::vector<AZStd::unique_ptr<TestImpact::ProductionTargetDescriptor>> CreateProductionTargetDescriptorsWithSharedSources();
+        AZStd::vector<AZStd::unique_ptr<TestImpact::NativeProductionTargetDescriptor>> CreateProductionTargetDescriptorsWithSharedSources();
 
-        AZStd::vector<AZStd::unique_ptr<TestImpact::TestTargetDescriptor>> CreateTestTargetDescriptorsWithSharedSources();
+        AZStd::vector<AZStd::unique_ptr<TestImpact::NativeTestTargetDescriptor>> CreateTestTargetDescriptorsWithSharedSources();
 
         AZStd::vector<TestImpact::SourceCoveringTests> CreateSourceCoveringTestList();
 

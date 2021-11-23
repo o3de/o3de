@@ -85,7 +85,7 @@ namespace UnitTest
         return JSONSafeString(output);
     }
 
-    AZStd::string GenerateBuildTargetDescriptorString(
+    AZStd::string GenerateNativeTargetDescriptorString(
         const AZStd::string& name,
         const AZStd::string& outputName,
         const TestImpact::RepoPath& path,
@@ -125,14 +125,14 @@ namespace UnitTest
         return output;
     }
 
-    TestImpact::BuildTargetDescriptor GenerateBuildTargetDescriptor(
+    TestImpact::NativeTargetDescriptor GenerateNativeTargetDescriptor(
         const AZStd::string& name,
         const AZStd::string& outputName,
         const TestImpact::RepoPath& path,
         const AZStd::vector<TestImpact::RepoPath>& staticSources,
         const TestImpact::AutogenSources& autogenSources)
     {
-        return TestImpact::BuildTargetDescriptor(TestImpact::TargetDescriptor{ name, path, TestImpact::TargetSources{ staticSources, autogenSources } }, outputName);
+        return TestImpact::NativeTargetDescriptor(TestImpact::TargetDescriptor{ name, path, TestImpact::TargetSources{ staticSources, autogenSources } }, outputName);
     }
 
     TestImpact::TestEnumerationSuite GenerateParamterizedSuite(
@@ -1702,7 +1702,7 @@ namespace UnitTest
         return true;
     }
 
-    bool operator==(const TestImpact::BuildTargetDescriptor& lhs, const TestImpact::BuildTargetDescriptor& rhs)
+    bool operator==(const TestImpact::NativeTargetDescriptor& lhs, const TestImpact::NativeTargetDescriptor& rhs)
     {
         return lhs.m_outputName == rhs.m_outputName &&
             static_cast<const TestImpact::TargetDescriptor&>(lhs) == static_cast<const TestImpact::TargetDescriptor&>(rhs);
@@ -1722,7 +1722,7 @@ namespace UnitTest
         return true;
     }
 
-    bool operator==(const TestImpact::TestTargetMeta& lhs, const TestImpact::TestTargetMeta& rhs)
+    bool operator==(const TestImpact::NativeTestTargetMeta& lhs, const TestImpact::NativeTestTargetMeta& rhs)
     {
         if (!(lhs.m_suiteMeta == rhs.m_suiteMeta))
         {
@@ -1736,14 +1736,14 @@ namespace UnitTest
         return true;
     }
 
-    bool operator==(const TestImpact::ProductionTargetDescriptor& lhs, const TestImpact::ProductionTargetDescriptor& rhs)
+    bool operator==(const TestImpact::NativeProductionTargetDescriptor& lhs, const TestImpact::NativeProductionTargetDescriptor& rhs)
     {
-        return static_cast<const TestImpact::BuildTargetDescriptor&>(lhs) == static_cast<const TestImpact::BuildTargetDescriptor&>(rhs);
+        return static_cast<const TestImpact::NativeTargetDescriptor&>(lhs) == static_cast<const TestImpact::NativeTargetDescriptor&>(rhs);
     }
 
-    bool operator==(const TestImpact::TestTargetDescriptor& lhs, const TestImpact::TestTargetDescriptor& rhs)
+    bool operator==(const TestImpact::NativeTestTargetDescriptor& lhs, const TestImpact::NativeTestTargetDescriptor& rhs)
     {
-        return static_cast<const TestImpact::BuildTargetDescriptor&>(lhs) == static_cast<const TestImpact::BuildTargetDescriptor&>(rhs) &&
+        return static_cast<const TestImpact::NativeTargetDescriptor&>(lhs) == static_cast<const TestImpact::NativeTargetDescriptor&>(rhs) &&
             lhs.m_testMetaData == rhs.m_testMetaData;
     }
 

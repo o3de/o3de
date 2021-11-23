@@ -12,7 +12,7 @@
 namespace TestImpact
 {
     TestEngineJob::TestEngineJob(
-        const TestTarget* testTarget,
+        const NativeTestTarget* testTarget,
         const AZStd::string& commandString,
         const JobMeta& jobMeta,
         Client::TestRunResult testResult,
@@ -27,7 +27,7 @@ namespace TestImpact
     {
     }
 
-    const TestTarget* TestEngineJob::GetTestTarget() const
+    const NativeTestTarget* TestEngineJob::GetTestTarget() const
     {
         return m_testTarget;
     }

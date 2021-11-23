@@ -11,17 +11,17 @@
 namespace TestImpact
 {
     TestTargetExclusionList::TestTargetExclusionList(
-        AZStd::unordered_map<const TestTarget*, AZStd::vector<AZStd::string>>&& excludedTestTargets)
+        AZStd::unordered_map<const NativeTestTarget*, AZStd::vector<AZStd::string>>&& excludedTestTargets)
         : m_excludedTestTargets(AZStd::move(excludedTestTargets))
     {
     }
 
-    const AZStd::unordered_map<const TestTarget*, AZStd::vector<AZStd::string>>& TestTargetExclusionList::GetExcludedTargets() const
+    const AZStd::unordered_map<const NativeTestTarget*, AZStd::vector<AZStd::string>>& TestTargetExclusionList::GetExcludedTargets() const
     {
         return m_excludedTestTargets;
     }
 
-    const AZStd::vector<AZStd::string>* TestTargetExclusionList::GetExcludedTestsForTarget(const TestTarget* testTarget) const
+    const AZStd::vector<AZStd::string>* TestTargetExclusionList::GetExcludedTestsForTarget(const NativeTestTarget* testTarget) const
     {
         const auto it = m_excludedTestTargets.find(testTarget);
         return it != m_excludedTestTargets.end()
@@ -29,7 +29,7 @@ namespace TestImpact
             : nullptr;
     }
 
-    bool TestTargetExclusionList::IsTestTargetFullyExcluded(const TestTarget* testTarget) const
+    bool TestTargetExclusionList::IsTestTargetFullyExcluded(const NativeTestTarget* testTarget) const
     {
         if (const auto* excludedTests = GetExcludedTestsForTarget(testTarget);
             excludedTests)

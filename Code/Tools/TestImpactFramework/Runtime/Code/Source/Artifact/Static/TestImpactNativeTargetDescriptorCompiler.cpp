@@ -13,27 +13,27 @@
 
 namespace TestImpact
 {
-    AZStd::tuple<AZStd::vector<AZStd::unique_ptr<ProductionTargetDescriptor>>, AZStd::vector<AZStd::unique_ptr<TestTargetDescriptor>>> CompileTargetDescriptors(
-        AZStd::vector<BuildTargetDescriptor>&& buildTargets, TestTargetMetaMap&& testTargetMetaMap)
+    AZStd::tuple<AZStd::vector<AZStd::unique_ptr<NativeProductionTargetDescriptor>>, AZStd::vector<AZStd::unique_ptr<NativeTestTargetDescriptor>>> CompileTargetDescriptors(
+        AZStd::vector<NativeTargetDescriptor>&& buildTargets, NativeTestTargetMetaMap&& NativeTestTargetMetaMap)
     {
         AZ_TestImpact_Eval(!buildTargets.empty(), ArtifactException, "Build target descriptor list cannot be null");
-        AZ_TestImpact_Eval(!testTargetMetaMap.empty(), ArtifactException, "Test target meta map cannot be null");
+        AZ_TestImpact_Eval(!NativeTestTargetMetaMap.empty(), ArtifactException, "Test target meta map cannot be null");
 
-        AZStd::tuple<AZStd::vector<AZStd::unique_ptr<ProductionTargetDescriptor>>, AZStd::vector<AZStd::unique_ptr<TestTargetDescriptor>>>
+        AZStd::tuple<AZStd::vector<AZStd::unique_ptr<NativeProductionTargetDescriptor>>, AZStd::vector<AZStd::unique_ptr<NativeTestTargetDescriptor>>>
             outputTargets;
         auto& [productionTargets, testTargets] = outputTargets;
 
         for (auto&& buildTarget : buildTargets)
         {
             // If this build target has an associated test artifact then it is a test target, otherwise it is a production target
-            if (auto&& testTargetMeta = testTargetMetaMap.find(buildTarget.m_name);
-                testTargetMeta != testTargetMetaMap.end())
+            if (auto&& testTargetMeta = NativeTestTargetMetaMap.find(buildTarget.m_name);
+                testTargetMeta != NativeTestTargetMetaMap.end())
             {
-                testTargets.emplace_back(AZStd::make_unique<TestTargetDescriptor>(AZStd::move(buildTarget), AZStd::move(testTargetMeta->second)));
+                testTargets.emplace_back(AZStd::make_unique<NativeTestTargetDescriptor>(AZStd::move(buildTarget), AZStd::move(testTargetMeta->second)));
             }
             else
             {
-                productionTargets.emplace_back(AZStd::make_unique<ProductionTargetDescriptor>(AZStd::move(buildTarget)));
+                productionTargets.emplace_back(AZStd::make_unique<NativeProductionTargetDescriptor>(AZStd::move(buildTarget)));
             }
         }
 

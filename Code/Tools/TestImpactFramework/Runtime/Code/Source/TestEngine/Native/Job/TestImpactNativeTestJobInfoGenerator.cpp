@@ -28,7 +28,7 @@ namespace TestImpact
     {
     }
 
-    AZStd::string NativeTestJobInfoGenerator::GenerateLaunchArgument(const TestTarget* testTarget) const
+    AZStd::string NativeTestJobInfoGenerator::GenerateLaunchArgument(const NativeTestTarget* testTarget) const
     {
         if (testTarget->GetLaunchMethod() == LaunchMethod::StandAlone)
         {
@@ -49,28 +49,28 @@ namespace TestImpact
         }
     }
 
-    RepoPath NativeTestJobInfoGenerator::GenerateTargetEnumerationCacheFilePath(const TestTarget* testTarget) const
+    RepoPath NativeTestJobInfoGenerator::GenerateTargetEnumerationCacheFilePath(const NativeTestTarget* testTarget) const
     {
         return AZStd::string::format("%s.cache", (m_cacheDir / RepoPath(testTarget->GetName())).c_str());
     }
 
-    RepoPath NativeTestJobInfoGenerator::GenerateTargetEnumerationArtifactFilePath(const TestTarget* testTarget) const
+    RepoPath NativeTestJobInfoGenerator::GenerateTargetEnumerationArtifactFilePath(const NativeTestTarget* testTarget) const
     {
         return AZStd::string::format("%s.Enumeration.xml", (m_artifactDir / RepoPath(testTarget->GetName())).c_str());
     }
 
-    RepoPath NativeTestJobInfoGenerator::GenerateTargetRunArtifactFilePath(const TestTarget* testTarget) const
+    RepoPath NativeTestJobInfoGenerator::GenerateTargetRunArtifactFilePath(const NativeTestTarget* testTarget) const
     {
         return AZStd::string::format("%s.Run.xml", (m_artifactDir / RepoPath(testTarget->GetName())).c_str());
     }
 
-    RepoPath NativeTestJobInfoGenerator::GenerateTargetCoverageArtifactFilePath(const TestTarget* testTarget) const
+    RepoPath NativeTestJobInfoGenerator::GenerateTargetCoverageArtifactFilePath(const NativeTestTarget* testTarget) const
     {
         return AZStd::string::format("%s.Coverage.xml", (m_artifactDir / RepoPath(testTarget->GetName())).c_str());
     }
 
     NativeTestEnumerator::JobInfo NativeTestJobInfoGenerator::GenerateTestEnumerationJobInfo(
-        const TestTarget* testTarget, NativeTestEnumerator::JobInfo::Id jobId, NativeTestEnumerator::JobInfo::CachePolicy cachePolicy) const
+        const NativeTestTarget* testTarget, NativeTestEnumerator::JobInfo::Id jobId, NativeTestEnumerator::JobInfo::CachePolicy cachePolicy) const
     {
         using Command = NativeTestEnumerator::Command;
         using JobInfo = NativeTestEnumerator::JobInfo;
@@ -90,7 +90,7 @@ namespace TestImpact
     }
 
     NativeRegularTestRunner::JobInfo NativeTestJobInfoGenerator::GenerateRegularTestRunJobInfo(
-        const TestTarget* testTarget, NativeRegularTestRunner::JobInfo::Id jobId) const
+        const NativeTestTarget* testTarget, NativeRegularTestRunner::JobInfo::Id jobId) const
     {
         using Command = NativeRegularTestRunner::Command;
         using JobInfo = NativeRegularTestRunner::JobInfo;
@@ -109,7 +109,7 @@ namespace TestImpact
     }
     
     NativeInstrumentedTestRunner::JobInfo NativeTestJobInfoGenerator::GenerateInstrumentedTestRunJobInfo(
-        const TestTarget* testTarget, NativeInstrumentedTestRunner::JobInfo::Id jobId,
+        const NativeTestTarget* testTarget, NativeInstrumentedTestRunner::JobInfo::Id jobId,
         CoverageLevel coverageLevel) const
     {
         using Command = NativeInstrumentedTestRunner::Command;
@@ -144,7 +144,7 @@ namespace TestImpact
     }
 
     AZStd::vector<NativeTestEnumerator::JobInfo> NativeTestJobInfoGenerator::GenerateTestEnumerationJobInfos(
-        const AZStd::vector<const TestTarget*>& testTargets, NativeTestEnumerator::JobInfo::CachePolicy cachePolicy) const
+        const AZStd::vector<const NativeTestTarget*>& testTargets, NativeTestEnumerator::JobInfo::CachePolicy cachePolicy) const
     {
         AZStd::vector<NativeTestEnumerator::JobInfo> jobInfos;
         jobInfos.reserve(testTargets.size());
@@ -157,7 +157,7 @@ namespace TestImpact
     }
 
     AZStd::vector<NativeRegularTestRunner::JobInfo> NativeTestJobInfoGenerator::GenerateRegularTestRunJobInfos(
-        const AZStd::vector<const TestTarget*>& testTargets) const
+        const AZStd::vector<const NativeTestTarget*>& testTargets) const
     {
         AZStd::vector<NativeRegularTestRunner::JobInfo> jobInfos;
         jobInfos.reserve(testTargets.size());
@@ -170,7 +170,7 @@ namespace TestImpact
     }
 
     AZStd::vector<NativeInstrumentedTestRunner::JobInfo> NativeTestJobInfoGenerator::GenerateInstrumentedTestRunJobInfos(
-        const AZStd::vector<const TestTarget*>& testTargets,
+        const AZStd::vector<const NativeTestTarget*>& testTargets,
         CoverageLevel coverageLevel) const
     {
         AZStd::vector<NativeInstrumentedTestRunner::JobInfo> jobInfos;

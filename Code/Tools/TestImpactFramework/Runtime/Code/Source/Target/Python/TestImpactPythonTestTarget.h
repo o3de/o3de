@@ -16,13 +16,13 @@
 namespace TestImpact
 {
     //! Build target specialization for test targets (build targets containing test code and no production code).
-    class TestScriptTarget
+    class PythonTestTarget
         : public Target
     {
     public:
-        using Descriptor = TestScriptTargetDescriptor;
+        using Descriptor = PythonTestTargetDescriptor;
 
-        TestScriptTarget(AZStd::unique_ptr<Descriptor> descriptor);
+        PythonTestTarget(AZStd::unique_ptr<Descriptor> descriptor);
 
         //! Returns the test script target suite.
         const AZStd::string& GetSuite() const;

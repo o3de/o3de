@@ -31,8 +31,8 @@ namespace TestImpact
     public:
         //! Constructs the dependency map with entries for each build target's source files with empty test coverage data.
         DynamicDependencyMap(
-            AZStd::vector<AZStd::unique_ptr<ProductionTargetDescriptor>>&& productionTargetDescriptors,
-            AZStd::vector<AZStd::unique_ptr<TestTargetList::TargetType::Descriptor>>&& testTargetDescriptors);
+            AZStd::vector<AZStd::unique_ptr<NativeProductionTargetDescriptor>>&& productionTargetDescriptors,
+            AZStd::vector<AZStd::unique_ptr<NativeTestTargetList::TargetType::Descriptor>>&& testTargetDescriptors);
 
         //! Gets the total number of production and test targets in the repository.
         size_t GetNumBuildTargets() const;
@@ -44,31 +44,31 @@ namespace TestImpact
         //! Attempts to get the specified build target.
         //! @param name The name of the build target to get.
         //! @returns If found, the pointer to the specified build target, otherwise nullptr.
-        const BuildTarget* GetBuildTarget(const AZStd::string& name) const;
+        const NativeTarget* GetBuildTarget(const AZStd::string& name) const;
 
         //! Attempts to get the specified build target or throw TargetException.
         //! @param name The name of the build target to get.
-        const BuildTarget* GetBuildTargetOrThrow(const AZStd::string& name) const;
+        const NativeTarget* GetBuildTargetOrThrow(const AZStd::string& name) const;
 
         //! Attempts to get the specified target's specialized type.
         //! @param name The name of the target to get.
         //! @returns If found, the pointer to the specialized target, otherwise AZStd::monostate.
-        OptionalSpecializedBuildTarget GetSpecializedBuildTarget(const AZStd::string& name) const;
+        OptionalSpecializedNativeTarget GetSpecializedBuildTarget(const AZStd::string& name) const;
 
         //! Attempts to get the specified target's specialized type or throw TargetException.
         //! @param name The name of the target to get.
-        SpecializedBuildTarget GetSpecializedBuildTargetOrThrow(const AZStd::string& name) const;
+        SpecializedNativeTarget GetSpecializedBuildTargetOrThrow(const AZStd::string& name) const;
 
         //! Get the list of production targets in the repository.
-        const ProductionTargetList& GetProductionTargetList() const;
+        const NativeProductionTargetList& GetProductionTargetList() const;
 
         //! Get the list of test targets in the repository.
-        const TestTargetList& GetTestTargetList() const;
+        const NativeTestTargetList& GetTestTargetList() const;
 
         //! Gets the test targets covering the specified production target.
         //! @param productionTarget The production target to retrieve the covering tests for.
-        AZStd::vector<const TestTargetList::TargetType*> GetCoveringTestTargetsForProductionTarget(
-            const ProductionTarget& productionTarget) const;
+        AZStd::vector<const NativeTestTargetList::TargetType*> GetCoveringTestTargetsForProductionTarget(
+            const NativeProductionTarget& productionTarget) const;
 
         //! Gets the source dependency for the specified source file.
         //! @note Autogen input source dependencies are the consolidated source dependencies of all of their generated output sources.
@@ -100,13 +100,13 @@ namespace TestImpact
             const ChangeList& changeList, Policy::IntegrityFailure integrityFailurePolicy);
 
         //! Removes the specified test target from all source coverage.
-        void RemoveTestTargetFromSourceCoverage(const TestTargetList::TargetType* testTarget);
+        void RemoveTestTargetFromSourceCoverage(const NativeTestTargetList::TargetType* testTarget);
 
         //! Returns the test targets that cover one or more sources in the repository.
-        AZStd::vector<const TestTargetList::TargetType*> GetCoveringTests() const;
+        AZStd::vector<const NativeTestTargetList::TargetType*> GetCoveringTests() const;
 
         //! Returns the test targets that do not cover any sources in the repository.
-        AZStd::vector<const TestTargetList::TargetType*> GetNotCoveringTests() const;
+        AZStd::vector<const NativeTestTargetList::TargetType*> GetNotCoveringTests() const;
 
     private:
         //! Internal handler for ReplaceSourceCoverage where the pruning of parentless and coverageless source depenencies after the
@@ -121,20 +121,20 @@ namespace TestImpact
         void ClearSourceCoverage(const AZStd::vector<RepoPath>& paths);
 
         //! The sorted list of unique production targets in the repository.
-        ProductionTargetList m_productionTargets;
+        NativeProductionTargetList m_productionTargets;
 
         //! The sorted list of unique test targets in the repository.
-        TestTargetList m_testTargets;
+        NativeTestTargetList m_testTargets;
 
         //! The dependency map of sources to their parent build targets and covering test targets.
         AZStd::unordered_map<AZStd::string, DependencyData> m_sourceDependencyMap;
 
         //! Map of all test targets and the sources they cover.
-        AZStd::unordered_map<const TestTargetList::TargetType*, AZStd::unordered_set<AZStd::string>> m_testTargetSourceCoverage;
+        AZStd::unordered_map<const NativeTestTargetList::TargetType*, AZStd::unordered_set<AZStd::string>> m_testTargetSourceCoverage;
 
         //! The map of build targets and their covering test targets.
         //! @note As per the note for ReplaceSourceCoverageInternal, this map is currently not pruned when source coverage is replaced.
-        AZStd::unordered_map<const BuildTarget*, AZStd::unordered_set<const TestTargetList::TargetType*>> m_buildTargetCoverage;
+        AZStd::unordered_map<const NativeTarget*, AZStd::unordered_set<const NativeTestTargetList::TargetType*>> m_buildTargetCoverage;
 
         //! Mapping of autogen input sources to their generated output sources.
         AZStd::unordered_map<AZStd::string, AZStd::vector<AZStd::string>> m_autogenInputToOutputMap;

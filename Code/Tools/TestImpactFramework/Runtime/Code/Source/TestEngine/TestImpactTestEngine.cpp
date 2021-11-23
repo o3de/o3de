@@ -126,7 +126,7 @@ namespace TestImpact
             using JobInfo = typename TestJobRunner::JobInfo;
         public:
             TestJobRunnerCallbackHandler(
-                const AZStd::vector<const TestTarget*>& testTargets,
+                const AZStd::vector<const NativeTestTarget*>& testTargets,
                 TestEngineJobMap<IdType>* engineJobs,
                 Policy::ExecutionFailure executionFailurePolicy,
                 Policy::TestFailure testFailurePolicy,
@@ -209,7 +209,7 @@ namespace TestImpact
             }
 
         private:
-            const AZStd::vector<const TestTarget*>& m_testTargets;
+            const AZStd::vector<const NativeTestTarget*>& m_testTargets;
             TestEngineJobMap<typename IdType>* m_engineJobs;
             Policy::ExecutionFailure m_executionFailurePolicy;
             Policy::TestFailure m_testFailurePolicy;
@@ -225,7 +225,7 @@ namespace TestImpact
 
         public:
             RegularTestJobRunnerCallbackHandler(
-                const AZStd::vector<const TestTarget*>& testTargets,
+                const AZStd::vector<const NativeTestTarget*>& testTargets,
                 TestEngineJobMap<NativeRegularTestRunner::JobInfo::IdType>* engineJobs,
                 Policy::ExecutionFailure executionFailurePolicy,
                 Policy::TestFailure testFailurePolicy,
@@ -253,7 +253,7 @@ namespace TestImpact
 
         public:
             InstrumentedRegularTestJobRunnerCallbackHandler(
-                const AZStd::vector<const TestTarget*>& testTargets,
+                const AZStd::vector<const NativeTestTarget*>& testTargets,
                 TestEngineJobMap<NativeInstrumentedTestRunner::JobInfo::IdType>* engineJobs,
                 Policy::ExecutionFailure executionFailurePolicy,
                 Policy::TestFailure testFailurePolicy,
@@ -278,7 +278,7 @@ namespace TestImpact
         // Helper function to compile the run type specific test engine jobs from their associated jobs and payloads
         template<typename TestJobRunner>
         AZStd::vector<TestEngineJobType<TestJobRunner>> CompileTestEngineRuns(
-            const AZStd::vector<const TestTarget*>& testTargets,
+            const AZStd::vector<const NativeTestTarget*>& testTargets,
             AZStd::vector<typename TestJobRunner::Job>& runnerjobs,
             TestEngineJobMap<typename TestJobRunner::JobInfo::IdType>&& engineJobs)
         {
@@ -337,7 +337,7 @@ namespace TestImpact
     }
 
     //AZStd::pair<TestSequenceResult, AZStd::vector<TestEngineEnumeration>> TestEngine::UpdateEnumerationCache(
-    //    const AZStd::vector<const TestTarget*>& testTargets,
+    //    const AZStd::vector<const NativeTestTarget*>& testTargets,
     //    Policy::ExecutionFailure executionFailurePolicy,
     //    Policy::TestFailure testFailurePolicy,
     //    AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
@@ -358,7 +358,7 @@ namespace TestImpact
     //}
 
     AZStd::pair<TestSequenceResult, AZStd::vector<TestEngineRegularRun>> TestEngine::RegularRun(
-        const AZStd::vector<const TestTarget*>& testTargets,
+        const AZStd::vector<const NativeTestTarget*>& testTargets,
         Policy::ExecutionFailure executionFailurePolicy,
         Policy::TestFailure testFailurePolicy,
         [[maybe_unused]]Policy::TargetOutputCapture targetOutputCapture,
@@ -392,7 +392,7 @@ namespace TestImpact
     }
 
     AZStd::pair<TestSequenceResult, AZStd::vector<TestEngineInstrumentedRun>> TestEngine::InstrumentedRun(
-        const AZStd::vector<const TestTarget*>& testTargets,
+        const AZStd::vector<const NativeTestTarget*>& testTargets,
         Policy::ExecutionFailure executionFailurePolicy,
         Policy::IntegrityFailure integrityFailurePolicy,
         Policy::TestFailure testFailurePolicy,

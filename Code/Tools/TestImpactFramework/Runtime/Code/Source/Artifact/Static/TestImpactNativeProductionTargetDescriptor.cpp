@@ -10,8 +10,8 @@
 
 namespace TestImpact
 {
-    ProductionTargetDescriptor::ProductionTargetDescriptor(BuildTargetDescriptor&& buildTargetDescriptor)
-        : BuildTargetDescriptor(AZStd::move(buildTargetDescriptor))
+    NativeProductionTargetDescriptor::NativeProductionTargetDescriptor(NativeTargetDescriptor&& NativeTargetDescriptor)
+        : NativeTargetDescriptor(AZStd::move(NativeTargetDescriptor))
     {
     }
 } // namespace TestImpact

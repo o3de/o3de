@@ -17,8 +17,8 @@
 
 namespace TestImpact
 {
-    class ProductionTarget;
-    class TestTarget;
+    class NativeProductionTarget;
+    class NativeTestTarget;
 
     //! Representation of a source dependency's parent target.
     class ParentTarget
@@ -31,14 +31,14 @@ namespace TestImpact
         }
 
         //! Returns the base build target pointer for this parent.
-        const BuildTarget* GetBuildTarget() const;
+        const NativeTarget* GetBuildTarget() const;
 
         //! Returns the specialized target pointer for this parent.
-        const SpecializedBuildTarget& GetSpecializedBuildTarget() const;
+        const SpecializedNativeTarget& GetSpecializedBuildTarget() const;
 
         bool operator==(const ParentTarget& other) const;
     private:
-        SpecializedBuildTarget m_target; //! The specialized target pointer for this parent.
+        SpecializedNativeTarget m_target; //! The specialized target pointer for this parent.
     };
 }
 
@@ -59,7 +59,7 @@ namespace TestImpact
     struct DependencyData
     {
         AZStd::unordered_set<ParentTarget> m_parentTargets;
-        AZStd::unordered_set<const TestTarget*> m_coveringTestTargets;
+        AZStd::unordered_set<const NativeTestTarget*> m_coveringTestTargets;
     };
 
     //! Test target coverage and build target dependency information for a given source file in the dynamic dependency map.
@@ -83,7 +83,7 @@ namespace TestImpact
         const AZStd::unordered_set<ParentTarget>& GetParentTargets() const;
 
         //! Returns the test targets covering this source file.
-        const AZStd::unordered_set<const TestTarget*>& GetCoveringTestTargets() const;
+        const AZStd::unordered_set<const NativeTestTarget*>& GetCoveringTestTargets() const;
     private:
         RepoPath m_path; //!< The path of this source file.
         DependencyData m_dependencyData; //!< The dependency data for this source file.

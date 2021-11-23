@@ -16,7 +16,7 @@
 
 namespace UnitTest
 {
-    class BuildTargetDescriptorFactoryTestFixture
+    class NativeTargetDescriptorFactoryTestFixture
         : public AllocatorsTestFixture
     {
     protected:
@@ -84,7 +84,7 @@ namespace UnitTest
         };
     };
 
-    TEST_F(BuildTargetDescriptorFactoryTestFixture, NoRawData_ExpectArtifactException)
+    TEST_F(NativeTargetDescriptorFactoryTestFixture, NoRawData_ExpectArtifactException)
     {
         // Given an empty raw descriptor string
         const AZStd::string rawTargetDescriptor;
@@ -92,8 +92,8 @@ namespace UnitTest
         try
         {
             // When attempting to construct the build target descriptor
-            const TestImpact::BuildTargetDescriptor buildTarget =
-                TestImpact::BuildTargetDescriptorFactory(rawTargetDescriptor, m_staticInclude, m_inputInclude, m_autogenMatcher);
+            const TestImpact::NativeTargetDescriptor buildTarget =
+                TestImpact::NativeTargetDescriptorFactory(rawTargetDescriptor, m_staticInclude, m_inputInclude, m_autogenMatcher);
 
             // Do not expect this statement to be reachable
             FAIL();
@@ -110,7 +110,7 @@ namespace UnitTest
         }
     }
 
-    TEST_F(BuildTargetDescriptorFactoryTestFixture, InvalidRawData_ExpectArtifactException)
+    TEST_F(NativeTargetDescriptorFactoryTestFixture, InvalidRawData_ExpectArtifactException)
     {
         // Given a raw descriptor string of invalid data
         const AZStd::string rawTargetDescriptor = "abcde";
@@ -118,8 +118,8 @@ namespace UnitTest
         try
         {
             // When attempting to construct the build target descriptor
-            const TestImpact::BuildTargetDescriptor buildTarget =
-                TestImpact::BuildTargetDescriptorFactory(rawTargetDescriptor, m_staticInclude, m_inputInclude, m_autogenMatcher);
+            const TestImpact::NativeTargetDescriptor buildTarget =
+                TestImpact::NativeTargetDescriptorFactory(rawTargetDescriptor, m_staticInclude, m_inputInclude, m_autogenMatcher);
 
             // Do not expect this statement to be reachable
             FAIL();
@@ -136,17 +136,17 @@ namespace UnitTest
         }
     }
 
-    TEST_F(BuildTargetDescriptorFactoryTestFixture, NoAutogenMatcher_ExpectArtifactException)
+    TEST_F(NativeTargetDescriptorFactoryTestFixture, NoAutogenMatcher_ExpectArtifactException)
     {
         // Given a valid raw descriptor string
         const AZStd::string rawTargetDescriptor =
-            GenerateBuildTargetDescriptorString(m_name, m_outputName, m_path, m_staticSources, m_autogenInputs, m_autogenOutputs);
+            GenerateNativeTargetDescriptorString(m_name, m_outputName, m_path, m_staticSources, m_autogenInputs, m_autogenOutputs);
 
         try
         {
             // When attempting to construct the build target descriptor with an empty autogen matcher
-            const TestImpact::BuildTargetDescriptor buildTarget =
-                TestImpact::BuildTargetDescriptorFactory(rawTargetDescriptor, m_staticInclude, m_inputInclude, "");
+            const TestImpact::NativeTargetDescriptor buildTarget =
+                TestImpact::NativeTargetDescriptorFactory(rawTargetDescriptor, m_staticInclude, m_inputInclude, "");
 
             // Do not expect this statement to be reachable
             FAIL();
@@ -163,17 +163,17 @@ namespace UnitTest
         }
     }
 
-    TEST_F(BuildTargetDescriptorFactoryTestFixture, EmptyName_ExpectArtifactException)
+    TEST_F(NativeTargetDescriptorFactoryTestFixture, EmptyName_ExpectArtifactException)
     {
         // Given a invalid raw descriptor string lacking build meta-data name
         const AZStd::string rawTargetDescriptor =
-            GenerateBuildTargetDescriptorString("", m_outputName, m_path, m_staticSources, m_autogenInputs, m_autogenOutputs);
+            GenerateNativeTargetDescriptorString("", m_outputName, m_path, m_staticSources, m_autogenInputs, m_autogenOutputs);
 
         try
         {
             // When attempting to construct the build target descriptor
-            const TestImpact::BuildTargetDescriptor buildTarget =
-                TestImpact::BuildTargetDescriptorFactory(rawTargetDescriptor, m_staticInclude, m_inputInclude, m_autogenMatcher);
+            const TestImpact::NativeTargetDescriptor buildTarget =
+                TestImpact::NativeTargetDescriptorFactory(rawTargetDescriptor, m_staticInclude, m_inputInclude, m_autogenMatcher);
 
             // Do not expect this statement to be reachable
             FAIL();
@@ -190,17 +190,17 @@ namespace UnitTest
         }
     }
 
-    TEST_F(BuildTargetDescriptorFactoryTestFixture, EmptyOutputName_ExpectArtifactException)
+    TEST_F(NativeTargetDescriptorFactoryTestFixture, EmptyOutputName_ExpectArtifactException)
     {
         // Given a invalid raw descriptor string lacking build meta-data output name
         const AZStd::string rawTargetDescriptor =
-            GenerateBuildTargetDescriptorString(m_name, "", m_path, m_staticSources, m_autogenInputs, m_autogenOutputs);
+            GenerateNativeTargetDescriptorString(m_name, "", m_path, m_staticSources, m_autogenInputs, m_autogenOutputs);
 
         try
         {
             // When attempting to construct the build target descriptor
-            const TestImpact::BuildTargetDescriptor buildTarget =
-                TestImpact::BuildTargetDescriptorFactory(rawTargetDescriptor, m_staticInclude, m_inputInclude, m_autogenMatcher);
+            const TestImpact::NativeTargetDescriptor buildTarget =
+                TestImpact::NativeTargetDescriptorFactory(rawTargetDescriptor, m_staticInclude, m_inputInclude, m_autogenMatcher);
 
             // Do not expect this statement to be reachable
             FAIL();
@@ -217,17 +217,17 @@ namespace UnitTest
         }
     }
 
-    TEST_F(BuildTargetDescriptorFactoryTestFixture, EmptyPath_ExpectArtifactException)
+    TEST_F(NativeTargetDescriptorFactoryTestFixture, EmptyPath_ExpectArtifactException)
     {
         // Given a invalid raw descriptor string lacking build meta-data path
         const AZStd::string rawTargetDescriptor =
-            GenerateBuildTargetDescriptorString(m_name, m_outputName, "", m_staticSources, m_autogenInputs, m_autogenOutputs);
+            GenerateNativeTargetDescriptorString(m_name, m_outputName, "", m_staticSources, m_autogenInputs, m_autogenOutputs);
 
         try
         {
             // When attempting to construct the build target descriptor
-            const TestImpact::BuildTargetDescriptor buildTarget =
-                TestImpact::BuildTargetDescriptorFactory(rawTargetDescriptor, m_staticInclude, m_inputInclude, m_autogenMatcher);
+            const TestImpact::NativeTargetDescriptor buildTarget =
+                TestImpact::NativeTargetDescriptorFactory(rawTargetDescriptor, m_staticInclude, m_inputInclude, m_autogenMatcher);
 
             // Do not expect this statement to be reachable
             FAIL();
@@ -244,21 +244,21 @@ namespace UnitTest
         }
     }
 
-    TEST_F(BuildTargetDescriptorFactoryTestFixture, NoStaticSources_ExpectValidDescriptor)
+    TEST_F(NativeTargetDescriptorFactoryTestFixture, NoStaticSources_ExpectValidDescriptor)
     {
-        const TestImpact::BuildTargetDescriptor expectedBuiltTarget =
-            GenerateBuildTargetDescriptor(m_name, m_outputName, m_path, {}, m_expectedAutogenSources);
+        const TestImpact::NativeTargetDescriptor expectedBuiltTarget =
+            GenerateNativeTargetDescriptor(m_name, m_outputName, m_path, {}, m_expectedAutogenSources);
 
         // Given a valid raw descriptor string with no static sources
         const AZStd::string rawTargetDescriptor =
-            GenerateBuildTargetDescriptorString(m_name, m_outputName, m_path, {}, m_autogenInputs, m_autogenOutputs);
+            GenerateNativeTargetDescriptorString(m_name, m_outputName, m_path, {}, m_autogenInputs, m_autogenOutputs);
 
         try
         {
             std::cout << "\n" << rawTargetDescriptor.c_str() << "\n";
             // When attempting to construct the build target descriptor
-            const TestImpact::BuildTargetDescriptor buildTarget =
-                TestImpact::BuildTargetDescriptorFactory(rawTargetDescriptor, {}, m_inputInclude, m_autogenMatcher);
+            const TestImpact::NativeTargetDescriptor buildTarget =
+                TestImpact::NativeTargetDescriptorFactory(rawTargetDescriptor, {}, m_inputInclude, m_autogenMatcher);
 
             // Expect the constructed build target descriptor to match the specified descriptor
             EXPECT_TRUE(buildTarget == expectedBuiltTarget);
@@ -269,49 +269,49 @@ namespace UnitTest
         }
     }
 
-    TEST_F(BuildTargetDescriptorFactoryTestFixture, NoAutogenSources_ExpectValidDescriptor)
+    TEST_F(NativeTargetDescriptorFactoryTestFixture, NoAutogenSources_ExpectValidDescriptor)
     {
-        const TestImpact::BuildTargetDescriptor expectedBuiltTarget =
-            GenerateBuildTargetDescriptor(m_name, m_outputName, m_path, m_expectedStaticSources, {});
+        const TestImpact::NativeTargetDescriptor expectedBuiltTarget =
+            GenerateNativeTargetDescriptor(m_name, m_outputName, m_path, m_expectedStaticSources, {});
 
         // Given a valid raw descriptor string with no autogen sources
         const AZStd::string rawTargetDescriptor =
-            GenerateBuildTargetDescriptorString(m_name, m_outputName, m_path, m_staticSources, {}, {});
+            GenerateNativeTargetDescriptorString(m_name, m_outputName, m_path, m_staticSources, {}, {});
 
         // When attempting to construct the build target descriptor
-        const TestImpact::BuildTargetDescriptor buildTarget =
-            TestImpact::BuildTargetDescriptorFactory(rawTargetDescriptor, m_staticInclude, m_inputInclude, m_autogenMatcher);
+        const TestImpact::NativeTargetDescriptor buildTarget =
+            TestImpact::NativeTargetDescriptorFactory(rawTargetDescriptor, m_staticInclude, m_inputInclude, m_autogenMatcher);
 
         // Expect the constructed build target descriptor to match the specified descriptor
         EXPECT_TRUE(buildTarget == expectedBuiltTarget);
     }
 
-    TEST_F(BuildTargetDescriptorFactoryTestFixture, NoStaticOrAutogenSources_ExpectValidDescriptor)
+    TEST_F(NativeTargetDescriptorFactoryTestFixture, NoStaticOrAutogenSources_ExpectValidDescriptor)
     {
-        const TestImpact::BuildTargetDescriptor expectedBuiltTarget = GenerateBuildTargetDescriptor(m_name, m_outputName, m_path, {}, {});
+        const TestImpact::NativeTargetDescriptor expectedBuiltTarget = GenerateNativeTargetDescriptor(m_name, m_outputName, m_path, {}, {});
 
         // Given a valid raw descriptor string with no static or autogen sources
-        const AZStd::string rawTargetDescriptor = GenerateBuildTargetDescriptorString(m_name, m_outputName, m_path, {}, {}, {});
+        const AZStd::string rawTargetDescriptor = GenerateNativeTargetDescriptorString(m_name, m_outputName, m_path, {}, {}, {});
 
         // When attempting to construct the build target descriptor
-        const TestImpact::BuildTargetDescriptor buildTarget =
-            TestImpact::BuildTargetDescriptorFactory(rawTargetDescriptor, m_staticInclude, m_inputInclude, m_autogenMatcher);
+        const TestImpact::NativeTargetDescriptor buildTarget =
+            TestImpact::NativeTargetDescriptorFactory(rawTargetDescriptor, m_staticInclude, m_inputInclude, m_autogenMatcher);
 
         // Expect the constructed build target descriptor to match the specified descriptor
         EXPECT_TRUE(buildTarget == expectedBuiltTarget);
     }
 
-    TEST_F(BuildTargetDescriptorFactoryTestFixture, AutogenOutputSourcesButNoAutogenInputSources_ExpectArtifactException)
+    TEST_F(NativeTargetDescriptorFactoryTestFixture, AutogenOutputSourcesButNoAutogenInputSources_ExpectArtifactException)
     {
         // Given a valid raw descriptor string with autogen output sources but no autogen input sources
         const AZStd::string rawTargetDescriptor =
-            GenerateBuildTargetDescriptorString(m_name, m_outputName, m_path, m_staticSources, {}, m_autogenOutputs);
+            GenerateNativeTargetDescriptorString(m_name, m_outputName, m_path, m_staticSources, {}, m_autogenOutputs);
 
         try
         {
             // When attempting to construct the build target descriptor
-            const TestImpact::BuildTargetDescriptor buildTarget =
-                TestImpact::BuildTargetDescriptorFactory(rawTargetDescriptor, m_staticInclude, m_inputInclude, m_autogenMatcher);
+            const TestImpact::NativeTargetDescriptor buildTarget =
+                TestImpact::NativeTargetDescriptorFactory(rawTargetDescriptor, m_staticInclude, m_inputInclude, m_autogenMatcher);
 
             // Do not expect this statement to be reachable
             FAIL();
@@ -328,17 +328,17 @@ namespace UnitTest
         }
     }
 
-    TEST_F(BuildTargetDescriptorFactoryTestFixture, AutogenInputSourcesButNoAutogenOutputSources_ExpectArtifactException)
+    TEST_F(NativeTargetDescriptorFactoryTestFixture, AutogenInputSourcesButNoAutogenOutputSources_ExpectArtifactException)
     {
         // Given a valid raw descriptor string with autogen inout sources but no autogen output sources
         const AZStd::string rawTargetDescriptor =
-            GenerateBuildTargetDescriptorString(m_name, m_outputName, m_path, m_staticSources, m_autogenInputs, {});
+            GenerateNativeTargetDescriptorString(m_name, m_outputName, m_path, m_staticSources, m_autogenInputs, {});
 
         try
         {
             // When attempting to construct the build target descriptor
-            const TestImpact::BuildTargetDescriptor buildTarget =
-                TestImpact::BuildTargetDescriptorFactory(rawTargetDescriptor, m_staticInclude, m_inputInclude, m_autogenMatcher);
+            const TestImpact::NativeTargetDescriptor buildTarget =
+                TestImpact::NativeTargetDescriptorFactory(rawTargetDescriptor, m_staticInclude, m_inputInclude, m_autogenMatcher);
 
             // Do not expect this statement to be reachable
             FAIL();
@@ -355,18 +355,18 @@ namespace UnitTest
         }
     }
 
-    TEST_F(BuildTargetDescriptorFactoryTestFixture, StaticAndAutogenSources_ExpectValidDescriptor)
+    TEST_F(NativeTargetDescriptorFactoryTestFixture, StaticAndAutogenSources_ExpectValidDescriptor)
     {
-        const TestImpact::BuildTargetDescriptor expectedBuiltTarget =
-            GenerateBuildTargetDescriptor(m_name, m_outputName, m_path, m_expectedStaticSources, m_expectedAutogenSources);
+        const TestImpact::NativeTargetDescriptor expectedBuiltTarget =
+            GenerateNativeTargetDescriptor(m_name, m_outputName, m_path, m_expectedStaticSources, m_expectedAutogenSources);
 
         // Given a valid raw descriptor string with static and autogen sources
         const AZStd::string rawTargetDescriptor =
-            GenerateBuildTargetDescriptorString(m_name, m_outputName, m_path, m_staticSources, m_autogenInputs, m_autogenOutputs);
+            GenerateNativeTargetDescriptorString(m_name, m_outputName, m_path, m_staticSources, m_autogenInputs, m_autogenOutputs);
 
         // When attempting to construct the build target descriptor
-        const TestImpact::BuildTargetDescriptor buildTarget =
-            TestImpact::BuildTargetDescriptorFactory(rawTargetDescriptor, m_staticInclude, m_inputInclude, m_autogenMatcher);
+        const TestImpact::NativeTargetDescriptor buildTarget =
+            TestImpact::NativeTargetDescriptorFactory(rawTargetDescriptor, m_staticInclude, m_inputInclude, m_autogenMatcher);
 
         // Expect the constructed build target descriptor to match the specified descriptor
         EXPECT_TRUE(buildTarget == expectedBuiltTarget);

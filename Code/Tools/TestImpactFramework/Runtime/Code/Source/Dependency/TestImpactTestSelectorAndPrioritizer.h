@@ -20,14 +20,14 @@
 namespace TestImpact
 {
     class DynamicDependencyMap;
-    class BuildTarget;
-    class TestTarget;
+    class NativeTarget;
+    class NativeTestTarget;
 
     //! Map of build targets and their dependency graph data.
     //! For test targets, the dependency graph data is that of the build targets which the test target depends on.
     //! For production targets, the dependency graph is that of the build targets that depend on it (dependers).
     //! @note No dependency graph data is not an error, it simple means that the target cannot be prioritized.
-    using DependencyGraphDataMap = AZStd::unordered_map<const BuildTarget*, DependencyGraphData>;
+    using DependencyGraphDataMap = AZStd::unordered_map<const NativeTarget*, DependencyGraphData>;
 
     //! Selects the test targets that cover a given set of changes based on the CRUD rules and optionally prioritizes the test
     //! selection according to their locality of their covering production targets in the their dependency graphs.
@@ -43,11 +43,11 @@ namespace TestImpact
         //! Select the covering test targets for the given set of source changes and optionally prioritizes said test selection.
         //! @param changeDependencyList The resolved list of source dependencies for the CRUD source changes.
         //! @param testSelectionStrategy The test selection and prioritization strategy to apply to the given CRUD source changes.
-        AZStd::vector<const TestTarget*> SelectTestTargets(const ChangeDependencyList& changeDependencyList, Policy::TestPrioritization testSelectionStrategy);
+        AZStd::vector<const NativeTestTarget*> SelectTestTargets(const ChangeDependencyList& changeDependencyList, Policy::TestPrioritization testSelectionStrategy);
 
     private:
         //! Map of selected test targets and the production targets they cover for the given set of source changes.
-        using SelectedTestTargetAndDependerMap = AZStd::unordered_map<const TestTarget*, AZStd::unordered_set<const ProductionTarget*>>;
+        using SelectedTestTargetAndDependerMap = AZStd::unordered_map<const NativeTestTarget*, AZStd::unordered_set<const NativeProductionTarget*>>;
 
         //! Selects the test targets covering the set of source changes in the change dependency list.
         //! @param changeDependencyList The change dependency list containing the CRUD source changes to select tests for.
@@ -59,7 +59,7 @@ namespace TestImpact
         //! @param selectedTestTargetAndDependerMap The selected tests to prioritize.
         //! @param testSelectionStrategy The test selection strategy to prioritize the selected tests.
         //! @returns The selected tests either in either arbitrary order or in prioritized with highest priority first.
-        AZStd::vector<const TestTarget*> PrioritizeSelectedTestTargets(
+        AZStd::vector<const NativeTestTarget*> PrioritizeSelectedTestTargets(
             const SelectedTestTargetAndDependerMap& selectedTestTargetAndDependerMap, Policy::TestPrioritization testSelectionStrategy);
 
         const DynamicDependencyMap* m_dynamicDependencyMap;

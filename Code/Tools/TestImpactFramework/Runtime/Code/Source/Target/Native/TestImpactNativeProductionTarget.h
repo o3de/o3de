@@ -16,17 +16,17 @@
 namespace TestImpact
 {
     //! Build target specialization for production targets (build targets containing production code and no test code).
-    class ProductionTarget
-        : public BuildTarget
+    class NativeProductionTarget
+        : public NativeTarget
     {
     public:
-        using Descriptor = ProductionTargetDescriptor;
-        ProductionTarget(AZStd::unique_ptr<Descriptor> descriptor);
+        using Descriptor = NativeProductionTargetDescriptor;
+        NativeProductionTarget(AZStd::unique_ptr<Descriptor> descriptor);
 
     private:
         AZStd::unique_ptr<Descriptor> m_descriptor;
     };
 
     template<typename Target>
-    inline constexpr bool IsProductionTarget = AZStd::is_same_v<ProductionTarget, AZStd::remove_const_t<AZStd::remove_pointer_t<AZStd::decay_t<Target>>>>;
+    inline constexpr bool IsProductionTarget = AZStd::is_same_v<NativeProductionTarget, AZStd::remove_const_t<AZStd::remove_pointer_t<AZStd::decay_t<Target>>>>;
 } // namespace TestImpact

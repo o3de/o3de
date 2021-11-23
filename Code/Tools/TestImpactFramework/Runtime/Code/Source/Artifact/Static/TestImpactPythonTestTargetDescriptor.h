@@ -14,11 +14,11 @@
 namespace TestImpact
 {
     //! Artifact produced by the target artifact compiler that represents a test build target in the repository.
-    struct TestScriptTargetDescriptor
+    struct PythonTestTargetDescriptor
         : public TargetDescriptor
     {
-        TestScriptTargetDescriptor() = default;
-        TestScriptTargetDescriptor(TargetDescriptor&& targetDescriptor, TestSuiteMeta&& testSuiteMeta, const RepoPath& scriptPath);
+        PythonTestTargetDescriptor() = default;
+        PythonTestTargetDescriptor(TargetDescriptor&& targetDescriptor, TestSuiteMeta&& testSuiteMeta, const RepoPath& scriptPath);
 
         TestSuiteMeta m_testSuiteMeta;
         RepoPath m_scriptPath; //!< Path to the Python script for this test (relative to repository root).

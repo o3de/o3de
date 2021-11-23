@@ -20,9 +20,9 @@ namespace TestImpact
         return GetBuildTarget() == other.GetBuildTarget();
     }
 
-    const BuildTarget* ParentTarget::GetBuildTarget() const
+    const NativeTarget* ParentTarget::GetBuildTarget() const
     {
-        const BuildTarget* buildTarget;
+        const NativeTarget* buildTarget;
         AZStd::visit([&buildTarget](auto&& target)
         {
             buildTarget = target;
@@ -32,7 +32,7 @@ namespace TestImpact
         return buildTarget;
     }
 
-    const SpecializedBuildTarget& ParentTarget::GetSpecializedBuildTarget() const
+    const SpecializedNativeTarget& ParentTarget::GetSpecializedBuildTarget() const
     {
         return m_target;
     }
@@ -65,7 +65,7 @@ namespace TestImpact
         return m_dependencyData.m_parentTargets;
     }
 
-    const AZStd::unordered_set<const TestTarget*>& SourceDependency::GetCoveringTestTargets() const
+    const AZStd::unordered_set<const NativeTestTarget*>& SourceDependency::GetCoveringTestTargets() const
     {
         return m_dependencyData.m_coveringTestTargets;
     }

@@ -8,11 +8,11 @@
 
 #pragma once
 
-#include <Target/TestImpactTargetList.h>
-#include <Target/TestImpactTestScriptTarget.h>
+#include <Target/Common/TestImpactTargetList.h>
+#include <Target/Python/TestImpactPythonTestTarget.h>
 
 namespace TestImpact
 {
     //! Container for set of sorted test targets containing no duplicates.
-    using TestScriptTargetList = TargetList<TestScriptTarget>;
+    using PythonTestTargetList = TargetList<PythonTestTarget>;
 } // namespace TestImpact

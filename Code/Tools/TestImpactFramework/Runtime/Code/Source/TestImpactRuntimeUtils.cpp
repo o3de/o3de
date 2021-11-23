@@ -18,45 +18,45 @@
 
 namespace TestImpact
 {
-    TestTargetMetaMap ReadTestTargetMetaMapFile(SuiteType suiteFilter, const RepoPath& testTargetMetaConfigFile)
+    NativeTestTargetMetaMap ReadNativeTestTargetMetaMapFile(SuiteType suiteFilter, const RepoPath& testTargetMetaConfigFile)
     {
         const auto masterTestListData = ReadFileContents<RuntimeException>(testTargetMetaConfigFile);
-        return TestTargetMetaMapFactory(masterTestListData, suiteFilter);
+        return NativeTestTargetMetaMapFactory(masterTestListData, suiteFilter);
     }
 
-    AZStd::vector<BuildTargetDescriptor> ReadBuildTargetDescriptorFiles(const BuildTargetDescriptorConfig& buildTargetDescriptorConfig)
+    AZStd::vector<NativeTargetDescriptor> ReadNativeTargetDescriptorFiles(const NativeTargetDescriptorConfig& NativeTargetDescriptorConfig)
     {
-        AZStd::vector<BuildTargetDescriptor> buildTargetDescriptors;
-        for (const auto& buildTargetDescriptorFile : std::filesystem::directory_iterator(buildTargetDescriptorConfig.m_mappingDirectory.c_str()))
+        AZStd::vector<NativeTargetDescriptor> NativeTargetDescriptors;
+        for (const auto& NativeTargetDescriptorFile : std::filesystem::directory_iterator(NativeTargetDescriptorConfig.m_mappingDirectory.c_str()))
         {
-            const auto buildTargetDescriptorContents = ReadFileContents<RuntimeException>(buildTargetDescriptorFile.path().string().c_str());
-            auto buildTargetDescriptor = BuildTargetDescriptorFactory(
-                buildTargetDescriptorContents,
-                buildTargetDescriptorConfig.m_staticInclusionFilters,
-                buildTargetDescriptorConfig.m_inputInclusionFilters,
-                buildTargetDescriptorConfig.m_inputOutputPairer);
-            buildTargetDescriptors.emplace_back(AZStd::move(buildTargetDescriptor));
+            const auto NativeTargetDescriptorContents = ReadFileContents<RuntimeException>(NativeTargetDescriptorFile.path().string().c_str());
+            auto NativeTargetDescriptor = NativeTargetDescriptorFactory(
+                NativeTargetDescriptorContents,
+                NativeTargetDescriptorConfig.m_staticInclusionFilters,
+                NativeTargetDescriptorConfig.m_inputInclusionFilters,
+                NativeTargetDescriptorConfig.m_inputOutputPairer);
+            NativeTargetDescriptors.emplace_back(AZStd::move(NativeTargetDescriptor));
         }
 
-        return buildTargetDescriptors;
+        return NativeTargetDescriptors;
     }
 
     AZStd::unique_ptr<DynamicDependencyMap> ConstructDynamicDependencyMap(
         SuiteType suiteFilter,
-        const BuildTargetDescriptorConfig& buildTargetDescriptorConfig,
+        const NativeTargetDescriptorConfig& NativeTargetDescriptorConfig,
         const TestTargetMetaConfig& testTargetMetaConfig)
     {
-        auto testTargetmetaMap = ReadTestTargetMetaMapFile(suiteFilter, testTargetMetaConfig.m_metaFile);
-        auto buildTargetDescriptors = ReadBuildTargetDescriptorFiles(buildTargetDescriptorConfig);
-        auto buildTargets = CompileTargetDescriptors(AZStd::move(buildTargetDescriptors), AZStd::move(testTargetmetaMap));
+        auto NativeTestTargetMetaMap = ReadNativeTestTargetMetaMapFile(suiteFilter, testTargetMetaConfig.m_metaFile);
+        auto NativeTargetDescriptors = ReadNativeTargetDescriptorFiles(NativeTargetDescriptorConfig);
+        auto buildTargets = CompileTargetDescriptors(AZStd::move(NativeTargetDescriptors), AZStd::move(NativeTestTargetMetaMap));
         auto&& [productionTargets, testTargets] = buildTargets;
         return AZStd::make_unique<DynamicDependencyMap>(AZStd::move(productionTargets), AZStd::move(testTargets));
     }
 
     AZStd::unique_ptr<TestTargetExclusionList> ConstructTestTargetExcludeList(
-        const TestTargetList& testTargets, AZStd::vector<TargetConfig::ExcludedTarget>&& excludedTestTargets)
+        const NativeTestTargetList& testTargets, AZStd::vector<TargetConfig::ExcludedTarget>&& excludedTestTargets)
     {
-        AZStd::unordered_map<const TestTarget*, AZStd::vector<AZStd::string>> testTargetExcludeList;
+        AZStd::unordered_map<const NativeTestTarget*, AZStd::vector<AZStd::string>> testTargetExcludeList;
         for (const auto& excludedTestTarget : excludedTestTargets)
         {
             if (const auto* testTarget = testTargets.GetTarget(excludedTestTarget.m_name);
@@ -69,11 +69,11 @@ namespace TestImpact
         return AZStd::make_unique<TestTargetExclusionList>(AZStd::move(testTargetExcludeList));
     }
 
-    AZStd::pair<AZStd::vector<const TestTarget*>, AZStd::vector<const TestTarget*>> SelectTestTargetsByExcludeList(
-    const TestTargetExclusionList& testTargetExcludeList, const AZStd::vector<const TestTarget*>& testTargets)
+    AZStd::pair<AZStd::vector<const NativeTestTarget*>, AZStd::vector<const NativeTestTarget*>> SelectTestTargetsByExcludeList(
+    const TestTargetExclusionList& testTargetExcludeList, const AZStd::vector<const NativeTestTarget*>& testTargets)
     {
-        AZStd::vector<const TestTarget*> includedTestTargets;
-        AZStd::vector<const TestTarget*> excludedTestTargets;
+        AZStd::vector<const NativeTestTarget*> includedTestTargets;
+        AZStd::vector<const NativeTestTarget*> excludedTestTargets;
 
         if (testTargetExcludeList.IsEmpty())
         {
@@ -97,10 +97,10 @@ namespace TestImpact
         return { includedTestTargets, excludedTestTargets };
     }
 
-    AZStd::vector<AZStd::string> ExtractTestTargetNames(const AZStd::vector<const TestTarget*>& testTargets)
+    AZStd::vector<AZStd::string> ExtractTestTargetNames(const AZStd::vector<const NativeTestTarget*>& testTargets)
     {
         AZStd::vector<AZStd::string> testNames;
-        AZStd::transform(testTargets.begin(), testTargets.end(), AZStd::back_inserter(testNames), [](const TestTarget* testTarget)
+        AZStd::transform(testTargets.begin(), testTargets.end(), AZStd::back_inserter(testNames), [](const NativeTestTarget* testTarget)
         {
             return testTarget->GetName();
         });

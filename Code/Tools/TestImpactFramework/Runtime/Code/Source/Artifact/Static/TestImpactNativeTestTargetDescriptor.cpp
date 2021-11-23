@@ -10,8 +10,8 @@
 
 namespace TestImpact
 {
-    TestTargetDescriptor::TestTargetDescriptor(BuildTargetDescriptor&& buildTarget, TestTargetMeta&& testTargetMeta)
-        : BuildTargetDescriptor(AZStd::move(buildTarget))
+    NativeTestTargetDescriptor::NativeTestTargetDescriptor(NativeTargetDescriptor&& buildTarget, NativeTestTargetMeta&& testTargetMeta)
+        : NativeTargetDescriptor(AZStd::move(buildTarget))
         , m_testMetaData(AZStd::move(testTargetMeta))
     {
     }

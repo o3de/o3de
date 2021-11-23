@@ -13,10 +13,10 @@
 namespace TestImpact
 {
     //! Artifact produced by the target artifact compiler that represents a production build target in the repository.
-    struct ProductionTargetDescriptor
-        : public BuildTargetDescriptor
+    struct NativeProductionTargetDescriptor
+        : public NativeTargetDescriptor
     {
-        ProductionTargetDescriptor() = default;
-        ProductionTargetDescriptor(BuildTargetDescriptor&& buildTarget);
+        NativeProductionTargetDescriptor() = default;
+        NativeProductionTargetDescriptor(NativeTargetDescriptor&& buildTarget);
     };
 } // namespace TestImpact

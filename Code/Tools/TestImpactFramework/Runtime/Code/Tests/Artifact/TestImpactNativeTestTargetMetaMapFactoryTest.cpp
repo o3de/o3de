@@ -12,7 +12,7 @@
 //
 //#include <TestImpactTestUtils.h>
 //
-//#include <Artifact/Factory/TestImpactTestTargetMetaMapFactory.h>
+//#include <Artifact/Factory/TestImpactNativeTestTargetMetaMapFactory.h>
 //#include <Artifact/TestImpactArtifactException.h>
 //
 //#include <AzCore/UnitTest/TestTypes.h>
@@ -20,7 +20,7 @@
 //
 //namespace UnitTest
 //{
-//    TEST(TestTargetMetaMapFactoryTest, NoRawData_ExpectArtifactException)
+//    TEST(NativeTestTargetMetaMapFactoryTest, NoRawData_ExpectArtifactException)
 //    {
 //        // Given an empty meta data string
 //        const AZStd::string rawTestTargetMetaData;
@@ -28,7 +28,7 @@
 //        try
 //        {
 //            // When attempting to construct the test target
-//            const TestImpact::TestTargetMetaMap testTargetMetaData = TestImpact::TestTargetMetaMapFactory(rawTestTargetMetaData);
+//            const TestImpact::NativeTestTargetMetaMap testTargetMetaData = TestImpact::NativeTestTargetMetaMapFactory(rawTestTargetMetaData);
 //
 //            // Do not expect this statement to be reachable
 //            FAIL();
@@ -45,7 +45,7 @@
 //        }
 //    }
 //
-//    TEST(TestTargetMetaMapFactoryTest, InvalidRawData_ExpectArtifactException)
+//    TEST(NativeTestTargetMetaMapFactoryTest, InvalidRawData_ExpectArtifactException)
 //    {
 //        // Given a raw meta data string of invalid data
 //        const AZStd::string rawTestTargetMetaData = "abcde";
@@ -53,7 +53,7 @@
 //        try
 //        {
 //            // When attempting to construct the test target
-//            const TestImpact::TestTargetMetaMap testTargetMetaData = TestImpact::TestTargetMetaMapFactory(rawTestTargetMetaData);
+//            const TestImpact::NativeTestTargetMetaMap testTargetMetaData = TestImpact::NativeTestTargetMetaMapFactory(rawTestTargetMetaData);
 //
 //            // Do not expect this statement to be reachable
 //            FAIL();
@@ -70,7 +70,7 @@
 //        }
 //    }
 //
-//    TEST(TestTargetMetaMapFactoryTest, EmptyTestMetaArray_ExpectArtifactException)
+//    TEST(NativeTestTargetMetaMapFactoryTest, EmptyTestMetaArray_ExpectArtifactException)
 //    {
 //        // Given a raw meta data string of valid JSON that contains no tests
 //        const AZStd::string rawTestTargetMetaData =
@@ -86,7 +86,7 @@
 //        try
 //        {
 //            // When attempting to construct the test target
-//            const TestImpact::TestTargetMetaMap testTargetMetaData = TestImpact::TestTargetMetaMapFactory(rawTestTargetMetaData);
+//            const TestImpact::NativeTestTargetMetaMap testTargetMetaData = TestImpact::NativeTestTargetMetaMapFactory(rawTestTargetMetaData);
 //
 //            // Do not expect this statement to be reachable
 //            FAIL();
@@ -103,7 +103,7 @@
 //        }
 //    }
 //
-//    TEST(TestTargetMetaMapFactoryTest, EmptyName_ExpectArtifactException)
+//    TEST(NativeTestTargetMetaMapFactoryTest, EmptyName_ExpectArtifactException)
 //    {
 //        // Given a raw meta data string with a test that has no name value
 //        const AZStd::string rawTestTargetMetaData =
@@ -120,7 +120,7 @@
 //        try
 //        {
 //            // When attempting to construct the test target
-//            const TestImpact::TestTargetMetaMap testTargetMetaData = TestImpact::TestTargetMetaMapFactory(rawTestTargetMetaData);
+//            const TestImpact::NativeTestTargetMetaMap testTargetMetaData = TestImpact::NativeTestTargetMetaMapFactory(rawTestTargetMetaData);
 //
 //            // Do not expect this statement to be reachable
 //            FAIL();
@@ -137,7 +137,7 @@
 //        }
 //    }
 //
-//    TEST(TestTargetMetaMapFactoryTest, EmptyTimeout_ExpectArtifactException)
+//    TEST(NativeTestTargetMetaMapFactoryTest, EmptyTimeout_ExpectArtifactException)
 //    {
 //        // Given a raw meta data string with a test that has no name value
 //        const AZStd::string rawTestTargetMetaData =
@@ -154,7 +154,7 @@
 //        try
 //        {
 //            // When attempting to construct the test target
-//            const TestImpact::TestTargetMetaMap testTargetMetaData = TestImpact::TestTargetMetaMapFactory(rawTestTargetMetaData);
+//            const TestImpact::NativeTestTargetMetaMap testTargetMetaData = TestImpact::NativeTestTargetMetaMapFactory(rawTestTargetMetaData);
 //
 //            // Do not expect this statement to be reachable
 //            FAIL();
@@ -171,7 +171,7 @@
 //        }
 //    }
 //
-//    TEST(TestTargetMetaMapFactoryTest, EmptyBuildType_ExpectArtifactException)
+//    TEST(NativeTestTargetMetaMapFactoryTest, EmptyBuildType_ExpectArtifactException)
 //    {
 //        // Given a raw meta data string with a test that has no build type
 //        const AZStd::string rawTestTargetMetaData =
@@ -188,7 +188,7 @@
 //        try
 //        {
 //            // When attempting to construct the test target
-//            const TestImpact::TestTargetMetaMap testTargetMetaData = TestImpact::TestTargetMetaMapFactory(rawTestTargetMetaData);
+//            const TestImpact::NativeTestTargetMetaMap testTargetMetaData = TestImpact::NativeTestTargetMetaMapFactory(rawTestTargetMetaData);
 //
 //            // Do not expect this statement to be reachable
 //            FAIL();
@@ -205,7 +205,7 @@
 //        }
 //    }
 //
-//    TEST(TestTargetMetaMapFactoryTest, InvalidBuildType_ExpectArtifactException)
+//    TEST(NativeTestTargetMetaMapFactoryTest, InvalidBuildType_ExpectArtifactException)
 //    {
 //        // Given a raw meta data string with a test that has an invalid build type
 //        const AZStd::string rawTestTargetMetaData =
@@ -222,7 +222,7 @@
 //        try
 //        {
 //            // When attempting to construct the test target
-//            const TestImpact::TestTargetMetaMap testTargetMetaData = TestImpact::TestTargetMetaMapFactory(rawTestTargetMetaData);
+//            const TestImpact::NativeTestTargetMetaMap testTargetMetaData = TestImpact::NativeTestTargetMetaMapFactory(rawTestTargetMetaData);
 //
 //            // Do not expect this statement to be reachable
 //            FAIL();
@@ -239,7 +239,7 @@
 //        }
 //    }
 //
-//    TEST(TestTargetMetaMapFactoryTest, ValidMetaData_ExpectValidTestMetaData)
+//    TEST(NativeTestTargetMetaMapFactoryTest, ValidMetaData_ExpectValidTestMetaData)
 //    {
 //        // Given a raw meta data string valid test meta-data
 //        const AZStd::string rawTestTargetMetaData =
@@ -257,17 +257,17 @@
 //            "}";
 //
 //        // When attempting to construct the test target
-//        const auto testTargetMetaData = TestImpact::TestTargetMetaMapFactory(rawTestTargetMetaData);
+//        const auto testTargetMetaData = TestImpact::NativeTestTargetMetaMapFactory(rawTestTargetMetaData);
 //
 //        // Expect the constructed test meta-data to match that of the supplied raw data
 //        EXPECT_EQ(testTargetMetaData.size(), 4);
 //        EXPECT_TRUE(testTargetMetaData.find("TestA") != testTargetMetaData.end());
-//        EXPECT_TRUE((testTargetMetaData.at("TestA") == TestImpact::TestTargetMeta{ "main", "", AZStd::chrono::milliseconds{1500}, TestImpact::LaunchMethod::TestRunner }));
+//        EXPECT_TRUE((testTargetMetaData.at("TestA") == TestImpact::NativeTestTargetMeta{ "main", "", AZStd::chrono::milliseconds{1500}, TestImpact::LaunchMethod::TestRunner }));
 //        EXPECT_TRUE(testTargetMetaData.find("TestB") != testTargetMetaData.end());
-//        EXPECT_TRUE((testTargetMetaData.at("TestB") == TestImpact::TestTargetMeta{"main", "args1", AZStd::chrono::milliseconds{1000}, TestImpact::LaunchMethod::TestRunner}));
+//        EXPECT_TRUE((testTargetMetaData.at("TestB") == TestImpact::NativeTestTargetMeta{"main", "args1", AZStd::chrono::milliseconds{1000}, TestImpact::LaunchMethod::TestRunner}));
 //        EXPECT_TRUE(testTargetMetaData.find("TestC") != testTargetMetaData.end());
-//        EXPECT_TRUE((testTargetMetaData.at("TestC") == TestImpact::TestTargetMeta{"", "args1 args2", AZStd::chrono::milliseconds{500}, TestImpact::LaunchMethod::TestRunner}));
+//        EXPECT_TRUE((testTargetMetaData.at("TestC") == TestImpact::NativeTestTargetMeta{"", "args1 args2", AZStd::chrono::milliseconds{500}, TestImpact::LaunchMethod::TestRunner}));
 //        EXPECT_TRUE(testTargetMetaData.find("TestD") != testTargetMetaData.end());
-//        EXPECT_TRUE((testTargetMetaData.at("TestD") == TestImpact::TestTargetMeta{"main", "--unittests", AZStd::chrono::milliseconds{100}, TestImpact::LaunchMethod::StandAlone}));
+//        EXPECT_TRUE((testTargetMetaData.at("TestD") == TestImpact::NativeTestTargetMeta{"main", "--unittests", AZStd::chrono::milliseconds{100}, TestImpact::LaunchMethod::StandAlone}));
 //    }
 //} // namespace UnitTest

@@ -65,7 +65,7 @@ namespace UnitTest
     AZStd::string StringVectorToJSONElements(const AZStd::vector<AZStd::string> strings);
 
     // Generate a build target descriptor string in JSON format from the specified build target description
-    AZStd::string GenerateBuildTargetDescriptorString(
+    AZStd::string GenerateNativeTargetDescriptorString(
         const AZStd::string& name,
         const AZStd::string& outputName,
         const TestImpact::RepoPath& path,
@@ -75,7 +75,7 @@ namespace UnitTest
 
     // Generate a build target descriptor from the specified build target description
     // Note: no check for correctness of arguments is peformed
-    TestImpact::BuildTargetDescriptor GenerateBuildTargetDescriptor(
+    TestImpact::NativeTargetDescriptor GenerateNativeTargetDescriptor(
         const AZStd::string& name,
         const AZStd::string& outputName,
         const TestImpact::RepoPath& path,
@@ -205,11 +205,11 @@ namespace UnitTest
 
     bool operator==(const TestImpact::TargetDescriptor& lhs, const TestImpact::TargetDescriptor& rhs);
     bool operator==(const TestImpact::TargetSources& lhs, const TestImpact::TargetSources& rhs);
-    bool operator==(const TestImpact::BuildTargetDescriptor& lhs, const TestImpact::BuildTargetDescriptor& rhs);
+    bool operator==(const TestImpact::NativeTargetDescriptor& lhs, const TestImpact::NativeTargetDescriptor& rhs);
     bool operator==(const TestImpact::TestSuiteMeta& lhs, const TestImpact::TestSuiteMeta& rhs);
-    bool operator==(const TestImpact::TestTargetMeta& lhs, const TestImpact::TestTargetMeta& rhs);
-    bool operator==(const TestImpact::ProductionTargetDescriptor& lhs, const TestImpact::ProductionTargetDescriptor& rhs);
-    bool operator==(const TestImpact::TestTargetDescriptor& lhs, const TestImpact::TestTargetDescriptor& rhs);
+    bool operator==(const TestImpact::NativeTestTargetMeta& lhs, const TestImpact::NativeTestTargetMeta& rhs);
+    bool operator==(const TestImpact::NativeProductionTargetDescriptor& lhs, const TestImpact::NativeProductionTargetDescriptor& rhs);
+    bool operator==(const TestImpact::NativeTestTargetDescriptor& lhs, const TestImpact::NativeTestTargetDescriptor& rhs);
 
     bool operator==(const TestImpact::LineCoverage& lhs, const TestImpact::LineCoverage& rhs);
     bool operator==(const TestImpact::SourceCoverage& lhs, const TestImpact::SourceCoverage& rhs);

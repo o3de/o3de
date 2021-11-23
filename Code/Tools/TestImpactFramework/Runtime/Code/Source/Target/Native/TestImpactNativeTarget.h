@@ -15,37 +15,37 @@
 
 namespace TestImpact
 {
-    class TestTarget;
-    class ProductionTarget;
+    class NativeTestTarget;
+    class NativeProductionTarget;
 
-    //! Holder for specializations of BuildTarget.
-    using SpecializedBuildTarget = AZStd::variant<const TestTarget*, const ProductionTarget*>;
+    //! Holder for specializations of NativeTarget.
+    using SpecializedNativeTarget = AZStd::variant<const NativeTestTarget*, const NativeProductionTarget*>;
 
-    //! Optional holder for specializations of BuildTarget.
-    using OptionalSpecializedBuildTarget = AZStd::variant<AZStd::monostate, const TestTarget*, const ProductionTarget*>;
+    //! Optional holder for specializations of NativeTarget.
+    using OptionalSpecializedNativeTarget = AZStd::variant<AZStd::monostate, const NativeTestTarget*, const NativeProductionTarget*>;
 
     //! Type id for querying specialized derived target types from base pointer/reference.
-    enum class SpecializedBuildTargetType : bool
+    enum class SpecializedNativeTargetType : bool
     {
         Production, //!< Production build target.
         Test //!< Test build target.
     };
 
     //! Representation of a generic build target in the repository.
-    class BuildTarget
+    class NativeTarget
         : public Target
     {
     public:
-        BuildTarget(BuildTargetDescriptor* descriptor, SpecializedBuildTargetType type);
+        NativeTarget(NativeTargetDescriptor* descriptor, SpecializedNativeTargetType type);
 
         //! Returns the build target's compiled binary name.
         const AZStd::string& GetOutputName() const;
 
         //! Returns the build target type.
-        SpecializedBuildTargetType GetSpecializedBuildTargetType() const;
+        SpecializedNativeTargetType GetSpecializedBuildTargetType() const;
 
     private:
-        const BuildTargetDescriptor* m_descriptor;
-        SpecializedBuildTargetType m_type;
+        const NativeTargetDescriptor* m_descriptor;
+        SpecializedNativeTargetType m_type;
     };
 } // namespace TestImpact

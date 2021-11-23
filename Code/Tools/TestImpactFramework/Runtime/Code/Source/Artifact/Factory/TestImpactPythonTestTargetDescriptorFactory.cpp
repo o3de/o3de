@@ -15,7 +15,7 @@
 
 namespace TestImpact
 {
-    AZStd::vector<TestScriptTargetDescriptor> TestScriptTargetDescriptorFactory(const AZStd::string& masterTestListData, SuiteType suiteType)
+    AZStd::vector<PythonTestTargetDescriptor> PythonTestTargetDescriptorFactory(const AZStd::string& masterTestListData, SuiteType suiteType)
     {
         // Keys for pertinent JSON node and attribute names
         constexpr const char* Keys[] =
@@ -46,13 +46,13 @@ namespace TestImpact
 
         AZ_TestImpact_Eval(!masterTestListData.empty(), ArtifactException, "Test meta-data cannot be empty");
 
-        AZStd::vector<TestScriptTargetDescriptor> testScriptTargetDescriptors;
+        AZStd::vector<PythonTestTargetDescriptor> PythonTestTargetDescriptors;
         rapidjson::Document masterTestList;
 
         const auto tests = masterTestList[Keys[PythonKey]][Keys[TestKey]][Keys[TestsKey]].GetArray();
         for (const auto& test : tests)
         {
-            TestScriptTargetDescriptor testScriptTargetDescriptor;
+            PythonTestTargetDescriptor PythonTestTargetDescriptor;
             const auto testSuites = test[Keys[TestSuitesKey]].GetArray();
             for (const auto& suite : testSuites)
             {
@@ -60,18 +60,18 @@ namespace TestImpact
                 if (const auto suiteName = suite[Keys[SuiteKey]].GetString();
                     strcmp(SuiteTypeAsString(suiteType).c_str(), suiteName) == 0)
                 {
-                    testScriptTargetDescriptor.m_testSuiteMeta.m_name = suiteName;
-                    testScriptTargetDescriptor.m_testSuiteMeta.m_timeout = AZStd::chrono::seconds{ suite[Keys[TimeoutKey]].GetUint() };
-                    testScriptTargetDescriptor.m_name = test[Keys[NameKey]].GetString();
-                    testScriptTargetDescriptor.m_scriptPath = test[Keys[ScriptKey]].GetString();
+                    PythonTestTargetDescriptor.m_testSuiteMeta.m_name = suiteName;
+                    PythonTestTargetDescriptor.m_testSuiteMeta.m_timeout = AZStd::chrono::seconds{ suite[Keys[TimeoutKey]].GetUint() };
+                    PythonTestTargetDescriptor.m_name = test[Keys[NameKey]].GetString();
+                    PythonTestTargetDescriptor.m_scriptPath = test[Keys[ScriptKey]].GetString();
 
-                    AZ_TestImpact_Eval(!testScriptTargetDescriptor.m_name.empty(), ArtifactException, "Test name field cannot be empty");
-                    AZ_TestImpact_Eval(!testScriptTargetDescriptor.m_scriptPath.empty(), ArtifactException, "Test script field cannot be empty");
-                    testScriptTargetDescriptors.push_back(AZStd::move(testScriptTargetDescriptor));
+                    AZ_TestImpact_Eval(!PythonTestTargetDescriptor.m_name.empty(), ArtifactException, "Test name field cannot be empty");
+                    AZ_TestImpact_Eval(!PythonTestTargetDescriptor.m_scriptPath.empty(), ArtifactException, "Test script field cannot be empty");
+                    PythonTestTargetDescriptors.push_back(AZStd::move(PythonTestTargetDescriptor));
                 }
             }
         }
 
-        return testScriptTargetDescriptors;
+        return PythonTestTargetDescriptors;
     }
 } // namespace TestImpact

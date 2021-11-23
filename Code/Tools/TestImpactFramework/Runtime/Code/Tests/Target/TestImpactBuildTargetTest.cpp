@@ -79,9 +79,9 @@
 //            return sources;
 //        }
 //
-//        TestImpact::ProductionTargetDescriptor GenerateProductionTargetDescriptor(size_t index = 0)
+//        TestImpact::NativeProductionTargetDescriptor GenerateProductionTargetDescriptor(size_t index = 0)
 //        {
-//            return TestImpact::ProductionTargetDescriptor(
+//            return TestImpact::NativeProductionTargetDescriptor(
 //                {
 //                    TestImpact::BuildMetaData
 //                    {
@@ -91,9 +91,9 @@
 //                });
 //        }
 //
-//        TestImpact::TestTargetDescriptor GenerateTestTargetDescriptor(size_t index = 0)
+//        TestImpact::NativeTestTargetDescriptor GenerateTestTargetDescriptor(size_t index = 0)
 //        {
-//            return TestImpact::TestTargetDescriptor(
+//            return TestImpact::NativeTestTargetDescriptor(
 //                {
 //                    TestImpact::BuildMetaData
 //                    {
@@ -101,7 +101,7 @@
 //                    },
 //                    GenerateTargetSources(index)
 //                },
-//                TestImpact::TestTargetMeta
+//                TestImpact::NativeTestTargetMeta
 //                {
 //                    GenerateTestTargetSuite(index), "", AZStd::chrono::milliseconds{0}, GenerateLaunchMethod(index)
 //                });
@@ -112,10 +112,10 @@
 //    typename Target::Descriptor GenerateTargetDescriptor(size_t index = 0)
 //    {
 //        static_assert(
-//            AZStd::is_same_v<Target, TestImpact::ProductionTarget> || AZStd::is_same_v<Target, TestImpact::TestTarget>,
-//            "Unexpected target type, wants TestImpact::ProductionTarget or TestImpact::TestTarget");
+//            AZStd::is_same_v<Target, TestImpact::NativeProductionTarget> || AZStd::is_same_v<Target, TestImpact::NativeTestTarget>,
+//            "Unexpected target type, wants TestImpact::NativeProductionTarget or TestImpact::NativeTestTarget");
 //
-//        if constexpr (AZStd::is_same_v<Target, TestImpact::ProductionTarget>)
+//        if constexpr (AZStd::is_same_v<Target, TestImpact::NativeProductionTarget>)
 //        {
 //            return GenerateProductionTargetDescriptor(index);
 //        }
@@ -157,21 +157,21 @@
 //        }
 //    }
 //
-//    void ValidateTarget(const TestImpact::ProductionTarget& target, size_t index = 0)
+//    void ValidateTarget(const TestImpact::NativeProductionTarget& target, size_t index = 0)
 //    {
 //        EXPECT_EQ(target.GetName(), GenerateBuildTargetName(index));
 //        EXPECT_EQ(target.GetOutputName(), GenerateBuildTargetOutputName(index));
 //        EXPECT_EQ(target.GetPath(), GenerateBuildTargetPath(index));
-//        EXPECT_EQ(target.GetType(), TestImpact::SpecializedBuildTargetType::Production);
+//        EXPECT_EQ(target.GetType(), TestImpact::SpecializedNativeTargetType::Production);
 //        ValidateSources(target.GetSources(), index);
 //    }
 //
-//    void ValidateTarget(const TestImpact::TestTarget& target, size_t index = 0)
+//    void ValidateTarget(const TestImpact::NativeTestTarget& target, size_t index = 0)
 //    {
 //        EXPECT_EQ(target.GetName(), GenerateBuildTargetName(index));
 //        EXPECT_EQ(target.GetOutputName(), GenerateBuildTargetOutputName(index));
 //        EXPECT_EQ(target.GetPath(), GenerateBuildTargetPath(index));
-//        EXPECT_EQ(target.GetType(), TestImpact::SpecializedBuildTargetType::Test);
+//        EXPECT_EQ(target.GetType(), TestImpact::SpecializedNativeTargetType::Test);
 //        EXPECT_EQ(target.GetSuite(), GenerateTestTargetSuite(index));
 //        EXPECT_EQ(target.GetLaunchMethod(), GenerateLaunchMethod(index));
 //        ValidateSources(target.GetSources(), index);
@@ -183,18 +183,18 @@
 //    {
 //    public:
 //        using TargetListType = TargetList;
-//        using SpecializedBuildTargetType = typename TargetList::SpecializedBuildTargetType;
+//        using SpecializedNativeTargetType = typename TargetList::SpecializedNativeTargetType;
 //
 //        static constexpr size_t m_numTargets = 10;
 //    };
 //
-//    using TargetTypes = testing::Types<TestImpact::ProductionTargetList, TestImpact::TestTargetList>;
+//    using TargetTypes = testing::Types<TestImpact::NativeProductionTargetList, TestImpact::NativeTestTargetList>;
 //    TYPED_TEST_CASE(TargetListFixture, TargetTypes);
 //
 //    TYPED_TEST(TargetListFixture, CreateTarget_ExpectValidTarget)
 //    {
 //        // Given a target of the specified type
-//        SpecializedBuildTargetType target(GenerateTargetDescriptor<SpecializedBuildTargetType>());
+//        SpecializedNativeTargetType target(GenerateTargetDescriptor<SpecializedNativeTargetType>());
 //
 //        // Expect the target to match the procedurally generated target descriptor
 //        ValidateTarget(target);
@@ -227,12 +227,12 @@
 //        try
 //        {
 //            // Given a set of target descriptors containing a single duplicate            
-//            AZStd::vector<SpecializedBuildTargetType::Descriptor> descriptors;
+//            AZStd::vector<SpecializedNativeTargetType::Descriptor> descriptors;
 //            descriptors.reserve(m_numTargets);
 //            for (size_t i = 0; i < m_numTargets; i++)
 //            {
 //                // Wrap the last index round to repeat the first index
-//                descriptors.push_back(GenerateTargetDescriptor<SpecializedBuildTargetType>(i % (m_numTargets - 1)));
+//                descriptors.push_back(GenerateTargetDescriptor<SpecializedNativeTargetType>(i % (m_numTargets - 1)));
 //            }
 //
 //            // When constructing the target list containing the duplicate target descriptor
@@ -256,11 +256,11 @@
 //    TYPED_TEST(TargetListFixture, CreateTargetListWithValidDescriptors_ExpectValidTargetList)
 //    {
 //        // Given a valid set of target descriptor
-//        AZStd::vector<SpecializedBuildTargetType::Descriptor> descriptors;
+//        AZStd::vector<SpecializedNativeTargetType::Descriptor> descriptors;
 //        descriptors.reserve(m_numTargets);
 //        for (size_t i = 0; i < m_numTargets; i++)
 //        {
-//            descriptors.push_back(GenerateTargetDescriptor<SpecializedBuildTargetType>(i));
+//            descriptors.push_back(GenerateTargetDescriptor<SpecializedNativeTargetType>(i));
 //        }
 //
 //        // When constructing the target list containing the valid target descriptors
@@ -284,11 +284,11 @@
 //    TYPED_TEST(TargetListFixture, FindNonExistantTargets_ExpectEmptyResults)
 //    {
 //        // Given a valid set of target descriptor
-//        AZStd::vector<SpecializedBuildTargetType::Descriptor> descriptors;
+//        AZStd::vector<SpecializedNativeTargetType::Descriptor> descriptors;
 //        descriptors.reserve(m_numTargets);
 //        for (size_t i = 0; i < m_numTargets; i++)
 //        {
-//            descriptors.push_back(GenerateTargetDescriptor<SpecializedBuildTargetType>(i));
+//            descriptors.push_back(GenerateTargetDescriptor<SpecializedNativeTargetType>(i));
 //        }
 //
 //        // When constructing the target list containing the valid target descriptors
@@ -310,11 +310,11 @@
 //    TYPED_TEST(TargetListFixture, FindNonExistantTargetsAndThrow_ExpectTargetExceptionss)
 //    {
 //        // Given a valid set of target descriptor
-//        AZStd::vector<SpecializedBuildTargetType::Descriptor> descriptors;
+//        AZStd::vector<SpecializedNativeTargetType::Descriptor> descriptors;
 //        descriptors.reserve(m_numTargets);
 //        for (size_t i = 0; i < m_numTargets; i++)
 //        {
-//            descriptors.push_back(GenerateTargetDescriptor<SpecializedBuildTargetType>(i));
+//            descriptors.push_back(GenerateTargetDescriptor<SpecializedNativeTargetType>(i));
 //        }
 //
 //        // When constructing the target list containing the valid target descriptors

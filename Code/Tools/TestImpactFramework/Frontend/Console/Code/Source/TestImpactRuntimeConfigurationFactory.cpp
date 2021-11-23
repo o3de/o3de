@@ -114,7 +114,7 @@ namespace TestImpact
             Meta,
             Repository,
             Workspace,
-            BuildTargetDescriptor,
+            NativeTargetDescriptor,
             DependencyGraphData,
             TestTargetMeta,
             TestEngine,
@@ -173,31 +173,31 @@ namespace TestImpact
         return workspaceConfig;
     }
 
-    BuildTargetDescriptorConfig ParseBuildTargetDescriptorConfig(const rapidjson::Value& buildTargetDescriptor)
+    NativeTargetDescriptorConfig ParseNativeTargetDescriptorConfig(const rapidjson::Value& NativeTargetDescriptor)
     {
-        BuildTargetDescriptorConfig buildTargetDescriptorConfig;
-        const auto& targetSources = buildTargetDescriptor[Config::Keys[Config::TargetSources]];
+        NativeTargetDescriptorConfig NativeTargetDescriptorConfig;
+        const auto& targetSources = NativeTargetDescriptor[Config::Keys[Config::TargetSources]];
         const auto& staticTargetSources = targetSources[Config::Keys[Config::StaticSources]];
         const auto& autogenTargetSources = targetSources[Config::Keys[Config::AutogenSources]];
-        buildTargetDescriptorConfig.m_mappingDirectory = buildTargetDescriptor[Config::Keys[Config::Directory]].GetString();
+        NativeTargetDescriptorConfig.m_mappingDirectory = NativeTargetDescriptor[Config::Keys[Config::Directory]].GetString();
         const auto& staticInclusionFilters = staticTargetSources[Config::Keys[Config::SourceIncludeFilters]].GetArray();
         
-        buildTargetDescriptorConfig.m_staticInclusionFilters.reserve(staticInclusionFilters.Size());
+        NativeTargetDescriptorConfig.m_staticInclusionFilters.reserve(staticInclusionFilters.Size());
         for (const auto& staticInclusionFilter : staticInclusionFilters)
         {
-            buildTargetDescriptorConfig.m_staticInclusionFilters.push_back(staticInclusionFilter.GetString());
+            NativeTargetDescriptorConfig.m_staticInclusionFilters.push_back(staticInclusionFilter.GetString());
         }
 
-        buildTargetDescriptorConfig.m_inputOutputPairer = autogenTargetSources[Config::Keys[Config::AutogenInputOutputPairer]].GetString();
+        NativeTargetDescriptorConfig.m_inputOutputPairer = autogenTargetSources[Config::Keys[Config::AutogenInputOutputPairer]].GetString();
         const auto& inputInclusionFilters =
             autogenTargetSources[Config::Keys[Config::AutogenInputSources]][Config::Keys[Config::SourceIncludeFilters]].GetArray();
-        buildTargetDescriptorConfig.m_inputInclusionFilters.reserve(inputInclusionFilters.Size());
+        NativeTargetDescriptorConfig.m_inputInclusionFilters.reserve(inputInclusionFilters.Size());
         for (const auto& inputInclusionFilter : inputInclusionFilters)
         {
-            buildTargetDescriptorConfig.m_inputInclusionFilters.push_back(inputInclusionFilter.GetString());
+            NativeTargetDescriptorConfig.m_inputInclusionFilters.push_back(inputInclusionFilter.GetString());
         }
 
-        return buildTargetDescriptorConfig;
+        return NativeTargetDescriptorConfig;
     }
 
     DependencyGraphDataConfig ParseDependencyGraphDataConfig(const rapidjson::Value& dependencyGraphData)
@@ -318,7 +318,7 @@ namespace TestImpact
         runtimeConfig.m_meta = ParseConfigMeta(configurationFile[Config::Keys[Config::Meta]]);
         runtimeConfig.m_repo = ParseRepoConfig(configurationFile[Config::Keys[Config::Repository]]);
         runtimeConfig.m_workspace = ParseWorkspaceConfig(configurationFile[Config::Keys[Config::Workspace]]);
-        runtimeConfig.m_buildTargetDescriptor = ParseBuildTargetDescriptorConfig(staticArtifacts[Config::Keys[Config::BuildTargetDescriptor]]);
+        runtimeConfig.m_NativeTargetDescriptor = ParseNativeTargetDescriptorConfig(staticArtifacts[Config::Keys[Config::NativeTargetDescriptor]]);
         runtimeConfig.m_dependencyGraphData = ParseDependencyGraphDataConfig(staticArtifacts[Config::Keys[Config::DependencyGraphData]]);
         runtimeConfig.m_testTargetMeta = ParseTestTargetMetaConfig(staticArtifacts[Config::Keys[Config::TestTargetMeta]]);
         runtimeConfig.m_gemTarget = ParseGemTargetConfig(staticArtifacts[Config::Keys[Config::GemTarget]]);

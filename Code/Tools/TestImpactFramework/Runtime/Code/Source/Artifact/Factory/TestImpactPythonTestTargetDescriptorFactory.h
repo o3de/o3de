@@ -16,5 +16,5 @@
 namespace TestImpact
 {
     //!
-    AZStd::vector<TestScriptTargetDescriptor> TestScriptTargetDescriptorFactory(const AZStd::string& masterTestListData, SuiteType suiteType);
+    AZStd::vector<PythonTestTargetDescriptor> PythonTestTargetDescriptorFactory(const AZStd::string& masterTestListData, SuiteType suiteType);
 } // namespace TestImpact

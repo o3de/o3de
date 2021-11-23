@@ -20,7 +20,7 @@ namespace TestImpact
     {
     }
 
-    AZStd::vector<const TestTarget*> TestSelectorAndPrioritizer::SelectTestTargets(
+    AZStd::vector<const NativeTestTarget*> TestSelectorAndPrioritizer::SelectTestTargets(
         const ChangeDependencyList& changeDependencyList, Policy::TestPrioritization testSelectionStrategy)
     {
         const auto selectedTestTargetAndDependerMap = SelectTestTargets(changeDependencyList);
@@ -204,11 +204,11 @@ namespace TestImpact
         return selectedTestTargetMap;
     }
 
-    AZStd::vector<const TestTarget*> TestSelectorAndPrioritizer::PrioritizeSelectedTestTargets(
+    AZStd::vector<const NativeTestTarget*> TestSelectorAndPrioritizer::PrioritizeSelectedTestTargets(
         const SelectedTestTargetAndDependerMap& selectedTestTargetAndDependerMap,
         [[maybe_unused]] Policy::TestPrioritization testSelectionStrategy)
     {
-        AZStd::vector<const TestTarget*> selectedTestTargets;
+        AZStd::vector<const NativeTestTarget*> selectedTestTargets;
 
         // Prioritization disabled for now
         // SPEC-6563

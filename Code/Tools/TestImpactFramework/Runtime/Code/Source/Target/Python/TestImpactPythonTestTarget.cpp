@@ -10,23 +10,23 @@
 
 namespace TestImpact
 {
-    TestScriptTarget::TestScriptTarget(AZStd::unique_ptr<Descriptor> descriptor)
+    PythonTestTarget::PythonTestTarget(AZStd::unique_ptr<Descriptor> descriptor)
         : Target(descriptor.get())
         , m_descriptor(AZStd::move(descriptor))
     {
     }
 
-    const AZStd::string& TestScriptTarget::GetSuite() const
+    const AZStd::string& PythonTestTarget::GetSuite() const
     {
         return m_descriptor->m_testSuiteMeta.m_name;
     }
 
-    const RepoPath& TestScriptTarget::GetScriptPath() const
+    const RepoPath& PythonTestTarget::GetScriptPath() const
     {
         return m_descriptor->m_scriptPath;
     }
 
-    AZStd::chrono::milliseconds TestScriptTarget::GetTimeout() const
+    AZStd::chrono::milliseconds PythonTestTarget::GetTimeout() const
     {
         return m_descriptor->m_testSuiteMeta.m_timeout;
     }

@@ -22,7 +22,7 @@ namespace TestImpact
     };
 
     //! Artifact produced by the build system for each test target containing the additional meta-data about the test.
-    struct TestTargetMeta
+    struct NativeTestTargetMeta
     {
         TestSuiteMeta m_suiteMeta;
         AZStd::string m_customArgs;
@@ -30,5 +30,5 @@ namespace TestImpact
     };
 
     //! Map between test target name and test target meta-data.
-    using TestTargetMetaMap = AZStd::unordered_map<AZStd::string, TestTargetMeta>;
+    using NativeTestTargetMetaMap = AZStd::unordered_map<AZStd::string, NativeTestTargetMeta>;
 } // namespace TestImpact

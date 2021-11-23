@@ -24,42 +24,42 @@ namespace UnitTest
         {
             AllocatorsTestFixture::SetUp();
 
-            m_buildTargetDescriptors.emplace_back(TestImpact::BuildTargetDescriptor{TestImpact::TargetDescriptor{"TestTargetA", "", }, {""}});
-            m_buildTargetDescriptors.emplace_back(TestImpact::BuildTargetDescriptor{TestImpact::TargetDescriptor{"TestTargetB", "", }, {""}});
-            m_buildTargetDescriptors.emplace_back(TestImpact::BuildTargetDescriptor{TestImpact::TargetDescriptor{"ProductionTargetA", "", }, {""}});
-            m_buildTargetDescriptors.emplace_back(TestImpact::BuildTargetDescriptor{TestImpact::TargetDescriptor{"ProductionTargetB", "", }, {""}});
-            m_buildTargetDescriptors.emplace_back(TestImpact::BuildTargetDescriptor{TestImpact::TargetDescriptor{"ProductionTargetC", "", }, {""}});
+            m_NativeTargetDescriptors.emplace_back(TestImpact::NativeTargetDescriptor{TestImpact::TargetDescriptor{"TestTargetA", "", }, {""}});
+            m_NativeTargetDescriptors.emplace_back(TestImpact::NativeTargetDescriptor{TestImpact::TargetDescriptor{"TestTargetB", "", }, {""}});
+            m_NativeTargetDescriptors.emplace_back(TestImpact::NativeTargetDescriptor{TestImpact::TargetDescriptor{"ProductionTargetA", "", }, {""}});
+            m_NativeTargetDescriptors.emplace_back(TestImpact::NativeTargetDescriptor{TestImpact::TargetDescriptor{"ProductionTargetB", "", }, {""}});
+            m_NativeTargetDescriptors.emplace_back(TestImpact::NativeTargetDescriptor{TestImpact::TargetDescriptor{"ProductionTargetC", "", }, {""}});
 
-            m_testTargetMetaMap.emplace("TestTargetA", TestImpact::TestTargetMeta{TestImpact::TestSuiteMeta{"", AZStd::chrono::milliseconds{0}}, "", TestImpact::LaunchMethod::TestRunner});
-            m_testTargetMetaMap.emplace("TestTargetB", TestImpact::TestTargetMeta{TestImpact::TestSuiteMeta{"", AZStd::chrono::milliseconds{0}}, "", TestImpact::LaunchMethod::StandAlone});
+            m_NativeTestTargetMetaMap.emplace("TestTargetA", TestImpact::NativeTestTargetMeta{TestImpact::TestSuiteMeta{"", AZStd::chrono::milliseconds{0}}, "", TestImpact::LaunchMethod::TestRunner});
+            m_NativeTestTargetMetaMap.emplace("TestTargetB", TestImpact::NativeTestTargetMeta{TestImpact::TestSuiteMeta{"", AZStd::chrono::milliseconds{0}}, "", TestImpact::LaunchMethod::StandAlone});
         }
 
     protected:
-        AZStd::vector<TestImpact::BuildTargetDescriptor> m_buildTargetDescriptors;
-        TestImpact::TestTargetMetaMap m_testTargetMetaMap;
+        AZStd::vector<TestImpact::NativeTargetDescriptor> m_NativeTargetDescriptors;
+        TestImpact::NativeTestTargetMetaMap m_NativeTestTargetMetaMap;
     };
 
-    TestImpact::ProductionTargetDescriptor ConstructProductionTargetDescriptor(const AZStd::string& name)
+    TestImpact::NativeProductionTargetDescriptor ConstructProductionTargetDescriptor(const AZStd::string& name)
     {
-        return TestImpact::ProductionTargetDescriptor{TestImpact::BuildTargetDescriptor{TestImpact::TargetDescriptor{name, "", }, {""}}};
+        return TestImpact::NativeProductionTargetDescriptor{TestImpact::NativeTargetDescriptor{TestImpact::TargetDescriptor{name, "", }, {""}}};
     }
 
-    TestImpact::TestTargetDescriptor ConstructTestTargetDescriptor(const AZStd::string& name, TestImpact::LaunchMethod launchMethod)
+    TestImpact::NativeTestTargetDescriptor ConstructTestTargetDescriptor(const AZStd::string& name, TestImpact::LaunchMethod launchMethod)
     {
-        return TestImpact::TestTargetDescriptor{
-            TestImpact::BuildTargetDescriptor{TestImpact::TargetDescriptor{name, "", }, {""}},
-            TestImpact::TestTargetMeta{ TestImpact::TestSuiteMeta{ "", AZStd::chrono::milliseconds{ 0 } }, "", launchMethod }
+        return TestImpact::NativeTestTargetDescriptor{
+            TestImpact::NativeTargetDescriptor{TestImpact::TargetDescriptor{name, "", }, {""}},
+            TestImpact::NativeTestTargetMeta{ TestImpact::TestSuiteMeta{ "", AZStd::chrono::milliseconds{ 0 } }, "", launchMethod }
         };
     }
 
-    TEST_F(TargetDescriptorCompilerTestFixture, EmptyBuildTargetDescriptorList_ExpectArtifactException)
+    TEST_F(TargetDescriptorCompilerTestFixture, EmptyNativeTargetDescriptorList_ExpectArtifactException)
     {
         try
         {
             // Given an empty build target descriptor list but valid test target meta map
             // When attempting to construct the test target
             const auto& [productionTargetDescriptors, testTargetDescriptors] =
-                TestImpact::CompileTargetDescriptors({}, AZStd::move(m_testTargetMetaMap));
+                TestImpact::CompileTargetDescriptors({}, AZStd::move(m_NativeTestTargetMetaMap));
 
             // Do not expect this statement to be reachable
             FAIL();
@@ -76,14 +76,14 @@ namespace UnitTest
         }
     }
 
-    TEST_F(TargetDescriptorCompilerTestFixture, EmptyTestTargetMetaMap_ExpectArtifactException)
+    TEST_F(TargetDescriptorCompilerTestFixture, EmptyNativeTestTargetMetaMap_ExpectArtifactException)
     {
         try
         {
             // Given a valid build target descriptor list but empty test target meta map
             // When attempting to construct the test target
             const auto& [productionTargetDescriptors, testTargetDescriptors] =
-                TestImpact::CompileTargetDescriptors(AZStd::move(m_buildTargetDescriptors), {});
+                TestImpact::CompileTargetDescriptors(AZStd::move(m_NativeTargetDescriptors), {});
 
             // Do not expect this statement to be reachable
             FAIL();
@@ -105,11 +105,11 @@ namespace UnitTest
         try
         {
             // Given a valid build target descriptor list but a test target meta map with an orphan entry
-            m_testTargetMetaMap.emplace("Orphan", TestImpact::TestTargetMeta{TestImpact::TestSuiteMeta{"", AZStd::chrono::milliseconds{0}}, "", TestImpact::LaunchMethod::TestRunner});
+            m_NativeTestTargetMetaMap.emplace("Orphan", TestImpact::NativeTestTargetMeta{TestImpact::TestSuiteMeta{"", AZStd::chrono::milliseconds{0}}, "", TestImpact::LaunchMethod::TestRunner});
 
             // When attempting to construct the test target
             const auto& [productionTargetDescriptors, testTargetDescriptors] =
-                TestImpact::CompileTargetDescriptors(AZStd::move(m_buildTargetDescriptors), {});
+                TestImpact::CompileTargetDescriptors(AZStd::move(m_NativeTargetDescriptors), {});
 
             // Do not expect this statement to be reachable
             FAIL();
@@ -131,7 +131,7 @@ namespace UnitTest
         // Given a valid build target descriptor list and a valid test target meta map
         // When attempting to construct the test target
         const auto& [productionTargetDescriptors, testTargetDescriptors] =
-            TestImpact::CompileTargetDescriptors(AZStd::move(m_buildTargetDescriptors), AZStd::move(m_testTargetMetaMap));
+            TestImpact::CompileTargetDescriptors(AZStd::move(m_NativeTargetDescriptors), AZStd::move(m_NativeTestTargetMetaMap));
 
         // Expect the production targets to match the expected targets
         EXPECT_TRUE(productionTargetDescriptors.size() == 3);

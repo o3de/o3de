@@ -16,13 +16,13 @@
 namespace TestImpact
 {
     //! Build target specialization for test targets (build targets containing test code and no production code).
-    class TestTarget
-        : public BuildTarget
+    class NativeTestTarget
+        : public NativeTarget
     {
     public:
-        using Descriptor = TestTargetDescriptor;
+        using Descriptor = NativeTestTargetDescriptor;
 
-        TestTarget(AZStd::unique_ptr<Descriptor> descriptor);
+        NativeTestTarget(AZStd::unique_ptr<Descriptor> descriptor);
 
         //! Returns the test target suite.
         const AZStd::string& GetSuite() const;
@@ -41,5 +41,5 @@ namespace TestImpact
     };
 
     template<typename Target>
-    inline constexpr bool IsTestTarget = AZStd::is_same_v<TestTarget, AZStd::remove_const_t<AZStd::remove_pointer_t<AZStd::decay_t<Target>>>>;
+    inline constexpr bool IsTestTarget = AZStd::is_same_v<NativeTestTarget, AZStd::remove_const_t<AZStd::remove_pointer_t<AZStd::decay_t<Target>>>>;
 } // namespace TestImpact

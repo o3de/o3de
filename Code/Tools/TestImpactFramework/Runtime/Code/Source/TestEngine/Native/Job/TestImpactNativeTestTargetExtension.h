@@ -12,8 +12,8 @@
 
 namespace TestImpact
 {
-    class TestTarget;
+    class NativeTestTarget;
 
     //! Returns the binary file extension for the specified test target.
-    AZStd::string GetTestTargetExtension(const TestTarget* testTarget);
+    AZStd::string GetTestTargetExtension(const NativeTestTarget* testTarget);
 }

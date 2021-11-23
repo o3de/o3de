@@ -21,7 +21,7 @@
 
 namespace TestImpact
 {
-    class TestTarget;
+    class NativeTestTarget;
     class NativeTestJobInfoGenerator;
     class NativeTestEnumerator;
     class NativeInstrumentedTestRunner;
@@ -64,7 +64,7 @@ namespace TestImpact
         //! @param callback The client callback function to handle completed test target enumerations.
         //! @ returns The sequence result and the enumerations for the target that were enumerated.
         //AZStd::pair<TestSequenceResult, AZStd::vector<TestEngineEnumeration>> UpdateEnumerationCache(
-        //    const AZStd::vector<const TestTarget*>& testTargets,
+        //    const AZStd::vector<const NativeTestTarget*>& testTargets,
         //    Policy::ExecutionFailure executionFailurePolicy,
         //    Policy::TestFailure testFailurePolicy,
         //    AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
@@ -82,7 +82,7 @@ namespace TestImpact
         //! @param callback The client callback function to handle completed test target runs.
         //! @ returns The sequence result and the test run results for the test targets that were run.
         [[nodiscard]] AZStd::pair<TestSequenceResult, AZStd::vector<TestEngineRegularRun>> RegularRun(
-            const AZStd::vector<const TestTarget*>& testTargets,
+            const AZStd::vector<const NativeTestTarget*>& testTargets,
             Policy::ExecutionFailure executionFailurePolicy,
             Policy::TestFailure testFailurePolicy,
             Policy::TargetOutputCapture targetOutputCapture,
@@ -101,7 +101,7 @@ namespace TestImpact
         //! @param callback The client callback function to handle completed test target runs.
         //! @ returns The sequence result and the test run results and test coverages for the test targets that were run.
         [[nodiscard]] AZStd::pair<TestSequenceResult, AZStd::vector<TestEngineInstrumentedRun>> InstrumentedRun(
-            const AZStd::vector<const TestTarget*>& testTargets,
+            const AZStd::vector<const NativeTestTarget*>& testTargets,
             Policy::ExecutionFailure executionFailurePolicy,
             Policy::IntegrityFailure integrityFailurePolicy,
             Policy::TestFailure testFailurePolicy,

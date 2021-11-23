@@ -10,7 +10,7 @@
 
 namespace TestImpact
 {
-    TestScriptTargetDescriptor::TestScriptTargetDescriptor(
+    PythonTestTargetDescriptor::PythonTestTargetDescriptor(
         TargetDescriptor&& targetDescriptor, TestSuiteMeta&& testSuiteMeta, const RepoPath& scriptPath)
         : TargetDescriptor(AZStd::move(targetDescriptor))
         , m_testSuiteMeta(AZStd::move(testSuiteMeta))

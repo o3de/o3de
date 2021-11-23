@@ -10,7 +10,7 @@
 
 namespace TestImpact
 {
-    BuildTargetDescriptor::BuildTargetDescriptor(TargetDescriptor&& targetDescriptor, const AZStd::string& outputName)
+    NativeTargetDescriptor::NativeTargetDescriptor(TargetDescriptor&& targetDescriptor, const AZStd::string& outputName)
         : TargetDescriptor(AZStd::move(targetDescriptor))
         , m_outputName(outputName)
     {

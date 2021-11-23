@@ -12,7 +12,7 @@
 
 namespace TestImpact
 {
-    class TestTarget;
+    class NativeTestTarget;
 
     //! Represents the meta-data describing a test engine run.
     class TestEngineJob
@@ -20,7 +20,7 @@ namespace TestImpact
     {
     public:
         TestEngineJob(
-            const TestTarget* testTarget,
+            const NativeTestTarget* testTarget,
             const AZStd::string& commandString,
             const JobMeta& jobMeta,
             Client::TestRunResult testResult,
@@ -28,7 +28,7 @@ namespace TestImpact
             AZStd::string&& stdErr);
 
         //! Returns the test target that was run for this job.
-        const TestTarget* GetTestTarget() const;
+        const NativeTestTarget* GetTestTarget() const;
 
         //! Returns the result of the job that was run.
         Client::TestRunResult GetTestResult() const;
@@ -43,7 +43,7 @@ namespace TestImpact
         const AZStd::string& GetStdError() const;
 
     private:
-        const TestTarget* m_testTarget;
+        const NativeTestTarget* m_testTarget;
         AZStd::string m_commandString;
         Client::TestRunResult m_testResult;
         AZStd::string m_stdOut;
