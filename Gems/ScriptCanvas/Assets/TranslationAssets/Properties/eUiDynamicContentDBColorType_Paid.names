@@ -5,13 +5,14 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "e Ui Dynamic ContentDB Color Type_ Paid"
+                "name": "Color Type Paid",
+                "category": "Constants/UI/Dynamic ContentDB"
             },
             "methods": [
                 {
                     "key": "GeteUiDynamicContentDBColorType_Paid",
                     "details": {
-                        "name": "Gete Ui Dynamic ContentDB Color Type_ Paid"
+                        "name": "Color Type Paid"
                     },
                     "results": [
                         {

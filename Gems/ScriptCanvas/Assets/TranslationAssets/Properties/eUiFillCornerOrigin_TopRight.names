@@ -5,13 +5,14 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "e Ui Fill Corner Origin_ Top Right"
+                "name": "Top Right",
+                "category": "Constants/UI/Fill Corner"
             },
             "methods": [
                 {
                     "key": "GeteUiFillCornerOrigin_TopRight",
                     "details": {
-                        "name": "Gete Ui Fill Corner Origin_ Top Right"
+                        "name": "Top Right"
                     },
                     "results": [
                         {

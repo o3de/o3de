@@ -5,7 +5,8 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Transform Mode_ Rotation"
+                "name": "Transform Mode_ Rotation",
+                "category": "Constants/Transform"
             },
             "methods": [
                 {

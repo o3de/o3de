@@ -5,13 +5,14 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "e Ui Particle Initial Direction Type_ Relative To Emitter Center"
+                "name": "Particle Initial Direction Type_ Relative To Emitter Center",
+                "category": "Constants/UI"
             },
             "methods": [
                 {
                     "key": "GeteUiParticleInitialDirectionType_RelativeToEmitterCenter",
                     "details": {
-                        "name": "Gete Ui Particle Initial Direction Type_ Relative To Emitter Center"
+                        "name": "Get Particle Initial Direction Type_ Relative To Emitter Center"
                     },
                     "results": [
                         {

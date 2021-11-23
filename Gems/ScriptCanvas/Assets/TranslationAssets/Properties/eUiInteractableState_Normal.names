@@ -5,13 +5,14 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "e Ui Interactable State_ Normal"
+                "name": "Interactable State_ Normal",
+                "category": "Constants/UI"
             },
             "methods": [
                 {
                     "key": "GeteUiInteractableState_Normal",
                     "details": {
-                        "name": "Gete Ui Interactable State_ Normal"
+                        "name": "Get Interactable State_ Normal"
                     },
                     "results": [
                         {

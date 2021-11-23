@@ -5,13 +5,14 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "e Ui Flipbook Animation Loop Type_ Ping Pong"
+                "name": "Ping Pong",
+                "category": "Constants/UI/Flipbook Animation/Loop Type"
             },
             "methods": [
                 {
                     "key": "GeteUiFlipbookAnimationLoopType_PingPong",
                     "details": {
-                        "name": "Gete Ui Flipbook Animation Loop Type_ Ping Pong"
+                        "name": "Ping Pong"
                     },
                     "results": [
                         {

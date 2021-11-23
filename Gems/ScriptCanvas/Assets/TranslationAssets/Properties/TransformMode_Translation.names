@@ -5,7 +5,8 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Transform Mode_ Translation"
+                "name": "Transform Mode_ Translation",
+                "category": "Constants/Transform"
             },
             "methods": [
                 {

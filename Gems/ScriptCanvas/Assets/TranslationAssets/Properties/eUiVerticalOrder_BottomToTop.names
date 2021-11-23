@@ -5,13 +5,14 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "e Ui Vertical Order_ Bottom To Top"
+                "name": "Bottom To Top",
+                "category": "Constants/UI/Order/Vertical"
             },
             "methods": [
                 {
                     "key": "GeteUiVerticalOrder_BottomToTop",
                     "details": {
-                        "name": "Gete Ui Vertical Order_ Bottom To Top"
+                        "name": "Bottom To Top"
                     },
                     "results": [
                         {

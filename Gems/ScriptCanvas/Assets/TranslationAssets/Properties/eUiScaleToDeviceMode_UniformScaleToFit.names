@@ -5,13 +5,14 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "e Ui Scale To Device Mode_ Uniform Scale To Fit"
+                "name": "Scale To Device Mode_ Uniform Scale To Fit",
+                "category": "Constants/UI"
             },
             "methods": [
                 {
                     "key": "GeteUiScaleToDeviceMode_UniformScaleToFit",
                     "details": {
-                        "name": "Gete Ui Scale To Device Mode_ Uniform Scale To Fit"
+                        "name": "Get Scale To Device Mode_ Uniform Scale To Fit"
                     },
                     "results": [
                         {

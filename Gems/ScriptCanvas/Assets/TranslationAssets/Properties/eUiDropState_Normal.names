@@ -5,13 +5,14 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "e Ui Drop State_ Normal"
+                "name": "Normal",
+                "category": "Constants/UI/Drop State"
             },
             "methods": [
                 {
                     "key": "GeteUiDropState_Normal",
                     "details": {
-                        "name": "Gete Ui Drop State_ Normal"
+                        "name": "Normal"
                     },
                     "results": [
                         {

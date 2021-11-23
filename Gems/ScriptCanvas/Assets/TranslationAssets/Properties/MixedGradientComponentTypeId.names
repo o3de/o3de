@@ -5,7 +5,8 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Mixed Gradient Component Type Id"
+                "name": "Mixed Gradient Component Type Id",
+                "category": "Constants/Editor"
             },
             "methods": [
                 {

@@ -5,7 +5,8 @@
             "context": "BehaviorClass",
             "variant": "",
             "details": {
-                "name": "Axis Type"
+                "name": "Axis Type",
+                "category": "Constants"
             },
             "methods": [
                 {

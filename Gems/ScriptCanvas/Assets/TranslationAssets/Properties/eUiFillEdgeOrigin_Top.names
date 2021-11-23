@@ -5,13 +5,15 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "e Ui Fill Edge Origin_ Top"
+                "name": "Top",
+                "category": "Constants/UI/Fill Edge",
+                "subtitle": "Fill Edge"
             },
             "methods": [
                 {
                     "key": "GeteUiFillEdgeOrigin_Top",
                     "details": {
-                        "name": "Gete Ui Fill Edge Origin_ Top"
+                        "name": "Top"
                     },
                     "results": [
                         {

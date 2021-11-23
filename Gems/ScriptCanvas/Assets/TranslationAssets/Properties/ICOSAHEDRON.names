@@ -5,13 +5,14 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "ICOSAHEDRON"
+                "name": "Icosahedron",
+                "category": "Constants/White Box"
             },
             "methods": [
                 {
                     "key": "GetICOSAHEDRON",
                     "details": {
-                        "name": "GetICOSAHEDRON"
+                        "name": "Icosahedron"
                     },
                     "results": [
                         {

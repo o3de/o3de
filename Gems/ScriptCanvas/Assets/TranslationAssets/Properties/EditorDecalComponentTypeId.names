@@ -5,7 +5,8 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Editor Decal Component Type Id"
+                "name": "Editor Decal Component Type Id",
+                "category": "Constants/Editor/Component Type Id"
             },
             "methods": [
                 {

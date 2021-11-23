@@ -5,7 +5,8 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Shadow Filter Method_ESM_PCF"
+                "name": "Shadow Filter Method_ESM_PCF",
+                "category": "Constants/Shadowmap"
             },
             "methods": [
                 {

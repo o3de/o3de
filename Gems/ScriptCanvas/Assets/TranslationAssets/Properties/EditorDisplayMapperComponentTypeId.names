@@ -5,7 +5,8 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Editor Display Mapper Component Type Id"
+                "name": "Editor Display Mapper Component Type Id",
+                "category": "Constants/Editor"
             },
             "methods": [
                 {

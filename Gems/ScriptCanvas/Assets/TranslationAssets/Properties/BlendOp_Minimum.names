@@ -5,13 +5,14 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Blend Op_ Minimum"
+                "name": "Minimum",
+                "category": "Constants/Blend Operation"
             },
             "methods": [
                 {
-                    "key": "GetBlendOp_Minimum",
+                    "key": "Minimum",
                     "details": {
-                        "name": "Get Blend Op_ Minimum"
+                        "name": "Get Minimum"
                     },
                     "results": [
                         {

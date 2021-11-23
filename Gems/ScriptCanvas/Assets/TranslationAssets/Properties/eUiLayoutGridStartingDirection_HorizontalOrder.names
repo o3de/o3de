@@ -5,13 +5,14 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "e Ui Layout Grid Starting Direction_ Horizontal Order"
+                "name": "Layout Grid Starting Direction_ Horizontal Order",
+                "category": "Constants/UI"
             },
             "methods": [
                 {
                     "key": "GeteUiLayoutGridStartingDirection_HorizontalOrder",
                     "details": {
-                        "name": "Gete Ui Layout Grid Starting Direction_ Horizontal Order"
+                        "name": "Get Layout Grid Starting Direction_ Horizontal Order"
                     },
                     "results": [
                         {

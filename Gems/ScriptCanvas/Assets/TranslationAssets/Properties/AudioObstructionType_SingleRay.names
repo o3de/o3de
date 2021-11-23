@@ -5,7 +5,8 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Audio Obstruction Type_ Single Ray"
+                "name": "Audio Obstruction Type_ Single Ray",
+                "category": "Constants/Audio Obstruction"
             },
             "methods": [
                 {

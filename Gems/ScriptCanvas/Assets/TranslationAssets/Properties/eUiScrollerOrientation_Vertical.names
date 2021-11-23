@@ -5,13 +5,14 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "e Ui Scroller Orientation_ Vertical"
+                "name": "Scroller Orientation_ Vertical",
+                "category": "Constants/UI"
             },
             "methods": [
                 {
                     "key": "GeteUiScrollerOrientation_Vertical",
                     "details": {
-                        "name": "Gete Ui Scroller Orientation_ Vertical"
+                        "name": "Get Scroller Orientation_ Vertical"
                     },
                     "results": [
                         {

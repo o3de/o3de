@@ -5,7 +5,8 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Default Material Assignment Id"
+                "name": "Default Material Assignment Id",
+                "category": "Constants/Defaults"
             },
             "methods": [
                 {
