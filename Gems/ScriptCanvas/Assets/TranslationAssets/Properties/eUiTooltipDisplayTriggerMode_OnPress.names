@@ -5,14 +5,14 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Tooltip Display Trigger Mode_ On Press",
-                "category": "Constants/UI"
+                "name": "On Press",
+                "category": "Constants/UI/Tooltip Display Trigger Mode"
             },
             "methods": [
                 {
                     "key": "GeteUiTooltipDisplayTriggerMode_OnPress",
                     "details": {
-                        "name": "Get Tooltip Display Trigger Mode_ On Press"
+                        "name": "On Press"
                     },
                     "results": [
                         {

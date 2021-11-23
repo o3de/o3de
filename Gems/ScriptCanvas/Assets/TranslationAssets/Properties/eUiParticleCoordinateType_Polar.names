@@ -5,14 +5,14 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Particle Coordinate Type_ Polar",
-                "category": "Constants/UI"
+                "name": "Polar",
+                "category": "Constants/UI/Particle Coordinate Type"
             },
             "methods": [
                 {
                     "key": "GeteUiParticleCoordinateType_Polar",
                     "details": {
-                        "name": "Get Particle Coordinate Type_ Polar"
+                        "name": "Polar"
                     },
                     "results": [
                         {

@@ -5,14 +5,14 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Scroll Box Scroll Bar Visibility_ Always Show",
-                "category": "Constants/UI"
+                "name": "Always Show",
+                "category": "Constants/UI/Scroll Box Scroll Bar Visibility"
             },
             "methods": [
                 {
                     "key": "GeteUiScrollBoxScrollBarVisibility_AlwaysShow",
                     "details": {
-                        "name": "Get Scroll Box Scroll Bar Visibility_ Always Show"
+                        "name": "Always Show"
                     },
                     "results": [
                         {

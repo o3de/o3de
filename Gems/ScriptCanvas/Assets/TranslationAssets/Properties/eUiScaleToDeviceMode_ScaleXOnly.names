@@ -5,14 +5,14 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Scale To Device Mode_ ScaleX Only",
-                "category": "Constants/UI"
+                "name": "Scale X Only",
+                "category": "Constants/UI/Scale To Device Mode"
             },
             "methods": [
                 {
                     "key": "GeteUiScaleToDeviceMode_ScaleXOnly",
                     "details": {
-                        "name": "Get Scale To Device Mode_ ScaleX Only"
+                        "name": "Scale X Only"
                     },
                     "results": [
                         {
