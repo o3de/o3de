@@ -429,11 +429,11 @@ namespace UnitTest
             ->MousePosition(screenEnd)
             ->MouseLButtonUp();
 
-        const auto WorldToScreenMultiplier = 1.0f / AzToolsFramework::CalculateScreenToWorldMultiplier(worldStart, m_cameraState);
+        const auto worldToScreenMultiplier = 1.0f / AzToolsFramework::CalculateScreenToWorldMultiplier(worldStart, m_cameraState);
         const auto assetScale = colliderEntity->FindComponent<TestColliderComponentMode>()->GetAssetScale();
         // need quite a large tolerance because using screen co-ordinates limits precision
         const float tolerance = 0.01f;
-        EXPECT_NEAR(assetScale.GetX(), 1.0f + xDelta * WorldToScreenMultiplier, tolerance);
+        EXPECT_NEAR(assetScale.GetX(), 1.0f + xDelta * worldToScreenMultiplier, tolerance);
         EXPECT_NEAR(assetScale.GetY(), 1.0f, tolerance);
         EXPECT_NEAR(assetScale.GetZ(), 1.0f, tolerance);
     }
