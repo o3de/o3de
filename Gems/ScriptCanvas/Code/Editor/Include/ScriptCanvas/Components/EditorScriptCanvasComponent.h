@@ -98,6 +98,14 @@ namespace ScriptCanvasEditor
         void OnStopPlayInEditor() override;
 
     protected:
+        enum class SourceChangeDescription : AZ::u8
+        {
+            Error,
+            Modified,
+            Removed,
+            SelectionChanged,
+        };
+
         static void Reflect(AZ::ReflectContext* context);
 
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
@@ -123,7 +131,7 @@ namespace ScriptCanvasEditor
 
         AZ::u32 OnFileSelectionChanged();
 
-        void OnScriptCanvasAssetChanged(const SourceHandle& sourceHandle);
+        void OnScriptCanvasAssetChanged(SourceChangeDescription changeDescription);
 
         void UpdateName();
 

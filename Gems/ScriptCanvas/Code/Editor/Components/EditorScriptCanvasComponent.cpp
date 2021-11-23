@@ -377,7 +377,7 @@ namespace ScriptCanvasEditor
             m_sourceHandle = *completeAsset;
         }
 
-        OnScriptCanvasAssetChanged(m_sourceHandle);
+        OnScriptCanvasAssetChanged(SourceChangeDescription::SelectionChanged);
         SetName(m_sourceHandle.Path().Filename().Native());
         AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(&AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay, AzToolsFramework::Refresh_AttributesAndValues);
     }
@@ -391,26 +391,16 @@ namespace ScriptCanvasEditor
     {
         m_sourceHandle = SourceHandle(nullptr, m_sourceHandle.Path());
         CompleteDescriptionInPlace(m_sourceHandle);
-
         m_previousHandle = {};
         m_removedHandle = {};
-
-        if (m_sourceHandle.IsDescriptionValid())
-        {
-            OnScriptCanvasAssetChanged(m_sourceHandle);
-        }
-        else
-        {
-            ClearVariables();
-        }
-
+        OnScriptCanvasAssetChanged(SourceChangeDescription::SelectionChanged);
         return AZ::Edit::PropertyRefreshLevels::EntireTree;
     }
     
-    void EditorScriptCanvasComponent::OnScriptCanvasAssetChanged(const SourceHandle& assetId)
+    void EditorScriptCanvasComponent::OnScriptCanvasAssetChanged(SourceChangeDescription changeDescription)
     {
         ScriptCanvas::GraphIdentifier newIdentifier = GetGraphIdentifier();
-        newIdentifier.m_assetId = assetId.Id();
+        newIdentifier.m_assetId = m_sourceHandle.Id();
 
         ScriptCanvas::GraphIdentifier oldIdentifier = GetGraphIdentifier();
         oldIdentifier.m_assetId = m_previousHandle.Id();
@@ -419,21 +409,24 @@ namespace ScriptCanvasEditor
 
         m_previousHandle = m_sourceHandle.Describe();
 
-        // Only clear our variables when we are given a new asset id
-        // or when the asset was explicitly set to empty.
-        //
-        // i.e. do not clear variables when we lose the catalog asset.
-        if ((assetId.IsDescriptionValid() && assetId.Describe() != m_removedHandle.Describe())
-            || (!assetId.IsDescriptionValid() && !m_removedHandle.IsDescriptionValid()))
+        if (changeDescription == SourceChangeDescription::SelectionChanged)
         {
             ClearVariables();
         }
 
-        if (assetId.IsDescriptionValid())
+        if (m_sourceHandle.IsDescriptionValid())
         {
-            if (auto loaded = LoadFromFile(assetId.Path().c_str()); loaded.IsSuccess())
+            if (!m_sourceHandle.Get())
             {
-                UpdatePropertyDisplay(loaded.GetValue());
+                if (auto loaded = LoadFromFile(m_sourceHandle.Path().c_str()); loaded.IsSuccess())
+                {
+                    m_sourceHandle = SourceHandle(loaded.TakeValue(), m_sourceHandle.Id(), m_sourceHandle.Path().c_str());
+                }
+            }
+
+            if (m_sourceHandle.Get())
+            {
+                UpdatePropertyDisplay(m_sourceHandle);
             }
         }
 
@@ -467,8 +460,9 @@ namespace ScriptCanvasEditor
         {
             if (auto handle = CompleteDescription(SourceHandle(nullptr, fileAssetId, {})))
             {
+                m_sourceHandle = *handle;
                 // consider queueing on tick bus
-                OnScriptCanvasAssetChanged(*handle);
+                OnScriptCanvasAssetChanged(SourceChangeDescription::Modified);
             }
         }
     }
@@ -479,7 +473,7 @@ namespace ScriptCanvasEditor
         if (fileAssetId == m_sourceHandle.Id())
         {
             m_removedHandle = m_sourceHandle;
-            OnScriptCanvasAssetChanged(m_removedHandle);
+            OnScriptCanvasAssetChanged(SourceChangeDescription::Removed);
         }
     }
 
@@ -489,7 +483,7 @@ namespace ScriptCanvasEditor
         if (fileAssetId == m_sourceHandle.Id())
         {
             m_removedHandle = m_sourceHandle;
-            OnScriptCanvasAssetChanged(m_removedHandle);
+            OnScriptCanvasAssetChanged(SourceChangeDescription::Error);
         }
     }
 
