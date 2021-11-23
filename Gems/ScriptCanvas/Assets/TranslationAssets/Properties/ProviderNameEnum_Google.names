@@ -5,14 +5,14 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Provider Name Enum_ Google",
+                "name": "Google",
                 "category": "Constants/Provider Name"
             },
             "methods": [
                 {
                     "key": "GetProviderNameEnum_Google",
                     "details": {
-                        "name": "Get Provider Name Enum_ Google"
+                        "name": "Google"
                     },
                     "results": [
                         {

@@ -5,14 +5,14 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Audio Obstruction Type_ Single Ray",
+                "name": "Single Ray",
                 "category": "Constants/Audio Obstruction"
             },
             "methods": [
                 {
                     "key": "GetAudioObstructionType_SingleRay",
                     "details": {
-                        "name": "Get Audio Obstruction Type_ Single Ray"
+                        "name": "Single Ray"
                     },
                     "results": [
                         {

@@ -6,7 +6,7 @@
             "variant": "",
             "details": {
                 "name": "Vegetation Spawner Component Type Id",
-                "category": "Constants/Vegetation Spawner"
+                "category": "Constants/Editor"
             },
             "methods": [
                 {

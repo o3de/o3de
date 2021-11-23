@@ -5,14 +5,14 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Light Attenuation Radius Mode_ Explicit",
+                "name": "Explicit",
                 "category": "Constants/Light Attenuation Radius Mode"
             },
             "methods": [
                 {
                     "key": "GetLightAttenuationRadiusMode_Explicit",
                     "details": {
-                        "name": "Get Light Attenuation Radius Mode_ Explicit"
+                        "name": "Explicit"
                     },
                     "results": [
                         {

@@ -5,14 +5,14 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Multi Position Behavior Type_ Separate",
+                "name": "Separate",
                 "category": "Constants/Multi Position Behavior Type"
             },
             "methods": [
                 {
                     "key": "GetMultiPositionBehaviorType_Separate",
                     "details": {
-                        "name": "Get Multi Position Behavior Type_ Separate"
+                        "name": "Separate"
                     },
                     "results": [
                         {

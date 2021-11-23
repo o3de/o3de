@@ -5,14 +5,14 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Transform Pivot_ Object",
-                "category": "Constants/Transform"
+                "name": "Object",
+                "category": "Constants/Transform/Pivot"
             },
             "methods": [
                 {
                     "key": "GetTransformPivot_Object",
                     "details": {
-                        "name": "Get Transform Pivot_ Object"
+                        "name": "Object"
                     },
                     "results": [
                         {

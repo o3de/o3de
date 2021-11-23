@@ -5,14 +5,14 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Fill Mode_ Invalid",
+                "name": "Invalid",
                 "category": "Constants/Fill Mode"
             },
             "methods": [
                 {
                     "key": "GetFillMode_Invalid",
                     "details": {
-                        "name": "Get Fill Mode_ Invalid"
+                        "name": "Invalid"
                     },
                     "results": [
                         {

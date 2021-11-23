@@ -5,14 +5,14 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Material Property Group Visibility_ Enabled",
-                "category": "Constants/Material Property"
+                "name": "Enabled",
+                "category": "Constants/Material Property Group Visibility"
             },
             "methods": [
                 {
                     "key": "GetMaterialPropertyGroupVisibility_Enabled",
                     "details": {
-                        "name": "Get Material Property Group Visibility_ Enabled"
+                        "name": "Enabled"
                     },
                     "results": [
                         {
