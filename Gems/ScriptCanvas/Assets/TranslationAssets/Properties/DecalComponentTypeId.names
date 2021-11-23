@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "DecalComponentTypeId",
+            "base": "DecalComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "DecalComponentTypeId::Getter",
-                "category": "Constants"
-            }
+                "name": "Decal Component Type Id",
+                "category": "Constants/Editor"
+            },
+            "methods": [
+                {
+                    "base": "GetDecalComponentTypeId",
+                    "details": {
+                        "name": "Get Decal Component Type Id"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}",
+                            "details": {
+                                "name": "AZ:: Uuid"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

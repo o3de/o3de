@@ -1,37 +1,38 @@
 {
     "entries": [
         {
-            "key": "ActorComponentNotificationBus",
+            "base": "ActorComponentNotificationBus",
             "context": "EBusHandler",
             "variant": "",
             "details": {
-                "name": "ActorComponentNotificationBus"
+                "name": "Actor",
+                "category": "Animation"
             },
             "methods": [
                 {
-                    "key": "OnActorInstanceCreated",
+                    "base": "OnActorInstanceCreated",
                     "details": {
-                        "name": "OnActorInstanceCreated"
+                        "name": "On Actor Instance Created"
                     },
                     "params": [
                         {
                             "typeid": "{280A0170-EB6A-4E90-B2F1-E18D8EAEFB36}",
                             "details": {
-                                "name": ""
+                                "name": "Actor Instance"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "OnActorInstanceDestroyed",
+                    "base": "OnActorInstanceDestroyed",
                     "details": {
-                        "name": "OnActorInstanceDestroyed"
+                        "name": "On Actor Instance Destroyed"
                     },
                     "params": [
                         {
                             "typeid": "{280A0170-EB6A-4E90-B2F1-E18D8EAEFB36}",
                             "details": {
-                                "name": ""
+                                "name": "Actor Instance"
                             }
                         }
                     ]

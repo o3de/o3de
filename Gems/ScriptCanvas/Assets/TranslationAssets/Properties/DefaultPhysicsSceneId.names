@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "DefaultPhysicsSceneId",
+            "base": "DefaultPhysicsSceneId",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "DefaultPhysicsSceneId::Getter",
-                "category": "Constants"
-            }
+                "name": "Default Physics Scene Id",
+                "category": "Constants/Defaults"
+            },
+            "methods": [
+                {
+                    "base": "GetDefaultPhysicsSceneId",
+                    "details": {
+                        "name": "Get Default Physics Scene Id"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{9F4E062E-06A0-46D4-85DF-E0DA96467D3A}",
+                            "details": {
+                                "name": "Crc 32"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

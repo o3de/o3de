@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "{197D0BAA-FCAF-4922-872B-3A95BEA574B2}",
+            "base": "{197D0BAA-FCAF-4922-872B-3A95BEA574B2}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
@@ -12,44 +12,44 @@
             },
             "slots": [
                 {
-                    "key": "DataInput_Source",
+                    "base": "DataInput_Source",
                     "details": {
                         "name": "Source"
                     }
                 },
                 {
-                    "key": "DataInput_Replace",
+                    "base": "DataInput_Replace",
                     "details": {
                         "name": "Replace"
                     }
                 },
                 {
-                    "key": "DataInput_With",
+                    "base": "DataInput_With",
                     "details": {
                         "name": "With"
                     }
                 },
                 {
-                    "key": "DataInput_Case Sensitive",
+                    "base": "DataInput_Case Sensitive",
                     "details": {
                         "name": "Case Sensitive"
                     }
                 },
                 {
-                    "key": "DataOutput_Result",
+                    "base": "DataOutput_Result",
                     "details": {
                         "name": "Result"
                     }
                 },
                 {
-                    "key": "Input_In",
+                    "base": "Input_In",
                     "details": {
                         "name": "In",
                         "tooltip": "Input signal"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out",
                     "details": {
                         "name": "Out"
                     }

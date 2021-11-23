@@ -52,6 +52,7 @@ namespace AZ
             void SetShadowFilterMethod(LightHandle handle, ShadowFilterMethod method) override;
             void SetFilteringSampleCount(LightHandle handle, uint16_t count) override;
             void SetEsmExponent(LightHandle handle, float esmExponent) override;
+            void SetNormalShadowBias(LightHandle handle, float bias) override;
             void SetPointData(LightHandle handle, const PointLightData& data) override;
 
             const Data::Instance<RPI::Buffer>  GetLightBuffer() const;

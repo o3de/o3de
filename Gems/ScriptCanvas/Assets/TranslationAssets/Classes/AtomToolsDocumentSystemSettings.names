@@ -1,12 +1,57 @@
 {
     "entries": [
         {
-            "key": "AtomToolsDocumentSystemSettings",
+            "base": "AtomToolsDocumentSystemSettings",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
-                "name": "AtomToolsDocumentSystemSettings"
-            }
+                "name": "Document System Settings",
+                "category": "Atom Tools"
+            },
+            "methods": [
+                {
+                    "base": "GetshowReloadDocumentPrompt",
+                    "details": {
+                        "name": "Get Show Reload Document Prompt"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{9E576D4F-A74A-4326-9135-C07284D0A3B9}",
+                            "details": {
+                                "name": "Document System Settings"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Enabled"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetshowReloadDocumentPrompt",
+                    "details": {
+                        "name": "Set Show Reload Document Prompt"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{9E576D4F-A74A-4326-9135-C07284D0A3B9}",
+                            "details": {
+                                "name": "Document System Settings"
+                            }
+                        },
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Enabled"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

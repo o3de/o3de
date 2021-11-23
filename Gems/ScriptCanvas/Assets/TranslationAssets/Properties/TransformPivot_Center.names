@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "TransformPivot_Center",
+            "base": "TransformPivot_Center",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "TransformPivot_Center::Getter",
-                "category": "Constants"
-            }
+                "name": "Center",
+                "category": "Constants/Transform/Pivot"
+            },
+            "methods": [
+                {
+                    "base": "GetTransformPivot_Center",
+                    "details": {
+                        "name": "Center"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

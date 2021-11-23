@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "FrameCaptureResult_InternalError",
+            "base": "FrameCaptureResult_InternalError",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "FrameCaptureResult_InternalError::Getter",
-                "category": "Constants"
-            }
+                "name": "Internal Error",
+                "category": "Constants/Frame Capture Result"
+            },
+            "methods": [
+                {
+                    "base": "GetFrameCaptureResult_InternalError",
+                    "details": {
+                        "name": "Internal Error"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

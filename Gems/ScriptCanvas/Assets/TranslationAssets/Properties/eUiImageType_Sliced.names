@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "eUiImageType_Sliced",
+            "base": "eUiImageType_Sliced",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "eUiImageType_Sliced::Getter",
-                "category": "Constants"
-            }
+                "name": "Sliced",
+                "category": "Constants/UI/Image Type"
+            },
+            "methods": [
+                {
+                    "base": "GeteUiImageType_Sliced",
+                    "details": {
+                        "name": "Sliced"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

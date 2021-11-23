@@ -1,76 +1,316 @@
 {
     "entries": [
         {
-            "key": "TransformConfig",
+            "base": "TransformConfig",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
-                "name": "Transform",
+                "name": "Transform Config",
                 "category": "Entity"
             },
             "methods": [
                 {
-                    "key": "SetTransform",
+                    "base": "SetTransform",
                     "context": "TransformConfig",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetTransform"
+                        "tooltip": "When signaled, this will invoke Set Transform"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetTransform is invoked"
+                        "tooltip": "Signaled after Set Transform is invoked"
                     },
                     "details": {
-                        "name": "TransformConfig::SetTransform",
-                        "category": "Entity"
+                        "name": "Set Transform"
                     },
                     "params": [
                         {
                             "typeid": "{B3AAB26D-D075-4E2B-9653-9527EE363DF8}",
                             "details": {
-                                "name": "TransformConfig*"
+                                "name": "Transform Config"
                             }
                         },
                         {
                             "typeid": "{5D9958E9-9F1E-4985-B532-FFFDE75FEDFD}",
                             "details": {
-                                "name": "const Transform&"
+                                "name": "Transform"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "SetLocalAndWorldTransform",
+                    "base": "SetLocalAndWorldTransform",
                     "context": "TransformConfig",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetLocalAndWorldTransform"
+                        "tooltip": "When signaled, this will invoke Set Local And World Transform"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetLocalAndWorldTransform is invoked"
+                        "tooltip": "Signaled after Set Local And World Transform is invoked"
                     },
                     "details": {
-                        "name": "TransformConfig::SetLocalAndWorldTransform",
-                        "category": "Entity"
+                        "name": "Set Local And World Transform"
                     },
                     "params": [
                         {
                             "typeid": "{B3AAB26D-D075-4E2B-9653-9527EE363DF8}",
                             "details": {
-                                "name": "TransformConfig*"
+                                "name": "Transform Config"
                             }
                         },
                         {
                             "typeid": "{5D9958E9-9F1E-4985-B532-FFFDE75FEDFD}",
                             "details": {
-                                "name": "const Transform&"
+                                "name": "Local"
                             }
                         },
                         {
                             "typeid": "{5D9958E9-9F1E-4985-B532-FFFDE75FEDFD}",
                             "details": {
-                                "name": "const Transform&"
+                                "name": "World"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetparentActivationTransformMode",
+                    "details": {
+                        "name": "Get Parent Activation Transform Mode"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{B3AAB26D-D075-4E2B-9653-9527EE363DF8}",
+                            "details": {
+                                "name": "Transform Config"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "Mode",
+                                "tooltip": "0: Maintain Original Relative Transform\n1: Maintain Current World Transform"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetparentActivationTransformMode",
+                    "details": {
+                        "name": "Set Parent Activation Transform Mode"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{B3AAB26D-D075-4E2B-9653-9527EE363DF8}",
+                            "details": {
+                                "name": "Transform Config"
+                            }
+                        },
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "Mode",
+                                "tooltip": "0: Maintain Original Relative Transform\n1: Maintain Current World Transform"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetparentId",
+                    "details": {
+                        "name": "Get Parent Id"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{B3AAB26D-D075-4E2B-9653-9527EE363DF8}",
+                            "details": {
+                                "name": "Transform Config"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Parent Id",
+                                "tooltip": "Entity Unique Id"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetparentId",
+                    "details": {
+                        "name": "Set Parent Id"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{B3AAB26D-D075-4E2B-9653-9527EE363DF8}",
+                            "details": {
+                                "name": "Transform Config"
+                            }
+                        },
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Parent Id",
+                                "tooltip": "Entity Unique Id"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetworldTransform",
+                    "details": {
+                        "name": "Get World Transform"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{B3AAB26D-D075-4E2B-9653-9527EE363DF8}",
+                            "details": {
+                                "name": "Transform Config"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{5D9958E9-9F1E-4985-B532-FFFDE75FEDFD}",
+                            "details": {
+                                "name": "World"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetworldTransform",
+                    "details": {
+                        "name": "Set World Transform"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{B3AAB26D-D075-4E2B-9653-9527EE363DF8}",
+                            "details": {
+                                "name": "Transform Config"
+                            }
+                        },
+                        {
+                            "typeid": "{5D9958E9-9F1E-4985-B532-FFFDE75FEDFD}",
+                            "details": {
+                                "name": "World"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetMaintainCurrentWorldTransform",
+                    "details": {
+                        "name": "Get Maintain Current World Transform"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "Value"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetisStatic",
+                    "details": {
+                        "name": "Get Is Static"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{B3AAB26D-D075-4E2B-9653-9527EE363DF8}",
+                            "details": {
+                                "name": "Transform Config"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Is Static"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetisStatic",
+                    "details": {
+                        "name": "Set Is Static"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{B3AAB26D-D075-4E2B-9653-9527EE363DF8}",
+                            "details": {
+                                "name": "Transform Config"
+                            }
+                        },
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Is Static"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetMaintainOriginalRelativeTransform",
+                    "details": {
+                        "name": "Get Maintain Original Relative Transform"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "Value"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetlocalTransform",
+                    "details": {
+                        "name": "Get Local Transform"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{B3AAB26D-D075-4E2B-9653-9527EE363DF8}",
+                            "details": {
+                                "name": "Transform Config"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{5D9958E9-9F1E-4985-B532-FFFDE75FEDFD}",
+                            "details": {
+                                "name": "Local"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetlocalTransform",
+                    "details": {
+                        "name": "Set Local Transform"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{B3AAB26D-D075-4E2B-9653-9527EE363DF8}",
+                            "details": {
+                                "name": "Transform Config"
+                            }
+                        },
+                        {
+                            "typeid": "{5D9958E9-9F1E-4985-B532-FFFDE75FEDFD}",
+                            "details": {
+                                "name": "Local"
                             }
                         }
                     ]

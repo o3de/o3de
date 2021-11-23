@@ -1,53 +1,54 @@
 {
     "entries": [
         {
-            "key": "AtomToolsDocumentRequestBus",
+            "base": "AtomToolsDocumentRequestBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "AtomToolsDocumentRequestBus"
+                "name": "Document",
+                "category": "Atom Tools"
             },
             "methods": [
                 {
-                    "key": "CanRedo",
+                    "base": "CanRedo",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke CanRedo"
+                        "tooltip": "When signaled, this will invoke Can Redo"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after CanRedo is invoked"
+                        "tooltip": "Signaled after Can Redo is invoked"
                     },
                     "details": {
-                        "name": "CanRedo"
+                        "name": "Can Redo"
                     },
                     "results": [
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": "bool"
+                                "name": "Can Redo"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "SaveAsChild",
+                    "base": "SaveAsChild",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SaveAsChild"
+                        "tooltip": "When signaled, this will invoke Save As Child"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SaveAsChild is invoked"
+                        "tooltip": "Signaled after Save As Child is invoked"
                     },
                     "details": {
-                        "name": "SaveAsChild"
+                        "name": "Save As Child"
                     },
                     "params": [
                         {
                             "typeid": "{7114E998-A8B4-519B-9342-A86D1587B4F7}",
                             "details": {
-                                "name": ""
+                                "name": "Save Path"
                             }
                         }
                     ],
@@ -55,13 +56,13 @@
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": "bool"
+                                "name": "Success"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "Reopen",
+                    "base": "Reopen",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Reopen"
@@ -77,13 +78,13 @@
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": "bool"
+                                "name": "Success"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "Save",
+                    "base": "Save",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Save"
@@ -99,35 +100,35 @@
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": "bool"
+                                "name": "Success"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "IsOpen",
+                    "base": "IsOpen",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke IsOpen"
+                        "tooltip": "When signaled, this will invoke Is Open"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after IsOpen is invoked"
+                        "tooltip": "Signaled after Is Open is invoked"
                     },
                     "details": {
-                        "name": "IsOpen"
+                        "name": "Is Open"
                     },
                     "results": [
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": "bool"
+                                "name": "Is Open"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "Undo",
+                    "base": "Undo",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Undo"
@@ -143,13 +144,13 @@
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": "bool"
+                                "name": "Success"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "Open",
+                    "base": "Open",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Open"
@@ -165,7 +166,7 @@
                         {
                             "typeid": "{7114E998-A8B4-519B-9342-A86D1587B4F7}",
                             "details": {
-                                "name": ""
+                                "name": "Load Path"
                             }
                         }
                     ],
@@ -173,79 +174,79 @@
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": "bool"
+                                "name": "Success"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "CanUndo",
+                    "base": "CanUndo",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke CanUndo"
+                        "tooltip": "When signaled, this will invoke Can Undo"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after CanUndo is invoked"
+                        "tooltip": "Signaled after Can Undo is invoked"
                     },
                     "details": {
-                        "name": "CanUndo"
+                        "name": "Can Undo"
                     },
                     "results": [
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": "bool"
+                                "name": "Can Undo"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "SetPropertyValue",
+                    "base": "SetPropertyValue",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetPropertyValue"
+                        "tooltip": "When signaled, this will invoke Set Property Value"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetPropertyValue is invoked"
+                        "tooltip": "Signaled after Set Property Value is invoked"
                     },
                     "details": {
-                        "name": "SetPropertyValue"
+                        "name": "Set Property Value"
                     },
                     "params": [
                         {
                             "typeid": "{3D2B920C-9EFD-40D5-AAE0-DF131C3D4931}",
                             "details": {
-                                "name": "Name"
+                                "name": "Property Full Name"
                             }
                         },
                         {
                             "typeid": "{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}",
                             "details": {
-                                "name": "any"
+                                "name": "Value"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "SaveAsCopy",
+                    "base": "SaveAsCopy",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SaveAsCopy"
+                        "tooltip": "When signaled, this will invoke Save As Copy"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SaveAsCopy is invoked"
+                        "tooltip": "Signaled after Save As Copy is invoked"
                     },
                     "details": {
-                        "name": "SaveAsCopy"
+                        "name": "Save As Copy"
                     },
                     "params": [
                         {
                             "typeid": "{7114E998-A8B4-519B-9342-A86D1587B4F7}",
                             "details": {
-                                "name": ""
+                                "name": "Save Path"
                             }
                         }
                     ],
@@ -253,51 +254,51 @@
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": "bool"
+                                "name": "Success"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "BeginEdit",
+                    "base": "BeginEdit",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke BeginEdit"
+                        "tooltip": "When signaled, this will invoke Begin Edit"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after BeginEdit is invoked"
+                        "tooltip": "Signaled after Begin Edit is invoked"
                     },
                     "details": {
-                        "name": "BeginEdit"
+                        "name": "Begin Edit"
                     },
                     "results": [
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": "bool"
+                                "name": "Begin"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "GetPropertyValue",
+                    "base": "GetPropertyValue",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetPropertyValue"
+                        "tooltip": "When signaled, this will invoke Get Property Value"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetPropertyValue is invoked"
+                        "tooltip": "Signaled after Get Property Value is invoked"
                     },
                     "details": {
-                        "name": "GetPropertyValue"
+                        "name": "Get Property Value"
                     },
                     "params": [
                         {
                             "typeid": "{3D2B920C-9EFD-40D5-AAE0-DF131C3D4931}",
                             "details": {
-                                "name": "Name"
+                                "name": "Property Full Name"
                             }
                         }
                     ],
@@ -305,13 +306,13 @@
                         {
                             "typeid": "{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}",
                             "details": {
-                                "name": "any"
+                                "name": "Value"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "Close",
+                    "base": "Close",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Close"
@@ -327,13 +328,13 @@
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": "bool"
+                                "name": "Success"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "IsModified",
+                    "base": "IsModified",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke IsModified"
@@ -343,107 +344,107 @@
                         "tooltip": "Signaled after IsModified is invoked"
                     },
                     "details": {
-                        "name": "IsModified"
+                        "name": "Is Modified"
                     },
                     "results": [
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": "bool"
+                                "name": "Is Modified"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "EndEdit",
+                    "base": "EndEdit",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke EndEdit"
+                        "tooltip": "When signaled, this will invoke End Edit"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after EndEdit is invoked"
+                        "tooltip": "Signaled after End Edit is invoked"
                     },
                     "details": {
-                        "name": "EndEdit"
+                        "name": "End Edit"
                     },
                     "results": [
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": "bool"
+                                "name": "End Edit"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "GetAbsolutePath",
+                    "base": "GetAbsolutePath",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetAbsolutePath"
+                        "tooltip": "When signaled, this will invoke Get Absolute Path"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetAbsolutePath is invoked"
+                        "tooltip": "Signaled after Get Absolute Path is invoked"
                     },
                     "details": {
-                        "name": "GetAbsolutePath"
+                        "name": "Get Absolute Path"
                     },
                     "results": [
                         {
                             "typeid": "{7114E998-A8B4-519B-9342-A86D1587B4F7}",
                             "details": {
-                                "name": ""
+                                "name": "Path"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "GetRelativePath",
+                    "base": "GetRelativePath",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetRelativePath"
+                        "tooltip": "When signaled, this will invoke Get Relative Path"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetRelativePath is invoked"
+                        "tooltip": "Signaled after Get Relative Path is invoked"
                     },
                     "details": {
-                        "name": "GetRelativePath"
+                        "name": "Get Relative Path"
                     },
                     "results": [
                         {
                             "typeid": "{7114E998-A8B4-519B-9342-A86D1587B4F7}",
                             "details": {
-                                "name": ""
+                                "name": "Path"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "IsSavable",
+                    "base": "IsSavable",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke IsSavable"
+                        "tooltip": "When signaled, this will invoke Is Savable"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after IsSavable is invoked"
+                        "tooltip": "Signaled after Is Savable is invoked"
                     },
                     "details": {
-                        "name": "IsSavable"
+                        "name": "Is Savable"
                     },
                     "results": [
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": "bool"
+                                "name": "Is Savable"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "Redo",
+                    "base": "Redo",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Redo"
@@ -459,7 +460,7 @@
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": "bool"
+                                "name": "Success"
                             }
                         }
                     ]

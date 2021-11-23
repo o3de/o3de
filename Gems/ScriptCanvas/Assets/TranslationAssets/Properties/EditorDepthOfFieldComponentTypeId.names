@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "EditorDepthOfFieldComponentTypeId",
+            "base": "EditorDepthOfFieldComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "EditorDepthOfFieldComponentTypeId::Getter",
-                "category": "Constants"
-            }
+                "name": "Editor Depth Of Field Component Type Id",
+                "category": "Constants/Editor/Component Type Id"
+            },
+            "methods": [
+                {
+                    "base": "GetEditorDepthOfFieldComponentTypeId",
+                    "details": {
+                        "name": "Get Editor Depth Of Field Component Type Id"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}",
+                            "details": {
+                                "name": "AZ:: Uuid"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

@@ -275,6 +275,8 @@ set(FILES
     Source/RayTracing/RayTracingPassData.h
     Source/ReflectionProbe/ReflectionProbeFeatureProcessor.cpp
     Source/ReflectionProbe/ReflectionProbe.cpp
+    Source/ReflectionScreenSpace/ReflectionScreenSpaceTracePass.cpp
+    Source/ReflectionScreenSpace/ReflectionScreenSpaceTracePass.h
     Source/ReflectionScreenSpace/ReflectionScreenSpaceBlurPass.cpp
     Source/ReflectionScreenSpace/ReflectionScreenSpaceBlurPass.h
     Source/ReflectionScreenSpace/ReflectionScreenSpaceBlurChildPass.cpp

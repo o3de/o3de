@@ -58,6 +58,8 @@ set(FILES
     Source/CreateProjectCtrl.cpp
     Source/UpdateProjectCtrl.h
     Source/UpdateProjectCtrl.cpp
+    Source/ProjectManagerSettings.h
+    Source/ProjectManagerSettings.cpp
     Source/ProjectsScreen.h
     Source/ProjectsScreen.cpp
     Source/ProjectSettingsScreen.h

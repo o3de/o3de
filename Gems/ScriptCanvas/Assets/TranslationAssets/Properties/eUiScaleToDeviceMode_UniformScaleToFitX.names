@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "eUiScaleToDeviceMode_UniformScaleToFitX",
+            "base": "eUiScaleToDeviceMode_UniformScaleToFitX",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "eUiScaleToDeviceMode_UniformScaleToFitX::Getter",
-                "category": "Constants"
-            }
+                "name": "Uniform Scale To Fit X",
+                "category": "Constants/UI/Scale To Device Mode"
+            },
+            "methods": [
+                {
+                    "base": "GeteUiScaleToDeviceMode_UniformScaleToFitX",
+                    "details": {
+                        "name": "Uniform Scale To Fit X"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

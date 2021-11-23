@@ -17,7 +17,7 @@ namespace AZ
     {
         //! MultiIndexedDataVector is similar to IndexedDataVector but adds support for multiple different data vectors each containing different types
         //! i.e. structure of (N) arrays
-        //! See IndexedDataVectorTests.cpp for examples of use
+        //! See MultiIndexedDataVectorTests.cpp for examples of use
         template<typename ... Ts>
         class MultiIndexedDataVector
         {

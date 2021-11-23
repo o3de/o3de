@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "FrameCaptureResult_InvalidArgument",
+            "base": "FrameCaptureResult_InvalidArgument",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "FrameCaptureResult_InvalidArgument::Getter",
-                "category": "Constants"
-            }
+                "name": "Invalid Argument",
+                "category": "Constants/Frame Capture Result"
+            },
+            "methods": [
+                {
+                    "base": "GetFrameCaptureResult_InvalidArgument",
+                    "details": {
+                        "name": "Invalid Argument"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

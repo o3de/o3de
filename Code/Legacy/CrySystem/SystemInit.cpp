@@ -170,14 +170,6 @@ void CryEngineSignalHandler(int signal)
 extern HMODULE gDLLHandle;
 #endif
 
-namespace
-{
-#if defined(AZ_PLATFORM_WINDOWS)
-    // on windows, we lock our cache using a lockfile.  On other platforms this is not necessary since devices like ios, android, consoles cannot
-    // run more than one game process that uses the same folder anyway.
-    HANDLE g_cacheLock = INVALID_HANDLE_VALUE;
-#endif
-}
 
 //static int g_sysSpecChanged = false;
 
@@ -339,9 +331,6 @@ bool CSystem::InitFileSystem()
         m_pUserCallback->OnInitProgress("Initializing File System...");
     }
 
-    // get the DirectInstance FileIOBase which should be the AZ::LocalFileIO
-    m_env.pFileIO = AZ::IO::FileIOBase::GetDirectInstance();
-
     m_env.pCryPak = AZ::Interface<AZ::IO::IArchive>::Get();
     m_env.pFileIO = AZ::IO::FileIOBase::GetInstance();
     AZ_Assert(m_env.pCryPak, "CryPak has not been initialized on AZ::Interface");
@@ -365,33 +354,6 @@ bool CSystem::InitFileSystem()
 
 void CSystem::ShutdownFileSystem()
 {
-#if defined(AZ_PLATFORM_WINDOWS)
-    if (g_cacheLock != INVALID_HANDLE_VALUE)
-    {
-        CloseHandle(g_cacheLock);
-        g_cacheLock = INVALID_HANDLE_VALUE;
-    }
-#endif
-
-    using namespace AZ::IO;
-
-    FileIOBase* directInstance = FileIOBase::GetDirectInstance();
-    FileIOBase* pakInstance = FileIOBase::GetInstance();
-
-    if (directInstance == m_env.pFileIO)
-    {
-        // we only mess with file io if we own the instance that we installed.
-        // if we dont' own the instance, then we never configured fileIO and we should not alter it.
-        delete directInstance;
-        FileIOBase::SetDirectInstance(nullptr);
-
-        if (pakInstance != directInstance)
-        {
-            delete pakInstance;
-            FileIOBase::SetInstance(nullptr);
-        }
-    }
-
     m_env.pFileIO = nullptr;
 }
 

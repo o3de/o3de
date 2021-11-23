@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "eUiAnimationEvent_Aborted",
+            "base": "eUiAnimationEvent_Aborted",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "eUiAnimationEvent_Aborted::Getter",
-                "category": "Constants"
-            }
+                "name": "Aborted",
+                "category": "Constants/UI/Animation Event"
+            },
+            "methods": [
+                {
+                    "base": "GeteUiAnimationEvent_Aborted",
+                    "details": {
+                        "name": "Aborted"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

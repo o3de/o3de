@@ -1,16 +1,16 @@
 {
     "entries": [
         {
-            "key": "BlastFamilyComponentNotificationBus",
+            "base": "BlastFamilyComponentNotificationBus",
             "context": "EBusHandler",
             "variant": "",
             "details": {
-                "name": "BlastFamilyComponentNotificationBus",
-                "category": "EBus Handlers"
+                "name": "Blast Family",
+                "category": "Blast"
             },
             "methods": [
                 {
-                    "key": "OnActorCreated",
+                    "base": "OnActorCreated",
                     "details": {
                         "name": "On Actor Created"
                     },
@@ -25,7 +25,7 @@
                     ]
                 },
                 {
-                    "key": "OnActorDestroyed",
+                    "base": "OnActorDestroyed",
                     "details": {
                         "name": "On Actor Destroyed"
                     },

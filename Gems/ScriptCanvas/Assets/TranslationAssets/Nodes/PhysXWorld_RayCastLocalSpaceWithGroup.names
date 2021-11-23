@@ -1,0 +1,94 @@
+{
+    "entries": [
+        {
+            "base": "{BD7F9C50-62EA-56C0-9B8B-D23E5D28300D}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "Ray Cast Local Space With Group",
+                "category": "PhysX/World",
+                "tooltip": "Returns the first entity hit by a ray cast in local space from the source entity in the specified direction."
+            },
+            "slots": [
+                {
+                    "base": "Input_In",
+                    "details": {
+                        "name": "In"
+                    }
+                },
+                {
+                    "base": "Output_Out",
+                    "details": {
+                        "name": "Out"
+                    }
+                },
+                {
+                    "base": "DataInput_Source",
+                    "details": {
+                        "name": "Source"
+                    }
+                },
+                {
+                    "base": "DataInput_Direction",
+                    "details": {
+                        "name": "Direction"
+                    }
+                },
+                {
+                    "base": "DataInput_Distance",
+                    "details": {
+                        "name": "Distance"
+                    }
+                },
+                {
+                    "base": "DataInput_Collision group",
+                    "details": {
+                        "name": "Collision group"
+                    }
+                },
+                {
+                    "base": "DataInput_Ignore",
+                    "details": {
+                        "name": "Ignore"
+                    }
+                },
+                {
+                    "base": "DataOutput_Object hit",
+                    "details": {
+                        "name": "Object hit"
+                    }
+                },
+                {
+                    "base": "DataOutput_Position",
+                    "details": {
+                        "name": "Position"
+                    }
+                },
+                {
+                    "base": "DataOutput_Normal",
+                    "details": {
+                        "name": "Normal"
+                    }
+                },
+                {
+                    "base": "DataOutput_Distance",
+                    "details": {
+                        "name": "Distance"
+                    }
+                },
+                {
+                    "base": "DataOutput_EntityId",
+                    "details": {
+                        "name": "EntityId"
+                    }
+                },
+                {
+                    "base": "DataOutput_Surface",
+                    "details": {
+                        "name": "Surface"
+                    }
+                }
+            ]
+        }
+    ]
+}

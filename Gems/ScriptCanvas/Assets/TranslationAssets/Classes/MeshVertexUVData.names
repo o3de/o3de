@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "MeshVertexUVData",
+            "base": "MeshVertexUVData",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
@@ -9,7 +9,7 @@
             },
             "methods": [
                 {
-                    "key": "GetCustomName",
+                    "base": "GetCustomName",
                     "context": "MeshVertexUVData",
                     "entry": {
                         "name": "In",
@@ -41,7 +41,7 @@
                     ]
                 },
                 {
-                    "key": "GetCount",
+                    "base": "GetCount",
                     "context": "MeshVertexUVData",
                     "entry": {
                         "name": "In",
@@ -73,7 +73,7 @@
                     ]
                 },
                 {
-                    "key": "GetUV",
+                    "base": "GetUV",
                     "context": "MeshVertexUVData",
                     "entry": {
                         "name": "In",

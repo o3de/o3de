@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "SystemConfigSpec_Medium",
+            "base": "SystemConfigSpec_Medium",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "SystemConfigSpec_Medium::Getter",
-                "category": "Constants"
-            }
+                "name": "Medium",
+                "category": "Constants/System Spec"
+            },
+            "methods": [
+                {
+                    "base": "GetSystemConfigSpec_Medium",
+                    "details": {
+                        "name": "Medium"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

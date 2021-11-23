@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "UiSpawnerNotificationBus",
+            "base": "UiSpawnerNotificationBus",
             "context": "EBusHandler",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "OnSpawnBegin",
+                    "base": "OnSpawnBegin",
                     "details": {
                         "name": "On Spawn Begin",
                         "tooltip": "Executes when the slice has been spawned, but entities have not yet been activated. \"On Entity Spawned\" events are about to be dispatched"
@@ -26,7 +26,7 @@
                     ]
                 },
                 {
-                    "key": "OnEntitySpawned",
+                    "base": "OnEntitySpawned",
                     "details": {
                         "name": "On Entity Spawned",
                         "tooltip": "Executes when an entity has been created during a spawn. Called once for each entity created while spawning a slice"
@@ -49,7 +49,7 @@
                     ]
                 },
                 {
-                    "key": "OnEntitiesSpawned",
+                    "base": "OnEntitiesSpawned",
                     "details": {
                         "name": "On Entities Spawned",
                         "tooltip": "Executes when all entities have been created during a spawn.\n\nCalled only once for each spawn request. Called after the \"On Entity Spawned\" calls and before the \"On Spawn End\" call"
@@ -72,7 +72,7 @@
                     ]
                 },
                 {
-                    "key": "OnTopLevelEntitiesSpawned",
+                    "base": "OnTopLevelEntitiesSpawned",
                     "details": {
                         "name": "On Top Level Entities Spawned",
                         "tooltip": "Executes when all top-level entities have been created during the spawn.\n\nTop-level entities are entities that do not have any parent within the slice. Typically, there is only one top-level entity for each slice.\n\nCalled only once for each spawn request. Called after the \"On Entity Spawned\" calls and before the \"On Spawn End\" call"
@@ -95,7 +95,7 @@
                     ]
                 },
                 {
-                    "key": "OnSpawnEnd",
+                    "base": "OnSpawnEnd",
                     "details": {
                         "name": "On Spawn End",
                         "tooltip": "Executes when a slice has been spawned. Called once for each spawn request. All \"On Entity Spawned\" events have been dispatched"
@@ -111,7 +111,7 @@
                     ]
                 },
                 {
-                    "key": "OnSpawnFailed",
+                    "base": "OnSpawnFailed",
                     "details": {
                         "name": "On Spawn Failed",
                         "tooltip": "Executes when a spawn request has failed"

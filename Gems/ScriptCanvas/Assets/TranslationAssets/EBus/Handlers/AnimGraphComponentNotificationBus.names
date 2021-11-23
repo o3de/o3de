@@ -1,229 +1,230 @@
 {
     "entries": [
         {
-            "key": "AnimGraphComponentNotificationBus",
+            "base": "AnimGraphComponentNotificationBus",
             "context": "EBusHandler",
             "variant": "",
             "details": {
-                "name": "AnimGraphComponentNotificationBus"
+                "name": "Anim Graph",
+                "category": "Animation"
             },
             "methods": [
                 {
-                    "key": "OnAnimGraphInstanceCreated",
+                    "base": "OnAnimGraphInstanceCreated",
                     "details": {
-                        "name": "OnAnimGraphInstanceCreated"
+                        "name": "On Anim Graph Instance Created"
                     },
                     "params": [
                         {
                             "typeid": "{2CC86AA2-AFC0-434B-A317-B102FD02E76D}",
                             "details": {
-                                "name": ""
+                                "name": "Anim Graph Instance"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "OnAnimGraphInstanceDestroyed",
+                    "base": "OnAnimGraphInstanceDestroyed",
                     "details": {
-                        "name": "OnAnimGraphInstanceDestroyed"
+                        "name": "On Anim Graph Instance Destroyed"
                     },
                     "params": [
                         {
                             "typeid": "{2CC86AA2-AFC0-434B-A317-B102FD02E76D}",
                             "details": {
-                                "name": ""
+                                "name": "Anim Graph Instance"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "OnAnimGraphFloatParameterChanged",
+                    "base": "OnAnimGraphFloatParameterChanged",
                     "details": {
-                        "name": "OnAnimGraphFloatParameterChanged"
+                        "name": "On Anim Graph Float Parameter Changed"
                     },
                     "params": [
                         {
                             "typeid": "{2CC86AA2-AFC0-434B-A317-B102FD02E76D}",
                             "details": {
-                                "name": ""
+                                "name": "Anim Graph Instance"
                             }
                         },
                         {
                             "typeid": "{D6597933-47CD-4FC8-B911-63F3E2B0993A}",
                             "details": {
-                                "name": "AZ::u64"
+                                "name": "Parameter Index"
                             }
                         },
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "float"
+                                "name": "Previous Value"
                             }
                         },
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "float"
+                                "name": "Current Value"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "OnAnimGraphBoolParameterChanged",
+                    "base": "OnAnimGraphBoolParameterChanged",
                     "details": {
-                        "name": "OnAnimGraphBoolParameterChanged"
+                        "name": "On Anim Graph Bool Parameter Changed"
                     },
                     "params": [
                         {
                             "typeid": "{2CC86AA2-AFC0-434B-A317-B102FD02E76D}",
                             "details": {
-                                "name": ""
+                                "name": "Anim Graph Instance"
                             }
                         },
                         {
                             "typeid": "{D6597933-47CD-4FC8-B911-63F3E2B0993A}",
                             "details": {
-                                "name": "AZ::u64"
+                                "name": "Parameter Index"
                             }
                         },
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": "bool"
+                                "name": "Previous Value"
                             }
                         },
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": "bool"
+                                "name": "Current Value"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "OnAnimGraphStringParameterChanged",
+                    "base": "OnAnimGraphStringParameterChanged",
                     "details": {
-                        "name": "OnAnimGraphStringParameterChanged"
+                        "name": "On Anim Graph String Parameter Changed"
                     },
                     "params": [
                         {
                             "typeid": "{2CC86AA2-AFC0-434B-A317-B102FD02E76D}",
                             "details": {
-                                "name": ""
+                                "name": "Anim Graph Instance"
                             }
                         },
                         {
                             "typeid": "{D6597933-47CD-4FC8-B911-63F3E2B0993A}",
                             "details": {
-                                "name": "AZ::u64"
+                                "name": "Parameter Index"
                             }
                         },
                         {
                             "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
                             "details": {
-                                "name": "char"
+                                "name": "Previous Value"
                             }
                         },
                         {
                             "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
                             "details": {
-                                "name": "char"
+                                "name": "Current Value"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "OnAnimGraphVector2ParameterChanged",
+                    "base": "OnAnimGraphVector2ParameterChanged",
                     "details": {
-                        "name": "OnAnimGraphVector2ParameterChanged"
+                        "name": "On Anim Graph Vector2 Parameter Changed"
                     },
                     "params": [
                         {
                             "typeid": "{2CC86AA2-AFC0-434B-A317-B102FD02E76D}",
                             "details": {
-                                "name": ""
+                                "name": "Anim Graph Instance"
                             }
                         },
                         {
                             "typeid": "{D6597933-47CD-4FC8-B911-63F3E2B0993A}",
                             "details": {
-                                "name": "AZ::u64"
+                                "name": "Parameter Index"
                             }
                         },
                         {
                             "typeid": "{3D80F623-C85C-4741-90D0-E4E66164E6BF}",
                             "details": {
-                                "name": "Vector2"
+                                "name": "Previous Value"
                             }
                         },
                         {
                             "typeid": "{3D80F623-C85C-4741-90D0-E4E66164E6BF}",
                             "details": {
-                                "name": "Vector2"
+                                "name": "Current Value"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "OnAnimGraphVector3ParameterChanged",
+                    "base": "OnAnimGraphVector3ParameterChanged",
                     "details": {
-                        "name": "OnAnimGraphVector3ParameterChanged"
+                        "name": "On Anim Graph Vector3 Parameter Changed"
                     },
                     "params": [
                         {
                             "typeid": "{2CC86AA2-AFC0-434B-A317-B102FD02E76D}",
                             "details": {
-                                "name": ""
+                                "name": "Anim Graph Instance"
                             }
                         },
                         {
                             "typeid": "{D6597933-47CD-4FC8-B911-63F3E2B0993A}",
                             "details": {
-                                "name": "AZ::u64"
+                                "name": "Parameter Index"
                             }
                         },
                         {
                             "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
                             "details": {
-                                "name": "Vector3"
+                                "name": "Previous Value"
                             }
                         },
                         {
                             "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
                             "details": {
-                                "name": "Vector3"
+                                "name": "Current Value"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "OnAnimGraphRotationParameterChanged",
+                    "base": "OnAnimGraphRotationParameterChanged",
                     "details": {
-                        "name": "OnAnimGraphRotationParameterChanged"
+                        "name": "On Anim Graph Rotation Parameter Changed"
                     },
                     "params": [
                         {
                             "typeid": "{2CC86AA2-AFC0-434B-A317-B102FD02E76D}",
                             "details": {
-                                "name": ""
+                                "name": "Anim Graph Instance"
                             }
                         },
                         {
                             "typeid": "{D6597933-47CD-4FC8-B911-63F3E2B0993A}",
                             "details": {
-                                "name": "AZ::u64"
+                                "name": "Parameter Index"
                             }
                         },
                         {
                             "typeid": "{73103120-3DD3-4873-BAB3-9713FA2804FB}",
                             "details": {
-                                "name": "Quaternion"
+                                "name": "Previous Value"
                             }
                         },
                         {
                             "typeid": "{73103120-3DD3-4873-BAB3-9713FA2804FB}",
                             "details": {
-                                "name": "Quaternion"
+                                "name": "Current Value"
                             }
                         }
                     ]

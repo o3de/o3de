@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "UiSliderNotificationBus",
+            "base": "UiSliderNotificationBus",
             "context": "EBusHandler",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "OnSliderValueChanging",
+                    "base": "OnSliderValueChanging",
                     "details": {
                         "name": "On Slider Value Changing",
                         "tooltip": "Executes when the slider value is changing"
@@ -26,7 +26,7 @@
                     ]
                 },
                 {
-                    "key": "OnSliderValueChanged",
+                    "base": "OnSliderValueChanged",
                     "details": {
                         "name": "On Slider Value Changed",
                         "tooltip": "Executes when the slider value has finished changing"

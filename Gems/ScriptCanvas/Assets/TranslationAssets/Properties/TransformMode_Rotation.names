@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "TransformMode_Rotation",
+            "base": "TransformMode_Rotation",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "TransformMode_Rotation::Getter",
-                "category": "Constants"
-            }
+                "name": "Rotation",
+                "category": "Constants/Transform/Mode"
+            },
+            "methods": [
+                {
+                    "base": "GetTransformMode_Rotation",
+                    "details": {
+                        "name": "Rotation"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

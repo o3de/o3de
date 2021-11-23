@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "eUiImageType_StretchedToFill",
+            "base": "eUiImageType_StretchedToFill",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "eUiImageType_StretchedToFill::Getter",
-                "category": "Constants"
-            }
+                "name": "Stretched To Fill",
+                "category": "Constants/UI/Image Type"
+            },
+            "methods": [
+                {
+                    "base": "GeteUiImageType_StretchedToFill",
+                    "details": {
+                        "name": "Stretched To Fill"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

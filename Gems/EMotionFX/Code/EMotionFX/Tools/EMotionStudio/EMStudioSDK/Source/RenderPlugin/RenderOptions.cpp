@@ -1063,6 +1063,7 @@ namespace EMStudio
         settings.m_vertexNormalsScale = m_vertexNormalsScale;
         settings.m_faceNormalsScale = m_faceNormalsScale;
         settings.m_tangentsScale = m_tangentsScale;
+        settings.m_nodeOrientationScale = m_nodeOrientationScale;
 
         settings.m_vertexNormalsColor = m_vertexNormalsColor;
         settings.m_faceNormalsColor = m_faceNormalsColor;
@@ -1083,6 +1084,7 @@ namespace EMStudio
         settings.m_selectedClothColliderColor = m_selectedClothColliderColor;
         settings.m_simulatedObjectColliderColor = m_simulatedObjectColliderColor;
         settings.m_selectedSimulatedObjectColliderColor = m_selectedSimulatedObjectColliderColor;
+        settings.m_jointNameColor = m_nodeNameColor;
     }
 
     void RenderOptions::OnGridUnitSizeChangedCallback() const
@@ -1111,6 +1113,7 @@ namespace EMStudio
     void RenderOptions::OnNodeOrientationScaleChangedCallback() const
     {
         PluginOptionsNotificationsBus::Event(s_nodeOrientationScaleOptionName, &PluginOptionsNotificationsBus::Events::OnOptionChanged, s_nodeOrientationScaleOptionName);
+        CopyToRenderActorSettings(EMotionFX::GetRenderActorSettings());
     }
 
     void RenderOptions::OnScaleBonesOnLengthChangedCallback() const
@@ -1285,6 +1288,7 @@ namespace EMStudio
     void RenderOptions::OnNodeNameColorChangedCallback() const
     {
         PluginOptionsNotificationsBus::Event(s_nodeNameColorOptionName, &PluginOptionsNotificationsBus::Events::OnOptionChanged, s_nodeNameColorOptionName);
+        CopyToRenderActorSettings(EMotionFX::GetRenderActorSettings());
     }
 
     void RenderOptions::OnGridColorChangedCallback() const

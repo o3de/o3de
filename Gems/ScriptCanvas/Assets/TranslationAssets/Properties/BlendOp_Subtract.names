@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "BlendOp_Subtract",
+            "base": "BlendOp_Subtract",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "BlendOp_Subtract::Getter",
-                "category": "Constants"
-            }
+                "name": "Subtract",
+                "category": "Constants/Blend Operation"
+            },
+            "methods": [
+                {
+                    "base": "GetBlendOp_Subtract",
+                    "details": {
+                        "name": "Get Subtract"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

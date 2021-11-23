@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "{131C7ECE-D083-F7CD-09FC-EE0FCF80AB86}",
+            "base": "{131C7ECE-D083-F7CD-09FC-EE0FCF80AB86}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
@@ -12,61 +12,61 @@
             },
             "slots": [
                 {
-                    "key": "Output_One String",
+                    "base": "Output_One String",
                     "details": {
                         "name": "One String"
                     }
                 },
                 {
-                    "key": "DataOutput_string",
+                    "base": "DataOutput_string",
                     "details": {
                         "name": "string"
                     }
                 },
                 {
-                    "key": "Output_Two Strings",
+                    "base": "Output_Two Strings",
                     "details": {
                         "name": "Two Strings"
                     }
                 },
                 {
-                    "key": "DataOutput_string1",
+                    "base": "DataOutput_string1",
                     "details": {
                         "name": "string1"
                     }
                 },
                 {
-                    "key": "DataOutput_string2",
+                    "base": "DataOutput_string2",
                     "details": {
                         "name": "string2"
                     }
                 },
                 {
-                    "key": "Output_Three Strings",
+                    "base": "Output_Three Strings",
                     "details": {
                         "name": "Three Strings"
                     }
                 },
                 {
-                    "key": "DataOutput_string3",
+                    "base": "DataOutput_string3",
                     "details": {
                         "name": "string3"
                     }
                 },
                 {
-                    "key": "Output_Square",
+                    "base": "Output_Square",
                     "details": {
                         "name": "Square"
                     }
                 },
                 {
-                    "key": "Output_Pants",
+                    "base": "Output_Pants",
                     "details": {
                         "name": "Pants"
                     }
                 },
                 {
-                    "key": "Output_Hello",
+                    "base": "Output_Hello",
                     "details": {
                         "name": "Hello"
                     }

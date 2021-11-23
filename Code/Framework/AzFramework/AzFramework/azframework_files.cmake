@@ -21,6 +21,7 @@ set(FILES
     Archive/ArchiveFindData.cpp
     Archive/ArchiveFindData.h
     Archive/ArchiveVars.h
+    Archive/ArchiveVars.cpp
     Archive/Codec.h
     Archive/IArchive.h
     Archive/INestedArchive.h
@@ -78,6 +79,7 @@ set(FILES
     CommandLine/CommandLine.h
     CommandLine/CommandRegistrationBus.h
     Debug/DebugCameraBus.h
+    feature_options.cmake
     Viewport/ViewportBus.h
     Viewport/ViewportBus.cpp
     Viewport/ViewportColors.h

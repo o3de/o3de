@@ -32,7 +32,7 @@ namespace O3DE::ProjectManager
 
     signals:
         void UpdateProgress(int bytesDownloaded, int totalBytes);
-        void Done(QString result = "");
+        void Done(QString result = "", QString detailedResult = "");
 
     private:
 

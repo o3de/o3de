@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "InputDeviceKeyboard",
+            "base": "InputDeviceKeyboard",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
