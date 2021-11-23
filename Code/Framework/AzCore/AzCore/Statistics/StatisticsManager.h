@@ -63,6 +63,18 @@ namespace AZ
                 }
             }
 
+            void GetAllStatisticsOfUnits(AZStd::vector<NamedRunningStatistic*>& vector, const char* units)
+            {
+                for (auto const& it : m_statistics)
+                {
+                    NamedRunningStatistic* stat = it.second;
+                    if (stat->GetUnits() == units)
+                    {
+                        vector.push_back(stat);
+                    }
+                }
+            }
+
             //! Helper method to apply units to statistics with empty units string.
             AZ::u32 ApplyUnits(const AZStd::string& units)
             {

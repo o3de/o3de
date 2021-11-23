@@ -215,7 +215,6 @@ namespace Profiler
 
         // Last captured CPU timing statistics
         AZStd::vector<CpuTimingEntry> m_cpuTimingStatisticsWhenPause;
-        AZStd::sys_time_t m_frameToFrameTime = 0;
 
         AZ::IO::FixedMaxPath m_lastCapturedFilePath;
 

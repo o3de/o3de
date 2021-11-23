@@ -23,6 +23,7 @@
 #include <AzCore/std/sort.h>
 #include <AzCore/std/string/conversions.h>
 #include <AzCore/std/time.h>
+#include <AzCore/Time/ITime.h>
 
 namespace Profiler
 {
@@ -649,21 +650,13 @@ namespace Profiler
         m_cpuTimingStatisticsWhenPause.clear();
         if (auto statsProfiler = AZ::Interface<StatisticalProfilerProxy>::Get(); statsProfiler)
         {
-            auto& rhiMetrics = statsProfiler->GetProfiler(AZ_CRC_CE("RHI"));
-
-            const NamedRunningStatistic* frameTimeMetric = rhiMetrics.GetStatistic(AZ_CRC_CE("Frame to Frame Time"));
-            if (frameTimeMetric)
-            {
-                m_frameToFrameTime = static_cast<AZStd::sys_time_t>(frameTimeMetric->GetMostRecentSample());
-            }
-
             AZStd::vector<NamedRunningStatistic*> statistics;
-            rhiMetrics.GetStatsManager().GetAllStatistics(statistics);
+            statistics.reserve(8);
 
+            statsProfiler->GetAllStatisticsOfUnits(statistics, "clocks");
             for (NamedRunningStatistic* stat : statistics)
             {
                 m_cpuTimingStatisticsWhenPause.push_back({ stat->GetName(), stat->GetMostRecentSample() });
-                stat->Reset();
             }
         }
     }
@@ -738,7 +731,11 @@ namespace Profiler
 
     void ImGuiCpuProfiler::CullFrameData()
     {
-        const AZStd::sys_time_t deleteBeforeTick = AZStd::GetTimeNowTicks() - m_frameToFrameTime * m_framesToCollect;
+        const AZ::TimeUs delta = AZ::GetRealTickDeltaTimeUs();
+        const float deltaTimeInSeconds = AZ::TimeUsToSeconds(delta);
+        const AZStd::sys_time_t frameToFrameTime = static_cast<AZStd::sys_time_t>(deltaTimeInSeconds * AZStd::GetTimeTicksPerSecond());
+
+        const AZStd::sys_time_t deleteBeforeTick = AZStd::GetTimeNowTicks() - frameToFrameTime * m_framesToCollect;
 
         // Remove old frame boundary data
         auto firstBoundaryToKeepItr = AZStd::upper_bound(m_frameEndTicks.begin(), m_frameEndTicks.end(), deleteBeforeTick);
