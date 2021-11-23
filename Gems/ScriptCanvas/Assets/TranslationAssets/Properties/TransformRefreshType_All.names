@@ -5,9 +5,24 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "TransformRefreshType_All::Getter",
-                "category": "Constants"
-            }
+                "name": "Transform Refresh Type_ All"
+            },
+            "methods": [
+                {
+                    "key": "GetTransformRefreshType_All",
+                    "details": {
+                        "name": "Get Transform Refresh Type_ All"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

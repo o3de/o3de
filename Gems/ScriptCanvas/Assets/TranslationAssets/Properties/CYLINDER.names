@@ -1,0 +1,28 @@
+{
+    "entries": [
+        {
+            "key": "CYLINDER",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "CYLINDER"
+            },
+            "methods": [
+                {
+                    "key": "GetCYLINDER",
+                    "details": {
+                        "name": "GetCYLINDER"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

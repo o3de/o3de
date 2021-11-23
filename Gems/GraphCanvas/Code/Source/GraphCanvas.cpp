@@ -386,6 +386,16 @@ namespace GraphCanvas
         AZ::Data::AssetCatalogRequestBus::Broadcast(&AZ::Data::AssetCatalogRequestBus::Events::EnumerateAssets, nullptr, collectAssetsCb, postEnumerateCb);
     }
 
+    void GraphCanvasSystemComponent::OnCatalogAssetChanged(const AZ::Data::AssetId& assetId)
+    {
+        AZ::Data::AssetInfo assetInfo;
+        AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetInfo, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetInfoById, assetId);
+        if (assetInfo.m_assetType == azrtti_typeid<TranslationAsset>())
+        {
+            GraphCanvas::TranslationRequestBus::Broadcast(&GraphCanvas::TranslationRequests::Restore);
+        }
+    }
+
     void GraphCanvasSystemComponent::UnregisterAssetHandler()
     {
         if (m_assetHandler)

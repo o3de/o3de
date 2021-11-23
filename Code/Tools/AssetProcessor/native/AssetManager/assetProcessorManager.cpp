@@ -25,6 +25,7 @@
 
 #include <native/AssetManager/PathDependencyManager.h>
 #include <native/utilities/BuilderConfigurationBus.h>
+#include <native/utilities/StatsCapture.h>
 
 #include "AssetRequestHandler.h"
 
@@ -123,6 +124,9 @@ namespace AssetProcessor
     {
         if (status == AssetProcessor::AssetScanningStatus::Started)
         {
+            // capture scanning stats:
+            AssetProcessor::StatsCapture::BeginCaptureStat("AssetScanning");
+           
             // Ensure that the source file list is populated before a scan begins
             m_sourceFilesInDatabase.clear();
             m_fileModTimes.clear();
@@ -176,6 +180,8 @@ namespace AssetProcessor
                  (status == AssetProcessor::AssetScanningStatus::Stopped))
         {
             m_isCurrentlyScanning = false;
+            AssetProcessor::StatsCapture::EndCaptureStat("AssetScanning");
+            
             // we cannot invoke this immediately - the scanner might be done, but we aren't actually ready until we've processed all remaining messages:
             QMetaObject::invokeMethod(this, "CheckMissingFiles", Qt::QueuedConnection);
         }
@@ -209,13 +215,24 @@ namespace AssetProcessor
         }
         else
         {
+            QString statKey = QString("ProcessJob,%1,%2,%3").arg(jobEntry.m_databaseSourceName).arg(jobEntry.m_jobKey).arg(jobEntry.m_platformInfo.m_identifier.c_str());
+            
             if (status == JobStatus::InProgress)
             {
                 //update to in progress status
                 m_jobRunKeyToJobInfoMap[jobEntry.m_jobRunKey].m_status = JobStatus::InProgress;
+                // stats tracking.  Start accumulating time.
+                AssetProcessor::StatsCapture::BeginCaptureStat(statKey.toUtf8().constData());
+
             }
             else //if failed or succeeded remove from the map
             {
+                // note that sometimes this gets called twice, once by the RCJobs thread and once by the AP itself,
+                // because sometimes jobs take a short cut from "started" -> "failed" or "started" -> "complete
+                // without going thru the RC.
+                // as such, all the code in this block should be crafted to work regardless of whether its double called.
+                AssetProcessor::StatsCapture::EndCaptureStat(statKey.toUtf8().constData());
+                
                 m_jobRunKeyToJobInfoMap.erase(jobEntry.m_jobRunKey);
                 Q_EMIT SourceFinished(sourceUUID, legacySourceUUID);
                 Q_EMIT JobComplete(jobEntry, status);
@@ -3355,8 +3372,13 @@ namespace AssetProcessor
             AZStd::string logFileName = AssetUtilities::ComputeJobLogFileName(createJobsRequest);
             {
                 AssetUtilities::JobLogTraceListener jobLogTraceListener(logFileName, runKey, true);
+                // track the time it takes to createJobs.  We can perform analysis later to present it by extension and other stats.
+                QString statKey = QString("CreateJobs,%1,%2").arg(actualRelativePath).arg(builderInfo.m_name.c_str());
+                AssetProcessor::StatsCapture::BeginCaptureStat(statKey.toUtf8().constData());
                 builderInfo.m_createJobFunction(createJobsRequest, createJobsResponse);
+                AssetProcessor::StatsCapture::EndCaptureStat(statKey.toUtf8().constData());
             }
+            
             AssetProcessor::SetThreadLocalJobId(0);
 
             bool isBuilderMissingFingerprint = (createJobsResponse.m_result == AssetBuilderSDK::CreateJobsResultCode::Success
@@ -4839,5 +4861,7 @@ namespace AssetProcessor
         }
         return filesFound;
     }
+
+    
 } // namespace AssetProcessor
 

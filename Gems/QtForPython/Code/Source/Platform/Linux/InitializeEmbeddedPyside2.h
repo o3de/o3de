@@ -38,7 +38,7 @@ namespace QtForPython
             void* moduleHandle = dlopen(moduleToLoad, RTLD_NOW | RTLD_GLOBAL);
             if (!moduleHandle)
             {
-                const char* loadError = dlerror();
+                [[maybe_unused]] const char* loadError = dlerror();
                 AZ_Error("QtForPython", false, "Unable to load python library %s for Pyside2: %s", moduleToLoad,
                          loadError ? loadError : "Unknown Error");
             }
