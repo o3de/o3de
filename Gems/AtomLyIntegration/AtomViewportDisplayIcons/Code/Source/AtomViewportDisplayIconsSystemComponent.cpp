@@ -73,7 +73,7 @@ namespace AZ::Render
     void AtomViewportDisplayIconsSystemComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
         required.push_back(AZ_CRC("RPISystem", 0xf2add773));
-        required.push_back(AZ_CRC("AtomBridgeService", 0xdb816a99));
+        required.push_back(AZ_CRC("AtomBridgeService", 0x92d990b5));
     }
 
     void AtomViewportDisplayIconsSystemComponent::GetDependentServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& dependent)
