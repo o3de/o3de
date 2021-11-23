@@ -1063,6 +1063,7 @@ namespace EMStudio
         settings.m_vertexNormalsScale = m_vertexNormalsScale;
         settings.m_faceNormalsScale = m_faceNormalsScale;
         settings.m_tangentsScale = m_tangentsScale;
+        settings.m_nodeOrientationScale = m_nodeOrientationScale;
 
         settings.m_vertexNormalsColor = m_vertexNormalsColor;
         settings.m_faceNormalsColor = m_faceNormalsColor;
@@ -1112,6 +1113,7 @@ namespace EMStudio
     void RenderOptions::OnNodeOrientationScaleChangedCallback() const
     {
         PluginOptionsNotificationsBus::Event(s_nodeOrientationScaleOptionName, &PluginOptionsNotificationsBus::Events::OnOptionChanged, s_nodeOrientationScaleOptionName);
+        CopyToRenderActorSettings(EMotionFX::GetRenderActorSettings());
     }
 
     void RenderOptions::OnScaleBonesOnLengthChangedCallback() const

@@ -1,0 +1,28 @@
+{
+    "entries": [
+        {
+            "key": "SurfaceMaskFilterComponentTypeId",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "Surface Mask Filter Component Type Id"
+            },
+            "methods": [
+                {
+                    "key": "GetSurfaceMaskFilterComponentTypeId",
+                    "details": {
+                        "name": "Get Surface Mask Filter Component Type Id"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}",
+                            "details": {
+                                "name": "AZ:: Uuid"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

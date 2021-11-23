@@ -5,9 +5,24 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "BlendFactor_ColorSource1Inverse::Getter",
-                "category": "Constants"
-            }
+                "name": "Blend Factor_ Color Source 1 Inverse"
+            },
+            "methods": [
+                {
+                    "key": "GetBlendFactor_ColorSource1Inverse",
+                    "details": {
+                        "name": "Get Blend Factor_ Color Source 1 Inverse"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }
