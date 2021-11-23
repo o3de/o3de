@@ -325,11 +325,15 @@ namespace ScriptCanvasEditor
 
         static void Reflect(AZ::ReflectContext* context);
 
-        SourceHandle() = default;
+        SourceHandle();
 
         SourceHandle(const SourceHandle& data, const AZ::Uuid& id, const AZ::IO::Path& path);
 
         SourceHandle(ScriptCanvas::DataPtr graph, const AZ::Uuid& id, const AZ::IO::Path& path);
+
+        SourceHandle(const SourceHandle& data, const AZ::IO::Path& path);
+
+        SourceHandle(ScriptCanvas::DataPtr graph, const AZ::IO::Path& path);
 
         bool AnyEquals(const SourceHandle& other) const;
 

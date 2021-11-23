@@ -25,6 +25,8 @@ namespace ScriptCanvasEditor
     // If both Path and Id is valid, including after correction, returns the handle including source Data,
     // otherwise, returns null
     AZStd::optional<SourceHandle> CompleteDescription(const SourceHandle& source);
+    // if CompleteDescription() succeeds, sets the handle to the result, else does nothing
+    bool CompleteDescriptionInPlace(SourceHandle& source);
 
     class Graph;
     class NodePaletteModel;

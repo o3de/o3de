@@ -26,6 +26,22 @@ namespace ScriptCanvas
 
 namespace ScriptCanvasEditor
 {
+    class EditorAssetTree
+    {
+    public:
+        AZ_CLASS_ALLOCATOR(EditorAssetTree, AZ::SystemAllocator, 0);
+
+        EditorAssetTree* m_parent = nullptr;
+        AZStd::vector<EditorAssetTree> m_dependencies;
+        SourceHandle m_asset;
+
+        EditorAssetTree* ModRoot();
+
+        void SetParent(EditorAssetTree& parent);
+
+        AZStd::string ToString(size_t depth = 0) const;
+    };
+
     AZ::Outcome<SourceHandle, AZStd::string> LoadFromFile(AZStd::string_view path);
 
     AZ::Outcome<void, AZStd::string> LoadDataFromJson
@@ -33,5 +49,7 @@ namespace ScriptCanvasEditor
         , AZStd::string_view source
         , AZ::SerializeContext& serializeContext);
 
+    AZ::Outcome<EditorAssetTree, AZStd::string> LoadEditorAssetTree(SourceHandle handle, EditorAssetTree* parent = nullptr);
+        
     AZ::Outcome<void, AZStd::string> SaveToStream(const SourceHandle& source, AZ::IO::GenericStream& stream);
 }

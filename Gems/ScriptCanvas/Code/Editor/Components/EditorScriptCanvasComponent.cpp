@@ -134,7 +134,7 @@ namespace ScriptCanvasEditor
             }
 
             ScriptCanvasBuilder::BuildVariableOverrides overrides;
-            overrides.m_source = AZ::Data::Asset<ScriptCanvasEditor::ScriptCanvasAsset>(assetHolder.GetAssetId(), assetHolder.GetAssetType(), assetHolder.GetAssetHint());;
+            overrides.m_source = SourceHandle(nullptr, assetHolder.GetAssetId().m_guid, {});
 
             for (auto& variable : editableData.GetVariables())
             {
@@ -197,14 +197,15 @@ namespace ScriptCanvasEditor
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Level", 0x9aeacc13))
                     ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/scripting/script-canvas/")
                     ->DataElement(AZ::Edit::UIHandlers::Default, &EditorScriptCanvasComponent::m_sourceHandle, "Script Canvas Source File", "Script Canvas source file associated with this component")
-                    ->Attribute("BrowseIcon", ":/stylesheet/img/UI20/browse-edit-select-files.svg")
-                    ->Attribute("EditButton", "")
-                    ->Attribute("EditDescription", "Open in Script Canvas Editor")
-                    ->Attribute("EditCallback", &EditorScriptCanvasComponent::OpenEditor)
-                    ->Attribute(AZ::Edit::Attributes::AssetPickerTitle, "Script Canvas")
-                    ->Attribute(AZ::Edit::Attributes::SourceAssetFilterPattern, "*.scriptcanvas")
+                        ->Attribute("BrowseIcon", ":/stylesheet/img/UI20/browse-edit-select-files.svg")
+                        ->Attribute("EditButton", "")
+                        ->Attribute("EditDescription", "Open in Script Canvas Editor")
+                        ->Attribute("EditCallback", &EditorScriptCanvasComponent::OpenEditor)
+                        ->Attribute(AZ::Edit::Attributes::AssetPickerTitle, "Script Canvas")
+                        ->Attribute(AZ::Edit::Attributes::SourceAssetFilterPattern, "*.scriptcanvas")
+                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorScriptCanvasComponent::OnFileSelectionChanged)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &EditorScriptCanvasComponent::m_variableOverrides, "Properties", "Script Canvas Graph Properties")
-                    ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
+                        ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ;
             }
         }
@@ -319,7 +320,7 @@ namespace ScriptCanvasEditor
 
         m_runtimeDataIsValid = false;
 
-        auto assetTreeOutcome = LoadEditorAssetTree(m_sourceHandle.Id(), m_sourceHandle.Path().c_str());
+        auto assetTreeOutcome = LoadEditorAssetTree(m_sourceHandle);
         if (!assetTreeOutcome.IsSuccess())
         {
             AZ_Warning("ScriptCanvas", false, "EditorScriptCanvasComponent::BuildGameEntityData failed: %s", assetTreeOutcome.GetError().c_str());
@@ -386,6 +387,26 @@ namespace ScriptCanvasEditor
         return m_sourceHandle.Id();
     }
 
+    AZ::u32 EditorScriptCanvasComponent::OnFileSelectionChanged()
+    {
+        m_sourceHandle = SourceHandle(nullptr, m_sourceHandle.Path());
+        CompleteDescriptionInPlace(m_sourceHandle);
+
+        m_previousHandle = {};
+        m_removedHandle = {};
+
+        if (m_sourceHandle.IsDescriptionValid())
+        {
+            OnScriptCanvasAssetChanged(m_sourceHandle);
+        }
+        else
+        {
+            ClearVariables();
+        }
+
+        return AZ::Edit::PropertyRefreshLevels::EntireTree;
+    }
+    
     void EditorScriptCanvasComponent::OnScriptCanvasAssetChanged(const SourceHandle& assetId)
     {
         ScriptCanvas::GraphIdentifier newIdentifier = GetGraphIdentifier();
@@ -491,10 +512,6 @@ namespace ScriptCanvasEditor
             BuildGameEntityData();
             UpdateName();
             AzToolsFramework::ToolsApplicationNotificationBus::Broadcast(&AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay, AzToolsFramework::Refresh_EntireTree_NewContent);
-        }
-        else
-        {
-            // #sc_editor_asset clear or disable something
         }
     }
 
