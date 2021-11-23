@@ -77,6 +77,10 @@ ly_add_target(
             ${additional_dependencies}
 )
 
+if(LY_DEFAULT_PROJECT_PATH)
+    set_property(TARGET AssetBundler AssetBundlerBatch APPEND PROPERTY VS_DEBUGGER_COMMAND_ARGUMENTS "--project-path=\"${LY_DEFAULT_PROJECT_PATH}\"")
+endif()
+
 # Adds a specialized .setreg to identify gems enabled in the active project.
 # This associates the AssetBundler target with the .Builders gem variants.
 ly_set_gem_variant_to_load(TARGETS AssetBundler VARIANTS Builders)

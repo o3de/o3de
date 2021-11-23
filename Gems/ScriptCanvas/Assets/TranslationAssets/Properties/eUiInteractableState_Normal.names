@@ -5,9 +5,24 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "eUiInteractableState_Normal::Getter",
-                "category": "Constants"
-            }
+                "name": "e Ui Interactable State_ Normal"
+            },
+            "methods": [
+                {
+                    "key": "GeteUiInteractableState_Normal",
+                    "details": {
+                        "name": "Gete Ui Interactable State_ Normal"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

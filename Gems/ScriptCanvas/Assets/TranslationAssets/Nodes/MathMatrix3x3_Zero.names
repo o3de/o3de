@@ -7,8 +7,7 @@
             "details": {
                 "name": "Zero",
                 "category": "Math/Matrix3x3",
-                "tooltip": "returns the zero matrix",
-                "subtitle": "Matrix3x3"
+                "tooltip": "Returns the zero matrix"
             },
             "slots": [
                 {
@@ -24,9 +23,9 @@
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Matrix3x3",
+                    "key": "DataOutput_Result",
                     "details": {
-                        "name": "Result: Matrix3x3"
+                        "name": "Result"
                     }
                 }
             ]

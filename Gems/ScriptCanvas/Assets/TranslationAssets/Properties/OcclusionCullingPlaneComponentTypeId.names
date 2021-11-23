@@ -5,9 +5,24 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "OcclusionCullingPlaneComponentTypeId::Getter",
-                "category": "Constants"
-            }
+                "name": "Occlusion Culling Plane Component Type Id"
+            },
+            "methods": [
+                {
+                    "key": "GetOcclusionCullingPlaneComponentTypeId",
+                    "details": {
+                        "name": "Get Occlusion Culling Plane Component Type Id"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}",
+                            "details": {
+                                "name": "AZ:: Uuid"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

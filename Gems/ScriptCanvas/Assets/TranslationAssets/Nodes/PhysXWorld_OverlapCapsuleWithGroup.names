@@ -1,0 +1,64 @@
+{
+    "entries": [
+        {
+            "key": "{588E1C8F-D18E-5C00-AF13-C4FCD5A9519D}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "Overlap Capsule With Group",
+                "category": "PhysX/World",
+                "tooltip": "Returns the objects overlapping a capsule at a position"
+            },
+            "slots": [
+                {
+                    "key": "Input_In",
+                    "details": {
+                        "name": "In"
+                    }
+                },
+                {
+                    "key": "Output_Out",
+                    "details": {
+                        "name": "Out"
+                    }
+                },
+                {
+                    "key": "DataInput_Pose",
+                    "details": {
+                        "name": "Pose"
+                    }
+                },
+                {
+                    "key": "DataInput_Height",
+                    "details": {
+                        "name": "Height"
+                    }
+                },
+                {
+                    "key": "DataInput_Radius",
+                    "details": {
+                        "name": "Radius"
+                    }
+                },
+                {
+                    "key": "DataInput_Collision group",
+                    "details": {
+                        "name": "Collision group"
+                    }
+                },
+                {
+                    "key": "DataInput_Ignore",
+                    "details": {
+                        "name": "Ignore"
+                    }
+                },
+                {
+                    "key": "DataOutput_Result",
+                    "details": {
+                        "name": "Result"
+                    }
+                }
+            ]
+        }
+    ]
+}

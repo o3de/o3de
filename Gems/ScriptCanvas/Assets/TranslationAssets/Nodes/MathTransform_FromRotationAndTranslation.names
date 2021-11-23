@@ -5,10 +5,9 @@
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "FromRotationAndTranslation",
+                "name": "From Rotation And Translation",
                 "category": "Math/Transform",
-                "tooltip": "returns a transform from the rotation and the translation",
-                "subtitle": "Transform"
+                "tooltip": "Returns a transform from the rotation and the translation"
             },
             "slots": [
                 {
@@ -24,21 +23,21 @@
                     }
                 },
                 {
-                    "key": "DataInput_Quaternion: Rotation",
+                    "key": "DataInput_Rotation",
                     "details": {
-                        "name": "Quaternion: Rotation"
+                        "name": "Rotation"
                     }
                 },
                 {
-                    "key": "DataInput_Vector3: Translation",
+                    "key": "DataInput_Translation",
                     "details": {
-                        "name": "Vector3: Translation"
+                        "name": "Translation"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Transform",
+                    "key": "DataOutput_Result",
                     "details": {
-                        "name": "Result: Transform"
+                        "name": "Result"
                     }
                 }
             ]

@@ -5,7 +5,7 @@
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "IsZero",
+                "name": "Is Zero",
                 "category": "Math/Color",
                 "tooltip": "returns true if Source is within Tolerance of zero",
                 "subtitle": "Color"
@@ -26,19 +26,19 @@
                 {
                     "key": "DataInput_Color: Source",
                     "details": {
-                        "name": "Color: Source"
+                        "name": "Source"
                     }
                 },
                 {
                     "key": "DataInput_Number: Tolerance",
                     "details": {
-                        "name": "Number: Tolerance"
+                        "name": "Tolerance"
                     }
                 },
                 {
                     "key": "DataOutput_Result: Boolean",
                     "details": {
-                        "name": "Result: Boolean"
+                        "name": "Is Zero"
                     }
                 }
             ]

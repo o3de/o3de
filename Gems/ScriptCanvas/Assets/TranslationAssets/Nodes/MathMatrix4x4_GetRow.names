@@ -5,10 +5,9 @@
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "GetRow",
+                "name": "Get Row",
                 "category": "Math/Matrix4x4",
-                "tooltip": "returns vector from matrix corresponding to the Row index",
-                "subtitle": "Matrix4x4"
+                "tooltip": "Returns vector from matrix corresponding to the Row index"
             },
             "slots": [
                 {
@@ -24,21 +23,21 @@
                     }
                 },
                 {
-                    "key": "DataInput_Matrix4x4: Source",
+                    "key": "DataInput_Source",
                     "details": {
-                        "name": "Matrix4x4: Source"
+                        "name": "Source"
                     }
                 },
                 {
-                    "key": "DataInput_Number: Row",
+                    "key": "DataInput_Row",
                     "details": {
-                        "name": "Number: Row"
+                        "name": "Row"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Vector4",
+                    "key": "DataOutput_Result",
                     "details": {
-                        "name": "Result: Vector4"
+                        "name": "Result"
                     }
                 }
             ]

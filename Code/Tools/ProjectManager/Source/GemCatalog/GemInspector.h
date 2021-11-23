@@ -16,11 +16,12 @@
 
 #include <QItemSelection>
 #include <QScrollArea>
-#include <QSpacerItem>
 #endif
 
 QT_FORWARD_DECLARE_CLASS(QVBoxLayout)
 QT_FORWARD_DECLARE_CLASS(QLabel)
+QT_FORWARD_DECLARE_CLASS(QSpacerItem)
+QT_FORWARD_DECLARE_CLASS(QPushButton)
 
 namespace O3DE::ProjectManager
 {
@@ -45,6 +46,8 @@ namespace O3DE::ProjectManager
 
     signals:
         void TagClicked(const Tag& tag);
+        void UpdateGem(const QModelIndex& modelIndex);
+        void UninstallGem(const QModelIndex& modelIndex);
 
     private slots:
         void OnSelectionChanged(const QItemSelection& selected, const QItemSelection& deselected);
@@ -55,11 +58,13 @@ namespace O3DE::ProjectManager
         GemModel* m_model = nullptr;
         QWidget* m_mainWidget = nullptr;
         QVBoxLayout* m_mainLayout = nullptr;
+        QModelIndex m_curModelIndex;
 
         // General info (top) section
         QLabel* m_nameLabel = nullptr;
         QLabel* m_creatorLabel = nullptr;
         QLabel* m_summaryLabel = nullptr;
+        QLabel* m_licenseLabel = nullptr;
         LinkLabel* m_licenseLinkLabel = nullptr;
         LinkLabel* m_directoryLinkLabel = nullptr;
         LinkLabel* m_documentationLinkLabel = nullptr;
@@ -77,5 +82,8 @@ namespace O3DE::ProjectManager
         QLabel* m_versionLabel = nullptr;
         QLabel* m_lastUpdatedLabel = nullptr;
         QLabel* m_binarySizeLabel = nullptr;
+
+        QPushButton* m_updateGemButton = nullptr;
+        QPushButton* m_uninstallGemButton = nullptr;
     };
 } // namespace O3DE::ProjectManager

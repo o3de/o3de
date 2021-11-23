@@ -5,9 +5,24 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "DisplaySettings_HideTracks::Getter",
-                "category": "Constants"
-            }
+                "name": "Display Settings_ Hide Tracks"
+            },
+            "methods": [
+                {
+                    "key": "GetDisplaySettings_HideTracks",
+                    "details": {
+                        "name": "Get Display Settings_ Hide Tracks"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

@@ -5,23 +5,21 @@
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "UiTransformBus",
-                "category": "UI"
+                "name": "Ui Transform Bus"
             },
             "methods": [
                 {
                     "key": "GetPivotY",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke Get Pivot Y"
+                        "tooltip": "When signaled, this will invoke Get PivotY"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after Get Pivot Y is invoked"
+                        "tooltip": "Signaled after Get PivotY is invoked"
                     },
                     "details": {
-                        "name": "Get Pivot Y",
-                        "tooltip": "Gets the Y value of the pivot point"
+                        "name": "Get PivotY"
                     },
                     "results": [
                         {
@@ -36,15 +34,14 @@
                     "key": "GetScaleX",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke Get Scale X"
+                        "tooltip": "When signaled, this will invoke Get ScaleX"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after Get Scale X is invoked"
+                        "tooltip": "Signaled after Get ScaleX is invoked"
                     },
                     "details": {
-                        "name": "Get Scale X",
-                        "tooltip": "Gets the X value of the scale"
+                        "name": "Get ScaleX"
                     },
                     "results": [
                         {
@@ -66,14 +63,13 @@
                         "tooltip": "Signaled after Get Scale is invoked"
                     },
                     "details": {
-                        "name": "Get Scale",
-                        "tooltip": "Gets the scale"
+                        "name": "Get Scale"
                     },
                     "results": [
                         {
                             "typeid": "{3D80F623-C85C-4741-90D0-E4E66164E6BF}",
                             "details": {
-                                "name": "Vector2"
+                                "name": "Vector 2"
                             }
                         }
                     ]
@@ -82,22 +78,20 @@
                     "key": "SetLocalPositionX",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke Set Local Position X"
+                        "tooltip": "When signaled, this will invoke Set Local PositionX"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after Set Local Position X is invoked"
+                        "tooltip": "Signaled after Set Local PositionX is invoked"
                     },
                     "details": {
-                        "name": "Set Local Position X",
-                        "tooltip": "Sets the X position of the element relative to the center of the element's anchors"
+                        "name": "Set Local PositionX"
                     },
                     "params": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "X Local Position",
-                                "tooltip": "The X position of the element relative to the center of the element's anchors"
+                                "name": "float"
                             }
                         }
                     ]
@@ -106,22 +100,20 @@
                     "key": "SetScaleX",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke Set Scale X"
+                        "tooltip": "When signaled, this will invoke Set ScaleX"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after Set Scale X is invoked"
+                        "tooltip": "Signaled after Set ScaleX is invoked"
                     },
                     "details": {
-                        "name": "Set Scale X",
-                        "tooltip": "Sets the X value of the scale"
+                        "name": "Set ScaleX"
                     },
                     "params": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "X Scale",
-                                "tooltip": "The X value of the scale"
+                                "name": "float"
                             }
                         }
                     ]
@@ -130,22 +122,20 @@
                     "key": "SetZRotation",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke Set Z Rotation"
+                        "tooltip": "When signaled, this will invoke SetZ Rotation"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after Set Z Rotation is invoked"
+                        "tooltip": "Signaled after SetZ Rotation is invoked"
                     },
                     "details": {
-                        "name": "Set Z Rotation",
-                        "tooltip": "Sets the rotation about the z-axis"
+                        "name": "SetZ Rotation"
                     },
                     "params": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Z Rotation",
-                                "tooltip": "The rotation about the z-axis"
+                                "name": "float"
                             }
                         }
                     ]
@@ -161,8 +151,7 @@
                         "tooltip": "Signaled after Get Scale To Device Mode is invoked"
                     },
                     "details": {
-                        "name": "Get Scale To Device Mode",
-                        "tooltip": "Returns how the element and all its children are scaled to allow for the difference between the authored canvas size and the actual viewport size"
+                        "name": "Get Scale To Device Mode"
                     },
                     "results": [
                         {
@@ -184,15 +173,13 @@
                         "tooltip": "Signaled after Set Pivot is invoked"
                     },
                     "details": {
-                        "name": "Set Pivot",
-                        "tooltip": "Sets the pivot point"
+                        "name": "Set Pivot"
                     },
                     "params": [
                         {
                             "typeid": "{3D80F623-C85C-4741-90D0-E4E66164E6BF}",
                             "details": {
-                                "name": "Pivot",
-                                "tooltip": "The pivot point"
+                                "name": "Vector 2"
                             }
                         }
                     ]
@@ -201,15 +188,14 @@
                     "key": "GetScaleY",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke Get Scale Y"
+                        "tooltip": "When signaled, this will invoke Get ScaleY"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after Get Scale Y is invoked"
+                        "tooltip": "Signaled after Get ScaleY is invoked"
                     },
                     "details": {
-                        "name": "Get Scale Y",
-                        "tooltip": "Gets the Y value of the scale"
+                        "name": "Get ScaleY"
                     },
                     "results": [
                         {
@@ -231,15 +217,13 @@
                         "tooltip": "Signaled after Move Local Position By is invoked"
                     },
                     "details": {
-                        "name": "Move Local Position By",
-                        "tooltip": "Moves the element relative to the center of the element's anchors"
+                        "name": "Move Local Position By"
                     },
                     "params": [
                         {
                             "typeid": "{3D80F623-C85C-4741-90D0-E4E66164E6BF}",
                             "details": {
-                                "name": "Offset",
-                                "tooltip": "The amount to move the local position"
+                                "name": "Vector 2"
                             }
                         }
                     ]
@@ -248,22 +232,20 @@
                     "key": "SetLocalPositionY",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke Set Local Position Y"
+                        "tooltip": "When signaled, this will invoke Set Local PositionY"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after Set Local Position Y is invoked"
+                        "tooltip": "Signaled after Set Local PositionY is invoked"
                     },
                     "details": {
-                        "name": "Set Local Position Y",
-                        "tooltip": "Sets the Y position of the element relative to the center of the element's anchors"
+                        "name": "Set Local PositionY"
                     },
                     "params": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Y Local Position",
-                                "tooltip": "The Y position of the element relative to the center of the element's anchors"
+                                "name": "float"
                             }
                         }
                     ]
@@ -279,15 +261,13 @@
                         "tooltip": "Signaled after Set Viewport Position is invoked"
                     },
                     "details": {
-                        "name": "Set Viewport Position",
-                        "tooltip": "Sets the position of the element in viewport space"
+                        "name": "Set Viewport Position"
                     },
                     "params": [
                         {
                             "typeid": "{3D80F623-C85C-4741-90D0-E4E66164E6BF}",
                             "details": {
-                                "name": "Position",
-                                "tooltip": "The position of the element in viewport space"
+                                "name": "Vector 2"
                             }
                         }
                     ]
@@ -303,15 +283,13 @@
                         "tooltip": "Signaled after Set Scale To Device Mode is invoked"
                     },
                     "details": {
-                        "name": "Set Scale To Device Mode",
-                        "tooltip": "Sets how the element and all its children should be scaled to allow for the difference between the authored canvas size and the actual viewport size"
+                        "name": "Set Scale To Device Mode"
                     },
                     "params": [
                         {
                             "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
                             "details": {
-                                "name": "Scale to Device Mode",
-                                "tooltip": "Indicates how the element and all its children are scaled to allow for the difference between the authored canvas size and the actual viewport size (0=None, 1=Scale to fit (uniformly), 2=Scale to fill (uniformly), 3=Scale to fit X (uniformly), 4=Scale to fit Y (uniformly), 5=Stretch to fill (non-uniformly), 6=Stretch to fit X (non-uniformly), 7=Stretch to fit Y (non-uniformly))"
+                                "name": "int"
                             }
                         }
                     ]
@@ -320,15 +298,14 @@
                     "key": "GetLocalPositionX",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke Get Local Position X"
+                        "tooltip": "When signaled, this will invoke Get Local PositionX"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after Get Local Position X is invoked"
+                        "tooltip": "Signaled after Get Local PositionX is invoked"
                     },
                     "details": {
-                        "name": "Get Local Position X",
-                        "tooltip": "Gets the X position of the element relative to the center of the element's anchors"
+                        "name": "Get Local PositionX"
                     },
                     "results": [
                         {
@@ -350,15 +327,13 @@
                         "tooltip": "Signaled after Move Canvas Position By is invoked"
                     },
                     "details": {
-                        "name": "Move Canvas Position By",
-                        "tooltip": "Moves the element in canvas space"
+                        "name": "Move Canvas Position By"
                     },
                     "params": [
                         {
                             "typeid": "{3D80F623-C85C-4741-90D0-E4E66164E6BF}",
                             "details": {
-                                "name": "Offset",
-                                "tooltip": "The amount to move the canvas position"
+                                "name": "Vector 2"
                             }
                         }
                     ]
@@ -367,22 +342,20 @@
                     "key": "SetPivotX",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke Set Pivot X"
+                        "tooltip": "When signaled, this will invoke Set PivotX"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after Set Pivot X is invoked"
+                        "tooltip": "Signaled after Set PivotX is invoked"
                     },
                     "details": {
-                        "name": "Set Pivot X",
-                        "tooltip": "Sets the X value of the pivot point"
+                        "name": "Set PivotX"
                     },
                     "params": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "X Pivot",
-                                "tooltip": "The X value of the pivot point"
+                                "name": "float"
                             }
                         }
                     ]
@@ -398,15 +371,13 @@
                         "tooltip": "Signaled after Move Viewport Position By is invoked"
                     },
                     "details": {
-                        "name": "Move Viewport Position By",
-                        "tooltip": "Moves the element in viewport space"
+                        "name": "Move Viewport Position By"
                     },
                     "params": [
                         {
                             "typeid": "{3D80F623-C85C-4741-90D0-E4E66164E6BF}",
                             "details": {
-                                "name": "Offset",
-                                "tooltip": "The amount to move the viewport position"
+                                "name": "Vector 2"
                             }
                         }
                     ]
@@ -415,22 +386,20 @@
                     "key": "SetPivotY",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke Set Pivot Y"
+                        "tooltip": "When signaled, this will invoke Set PivotY"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after Set Pivot Y is invoked"
+                        "tooltip": "Signaled after Set PivotY is invoked"
                     },
                     "details": {
-                        "name": "Set Pivot Y",
-                        "tooltip": "Sets the Y value of the pivot point"
+                        "name": "Set PivotY"
                     },
                     "params": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Y Pivot",
-                                "tooltip": "The Y value of the pivot point"
+                                "name": "float"
                             }
                         }
                     ]
@@ -446,14 +415,13 @@
                         "tooltip": "Signaled after Get Viewport Position is invoked"
                     },
                     "details": {
-                        "name": "Get Viewport Position",
-                        "tooltip": "Gets the position of the element in viewport space"
+                        "name": "Get Viewport Position"
                     },
                     "results": [
                         {
                             "typeid": "{3D80F623-C85C-4741-90D0-E4E66164E6BF}",
                             "details": {
-                                "name": "Vector2"
+                                "name": "Vector 2"
                             }
                         }
                     ]
@@ -469,15 +437,13 @@
                         "tooltip": "Signaled after Set Scale is invoked"
                     },
                     "details": {
-                        "name": "Set Scale",
-                        "tooltip": "Sets the scale"
+                        "name": "Set Scale"
                     },
                     "params": [
                         {
                             "typeid": "{3D80F623-C85C-4741-90D0-E4E66164E6BF}",
                             "details": {
-                                "name": "Scale",
-                                "tooltip": "The scale"
+                                "name": "Vector 2"
                             }
                         }
                     ]
@@ -493,15 +459,13 @@
                         "tooltip": "Signaled after Set Local Position is invoked"
                     },
                     "details": {
-                        "name": "Set Local Position",
-                        "tooltip": "Sets the position of the element relative to the center of the element's anchors"
+                        "name": "Set Local Position"
                     },
                     "params": [
                         {
                             "typeid": "{3D80F623-C85C-4741-90D0-E4E66164E6BF}",
                             "details": {
-                                "name": "Local Position",
-                                "tooltip": "The position of the element relative to the center of the element's anchors"
+                                "name": "Vector 2"
                             }
                         }
                     ]
@@ -517,14 +481,13 @@
                         "tooltip": "Signaled after Get Canvas Position is invoked"
                     },
                     "details": {
-                        "name": "Get Canvas Position",
-                        "tooltip": "Gets the position of the element in canvas space"
+                        "name": "Get Canvas Position"
                     },
                     "results": [
                         {
                             "typeid": "{3D80F623-C85C-4741-90D0-E4E66164E6BF}",
                             "details": {
-                                "name": "Vector2"
+                                "name": "Vector 2"
                             }
                         }
                     ]
@@ -533,15 +496,14 @@
                     "key": "GetPivotX",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke Get Pivot X"
+                        "tooltip": "When signaled, this will invoke Get PivotX"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after Get Pivot X is invoked"
+                        "tooltip": "Signaled after Get PivotX is invoked"
                     },
                     "details": {
-                        "name": "Get Pivot X",
-                        "tooltip": "Gets the X value of the pivot point"
+                        "name": "Get PivotX"
                     },
                     "results": [
                         {
@@ -556,15 +518,14 @@
                     "key": "GetZRotation",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke Get Z Rotation"
+                        "tooltip": "When signaled, this will invoke GetZ Rotation"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after Get Z Rotation is invoked"
+                        "tooltip": "Signaled after GetZ Rotation is invoked"
                     },
                     "details": {
-                        "name": "Get Z Rotation",
-                        "tooltip": "Gets the rotation about the z-axis"
+                        "name": "GetZ Rotation"
                     },
                     "results": [
                         {
@@ -586,14 +547,13 @@
                         "tooltip": "Signaled after Get Local Position is invoked"
                     },
                     "details": {
-                        "name": "Get Local Position",
-                        "tooltip": "Gets the position of the element relative to the center of the element's anchors"
+                        "name": "Get Local Position"
                     },
                     "results": [
                         {
                             "typeid": "{3D80F623-C85C-4741-90D0-E4E66164E6BF}",
                             "details": {
-                                "name": "Vector2"
+                                "name": "Vector 2"
                             }
                         }
                     ]
@@ -602,22 +562,20 @@
                     "key": "SetScaleY",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke Set Scale Y"
+                        "tooltip": "When signaled, this will invoke Set ScaleY"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after Set Scale Y is invoked"
+                        "tooltip": "Signaled after Set ScaleY is invoked"
                     },
                     "details": {
-                        "name": "Set Scale Y",
-                        "tooltip": "Sets the Y value of the scale"
+                        "name": "Set ScaleY"
                     },
                     "params": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Y Scale",
-                                "tooltip": "The Y value of the scale"
+                                "name": "float"
                             }
                         }
                     ]
@@ -633,14 +591,13 @@
                         "tooltip": "Signaled after Get Pivot is invoked"
                     },
                     "details": {
-                        "name": "Get Pivot",
-                        "tooltip": "Gets the pivot point"
+                        "name": "Get Pivot"
                     },
                     "results": [
                         {
                             "typeid": "{3D80F623-C85C-4741-90D0-E4E66164E6BF}",
                             "details": {
-                                "name": "Vector2"
+                                "name": "Vector 2"
                             }
                         }
                     ]
@@ -656,15 +613,13 @@
                         "tooltip": "Signaled after Set Canvas Position is invoked"
                     },
                     "details": {
-                        "name": "Set Canvas Position",
-                        "tooltip": "Sets the position of the element in canvas space"
+                        "name": "Set Canvas Position"
                     },
                     "params": [
                         {
                             "typeid": "{3D80F623-C85C-4741-90D0-E4E66164E6BF}",
                             "details": {
-                                "name": "Position",
-                                "tooltip": "The position of the element in canvas space"
+                                "name": "Vector 2"
                             }
                         }
                     ]
@@ -673,15 +628,14 @@
                     "key": "GetLocalPositionY",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke Get Local Position Y"
+                        "tooltip": "When signaled, this will invoke Get Local PositionY"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after Get Local Position Y is invoked"
+                        "tooltip": "Signaled after Get Local PositionY is invoked"
                     },
                     "details": {
-                        "name": "Get Local Position Y",
-                        "tooltip": "Gets the Y position of the element relative to the center of the element's anchors"
+                        "name": "Get Local PositionY"
                     },
                     "results": [
                         {

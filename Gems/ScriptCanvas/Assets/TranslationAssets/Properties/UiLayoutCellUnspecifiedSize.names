@@ -5,9 +5,24 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "UiLayoutCellUnspecifiedSize::Getter",
-                "category": "Constants"
-            }
+                "name": "Ui Layout Cell Unspecified Size"
+            },
+            "methods": [
+                {
+                    "key": "GetUiLayoutCellUnspecifiedSize",
+                    "details": {
+                        "name": "Get Ui Layout Cell Unspecified Size"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

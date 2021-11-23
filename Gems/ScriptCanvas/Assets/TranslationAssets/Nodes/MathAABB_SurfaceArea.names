@@ -5,10 +5,10 @@
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "SurfaceArea",
-                "category": "Math/AABB",
+                "name": "Surface Area",
+                "category": "Math/Axis Aligned Bounding Box",
                 "tooltip": "returns the sum of the surface area of all six faces of Source",
-                "subtitle": "AABB"
+                "subtitle": "Axis Aligned Bounding Box"
             },
             "slots": [
                 {
