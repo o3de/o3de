@@ -1,3 +1,5 @@
+import traceback, logging
+
 def log_exception_traceback():
     data = traceback.format_exc()
     logger = logging.getLogger('python')

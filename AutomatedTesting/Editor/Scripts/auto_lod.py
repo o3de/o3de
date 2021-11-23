@@ -40,6 +40,7 @@ def update_manifest(scene):
     # Make a list of mesh node paths
     mesh_path_list = list(map(lambda node: node.get_path(), mesh_name_list))
 
+    # Assume the first mesh is the main mesh
     main_mesh = mesh_name_list[0]
     mesh_path = main_mesh.get_path()
 
@@ -57,6 +58,21 @@ def update_manifest(scene):
     for node in mesh_path_list:
         if node != mesh_path:
             scene_manifest.mesh_group_unselect_node(mesh_group, node)
+
+    # Create a LOD rule
+    lod_rule = scene_manifest.mesh_group_add_lod_rule(mesh_group)
+
+    # Loop all the mesh nodes after the first 
+    for x in mesh_path_list[1:]:
+        # Add a new LOD level
+        lod = scene_manifest.lod_rule_add_lod(lod_rule)
+        # Select the current mesh for this LOD level
+        scene_manifest.lod_select_node(lod, x)
+
+        # Unselect every other mesh for this LOD level
+        for y in mesh_path_list:
+            if y != x:
+                scene_manifest.lod_unselect_node(lod, y)
 
     # Convert the manifest to a JSON string and return it
     new_manifest = scene_manifest.export()
