@@ -32,7 +32,7 @@ namespace AzQtComponents
 
     namespace Internal
     {
-        static const QString g_layerStyle = QStringLiteral("background-color:rgba(0, 0, 0, 179)");
+        static const QString LayerStyle = QStringLiteral("background-color:rgba(0, 0, 0, 179)");
 
         OverlayWidgetLayer::OverlayWidgetLayer(OverlayWidget* parent, QWidget* centerWidget, QWidget* breakoutWidget, 
             const char* title, const OverlayWidgetButtonList& buttons)
@@ -66,7 +66,7 @@ namespace AzQtComponents
                 
             if (breakoutWidget)
             {
-                setStyleSheet(g_layerStyle);
+                setStyleSheet(LayerStyle);
                 setLayout(new QHBoxLayout());
                 
                 // close the overlay if either dependent widget is destroyed
@@ -100,7 +100,7 @@ namespace AzQtComponents
                 }
                 else
                 {
-                    setStyleSheet(g_layerStyle);
+                    setStyleSheet(LayerStyle);
                 }
                 AddButtons(*m_ui.data(), buttons, parent == nullptr);
             }
