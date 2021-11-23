@@ -86,7 +86,8 @@ set(FILES
     Source/Target/Common/TestImpactTarget.cpp
     Source/Target/Common/TestImpactTarget.h
     Source/Target/Common/TestImpactTargetList.h
-    Source/Target/Common/TestImpactBuildSystemTargetList.h
+    Source/Target/Common/TestImpactBuildTargetList.h
+    Source/Target/Common/TestImpactBuildTarget.h
     Source/Target/Common/TestImpactTargetException.h
     Source/Target/Native/TestImpactNativeTarget.cpp
     Source/Target/Native/TestImpactNativeTarget.h

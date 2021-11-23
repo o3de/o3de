@@ -12,8 +12,8 @@
 namespace TestImpact
 {
     DynamicDependencyMap::DynamicDependencyMap(
-        AZStd::vector<AZStd::unique_ptr<NativeProductionTargetDescriptor>>&& productionTargetDescriptors,
-        AZStd::vector<AZStd::unique_ptr<NativeTestTargetList::TargetType::Descriptor>>&& testTargetDescriptors)
+        AZStd::vector<AZStd::unique_ptr<NativeTestTargetList::TargetType::Descriptor>>&& testTargetDescriptors,
+        AZStd::vector<AZStd::unique_ptr<NativeProductionTargetDescriptor>>&& productionTargetDescriptors)
         : m_productionTargets(AZStd::move(productionTargetDescriptors))
         , m_testTargets(AZStd::move(testTargetDescriptors))
     {

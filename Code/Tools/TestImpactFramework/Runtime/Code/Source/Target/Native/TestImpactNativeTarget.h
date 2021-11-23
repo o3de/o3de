@@ -10,8 +10,7 @@
 
 #include <Artifact/Static/TestImpactNativeTargetDescriptor.h>
 #include <Target/Common/TestImpactTarget.h>
-
-#include <AzCore/std/containers/variant.h>
+#include <Target/Common/TestImpactBuildTarget.h>
 
 namespace TestImpact
 {
@@ -19,10 +18,10 @@ namespace TestImpact
     class NativeProductionTarget;
 
     //! Holder for specializations of NativeTarget.
-    using SpecializedNativeTarget = AZStd::variant<const NativeTestTarget*, const NativeProductionTarget*>;
+    using SpecializedNativeTarget = BuildTarget<NativeTestTarget, NativeProductionTarget>;
 
     //! Optional holder for specializations of NativeTarget.
-    using OptionalSpecializedNativeTarget = AZStd::variant<AZStd::monostate, const NativeTestTarget*, const NativeProductionTarget*>;
+    using OptionalSpecializedNativeTarget = OptionalBuildTarget<NativeTestTarget, NativeProductionTarget>;
 
     //! Type id for querying specialized derived target types from base pointer/reference.
     enum class SpecializedNativeTargetType : bool
