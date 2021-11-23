@@ -558,7 +558,6 @@ namespace AZ::Debug
         fwrite(windowView.data(), 1, windowView.size(), stdout);
         fwrite(windowMessageSeparator.data(), 1, windowMessageSeparator.size(), stdout);
         fwrite(messageView.data(), 1, messageView.size(), stdout);
-        fwrite("\n\r", 1, 2, stdout);
     }
 
     //=========================================================================
