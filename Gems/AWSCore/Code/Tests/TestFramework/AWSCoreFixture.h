@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <AzCore/Component/ComponentApplication.h>
 #include <AzCore/Memory/PoolAllocator.h>
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzCore/Settings/SettingsRegistryImpl.h>
@@ -112,6 +113,11 @@ public:
 
     void SetUp() override
     {
+        SetUpFixture();
+    }
+
+    void SetUpFixture(bool mockSettingsRegistry = true)
+    {
         AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Create();
         AZ::AllocatorInstance<AZ::PoolAllocator>::Create();
 
@@ -120,14 +126,33 @@ public:
         AZ::IO::FileIOBase::SetInstance(nullptr);
         AZ::IO::FileIOBase::SetInstance(m_localFileIO);
 
-        m_settingsRegistry = AZStd::make_unique<AZ::SettingsRegistryImpl>();
-        AZ::SettingsRegistry::Register(m_settingsRegistry.get());
+        if (mockSettingsRegistry)
+        {
+            m_settingsRegistry = AZStd::make_unique<AZ::SettingsRegistryImpl>();
+            AZ::SettingsRegistry::Register(m_settingsRegistry.get());
+        }
+        else
+        {
+            m_app = AZStd::make_unique<AZ::ComponentApplication>();
+        }
     }
 
     void TearDown() override
     {
-        AZ::SettingsRegistry::Unregister(m_settingsRegistry.get());
-        m_settingsRegistry.reset();
+        TearDownFixture();
+    }
+
+    void TearDownFixture(bool mockSettingsRegistry = true) 
+    {
+        if (mockSettingsRegistry)
+        {
+            AZ::SettingsRegistry::Unregister(m_settingsRegistry.get());
+            m_settingsRegistry.reset();
+        }
+        else
+        {
+            m_app.reset();
+        }
 
         AZ::IO::FileIOBase::SetInstance(nullptr);
 
@@ -173,4 +198,5 @@ private:
 
 protected:
     AZStd::unique_ptr<AZ::SettingsRegistryImpl> m_settingsRegistry;
+    AZStd::unique_ptr<AZ::ComponentApplication> m_app;
 };
