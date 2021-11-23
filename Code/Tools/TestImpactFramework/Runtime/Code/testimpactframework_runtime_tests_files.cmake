@@ -7,12 +7,12 @@
 #
 
 set(FILES
-Tests/Artifact/TestImpactTargetDescriptorCompilerTest.cpp
-Tests/Artifact/TestImpactBuildTargetDescriptorFactoryTest.cpp
+Tests/Artifact/TestImpactNativeTargetDescriptorCompilerTest.cpp
+Tests/Artifact/TestImpactNativeTargetDescriptorFactoryTest.cpp
 Tests/Artifact/TestImpactModuleCoverageFactoryTest.cpp
 Tests/Artifact/TestImpactTestEnumerationSuiteFactoryTest.cpp
 Tests/Artifact/TestImpactTestRunSuiteFactoryTest.cpp
-Tests/Artifact/TestImpactTestTargetMetaMapFactoryTest.cpp
+Tests/Artifact/TestImpactNativeTestTargetMetaMapFactoryTest.cpp
 Tests/Artifact/TestImpactDependencyGraphDataFactoryTest.cpp
 Tests/Process/TestImpactProcessSchedulerTest.cpp
 Tests/Dependency/TestImpactDynamicDependencyMapTest.cpp
