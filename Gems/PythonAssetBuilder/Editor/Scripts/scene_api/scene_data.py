@@ -138,5 +138,77 @@ class SceneManifest():
         commentRule['comment'] = comment
         meshGroup['rules']['rules'].append(commentRule)
 
+    def DefaultOrValue(self, val, default):
+        return default if val is None else val
+
+    # 0 Red
+    # 1 Green
+    # 2 Blue
+    # 3 Alpha
+    def mesh_group_add_cloth_rule(self, meshGroup, clothNodeName,
+        inverseMassesStreamName, inverseMassesChannel,
+        motionConstrainsStreamName, motionConstraintsChannel, 
+        backstopStreamName, backstopOffsetChannel, backstopRadiusChannel):
+        cloth_rule = {}
+        cloth_rule['$type'] = 'ClothRule'
+        cloth_rule['meshNodeName'] = clothNodeName
+        cloth_rule['inverseMassesStreamName'] = self.DefaultOrValue(inverseMassesStreamName, 'Default: 1.0')
+        if inverseMassesChannel is not None:
+            cloth_rule['inverseMassesChannel'] = inverseMassesChannel
+        cloth_rule['motionConstraintsStreamName'] = self.DefaultOrValue(motionConstrainsStreamName, 'Default: 1.0')
+        if motionConstraintsChannel is not None:
+            cloth_rule['motionConstraintsChannel'] = motionConstraintsChannel
+        cloth_rule['backstopStreamName'] = self.DefaultOrValue(backstopStreamName, 'None')
+        if backstopOffsetChannel is not None:
+            cloth_rule['backstopOffsetChannel'] = backstopOffsetChannel
+        if backstopRadiusChannel is not None:
+            cloth_rule['backstopRadiusChannel'] = backstopRadiusChannel
+        meshGroup['rules']['rules'].append(cloth_rule)
+
+    def mesh_group_add_lod_rule(self, meshGroup):
+        lod_rule = {}
+        lod_rule['$type'] = '{6E796AC8-1484-4909-860A-6D3F22A7346F} LodRule'
+        lod_rule['nodeSelectionList'] = []
+        meshGroup['rules']['rules'].append(lod_rule)
+        return lod_rule
+
+    def lod_rule_add_lod(self, lodRule):
+        lod = {'selectedNodes': [], 'unselectedNodes': []}
+        lodRule['nodeSelectionList'].append(lod)
+        return lod
+
+    def lod_select_node(self, lod, selectedNode):
+        lod['selectedNodes'].append(selectedNode)
+
+    def lod_unselect_node(self, lod, unselectedNode):
+        lod['unselectedNodes'].append(unselectedNode)
+
+    def mesh_group_add_advanced_mesh_rule(self, mesh_group, use_32bit_vertices, merge_meshes, use_custom_normals, vertex_color_stream):
+        rule = {}
+        rule['$type'] = 'StaticMeshAdvancedRule'
+        rule['use32bitVertices'] = self.DefaultOrValue(use_32bit_vertices, False)
+        rule['mergeMeshes'] = self.DefaultOrValue(merge_meshes, True)
+        rule['useCustomNormals'] = self.DefaultOrValue(use_custom_normals, True)
+
+        if vertex_color_stream is not None:
+            rule['vertexColorStreamName'] = vertex_color_stream
+
+        mesh_group['rules']['rules'].append(rule)
+
+    def mesh_group_add_skin_rule(self, mesh_group, max_weights_per_vertex, weight_threshold):
+        rule = {}
+        rule['$type'] = 'SkinRule'
+        rule['maxWeightsPerVertex'] = self.DefaultOrValue(max_weights_per_vertex, 4)
+        rule['weightThreshold'] = self.DefaultOrValue(weight_threshold, 0.001)
+
+        mesh_group['rules']['rules'].append(rule)
+
+    def mesh_group_add_tangent_rule(self, mesh_group, tangent_space, tspace_method):
+        rule = {}
+        rule['$type'] = 'TangentsRule'
+        rule['tangentSpace'] = self.DefaultOrValue(tangent_space, 1)
+        rule['tSpaceMethod'] = self.DefaultOrValue(tspace_method, 0)
+        mesh_group['rules']['rules'].append(rule)
+
     def export(self):
         return json.dumps(self.manifest)

@@ -114,11 +114,17 @@ def update_manifest(scene):
         mesh_group['id'] = '{' + str(uuid.uuid5(uuid.NAMESPACE_DNS, source_filename_only + mesh_path)) + '}'
         # Set our current node as the only node that is included in this MeshGroup
         scene_manifest.mesh_group_select_node(mesh_group, mesh_path)
+        scene_manifest.mesh_group_add_comment(mesh_group, "Hello World")
 
         # Explicitly remove all other nodes to prevent implicit inclusions
         for node in all_node_paths:
             if node != mesh_path:
                 scene_manifest.mesh_group_unselect_node(mesh_group, node)
+
+        scene_manifest.mesh_group_add_cloth_rule(mesh_group, mesh_path, "Col0", 1, "Col0", 2, "Col0", 2, 3)
+        scene_manifest.mesh_group_add_advanced_mesh_rule(mesh_group, True, False, True, "Col0")
+        scene_manifest.mesh_group_add_skin_rule(mesh_group, 3, 0.002)
+        scene_manifest.mesh_group_add_tangent_rule(mesh_group, 1, 0)
 
         # Create an editor entity
         entity_id = azlmbr.entity.EntityUtilityBus(azlmbr.bus.Broadcast, "CreateEditorReadyEntity", mesh_group_name)
