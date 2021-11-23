@@ -5,7 +5,8 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Float Epsilon"
+                "name": "Float Epsilon",
+                "category": "Constants/Numeric"
             },
             "methods": [
                 {

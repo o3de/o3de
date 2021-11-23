@@ -5,7 +5,8 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Editor Material Component Type Id"
+                "name": "Editor Material Component Type Id",
+                "category": "Constants/Editor"
             },
             "methods": [
                 {

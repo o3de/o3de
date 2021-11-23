@@ -5,7 +5,8 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Shadow Filter Method_ None"
+                "name": "Shadow Filter Method_ None",
+                "category": "Constants/Shadowmap"
             },
             "methods": [
                 {

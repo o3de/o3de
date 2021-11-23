@@ -5,7 +5,8 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Frame Capture Result_ Unsupported Format"
+                "name": "Frame Capture Result_ Unsupported Format",
+                "category": "Constants/Frame Capture Result"
             },
             "methods": [
                 {

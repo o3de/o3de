@@ -5,7 +5,8 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "eSSB_ Leave Time"
+                "name": "eSSB_ Leave Time",
+                "category": "Constants/SSB"
             },
             "methods": [
                 {

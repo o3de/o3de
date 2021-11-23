@@ -5,7 +5,8 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Rotation Modifier Component Type Id"
+                "name": "Rotation Modifier Component Type Id",
+                "category": "Constants/Editor"
             },
             "methods": [
                 {

@@ -5,13 +5,14 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "e Ui Drag State_ Valid"
+                "name": "Valid",
+                "category": "Constants/UI/Drag State"
             },
             "methods": [
                 {
                     "key": "GeteUiDragState_Valid",
                     "details": {
-                        "name": "Gete Ui Drag State_ Valid"
+                        "name": "Valid"
                     },
                     "results": [
                         {

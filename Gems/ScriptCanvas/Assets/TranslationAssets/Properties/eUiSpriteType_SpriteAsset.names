@@ -5,13 +5,14 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "e Ui Sprite Type_ Sprite Asset"
+                "name": "Sprite Type_ Sprite Asset",
+                "category": "Constants/UI"
             },
             "methods": [
                 {
                     "key": "GeteUiSpriteType_SpriteAsset",
                     "details": {
-                        "name": "Gete Ui Sprite Type_ Sprite Asset"
+                        "name": "Get Sprite Type_ Sprite Asset"
                     },
                     "results": [
                         {

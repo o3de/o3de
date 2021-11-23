@@ -5,7 +5,8 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Levels Gradient Component Type Id"
+                "name": "Levels Gradient Component Type Id",
+                "category": "Constants/Editor"
             },
             "methods": [
                 {

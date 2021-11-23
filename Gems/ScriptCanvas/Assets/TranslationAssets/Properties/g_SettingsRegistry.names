@@ -5,7 +5,8 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "g_ Settings Registry"
+                "name": "g_ Settings Registry",
+                "category": "Constants/Settings"
             },
             "methods": [
                 {

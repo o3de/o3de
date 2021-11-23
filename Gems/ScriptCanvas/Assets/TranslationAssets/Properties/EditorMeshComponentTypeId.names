@@ -5,7 +5,8 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Editor Mesh Component Type Id"
+                "name": "Editor Mesh Component Type Id",
+                "category": "Constants/Editor"
             },
             "methods": [
                 {

@@ -5,7 +5,8 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Editor Non Uniform Scale Component Type Id"
+                "name": "Editor Non Uniform Scale Component Type Id",
+                "category": "Constants/Editor"
             },
             "methods": [
                 {

@@ -5,7 +5,8 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Photometric Unit_ Ev 100_ Luminance"
+                "name": "Photometric Unit_ Ev 100_ Luminance",
+                "category": "Constants/Photometric Unit"
             },
             "methods": [
                 {

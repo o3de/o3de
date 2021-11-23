@@ -5,7 +5,8 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Shadowmap Size_ 2045"
+                "name": "Shadowmap Size_ 2045",
+                "category": "Constants/Shadowmap"
             },
             "methods": [
                 {

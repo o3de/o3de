@@ -5,13 +5,14 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Stencil Op_ Invert"
+                "name": "Invert",
+                "category": "Constants/Stencil Op"
             },
             "methods": [
                 {
                     "key": "GetStencilOp_Invert",
                     "details": {
-                        "name": "Get Stencil Op_ Invert"
+                        "name": "Invert"
                     },
                     "results": [
                         {

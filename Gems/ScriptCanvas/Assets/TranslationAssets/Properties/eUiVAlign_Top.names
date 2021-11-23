@@ -5,13 +5,14 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "e UiV Align_ Top"
+                "name": "Vertical Align Top",
+                "category": "Constants/UI/Align"
             },
             "methods": [
                 {
                     "key": "GeteUiVAlign_Top",
                     "details": {
-                        "name": "Gete UiV Align_ Top"
+                        "name": "Vertical Align: Top"
                     },
                     "results": [
                         {

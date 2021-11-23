@@ -5,7 +5,8 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Display Mapper Component Type Id"
+                "name": "Display Mapper Component Type Id",
+                "category": "Constants/Editor"
             },
             "methods": [
                 {

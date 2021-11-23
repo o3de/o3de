@@ -5,7 +5,8 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Fill Mode_ Solid"
+                "name": "Fill Mode_ Solid",
+                "category": "Constants/Fill Mode"
             },
             "methods": [
                 {

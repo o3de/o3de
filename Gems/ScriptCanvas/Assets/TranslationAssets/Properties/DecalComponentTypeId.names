@@ -5,7 +5,8 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Decal Component Type Id"
+                "name": "Decal Component Type Id",
+                "category": "Constants/Editor"
             },
             "methods": [
                 {

@@ -5,13 +5,14 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Stencil Op_ Increment"
+                "name": "Increment",
+                "category": "Constants/Stencil Op"
             },
             "methods": [
                 {
                     "key": "GetStencilOp_Increment",
                     "details": {
-                        "name": "Get Stencil Op_ Increment"
+                        "name": "Increment"
                     },
                     "results": [
                         {

@@ -5,13 +5,14 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "e Ui Fill Edge Origin_ Bottom"
+                "name": "Bottom",
+                "category": "Constants/UI/Fill Edge"
             },
             "methods": [
                 {
                     "key": "GeteUiFillEdgeOrigin_Bottom",
                     "details": {
-                        "name": "Gete Ui Fill Edge Origin_ Bottom"
+                        "name": "Bottom"
                     },
                     "results": [
                         {

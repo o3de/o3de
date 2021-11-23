@@ -5,13 +5,14 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "e Ui Scale To Device Mode_ ScaleY Only"
+                "name": "Scale To Device Mode_ ScaleY Only",
+                "category": "Constants/UI"
             },
             "methods": [
                 {
                     "key": "GeteUiScaleToDeviceMode_ScaleYOnly",
                     "details": {
-                        "name": "Gete Ui Scale To Device Mode_ ScaleY Only"
+                        "name": "Get Scale To Device Mode_ ScaleY Only"
                     },
                     "results": [
                         {

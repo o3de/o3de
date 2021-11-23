@@ -5,7 +5,8 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Editor Entity Start Status_ Start Inactive"
+                "name": "Editor Entity Start Status_ Start Inactive",
+                "category": "Constants/Editor"
             },
             "methods": [
                 {

@@ -5,7 +5,8 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Light Attenuation Radius Mode_ Automatic"
+                "name": "Light Attenuation Radius Mode_ Automatic",
+                "category": "Constants/Light Attenuation Radius Mode"
             },
             "methods": [
                 {

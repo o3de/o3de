@@ -5,7 +5,8 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Image Gradient Component Type Id"
+                "name": "Image Gradient Component Type Id",
+                "category": "Constants/Editor"
             },
             "methods": [
                 {

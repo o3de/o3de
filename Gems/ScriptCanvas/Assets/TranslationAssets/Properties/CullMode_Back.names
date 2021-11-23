@@ -5,13 +5,14 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Cull Mode_ Back"
+                "name": "Back",
+                "category": "Constants/Cull Mode"
             },
             "methods": [
                 {
                     "key": "GetCullMode_Back",
                     "details": {
-                        "name": "Get Cull Mode_ Back"
+                        "name": "Get Back"
                     },
                     "results": [
                         {

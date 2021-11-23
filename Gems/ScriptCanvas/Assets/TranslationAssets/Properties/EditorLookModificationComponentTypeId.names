@@ -5,7 +5,8 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Editor Look Modification Component Type Id"
+                "name": "Editor Look Modification Component Type Id",
+                "category": "Constants/Editor"
             },
             "methods": [
                 {

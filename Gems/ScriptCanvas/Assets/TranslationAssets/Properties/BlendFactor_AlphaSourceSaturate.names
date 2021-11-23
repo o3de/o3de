@@ -5,13 +5,14 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Blend Factor_ Alpha Source Saturate"
+                "name": "Alpha Source Saturate",
+                "category": "Constants/Blend Factor"
             },
             "methods": [
                 {
                     "key": "GetBlendFactor_AlphaSourceSaturate",
                     "details": {
-                        "name": "Get Blend Factor_ Alpha Source Saturate"
+                        "name": "Get Alpha Source Saturate"
                     },
                     "results": [
                         {
