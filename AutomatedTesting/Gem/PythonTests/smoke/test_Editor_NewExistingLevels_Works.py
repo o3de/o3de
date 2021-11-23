@@ -31,4 +31,4 @@ class TestAutomation(TestAutomationBase):
 
         from . import Editor_NewExistingLevels_Works as test_module
 
-        self._run_test(request, workspace, editor, test_module, extra_cmdline_args=["--regset=/Amazon/Preferences/EnablePrefabSystem=false"])
+        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)

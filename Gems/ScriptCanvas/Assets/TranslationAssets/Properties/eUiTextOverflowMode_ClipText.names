@@ -5,9 +5,25 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "eUiTextOverflowMode_ClipText::Getter",
-                "category": "Constants"
-            }
+                "name": "Clip Text",
+                "category": "Constants/UI/Text Overflow Mode"
+            },
+            "methods": [
+                {
+                    "key": "GeteUiTextOverflowMode_ClipText",
+                    "details": {
+                        "name": "Clip Text"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

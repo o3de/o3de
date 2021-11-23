@@ -5,9 +5,8 @@
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "MultiplyAndAdd",
-                "category": "Math",
-                "subtitle": "Math"
+                "name": "Multiply And Add",
+                "category": "Math"
             },
             "slots": [
                 {
@@ -23,27 +22,27 @@
                     }
                 },
                 {
-                    "key": "DataInput_Number: Multiplicand",
+                    "key": "DataInput_Multiplicand",
                     "details": {
-                        "name": "Number: Multiplicand"
+                        "name": "Multiplicand"
                     }
                 },
                 {
-                    "key": "DataInput_Number: Multiplier",
+                    "key": "DataInput_Multiplier",
                     "details": {
-                        "name": "Number: Multiplier"
+                        "name": "Multiplier"
                     }
                 },
                 {
-                    "key": "DataInput_Number: Addend",
+                    "key": "DataInput_Addend",
                     "details": {
-                        "name": "Number: Addend"
+                        "name": "Addend"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Number",
+                    "key": "DataOutput_Result",
                     "details": {
-                        "name": "Result: Number"
+                        "name": "Result"
                     }
                 }
             ]

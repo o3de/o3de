@@ -5,9 +5,25 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "DisplaySettings_HideHelpers::Getter",
-                "category": "Constants"
-            }
+                "name": "Hide Helpers",
+                "category": "Constants/Display Settings"
+            },
+            "methods": [
+                {
+                    "key": "GetDisplaySettings_HideHelpers",
+                    "details": {
+                        "name": "Get Hide Helpers"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

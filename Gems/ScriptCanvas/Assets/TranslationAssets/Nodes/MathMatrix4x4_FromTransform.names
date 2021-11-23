@@ -5,9 +5,9 @@
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "FromTransform",
+                "name": "From Transform",
                 "category": "Math/Matrix4x4",
-                "tooltip": "returns a matrix using the supplied transform",
+                "tooltip": "Returns a matrix using the supplied transform",
                 "subtitle": "Matrix4x4"
             },
             "slots": [
@@ -26,13 +26,13 @@
                 {
                     "key": "DataInput_Transform: Transform",
                     "details": {
-                        "name": "Transform: Transform"
+                        "name": "Transform"
                     }
                 },
                 {
                     "key": "DataOutput_Result: Matrix4x4",
                     "details": {
-                        "name": "Result: Matrix4x4"
+                        "name": "Matrix4x4"
                     }
                 }
             ]

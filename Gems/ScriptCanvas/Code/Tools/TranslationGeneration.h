@@ -142,6 +142,9 @@ namespace ScriptCanvasEditorTools
         //! Utility function that saves a TranslationFormat object in the desired JSON format
         void SaveJSONData(const AZStd::string& filename, TranslationFormat& translationRoot);
 
+        //! Utility function that splits camel-case syntax string into separate words
+        void SplitCamelCase(AZStd::string&);
+
         //! Evaluates if the specified object has exclusion flags and should be skipped from generation
         template <typename T>
         bool ShouldSkip(const T* object) const

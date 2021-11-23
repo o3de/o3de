@@ -7,6 +7,10 @@ REM SPDX-License-Identifier: Apache-2.0 OR MIT
 REM
 REM
 
+REM To get recursive folder creation
+SETLOCAL EnableExtensions
+SETLOCAL EnableDelayedExpansion
+
 where /Q cmake
 IF NOT %ERRORLEVEL%==0 (
     ECHO [ci_build] CMake not found
@@ -16,6 +20,20 @@ IF NOT %ERRORLEVEL%==0 (
 IF NOT "%COMMAND_CWD%"=="" (
     ECHO [ci_build] Changing CWD to %COMMAND_CWD%
     CD %COMMAND_CWD%
+)
+
+REM Jenkins reports MSB8029 when TMP/TEMP is not defined, define a dummy folder
+IF NOT "%TMP%"=="" (
+    IF NOT "%WORKSPACE_TMP%"=="" (
+        SET TMP=%WORKSPACE_TMP%
+        SET TEMP=%WORKSPACE_TMP%
+    ) ELSE (
+        SET TMP=%cd%/temp
+        SET TEMP=%cd%/temp
+    )
+)
+IF NOT EXIST "!TMP!" (
+    MKDIR "!TMP!"
 )
 
 EXIT /b 0

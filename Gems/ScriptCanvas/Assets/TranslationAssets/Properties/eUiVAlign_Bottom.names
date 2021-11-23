@@ -5,9 +5,25 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "eUiVAlign_Bottom::Getter",
-                "category": "Constants"
-            }
+                "name": "Vertical Align Bottom",
+                "category": "Constants/UI/Align"
+            },
+            "methods": [
+                {
+                    "key": "GeteUiVAlign_Bottom",
+                    "details": {
+                        "name": "Vertical Align: Bottom"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

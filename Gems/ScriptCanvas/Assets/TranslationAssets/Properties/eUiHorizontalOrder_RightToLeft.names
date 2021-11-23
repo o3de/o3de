@@ -5,9 +5,25 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "eUiHorizontalOrder_RightToLeft::Getter",
-                "category": "Constants"
-            }
+                "name": "Right To Left",
+                "category": "Constants/UI/Order/Horizontal"
+            },
+            "methods": [
+                {
+                    "key": "GeteUiHorizontalOrder_RightToLeft",
+                    "details": {
+                        "name": "Right To Left"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

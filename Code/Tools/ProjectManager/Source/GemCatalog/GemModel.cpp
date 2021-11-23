@@ -26,14 +26,14 @@ namespace O3DE::ProjectManager
         return m_selectionModel;
     }
 
-    void GemModel::AddGem(const GemInfo& gemInfo)
+    QModelIndex GemModel::AddGem(const GemInfo& gemInfo)
     {
         if (FindIndexByNameString(gemInfo.m_name).isValid())
         {
             // do not add gems with duplicate names
             // this can happen by mistake or when a gem repo has a gem with the same name as a local gem
             AZ_TracePrintf("GemModel", "Ignoring duplicate gem: %s", gemInfo.m_name.toUtf8().constData());
-            return;
+            return QModelIndex();
         }
 
         QStandardItem* item = new QStandardItem();
@@ -61,11 +61,28 @@ namespace O3DE::ProjectManager
         item->setData(gemInfo.m_downloadStatus, RoleDownloadStatus);
         item->setData(gemInfo.m_licenseText, RoleLicenseText);
         item->setData(gemInfo.m_licenseLink, RoleLicenseLink);
+        item->setData(gemInfo.m_repoUri, RoleRepoUri);
 
         appendRow(item);
 
         const QModelIndex modelIndex = index(rowCount()-1, 0);
         m_nameToIndexMap[gemInfo.m_name] = modelIndex;
+
+        return modelIndex;
+    }
+
+    void GemModel::RemoveGem(const QModelIndex& modelIndex)
+    {
+        removeRow(modelIndex.row());
+    }
+
+    void GemModel::RemoveGem(const QString& gemName)
+    {
+        auto nameFind = m_nameToIndexMap.find(gemName);
+        if (nameFind != m_nameToIndexMap.end())
+        {
+            removeRow(nameFind->row());
+        }
     }
 
     void GemModel::Clear()
@@ -255,6 +272,11 @@ namespace O3DE::ProjectManager
         return modelIndex.data(RoleLicenseLink).toString();
     }
 
+    QString GemModel::GetRepoUri(const QModelIndex& modelIndex)
+    {
+        return modelIndex.data(RoleRepoUri).toString();
+    }
+
     GemModel* GemModel::GetSourceModel(QAbstractItemModel* model)
     {
         GemSortFilterProxyModel* proxyModel = qobject_cast<GemSortFilterProxyModel*>(model);
@@ -335,6 +357,8 @@ namespace O3DE::ProjectManager
                     if (!IsAdded(dependency))
                     {
                         numChangedDependencies++;
+                        const QString dependencyName = gemModel->GetName(dependency);
+                        gemModel->emit dependencyGemStatusChanged(dependencyName);
                     }
                 }
             }
@@ -359,6 +383,8 @@ namespace O3DE::ProjectManager
                     if (!IsAdded(dependency))
                     {
                         numChangedDependencies++;
+                        const QString dependencyName = gemModel->GetName(dependency);
+                        gemModel->emit dependencyGemStatusChanged(dependencyName);
                     }
                 }
             }
@@ -369,11 +395,30 @@ namespace O3DE::ProjectManager
 
     void GemModel::OnRowsAboutToBeRemoved(const QModelIndex& parent, int first, int last)
     {
+        bool selectedRowRemoved = false;
         for (int i = first; i <= last; ++i)
         {
             QModelIndex modelIndex = index(i, 0, parent);
             const QString& gemName = GetName(modelIndex);
             m_nameToIndexMap.remove(gemName);
+
+            if (GetSelectionModel()->isRowSelected(i))
+            {
+                selectedRowRemoved = true;
+            }
+        }
+
+        // Select a valid row if currently selected row was removed
+        if (selectedRowRemoved)
+        {
+            for (const QModelIndex& index : m_nameToIndexMap)
+            {
+                if (index.isValid())
+                {
+                    GetSelectionModel()->setCurrentIndex(index, QItemSelectionModel::ClearAndSelect);
+                    break;
+                }
+            }
         }
     }
 
@@ -436,6 +481,23 @@ namespace O3DE::ProjectManager
             added |= modelIndex.data(RoleIsAddedDependency).toBool();
         }
         return previouslyAdded && !added;
+    }
+
+    void GemModel::DeactivateDependentGems(QAbstractItemModel& model, const QModelIndex& modelIndex)
+    {
+        GemModel* gemModel = GetSourceModel(&model);
+        AZ_Assert(gemModel, "Failed to obtain GemModel");
+
+        QVector<QModelIndex> dependentGems = gemModel->GatherDependentGems(modelIndex);
+        if (!dependentGems.isEmpty())
+        {
+            // we need to deactivate all gems that depend on this one
+            for (auto dependentModelIndex : dependentGems)
+            {
+                SetIsAdded(model, dependentModelIndex, false);
+            }
+
+        }
     }
 
     void GemModel::SetDownloadStatus(QAbstractItemModel& model, const QModelIndex& modelIndex, GemInfo::DownloadStatus status)

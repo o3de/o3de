@@ -7,7 +7,7 @@
 
 include_guard()
 
-include(cmake/LySet.cmake)
+include(${LY_ROOT_FOLDER}/cmake/LySet.cmake)
 
 # OVERVIEW:
 # this is the Open 3D Engine Package system.
@@ -80,10 +80,7 @@ macro(ly_package_message)
     endif()
 endmacro()
 
-file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/packages)
-
-include(cmake/LYPackage_S3Downloader.cmake)
-
+include(${LY_ROOT_FOLDER}/cmake/LYPackage_S3Downloader.cmake)
 
 # Attempts one time to download a file.
 # sets should_retry to true if the caller should retry due to an intermittent problem
@@ -711,11 +708,11 @@ if (NOT CMAKE_SCRIPT_MODE_FILE)
     # include the built in 3rd party packages that are for every platform.
     # you can put your package associations anywhere, but this provides
     # a good starting point.
-    include(cmake/3rdParty/BuiltInPackages.cmake)
+    include(${LY_ROOT_FOLDER}/cmake/3rdParty/BuiltInPackages.cmake)
 endif()
 
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
-    include(cmake/LYWrappers.cmake)
+    include(${LY_ROOT_FOLDER}/cmake/LYWrappers.cmake)
     # Importing this globally to handle AUTOMOC, AUTOUIC, AUTORCC
     ly_parse_third_party_dependencies(3rdParty::Qt)
 endif()

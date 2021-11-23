@@ -454,6 +454,8 @@ void ApplicationManagerBase::InitFileMonitor()
         QObject::connect(newFolderWatch, &FolderWatchCallbackEx::fileModified, [this](QString path) { m_fileStateCache->UpdateFile(path); });
         QObject::connect(newFolderWatch, &FolderWatchCallbackEx::fileRemoved, [this](QString path) { m_fileStateCache->RemoveFile(path); });
 
+        QObject::connect(newFolderWatch, &FolderWatchCallbackEx::fileAdded, [](QString path) { AZ::Interface<AssetProcessor::ExcludedFolderCacheInterface>::Get()->FileAdded(path); });
+
         QObject::connect(newFolderWatch, &FolderWatchCallbackEx::fileAdded,
             m_fileProcessor.get(), &AssetProcessor::FileProcessor::AssessAddedFile);
         QObject::connect(newFolderWatch, &FolderWatchCallbackEx::fileRemoved,
@@ -1171,6 +1173,7 @@ void ApplicationManagerBase::InitBuilderManager()
         {
             m_builderManager->ConnectionLost(connId);
         });
+    
 }
 
 void ApplicationManagerBase::ShutdownBuilderManager()

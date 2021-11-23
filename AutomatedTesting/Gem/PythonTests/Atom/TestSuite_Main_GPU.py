@@ -26,6 +26,48 @@ TEST_DIRECTORY = os.path.join(os.path.dirname(__file__), "tests")
 @pytest.mark.parametrize("level", ["Base"])
 class TestAllComponentsIndepthTests(object):
 
+    @pytest.mark.parametrize("screenshot_name", ["AtomBasicLevelSetup.ppm"])
+    @pytest.mark.test_case_id("C34603773")
+    def test_BasicLevelSetup_SetsUpLevel(
+            self, request, editor, workspace, project, launcher_platform, level, screenshot_name):
+        """
+        Please review the hydra script run by this test for more specific test info.
+        Tests that a basic rendering level setup can be created (lighting, meshes, materials, etc.).
+        """
+        # Clear existing test screenshots before starting test.
+        screenshot_directory = os.path.join(workspace.paths.project(), DEFAULT_SUBFOLDER_PATH)
+        test_screenshots = [os.path.join(screenshot_directory, screenshot_name)]
+        file_system.delete(test_screenshots, True, True)
+
+        golden_images = [os.path.join(golden_images_directory(), screenshot_name)]
+
+        level_creation_expected_lines = [
+            "Viewport is set to the expected size: True",
+            "Exited game mode"
+        ]
+        unexpected_lines = ["Traceback (most recent call last):"]
+
+        hydra.launch_and_validate_results(
+            request,
+            TEST_DIRECTORY,
+            editor,
+            "hydra_GPUTest_BasicLevelSetup.py",
+            timeout=180,
+            expected_lines=level_creation_expected_lines,
+            unexpected_lines=unexpected_lines,
+            halt_on_unexpected=True,
+            cfg_args=[level],
+            null_renderer=False,
+            enable_prefab_system=False,
+        )
+
+        similarity_threshold = 0.99
+        for test_screenshot, golden_image in zip(test_screenshots, golden_images):
+            screenshot_comparison_result = compare_screenshot_similarity(
+                test_screenshot, golden_image, similarity_threshold, True, screenshot_directory)
+            if screenshot_comparison_result != "Screenshots match":
+                raise Exception(f"Screenshot test failed: {screenshot_comparison_result}")
+
     @pytest.mark.test_case_id("C34525095")
     def test_LightComponent_ScreenshotMatchesGoldenImage(
             self, request, editor, workspace, project, launcher_platform, level):
@@ -71,6 +113,7 @@ class TestAllComponentsIndepthTests(object):
             halt_on_unexpected=True,
             cfg_args=[level],
             null_renderer=False,
+            enable_prefab_system=False,
         )
 
         similarity_threshold = 0.99
@@ -118,6 +161,7 @@ class TestPerformanceBenchmarkSuite(object):
             halt_on_unexpected=True,
             cfg_args=[level],
             null_renderer=False,
+            enable_prefab_system=False,
         )
 
         aggregator = BenchmarkDataAggregator(workspace, logger, 'periodic')
@@ -155,5 +199,6 @@ class TestMaterialEditor(object):
             halt_on_unexpected=False,
             null_renderer=False,
             cfg_args=[cfg_args],
-            log_file_name="MaterialEditor.log"
+            log_file_name="MaterialEditor.log",
+            enable_prefab_system=False,
         )

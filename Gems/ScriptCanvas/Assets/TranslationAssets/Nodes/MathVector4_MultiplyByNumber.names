@@ -5,10 +5,9 @@
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "MultiplyByNumber",
+                "name": "Multiply By Number",
                 "category": "Math/Vector4",
-                "tooltip": "returns the vector Source with each element multiplied by Multipler",
-                "subtitle": "Vector4"
+                "tooltip": "Returns the vector Source with each element multiplied by Multipler"
             },
             "slots": [
                 {
@@ -24,21 +23,21 @@
                     }
                 },
                 {
-                    "key": "DataInput_Vector4: Source",
+                    "key": "DataInput_Source",
                     "details": {
-                        "name": "Vector4: Source"
+                        "name": "Source"
                     }
                 },
                 {
-                    "key": "DataInput_Number: Multiplier",
+                    "key": "DataInput_Multiplier",
                     "details": {
-                        "name": "Number: Multiplier"
+                        "name": "Multiplier"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Vector4",
+                    "key": "DataOutput_Result",
                     "details": {
-                        "name": "Result: Vector4"
+                        "name": "Result"
                     }
                 }
             ]

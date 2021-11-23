@@ -5,10 +5,9 @@
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "ShortestArc",
+                "name": "Shortest Arc",
                 "category": "Math/Quaternion",
-                "tooltip": "creates a rotation representing the shortest arc between From and To",
-                "subtitle": "Quaternion"
+                "tooltip": "Creates a rotation representing the shortest arc between From and To"
             },
             "slots": [
                 {
@@ -24,21 +23,21 @@
                     }
                 },
                 {
-                    "key": "DataInput_Vector3: From",
+                    "key": "DataInput_From",
                     "details": {
-                        "name": "Vector3: From"
+                        "name": "From"
                     }
                 },
                 {
-                    "key": "DataInput_Vector3: To",
+                    "key": "DataInput_To",
                     "details": {
-                        "name": "Vector3: To"
+                        "name": "To"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Quaternion",
+                    "key": "DataOutput_Result",
                     "details": {
-                        "name": "Result: Quaternion"
+                        "name": "Result"
                     }
                 }
             ]

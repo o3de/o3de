@@ -24,6 +24,7 @@ set(FILES
     Include/Private/Authorization/AWSCognitoAuthorizationController.h
     Include/Private/Authorization/AWSClientAuthPersistentCognitoIdentityProvider.h
     Include/Private/Authorization/AWSCognitoAuthorizationNotificationBusBehaviorHandler.h
+    Include/Private/Authorization/AWSClientAuthCognitoCachingAuthenticatedCredentialsProvider.h
 
     Include/Private/UserManagement/AWSCognitoUserManagementController.h
     Include/Private/UserManagement/UserManagementNotificationBusBehaviorHandler.h
@@ -45,6 +46,7 @@ set(FILES
     Source/Authorization/ClientAuthAWSCredentials.cpp
     Source/Authorization/AWSCognitoAuthorizationController.cpp
     Source/Authorization/AWSClientAuthPersistentCognitoIdentityProvider.cpp
+    Source/Authorization/AWSClientAuthCognitoCachingAuthenticatedCredentialsProvider.cpp
 
     Source/UserManagement/AWSCognitoUserManagementController.cpp
 )

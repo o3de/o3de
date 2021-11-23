@@ -7,20 +7,20 @@
  */
 
 #include "ColliderComponentMode.h"
+#include "ColliderAssetScaleMode.h"
+#include "ColliderBoxMode.h"
+#include "ColliderCapsuleMode.h"
 #include "ColliderOffsetMode.h"
 #include "ColliderRotationMode.h"
-#include "ColliderBoxMode.h"
 #include "ColliderSphereMode.h"
-#include "ColliderCapsuleMode.h"
-#include "ColliderAssetScaleMode.h"
 
 #include <Editor/Source/ComponentModes/PhysXSubComponentModeBase.h>
 #include <PhysX/EditorColliderComponentRequestBus.h>
 
 #include <AzFramework/Physics/ShapeConfiguration.h>
+#include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/ComponentModes/BoxComponentMode.h>
 #include <AzToolsFramework/ComponentModes/BoxViewportEdit.h>
-#include <AzToolsFramework/API/ToolsApplicationAPI.h>
 
 namespace PhysX
 {
@@ -31,7 +31,7 @@ namespace PhysX
         const AZ::Crc32 SetOffsetSubModeActionUri = AZ_CRC("com.o3de.action.physx.setoffsetsubmode", 0xc06132e5);
         const AZ::Crc32 SetRotationSubModeActionUri = AZ_CRC("com.o3de.action.physx.setrotationsubmode", 0xc4225918);
         const AZ::Crc32 ResetSubModeActionUri = AZ_CRC("com.o3de.action.physx.resetsubmode", 0xb70b120e);
-    }
+    } // namespace
 
     AZ_CLASS_ALLOCATOR_IMPL(ColliderComponentMode, AZ::SystemAllocator, 0);
 
@@ -39,19 +39,17 @@ namespace PhysX
         : AzToolsFramework::ComponentModeFramework::EditorBaseComponentMode(entityComponentIdPair, componentType)
     {
         CreateSubModes();
+        CreateSubModeSelectionCluster();
         ColliderComponentModeRequestBus::Handler::BusConnect(entityComponentIdPair);
         ColliderComponentModeUiRequestBus::Handler::BusConnect(entityComponentIdPair);
-
-        CreateSubModeSelectionCluster();
     }
 
     ColliderComponentMode::~ColliderComponentMode()
     {
-        RemoveSubModeSelectionCluster();
-
         ColliderComponentModeUiRequestBus::Handler::BusDisconnect();
         ColliderComponentModeRequestBus::Handler::BusDisconnect();
 
+        RemoveSubModeSelectionCluster();
         m_subModes[m_subMode]->Teardown(GetEntityComponentIdPair());
     }
 
@@ -62,39 +60,41 @@ namespace PhysX
 
     AZStd::vector<AzToolsFramework::ActionOverride> ColliderComponentMode::PopulateActionsImpl()
     {
-
-        AzToolsFramework::ActionOverride setDimensionsModeAction;
-        setDimensionsModeAction.SetUri(SetDimensionsSubModeActionUri);
-        setDimensionsModeAction.SetKeySequence(QKeySequence(Qt::Key_1));
-        setDimensionsModeAction.SetTitle("Set Resize Mode");
-        setDimensionsModeAction.SetTip("Set resize mode");
-        setDimensionsModeAction.SetEntityComponentIdPair(GetEntityComponentIdPair());
-        setDimensionsModeAction.SetCallback([this]()
-        {
-            SetCurrentMode(SubMode::Dimensions);
-        });
-
         AzToolsFramework::ActionOverride setOffsetModeAction;
         setOffsetModeAction.SetUri(SetOffsetSubModeActionUri);
-        setOffsetModeAction.SetKeySequence(QKeySequence(Qt::Key_2));
+        setOffsetModeAction.SetKeySequence(QKeySequence(Qt::Key_1));
         setOffsetModeAction.SetTitle("Set Offset Mode");
         setOffsetModeAction.SetTip("Set offset mode");
         setOffsetModeAction.SetEntityComponentIdPair(GetEntityComponentIdPair());
-        setOffsetModeAction.SetCallback([this]()
-        {
-            SetCurrentMode(SubMode::Offset);
-        });
+        setOffsetModeAction.SetCallback(
+            [this]()
+            {
+                SetCurrentMode(SubMode::Offset);
+            });
 
         AzToolsFramework::ActionOverride setRotationModeAction;
         setRotationModeAction.SetUri(SetRotationSubModeActionUri);
-        setRotationModeAction.SetKeySequence(QKeySequence(Qt::Key_3));
+        setRotationModeAction.SetKeySequence(QKeySequence(Qt::Key_2));
         setRotationModeAction.SetTitle("Set Rotation Mode");
         setRotationModeAction.SetTip("Set rotation mode");
         setRotationModeAction.SetEntityComponentIdPair(GetEntityComponentIdPair());
-        setRotationModeAction.SetCallback([this]()
-        {
-            SetCurrentMode(SubMode::Rotation);
-        });
+        setRotationModeAction.SetCallback(
+            [this]()
+            {
+                SetCurrentMode(SubMode::Rotation);
+            });
+
+        AzToolsFramework::ActionOverride setDimensionsModeAction;
+        setDimensionsModeAction.SetUri(SetDimensionsSubModeActionUri);
+        setDimensionsModeAction.SetKeySequence(QKeySequence(Qt::Key_3));
+        setDimensionsModeAction.SetTitle("Set Resize Mode");
+        setDimensionsModeAction.SetTip("Set resize mode");
+        setDimensionsModeAction.SetEntityComponentIdPair(GetEntityComponentIdPair());
+        setDimensionsModeAction.SetCallback(
+            [this]()
+            {
+                SetCurrentMode(SubMode::Dimensions);
+            });
 
         AzToolsFramework::ActionOverride resetModeAction;
         resetModeAction.SetUri(ResetSubModeActionUri);
@@ -102,12 +102,13 @@ namespace PhysX
         resetModeAction.SetTitle("Reset Current Mode");
         resetModeAction.SetTip("Reset current mode");
         resetModeAction.SetEntityComponentIdPair(GetEntityComponentIdPair());
-        resetModeAction.SetCallback([this]()
-        {
-            ResetCurrentMode();
-        });
+        resetModeAction.SetCallback(
+            [this]()
+            {
+                ResetCurrentMode();
+            });
 
-        return {setDimensionsModeAction, setOffsetModeAction, setRotationModeAction, resetModeAction };
+        return { setDimensionsModeAction, setOffsetModeAction, setRotationModeAction, resetModeAction };
     }
 
     void ColliderComponentMode::CreateSubModes()
@@ -141,7 +142,7 @@ namespace PhysX
         if (mouseInteraction.m_mouseEvent == AzToolsFramework::ViewportInteraction::MouseEvent::Wheel &&
             mouseInteraction.m_mouseInteraction.m_keyboardModifiers.Ctrl())
         {
-            int direction = MouseWheelDelta(mouseInteraction) > 0.0f ? 1 : -1;
+            const int direction = MouseWheelDelta(mouseInteraction) > 0.0f ? -1 : 1;
             AZ::u32 currentModeIndex = static_cast<AZ::u32>(m_subMode);
             AZ::u32 numSubModes = static_cast<AZ::u32>(SubMode::NumModes);
             AZ::u32 nextModeIndex = (currentModeIndex + numSubModes + direction) % m_subModes.size();
@@ -159,10 +160,17 @@ namespace PhysX
 
     void ColliderComponentMode::SetCurrentMode(SubMode newMode)
     {
-        AZ_Assert(m_subModes.count(newMode) > 0, "Submode not found:%d", newMode);
+        AZ_Assert(m_subModes.find(newMode) != m_subModes.end(), "Submode not found:%d", newMode);
         m_subModes[m_subMode]->Teardown(GetEntityComponentIdPair());
         m_subMode = newMode;
         m_subModes[m_subMode]->Setup(GetEntityComponentIdPair());
+
+        const auto modeIndex = static_cast<size_t>(newMode);
+        AZ_Assert(modeIndex < m_buttonIds.size(), "Invalid mode index %i.", modeIndex);
+        AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(
+            AzToolsFramework::ViewportUi::DefaultViewportId,
+            &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::SetClusterActiveButton, m_modeSelectionClusterId,
+            m_buttonIds[modeIndex]);
     }
 
     AzToolsFramework::ViewportUi::ClusterId ColliderComponentMode::GetClusterId() const
@@ -172,36 +180,40 @@ namespace PhysX
 
     AzToolsFramework::ViewportUi::ButtonId ColliderComponentMode::GetOffsetButtonId() const
     {
-        return m_offsetModeButtonId;
+        return m_buttonIds[static_cast<size_t>(SubMode::Offset)];
     }
 
     AzToolsFramework::ViewportUi::ButtonId ColliderComponentMode::GetRotationButtonId() const
     {
-        return m_rotationModeButtonId;
+        return m_buttonIds[static_cast<size_t>(SubMode::Rotation)];
     }
 
     AzToolsFramework::ViewportUi::ButtonId ColliderComponentMode::GetDimensionsButtonId() const
     {
-        return m_dimensionsModeButtonId;
+        return m_buttonIds[static_cast<size_t>(SubMode::Dimensions)];
+    }
+
+    AZStd::string ColliderComponentMode::GetComponentModeName() const
+    {
+        return "Collider Edit Mode";
     }
 
     void RefreshUI()
     {
         /// The reason this is in a free function is because ColliderComponentMode
         /// privately inherits from ToolsApplicationNotificationBus. Trying to invoke
-        /// the bus inside the class scope causes the compiler to complain it's not accessible 
-        /// to due private inheritence. 
-        /// Using the global namespace operator :: should have fixed that, except there 
+        /// the bus inside the class scope causes the compiler to complain it's not accessible
+        /// to due private inheritence.
+        /// Using the global namespace operator :: should have fixed that, except there
         /// is a bug in the microsoft compiler meaning it doesn't work. So this is a work around.
         AzToolsFramework::ToolsApplicationNotificationBus::Broadcast(
-            &AzToolsFramework::ToolsApplicationNotificationBus::Events::InvalidatePropertyDisplay,
-            AzToolsFramework::Refresh_Values);
+            &AzToolsFramework::ToolsApplicationNotificationBus::Events::InvalidatePropertyDisplay, AzToolsFramework::Refresh_Values);
     }
 
     void ColliderComponentMode::ResetCurrentMode()
     {
         m_subModes[m_subMode]->ResetValues(GetEntityComponentIdPair());
-        m_subModes[m_subMode]->Refresh(GetEntityComponentIdPair()); 
+        m_subModes[m_subMode]->Refresh(GetEntityComponentIdPair());
         RefreshUI();
     }
 
@@ -225,8 +237,8 @@ namespace PhysX
     void ColliderComponentMode::RemoveSubModeSelectionCluster()
     {
         AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(
-            AzToolsFramework::ViewportUi::DefaultViewportId,
-            &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::RemoveCluster, m_modeSelectionClusterId);
+            AzToolsFramework::ViewportUi::DefaultViewportId, &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::RemoveCluster,
+            m_modeSelectionClusterId);
     }
 
     void ColliderComponentMode::CreateSubModeSelectionCluster()
@@ -237,29 +249,37 @@ namespace PhysX
             &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::CreateCluster, AzToolsFramework::ViewportUi::Alignment::TopLeft);
 
         // create and register the buttons
-        m_dimensionsModeButtonId = RegisterClusterButton(m_modeSelectionClusterId, "Scale");
-        m_offsetModeButtonId = RegisterClusterButton(m_modeSelectionClusterId, "Move");
-        m_rotationModeButtonId = RegisterClusterButton(m_modeSelectionClusterId, "Rotate");
+        m_buttonIds.resize(static_cast<size_t>(SubMode::NumModes));
+        m_buttonIds[static_cast<size_t>(SubMode::Offset)] = RegisterClusterButton(m_modeSelectionClusterId, "Move");
+        m_buttonIds[static_cast<size_t>(SubMode::Rotation)] = RegisterClusterButton(m_modeSelectionClusterId, "Rotate");
+        m_buttonIds[static_cast<size_t>(SubMode::Dimensions)] = RegisterClusterButton(m_modeSelectionClusterId, "Scale");
 
-        const auto onButtonClicked = [this](AzToolsFramework::ViewportUi::ButtonId buttonId) {
-            if (buttonId == m_dimensionsModeButtonId)
-            {
-                SetCurrentMode(SubMode::Dimensions);
-            }
-            else if (buttonId == m_offsetModeButtonId)
+        SetCurrentMode(SubMode::Offset);
+
+        const auto onButtonClicked = [this](AzToolsFramework::ViewportUi::ButtonId buttonId)
+        {
+            if (buttonId == m_buttonIds[static_cast<size_t>(SubMode::Offset)])
             {
                 SetCurrentMode(SubMode::Offset);
             }
-            else if (buttonId == m_rotationModeButtonId)
+            else if (buttonId == m_buttonIds[static_cast<size_t>(SubMode::Rotation)])
             {
                 SetCurrentMode(SubMode::Rotation);
             }
+            else if (buttonId == m_buttonIds[static_cast<size_t>(SubMode::Dimensions)])
+            {
+                SetCurrentMode(SubMode::Dimensions);
+            }
+            else
+            {
+                AZ_Error("PhysX Collider Component Mode", false, "Unrecognized button ID.");
+            }
         };
-        
+
         m_modeSelectionHandler = AZ::Event<AzToolsFramework::ViewportUi::ButtonId>::Handler(onButtonClicked);
         AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(
             AzToolsFramework::ViewportUi::DefaultViewportId,
-            &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::RegisterClusterEventHandler,
-            m_modeSelectionClusterId, m_modeSelectionHandler);
+            &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::RegisterClusterEventHandler, m_modeSelectionClusterId,
+            m_modeSelectionHandler);
     }
-}
+} // namespace PhysX

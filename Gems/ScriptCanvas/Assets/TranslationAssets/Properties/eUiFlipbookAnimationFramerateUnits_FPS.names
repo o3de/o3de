@@ -5,9 +5,25 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "eUiFlipbookAnimationFramerateUnits_FPS::Getter",
-                "category": "Constants"
-            }
+                "name": "Frames Per Second",
+                "category": "Constants/UI/Flipbook Animation"
+            },
+            "methods": [
+                {
+                    "key": "GeteUiFlipbookAnimationFramerateUnits_FPS",
+                    "details": {
+                        "name": "Frames Per Second"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

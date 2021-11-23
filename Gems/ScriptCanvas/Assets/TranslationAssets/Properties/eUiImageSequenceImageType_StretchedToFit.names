@@ -5,9 +5,25 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "eUiImageSequenceImageType_StretchedToFit::Getter",
-                "category": "Constants"
-            }
+                "name": "Image Type: Stretched To Fit",
+                "category": "Constants/UI/Image Sequence"
+            },
+            "methods": [
+                {
+                    "key": "GeteUiImageSequenceImageType_StretchedToFit",
+                    "details": {
+                        "name": "Image Type: Stretched To Fit"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

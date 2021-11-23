@@ -12,6 +12,7 @@ import pytest
 import ly_test_tools.log.log_monitor
 
 from AWS.common import constants
+from AWS.common.resource_mappings import AWS_RESOURCE_MAPPINGS_ACCOUNT_ID_KEY
 
 # fixture imports
 from assetpipeline.ap_fixtures.asset_processor_fixture import asset_processor
@@ -54,6 +55,41 @@ class TestAWSClientAuthWindows(object):
         Tests: Getting credentials when no credentials are configured
         Verification: Log monitor looks for success credentials log.
         """
+        asset_processor.start()
+        asset_processor.wait_for_idle()
+
+        file_to_monitor = os.path.join(launcher.workspace.paths.project_log(), constants.GAME_LOG_NAME)
+        log_monitor = ly_test_tools.log.log_monitor.LogMonitor(launcher=launcher, log_file_path=file_to_monitor)
+
+        launcher.args = ['+LoadLevel', level]
+        launcher.args.extend(['-rhi=null'])
+
+        with launcher.start(launch_ap=False):
+            result = log_monitor.monitor_log_for_lines(
+                expected_lines=['(Script) - Success anonymous credentials'],
+                unexpected_lines=['(Script) - Fail anonymous credentials'],
+                halt_on_unexpected=True,
+            )
+            assert result, 'Anonymous credentials fetched successfully.'
+    
+    @pytest.mark.parametrize('level', ['AWS/ClientAuth'])
+    def test_anonymous_credentials_no_global_accountid(self,
+                                                       level: str,
+                                                       launcher: pytest.fixture,
+                                                       resource_mappings: pytest.fixture,
+                                                       workspace: pytest.fixture,
+                                                       asset_processor: pytest.fixture
+                                                       ):
+        """
+        Test to verify AWS Cognito Identity pool anonymous authorization.
+
+        Setup: Updates resource mapping file using existing CloudFormation stacks.
+        Tests: Getting credentials when no credentials are configured
+        Verification: Log monitor looks for success credentials log.
+        """
+        # Remove top-level account ID from resource mappings
+        resource_mappings.clear_select_keys([AWS_RESOURCE_MAPPINGS_ACCOUNT_ID_KEY])
+        
         asset_processor.start()
         asset_processor.wait_for_idle()
 

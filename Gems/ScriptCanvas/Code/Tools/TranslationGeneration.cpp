@@ -22,6 +22,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Settings/SettingsRegistry.h>
+#include <AzCore/std/string/regex.h>
 
 #include <AzFramework/Gem/GemInfo.h>
 
@@ -32,6 +33,7 @@
 
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzQtComponents/Utilities/DesktopUtilities.h>
+#include <Source/Translation/TranslationSerializer.h>
 
 namespace ScriptCanvasEditorTools
 {
@@ -87,6 +89,8 @@ namespace ScriptCanvasEditorTools
                 entry.m_details.m_name = prettyName;
             }
 
+            SplitCamelCase(entry.m_details.m_name);
+
             for (auto event : behaviorEBus->m_events)
             {
                 const AZ::BehaviorEBusEventSender& ebusSender = event.second;
@@ -112,6 +116,8 @@ namespace ScriptCanvasEditorTools
                 eventEntry.m_details.m_name = prettyName.empty() ? eventName : prettyName;
                 eventEntry.m_details.m_tooltip = Helpers::ReadStringAttribute(event.second.m_attributes, AZ::Script::Attributes::ToolTip);
 
+                SplitCamelCase(eventEntry.m_details.m_name);
+
                 eventEntry.m_entry.m_name = "In";
                 eventEntry.m_entry.m_tooltip = AZStd::string::format("When signaled, this will invoke %s", eventEntry.m_details.m_name.c_str());
                 eventEntry.m_exit.m_name = "Out";
@@ -128,18 +134,20 @@ namespace ScriptCanvasEditorTools
                     Helpers::GetTypeNameAndDescription(argumentType, argument.m_details.m_name, argument.m_details.m_tooltip);
 
                     auto name = method->GetArgumentName(i);
-                    if (!name->empty())
+                    if (name && !name->empty())
                     {
                         argument.m_details.m_name = *name;
                     }
 
                     auto tooltip = method->GetArgumentToolTip(i);
-                    if (!tooltip->empty())
+                    if (tooltip && !tooltip->empty())
                     {
                         argument.m_details.m_tooltip = *tooltip;
                     }
 
                     argument.m_typeId = argumentType.ToString<AZStd::string>();
+
+                    SplitCamelCase(argument.m_details.m_name);
 
                     eventEntry.m_arguments.push_back(argument);
                 }
@@ -153,12 +161,14 @@ namespace ScriptCanvasEditorTools
                     Helpers::GetTypeNameAndDescription(resultType, result.m_details.m_name, result.m_details.m_tooltip);
 
                     auto tooltip = method->GetArgumentToolTip(0);
-                    if (!tooltip->empty())
+                    if (tooltip && !tooltip->empty())
                     {
                         result.m_details.m_tooltip = *tooltip;
                     }
 
                     result.m_typeId = resultType.ToString<AZStd::string>();
+
+                    SplitCamelCase(result.m_details.m_name);
 
                     eventEntry.m_results.push_back(result);
                 }
@@ -229,6 +239,8 @@ namespace ScriptCanvasEditorTools
         details.m_category = Helpers::GetStringAttribute(behaviorClass, AZ::Script::Attributes::Category);
         details.m_tooltip = Helpers::GetStringAttribute(behaviorClass, AZ::Script::Attributes::ToolTip);
 
+        SplitCamelCase(details.m_name);
+
         if (!behaviorClass->m_methods.empty())
         {
             for (const auto& methodPair : behaviorClass->m_methods)
@@ -246,10 +258,14 @@ namespace ScriptCanvasEditorTools
                 methodEntry.m_details.m_tooltip = "";
                 methodEntry.m_details.m_name = methodPair.second->m_name;
 
+                AZStd::string prefix = className + "::";
+                AZ::StringFunc::Replace(methodEntry.m_details.m_name, prefix.c_str(), "");
+                SplitCamelCase(methodEntry.m_details.m_name);
+
                 methodEntry.m_entry.m_name = "In";
-                methodEntry.m_entry.m_tooltip = AZStd::string::format("When signaled, this will invoke %s", cleanName.c_str());
+                methodEntry.m_entry.m_tooltip = AZStd::string::format("When signaled, this will invoke %s", methodEntry.m_details.m_name.c_str());
                 methodEntry.m_exit.m_name = "Out";
-                methodEntry.m_exit.m_tooltip = AZStd::string::format("Signaled after %s is invoked", cleanName.c_str());
+                methodEntry.m_exit.m_tooltip = AZStd::string::format("Signaled after %s is invoked", methodEntry.m_details.m_name.c_str());
 
                 if (!Helpers::MethodHasAttribute(behaviorMethod, AZ::ScriptCanvasAttributes::FloatingFunction))
                 {
@@ -260,30 +276,39 @@ namespace ScriptCanvasEditorTools
                     methodEntry.m_details.m_category = Helpers::ReadStringAttribute(behaviorMethod->m_attributes, AZ::Script::Attributes::Category);
                 }
 
-                if (methodEntry.m_details.m_category.empty())
-                {
-                    methodEntry.m_details.m_category = "Other";
-                }
-
                 // Arguments (Input Slots)
                 if (behaviorMethod->GetNumArguments() > 0)
                 {
-                    for (size_t argIndex = 0; argIndex < behaviorMethod->GetNumArguments(); ++argIndex)
+                    size_t startIndex = behaviorMethod->HasResult() ? 1 : 0;
+                    for (size_t argIndex = startIndex; argIndex < behaviorMethod->GetNumArguments(); ++argIndex)
                     {
                         const AZ::BehaviorParameter* parameter = behaviorMethod->GetArgument(argIndex);
 
                         Argument argument;
 
                         AZStd::string argumentKey = parameter->m_typeId.ToString<AZStd::string>();
-                        AZStd::string argumentName = parameter->m_name;
-                        AZStd::string argumentDescription = "";
+                        AZStd::string argumentName;
+                        AZStd::string argumentDescription;
 
                         Helpers::GetTypeNameAndDescription(parameter->m_typeId, argumentName, argumentDescription);
 
+                        const AZStd::string* argName = behaviorMethod->GetArgumentName(argIndex);
+                        if (argName && !(*argName).empty())
+                        {
+                            argumentName = *argName;
+                        }
+
+                        const AZStd::string* argDesc = behaviorMethod->GetArgumentToolTip(argIndex);
+                        if (argDesc && !(*argDesc).empty())
+                        {
+                            argumentDescription = *argDesc;
+                        }
+
                         argument.m_typeId = argumentKey;
-                        argument.m_details.m_name = parameter->m_name;
-                        argument.m_details.m_category = "";
+                        argument.m_details.m_name = argumentName;
                         argument.m_details.m_tooltip = argumentDescription;
+
+                        SplitCamelCase(argument.m_details.m_name);
 
                         methodEntry.m_arguments.push_back(argument);
                     }
@@ -304,6 +329,8 @@ namespace ScriptCanvasEditorTools
                     result.m_typeId = resultKey;
                     result.m_details.m_name = resultParameter->m_name;
                     result.m_details.m_tooltip = resultDescription;
+
+                    SplitCamelCase(result.m_details.m_name);
 
                     methodEntry.m_results.push_back(result);
                 }
@@ -327,7 +354,8 @@ namespace ScriptCanvasEditorTools
 
         translationRoot.m_entries.push_back(entry);
 
-        AZStd::string fileName = AZStd::string::format("Classes/%s", className.c_str());
+        AZStd::string sanitizedFilename = GraphCanvas::TranslationKey::Sanitize(className);
+        AZStd::string fileName = AZStd::string::format("Classes/%s", sanitizedFilename.c_str());
 
         SaveJSONData(fileName, translationRoot);
 
@@ -378,6 +406,8 @@ namespace ScriptCanvasEditorTools
             entry.m_key = azEventEntry.m_eventName;
             entry.m_context = "AZEventHandler";
             entry.m_details.m_name = azEventEntry.m_eventName;
+
+            SplitCamelCase(entry.m_details.m_name);
 
             for (const ScriptCanvas::Slot& slot : nodeComponent->GetSlots())
             {
@@ -477,6 +507,8 @@ namespace ScriptCanvasEditorTools
             {
                 details.m_name = cleanName;
             }
+
+            SplitCamelCase(details.m_name);
 
             // Tooltip attribute takes priority over the edit data description
             AZStd::string tooltip = Helpers::GetStringAttribute(classData, AZ::Script::Attributes::ToolTip);
@@ -665,6 +697,7 @@ namespace ScriptCanvasEditorTools
 
                 EntryDetails& details = entry.m_details;
                 details.m_name = behaviorClass->m_name;
+                SplitCamelCase(details.m_name);
 
                 // Get the pretty name
                 AZStd::string prettyName;
@@ -698,6 +731,7 @@ namespace ScriptCanvasEditorTools
 
                         methodEntry.m_details.m_tooltip = Helpers::GetStringAttribute(behaviorMethod, AZ::Script::Attributes::ToolTip);
                         methodEntry.m_details.m_name = methodPair.second->m_name;
+                        SplitCamelCase(methodEntry.m_details.m_name);
 
                         // Strip the className from the methodName
                         AZStd::string qualifiedName = behaviorClass->m_name + "::";
@@ -730,6 +764,8 @@ namespace ScriptCanvasEditorTools
                                 argument.m_details.m_category = "";
                                 argument.m_details.m_tooltip = argumentDescription;
 
+                                SplitCamelCase(argument.m_details.m_name);
+
                                 methodEntry.m_arguments.push_back(argument);
                             }
                         }
@@ -749,6 +785,8 @@ namespace ScriptCanvasEditorTools
                             result.m_typeId = resultKey;
                             result.m_details.m_name = resultName;
                             result.m_details.m_tooltip = resultDescription;
+
+                            SplitCamelCase(result.m_details.m_name);
 
                             methodEntry.m_results.push_back(result);
                         }
@@ -789,7 +827,8 @@ namespace ScriptCanvasEditorTools
         TranslationFormat translationRoot;
         translationRoot.m_entries.push_back(entry);
 
-        AZStd::string fileName = AZStd::string::format("Properties/%s", behaviorProperty->m_name.c_str());
+        AZStd::string cleanName = GraphCanvas::TranslationKey::Sanitize(behaviorProperty->m_name);
+        AZStd::string fileName = AZStd::string::format("Properties/%s", cleanName.c_str());
         SaveJSONData(fileName, translationRoot);
     }
 
@@ -810,10 +849,13 @@ namespace ScriptCanvasEditorTools
 
                 Helpers::GetTypeNameAndDescription(parameter->m_typeId, argumentName, argumentDescription);
 
+                const AZStd::string* argName = behaviorMethod->GetArgumentName(argIndex);
                 argument.m_typeId = argumentKey;
-                argument.m_details.m_name = parameter->m_name;
+                argument.m_details.m_name = argName ? *argName : argumentName;
                 argument.m_details.m_category = "";
                 argument.m_details.m_tooltip = argumentDescription;
+
+                SplitCamelCase(argument.m_details.m_name);
 
                 methodEntry.m_arguments.push_back(argument);
             }
@@ -831,9 +873,12 @@ namespace ScriptCanvasEditorTools
 
             Helpers::GetTypeNameAndDescription(resultParameter->m_typeId, resultName, resultDescription);
 
+            const AZStd::string* resName = behaviorMethod->GetArgumentName(0);
             result.m_typeId = resultKey;
-            result.m_details.m_name = resultParameter->m_name;
+            result.m_details.m_name = resName ? *resName : resultName;
             result.m_details.m_tooltip = resultDescription;
+
+            SplitCamelCase(result.m_details.m_name);
 
             methodEntry.m_results.push_back(result);
         }
@@ -855,16 +900,25 @@ namespace ScriptCanvasEditorTools
         {
             entry->m_key = className;
             entry->m_context = context;
+
+            entry->m_details.m_name = className;
+            SplitCamelCase(entry->m_details.m_name);
         }
 
         if (behaviorProperty->m_getter)
         {
+            AZStd::string cleanName = behaviorProperty->m_name;
+            AZ::StringFunc::Replace(cleanName, "::Getter", "");
+
             Method method;
 
-            auto methodName = behaviorProperty->m_getter->m_name;
-            method.m_key = behaviorProperty->m_name;
+            AZStd::string methodName = "Get";
+            methodName.append(cleanName);
+            method.m_key = methodName;
             method.m_details.m_name = methodName;
             method.m_details.m_tooltip = behaviorProperty->m_getter->m_debugDescription ? behaviorProperty->m_getter->m_debugDescription : "";
+
+            SplitCamelCase(method.m_details.m_name);
 
             TranslateMethod(behaviorProperty->m_getter, method);
 
@@ -874,12 +928,19 @@ namespace ScriptCanvasEditorTools
 
         if (behaviorProperty->m_setter)
         {
+            AZStd::string cleanName = behaviorProperty->m_name;
+            AZ::StringFunc::Replace(cleanName, "::Setter", "");
+
             Method method;
 
-            auto methodName = behaviorProperty->m_setter->m_name;
-            method.m_key = behaviorProperty->m_name;
+            AZStd::string methodName = "Set";
+            methodName.append(cleanName);
+
+            method.m_key = methodName;
             method.m_details.m_name = methodName;
             method.m_details.m_tooltip = behaviorProperty->m_setter->m_debugDescription ? behaviorProperty->m_getter->m_debugDescription : "";
+
+            SplitCamelCase(method.m_details.m_name);
 
             TranslateMethod(behaviorProperty->m_setter, method);
 
@@ -910,6 +971,8 @@ namespace ScriptCanvasEditorTools
             entry.m_details.m_tooltip = behaviorEbus->m_toolTip;
             entry.m_details.m_category = "EBus Handlers";
 
+            SplitCamelCase(entry.m_details.m_name);
+
             for (const AZ::BehaviorEBusHandler::BusForwarderEvent& event : handler->GetEvents())
             {
                 Method methodEntry;
@@ -919,6 +982,8 @@ namespace ScriptCanvasEditorTools
                 methodEntry.m_details.m_category = "";
                 methodEntry.m_details.m_tooltip = "";
                 methodEntry.m_details.m_name = event.m_name;
+
+                SplitCamelCase(methodEntry.m_details.m_name);
 
                 // Arguments (Input Slots)
                 if (!event.m_parameters.empty())
@@ -964,6 +1029,8 @@ namespace ScriptCanvasEditorTools
                         argument.m_details.m_name = argumentName;
                         argument.m_details.m_tooltip = argumentDescription;
 
+                        SplitCamelCase(argument.m_details.m_name);
+
                         methodEntry.m_arguments.push_back(argument);
                     }
                 }
@@ -993,6 +1060,8 @@ namespace ScriptCanvasEditorTools
                     result.m_typeId = resultKey;
                     result.m_details.m_name = resultName;
                     result.m_details.m_tooltip = resultDescription;
+
+                    SplitCamelCase(result.m_details.m_name);
 
                     methodEntry.m_results.push_back(result);
                 }
@@ -1027,13 +1096,13 @@ namespace ScriptCanvasEditorTools
             rapidjson_ly::Value value(rapidjson_ly::kStringType);
 
             value.SetString(entrySource.m_key.c_str(), document.GetAllocator());
-            entry.AddMember("key", value, document.GetAllocator());
+            entry.AddMember(GraphCanvas::Schema::Field::key, value, document.GetAllocator());
 
             value.SetString(entrySource.m_context.c_str(), document.GetAllocator());
-            entry.AddMember("context", value, document.GetAllocator());
+            entry.AddMember(GraphCanvas::Schema::Field::context, value, document.GetAllocator());
 
             value.SetString(entrySource.m_variant.c_str(), document.GetAllocator());
-            entry.AddMember("variant", value, document.GetAllocator());
+            entry.AddMember(GraphCanvas::Schema::Field::variant, value, document.GetAllocator());
 
             rapidjson_ly::Value details(rapidjson_ly::kObjectType);
             value.SetString(entrySource.m_details.m_name.c_str(), document.GetAllocator());
@@ -1054,12 +1123,12 @@ namespace ScriptCanvasEditorTools
                     rapidjson_ly::Value theMethod(rapidjson_ly::kObjectType);
 
                     value.SetString(methodSource.m_key.c_str(), document.GetAllocator());
-                    theMethod.AddMember("key", value, document.GetAllocator());
+                    theMethod.AddMember(GraphCanvas::Schema::Field::key, value, document.GetAllocator());
 
                     if (!methodSource.m_context.empty())
                     {
                         value.SetString(methodSource.m_context.c_str(), document.GetAllocator());
-                        theMethod.AddMember("context", value, document.GetAllocator());
+                        theMethod.AddMember(GraphCanvas::Schema::Field::context, value, document.GetAllocator());
                     }
 
                     if (!methodSource.m_entry.m_name.empty())
@@ -1167,7 +1236,7 @@ namespace ScriptCanvasEditorTools
                     rapidjson_ly::Value theSlot(rapidjson_ly::kObjectType);
 
                     value.SetString(slotSource.m_key.c_str(), document.GetAllocator());
-                    theSlot.AddMember("key", value, document.GetAllocator());
+                    theSlot.AddMember(GraphCanvas::Schema::Field::key, value, document.GetAllocator());
 
                     rapidjson_ly::Value sloDetails(rapidjson_ly::kObjectType);
                     if (!slotSource.m_details.m_name.empty())
@@ -1240,6 +1309,14 @@ namespace ScriptCanvasEditorTools
 
         AzQtComponents::ShowFileOnDesktop(endPath.c_str());
 
+    }
+
+    void TranslationGeneration::SplitCamelCase(AZStd::string& text)
+    {
+        AZStd::regex splitRegex(R"(/[a-z]+|[0-9]+|(?:[A-Z][a-z]+)|(?:[A-Z]+(?=(?:[A-Z][a-z])|[^AZa-z]|[$\d\n]))/g)");
+        text = AZStd::regex_replace(text, splitRegex, " $&");
+        text = AZ::StringFunc::LStrip(text);
+        AZ::StringFunc::Replace(text, "  ", " ");
     }
 
     namespace Helpers

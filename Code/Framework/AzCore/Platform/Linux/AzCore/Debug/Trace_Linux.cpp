@@ -9,16 +9,10 @@
 #include <AzCore/Debug/Trace.h>
 #include <iostream>
 
-namespace AZ
+namespace AZ::Debug::Platform
 {
-    namespace Debug
+    void OutputToDebugger([[maybe_unused]] const char* title, [[maybe_unused]] const char* message)
     {
-        namespace Platform
-        {
-            void OutputToDebugger([[maybe_unused]] const char* title, [[maybe_unused]] const char* message)
-            {
-                // std::cout << title << ": " << message;
-            }
-        }
+        // std::cout << title << ": " << message;
     }
-}
+} // namespace AZ::Debug::Platform

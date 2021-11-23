@@ -5,10 +5,9 @@
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "IsValid",
+                "name": "Is Valid",
                 "category": "Entity/Entity",
-                "tooltip": "returns true if Source is valid, else false",
-                "subtitle": "Entity"
+                "tooltip": "Returns true if Source is valid, else false"
             },
             "slots": [
                 {
@@ -24,15 +23,15 @@
                     }
                 },
                 {
-                    "key": "DataInput_EntityID: Source",
+                    "key": "DataInput_Source",
                     "details": {
-                        "name": "EntityID: Source"
+                        "name": "Source"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Boolean",
+                    "key": "DataOutput_Result",
                     "details": {
-                        "name": "Result: Boolean"
+                        "name": "Result"
                     }
                 }
             ]

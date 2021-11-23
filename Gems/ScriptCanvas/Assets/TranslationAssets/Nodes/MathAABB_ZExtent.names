@@ -5,10 +5,10 @@
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "ZExtent",
-                "category": "Math/AABB",
+                "name": "Z Extent",
+                "category": "Math/Axis Aligned Bounding Box",
                 "tooltip": "returns the Z extent (max Z - min Z) of Source",
-                "subtitle": "AABB"
+                "subtitle": "Axis Aligned Bounding Box"
             },
             "slots": [
                 {

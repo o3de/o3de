@@ -5,19 +5,20 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": ""
+                "name": "Slope Alignment Modifier Component Type Id",
+                "category": "Constants/Editor"
             },
             "methods": [
                 {
-                    "key": "SlopeAlignmentModifierComponentTypeId",
+                    "key": "GetSlopeAlignmentModifierComponentTypeId",
                     "details": {
-                        "name": "SlopeAlignmentModifierComponentTypeId::Getter"
+                        "name": "Get Slope Alignment Modifier Component Type Id"
                     },
                     "results": [
                         {
                             "typeid": "{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}",
                             "details": {
-                                "name": "AZ::Uuid"
+                                "name": "AZ:: Uuid"
                             }
                         }
                     ]

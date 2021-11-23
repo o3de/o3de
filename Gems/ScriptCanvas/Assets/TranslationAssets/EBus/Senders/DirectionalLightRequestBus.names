@@ -5,27 +5,50 @@
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "DirectionalLightRequestBus"
+                "name": "Directional Light",
+                "category": "Lights"
             },
             "methods": [
                 {
-                    "key": "GetShadowBias",
+                    "key": "GetNormalShadowBias",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetShadowBias"
+                        "tooltip": "When signaled, this will invoke Get Normal Shadow Bias"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetShadowBias is invoked"
+                        "tooltip": "Signaled after Get Normal Shadow Bias is invoked"
                     },
                     "details": {
-                        "name": "GetShadowBias"
+                        "name": "Get Normal Shadow Bias"
                     },
                     "results": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "float"
+                                "name": "Normal Shadow Bias"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetShadowBias",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Shadow Bias"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Shadow Bias is invoked"
+                    },
+                    "details": {
+                        "name": "Get Shadow Bias"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Shadow Bias"
                             }
                         }
                     ]
@@ -34,20 +57,20 @@
                     "key": "SetAngularDiameter",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetAngularDiameter"
+                        "tooltip": "When signaled, this will invoke Set Angular Diameter"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetAngularDiameter is invoked"
+                        "tooltip": "Signaled after Set Angular Diameter is invoked"
                     },
                     "details": {
-                        "name": "SetAngularDiameter"
+                        "name": "Set Angular Diameter"
                     },
                     "params": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "float"
+                                "name": "Angular Diameter"
                             }
                         }
                     ]
@@ -56,20 +79,20 @@
                     "key": "GetShadowFarClipDistance",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetShadowFarClipDistance"
+                        "tooltip": "When signaled, this will invoke Get Shadow Far Clip Distance"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetShadowFarClipDistance is invoked"
+                        "tooltip": "Signaled after Get Shadow Far Clip Distance is invoked"
                     },
                     "details": {
-                        "name": "GetShadowFarClipDistance"
+                        "name": "Get Shadow Far Clip Distance"
                     },
                     "results": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "float"
+                                "name": "Shadow Far Clip Distance"
                             }
                         }
                     ]
@@ -78,20 +101,20 @@
                     "key": "SetShadowBias",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetShadowBias"
+                        "tooltip": "When signaled, this will invoke Set Shadow Bias"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetShadowBias is invoked"
+                        "tooltip": "Signaled after Set Shadow Bias is invoked"
                     },
                     "details": {
-                        "name": "SetShadowBias"
+                        "name": "Set Shadow Bias"
                     },
                     "params": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "float"
+                                "name": "Shadow Bias"
                             }
                         }
                     ]
@@ -100,20 +123,20 @@
                     "key": "SetIntensity",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetIntensity"
+                        "tooltip": "When signaled, this will invoke Set Intensity"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetIntensity is invoked"
+                        "tooltip": "Signaled after Set Intensity is invoked"
                     },
                     "details": {
-                        "name": "SetIntensity"
+                        "name": "Set Intensity"
                     },
                     "params": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "float"
+                                "name": "Intensity"
                             }
                         }
                     ]
@@ -122,20 +145,20 @@
                     "key": "SetSplitRatio",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetSplitRatio"
+                        "tooltip": "When signaled, this will invoke Set Split Ratio"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetSplitRatio is invoked"
+                        "tooltip": "Signaled after Set Split Ratio is invoked"
                     },
                     "details": {
-                        "name": "SetSplitRatio"
+                        "name": "Set Split Ratio"
                     },
                     "params": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "float"
+                                "name": "Split Ratio"
                             }
                         }
                     ]
@@ -144,20 +167,20 @@
                     "key": "GetFilteringSampleCount",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetFilteringSampleCount"
+                        "tooltip": "When signaled, this will invoke Get Filtering Sample Count"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetFilteringSampleCount is invoked"
+                        "tooltip": "Signaled after Get Filtering Sample Count is invoked"
                     },
                     "details": {
-                        "name": "GetFilteringSampleCount"
+                        "name": "Get Filtering Sample Count"
                     },
                     "results": [
                         {
                             "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
                             "details": {
-                                "name": "unsigned int"
+                                "name": "Filtering Sample Count"
                             }
                         }
                     ]
@@ -166,20 +189,20 @@
                     "key": "GetShadowFilterMethod",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetShadowFilterMethod"
+                        "tooltip": "When signaled, this will invoke Get Shadow Filter Method"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetShadowFilterMethod is invoked"
+                        "tooltip": "Signaled after Get Shadow Filter Method is invoked"
                     },
                     "details": {
-                        "name": "GetShadowFilterMethod"
+                        "name": "Get Shadow Filter Method"
                     },
                     "results": [
                         {
                             "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
                             "details": {
-                                "name": "unsigned int"
+                                "name": "Shadow Filter Method"
                             }
                         }
                     ]
@@ -188,20 +211,20 @@
                     "key": "GetCameraEntityId",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetCameraEntityId"
+                        "tooltip": "When signaled, this will invoke Get Camera Entity Id"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetCameraEntityId is invoked"
+                        "tooltip": "Signaled after Get Camera Entity Id is invoked"
                     },
                     "details": {
-                        "name": "GetCameraEntityId"
+                        "name": "Get Camera Entity Id"
                     },
                     "results": [
                         {
                             "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
                             "details": {
-                                "name": "EntityId",
+                                "name": "Camera Entity Id",
                                 "tooltip": "Entity Unique Id"
                             }
                         }
@@ -211,20 +234,20 @@
                     "key": "SetDebugColoringEnabled",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetDebugColoringEnabled"
+                        "tooltip": "When signaled, this will invoke Set Debug Coloring Enabled"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetDebugColoringEnabled is invoked"
+                        "tooltip": "Signaled after Set Debug Coloring Enabled is invoked"
                     },
                     "details": {
-                        "name": "SetDebugColoringEnabled"
+                        "name": "Set Debug Coloring Enabled"
                     },
                     "params": [
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": "bool"
+                                "name": "Enabled"
                             }
                         }
                     ]
@@ -233,20 +256,20 @@
                     "key": "GetDebugColoringEnabled",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetDebugColoringEnabled"
+                        "tooltip": "When signaled, this will invoke Get Debug Coloring Enabled"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetDebugColoringEnabled is invoked"
+                        "tooltip": "Signaled after Get Debug Coloring Enabled is invoked"
                     },
                     "details": {
-                        "name": "GetDebugColoringEnabled"
+                        "name": "Get Debug Coloring Enabled"
                     },
                     "results": [
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": "bool"
+                                "name": "Enabled"
                             }
                         }
                     ]
@@ -255,20 +278,20 @@
                     "key": "GetViewFrustumCorrectionEnabled",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetViewFrustumCorrectionEnabled"
+                        "tooltip": "When signaled, this will invoke Get View Frustum Correction Enabled"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetViewFrustumCorrectionEnabled is invoked"
+                        "tooltip": "Signaled after Get View Frustum Correction Enabled is invoked"
                     },
                     "details": {
-                        "name": "GetViewFrustumCorrectionEnabled"
+                        "name": "Get View Frustum Correction Enabled"
                     },
                     "results": [
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": "bool"
+                                "name": "Enabled"
                             }
                         }
                     ]
@@ -277,20 +300,20 @@
                     "key": "SetViewFrustumCorrectionEnabled",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetViewFrustumCorrectionEnabled"
+                        "tooltip": "When signaled, this will invoke Set View Frustum Correction Enabled"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetViewFrustumCorrectionEnabled is invoked"
+                        "tooltip": "Signaled after Set View Frustum Correction Enabled is invoked"
                     },
                     "details": {
-                        "name": "SetViewFrustumCorrectionEnabled"
+                        "name": "Set View Frustum Correction Enabled"
                     },
                     "params": [
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": "bool"
+                                "name": "Enabled"
                             }
                         }
                     ]
@@ -299,20 +322,20 @@
                     "key": "SetGroundHeight",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetGroundHeight"
+                        "tooltip": "When signaled, this will invoke Set Ground Height"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetGroundHeight is invoked"
+                        "tooltip": "Signaled after Set Ground Height is invoked"
                     },
                     "details": {
-                        "name": "SetGroundHeight"
+                        "name": "Set Ground Height"
                     },
                     "params": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "float"
+                                "name": "Ground Height"
                             }
                         }
                     ]
@@ -321,20 +344,20 @@
                     "key": "GetShadowReceiverPlaneBiasEnabled",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetShadowReceiverPlaneBiasEnabled"
+                        "tooltip": "When signaled, this will invoke Get Shadow Receiver Plane Bias Enabled"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetShadowReceiverPlaneBiasEnabled is invoked"
+                        "tooltip": "Signaled after Get Shadow Receiver Plane Bias Enabled is invoked"
                     },
                     "details": {
-                        "name": "GetShadowReceiverPlaneBiasEnabled"
+                        "name": "Get Shadow Receiver Plane Bias Enabled"
                     },
                     "results": [
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": "bool"
+                                "name": "Shadow Receiver Plane Bias"
                             }
                         }
                     ]
@@ -343,20 +366,20 @@
                     "key": "SetShadowmapSize",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetShadowmapSize"
+                        "tooltip": "When signaled, this will invoke Set Shadowmap Size"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetShadowmapSize is invoked"
+                        "tooltip": "Signaled after Set Shadowmap Size is invoked"
                     },
                     "details": {
-                        "name": "SetShadowmapSize"
+                        "name": "Set Shadowmap Size"
                     },
                     "params": [
                         {
                             "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
                             "details": {
-                                "name": "unsigned int"
+                                "name": "Shadowmap Size"
                             }
                         }
                     ]
@@ -365,20 +388,20 @@
                     "key": "SetShadowFarClipDistance",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetShadowFarClipDistance"
+                        "tooltip": "When signaled, this will invoke Set Shadow Far Clip Distance"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetShadowFarClipDistance is invoked"
+                        "tooltip": "Signaled after Set Shadow Far Clip Distance is invoked"
                     },
                     "details": {
-                        "name": "SetShadowFarClipDistance"
+                        "name": "Set Shadow Far Clip Distance"
                     },
                     "params": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "float"
+                                "name": "Shadow Far Clip Distance"
                             }
                         }
                     ]
@@ -387,20 +410,20 @@
                     "key": "SetCameraEntityId",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetCameraEntityId"
+                        "tooltip": "When signaled, this will invoke Set Camera Entity Id"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetCameraEntityId is invoked"
+                        "tooltip": "Signaled after Set Camera Entity Id is invoked"
                     },
                     "details": {
-                        "name": "SetCameraEntityId"
+                        "name": "Set Camera Entity Id"
                     },
                     "params": [
                         {
                             "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
                             "details": {
-                                "name": "EntityId",
+                                "name": "Camera Entity Id",
                                 "tooltip": "Entity Unique Id"
                             }
                         }
@@ -410,14 +433,14 @@
                     "key": "GetColor",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetColor"
+                        "tooltip": "When signaled, this will invoke Get Color"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetColor is invoked"
+                        "tooltip": "Signaled after Get Color is invoked"
                     },
                     "details": {
-                        "name": "GetColor"
+                        "name": "Get Color"
                     },
                     "results": [
                         {
@@ -432,20 +455,20 @@
                     "key": "SetSplitAutomatic",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetSplitAutomatic"
+                        "tooltip": "When signaled, this will invoke Set Split Automatic"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetSplitAutomatic is invoked"
+                        "tooltip": "Signaled after Set Split Automatic is invoked"
                     },
                     "details": {
-                        "name": "SetSplitAutomatic"
+                        "name": "Set Split Automatic"
                     },
                     "params": [
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": "bool"
+                                "name": "Split Automatic"
                             }
                         }
                     ]
@@ -454,20 +477,20 @@
                     "key": "SetCascadeFarDepth",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetCascadeFarDepth"
+                        "tooltip": "When signaled, this will invoke Set Cascade Far Depth"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetCascadeFarDepth is invoked"
+                        "tooltip": "Signaled after Set Cascade Far Depth is invoked"
                     },
                     "details": {
-                        "name": "SetCascadeFarDepth"
+                        "name": "Set Cascade Far Depth"
                     },
                     "params": [
                         {
                             "typeid": "{0CE9FA36-1E3A-4C06-9254-B7C73A732053}",
                             "details": {
-                                "name": "Vector4"
+                                "name": "Cascade Far Depth"
                             }
                         }
                     ]
@@ -476,20 +499,20 @@
                     "key": "GetSplitAutomatic",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetSplitAutomatic"
+                        "tooltip": "When signaled, this will invoke Get Split Automatic"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetSplitAutomatic is invoked"
+                        "tooltip": "Signaled after Get Split Automatic is invoked"
                     },
                     "details": {
-                        "name": "GetSplitAutomatic"
+                        "name": "Get Split Automatic"
                     },
                     "results": [
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": "bool"
+                                "name": "Split Automatic"
                             }
                         }
                     ]
@@ -498,20 +521,20 @@
                     "key": "GetGroundHeight",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetGroundHeight"
+                        "tooltip": "When signaled, this will invoke Get Ground Height"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetGroundHeight is invoked"
+                        "tooltip": "Signaled after Get Ground Height is invoked"
                     },
                     "details": {
-                        "name": "GetGroundHeight"
+                        "name": "Get Ground Height"
                     },
                     "results": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "float"
+                                "name": "Ground Height"
                             }
                         }
                     ]
@@ -520,20 +543,20 @@
                     "key": "SetCascadeCount",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetCascadeCount"
+                        "tooltip": "When signaled, this will invoke Set Cascade Count"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetCascadeCount is invoked"
+                        "tooltip": "Signaled after Set Cascade Count is invoked"
                     },
                     "details": {
-                        "name": "SetCascadeCount"
+                        "name": "Set Cascade Count"
                     },
                     "params": [
                         {
                             "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
                             "details": {
-                                "name": "unsigned int"
+                                "name": "Cascade Count"
                             }
                         }
                     ]
@@ -542,20 +565,20 @@
                     "key": "SetFilteringSampleCount",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetFilteringSampleCount"
+                        "tooltip": "When signaled, this will invoke Set Filtering Sample Count"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetFilteringSampleCount is invoked"
+                        "tooltip": "Signaled after Set Filtering Sample Count is invoked"
                     },
                     "details": {
-                        "name": "SetFilteringSampleCount"
+                        "name": "Set Filtering Sample Count"
                     },
                     "params": [
                         {
                             "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
                             "details": {
-                                "name": "unsigned int"
+                                "name": "Filtering Sample Count"
                             }
                         }
                     ]
@@ -564,20 +587,20 @@
                     "key": "GetCascadeCount",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetCascadeCount"
+                        "tooltip": "When signaled, this will invoke Get Cascade Count"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetCascadeCount is invoked"
+                        "tooltip": "Signaled after Get Cascade Count is invoked"
                     },
                     "details": {
-                        "name": "GetCascadeCount"
+                        "name": "Get Cascade Count"
                     },
                     "results": [
                         {
                             "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
                             "details": {
-                                "name": "unsigned int"
+                                "name": "Cascade Count"
                             }
                         }
                     ]
@@ -586,20 +609,42 @@
                     "key": "GetIntensity",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetIntensity"
+                        "tooltip": "When signaled, this will invoke Get Intensity"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetIntensity is invoked"
+                        "tooltip": "Signaled after Get Intensity is invoked"
                     },
                     "details": {
-                        "name": "GetIntensity"
+                        "name": "Get Intensity"
                     },
                     "results": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "float"
+                                "name": "Intensity"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetNormalShadowBias",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Normal Shadow Bias"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Normal Shadow Bias is invoked"
+                    },
+                    "details": {
+                        "name": "Set Normal Shadow Bias"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Normal Shadow Bias"
                             }
                         }
                     ]
@@ -608,20 +653,20 @@
                     "key": "GetShadowmapSize",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetShadowmapSize"
+                        "tooltip": "When signaled, this will invoke Get Shadowmap Size"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetShadowmapSize is invoked"
+                        "tooltip": "Signaled after Get Shadowmap Size is invoked"
                     },
                     "details": {
-                        "name": "GetShadowmapSize"
+                        "name": "Get Shadowmap Size"
                     },
                     "results": [
                         {
                             "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
                             "details": {
-                                "name": "unsigned int"
+                                "name": "Shadowmap Size"
                             }
                         }
                     ]
@@ -630,20 +675,20 @@
                     "key": "GetAngularDiameter",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetAngularDiameter"
+                        "tooltip": "When signaled, this will invoke Get Angular Diameter"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetAngularDiameter is invoked"
+                        "tooltip": "Signaled after Get Angular Diameter is invoked"
                     },
                     "details": {
-                        "name": "GetAngularDiameter"
+                        "name": "Get Angular Diameter"
                     },
                     "results": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "float"
+                                "name": "Angular Diameter"
                             }
                         }
                     ]
@@ -652,20 +697,20 @@
                     "key": "SetShadowFilterMethod",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetShadowFilterMethod"
+                        "tooltip": "When signaled, this will invoke Set Shadow Filter Method"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetShadowFilterMethod is invoked"
+                        "tooltip": "Signaled after Set Shadow Filter Method is invoked"
                     },
                     "details": {
-                        "name": "SetShadowFilterMethod"
+                        "name": "Set Shadow Filter Method"
                     },
                     "params": [
                         {
                             "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
                             "details": {
-                                "name": "unsigned int"
+                                "name": "Shadow Filter Method"
                             }
                         }
                     ]
@@ -674,20 +719,20 @@
                     "key": "SetShadowReceiverPlaneBiasEnabled",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetShadowReceiverPlaneBiasEnabled"
+                        "tooltip": "When signaled, this will invoke Set Shadow Receiver Plane Bias Enabled"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetShadowReceiverPlaneBiasEnabled is invoked"
+                        "tooltip": "Signaled after Set Shadow Receiver Plane Bias Enabled is invoked"
                     },
                     "details": {
-                        "name": "SetShadowReceiverPlaneBiasEnabled"
+                        "name": "Set Shadow Receiver Plane Bias Enabled"
                     },
                     "params": [
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": "bool"
+                                "name": "Enabled"
                             }
                         }
                     ]
@@ -696,20 +741,20 @@
                     "key": "GetSplitRatio",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetSplitRatio"
+                        "tooltip": "When signaled, this will invoke Get Split Ratio"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetSplitRatio is invoked"
+                        "tooltip": "Signaled after Get Split Ratio is invoked"
                     },
                     "details": {
-                        "name": "GetSplitRatio"
+                        "name": "Get Split Ratio"
                     },
                     "results": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "float"
+                                "name": "Split Ratio"
                             }
                         }
                     ]
@@ -718,20 +763,20 @@
                     "key": "GetCascadeFarDepth",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetCascadeFarDepth"
+                        "tooltip": "When signaled, this will invoke Get Cascade Far Depth"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetCascadeFarDepth is invoked"
+                        "tooltip": "Signaled after Get Cascade Far Depth is invoked"
                     },
                     "details": {
-                        "name": "GetCascadeFarDepth"
+                        "name": "Get Cascade Far Depth"
                     },
                     "results": [
                         {
                             "typeid": "{0CE9FA36-1E3A-4C06-9254-B7C73A732053}",
                             "details": {
-                                "name": "Vector4"
+                                "name": "Cascade Far Depth"
                             }
                         }
                     ]
@@ -740,14 +785,14 @@
                     "key": "SetColor",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetColor"
+                        "tooltip": "When signaled, this will invoke Set Color"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetColor is invoked"
+                        "tooltip": "Signaled after Set Color is invoked"
                     },
                     "details": {
-                        "name": "SetColor"
+                        "name": "Set Color"
                     },
                     "params": [
                         {

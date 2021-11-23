@@ -32,7 +32,7 @@ class TestAutomation(TestAutomationBase):
     def test_ScriptCanvas_GetCollisionNameReturnsName(self, request, workspace, editor, launcher_platform):
         from .tests.script_canvas import ScriptCanvas_GetCollisionNameReturnsName as test_module
         # Fixme: expected_lines=["Layer Name: Right"]
-        self._run_test(request, workspace, editor, test_module)
+        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
 
     ## Seems to be flaky, need to investigate
     def test_ScriptCanvas_GetCollisionNameReturnsNothingWhenHasToggledLayer(self, request, workspace, editor, launcher_platform):
@@ -42,4 +42,4 @@ class TestAutomation(TestAutomationBase):
         # Fixme: for group in collision_groups:
         # Fixme:    unexpected_lines.append(f"GroupName: {group}")
         # Fixme: expected_lines=["GroupName: "]
-        self._run_test(request, workspace, editor, test_module)
+        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
