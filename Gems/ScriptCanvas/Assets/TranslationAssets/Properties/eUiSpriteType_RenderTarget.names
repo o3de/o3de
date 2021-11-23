@@ -5,14 +5,14 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Sprite Type_ Render Target",
-                "category": "Constants/UI"
+                "name": "Render Target",
+                "category": "Constants/UI/Sprite Type"
             },
             "methods": [
                 {
                     "key": "GeteUiSpriteType_RenderTarget",
                     "details": {
-                        "name": "Get Sprite Type_ Render Target"
+                        "name": "Render Target"
                     },
                     "results": [
                         {

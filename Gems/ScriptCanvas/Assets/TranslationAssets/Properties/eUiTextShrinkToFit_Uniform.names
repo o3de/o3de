@@ -5,14 +5,14 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Text Shrink To Fit Uniform",
-                "category": "Constants/UI"
+                "name": "Uniform",
+                "category": "Constants/UI/Text Shrink To Fit"
             },
             "methods": [
                 {
                     "key": "GeteUiTextShrinkToFit_Uniform",
                     "details": {
-                        "name": "Get Text Shrink To Fit Uniform"
+                        "name": "Uniform"
                     },
                     "results": [
                         {
