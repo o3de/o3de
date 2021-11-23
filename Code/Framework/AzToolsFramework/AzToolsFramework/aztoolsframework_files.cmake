@@ -487,7 +487,6 @@ set(FILES
     Commands/EntityTransformCommand.h
     Commands/PreemptiveUndoCache.cpp
     Commands/PreemptiveUndoCache.h
-    Commands/LegacyCommand.h
     Commands/BaseSliceCommand.cpp
     Commands/BaseSliceCommand.h
     Commands/SliceDetachEntityCommand.cpp
