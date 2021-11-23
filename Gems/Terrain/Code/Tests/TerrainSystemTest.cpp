@@ -17,6 +17,7 @@
 #include <GradientSignal/Ebuses/MockGradientRequestBus.h>
 #include <Tests/Mocks/Terrain/MockTerrainDataRequestBus.h>
 #include <Terrain/MockTerrainAreaSurfaceRequestBus.h>
+#include <Terrain/MockTerrain.h>
 #include <MockAxisAlignedBoxShapeComponent.h>
 
 using ::testing::AtLeast;

@@ -16,28 +16,6 @@
 
 namespace UnitTest
 {
-    class MockTerrainSystemService : private Terrain::TerrainSystemServiceRequestBus::Handler
-    {
-    public:
-        MockTerrainSystemService()
-        {
-            Terrain::TerrainSystemServiceRequestBus::Handler::BusConnect();
-        }
-
-        ~MockTerrainSystemService()
-        {
-            Terrain::TerrainSystemServiceRequestBus::Handler::BusDisconnect();
-        }
-
-        MOCK_METHOD0(Activate, void());
-        MOCK_METHOD0(Deactivate, void());
-
-        MOCK_METHOD1(RegisterArea, void(AZ::EntityId areaId));
-        MOCK_METHOD1(UnregisterArea, void(AZ::EntityId areaId));
-        MOCK_METHOD2(RefreshArea,
-            void(AZ::EntityId areaId, AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask changeMask));
-    };
-
     class MockTerrainDataNotificationListener : public AzFramework::Terrain::TerrainDataNotificationBus::Handler
     {
     public:
@@ -56,39 +34,6 @@ namespace UnitTest
         MOCK_METHOD0(OnTerrainDataDestroyBegin, void());
         MOCK_METHOD0(OnTerrainDataDestroyEnd, void());
         MOCK_METHOD2(OnTerrainDataChanged, void(const AZ::Aabb& dirtyRegion, TerrainDataChangedMask dataChangedMask));
-    };
-
-    class MockTerrainAreaHeightRequests : public Terrain::TerrainAreaHeightRequestBus::Handler
-    {
-    public:
-        MockTerrainAreaHeightRequests(AZ::EntityId entityId)
-        {
-            Terrain::TerrainAreaHeightRequestBus::Handler::BusConnect(entityId);
-        }
-
-        ~MockTerrainAreaHeightRequests()
-        {
-            Terrain::TerrainAreaHeightRequestBus::Handler::BusDisconnect();
-        }
-
-        MOCK_METHOD3(GetHeight, void(const AZ::Vector3& inPosition, AZ::Vector3& outPosition, bool& terrainExists));
-    };
-
-    class MockTerrainSpawnerRequests : public Terrain::TerrainSpawnerRequestBus::Handler
-    {
-    public:
-        MockTerrainSpawnerRequests(AZ::EntityId entityId)
-        {
-            Terrain::TerrainSpawnerRequestBus::Handler::BusConnect(entityId);
-        }
-
-        ~MockTerrainSpawnerRequests()
-        {
-            Terrain::TerrainSpawnerRequestBus::Handler::BusDisconnect();
-        }
-
-        MOCK_METHOD2(GetPriority, void(AZ::u32& outLayer, AZ::u32& outPriority));
-        MOCK_METHOD0(GetUseGroundPlane, bool());
     };
 
     class MockTerrainDataRequests : public AzFramework::Terrain::TerrainDataRequestBus::Handler
