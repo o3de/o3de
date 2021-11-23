@@ -5,14 +5,14 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Interactable State_ Disabled",
-                "category": "Constants/UI"
+                "name": "Disabled",
+                "category": "Constants/UI/Interactable State"
             },
             "methods": [
                 {
                     "key": "GeteUiInteractableState_Disabled",
                     "details": {
-                        "name": "Get Interactable State_ Disabled"
+                        "name": "Disabled"
                     },
                     "results": [
                         {

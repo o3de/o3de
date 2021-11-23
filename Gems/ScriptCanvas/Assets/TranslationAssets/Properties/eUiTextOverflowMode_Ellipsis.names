@@ -5,14 +5,14 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Text Overflow Mode_ Ellipsis",
-                "category": "Constants/UI"
+                "name": "Ellipsis",
+                "category": "Constants/UI/Text Overflow Mode"
             },
             "methods": [
                 {
                     "key": "GeteUiTextOverflowMode_Ellipsis",
                     "details": {
-                        "name": "Get Text Overflow Mode_ Ellipsis"
+                        "name": "Ellipsis"
                     },
                     "results": [
                         {

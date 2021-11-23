@@ -6,7 +6,7 @@
             "variant": "",
             "details": {
                 "name": "Right To Left",
-                "category": "Constants/UI/Order/Horizontal Order"
+                "category": "Constants/UI/Order/Horizontal"
             },
             "methods": [
                 {

@@ -5,14 +5,14 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Navigation Mode_ None",
-                "category": "Constants/UI"
+                "name": "None",
+                "category": "Constants/UI/Navigation Mode"
             },
             "methods": [
                 {
                     "key": "GeteUiNavigationMode_None",
                     "details": {
-                        "name": "Get Navigation Mode_ None"
+                        "name": "None"
                     },
                     "results": [
                         {
