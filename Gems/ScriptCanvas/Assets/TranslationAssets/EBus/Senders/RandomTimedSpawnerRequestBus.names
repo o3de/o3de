@@ -6,7 +6,7 @@
             "variant": "",
             "details": {
                 "name": "Random Timed Spawner",
-                "category": "Spawner"
+                "category": "Gameplay/Spawner"
             },
             "methods": [
                 {
