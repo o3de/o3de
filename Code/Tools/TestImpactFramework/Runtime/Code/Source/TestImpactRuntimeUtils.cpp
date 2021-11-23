@@ -41,7 +41,7 @@ namespace TestImpact
         return NativeTargetDescriptors;
     }
 
-    AZStd::unique_ptr<DynamicDependencyMap> ConstructDynamicDependencyMap(
+     AZStd::unique_ptr<BuildTargetList<NativeTestTargetList, NativeProductionTargetList>> ConstructNativeBuildTargetList(
         SuiteType suiteFilter,
         const NativeTargetDescriptorConfig& NativeTargetDescriptorConfig,
         const TestTargetMetaConfig& testTargetMetaConfig)
@@ -50,7 +50,8 @@ namespace TestImpact
         auto NativeTargetDescriptors = ReadNativeTargetDescriptorFiles(NativeTargetDescriptorConfig);
         auto buildTargets = CompileTargetDescriptors(AZStd::move(NativeTargetDescriptors), AZStd::move(NativeTestTargetMetaMap));
         auto&& [productionTargets, testTargets] = buildTargets;
-        return AZStd::make_unique<DynamicDependencyMap>(AZStd::move(testTargets), AZStd::move(productionTargets));
+        return AZStd::make_unique<BuildTargetList<NativeTestTargetList, NativeProductionTargetList>>(
+            AZStd::move(testTargets), AZStd::move(productionTargets));
     }
 
     AZStd::unique_ptr<TestTargetExclusionList> ConstructTestTargetExcludeList(

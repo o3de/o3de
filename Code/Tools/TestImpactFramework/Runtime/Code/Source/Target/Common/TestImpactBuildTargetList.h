@@ -49,6 +49,14 @@ namespace TestImpact
         //! Get the list of production targets in the repository.
         const ProductionTargetList& GetProductionTargetList() const;
 
+        template<typename Target>
+        static constexpr bool IsProductionTarget =
+            AZStd::is_same_v<ProductionTarget, AZStd::remove_const_t<AZStd::remove_pointer_t<AZStd::decay_t<Target>>>>;
+
+        template<typename Target>
+        static constexpr bool IsTestTarget =
+            AZStd::is_same_v<TestTarget, AZStd::remove_const_t<AZStd::remove_pointer_t<AZStd::decay_t<Target>>>>;
+
     private:
         //! The sorted list of unique test targets in the repository.
         TestTargetList m_testTargets;

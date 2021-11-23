@@ -11,10 +11,8 @@
 
 namespace TestImpact
 {
-    DynamicDependencyMap::DynamicDependencyMap(
-        AZStd::vector<AZStd::unique_ptr<NativeTestTargetList::TargetType::Descriptor>>&& testTargetDescriptors,
-        AZStd::vector<AZStd::unique_ptr<NativeProductionTargetDescriptor>>&& productionTargetDescriptors)
-        : m_buildTargets(AZStd::move(testTargetDescriptors), AZStd::move(productionTargetDescriptors))
+    DynamicDependencyMap::DynamicDependencyMap(const BuildTargetList<NativeTestTargetList, NativeProductionTargetList>* buildTargetList)
+        : m_buildTargets(buildTargetList)
     {
         const auto mapBuildTargetSources = [this](const auto* target)
         {
@@ -43,19 +41,19 @@ namespace TestImpact
             }
         };
 
-        for (const auto& target : m_buildTargets.GetProductionTargetList().GetTargets())
+        for (const auto& target : m_buildTargets->GetProductionTargetList().GetTargets())
         {
             mapBuildTargetSources(&target);
         }
 
-        for (const auto& target : m_buildTargets.GetTestTargetList().GetTargets())
+        for (const auto& target : m_buildTargets->GetTestTargetList().GetTargets())
         {
             mapBuildTargetSources(&target);
             m_testTargetSourceCoverage[&target] = {};
         }
     }
 
-    const BuildTargetList<NativeTestTargetList, NativeProductionTargetList>& DynamicDependencyMap::GetBuildTargets() const
+    const BuildTargetList<NativeTestTargetList, NativeProductionTargetList>* DynamicDependencyMap::GetBuildTargets() const
     {
         return m_buildTargets;
     }
@@ -109,7 +107,7 @@ namespace TestImpact
             // Update the dependency with any new coverage data
             for (const auto& unresolvedTestTarget : sourceCoverage.GetCoveringTestTargets())
             {
-                if (const NativeTestTargetList::TargetType* testTarget = m_buildTargets.GetTestTargetList().GetTarget(unresolvedTestTarget);
+                if (const NativeTestTargetList::TargetType* testTarget = m_buildTargets->GetTestTargetList().GetTarget(unresolvedTestTarget);
                     testTarget)
                 {
                     // Source to covering test target mapping

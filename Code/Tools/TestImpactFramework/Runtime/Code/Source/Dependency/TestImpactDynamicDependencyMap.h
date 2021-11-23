@@ -31,11 +31,9 @@ namespace TestImpact
     {
     public:
         //! Constructs the dependency map with entries for each build target's source files with empty test coverage data.
-        DynamicDependencyMap(
-            AZStd::vector<AZStd::unique_ptr<NativeTestTargetList::TargetType::Descriptor>>&& testTargetDescriptors,
-            AZStd::vector<AZStd::unique_ptr<NativeProductionTargetDescriptor>>&& productionTargetDescriptors);
+        DynamicDependencyMap(const BuildTargetList<NativeTestTargetList, NativeProductionTargetList>* buildTargetList);
 
-        const BuildTargetList<NativeTestTargetList, NativeProductionTargetList>& GetBuildTargets() const;
+        const BuildTargetList<NativeTestTargetList, NativeProductionTargetList>* GetBuildTargets() const;
 
         //! Gets the total number of unique source files in the repository.
         //! @note This includes autogen output sources.
@@ -109,6 +107,6 @@ namespace TestImpact
         //! Mapping of autogen input sources to their generated output sources.
         AZStd::unordered_map<AZStd::string, AZStd::vector<AZStd::string>> m_autogenInputToOutputMap;
 
-        BuildTargetList<NativeTestTargetList, NativeProductionTargetList> m_buildTargets;
+        const BuildTargetList<NativeTestTargetList, NativeProductionTargetList>* m_buildTargets;
     };
 } // namespace TestImpact

@@ -17,6 +17,7 @@
 #include <Dependency/TestImpactDynamicDependencyMap.h>
 #include <Dependency/TestImpactSourceCoveringTestsList.h>
 #include <Target/Native/TestImpactNativeTestTarget.h>
+#include <Target/Common/TestImpactBuildTargetList.h>
 #include <TestEngine/Common/Enumeration/TestImpactTestEnumeration.h>
 #include <TestEngine/TestImpactTestEngineInstrumentedRun.h>
 #include <TestImpactTestTargetExclusionList.h>
@@ -25,8 +26,8 @@
 
 namespace TestImpact
 {
-    //! Construct a dynamic dependency map from the build target descriptors and test target metas.
-    AZStd::unique_ptr<DynamicDependencyMap> ConstructDynamicDependencyMap(
+    //! Construct a build target list from the build target descriptors and test target metas.
+    AZStd::unique_ptr<BuildTargetList<NativeTestTargetList, NativeProductionTargetList>> ConstructNativeBuildTargetList(
         SuiteType suiteFilter,
         const NativeTargetDescriptorConfig& NativeTargetDescriptorConfig,
         const TestTargetMetaConfig& testTargetMetaConfig);

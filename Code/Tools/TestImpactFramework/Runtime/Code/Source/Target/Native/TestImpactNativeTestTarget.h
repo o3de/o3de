@@ -39,7 +39,4 @@ namespace TestImpact
     private:
         AZStd::unique_ptr<Descriptor> m_descriptor;
     };
-
-    template<typename Target>
-    inline constexpr bool IsTestTarget = AZStd::is_same_v<NativeTestTarget, AZStd::remove_const_t<AZStd::remove_pointer_t<AZStd::decay_t<Target>>>>;
 } // namespace TestImpact

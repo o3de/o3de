@@ -14,5 +14,10 @@
 namespace TestImpact
 {
     //! Container for set of sorted test targets containing no duplicates.
-    using NativeTestTargetList = TargetList<NativeTestTarget>;
+    class NativeTestTargetList
+        : public TargetList<NativeTestTarget>
+    {
+    public:
+        using TargetList<NativeTestTarget>::TargetList;
+    };
 } // namespace TestImpact

@@ -14,5 +14,10 @@
 namespace TestImpact
 {
     //! Container for set of sorted production targets containing no duplicates.
-    using NativeProductionTargetList = TargetList<NativeProductionTarget>;
+    class NativeProductionTargetList
+        : public TargetList<NativeProductionTarget>
+    {
+    public:
+        using TargetList<NativeProductionTarget>::TargetList;
+    };
 } // namespace TestImpact

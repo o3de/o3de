@@ -28,6 +28,14 @@ namespace TestImpact
         return prioritizedSelectedTests;
     }
 
+    template<typename Target>
+    static constexpr bool IsProductionTarget =
+        AZStd::is_same_v<NativeProductionTarget, AZStd::remove_const_t<AZStd::remove_pointer_t<AZStd::decay_t<Target>>>>;
+
+    template<typename Target>
+    static constexpr bool IsTestTarget =
+        AZStd::is_same_v<NativeTestTarget, AZStd::remove_const_t<AZStd::remove_pointer_t<AZStd::decay_t<Target>>>>;
+
     TestSelectorAndPrioritizer::SelectedTestTargetAndDependerMap TestSelectorAndPrioritizer::SelectTestTargets(
         const ChangeDependencyList& changeDependencyList)
     {

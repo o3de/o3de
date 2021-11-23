@@ -30,9 +30,14 @@ namespace TestImpact
     class TestSelectorAndPrioritizer;
     class TestEngine;
     class NativeTestTarget;
+    class NativeTestTargetList;
+    class NativeProductionTargetList;
     class SourceCoveringTestsList;
     class TestEngineInstrumentedRun;
     class TestTargetExclusionList;
+
+    template<typename TestTargetList, typename ProductionTargetList>
+    class BuildTargetList;
 
     //! Callback for a test sequence that isn't using test impact analysis to determine selected tests.
     //! @parm suiteType The test suite to select tests from.
@@ -227,6 +232,7 @@ namespace TestImpact
         Policy::TestSharding m_testShardingPolicy;
         Policy::TargetOutputCapture m_targetOutputCapture;
         size_t m_maxConcurrency = 0;
+        AZStd::unique_ptr<BuildTargetList<NativeTestTargetList, NativeProductionTargetList>> m_buildTargets;
         AZStd::unique_ptr<DynamicDependencyMap> m_dynamicDependencyMap;
         AZStd::unique_ptr<TestSelectorAndPrioritizer> m_testSelectorAndPrioritizer;
         AZStd::unique_ptr<TestEngine> m_testEngine;
