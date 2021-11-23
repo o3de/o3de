@@ -5,9 +5,25 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "SsaoComponentTypeId::Getter",
-                "category": "Constants"
-            }
+                "name": "Ssao Component Type Id",
+                "category": "Constants/Editor"
+            },
+            "methods": [
+                {
+                    "key": "GetSsaoComponentTypeId",
+                    "details": {
+                        "name": "Get Ssao Component Type Id"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}",
+                            "details": {
+                                "name": "AZ:: Uuid"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

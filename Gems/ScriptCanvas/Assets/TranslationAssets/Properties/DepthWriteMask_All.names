@@ -5,9 +5,25 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "DepthWriteMask_All::Getter",
-                "category": "Constants"
-            }
+                "name": "All",
+                "category": "Constants/Depth Write Mask"
+            },
+            "methods": [
+                {
+                    "key": "GetDepthWriteMask_All",
+                    "details": {
+                        "name": "All"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

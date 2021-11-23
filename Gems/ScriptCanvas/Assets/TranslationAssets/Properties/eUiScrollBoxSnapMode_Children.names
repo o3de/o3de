@@ -5,9 +5,25 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "eUiScrollBoxSnapMode_Children::Getter",
-                "category": "Constants"
-            }
+                "name": "Children",
+                "category": "Constants/UI/Scroll Box Snap Mode"
+            },
+            "methods": [
+                {
+                    "key": "GeteUiScrollBoxSnapMode_Children",
+                    "details": {
+                        "name": "Children"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

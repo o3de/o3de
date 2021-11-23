@@ -5,9 +5,25 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "eUiHAlign_Left::Getter",
-                "category": "Constants"
-            }
+                "name": "Horizontal Align Left",
+                "category": "Constants/UI/Align"
+            },
+            "methods": [
+                {
+                    "key": "GeteUiHAlign_Left",
+                    "details": {
+                        "name": "Horizontal Align: Left"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

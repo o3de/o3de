@@ -5,9 +5,25 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "eUiScaleToDeviceMode_UniformScaleToFit::Getter",
-                "category": "Constants"
-            }
+                "name": "Uniform Scale To Fit",
+                "category": "Constants/UI/Scale To Device Mode"
+            },
+            "methods": [
+                {
+                    "key": "GeteUiScaleToDeviceMode_UniformScaleToFit",
+                    "details": {
+                        "name": "Uniform Scale To Fit"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

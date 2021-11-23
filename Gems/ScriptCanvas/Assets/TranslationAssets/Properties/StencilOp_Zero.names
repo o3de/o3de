@@ -5,9 +5,25 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "StencilOp_Zero::Getter",
-                "category": "Constants"
-            }
+                "name": "Zero",
+                "category": "Constants/Stencil Op"
+            },
+            "methods": [
+                {
+                    "key": "GetStencilOp_Zero",
+                    "details": {
+                        "name": "Zero"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }
