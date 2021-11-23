@@ -237,14 +237,14 @@ namespace ScriptCanvasEditor
         return m_id;
     }
 
-    bool SourceHandle::IsValid() const
-    {
-        return m_data != nullptr;
-    }
-
-    bool SourceHandle::IsValidDescription() const
+    bool SourceHandle::IsDescriptionValid() const
     {
         return !m_id.IsNull() && !m_path.empty();
+    }
+
+    bool SourceHandle::IsGraphValid() const
+    {
+        return m_data != nullptr;
     }
 
     GraphPtr SourceHandle::Mod() const
@@ -290,7 +290,7 @@ namespace ScriptCanvasEditor
     {
         return AZStd::string::format
             ( "%s, %s, %s"
-            , IsValid() ? "O" : "X"
+            , IsGraphValid() ? "O" : "X"
             , m_path.empty() ? m_path.c_str() : "<no name>"
             , m_id.IsNull() ? "<null id>" : m_id.ToString<AZStd::string>().c_str());
     }

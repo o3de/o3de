@@ -59,6 +59,8 @@ set(FILES
     Editor/Components/EditorGraphVariableManagerComponent.cpp
     Editor/Include/ScriptCanvas/Components/EditorScriptCanvasComponent.h
     Editor/Components/EditorScriptCanvasComponent.cpp
+    Editor/Include/ScriptCanvas/Components/EditorScriptCanvasComponentSerializer.h
+    Editor/Include/ScriptCanvas/Components/EditorScriptCanvasComponentSerializer.cpp
     Editor/Components/IconComponent.h
     Editor/Components/IconComponent.cpp
     Editor/Include/ScriptCanvas/GraphCanvas/DynamicSlotBus.h

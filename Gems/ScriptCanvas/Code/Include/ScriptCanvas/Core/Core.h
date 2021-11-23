@@ -342,9 +342,9 @@ namespace ScriptCanvasEditor
 
         const AZ::Uuid& Id() const;
 
-        bool IsValid() const;
+        bool IsDescriptionValid() const;
 
-        bool IsValidDescription() const;
+        bool IsGraphValid() const;
 
         GraphPtr Mod() const;
 

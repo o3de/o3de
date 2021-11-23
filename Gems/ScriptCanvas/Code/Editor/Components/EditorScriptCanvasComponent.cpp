@@ -6,7 +6,6 @@
  *
  */
 
-
 #include <AzCore/Asset/AssetManagerBus.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Component/NamedEntityId.h>
@@ -14,6 +13,7 @@
 #include <AzCore/Script/ScriptSystemBus.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/IdUtils.h>
+#include <AzCore/Serialization/Json/RegistrationContext.h>
 #include <AzCore/Serialization/Utils.h>
 #include <AzFramework/Asset/AssetSystemBus.h>
 #include <AzFramework/StringFunc/StringFunc.h>
@@ -21,24 +21,26 @@
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <Core/ScriptCanvasBus.h>
 #include <Editor/Assets/ScriptCanvasAssetTrackerBus.h>
+#include <LyViewPaneNames.h>
 #include <ScriptCanvas/Asset/RuntimeAsset.h>
 #include <ScriptCanvas/Asset/RuntimeAsset.h>
 #include <ScriptCanvas/Assets/ScriptCanvasAsset.h>
+#include <ScriptCanvas/Assets/ScriptCanvasFileHandling.h>
 #include <ScriptCanvas/Bus/RequestBus.h>
 #include <ScriptCanvas/Components/EditorGraph.h>
-#include <ScriptCanvas/Components/EditorUtils.h>
 #include <ScriptCanvas/Components/EditorGraphVariableManagerComponent.h>
 #include <ScriptCanvas/Components/EditorScriptCanvasComponent.h>
+#include <ScriptCanvas/Components/EditorScriptCanvasComponentSerializer.h>
+#include <ScriptCanvas/Components/EditorUtils.h>
 #include <ScriptCanvas/Core/Node.h>
 #include <ScriptCanvas/PerformanceStatisticsBus.h>
-#include <LyViewPaneNames.h>
-#include <ScriptCanvas/Assets/ScriptCanvasFileHandling.h>
 
 namespace EditorScriptCanvasComponentCpp
 {
     enum Version
     {
         PrefabIntegration = 10,
+        InternalDev,
         AddSourceHandle,
         // add description above
         Current
@@ -49,6 +51,8 @@ namespace ScriptCanvasEditor
 {
     static bool EditorScriptCanvasComponentVersionConverter(AZ::SerializeContext& serializeContext, AZ::SerializeContext::DataElementNode& rootElement)
     {
+        AZ_TracePrintf("ScriptCanvas", "EditorScriptCanvasComponentVersionConverter called!");
+
         if (rootElement.GetVersion() <= 4)
         {
             int assetElementIndex = rootElement.FindElement(AZ::Crc32("m_asset"));
@@ -204,6 +208,11 @@ namespace ScriptCanvasEditor
                     ;
             }
         }
+
+        if (AZ::JsonRegistrationContext* jsonContext = azrtti_cast<AZ::JsonRegistrationContext*>(context))
+        {
+            jsonContext->Serializer<AZ::EditorScriptCanvasComponentSerializer>()->HandlesType<EditorScriptCanvasComponent>();
+        }
     }
 
     EditorScriptCanvasComponent::EditorScriptCanvasComponent()
@@ -238,7 +247,7 @@ namespace ScriptCanvasEditor
          
         AZ::Outcome<int, AZStd::string> openOutcome = AZ::Failure(AZStd::string());
          
-        if (m_sourceHandle.IsValid())
+        if (m_sourceHandle.IsDescriptionValid())
         {
             GeneralRequestBus::BroadcastResult(openOutcome, &GeneralRequests::OpenScriptCanvasAsset, m_sourceHandle, Tracker::ScriptCanvasFileState::UNMODIFIED, -1);
          
@@ -265,7 +274,11 @@ namespace ScriptCanvasEditor
         EditorComponentBase::Init();
         AzFramework::AssetCatalogEventBus::Handler::BusConnect();
         AzToolsFramework::EditorEntityContextNotificationBus::Handler::BusConnect();
-        // m_scriptCanvasAssetHolder.Init(GetEntityId(), GetId());
+    }
+
+    void EditorScriptCanvasComponent::InitializeSource(const SourceHandle& sourceHandle)
+    {
+        m_sourceHandle = sourceHandle;
     }
 
     //=========================================================================
@@ -389,13 +402,13 @@ namespace ScriptCanvasEditor
         // or when the asset was explicitly set to empty.
         //
         // i.e. do not clear variables when we lose the catalog asset.
-        if ((assetId.IsValidDescription() && assetId.Describe() != m_removedHandle.Describe())
-            || (!assetId.IsValidDescription() && !m_removedHandle.IsValidDescription()))
+        if ((assetId.IsDescriptionValid() && assetId.Describe() != m_removedHandle.Describe())
+            || (!assetId.IsDescriptionValid() && !m_removedHandle.IsDescriptionValid()))
         {
             ClearVariables();
         }
 
-        if (assetId.IsValidDescription())
+        if (assetId.IsDescriptionValid())
         {
             if (auto loaded = LoadFromFile(assetId.Path().c_str()); loaded.IsSuccess())
             {
@@ -473,7 +486,7 @@ namespace ScriptCanvasEditor
 
     void EditorScriptCanvasComponent::UpdatePropertyDisplay(const SourceHandle& sourceHandle)
     {
-        if (sourceHandle.IsValid())
+        if (sourceHandle.IsGraphValid())
         {
             BuildGameEntityData();
             UpdateName();
