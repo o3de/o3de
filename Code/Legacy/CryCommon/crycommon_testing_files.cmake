@@ -9,7 +9,6 @@
 set(FILES
     Mocks/IConsoleMock.h
     Mocks/ICryPakMock.h
-    Mocks/ILogMock.h
     Mocks/ISystemMock.h
     Mocks/ICVarMock.h
 )
