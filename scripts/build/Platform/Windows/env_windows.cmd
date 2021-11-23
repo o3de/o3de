@@ -32,6 +32,10 @@ IF "%TMP%"=="" (
     ) ELSE (
         SET TMP=%WORKSPACE%\Temp
         SET TEMP=%WORKSPACE%\Temp
+        REM This folder may not be created in the workspace
+        IF NOT EXIST "!TMP!" (
+            MKDIR "!TMP!"
+        )
     )
 )
 
