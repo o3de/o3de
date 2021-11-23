@@ -10,6 +10,7 @@ set(FILES
     ../Common/Configurations_common.cmake
     ../Common/Clang/Configurations_clang.cmake
     ../Common/Install_common.cmake
+    ../Common/PackagingCodeSign.cmake
     ../Common/PackagingPostBuild_common.cmake
     ../Common/PackagingPreBuild_common.cmake
     CompilerSettings_linux.cmake

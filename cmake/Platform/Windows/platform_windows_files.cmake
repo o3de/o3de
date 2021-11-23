@@ -15,6 +15,7 @@ set(FILES
     ../Common/MSVC/VisualStudio_common.cmake
     ../Common/Install_common.cmake
     ../Common/LYWrappers_default.cmake
+    ../Common/PackagingCodeSign.cmake
     ../Common/PackagingPostBuild_common.cmake
     ../Common/PackagingPreBuild_common.cmake
     ../Common/TargetIncludeSystemDirectories_unsupported.cmake
