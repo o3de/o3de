@@ -83,7 +83,9 @@ namespace Multiplayer
         bool IsInGameMode() override;
         //! @}
 
-    private:    
+    private:
+        void LaunchEditorServer();
+        
         //! EditorEvents::Handler overrides
         //! @{
         void OnEditorNotifyEvent(EEditorNotifyEvent event) override;
@@ -106,7 +108,7 @@ namespace Multiplayer
         //! @}
 
         IEditor* m_editor = nullptr;
-        AzFramework::ProcessWatcher* m_serverProcessWatcher = nullptr;
+        AZStd::unique_ptr<AzFramework::ProcessWatcher> m_serverProcessWatcher = nullptr;
         AZStd::unique_ptr<ProcessCommunicatorTracePrinter> m_serverProcessTracePrinter = nullptr;
         AzNetworking::ConnectionId m_editorConnId;
 

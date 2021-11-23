@@ -193,7 +193,7 @@ namespace Multiplayer
         }
     }
 
-    AzFramework::ProcessWatcher* LaunchEditorServer()
+    void MultiplayerEditorSystemComponent::LaunchEditorServer()
     {
         // Assemble the server's path
         AZ::CVarFixedString serverProcess = editorsv_process;
@@ -248,7 +248,13 @@ namespace Multiplayer
             "MultiplayerEditor", processLaunchInfo.m_launchResult != AzFramework::ProcessLauncher::ProcessLaunchResult::PLR_MissingFile,
             "LaunchEditorServer failed! The ServerLauncher binary is missing! (%s)  Please build server launcher.", serverPath.c_str())
 
-        return outProcess;
+        // Stop the previous server if one exists
+        if (m_serverProcessWatcher)
+        {
+            m_serverProcessWatcher->TerminateProcess(0);
+        }
+        m_serverProcessWatcher.reset(outProcess);
+        m_serverProcessTracePrinter = AZStd::make_unique<ProcessCommunicatorTracePrinter>(m_serverProcessWatcher->GetCommunicator(), "EditorServer");
     }
 
     void MultiplayerEditorSystemComponent::OnGameEntitiesStarted()
@@ -308,8 +314,7 @@ namespace Multiplayer
             editorNetworkInterface->Listen(editorsv_port);
 
             // Launch the editor-server
-            m_serverProcessWatcher = LaunchEditorServer();
-            m_serverProcessTracePrinter = AZStd::make_unique<ProcessCommunicatorTracePrinter>(m_serverProcessWatcher->GetCommunicator(), "EditorServer");
+            LaunchEditorServer();
             AZ::TickBus::Handler::BusConnect();
         }
         else
