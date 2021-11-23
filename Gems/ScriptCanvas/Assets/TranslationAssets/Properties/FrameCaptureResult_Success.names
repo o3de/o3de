@@ -5,7 +5,8 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Frame Capture Result_ Success"
+                "name": "Frame Capture Result_ Success",
+                "category": "Constants/Frame Capture Result"
             },
             "methods": [
                 {

@@ -5,13 +5,14 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "e Ui Animation Event_ Aborted"
+                "name": "Aborted",
+                "category": "Constants/UI/Animation Event"
             },
             "methods": [
                 {
                     "key": "GeteUiAnimationEvent_Aborted",
                     "details": {
-                        "name": "Gete Ui Animation Event_ Aborted"
+                        "name": "Aborted"
                     },
                     "results": [
                         {

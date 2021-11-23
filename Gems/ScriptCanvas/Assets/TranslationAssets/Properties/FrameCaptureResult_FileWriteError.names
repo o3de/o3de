@@ -5,7 +5,8 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Frame Capture Result_ File Write Error"
+                "name": "Frame Capture Result_ File Write Error",
+                "category": "Constants/Frame Capture Result"
             },
             "methods": [
                 {

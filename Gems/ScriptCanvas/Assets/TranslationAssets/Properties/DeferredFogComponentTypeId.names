@@ -5,7 +5,8 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Deferred Fog Component Type Id"
+                "name": "Deferred Fog Component Type Id",
+                "category": "Constants/Editor"
             },
             "methods": [
                 {

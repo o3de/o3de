@@ -5,13 +5,14 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Display Settings_ Physics"
+                "name": "Physics",
+                "category": "Constants/Display Settings"
             },
             "methods": [
                 {
                     "key": "GetDisplaySettings_Physics",
                     "details": {
-                        "name": "Get Display Settings_ Physics"
+                        "name": "Get Physics"
                     },
                     "results": [
                         {

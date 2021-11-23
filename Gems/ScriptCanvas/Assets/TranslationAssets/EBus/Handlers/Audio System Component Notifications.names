@@ -5,8 +5,8 @@
             "context": "EBusHandler",
             "variant": "",
             "details": {
-                "name": "Audio  System",
-                "category": "EBus Handlers"
+                "name": "Audio System",
+                "category": "Audio"
             },
             "methods": [
                 {

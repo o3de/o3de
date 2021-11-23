@@ -5,7 +5,8 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Provider Name Enum_ Login With Amazon"
+                "name": "Provider Name Enum_ Login With Amazon",
+                "category": "Constants/Provider Name"
             },
             "methods": [
                 {

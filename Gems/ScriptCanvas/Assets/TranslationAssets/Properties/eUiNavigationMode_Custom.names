@@ -5,13 +5,14 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "e Ui Navigation Mode_ Custom"
+                "name": "Navigation Mode_ Custom",
+                "category": "Constants/UI"
             },
             "methods": [
                 {
                     "key": "GeteUiNavigationMode_Custom",
                     "details": {
-                        "name": "Gete Ui Navigation Mode_ Custom"
+                        "name": "Get Navigation Mode_ Custom"
                     },
                     "results": [
                         {

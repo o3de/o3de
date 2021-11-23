@@ -5,7 +5,8 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Transform Refresh Type_ Orientation"
+                "name": "Transform Refresh Type_ Orientation",
+                "category": "Constants/Transform"
             },
             "methods": [
                 {

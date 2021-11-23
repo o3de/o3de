@@ -5,7 +5,8 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Transform Pivot_ Center"
+                "name": "Transform Pivot_ Center",
+                "category": "Constants/Transform"
             },
             "methods": [
                 {

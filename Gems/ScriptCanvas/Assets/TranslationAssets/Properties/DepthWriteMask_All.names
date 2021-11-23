@@ -5,7 +5,8 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Depth Write Mask_ All"
+                "name": "Depth Write Mask_ All",
+                "category": "Constants/Depth Write Mask"
             },
             "methods": [
                 {

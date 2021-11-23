@@ -5,13 +5,14 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Stencil Op_ Decrement Saturate"
+                "name": "Decrement Saturate",
+                "category": "Constants/Stencil Op"
             },
             "methods": [
                 {
                     "key": "GetStencilOp_DecrementSaturate",
                     "details": {
-                        "name": "Get Stencil Op_ Decrement Saturate"
+                        "name": "Decrement Saturate"
                     },
                     "results": [
                         {

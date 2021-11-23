@@ -5,13 +5,14 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "SPHERE"
+                "name": "Sphere",
+                "category": "Constants/White Box"
             },
             "methods": [
                 {
                     "key": "GetSPHERE",
                     "details": {
-                        "name": "GetSPHERE"
+                        "name": "Sphere"
                     },
                     "results": [
                         {

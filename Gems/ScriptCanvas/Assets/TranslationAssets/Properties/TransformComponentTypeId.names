@@ -5,7 +5,8 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Transform Component Type Id"
+                "name": "Transform Component Type Id",
+                "category": "Constants/Transform"
             },
             "methods": [
                 {

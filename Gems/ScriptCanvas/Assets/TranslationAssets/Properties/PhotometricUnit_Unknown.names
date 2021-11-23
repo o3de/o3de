@@ -5,7 +5,8 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Photometric Unit_ Unknown"
+                "name": "Photometric Unit_ Unknown",
+                "category": "Constants/Photometric Unit"
             },
             "methods": [
                 {

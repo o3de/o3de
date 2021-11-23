@@ -5,7 +5,8 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Transform Refresh Type_ Translation"
+                "name": "Transform Refresh Type_ Translation",
+                "category": "Constants/Transform"
             },
             "methods": [
                 {

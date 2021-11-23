@@ -5,13 +5,14 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Blend Op_ Add"
+                "name": "Add",
+                "category": "Constants/Blend Operation"
             },
             "methods": [
                 {
                     "key": "GetBlendOp_Add",
                     "details": {
-                        "name": "Get Blend Op_ Add"
+                        "name": "Get Add"
                     },
                     "results": [
                         {

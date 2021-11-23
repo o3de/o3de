@@ -5,13 +5,14 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "e Ui Text Wrap Text Setting_ No Wrap"
+                "name": "Text Setting No Wrap",
+                "category": "Constants/UI/Text Wrap"
             },
             "methods": [
                 {
                     "key": "GeteUiTextWrapTextSetting_NoWrap",
                     "details": {
-                        "name": "Gete Ui Text Wrap Text Setting_ No Wrap"
+                        "name": "Get Text Setting No Wrap"
                     },
                     "results": [
                         {

@@ -5,13 +5,14 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "LANDSCAPE_CANVAS_EDITOR_ID"
+                "name": "Editor Id",
+                "category": "Constants/Landscape Canvas"
             },
             "methods": [
                 {
                     "key": "GetLANDSCAPE_CANVAS_EDITOR_ID",
                     "details": {
-                        "name": "GetLANDSCAPE_CANVAS_EDITOR_ID"
+                        "name": "Editor Id"
                     },
                     "results": [
                         {

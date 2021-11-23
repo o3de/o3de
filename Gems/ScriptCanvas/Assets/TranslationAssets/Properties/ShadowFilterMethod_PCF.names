@@ -5,7 +5,8 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Shadow Filter Method_PCF"
+                "name": "Shadow Filter Method_PCF",
+                "category": "Constants/Shadowmap"
             },
             "methods": [
                 {

@@ -5,13 +5,14 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "e Ui Emit Shape_ Point"
+                "name": "Point",
+                "category": "Constants/UI/Emit Shape"
             },
             "methods": [
                 {
                     "key": "GeteUiEmitShape_Point",
                     "details": {
-                        "name": "Gete Ui Emit Shape_ Point"
+                        "name": "Point"
                     },
                     "results": [
                         {

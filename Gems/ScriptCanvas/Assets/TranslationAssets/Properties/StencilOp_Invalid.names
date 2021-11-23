@@ -5,13 +5,14 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Stencil Op_ Invalid"
+                "name": "Invalid",
+                "category": "Constants/Stencil Op"
             },
             "methods": [
                 {
                     "key": "GetStencilOp_Invalid",
                     "details": {
-                        "name": "Get Stencil Op_ Invalid"
+                        "name": "Invalid"
                     },
                     "results": [
                         {

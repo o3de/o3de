@@ -5,7 +5,8 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Default Lod Type"
+                "name": "Default Lod Type",
+                "category": "Constants/Defaults"
             },
             "methods": [
                 {

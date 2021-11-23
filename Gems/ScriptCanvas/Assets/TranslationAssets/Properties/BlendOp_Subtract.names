@@ -5,13 +5,14 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Blend Op_ Subtract"
+                "name": "Subtract",
+                "category": "Constants/Blend Operation"
             },
             "methods": [
                 {
                     "key": "GetBlendOp_Subtract",
                     "details": {
-                        "name": "Get Blend Op_ Subtract"
+                        "name": "Get Subtract"
                     },
                     "results": [
                         {

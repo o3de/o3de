@@ -5,7 +5,8 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Multi Position Behavior Type_ Separate"
+                "name": "Multi Position Behavior Type_ Separate",
+                "category": "Constants/Multi Position Behavior Type"
             },
             "methods": [
                 {

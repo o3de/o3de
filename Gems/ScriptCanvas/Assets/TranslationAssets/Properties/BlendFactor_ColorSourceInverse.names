@@ -5,13 +5,14 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Blend Factor_ Color Source Inverse"
+                "name": "Color Source Inverse",
+                "category": "Constants/Blend Factor"
             },
             "methods": [
                 {
                     "key": "GetBlendFactor_ColorSourceInverse",
                     "details": {
-                        "name": "Get Blend Factor_ Color Source Inverse"
+                        "name": "Get Color Source Inverse"
                     },
                     "results": [
                         {
