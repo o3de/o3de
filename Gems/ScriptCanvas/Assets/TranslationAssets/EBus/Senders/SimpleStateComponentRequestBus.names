@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "SimpleStateComponentRequestBus",
+            "base": "SimpleStateComponentRequestBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetNumStates",
+                    "base": "GetNumStates",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Num States"
@@ -32,7 +32,7 @@
                     ]
                 },
                 {
-                    "key": "SetToLastState",
+                    "base": "SetToLastState",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set To Last State"
@@ -46,7 +46,7 @@
                     }
                 },
                 {
-                    "key": "SetToPreviousState",
+                    "base": "SetToPreviousState",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set To Previous State"
@@ -60,7 +60,7 @@
                     }
                 },
                 {
-                    "key": "SetToFirstState",
+                    "base": "SetToFirstState",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set To First State"
@@ -74,7 +74,7 @@
                     }
                 },
                 {
-                    "key": "SetToNextState",
+                    "base": "SetToNextState",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set To Next State"
@@ -88,7 +88,7 @@
                     }
                 },
                 {
-                    "key": "SetStateByIndex",
+                    "base": "SetStateByIndex",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set State By Index"
@@ -110,7 +110,7 @@
                     ]
                 },
                 {
-                    "key": "SetState",
+                    "base": "SetState",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set State"
@@ -132,7 +132,7 @@
                     ]
                 },
                 {
-                    "key": "GetCurrentState",
+                    "base": "GetCurrentState",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Current State"

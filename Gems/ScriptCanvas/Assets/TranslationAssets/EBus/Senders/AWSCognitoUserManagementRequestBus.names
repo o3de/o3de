@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "AWSCognitoUserManagementRequestBus",
+            "base": "AWSCognitoUserManagementRequestBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "EnableMFAAsync",
+                    "base": "EnableMFAAsync",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Enable MFA Async"
@@ -33,7 +33,7 @@
                     ]
                 },
                 {
-                    "key": "ConfirmSignUpAsync",
+                    "base": "ConfirmSignUpAsync",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Confirm Sign Up Async"
@@ -63,7 +63,7 @@
                     ]
                 },
                 {
-                    "key": "PhoneSignUpAsync",
+                    "base": "PhoneSignUpAsync",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Phone Sign Up Async"
@@ -100,7 +100,7 @@
                     ]
                 },
                 {
-                    "key": "EmailSignUpAsync",
+                    "base": "EmailSignUpAsync",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Email Sign Up Async"
@@ -137,7 +137,7 @@
                     ]
                 },
                 {
-                    "key": "ConfirmForgotPasswordAsync",
+                    "base": "ConfirmForgotPasswordAsync",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Confirm Forgot Password Async"
@@ -174,7 +174,7 @@
                     ]
                 },
                 {
-                    "key": "Initialize",
+                    "base": "Initialize",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Initialize"
@@ -196,7 +196,7 @@
                     ]
                 },
                 {
-                    "key": "ForgotPasswordAsync",
+                    "base": "ForgotPasswordAsync",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Forgot Password Async"

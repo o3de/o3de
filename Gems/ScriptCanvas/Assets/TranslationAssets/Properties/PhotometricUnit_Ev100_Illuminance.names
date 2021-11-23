@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "PhotometricUnit_Ev100_Illuminance",
+            "base": "PhotometricUnit_Ev100_Illuminance",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetPhotometricUnit_Ev100_Illuminance",
+                    "base": "GetPhotometricUnit_Ev100_Illuminance",
                     "details": {
                         "name": "Ev 100 Illuminance"
                     },

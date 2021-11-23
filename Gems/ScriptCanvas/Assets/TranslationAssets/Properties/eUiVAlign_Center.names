@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "eUiVAlign_Center",
+            "base": "eUiVAlign_Center",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GeteUiVAlign_Center",
+                    "base": "GeteUiVAlign_Center",
                     "details": {
                         "name": "Vertical Align: Center"
                     },

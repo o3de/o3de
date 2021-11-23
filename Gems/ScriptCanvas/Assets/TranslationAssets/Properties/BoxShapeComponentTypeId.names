@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "BoxShapeComponentTypeId",
+            "base": "BoxShapeComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetBoxShapeComponentTypeId",
+                    "base": "GetBoxShapeComponentTypeId",
                     "details": {
                         "name": "Get Box Shape Component Type Id"
                     },

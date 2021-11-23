@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "SystemConfigSpec_Auto",
+            "base": "SystemConfigSpec_Auto",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetSystemConfigSpec_Auto",
+                    "base": "GetSystemConfigSpec_Auto",
                     "details": {
                         "name": "Auto"
                     },

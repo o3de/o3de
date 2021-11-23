@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "GridComponentTypeId",
+            "base": "GridComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetGridComponentTypeId",
+                    "base": "GetGridComponentTypeId",
                     "details": {
                         "name": "Get Grid Component Type Id"
                     },

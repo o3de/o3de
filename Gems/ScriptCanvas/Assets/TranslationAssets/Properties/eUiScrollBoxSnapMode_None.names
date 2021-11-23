@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "eUiScrollBoxSnapMode_None",
+            "base": "eUiScrollBoxSnapMode_None",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GeteUiScrollBoxSnapMode_None",
+                    "base": "GeteUiScrollBoxSnapMode_None",
                     "details": {
                         "name": "None"
                     },

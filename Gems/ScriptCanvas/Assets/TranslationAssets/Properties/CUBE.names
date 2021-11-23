@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "CUBE",
+            "base": "CUBE",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetCUBE",
+                    "base": "GetCUBE",
                     "details": {
                         "name": "Cube"
                     },

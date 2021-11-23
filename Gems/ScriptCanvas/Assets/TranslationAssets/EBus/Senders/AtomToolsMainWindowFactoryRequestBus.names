@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "AtomToolsMainWindowFactoryRequestBus",
+            "base": "AtomToolsMainWindowFactoryRequestBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "CreateMainWindow",
+                    "base": "CreateMainWindow",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Create Main Window"
@@ -24,7 +24,7 @@
                     }
                 },
                 {
-                    "key": "DestroyMainWindow",
+                    "base": "DestroyMainWindow",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Destroy Main Window"

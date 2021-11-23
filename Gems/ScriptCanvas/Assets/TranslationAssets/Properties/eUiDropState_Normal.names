@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "eUiDropState_Normal",
+            "base": "eUiDropState_Normal",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GeteUiDropState_Normal",
+                    "base": "GeteUiDropState_Normal",
                     "details": {
                         "name": "Normal"
                     },

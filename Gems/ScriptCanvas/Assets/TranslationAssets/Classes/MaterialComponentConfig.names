@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "MaterialComponentConfig",
+            "base": "MaterialComponentConfig",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "Getmaterials",
+                    "base": "Getmaterials",
                     "details": {
                         "name": "Get Materials"
                     },
@@ -33,7 +33,7 @@
                     ]
                 },
                 {
-                    "key": "Setmaterials",
+                    "base": "Setmaterials",
                     "details": {
                         "name": "Set Materials"
                     },

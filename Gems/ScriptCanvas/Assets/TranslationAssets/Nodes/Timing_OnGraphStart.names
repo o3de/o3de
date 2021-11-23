@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "{F200B22A-5903-483A-BF63-5241BC03632B}",
+            "base": "{F200B22A-5903-483A-BF63-5241BC03632B}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
@@ -12,7 +12,7 @@
             },
             "slots": [
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out",
                     "details": {
                         "name": "Out",
                         "tooltip": "Signaled when the entity that owns this graph is fully activated."

@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "EditorPhysicsSceneName",
+            "base": "EditorPhysicsSceneName",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetEditorPhysicsSceneName",
+                    "base": "GetEditorPhysicsSceneName",
                     "details": {
                         "name": "Get Editor Physics Scene Name"
                     },

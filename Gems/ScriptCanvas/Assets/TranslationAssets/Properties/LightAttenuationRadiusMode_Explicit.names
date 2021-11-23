@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "LightAttenuationRadiusMode_Explicit",
+            "base": "LightAttenuationRadiusMode_Explicit",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetLightAttenuationRadiusMode_Explicit",
+                    "base": "GetLightAttenuationRadiusMode_Explicit",
                     "details": {
                         "name": "Explicit"
                     },

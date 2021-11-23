@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "eUiHorizontalOrder_RightToLeft",
+            "base": "eUiHorizontalOrder_RightToLeft",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GeteUiHorizontalOrder_RightToLeft",
+                    "base": "GeteUiHorizontalOrder_RightToLeft",
                     "details": {
                         "name": "Right To Left"
                     },

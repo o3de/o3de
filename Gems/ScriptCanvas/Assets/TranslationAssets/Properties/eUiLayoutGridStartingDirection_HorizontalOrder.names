@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "eUiLayoutGridStartingDirection_HorizontalOrder",
+            "base": "eUiLayoutGridStartingDirection_HorizontalOrder",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GeteUiLayoutGridStartingDirection_HorizontalOrder",
+                    "base": "GeteUiLayoutGridStartingDirection_HorizontalOrder",
                     "details": {
                         "name": "Horizontal Order"
                     },

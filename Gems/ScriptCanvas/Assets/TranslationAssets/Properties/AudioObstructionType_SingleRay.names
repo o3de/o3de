@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "AudioObstructionType_SingleRay",
+            "base": "AudioObstructionType_SingleRay",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetAudioObstructionType_SingleRay",
+                    "base": "GetAudioObstructionType_SingleRay",
                     "details": {
                         "name": "Single Ray"
                     },

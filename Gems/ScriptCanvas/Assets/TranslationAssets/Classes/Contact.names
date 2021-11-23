@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "Contact",
+            "base": "Contact",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
@@ -9,7 +9,7 @@
             },
             "methods": [
                 {
-                    "key": "GetPosition",
+                    "base": "GetPosition",
                     "details": {
                         "name": "Get Position"
                     },
@@ -31,7 +31,7 @@
                     ]
                 },
                 {
-                    "key": "SetPosition",
+                    "base": "SetPosition",
                     "details": {
                         "name": "Set Position"
                     },
@@ -51,7 +51,7 @@
                     ]
                 },
                 {
-                    "key": "GetNormal",
+                    "base": "GetNormal",
                     "details": {
                         "name": "Get Normal"
                     },
@@ -73,7 +73,7 @@
                     ]
                 },
                 {
-                    "key": "SetNormal",
+                    "base": "SetNormal",
                     "details": {
                         "name": "Set Normal"
                     },
@@ -93,7 +93,7 @@
                     ]
                 },
                 {
-                    "key": "GetImpulse",
+                    "base": "GetImpulse",
                     "details": {
                         "name": "Get Impulse"
                     },
@@ -115,7 +115,7 @@
                     ]
                 },
                 {
-                    "key": "SetImpulse",
+                    "base": "SetImpulse",
                     "details": {
                         "name": "Set Impulse"
                     },
@@ -135,7 +135,7 @@
                     ]
                 },
                 {
-                    "key": "GetSeparation",
+                    "base": "GetSeparation",
                     "details": {
                         "name": "Get Separation"
                     },
@@ -157,7 +157,7 @@
                     ]
                 },
                 {
-                    "key": "SetSeparation",
+                    "base": "SetSeparation",
                     "details": {
                         "name": "Set Separation"
                     },

@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "InputDeviceMouse",
+            "base": "InputDeviceMouse",
             "context": "BehaviorClass",
             "variant": "",
             "details": {

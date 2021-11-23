@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "eUiNavigationMode_None",
+            "base": "eUiNavigationMode_None",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GeteUiNavigationMode_None",
+                    "base": "GeteUiNavigationMode_None",
                     "details": {
                         "name": "None"
                     },

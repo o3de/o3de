@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "eUiVAlign_Bottom",
+            "base": "eUiVAlign_Bottom",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GeteUiVAlign_Bottom",
+                    "base": "GeteUiVAlign_Bottom",
                     "details": {
                         "name": "Vertical Align: Bottom"
                     },

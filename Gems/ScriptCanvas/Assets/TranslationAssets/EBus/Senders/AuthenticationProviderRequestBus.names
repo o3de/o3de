@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "SignOut",
+                    "base": "SignOut",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SignOut"
@@ -42,7 +42,7 @@
                     ]
                 },
                 {
-                    "key": "DeviceCodeGrantConfirmSignInAsync",
+                    "base": "DeviceCodeGrantConfirmSignInAsync",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Device Code Grant Confirm Sign In Async"
@@ -65,7 +65,7 @@
                     ]
                 },
                 {
-                    "key": "DeviceCodeGrantSignInAsync",
+                    "base": "DeviceCodeGrantSignInAsync",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Device Code Grant Sign In Async"
@@ -88,7 +88,7 @@
                     ]
                 },
                 {
-                    "key": "PasswordGrantMultiFactorSignInAsync",
+                    "base": "PasswordGrantMultiFactorSignInAsync",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Password Grant Multi Factor Sign In Async"
@@ -125,7 +125,7 @@
                     ]
                 },
                 {
-                    "key": "GetAuthenticationTokens",
+                    "base": "GetAuthenticationTokens",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Authentication Tokens"
@@ -156,7 +156,7 @@
                     ]
                 },
                 {
-                    "key": "GetTokensWithRefreshAsync",
+                    "base": "GetTokensWithRefreshAsync",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Tokens With Refresh Async"
@@ -179,7 +179,7 @@
                     ]
                 },
                 {
-                    "key": "IsSignedIn",
+                    "base": "IsSignedIn",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Is Signed In"
@@ -210,7 +210,7 @@
                     ]
                 },
                 {
-                    "key": "PasswordGrantSingleFactorSignInAsync",
+                    "base": "PasswordGrantSingleFactorSignInAsync",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Password GrantSingle Factor Sign In Async"
@@ -247,7 +247,7 @@
                     ]
                 },
                 {
-                    "key": "RefreshTokensAsync",
+                    "base": "RefreshTokensAsync",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Refresh Tokens Async"
@@ -270,7 +270,7 @@
                     ]
                 },
                 {
-                    "key": "Initialize",
+                    "base": "Initialize",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Initialize"
@@ -300,7 +300,7 @@
                     ]
                 },
                 {
-                    "key": "PasswordGrantMultiFactorConfirmSignInAsync",
+                    "base": "PasswordGrantMultiFactorConfirmSignInAsync",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Password Grant Multi Factor Confirm Sign In Async"

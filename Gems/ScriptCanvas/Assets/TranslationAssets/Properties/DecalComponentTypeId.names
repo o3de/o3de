@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "DecalComponentTypeId",
+            "base": "DecalComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetDecalComponentTypeId",
+                    "base": "GetDecalComponentTypeId",
                     "details": {
                         "name": "Get Decal Component Type Id"
                     },

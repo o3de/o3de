@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "undo",
+            "base": "undo",
             "context": "Method",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "undo",
+                    "base": "undo",
                     "context": "Global",
                     "entry": {
                         "name": "In",

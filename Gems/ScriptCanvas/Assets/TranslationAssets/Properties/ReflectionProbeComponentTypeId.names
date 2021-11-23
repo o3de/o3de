@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "ReflectionProbeComponentTypeId",
+            "base": "ReflectionProbeComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetReflectionProbeComponentTypeId",
+                    "base": "GetReflectionProbeComponentTypeId",
                     "details": {
                         "name": "Get Reflection Probe Component Type Id"
                     },

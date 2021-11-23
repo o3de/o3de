@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "DisplaySettings_HideTracks",
+            "base": "DisplaySettings_HideTracks",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetDisplaySettings_HideTracks",
+                    "base": "GetDisplaySettings_HideTracks",
                     "details": {
                         "name": "Get Hide Tracks"
                     },

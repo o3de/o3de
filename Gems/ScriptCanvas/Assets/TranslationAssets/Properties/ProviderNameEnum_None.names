@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "ProviderNameEnum_None",
+            "base": "ProviderNameEnum_None",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetProviderNameEnum_None",
+                    "base": "GetProviderNameEnum_None",
                     "details": {
                         "name": "None"
                     },

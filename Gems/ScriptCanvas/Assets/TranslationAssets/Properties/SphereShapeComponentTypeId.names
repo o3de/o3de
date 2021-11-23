@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "SphereShapeComponentTypeId",
+            "base": "SphereShapeComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetSphereShapeComponentTypeId",
+                    "base": "GetSphereShapeComponentTypeId",
                     "details": {
                         "name": "Get Sphere Shape Component Type Id"
                     },

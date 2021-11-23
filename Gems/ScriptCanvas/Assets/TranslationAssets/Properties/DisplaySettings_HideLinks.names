@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "DisplaySettings_HideLinks",
+            "base": "DisplaySettings_HideLinks",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetDisplaySettings_HideLinks",
+                    "base": "GetDisplaySettings_HideLinks",
                     "details": {
                         "name": "Get Hide Links"
                     },

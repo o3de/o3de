@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "EditorSsaoComponentTypeId",
+            "base": "EditorSsaoComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetEditorSsaoComponentTypeId",
+                    "base": "GetEditorSsaoComponentTypeId",
                     "details": {
                         "name": "Get Editor Ssao Component Type Id"
                     },

@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "eUiFillEdgeOrigin_Bottom",
+            "base": "eUiFillEdgeOrigin_Bottom",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GeteUiFillEdgeOrigin_Bottom",
+                    "base": "GeteUiFillEdgeOrigin_Bottom",
                     "details": {
                         "name": "Bottom"
                     },

@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "eUiFillEdgeOrigin_Left",
+            "base": "eUiFillEdgeOrigin_Left",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GeteUiFillEdgeOrigin_Left",
+                    "base": "GeteUiFillEdgeOrigin_Left",
                     "details": {
                         "name": "Left"
                     },

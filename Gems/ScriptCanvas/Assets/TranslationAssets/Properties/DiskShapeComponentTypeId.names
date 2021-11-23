@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "DiskShapeComponentTypeId",
+            "base": "DiskShapeComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetDiskShapeComponentTypeId",
+                    "base": "GetDiskShapeComponentTypeId",
                     "details": {
                         "name": "Get Disk Shape Component Type Id"
                     },

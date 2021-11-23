@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "eUiParticleCoordinateType_Polar",
+            "base": "eUiParticleCoordinateType_Polar",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GeteUiParticleCoordinateType_Polar",
+                    "base": "GeteUiParticleCoordinateType_Polar",
                     "details": {
                         "name": "Polar"
                     },

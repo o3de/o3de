@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "eUiVerticalOrder_BottomToTop",
+            "base": "eUiVerticalOrder_BottomToTop",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GeteUiVerticalOrder_BottomToTop",
+                    "base": "GeteUiVerticalOrder_BottomToTop",
                     "details": {
                         "name": "Bottom To Top"
                     },

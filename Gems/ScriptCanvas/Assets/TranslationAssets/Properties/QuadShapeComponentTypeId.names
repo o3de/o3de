@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "QuadShapeComponentTypeId",
+            "base": "QuadShapeComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetQuadShapeComponentTypeId",
+                    "base": "GetQuadShapeComponentTypeId",
                     "details": {
                         "name": "Get Quad Shape Component Type Id"
                     },

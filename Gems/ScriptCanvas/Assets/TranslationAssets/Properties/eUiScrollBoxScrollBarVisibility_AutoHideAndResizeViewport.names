@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "eUiScrollBoxScrollBarVisibility_AutoHideAndResizeViewport",
+            "base": "eUiScrollBoxScrollBarVisibility_AutoHideAndResizeViewport",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GeteUiScrollBoxScrollBarVisibility_AutoHideAndResizeViewport",
+                    "base": "GeteUiScrollBoxScrollBarVisibility_AutoHideAndResizeViewport",
                     "details": {
                         "name": "Auto Hide And Resize Viewport"
                     },

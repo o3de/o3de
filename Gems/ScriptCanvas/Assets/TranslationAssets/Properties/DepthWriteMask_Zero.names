@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "DepthWriteMask_Zero",
+            "base": "DepthWriteMask_Zero",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetDepthWriteMask_Zero",
+                    "base": "GetDepthWriteMask_Zero",
                     "details": {
                         "name": "Zero"
                     },

@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "ImageBasedLightComponentTypeId",
+            "base": "ImageBasedLightComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetImageBasedLightComponentTypeId",
+                    "base": "GetImageBasedLightComponentTypeId",
                     "details": {
                         "name": "Get Image Based Light Component Type Id"
                     },

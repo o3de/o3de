@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "EditorImageBasedLightComponentTypeId",
+            "base": "EditorImageBasedLightComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetEditorImageBasedLightComponentTypeId",
+                    "base": "GetEditorImageBasedLightComponentTypeId",
                     "details": {
                         "name": "Get Editor Image Based Light Component Type Id"
                     },

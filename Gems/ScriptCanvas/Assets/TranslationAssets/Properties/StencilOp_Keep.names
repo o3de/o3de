@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "StencilOp_Keep",
+            "base": "StencilOp_Keep",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetStencilOp_Keep",
+                    "base": "GetStencilOp_Keep",
                     "details": {
                         "name": "Keep"
                     },

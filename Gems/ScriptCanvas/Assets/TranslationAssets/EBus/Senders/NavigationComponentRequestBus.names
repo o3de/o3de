@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "NavigationComponentRequestBus",
+            "base": "NavigationComponentRequestBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "SetAgentSpeed",
+                    "base": "SetAgentSpeed",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Agent Speed"
@@ -33,7 +33,7 @@
                     ]
                 },
                 {
-                    "key": "SetAgentMovementMethod",
+                    "base": "SetAgentMovementMethod",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Agent Movement Method"
@@ -56,7 +56,7 @@
                     ]
                 },
                 {
-                    "key": "GetAgentSpeed",
+                    "base": "GetAgentSpeed",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetAgentSpeed"
@@ -78,7 +78,7 @@
                     ]
                 },
                 {
-                    "key": "FindPathToPosition",
+                    "base": "FindPathToPosition",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Find Path To Position"
@@ -109,7 +109,7 @@
                     ]
                 },
                 {
-                    "key": "Stop",
+                    "base": "Stop",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Stop"
@@ -132,7 +132,7 @@
                     ]
                 },
                 {
-                    "key": "FindPathToEntity",
+                    "base": "FindPathToEntity",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Find Path To Entity"
@@ -163,7 +163,7 @@
                     ]
                 },
                 {
-                    "key": "GetAgentMovementMethod",
+                    "base": "GetAgentMovementMethod",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Agent Movement Method"

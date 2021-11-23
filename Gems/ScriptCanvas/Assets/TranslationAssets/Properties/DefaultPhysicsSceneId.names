@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "DefaultPhysicsSceneId",
+            "base": "DefaultPhysicsSceneId",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetDefaultPhysicsSceneId",
+                    "base": "GetDefaultPhysicsSceneId",
                     "details": {
                         "name": "Get Default Physics Scene Id"
                     },

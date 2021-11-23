@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "SystemConfigPlatform_Provo",
+            "base": "SystemConfigPlatform_Provo",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetSystemConfigPlatform_Provo",
+                    "base": "GetSystemConfigPlatform_Provo",
                     "details": {
                         "name": "Provo"
                     },

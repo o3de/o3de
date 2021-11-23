@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "IAnimationData",
+            "base": "IAnimationData",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
@@ -9,7 +9,7 @@
             },
             "methods": [
                 {
-                    "key": "GetKeyFrameCount",
+                    "base": "GetKeyFrameCount",
                     "context": "IAnimationData",
                     "entry": {
                         "name": "In",
@@ -41,7 +41,7 @@
                     ]
                 },
                 {
-                    "key": "GetKeyFrame",
+                    "base": "GetKeyFrame",
                     "context": "IAnimationData",
                     "entry": {
                         "name": "In",
@@ -79,7 +79,7 @@
                     ]
                 },
                 {
-                    "key": "GetTimeStepBetweenFrames",
+                    "base": "GetTimeStepBetweenFrames",
                     "context": "IAnimationData",
                     "entry": {
                         "name": "In",

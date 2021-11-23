@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "LevelsGradientComponentTypeId",
+            "base": "LevelsGradientComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetLevelsGradientComponentTypeId",
+                    "base": "GetLevelsGradientComponentTypeId",
                     "details": {
                         "name": "Get Levels Gradient Component Type Id"
                     },

@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "DepthOfFieldComponentTypeId",
+            "base": "DepthOfFieldComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetDepthOfFieldComponentTypeId",
+                    "base": "GetDepthOfFieldComponentTypeId",
                     "details": {
                         "name": "Get Depth Of Field Component Type Id"
                     },

@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "UiLayoutRowComponent",
+            "base": "UiLayoutRowComponent",
             "context": "BehaviorClass",
             "variant": "",
             "details": {

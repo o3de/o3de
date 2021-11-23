@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "RotationModifierComponentTypeId",
+            "base": "RotationModifierComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetRotationModifierComponentTypeId",
+                    "base": "GetRotationModifierComponentTypeId",
                     "details": {
                         "name": "Get Rotation Modifier Component Type Id"
                     },

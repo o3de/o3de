@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "MaterialAssignmentId",
+            "base": "MaterialAssignmentId",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "ToString",
+                    "base": "ToString",
                     "context": "MaterialAssignmentId",
                     "entry": {
                         "name": "In",
@@ -33,7 +33,7 @@
                     ]
                 },
                 {
-                    "key": "IsAssetOnly",
+                    "base": "IsAssetOnly",
                     "context": "MaterialAssignmentId",
                     "entry": {
                         "name": "In",
@@ -56,7 +56,7 @@
                     ]
                 },
                 {
-                    "key": "IsSlotIdOnly",
+                    "base": "IsSlotIdOnly",
                     "context": "MaterialAssignmentId",
                     "entry": {
                         "name": "In",
@@ -79,7 +79,7 @@
                     ]
                 },
                 {
-                    "key": "IsLodAndSlotId",
+                    "base": "IsLodAndSlotId",
                     "context": "MaterialAssignmentId",
                     "entry": {
                         "name": "In",
@@ -102,7 +102,7 @@
                     ]
                 },
                 {
-                    "key": "IsDefault",
+                    "base": "IsDefault",
                     "context": "MaterialAssignmentId",
                     "entry": {
                         "name": "In",
@@ -125,7 +125,7 @@
                     ]
                 },
                 {
-                    "key": "IsLodAndAsset",
+                    "base": "IsLodAndAsset",
                     "context": "MaterialAssignmentId",
                     "entry": {
                         "name": "In",
@@ -148,7 +148,7 @@
                     ]
                 },
                 {
-                    "key": "GetlodIndex",
+                    "base": "GetlodIndex",
                     "details": {
                         "name": "Getlod Index"
                     },
@@ -170,7 +170,7 @@
                     ]
                 },
                 {
-                    "key": "SetlodIndex",
+                    "base": "SetlodIndex",
                     "details": {
                         "name": "Setlod Index"
                     },
@@ -190,7 +190,7 @@
                     ]
                 },
                 {
-                    "key": "GetmaterialSlotStableId",
+                    "base": "GetmaterialSlotStableId",
                     "details": {
                         "name": "Getmaterial Slot Stable Id"
                     },
@@ -212,7 +212,7 @@
                     ]
                 },
                 {
-                    "key": "SetmaterialSlotStableId",
+                    "base": "SetmaterialSlotStableId",
                     "details": {
                         "name": "Setmaterial Slot Stable Id"
                     },

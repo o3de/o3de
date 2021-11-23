@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "{2B0CF330-B397-519C-867F-800AECBB84A8}",
+            "base": "{2B0CF330-B397-519C-867F-800AECBB84A8}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
@@ -11,31 +11,31 @@
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "key": "DataInput_Source",
+                    "base": "DataInput_Source",
                     "details": {
                         "name": "Source"
                     }
                 },
                 {
-                    "key": "DataInput_Multiplier",
+                    "base": "DataInput_Multiplier",
                     "details": {
                         "name": "Multiplier"
                     }
                 },
                 {
-                    "key": "DataOutput_Result",
+                    "base": "DataOutput_Result",
                     "details": {
                         "name": "Result"
                     }

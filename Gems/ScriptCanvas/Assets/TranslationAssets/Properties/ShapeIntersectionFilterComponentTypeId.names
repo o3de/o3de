@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "ShapeIntersectionFilterComponentTypeId",
+            "base": "ShapeIntersectionFilterComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetShapeIntersectionFilterComponentTypeId",
+                    "base": "GetShapeIntersectionFilterComponentTypeId",
                     "details": {
                         "name": "Get Shape Intersection Filter Component Type Id"
                     },

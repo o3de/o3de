@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "PhotometricUnit_Unknown",
+            "base": "PhotometricUnit_Unknown",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetPhotometricUnit_Unknown",
+                    "base": "GetPhotometricUnit_Unknown",
                     "details": {
                         "name": "Unknown"
                     },
