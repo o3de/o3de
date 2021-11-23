@@ -69,7 +69,7 @@ function(ly_sign_binaries in_path sign_type)
             )
         endif()
 
-    elseif(UNIX AND NOT CYGWIN)        
+    elseif(UNIX AND NOT CYGWIN)
         cmake_path(SET _sign_script "${_root_path}/scripts/signer/Platform/Linux/signer.sh")
 
         list(APPEND _signing_command
@@ -87,7 +87,7 @@ function(ly_sign_binaries in_path sign_type)
     elseif(APPLE AND NOT CYGWIN)
         message("Mac and iOS Gatekeeper signing currently not supported through this function, use internal build signing functions instead")
 
-    else
+    else()
         message("Unsupported platform for signing")
     endif()
 
