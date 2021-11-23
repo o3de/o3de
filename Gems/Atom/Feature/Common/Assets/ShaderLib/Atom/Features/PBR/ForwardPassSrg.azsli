@@ -29,6 +29,16 @@ ShaderResourceGroup PassSrg : SRG_PerPass
         AddressW = Clamp;
     };
     
+    Sampler PointSampler
+    {
+        MinFilter = Point;
+        MagFilter = Point;
+        MipFilter = Point;
+        AddressU = Clamp;
+        AddressV = Clamp;
+        AddressW = Clamp;
+    };
+    
     Texture2D<uint4> m_tileLightData;
     StructuredBuffer<uint> m_lightListRemapped;
     Texture2D<float> m_linearDepthTexture;
