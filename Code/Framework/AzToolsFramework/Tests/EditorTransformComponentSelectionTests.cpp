@@ -2781,4 +2781,196 @@ namespace UnitTest
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
     }
 
+    TEST(HandleAccents, CurrentValidEntityIdBecomesHoveredWithNoSelectionAndUnstickySelect)
+    {
+        namespace azvi = AzToolsFramework::ViewportInteraction;
+
+        const AZ::EntityId currentEntityId = AZ::EntityId(12345);
+        AZ::EntityId hoveredEntityEntityId;
+
+        AzToolsFramework::HandleAccentsContext handleAccentsContext;
+        handleAccentsContext.m_ctrlHeld = false;
+        handleAccentsContext.m_hasSelectedEntities = false;
+        handleAccentsContext.m_usingBoxSelect = false;
+        handleAccentsContext.m_usingStickySelect = false;
+
+        bool currentEntityIdAccentAdded = false;
+        AzToolsFramework::HandleAccents(
+            currentEntityId, hoveredEntityEntityId, handleAccentsContext, azvi::MouseButtonsFromButton(azvi::MouseButton::None),
+            [&currentEntityIdAccentAdded, currentEntityId](const AZ::EntityId entityId, const bool accent)
+            {
+                if (entityId == currentEntityId && accent)
+                {
+                    currentEntityIdAccentAdded = true;
+                }
+            });
+
+        using ::testing::Eq;
+        using ::testing::IsTrue;
+        EXPECT_THAT(currentEntityId, Eq(hoveredEntityEntityId));
+        EXPECT_THAT(currentEntityIdAccentAdded, IsTrue());
+    }
+
+    TEST(HandleAccents, CurrentValidEntityIdBecomesHoveredWithSelectionAndUnstickySelect)
+    {
+        namespace azvi = AzToolsFramework::ViewportInteraction;
+
+        const AZ::EntityId currentEntityId = AZ::EntityId(12345);
+        AZ::EntityId hoveredEntityEntityId;
+
+        AzToolsFramework::HandleAccentsContext handleAccentsContext;
+        handleAccentsContext.m_ctrlHeld = false;
+        handleAccentsContext.m_hasSelectedEntities = true;
+        handleAccentsContext.m_usingBoxSelect = false;
+        handleAccentsContext.m_usingStickySelect = false;
+
+        bool currentEntityIdAccentAdded = false;
+        AzToolsFramework::HandleAccents(
+            currentEntityId, hoveredEntityEntityId, handleAccentsContext, azvi::MouseButtonsFromButton(azvi::MouseButton::None),
+            [&currentEntityIdAccentAdded, currentEntityId](const AZ::EntityId entityId, const bool accent)
+            {
+                if (entityId == currentEntityId && accent)
+                {
+                    currentEntityIdAccentAdded = true;
+                }
+            });
+
+        using ::testing::Eq;
+        using ::testing::IsTrue;
+        EXPECT_THAT(currentEntityId, Eq(hoveredEntityEntityId));
+        EXPECT_THAT(currentEntityIdAccentAdded, IsTrue());
+    }
+
+    TEST(HandleAccents, CurrentValidEntityIdDoesNotBecomeHoveredWithSelectionUnstickySelectAndInvalidButton)
+    {
+        namespace azvi = AzToolsFramework::ViewportInteraction;
+
+        const AZ::EntityId currentEntityId = AZ::EntityId(12345);
+        AZ::EntityId hoveredEntityEntityId = AZ::EntityId(54321);
+
+        AzToolsFramework::HandleAccentsContext handleAccentsContext;
+        handleAccentsContext.m_ctrlHeld = false;
+        handleAccentsContext.m_hasSelectedEntities = false;
+        handleAccentsContext.m_usingBoxSelect = false;
+        handleAccentsContext.m_usingStickySelect = false;
+
+        bool hoveredEntityIdAccentRemoved = false;
+        AzToolsFramework::HandleAccents(
+            currentEntityId, hoveredEntityEntityId, handleAccentsContext, azvi::MouseButtonsFromButton(azvi::MouseButton::Middle),
+            [&hoveredEntityIdAccentRemoved, hoveredEntityEntityId](const AZ::EntityId entityId, const bool accent)
+            {
+                if (entityId == hoveredEntityEntityId && !accent)
+                {
+                    hoveredEntityIdAccentRemoved = true;
+                }
+            });
+
+        using ::testing::Eq;
+        using ::testing::IsFalse;
+        using ::testing::IsTrue;
+        EXPECT_THAT(hoveredEntityEntityId.IsValid(), IsFalse());
+        EXPECT_THAT(hoveredEntityIdAccentRemoved, IsTrue());
+    }
+
+    TEST(HandleAccents, CurrentValidEntityIdDoesNotBecomeHoveredWithSelectionUnstickySelectAndDoingBoxSelect)
+    {
+        namespace azvi = AzToolsFramework::ViewportInteraction;
+
+        const AZ::EntityId currentEntityId = AZ::EntityId(12345);
+        AZ::EntityId hoveredEntityEntityId = AZ::EntityId(54321);
+
+        AzToolsFramework::HandleAccentsContext handleAccentsContext;
+        handleAccentsContext.m_ctrlHeld = false;
+        handleAccentsContext.m_hasSelectedEntities = false;
+        handleAccentsContext.m_usingBoxSelect = true;
+        handleAccentsContext.m_usingStickySelect = false;
+
+        bool hoveredEntityIdAccentRemoved = false;
+        AzToolsFramework::HandleAccents(
+            currentEntityId, hoveredEntityEntityId, handleAccentsContext, azvi::MouseButtonsFromButton(azvi::MouseButton::None),
+            [&hoveredEntityIdAccentRemoved, hoveredEntityEntityId](const AZ::EntityId entityId, const bool accent)
+            {
+                if (entityId == hoveredEntityEntityId && !accent)
+                {
+                    hoveredEntityIdAccentRemoved = true;
+                }
+            });
+
+        using ::testing::Eq;
+        using ::testing::IsFalse;
+        using ::testing::IsTrue;
+        EXPECT_THAT(hoveredEntityEntityId.IsValid(), IsFalse());
+        EXPECT_THAT(hoveredEntityIdAccentRemoved, IsTrue());
+    }
+
+    // mimics the mouse moving off of hovered entity onto a new entity with sticky select enabled
+    TEST(HandleAccents, CurrentValidEntityIdDoesNotBecomeHoveredWithSelectionAndStickySelect)
+    {
+        namespace azvi = AzToolsFramework::ViewportInteraction;
+
+        const AZ::EntityId currentEntityId = AZ::EntityId(12345);
+        AZ::EntityId hoveredEntityEntityId = AZ::EntityId(54321);
+
+        AzToolsFramework::HandleAccentsContext handleAccentsContext;
+        handleAccentsContext.m_ctrlHeld = false;
+        handleAccentsContext.m_hasSelectedEntities = true;
+        handleAccentsContext.m_usingBoxSelect = false;
+        handleAccentsContext.m_usingStickySelect = true;
+
+        bool hoveredEntityIdAccentRemoved = false;
+        AzToolsFramework::HandleAccents(
+            currentEntityId, hoveredEntityEntityId, handleAccentsContext, azvi::MouseButtonsFromButton(azvi::MouseButton::None),
+            [&hoveredEntityIdAccentRemoved, hoveredEntityEntityId](const AZ::EntityId entityId, const bool accent)
+            {
+                if (entityId == hoveredEntityEntityId && !accent)
+                {
+                    hoveredEntityIdAccentRemoved = true;
+                }
+            });
+
+        using ::testing::Eq;
+        using ::testing::IsFalse;
+        using ::testing::IsTrue;
+        EXPECT_THAT(hoveredEntityIdAccentRemoved, IsTrue());
+        EXPECT_THAT(hoveredEntityEntityId.IsValid(), IsFalse());
+    }
+
+    TEST(HandleAccents, CurrentValidEntityIdDoesBecomeHoveredWithSelectionAndStickySelectAndCtrl)
+    {
+        namespace azvi = AzToolsFramework::ViewportInteraction;
+
+        const AZ::EntityId currentEntityId = AZ::EntityId(12345);
+        AZ::EntityId hoveredEntityEntityId = AZ::EntityId(54321);
+
+        AzToolsFramework::HandleAccentsContext handleAccentsContext;
+        handleAccentsContext.m_ctrlHeld = true;
+        handleAccentsContext.m_hasSelectedEntities = true;
+        handleAccentsContext.m_usingBoxSelect = false;
+        handleAccentsContext.m_usingStickySelect = true;
+
+        bool currentEntityIdAccentAdded = false;
+        bool hoveredEntityIdAccentRemoved = false;
+        AzToolsFramework::HandleAccents(
+            currentEntityId, hoveredEntityEntityId, handleAccentsContext, azvi::MouseButtonsFromButton(azvi::MouseButton::None),
+            [&hoveredEntityIdAccentRemoved, &currentEntityIdAccentAdded, currentEntityId,
+             hoveredEntityEntityId](const AZ::EntityId entityId, const bool accent)
+            {
+                if (entityId == currentEntityId && accent)
+                {
+                    currentEntityIdAccentAdded = true;
+                }
+
+                if (entityId == hoveredEntityEntityId && !accent)
+                {
+                    hoveredEntityIdAccentRemoved = true;
+                }
+            });
+
+        using ::testing::Eq;
+        using ::testing::IsFalse;
+        using ::testing::IsTrue;
+        EXPECT_THAT(currentEntityIdAccentAdded, IsTrue());
+        EXPECT_THAT(hoveredEntityIdAccentRemoved, IsTrue());
+        EXPECT_THAT(hoveredEntityEntityId, Eq(AZ::EntityId(12345)));
+    }
 } // namespace UnitTest
