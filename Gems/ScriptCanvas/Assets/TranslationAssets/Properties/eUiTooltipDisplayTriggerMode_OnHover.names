@@ -5,14 +5,14 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Tooltip Display Trigger Mode_ On Hover",
-                "category": "Constants/UI"
+                "name": "On Hover",
+                "category": "Constants/UI/Tooltip Display Trigger Mode"
             },
             "methods": [
                 {
                     "key": "GeteUiTooltipDisplayTriggerMode_OnHover",
                     "details": {
-                        "name": "Get Tooltip Display Trigger Mode_ On Hover"
+                        "name": "On Hover"
                     },
                     "results": [
                         {

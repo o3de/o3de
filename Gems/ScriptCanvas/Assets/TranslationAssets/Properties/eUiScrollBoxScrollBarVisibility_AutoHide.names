@@ -5,14 +5,14 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Scroll Box Scroll Bar Visibility_ Auto Hide",
-                "category": "Constants/UI"
+                "name": "Auto Hide",
+                "category": "Constants/UI/Scroll Box Scroll Bar Visibility"
             },
             "methods": [
                 {
                     "key": "GeteUiScrollBoxScrollBarVisibility_AutoHide",
                     "details": {
-                        "name": "Get Scroll Box Scroll Bar Visibility_ Auto Hide"
+                        "name": "Auto Hide"
                     },
                     "results": [
                         {

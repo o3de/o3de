@@ -5,14 +5,14 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Tooltip Display Auto Position Mode_ Offset From Element",
-                "category": "Constants/UI"
+                "name": "Offset From Element",
+                "category": "Constants/UI/Tooltip Display Auto Position Mode"
             },
             "methods": [
                 {
                     "key": "GeteUiTooltipDisplayAutoPositionMode_OffsetFromElement",
                     "details": {
-                        "name": "GetTooltip Display Auto Position Mode_ Offset From Element"
+                        "name": "Offset From Element"
                     },
                     "results": [
                         {
