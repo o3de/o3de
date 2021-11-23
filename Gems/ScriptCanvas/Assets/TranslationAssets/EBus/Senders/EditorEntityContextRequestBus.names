@@ -5,7 +5,7 @@
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "EditorEntityContextRequestBus"
+                "name": "Editor Entity Context"
             },
             "methods": [
                 {

@@ -5,7 +5,7 @@
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "UiDynamicLayoutBus",
+                "name": "UI Dynamic Layout",
                 "category": "UI"
             },
             "methods": [

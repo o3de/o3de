@@ -5,7 +5,7 @@
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "ImageBasedLightComponentRequestBus"
+                "name": "Image Based Light Component"
             },
             "methods": [
                 {
