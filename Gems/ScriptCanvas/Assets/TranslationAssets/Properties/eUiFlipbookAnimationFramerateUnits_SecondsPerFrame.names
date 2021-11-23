@@ -5,13 +5,14 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "e Ui Flipbook Animation Framerate Units_ Seconds Per Frame"
+                "name": "Seconds Per Frame",
+                "category": "Constants/UI/Flipbook Animation"
             },
             "methods": [
                 {
                     "key": "GeteUiFlipbookAnimationFramerateUnits_SecondsPerFrame",
                     "details": {
-                        "name": "Gete Ui Flipbook Animation Framerate Units_ Seconds Per Frame"
+                        "name": "Seconds Per Frame"
                     },
                     "results": [
                         {

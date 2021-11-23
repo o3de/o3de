@@ -5,13 +5,14 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Depth Write Mask_ Zero"
+                "name": "Zero",
+                "category": "Constants/Depth Write Mask"
             },
             "methods": [
                 {
                     "key": "GetDepthWriteMask_Zero",
                     "details": {
-                        "name": "Get Depth Write Mask_ Zero"
+                        "name": "Zero"
                     },
                     "results": [
                         {

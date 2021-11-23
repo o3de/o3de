@@ -5,13 +5,14 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Shadowmap Size_ None"
+                "name": "None",
+                "category": "Constants/Shadowmap/Size"
             },
             "methods": [
                 {
                     "key": "GetShadowmapSize_None",
                     "details": {
-                        "name": "Get Shadowmap Size_ None"
+                        "name": "None"
                     },
                     "results": [
                         {

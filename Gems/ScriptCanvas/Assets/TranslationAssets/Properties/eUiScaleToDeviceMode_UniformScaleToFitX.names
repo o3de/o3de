@@ -5,13 +5,14 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "e Ui Scale To Device Mode_ Uniform Scale To FitX"
+                "name": "Uniform Scale To Fit X",
+                "category": "Constants/UI/Scale To Device Mode"
             },
             "methods": [
                 {
                     "key": "GeteUiScaleToDeviceMode_UniformScaleToFitX",
                     "details": {
-                        "name": "Gete Ui Scale To Device Mode_ Uniform Scale To FitX"
+                        "name": "Uniform Scale To Fit X"
                     },
                     "results": [
                         {

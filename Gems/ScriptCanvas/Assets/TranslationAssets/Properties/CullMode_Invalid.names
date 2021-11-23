@@ -5,13 +5,14 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Cull Mode_ Invalid"
+                "name": "Invalid",
+                "category": "Constants/Cull Mode"
             },
             "methods": [
                 {
                     "key": "GetCullMode_Invalid",
                     "details": {
-                        "name": "Get Cull Mode_ Invalid"
+                        "name": "Get Invalid"
                     },
                     "results": [
                         {

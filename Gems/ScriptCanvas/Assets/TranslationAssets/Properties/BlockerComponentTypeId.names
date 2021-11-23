@@ -5,7 +5,8 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Blocker Component Type Id"
+                "name": "Blocker Component Type Id",
+                "category": "Constants/Editor"
             },
             "methods": [
                 {

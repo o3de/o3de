@@ -5,7 +5,8 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Invalid Component Id"
+                "name": "Invalid Component Id",
+                "category": "Constants/Editor"
             },
             "methods": [
                 {

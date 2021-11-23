@@ -5,13 +5,14 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "e Ui Particle Coordinate Type_ Cartesian"
+                "name": "Cartesian",
+                "category": "Constants/UI/Particle Coordinate Type"
             },
             "methods": [
                 {
                     "key": "GeteUiParticleCoordinateType_Cartesian",
                     "details": {
-                        "name": "Gete Ui Particle Coordinate Type_ Cartesian"
+                        "name": "Cartesian"
                     },
                     "results": [
                         {

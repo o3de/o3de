@@ -5,13 +5,14 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Frame Capture Result_ Invalid Argument"
+                "name": "Invalid Argument",
+                "category": "Constants/Frame Capture Result"
             },
             "methods": [
                 {
                     "key": "GetFrameCaptureResult_InvalidArgument",
                     "details": {
-                        "name": "Get Frame Capture Result_ Invalid Argument"
+                        "name": "Invalid Argument"
                     },
                     "results": [
                         {

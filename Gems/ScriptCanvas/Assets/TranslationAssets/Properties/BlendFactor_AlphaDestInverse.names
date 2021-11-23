@@ -5,13 +5,14 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Blend Factor_ Alpha Dest Inverse"
+                "name": "Alpha Dest Inverse",
+                "category": "Constants/Blend Factor"
             },
             "methods": [
                 {
                     "key": "GetBlendFactor_AlphaDestInverse",
                     "details": {
-                        "name": "Get Blend Factor_ Alpha Dest Inverse"
+                        "name": "Get Alpha Dest Inverse"
                     },
                     "results": [
                         {

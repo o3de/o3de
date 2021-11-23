@@ -5,13 +5,14 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Transform Mode_ Rotation"
+                "name": "Rotation",
+                "category": "Constants/Transform/Mode"
             },
             "methods": [
                 {
                     "key": "GetTransformMode_Rotation",
                     "details": {
-                        "name": "Get Transform Mode_ Rotation"
+                        "name": "Rotation"
                     },
                     "results": [
                         {

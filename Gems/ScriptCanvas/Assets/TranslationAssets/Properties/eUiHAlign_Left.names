@@ -5,13 +5,14 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "e UiH Align_ Left"
+                "name": "Horizontal Align Left",
+                "category": "Constants/UI/Align"
             },
             "methods": [
                 {
                     "key": "GeteUiHAlign_Left",
                     "details": {
-                        "name": "Gete UiH Align_ Left"
+                        "name": "Horizontal Align: Left"
                     },
                     "results": [
                         {

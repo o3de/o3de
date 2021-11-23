@@ -5,13 +5,14 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Audio Preload Component Load Type_ Auto"
+                "name": "Load Type Auto",
+                "category": "Constants/Audio Preload"
             },
             "methods": [
                 {
                     "key": "GetAudioPreloadComponentLoadType_Auto",
                     "details": {
-                        "name": "Get Audio Preload Component Load Type_ Auto"
+                        "name": "Load Type Auto"
                     },
                     "results": [
                         {

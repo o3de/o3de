@@ -5,13 +5,14 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "CYLINDER"
+                "name": "Cylinder",
+                "category": "Constants/White Box"
             },
             "methods": [
                 {
                     "key": "GetCYLINDER",
                     "details": {
-                        "name": "GetCYLINDER"
+                        "name": "Cylinder"
                     },
                     "results": [
                         {

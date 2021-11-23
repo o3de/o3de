@@ -5,13 +5,14 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Frame Capture Result_ Internal Error"
+                "name": "Internal Error",
+                "category": "Constants/Frame Capture Result"
             },
             "methods": [
                 {
                     "key": "GetFrameCaptureResult_InternalError",
                     "details": {
-                        "name": "Get Frame Capture Result_ Internal Error"
+                        "name": "Internal Error"
                     },
                     "results": [
                         {

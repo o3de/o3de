@@ -5,13 +5,14 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Frame Capture Result_ File Write Error"
+                "name": "File Write Error",
+                "category": "Constants/Frame Capture Result"
             },
             "methods": [
                 {
                     "key": "GetFrameCaptureResult_FileWriteError",
                     "details": {
-                        "name": "Get Frame Capture Result_ File Write Error"
+                        "name": "File Write Error"
                     },
                     "results": [
                         {

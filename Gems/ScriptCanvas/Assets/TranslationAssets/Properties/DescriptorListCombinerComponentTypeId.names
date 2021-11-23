@@ -5,7 +5,8 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Descriptor List Combiner Component Type Id"
+                "name": "Descriptor List Combiner Component Type Id",
+                "category": "Constants/Editor"
             },
             "methods": [
                 {

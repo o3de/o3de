@@ -5,7 +5,8 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Shape Area Falloff Gradient Component Type Id"
+                "name": "Shape Area Falloff Gradient Component Type Id",
+                "category": "Constants/Editor"
             },
             "methods": [
                 {

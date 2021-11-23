@@ -5,7 +5,8 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "EditorHD Ri Skybox Component Type Id"
+                "name": "EditorHD Ri Skybox Component Type Id",
+                "category": "Constants/Editor"
             },
             "methods": [
                 {

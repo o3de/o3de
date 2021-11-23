@@ -5,7 +5,8 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Area Blender Component Type Id"
+                "name": "Area Blender Component Type Id",
+                "category": "Constants/Editor"
             },
             "methods": [
                 {
