@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "AreaLightComponentTypeId",
+            "base": "AreaLightComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetAreaLightComponentTypeId",
+                    "base": "GetAreaLightComponentTypeId",
                     "details": {
                         "name": "Get Area Light Component Type Id"
                     },

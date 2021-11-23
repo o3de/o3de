@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "PhotometricUnit_Candela",
+            "base": "PhotometricUnit_Candela",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetPhotometricUnit_Candela",
+                    "base": "GetPhotometricUnit_Candela",
                     "details": {
                         "name": "Candela"
                     },

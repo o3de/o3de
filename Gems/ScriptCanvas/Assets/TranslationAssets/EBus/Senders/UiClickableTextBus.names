@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "UiClickableTextBus",
+            "base": "UiClickableTextBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "SetClickableTextColor",
+                    "base": "SetClickableTextColor",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Clickable Text Color"

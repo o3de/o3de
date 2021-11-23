@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "eUiTextShrinkToFit_Uniform",
+            "base": "eUiTextShrinkToFit_Uniform",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GeteUiTextShrinkToFit_Uniform",
+                    "base": "GeteUiTextShrinkToFit_Uniform",
                     "details": {
                         "name": "Uniform"
                     },

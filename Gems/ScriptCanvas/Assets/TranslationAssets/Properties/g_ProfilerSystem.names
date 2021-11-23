@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "g_ProfilerSystem",
+            "base": "g_ProfilerSystem",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "Getg_ProfilerSystem",
+                    "base": "Getg_ProfilerSystem",
                     "details": {
                         "name": "Profiler System"
                     },

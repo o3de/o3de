@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "BlendFactor_ColorSource1Inverse",
+            "base": "BlendFactor_ColorSource1Inverse",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetBlendFactor_ColorSource1Inverse",
+                    "base": "GetBlendFactor_ColorSource1Inverse",
                     "details": {
                         "name": "Get Color Source 1 Inverse"
                     },

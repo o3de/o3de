@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "eUiNavigationMode_Custom",
+            "base": "eUiNavigationMode_Custom",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GeteUiNavigationMode_Custom",
+                    "base": "GeteUiNavigationMode_Custom",
                     "details": {
                         "name": "Custom"
                     },

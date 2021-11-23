@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "PhysicalSkyRequestBus",
+            "base": "PhysicalSkyRequestBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "SetSkyIntensity",
+                    "base": "SetSkyIntensity",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Sky Intensity"
@@ -32,7 +32,7 @@
                     ]
                 },
                 {
-                    "key": "SetSunIntensity",
+                    "base": "SetSunIntensity",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Sun Intensity"
@@ -54,7 +54,7 @@
                     ]
                 },
                 {
-                    "key": "GetSunIntensity",
+                    "base": "GetSunIntensity",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Sun Intensity"
@@ -76,7 +76,7 @@
                     ]
                 },
                 {
-                    "key": "GetSunRadiusFactor",
+                    "base": "GetSunRadiusFactor",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Sun Radius Factor"
@@ -98,7 +98,7 @@
                     ]
                 },
                 {
-                    "key": "SetSunRadiusFactor",
+                    "base": "SetSunRadiusFactor",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Sun Radius Factor"
@@ -120,7 +120,7 @@
                     ]
                 },
                 {
-                    "key": "GetTurbidity",
+                    "base": "GetTurbidity",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Turbidity"
@@ -142,7 +142,7 @@
                     ]
                 },
                 {
-                    "key": "GetSkyIntensity",
+                    "base": "GetSkyIntensity",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Sky Intensity"
@@ -164,7 +164,7 @@
                     ]
                 },
                 {
-                    "key": "SetTurbidity",
+                    "base": "SetTurbidity",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Turbidity"

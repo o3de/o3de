@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "eUiTooltipDisplayTriggerMode_OnPress",
+            "base": "eUiTooltipDisplayTriggerMode_OnPress",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GeteUiTooltipDisplayTriggerMode_OnPress",
+                    "base": "GeteUiTooltipDisplayTriggerMode_OnPress",
                     "details": {
                         "name": "On Press"
                     },

@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "DisplaySettings_NoLabels",
+            "base": "DisplaySettings_NoLabels",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetDisplaySettings_NoLabels",
+                    "base": "GetDisplaySettings_NoLabels",
                     "details": {
                         "name": "Get No Labels"
                     },

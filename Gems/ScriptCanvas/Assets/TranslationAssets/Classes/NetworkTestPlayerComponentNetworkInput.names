@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "NetworkTestPlayerComponentNetworkInput",
+            "base": "NetworkTestPlayerComponentNetworkInput",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "CreateFromValues",
+                    "base": "CreateFromValues",
                     "context": "NetworkTestPlayerComponentNetworkInput",
                     "entry": {
                         "name": "In",
@@ -47,7 +47,7 @@
                     ]
                 },
                 {
-                    "key": "FwdBack",
+                    "base": "FwdBack",
                     "details": {
                         "name": "Get Forward Back"
                     },
@@ -69,7 +69,7 @@
                     ]
                 },
                 {
-                    "key": "FwdBack",
+                    "base": "FwdBack",
                     "details": {
                         "name": "Set Forward Back"
                     },
@@ -89,7 +89,7 @@
                     ]
                 },
                 {
-                    "key": "LeftRight",
+                    "base": "LeftRight",
                     "details": {
                         "name": "Get Left Right"
                     },
@@ -111,7 +111,7 @@
                     ]
                 },
                 {
-                    "key": "LeftRight",
+                    "base": "LeftRight",
                     "details": {
                         "name": "Set Left Right"
                     },

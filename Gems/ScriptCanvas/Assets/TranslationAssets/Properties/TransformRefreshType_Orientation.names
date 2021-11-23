@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "TransformRefreshType_Orientation",
+            "base": "TransformRefreshType_Orientation",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetTransformRefreshType_Orientation",
+                    "base": "GetTransformRefreshType_Orientation",
                     "details": {
                         "name": "Orientation"
                     },

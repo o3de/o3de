@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "MeshVertexBitangentData",
+            "base": "MeshVertexBitangentData",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
@@ -9,7 +9,7 @@
             },
             "methods": [
                 {
-                    "key": "GetCount",
+                    "base": "GetCount",
                     "context": "MeshVertexBitangentData",
                     "entry": {
                         "name": "In",
@@ -41,7 +41,7 @@
                     ]
                 },
                 {
-                    "key": "GetBitangent",
+                    "base": "GetBitangent",
                     "context": "MeshVertexBitangentData",
                     "entry": {
                         "name": "In",
@@ -79,7 +79,7 @@
                     ]
                 },
                 {
-                    "key": "GetBitangentSetIndex",
+                    "base": "GetBitangentSetIndex",
                     "context": "MeshVertexBitangentData",
                     "entry": {
                         "name": "In",
@@ -111,7 +111,7 @@
                     ]
                 },
                 {
-                    "key": "GetGenerationMethod",
+                    "base": "GetGenerationMethod",
                     "context": "MeshVertexBitangentData",
                     "entry": {
                         "name": "In",

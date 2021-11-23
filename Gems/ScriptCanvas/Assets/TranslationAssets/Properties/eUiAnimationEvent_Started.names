@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "eUiAnimationEvent_Started",
+            "base": "eUiAnimationEvent_Started",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GeteUiAnimationEvent_Started",
+                    "base": "GeteUiAnimationEvent_Started",
                     "details": {
                         "name": "Get Started"
                     },

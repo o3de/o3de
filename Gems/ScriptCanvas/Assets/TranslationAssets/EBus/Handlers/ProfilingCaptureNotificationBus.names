@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "ProfilingCaptureNotificationBus",
+            "base": "ProfilingCaptureNotificationBus",
             "context": "EBusHandler",
             "variant": "",
             "details": {
@@ -9,7 +9,7 @@
             },
             "methods": [
                 {
-                    "key": "OnCaptureQueryTimestampFinished",
+                    "base": "OnCaptureQueryTimestampFinished",
                     "details": {
                         "name": "OnCaptureQueryTimestampFinished"
                     },
@@ -29,7 +29,7 @@
                     ]
                 },
                 {
-                    "key": "OnCaptureCpuFrameTimeFinished",
+                    "base": "OnCaptureCpuFrameTimeFinished",
                     "details": {
                         "name": "OnCaptureCpuFrameTimeFinished"
                     },
@@ -49,7 +49,7 @@
                     ]
                 },
                 {
-                    "key": "OnCaptureQueryPipelineStatisticsFinished",
+                    "base": "OnCaptureQueryPipelineStatisticsFinished",
                     "details": {
                         "name": "OnCaptureQueryPipelineStatisticsFinished"
                     },
@@ -69,7 +69,7 @@
                     ]
                 },
                 {
-                    "key": "OnCaptureBenchmarkMetadataFinished",
+                    "base": "OnCaptureBenchmarkMetadataFinished",
                     "details": {
                         "name": "OnCaptureBenchmarkMetadataFinished"
                     },

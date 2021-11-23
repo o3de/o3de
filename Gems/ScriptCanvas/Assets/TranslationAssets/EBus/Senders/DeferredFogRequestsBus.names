@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "DeferredFogRequestsBus",
+            "base": "DeferredFogRequestsBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "SetNoiseTexture",
+                    "base": "SetNoiseTexture",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Noise Texture"
@@ -32,7 +32,7 @@
                     ]
                 },
                 {
-                    "key": "SetNoiseTexCoordScale",
+                    "base": "SetNoiseTexCoordScale",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Noise Tex Coord Scale"
@@ -54,7 +54,7 @@
                     ]
                 },
                 {
-                    "key": "SetNoiseTexCoord2Scale",
+                    "base": "SetNoiseTexCoord2Scale",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Noise Tex Coord 2 Scale"
@@ -76,7 +76,7 @@
                     ]
                 },
                 {
-                    "key": "GetFogMaxHeight",
+                    "base": "GetFogMaxHeight",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Fog Max Height"
@@ -98,7 +98,7 @@
                     ]
                 },
                 {
-                    "key": "GetNoiseTexCoordScale",
+                    "base": "GetNoiseTexCoordScale",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Noise Tex Coord Scale"
@@ -120,7 +120,7 @@
                     ]
                 },
                 {
-                    "key": "GetNoiseTexCoordVelocity",
+                    "base": "GetNoiseTexCoordVelocity",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Noise Tex Coord Velocity"
@@ -142,7 +142,7 @@
                     ]
                 },
                 {
-                    "key": "SetFogEndDistance",
+                    "base": "SetFogEndDistance",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Fog End Distance"
@@ -164,7 +164,7 @@
                     ]
                 },
                 {
-                    "key": "GetFogEndDistance",
+                    "base": "GetFogEndDistance",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Fog End Distance"
@@ -186,7 +186,7 @@
                     ]
                 },
                 {
-                    "key": "GetNoiseTexCoord2Scale",
+                    "base": "GetNoiseTexCoord2Scale",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Noise Tex Coord 2 Scale"
@@ -208,7 +208,7 @@
                     ]
                 },
                 {
-                    "key": "SetNoiseTexCoord2Velocity",
+                    "base": "SetNoiseTexCoord2Velocity",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Noise Tex Coord 2 Velocity"
@@ -230,7 +230,7 @@
                     ]
                 },
                 {
-                    "key": "GetFogStartDistance",
+                    "base": "GetFogStartDistance",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Fog Start Distance"
@@ -252,7 +252,7 @@
                     ]
                 },
                 {
-                    "key": "SetFogMaxHeight",
+                    "base": "SetFogMaxHeight",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Fog Max Height"
@@ -274,7 +274,7 @@
                     ]
                 },
                 {
-                    "key": "SetNoiseTexCoordVelocity",
+                    "base": "SetNoiseTexCoordVelocity",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Noise Tex Coord Velocity"
@@ -296,7 +296,7 @@
                     ]
                 },
                 {
-                    "key": "GetNoiseTexCoord2Velocity",
+                    "base": "GetNoiseTexCoord2Velocity",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Noise Tex Coord 2 Velocity"
@@ -318,7 +318,7 @@
                     ]
                 },
                 {
-                    "key": "SetFogStartDistance",
+                    "base": "SetFogStartDistance",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Fog Start Distance"
@@ -340,7 +340,7 @@
                     ]
                 },
                 {
-                    "key": "GetFogMinHeight",
+                    "base": "GetFogMinHeight",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Fog Min Height"
@@ -362,7 +362,7 @@
                     ]
                 },
                 {
-                    "key": "GetFogColor",
+                    "base": "GetFogColor",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Fog Color"
@@ -384,7 +384,7 @@
                     ]
                 },
                 {
-                    "key": "SetOctavesBlendFactor",
+                    "base": "SetOctavesBlendFactor",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Octaves Blend Factor"
@@ -406,7 +406,7 @@
                     ]
                 },
                 {
-                    "key": "GetOctavesBlendFactor",
+                    "base": "GetOctavesBlendFactor",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Octaves Blend Factor"
@@ -428,7 +428,7 @@
                     ]
                 },
                 {
-                    "key": "SetFogColor",
+                    "base": "SetFogColor",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Fog Color"
@@ -450,7 +450,7 @@
                     ]
                 },
                 {
-                    "key": "SetFogMinHeight",
+                    "base": "SetFogMinHeight",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Fog Min Height"
@@ -472,7 +472,7 @@
                     ]
                 },
                 {
-                    "key": "GetNoiseTexture",
+                    "base": "GetNoiseTexture",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Noise Texture"

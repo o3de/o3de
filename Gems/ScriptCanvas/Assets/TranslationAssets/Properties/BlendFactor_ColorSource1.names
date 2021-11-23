@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "BlendFactor_ColorSource1",
+            "base": "BlendFactor_ColorSource1",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetBlendFactor_ColorSource1",
+                    "base": "GetBlendFactor_ColorSource1",
                     "details": {
                         "name": "Get Color Source 1"
                     },

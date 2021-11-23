@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "eUiAnimationEvent_Stopped",
+            "base": "eUiAnimationEvent_Stopped",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GeteUiAnimationEvent_Stopped",
+                    "base": "GeteUiAnimationEvent_Stopped",
                     "details": {
                         "name": "Stopped"
                     },

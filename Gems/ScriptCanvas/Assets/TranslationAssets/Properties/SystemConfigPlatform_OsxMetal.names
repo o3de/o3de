@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "SystemConfigPlatform_OsxMetal",
+            "base": "SystemConfigPlatform_OsxMetal",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetSystemConfigPlatform_OsxMetal",
+                    "base": "GetSystemConfigPlatform_OsxMetal",
                     "details": {
                         "name": "Osx Metal"
                     },

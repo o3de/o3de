@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "eUiImageType_Tiled",
+            "base": "eUiImageType_Tiled",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GeteUiImageType_Tiled",
+                    "base": "GeteUiImageType_Tiled",
                     "details": {
                         "name": "Tiled"
                     },

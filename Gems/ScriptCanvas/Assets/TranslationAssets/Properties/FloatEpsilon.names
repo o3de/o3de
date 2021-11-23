@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "FloatEpsilon",
+            "base": "FloatEpsilon",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetFloatEpsilon",
+                    "base": "GetFloatEpsilon",
                     "details": {
                         "name": "Float Epsilon"
                     },

@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "TubeShapeComponentTypeId",
+            "base": "TubeShapeComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetTubeShapeComponentTypeId",
+                    "base": "GetTubeShapeComponentTypeId",
                     "details": {
                         "name": "Get Tube Shape Component Type Id"
                     },

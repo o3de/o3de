@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "eUiEmitShape_Point",
+            "base": "eUiEmitShape_Point",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GeteUiEmitShape_Point",
+                    "base": "GeteUiEmitShape_Point",
                     "details": {
                         "name": "Point"
                     },

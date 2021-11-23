@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "SurfaceAltitudeFilterComponentTypeId",
+            "base": "SurfaceAltitudeFilterComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetSurfaceAltitudeFilterComponentTypeId",
+                    "base": "GetSurfaceAltitudeFilterComponentTypeId",
                     "details": {
                         "name": "Get Surface Altitude Filter Component Type Id"
                     },

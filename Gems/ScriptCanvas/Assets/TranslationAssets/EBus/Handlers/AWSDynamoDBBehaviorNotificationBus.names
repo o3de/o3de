@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "AWSDynamoDBBehaviorNotificationBus",
+            "base": "AWSDynamoDBBehaviorNotificationBus",
             "context": "EBusHandler",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "OnGetItemSuccess",
+                    "base": "OnGetItemSuccess",
                     "details": {
                         "name": "On Get Item Success"
                     },
@@ -24,7 +24,7 @@
                     ]
                 },
                 {
-                    "key": "OnGetItemError",
+                    "base": "OnGetItemError",
                     "details": {
                         "name": "On Get Item Error"
                     },

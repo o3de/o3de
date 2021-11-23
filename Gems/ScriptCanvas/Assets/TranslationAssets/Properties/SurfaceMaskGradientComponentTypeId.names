@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "SurfaceMaskGradientComponentTypeId",
+            "base": "SurfaceMaskGradientComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetSurfaceMaskGradientComponentTypeId",
+                    "base": "GetSurfaceMaskGradientComponentTypeId",
                     "details": {
                         "name": "Get Surface Mask Gradient Component Type Id"
                     },

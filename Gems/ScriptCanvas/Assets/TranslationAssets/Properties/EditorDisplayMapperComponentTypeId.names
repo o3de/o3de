@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "EditorDisplayMapperComponentTypeId",
+            "base": "EditorDisplayMapperComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetEditorDisplayMapperComponentTypeId",
+                    "base": "GetEditorDisplayMapperComponentTypeId",
                     "details": {
                         "name": "Get Editor Display Mapper Component Type Id"
                     },

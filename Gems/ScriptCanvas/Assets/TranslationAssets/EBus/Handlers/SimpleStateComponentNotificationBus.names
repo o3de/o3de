@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "SimpleStateComponentNotificationBus",
+            "base": "SimpleStateComponentNotificationBus",
             "context": "EBusHandler",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "OnStateChanged",
+                    "base": "OnStateChanged",
                     "details": {
                         "name": "On State Changed",
                         "tooltip": "Notifies that the state has changed from state oldName to state newName"

@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "g_SettingsRegistry",
+            "base": "g_SettingsRegistry",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "Getg_SettingsRegistry",
+                    "base": "Getg_SettingsRegistry",
                     "details": {
                         "name": "Settings Registry"
                     },

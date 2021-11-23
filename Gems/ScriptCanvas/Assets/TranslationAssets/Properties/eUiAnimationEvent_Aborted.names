@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "eUiAnimationEvent_Aborted",
+            "base": "eUiAnimationEvent_Aborted",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GeteUiAnimationEvent_Aborted",
+                    "base": "GeteUiAnimationEvent_Aborted",
                     "details": {
                         "name": "Aborted"
                     },

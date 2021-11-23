@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "CYLINDER",
+            "base": "CYLINDER",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetCYLINDER",
+                    "base": "GetCYLINDER",
                     "details": {
                         "name": "Cylinder"
                     },

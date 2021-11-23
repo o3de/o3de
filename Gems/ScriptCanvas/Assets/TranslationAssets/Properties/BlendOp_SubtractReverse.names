@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "BlendOp_SubtractReverse",
+            "base": "BlendOp_SubtractReverse",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetBlendOp_SubtractReverse",
+                    "base": "GetBlendOp_SubtractReverse",
                     "details": {
                         "name": "Get Subtract Reverse"
                     },

@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "EditorDecalComponentTypeId",
+            "base": "EditorDecalComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetEditorDecalComponentTypeId",
+                    "base": "GetEditorDecalComponentTypeId",
                     "details": {
                         "name": "Get Editor Decal Component Type Id"
                     },

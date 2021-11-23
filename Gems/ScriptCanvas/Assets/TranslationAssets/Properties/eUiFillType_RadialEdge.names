@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "eUiFillType_RadialEdge",
+            "base": "eUiFillType_RadialEdge",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GeteUiFillType_RadialEdge",
+                    "base": "GeteUiFillType_RadialEdge",
                     "details": {
                         "name": "Radial Edge"
                     },

@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "StencilOp_Invert",
+            "base": "StencilOp_Invert",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetStencilOp_Invert",
+                    "base": "GetStencilOp_Invert",
                     "details": {
                         "name": "Invert"
                     },

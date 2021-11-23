@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "AttachmentComponentNotificationBus",
+            "base": "AttachmentComponentNotificationBus",
             "context": "EBusHandler",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "OnAttached",
+                    "base": "OnAttached",
                     "details": {
                         "name": "On Attached"
                     },
@@ -25,7 +25,7 @@
                     ]
                 },
                 {
-                    "key": "OnDetached",
+                    "base": "OnDetached",
                     "details": {
                         "name": "On Detached"
                     },

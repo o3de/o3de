@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "UiMarkupButtonNotificationsBus",
+            "base": "UiMarkupButtonNotificationsBus",
             "context": "EBusHandler",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "OnHoverStart",
+                    "base": "OnHoverStart",
                     "details": {
                         "name": "On Hover Start",
                         "tooltip": "Executes when the button has become hovered"
@@ -40,7 +40,7 @@
                     ]
                 },
                 {
-                    "key": "OnHoverEnd",
+                    "base": "OnHoverEnd",
                     "details": {
                         "name": "On Hover End",
                         "tooltip": "Executes when the button is no longer hovered"
@@ -70,7 +70,7 @@
                     ]
                 },
                 {
-                    "key": "OnPressed",
+                    "base": "OnPressed",
                     "details": {
                         "name": "On Pressed",
                         "tooltip": "Executes when the button receives a press event"
@@ -100,7 +100,7 @@
                     ]
                 },
                 {
-                    "key": "OnReleased",
+                    "base": "OnReleased",
                     "details": {
                         "name": "On Released",
                         "tooltip": "Executes when the button receives a release event"
@@ -130,7 +130,7 @@
                     ]
                 },
                 {
-                    "key": "OnClick",
+                    "base": "OnClick",
                     "details": {
                         "name": "On Click",
                         "tooltip": "Executes when the button is clicked (a release on the button following a press on the button)"

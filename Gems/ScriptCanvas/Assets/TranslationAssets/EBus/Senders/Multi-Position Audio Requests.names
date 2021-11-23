@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "Multi-Position Audio Requests",
+            "base": "Multi-Position Audio Requests",
             "context": "EBusSender",
             "variant": "",
             "details": {
@@ -9,7 +9,7 @@
             },
             "methods": [
                 {
-                    "key": "Add Entity",
+                    "base": "Add Entity",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Add Entity"
@@ -32,7 +32,7 @@
                     ]
                 },
                 {
-                    "key": "RemoveEntity",
+                    "base": "RemoveEntity",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Remove Entity"
@@ -55,7 +55,7 @@
                     ]
                 },
                 {
-                    "key": "SetBehaviorType",
+                    "base": "SetBehaviorType",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Behavior Type"

@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "LANDSCAPE_CANVAS_EDITOR_ID",
+            "base": "LANDSCAPE_CANVAS_EDITOR_ID",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetLANDSCAPE_CANVAS_EDITOR_ID",
+                    "base": "GetLANDSCAPE_CANVAS_EDITOR_ID",
                     "details": {
                         "name": "Editor Id"
                     },

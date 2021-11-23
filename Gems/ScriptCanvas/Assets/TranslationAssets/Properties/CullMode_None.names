@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "CullMode_None",
+            "base": "CullMode_None",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetCullMode_None",
+                    "base": "GetCullMode_None",
                     "details": {
                         "name": "Get None"
                     },

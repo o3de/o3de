@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "SurfaceTagWeight",
+            "base": "SurfaceTagWeight",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetsurfaceType",
+                    "base": "GetsurfaceType",
                     "details": {
                         "name": "Get Surface Type"
                     },
@@ -32,7 +32,7 @@
                     ]
                 },
                 {
-                    "key": "SetsurfaceType",
+                    "base": "SetsurfaceType",
                     "details": {
                         "name": "Set Surface Type"
                     },
@@ -52,7 +52,7 @@
                     ]
                 },
                 {
-                    "key": "Getweight",
+                    "base": "Getweight",
                     "details": {
                         "name": "Get Weight"
                     },
@@ -74,7 +74,7 @@
                     ]
                 },
                 {
-                    "key": "Setweight",
+                    "base": "Setweight",
                     "details": {
                         "name": "Set Weight"
                     },

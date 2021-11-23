@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "MaterialAssignment",
+            "base": "MaterialAssignment",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "ToString",
+                    "base": "ToString",
                     "context": "MaterialAssignment",
                     "entry": {
                         "name": "In",
@@ -33,7 +33,7 @@
                     ]
                 },
                 {
-                    "key": "GetmaterialAsset",
+                    "base": "GetmaterialAsset",
                     "details": {
                         "name": "Getmaterial Asset"
                     },
@@ -55,7 +55,7 @@
                     ]
                 },
                 {
-                    "key": "SetmaterialAsset",
+                    "base": "SetmaterialAsset",
                     "details": {
                         "name": "Setmaterial Asset"
                     },
@@ -75,7 +75,7 @@
                     ]
                 },
                 {
-                    "key": "GetpropertyOverrides",
+                    "base": "GetpropertyOverrides",
                     "details": {
                         "name": "Getproperty Overrides"
                     },
@@ -97,7 +97,7 @@
                     ]
                 },
                 {
-                    "key": "SetpropertyOverrides",
+                    "base": "SetpropertyOverrides",
                     "details": {
                         "name": "Setproperty Overrides"
                     },

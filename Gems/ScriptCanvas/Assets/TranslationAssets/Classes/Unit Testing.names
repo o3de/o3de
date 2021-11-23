@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "Unit Testing",
+            "base": "Unit Testing",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
@@ -9,7 +9,7 @@
             },
             "methods": [
                 {
-                    "key": "ExpectLessThanEqual",
+                    "base": "ExpectLessThanEqual",
                     "context": "Unit Testing",
                     "entry": {
                         "name": "In",
@@ -52,7 +52,7 @@
                     ]
                 },
                 {
-                    "key": "ExpectGreaterThanEqual",
+                    "base": "ExpectGreaterThanEqual",
                     "context": "Unit Testing",
                     "entry": {
                         "name": "In",
@@ -95,7 +95,7 @@
                     ]
                 },
                 {
-                    "key": "MarkComplete",
+                    "base": "MarkComplete",
                     "context": "Unit Testing",
                     "entry": {
                         "name": "In",
@@ -126,7 +126,7 @@
                     ]
                 },
                 {
-                    "key": "ExpectTrue",
+                    "base": "ExpectTrue",
                     "context": "Unit Testing",
                     "entry": {
                         "name": "In",
@@ -163,7 +163,7 @@
                     ]
                 },
                 {
-                    "key": "Checkpoint",
+                    "base": "Checkpoint",
                     "context": "Unit Testing",
                     "entry": {
                         "name": "In",
@@ -194,7 +194,7 @@
                     ]
                 },
                 {
-                    "key": "ExpectFalse",
+                    "base": "ExpectFalse",
                     "context": "Unit Testing",
                     "entry": {
                         "name": "In",
@@ -231,7 +231,7 @@
                     ]
                 },
                 {
-                    "key": "ExpectEqual",
+                    "base": "ExpectEqual",
                     "context": "Unit Testing",
                     "entry": {
                         "name": "In",
@@ -274,7 +274,7 @@
                     ]
                 },
                 {
-                    "key": "ExpectLessThan",
+                    "base": "ExpectLessThan",
                     "context": "Unit Testing",
                     "entry": {
                         "name": "In",
@@ -317,7 +317,7 @@
                     ]
                 },
                 {
-                    "key": "AddSuccess",
+                    "base": "AddSuccess",
                     "context": "Unit Testing",
                     "entry": {
                         "name": "In",
@@ -348,7 +348,7 @@
                     ]
                 },
                 {
-                    "key": "ExpectNotEqual",
+                    "base": "ExpectNotEqual",
                     "context": "Unit Testing",
                     "entry": {
                         "name": "In",
@@ -391,7 +391,7 @@
                     ]
                 },
                 {
-                    "key": "ExpectGreaterThan",
+                    "base": "ExpectGreaterThan",
                     "context": "Unit Testing",
                     "entry": {
                         "name": "In",
@@ -434,7 +434,7 @@
                     ]
                 },
                 {
-                    "key": "AddFailure",
+                    "base": "AddFailure",
                     "context": "Unit Testing",
                     "entry": {
                         "name": "In",

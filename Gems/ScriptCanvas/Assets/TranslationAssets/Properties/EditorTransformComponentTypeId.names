@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "EditorTransformComponentTypeId",
+            "base": "EditorTransformComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetEditorTransformComponentTypeId",
+                    "base": "GetEditorTransformComponentTypeId",
                     "details": {
                         "name": "Get Editor Transform Component Type Id"
                     },

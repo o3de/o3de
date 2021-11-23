@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "BlendFactor_One",
+            "base": "BlendFactor_One",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetBlendFactor_One",
+                    "base": "GetBlendFactor_One",
                     "details": {
                         "name": "Get One"
                     },

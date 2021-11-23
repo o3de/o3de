@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "eUiDropState_Invalid",
+            "base": "eUiDropState_Invalid",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GeteUiDropState_Invalid",
+                    "base": "GeteUiDropState_Invalid",
                     "details": {
                         "name": "Invalid"
                     },

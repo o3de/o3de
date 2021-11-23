@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "ShapeType_PhysicsAsset",
+            "base": "ShapeType_PhysicsAsset",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "ShapeType_PhysicsAsset",
+                    "base": "ShapeType_PhysicsAsset",
                     "details": {
                         "name": "Get Shape Type: Physics Asset",
                         "subtitle": "Shape Type"

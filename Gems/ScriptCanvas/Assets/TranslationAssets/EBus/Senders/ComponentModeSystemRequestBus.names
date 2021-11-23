@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "ComponentModeSystemRequestBus",
+            "base": "ComponentModeSystemRequestBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
@@ -9,7 +9,7 @@
             },
             "methods": [
                 {
-                    "key": "EnterComponentMode",
+                    "base": "EnterComponentMode",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke EnterComponentMode"
@@ -31,7 +31,7 @@
                     ]
                 },
                 {
-                    "key": "EndComponentMode",
+                    "base": "EndComponentMode",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke EndComponentMode"

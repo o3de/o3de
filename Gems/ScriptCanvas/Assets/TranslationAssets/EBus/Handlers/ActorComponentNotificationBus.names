@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "ActorComponentNotificationBus",
+            "base": "ActorComponentNotificationBus",
             "context": "EBusHandler",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "OnActorInstanceCreated",
+                    "base": "OnActorInstanceCreated",
                     "details": {
                         "name": "On Actor Instance Created"
                     },
@@ -24,7 +24,7 @@
                     ]
                 },
                 {
-                    "key": "OnActorInstanceDestroyed",
+                    "base": "OnActorInstanceDestroyed",
                     "details": {
                         "name": "On Actor Instance Destroyed"
                     },

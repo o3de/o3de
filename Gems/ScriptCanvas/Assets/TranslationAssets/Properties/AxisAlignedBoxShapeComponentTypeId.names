@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "AxisAlignedBoxShapeComponentTypeId",
+            "base": "AxisAlignedBoxShapeComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetAxisAlignedBoxShapeComponentTypeId",
+                    "base": "GetAxisAlignedBoxShapeComponentTypeId",
                     "details": {
                         "name": "Get Axis Aligned Box Shape Component Type Id"
                     },

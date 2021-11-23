@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "eUiImageSequenceImageType_StretchedToFit",
+            "base": "eUiImageSequenceImageType_StretchedToFit",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GeteUiImageSequenceImageType_StretchedToFit",
+                    "base": "GeteUiImageSequenceImageType_StretchedToFit",
                     "details": {
                         "name": "Image Type: Stretched To Fit"
                     },

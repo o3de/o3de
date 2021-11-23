@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "eUiScrollBoxSnapMode_Children",
+            "base": "eUiScrollBoxSnapMode_Children",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GeteUiScrollBoxSnapMode_Children",
+                    "base": "GeteUiScrollBoxSnapMode_Children",
                     "details": {
                         "name": "Children"
                     },

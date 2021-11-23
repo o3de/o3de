@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "SpawnerComponentRequestBus",
+            "base": "SpawnerComponentRequestBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "SetDynamicSlice",
+                    "base": "SetDynamicSlice",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Dynamic Slice"
@@ -32,7 +32,7 @@
                     ]
                 },
                 {
-                    "key": "GetCurrentlySpawnedSlices",
+                    "base": "GetCurrentlySpawnedSlices",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Currently Spawned Slices"
@@ -54,7 +54,7 @@
                     ]
                 },
                 {
-                    "key": "HasAnyCurrentlySpawnedSlices",
+                    "base": "HasAnyCurrentlySpawnedSlices",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Has Any Currently Spawned Slices"
@@ -76,7 +76,7 @@
                     ]
                 },
                 {
-                    "key": "GetAllCurrentlySpawnedEntities",
+                    "base": "GetAllCurrentlySpawnedEntities",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get All Currently Spawned Entities"
@@ -98,7 +98,7 @@
                     ]
                 },
                 {
-                    "key": "DestroyAllSpawnedSlices",
+                    "base": "DestroyAllSpawnedSlices",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Destroy All Spawned Slices"
@@ -112,7 +112,7 @@
                     }
                 },
                 {
-                    "key": "GetCurrentEntitiesFromSpawnedSlice",
+                    "base": "GetCurrentEntitiesFromSpawnedSlice",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Current Entities From Spawned Slice"
@@ -142,7 +142,7 @@
                     ]
                 },
                 {
-                    "key": "DestroySpawnedSlice",
+                    "base": "DestroySpawnedSlice",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Destroy Spawned Slice"
@@ -164,7 +164,7 @@
                     ]
                 },
                 {
-                    "key": "IsReadyToSpawn",
+                    "base": "IsReadyToSpawn",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Is Ready To Spawn"
@@ -186,7 +186,7 @@
                     ]
                 },
                 {
-                    "key": "SpawnRelative",
+                    "base": "SpawnRelative",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Spawn Relative"
@@ -216,7 +216,7 @@
                     ]
                 },
                 {
-                    "key": "Spawn",
+                    "base": "Spawn",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Spawn"
@@ -238,7 +238,7 @@
                     ]
                 },
                 {
-                    "key": "SpawnAbsolute",
+                    "base": "SpawnAbsolute",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Spawn Absolute"

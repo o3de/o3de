@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "MeshBlockerComponentTypeId",
+            "base": "MeshBlockerComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetMeshBlockerComponentTypeId",
+                    "base": "GetMeshBlockerComponentTypeId",
                     "details": {
                         "name": "Get Mesh Blocker Component Type Id"
                     },

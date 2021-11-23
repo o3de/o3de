@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "{60CF8540-E51A-434D-A32C-461C41D68AF9}",
+            "base": "{60CF8540-E51A-434D-A32C-461C41D68AF9}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
@@ -11,33 +11,33 @@
             },
             "slots": [
                 {
-                    "key": "DataOutput_Milliseconds",
+                    "base": "DataOutput_Milliseconds",
                     "details": {
                         "name": "Milliseconds"
                     }
                 },
                 {
-                    "key": "DataOutput_Seconds",
+                    "base": "DataOutput_Seconds",
                     "details": {
                         "name": "Seconds"
                     }
                 },
                 {
-                    "key": "Input_Start",
+                    "base": "Input_Start",
                     "details": {
                         "name": "Start",
                         "tooltip": "Starts the timer."
                     }
                 },
                 {
-                    "key": "Input_Stop",
+                    "base": "Input_Stop",
                     "details": {
                         "name": "Stop",
                         "tooltip": "Stops the timer."
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out",
                     "details": {
                         "name": "Out",
                         "tooltip": "Signaled every frame while the timer is running."

@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "eUiSpriteType_SpriteAsset",
+            "base": "eUiSpriteType_SpriteAsset",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GeteUiSpriteType_SpriteAsset",
+                    "base": "GeteUiSpriteType_SpriteAsset",
                     "details": {
                         "name": "Sprite Asset"
                     },

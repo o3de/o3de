@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "MaterialPropertyVisibility_Hidden",
+            "base": "MaterialPropertyVisibility_Hidden",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetMaterialPropertyVisibility_Hidden",
+                    "base": "GetMaterialPropertyVisibility_Hidden",
                     "details": {
                         "name": "Hidden"
                     },

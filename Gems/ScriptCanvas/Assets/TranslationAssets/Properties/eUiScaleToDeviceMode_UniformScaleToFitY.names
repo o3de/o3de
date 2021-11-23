@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "eUiScaleToDeviceMode_UniformScaleToFitY",
+            "base": "eUiScaleToDeviceMode_UniformScaleToFitY",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GeteUiScaleToDeviceMode_UniformScaleToFitY",
+                    "base": "GeteUiScaleToDeviceMode_UniformScaleToFitY",
                     "details": {
                         "name": "Uniform Scale To Fit Y"
                     },

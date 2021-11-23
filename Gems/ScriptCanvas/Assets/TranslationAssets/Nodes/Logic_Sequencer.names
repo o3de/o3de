@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "{CB98B828-BF86-4623-BF73-396A68FA386A}",
+            "base": "{CB98B828-BF86-4623-BF73-396A68FA386A}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
@@ -11,82 +11,82 @@
             },
             "slots": [
                 {
-                    "key": "DataInput_Index",
+                    "base": "DataInput_Index",
                     "details": {
                         "name": "Index"
                     }
                 },
                 {
-                    "key": "DataInput_Order",
+                    "base": "DataInput_Order",
                     "details": {
                         "name": "Order"
                     }
                 },
                 {
-                    "key": "Input_In",
+                    "base": "Input_In",
                     "details": {
                         "name": "In",
                         "tooltip": "Input signal"
                     }
                 },
                 {
-                    "key": "Input_Next",
+                    "base": "Input_Next",
                     "details": {
                         "name": "Next",
                         "tooltip": "When next is activated, it enables the next output"
                     }
                 },
                 {
-                    "key": "Output_Out0",
+                    "base": "Output_Out0",
                     "details": {
                         "name": "Out0",
                         "tooltip": "Output 0"
                     }
                 },
                 {
-                    "key": "Output_Out1",
+                    "base": "Output_Out1",
                     "details": {
                         "name": "Out1",
                         "tooltip": "Output 1"
                     }
                 },
                 {
-                    "key": "Output_Out2",
+                    "base": "Output_Out2",
                     "details": {
                         "name": "Out2",
                         "tooltip": "Output 2"
                     }
                 },
                 {
-                    "key": "Output_Out3",
+                    "base": "Output_Out3",
                     "details": {
                         "name": "Out3",
                         "tooltip": "Output 3"
                     }
                 },
                 {
-                    "key": "Output_Out4",
+                    "base": "Output_Out4",
                     "details": {
                         "name": "Out4",
                         "tooltip": "Output 4"
                     }
                 },
                 {
-                    "key": "Output_Out5",
+                    "base": "Output_Out5",
                     "details": {
                         "name": "Out5",
                         "tooltip": "Output 5"
                     }
                 },
                 {
-                    "key": "Output_Out6",
+                    "base": "Output_Out6",
                     "details": {
                         "name": "Out6",
                         "tooltip": "Output 6"
                     }
                 },
                 {
-                    "key": "Output_Out7",
+                    "base": "Output_Out7",
                     "details": {
                         "name": "Out7",
                         "tooltip": "Output 7"

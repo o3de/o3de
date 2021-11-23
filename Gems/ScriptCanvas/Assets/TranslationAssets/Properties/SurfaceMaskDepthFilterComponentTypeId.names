@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "SurfaceMaskDepthFilterComponentTypeId",
+            "base": "SurfaceMaskDepthFilterComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetSurfaceMaskDepthFilterComponentTypeId",
+                    "base": "GetSurfaceMaskDepthFilterComponentTypeId",
                     "details": {
                         "name": "Get Surface Mask Depth Filter Component Type Id"
                     },

@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "ScriptBuildingNotificationBus",
+            "base": "ScriptBuildingNotificationBus",
             "context": "EBusHandler",
             "variant": "",
             "details": {
@@ -9,7 +9,7 @@
             },
             "methods": [
                 {
-                    "key": "OnUpdateManifest",
+                    "base": "OnUpdateManifest",
                     "details": {
                         "name": "OnUpdateManifest"
                     },
@@ -31,7 +31,7 @@
                     ]
                 },
                 {
-                    "key": "OnPrepareForExport",
+                    "base": "OnPrepareForExport",
                     "details": {
                         "name": "OnPrepareForExport"
                     },

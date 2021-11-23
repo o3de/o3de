@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "eUiFillEdgeOrigin_Right",
+            "base": "eUiFillEdgeOrigin_Right",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GeteUiFillEdgeOrigin_Right",
+                    "base": "GeteUiFillEdgeOrigin_Right",
                     "details": {
                         "name": "Right"
                     },

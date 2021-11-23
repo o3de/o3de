@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "eUiTextShrinkToFit_WidthOnly",
+            "base": "eUiTextShrinkToFit_WidthOnly",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GeteUiTextShrinkToFit_WidthOnly",
+                    "base": "GeteUiTextShrinkToFit_WidthOnly",
                     "details": {
                         "name": "Width Only"
                     },

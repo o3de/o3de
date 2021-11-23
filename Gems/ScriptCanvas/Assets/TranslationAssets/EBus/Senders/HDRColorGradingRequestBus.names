@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "HDRColorGradingRequestBus",
+            "base": "HDRColorGradingRequestBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
@@ -9,7 +9,7 @@
             },
             "methods": [
                 {
-                    "key": "SetCustomMinExposure",
+                    "base": "SetCustomMinExposure",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetCustomMinExposure"
@@ -31,7 +31,7 @@
                     ]
                 },
                 {
-                    "key": "GetFinalAdjustmentWeight",
+                    "base": "GetFinalAdjustmentWeight",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetFinalAdjustmentWeight"
@@ -53,7 +53,7 @@
                     ]
                 },
                 {
-                    "key": "SetSmhHighlightsColor",
+                    "base": "SetSmhHighlightsColor",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetSmhHighlightsColor"
@@ -75,7 +75,7 @@
                     ]
                 },
                 {
-                    "key": "SetLutResolution",
+                    "base": "SetLutResolution",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetLutResolution"
@@ -97,7 +97,7 @@
                     ]
                 },
                 {
-                    "key": "GetSmhMidtonesColor",
+                    "base": "GetSmhMidtonesColor",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetSmhMidtonesColor"
@@ -119,7 +119,7 @@
                     ]
                 },
                 {
-                    "key": "GetSmhHighlightsEnd",
+                    "base": "GetSmhHighlightsEnd",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetSmhHighlightsEnd"
@@ -141,7 +141,7 @@
                     ]
                 },
                 {
-                    "key": "GetCustomMinExposure",
+                    "base": "GetCustomMinExposure",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetCustomMinExposure"
@@ -163,7 +163,7 @@
                     ]
                 },
                 {
-                    "key": "SetSmhHighlightsEnd",
+                    "base": "SetSmhHighlightsEnd",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetSmhHighlightsEnd"
@@ -185,7 +185,7 @@
                     ]
                 },
                 {
-                    "key": "GetChannelMixingGreen",
+                    "base": "GetChannelMixingGreen",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetChannelMixingGreen"
@@ -207,7 +207,7 @@
                     ]
                 },
                 {
-                    "key": "SetSmhShadowsEnd",
+                    "base": "SetSmhShadowsEnd",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetSmhShadowsEnd"
@@ -229,7 +229,7 @@
                     ]
                 },
                 {
-                    "key": "SetSmhWeight",
+                    "base": "SetSmhWeight",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetSmhWeight"
@@ -251,7 +251,7 @@
                     ]
                 },
                 {
-                    "key": "SetShaperPresetType",
+                    "base": "SetShaperPresetType",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetShaperPresetType"
@@ -273,7 +273,7 @@
                     ]
                 },
                 {
-                    "key": "GetShaperPresetType",
+                    "base": "GetShaperPresetType",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetShaperPresetType"
@@ -295,7 +295,7 @@
                     ]
                 },
                 {
-                    "key": "SetEnabled",
+                    "base": "SetEnabled",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetEnabled"
@@ -317,7 +317,7 @@
                     ]
                 },
                 {
-                    "key": "GetSmhShadowsColor",
+                    "base": "GetSmhShadowsColor",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetSmhShadowsColor"
@@ -339,7 +339,7 @@
                     ]
                 },
                 {
-                    "key": "GetColorGradingPreSaturation",
+                    "base": "GetColorGradingPreSaturation",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetColorGradingPreSaturation"
@@ -361,7 +361,7 @@
                     ]
                 },
                 {
-                    "key": "GetSplitToneHighlightsColor",
+                    "base": "GetSplitToneHighlightsColor",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetSplitToneHighlightsColor"
@@ -383,7 +383,7 @@
                     ]
                 },
                 {
-                    "key": "GetColorGradingHueShift",
+                    "base": "GetColorGradingHueShift",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetColorGradingHueShift"
@@ -405,7 +405,7 @@
                     ]
                 },
                 {
-                    "key": "SetColorGradingExposure",
+                    "base": "SetColorGradingExposure",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetColorGradingExposure"
@@ -427,7 +427,7 @@
                     ]
                 },
                 {
-                    "key": "GetColorFilterSwatch",
+                    "base": "GetColorFilterSwatch",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetColorFilterSwatch"
@@ -449,7 +449,7 @@
                     ]
                 },
                 {
-                    "key": "GetWhiteBalanceTint",
+                    "base": "GetWhiteBalanceTint",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetWhiteBalanceTint"
@@ -471,7 +471,7 @@
                     ]
                 },
                 {
-                    "key": "GetColorGradingExposure",
+                    "base": "GetColorGradingExposure",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetColorGradingExposure"
@@ -493,7 +493,7 @@
                     ]
                 },
                 {
-                    "key": "GetSmhWeight",
+                    "base": "GetSmhWeight",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetSmhWeight"
@@ -515,7 +515,7 @@
                     ]
                 },
                 {
-                    "key": "SetSmhMidtonesColor",
+                    "base": "SetSmhMidtonesColor",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetSmhMidtonesColor"
@@ -537,7 +537,7 @@
                     ]
                 },
                 {
-                    "key": "SetChannelMixingBlue",
+                    "base": "SetChannelMixingBlue",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetChannelMixingBlue"
@@ -559,7 +559,7 @@
                     ]
                 },
                 {
-                    "key": "GetGenerateLut",
+                    "base": "GetGenerateLut",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetGenerateLut"
@@ -581,7 +581,7 @@
                     ]
                 },
                 {
-                    "key": "SetSplitToneBalance",
+                    "base": "SetSplitToneBalance",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetSplitToneBalance"
@@ -603,7 +603,7 @@
                     ]
                 },
                 {
-                    "key": "GetLutResolution",
+                    "base": "GetLutResolution",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetLutResolution"
@@ -625,7 +625,7 @@
                     ]
                 },
                 {
-                    "key": "SetColorGradingContrast",
+                    "base": "SetColorGradingContrast",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetColorGradingContrast"
@@ -647,7 +647,7 @@
                     ]
                 },
                 {
-                    "key": "GetWhiteBalanceKelvin",
+                    "base": "GetWhiteBalanceKelvin",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetWhiteBalanceKelvin"
@@ -669,7 +669,7 @@
                     ]
                 },
                 {
-                    "key": "SetSplitToneHighlightsColor",
+                    "base": "SetSplitToneHighlightsColor",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetSplitToneHighlightsColor"
@@ -691,7 +691,7 @@
                     ]
                 },
                 {
-                    "key": "GetSmhShadowsEnd",
+                    "base": "GetSmhShadowsEnd",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetSmhShadowsEnd"
@@ -713,7 +713,7 @@
                     ]
                 },
                 {
-                    "key": "SetSmhHighlightsStart",
+                    "base": "SetSmhHighlightsStart",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetSmhHighlightsStart"
@@ -735,7 +735,7 @@
                     ]
                 },
                 {
-                    "key": "SetColorFilterSwatch",
+                    "base": "SetColorFilterSwatch",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetColorFilterSwatch"
@@ -757,7 +757,7 @@
                     ]
                 },
                 {
-                    "key": "GetColorGradingFilterIntensity",
+                    "base": "GetColorGradingFilterIntensity",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetColorGradingFilterIntensity"
@@ -779,7 +779,7 @@
                     ]
                 },
                 {
-                    "key": "SetWhiteBalanceWeight",
+                    "base": "SetWhiteBalanceWeight",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetWhiteBalanceWeight"
@@ -801,7 +801,7 @@
                     ]
                 },
                 {
-                    "key": "SetSmhShadowsStart",
+                    "base": "SetSmhShadowsStart",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetSmhShadowsStart"
@@ -823,7 +823,7 @@
                     ]
                 },
                 {
-                    "key": "GetChannelMixingRed",
+                    "base": "GetChannelMixingRed",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetChannelMixingRed"
@@ -845,7 +845,7 @@
                     ]
                 },
                 {
-                    "key": "GetColorGradingFilterMultiply",
+                    "base": "GetColorGradingFilterMultiply",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetColorGradingFilterMultiply"
@@ -867,7 +867,7 @@
                     ]
                 },
                 {
-                    "key": "SetColorGradingFilterMultiply",
+                    "base": "SetColorGradingFilterMultiply",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetColorGradingFilterMultiply"
@@ -889,7 +889,7 @@
                     ]
                 },
                 {
-                    "key": "SetSplitToneShadowsColor",
+                    "base": "SetSplitToneShadowsColor",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetSplitToneShadowsColor"
@@ -911,7 +911,7 @@
                     ]
                 },
                 {
-                    "key": "SetSplitToneWeight",
+                    "base": "SetSplitToneWeight",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetSplitToneWeight"
@@ -933,7 +933,7 @@
                     ]
                 },
                 {
-                    "key": "GetSplitToneShadowsColor",
+                    "base": "GetSplitToneShadowsColor",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetSplitToneShadowsColor"
@@ -955,7 +955,7 @@
                     ]
                 },
                 {
-                    "key": "GetSmhHighlightsStart",
+                    "base": "GetSmhHighlightsStart",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetSmhHighlightsStart"
@@ -977,7 +977,7 @@
                     ]
                 },
                 {
-                    "key": "SetChannelMixingRed",
+                    "base": "SetChannelMixingRed",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetChannelMixingRed"
@@ -999,7 +999,7 @@
                     ]
                 },
                 {
-                    "key": "SetChannelMixingGreen",
+                    "base": "SetChannelMixingGreen",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetChannelMixingGreen"
@@ -1021,7 +1021,7 @@
                     ]
                 },
                 {
-                    "key": "SetColorGradingFilterIntensity",
+                    "base": "SetColorGradingFilterIntensity",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetColorGradingFilterIntensity"
@@ -1043,7 +1043,7 @@
                     ]
                 },
                 {
-                    "key": "SetGenerateLut",
+                    "base": "SetGenerateLut",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetGenerateLut"
@@ -1065,7 +1065,7 @@
                     ]
                 },
                 {
-                    "key": "SetColorAdjustmentWeight",
+                    "base": "SetColorAdjustmentWeight",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetColorAdjustmentWeight"
@@ -1087,7 +1087,7 @@
                     ]
                 },
                 {
-                    "key": "GetSmhShadowsStart",
+                    "base": "GetSmhShadowsStart",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetSmhShadowsStart"
@@ -1109,7 +1109,7 @@
                     ]
                 },
                 {
-                    "key": "SetSmhShadowsColor",
+                    "base": "SetSmhShadowsColor",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetSmhShadowsColor"
@@ -1131,7 +1131,7 @@
                     ]
                 },
                 {
-                    "key": "SetFinalAdjustmentWeight",
+                    "base": "SetFinalAdjustmentWeight",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetFinalAdjustmentWeight"
@@ -1153,7 +1153,7 @@
                     ]
                 },
                 {
-                    "key": "GetColorGradingPostSaturation",
+                    "base": "GetColorGradingPostSaturation",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetColorGradingPostSaturation"
@@ -1175,7 +1175,7 @@
                     ]
                 },
                 {
-                    "key": "SetColorGradingPreSaturation",
+                    "base": "SetColorGradingPreSaturation",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetColorGradingPreSaturation"
@@ -1197,7 +1197,7 @@
                     ]
                 },
                 {
-                    "key": "SetColorGradingHueShift",
+                    "base": "SetColorGradingHueShift",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetColorGradingHueShift"
@@ -1219,7 +1219,7 @@
                     ]
                 },
                 {
-                    "key": "GetSplitToneBalance",
+                    "base": "GetSplitToneBalance",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetSplitToneBalance"
@@ -1241,7 +1241,7 @@
                     ]
                 },
                 {
-                    "key": "GetColorAdjustmentWeight",
+                    "base": "GetColorAdjustmentWeight",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetColorAdjustmentWeight"
@@ -1263,7 +1263,7 @@
                     ]
                 },
                 {
-                    "key": "GetSmhHighlightsColor",
+                    "base": "GetSmhHighlightsColor",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetSmhHighlightsColor"
@@ -1285,7 +1285,7 @@
                     ]
                 },
                 {
-                    "key": "GetSplitToneWeight",
+                    "base": "GetSplitToneWeight",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetSplitToneWeight"
@@ -1307,7 +1307,7 @@
                     ]
                 },
                 {
-                    "key": "SetColorGradingPostSaturation",
+                    "base": "SetColorGradingPostSaturation",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetColorGradingPostSaturation"
@@ -1329,7 +1329,7 @@
                     ]
                 },
                 {
-                    "key": "SetWhiteBalanceKelvin",
+                    "base": "SetWhiteBalanceKelvin",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetWhiteBalanceKelvin"
@@ -1351,7 +1351,7 @@
                     ]
                 },
                 {
-                    "key": "GetWhiteBalanceWeight",
+                    "base": "GetWhiteBalanceWeight",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetWhiteBalanceWeight"
@@ -1373,7 +1373,7 @@
                     ]
                 },
                 {
-                    "key": "GetColorGradingContrast",
+                    "base": "GetColorGradingContrast",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetColorGradingContrast"
@@ -1395,7 +1395,7 @@
                     ]
                 },
                 {
-                    "key": "GetEnabled",
+                    "base": "GetEnabled",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetEnabled"
@@ -1417,7 +1417,7 @@
                     ]
                 },
                 {
-                    "key": "GetCustomMaxExposure",
+                    "base": "GetCustomMaxExposure",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetCustomMaxExposure"
@@ -1439,7 +1439,7 @@
                     ]
                 },
                 {
-                    "key": "SetWhiteBalanceTint",
+                    "base": "SetWhiteBalanceTint",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetWhiteBalanceTint"
@@ -1461,7 +1461,7 @@
                     ]
                 },
                 {
-                    "key": "GetChannelMixingBlue",
+                    "base": "GetChannelMixingBlue",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetChannelMixingBlue"
@@ -1483,7 +1483,7 @@
                     ]
                 },
                 {
-                    "key": "SetCustomMaxExposure",
+                    "base": "SetCustomMaxExposure",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetCustomMaxExposure"

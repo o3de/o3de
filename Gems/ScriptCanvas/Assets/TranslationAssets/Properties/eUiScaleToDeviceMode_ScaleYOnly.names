@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "eUiScaleToDeviceMode_ScaleYOnly",
+            "base": "eUiScaleToDeviceMode_ScaleYOnly",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GeteUiScaleToDeviceMode_ScaleYOnly",
+                    "base": "GeteUiScaleToDeviceMode_ScaleYOnly",
                     "details": {
                         "name": "Scale Y Only"
                     },

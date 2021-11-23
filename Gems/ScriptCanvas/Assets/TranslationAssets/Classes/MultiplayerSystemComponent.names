@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "MultiplayerSystemComponent",
+            "base": "MultiplayerSystemComponent",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
@@ -9,7 +9,7 @@
             },
             "methods": [
                 {
-                    "key": "GetOnClientDisconnectedEvent",
+                    "base": "GetOnClientDisconnectedEvent",
                     "context": "MultiplayerSystemComponent",
                     "entry": {
                         "name": "In",
