@@ -5,13 +5,14 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Transform Pivot_ Center"
+                "name": "Center",
+                "category": "Constants/Transform/Pivot"
             },
             "methods": [
                 {
                     "key": "GetTransformPivot_Center",
                     "details": {
-                        "name": "Get Transform Pivot_ Center"
+                        "name": "Center"
                     },
                     "results": [
                         {

@@ -5,13 +5,14 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "e Ui Drop State_ Valid"
+                "name": "Valid",
+                "category": "Constants/UI/Drop State"
             },
             "methods": [
                 {
                     "key": "GeteUiDropState_Valid",
                     "details": {
-                        "name": "Gete Ui Drop State_ Valid"
+                        "name": "Valid"
                     },
                     "results": [
                         {

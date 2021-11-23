@@ -5,7 +5,8 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Diffuse Probe Grid Component Type Id"
+                "name": "Diffuse Probe Grid Component Type Id",
+                "category": "Constants/Editor"
             },
             "methods": [
                 {

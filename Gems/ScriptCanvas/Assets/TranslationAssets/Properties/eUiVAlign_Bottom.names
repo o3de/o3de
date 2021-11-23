@@ -5,13 +5,14 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "e UiV Align_ Bottom"
+                "name": "Vertical Align Bottom",
+                "category": "Constants/UI/Align"
             },
             "methods": [
                 {
                     "key": "GeteUiVAlign_Bottom",
                     "details": {
-                        "name": "Gete UiV Align_ Bottom"
+                        "name": "Vertical Align: Bottom"
                     },
                     "results": [
                         {

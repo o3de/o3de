@@ -5,7 +5,8 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Level Settings Component Type Id"
+                "name": "Level Settings Component Type Id",
+                "category": "Constants/Editor"
             },
             "methods": [
                 {

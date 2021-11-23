@@ -5,13 +5,14 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Audio Obstruction Type_ Multi Ray"
+                "name": "Multi Ray",
+                "category": "Constants/Audio Obstruction"
             },
             "methods": [
                 {
                     "key": "GetAudioObstructionType_MultiRay",
                     "details": {
-                        "name": "Get Audio Obstruction Type_ Multi Ray"
+                        "name": "Multi Ray"
                     },
                     "results": [
                         {

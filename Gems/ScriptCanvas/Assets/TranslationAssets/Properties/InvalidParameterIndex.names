@@ -5,7 +5,8 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Invalid Parameter Index"
+                "name": "Invalid Parameter Index",
+                "category": "Constants/Editor"
             },
             "methods": [
                 {

@@ -5,13 +5,14 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "System Config Platform_ Pc"
+                "name": "Pc",
+                "category": "Constants/System Configuration"
             },
             "methods": [
                 {
                     "key": "GetSystemConfigPlatform_Pc",
                     "details": {
-                        "name": "Get System Config Platform_ Pc"
+                        "name": "Pc"
                     },
                     "results": [
                         {

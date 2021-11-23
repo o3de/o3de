@@ -5,13 +5,14 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Stencil Op_ Zero"
+                "name": "Zero",
+                "category": "Constants/Stencil Op"
             },
             "methods": [
                 {
                     "key": "GetStencilOp_Zero",
                     "details": {
-                        "name": "Get Stencil Op_ Zero"
+                        "name": "Zero"
                     },
                     "results": [
                         {

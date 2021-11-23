@@ -5,13 +5,14 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Shadow Filter Method_ESM"
+                "name": "ESM",
+                "category": "Constants/Shadowmap/Filter"
             },
             "methods": [
                 {
                     "key": "GetShadowFilterMethod_ESM",
                     "details": {
-                        "name": "Get Shadow Filter Method_ESM"
+                        "name": "ESM"
                     },
                     "results": [
                         {

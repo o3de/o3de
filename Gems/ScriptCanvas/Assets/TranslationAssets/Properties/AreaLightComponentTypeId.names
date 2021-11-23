@@ -5,7 +5,8 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Area Light Component Type Id"
+                "name": "Area Light Component Type Id",
+                "category": "Constants/Editor"
             },
             "methods": [
                 {

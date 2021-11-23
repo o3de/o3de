@@ -5,13 +5,14 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "e Ui Scroll Box Scroll Bar Visibility_ Auto Hide And Resize Viewport"
+                "name": "Auto Hide And Resize Viewport",
+                "category": "Constants/UI/Scroll Box Scroll Bar Visibility"
             },
             "methods": [
                 {
                     "key": "GeteUiScrollBoxScrollBarVisibility_AutoHideAndResizeViewport",
                     "details": {
-                        "name": "Gete Ui Scroll Box Scroll Bar Visibility_ Auto Hide And Resize Viewport"
+                        "name": "Auto Hide And Resize Viewport"
                     },
                     "results": [
                         {

@@ -5,13 +5,14 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "e Ui Image Type_ Tiled"
+                "name": "Tiled",
+                "category": "Constants/UI/Image Type"
             },
             "methods": [
                 {
                     "key": "GeteUiImageType_Tiled",
                     "details": {
-                        "name": "Gete Ui Image Type_ Tiled"
+                        "name": "Tiled"
                     },
                     "results": [
                         {

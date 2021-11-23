@@ -5,13 +5,14 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Blend Op_ Subtract Reverse"
+                "name": "Subtract Reverse",
+                "category": "Constants/Blend Operation"
             },
             "methods": [
                 {
                     "key": "GetBlendOp_SubtractReverse",
                     "details": {
-                        "name": "Get Blend Op_ Subtract Reverse"
+                        "name": "Get Subtract Reverse"
                     },
                     "results": [
                         {

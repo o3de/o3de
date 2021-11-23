@@ -5,13 +5,14 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "CUBE"
+                "name": "Cube",
+                "category": "Constants/White Box"
             },
             "methods": [
                 {
                     "key": "GetCUBE",
                     "details": {
-                        "name": "GetCUBE"
+                        "name": "Cube"
                     },
                     "results": [
                         {

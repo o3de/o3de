@@ -5,13 +5,14 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "System Config Spec_ High"
+                "name": "High",
+                "category": "Constants/System Spec"
             },
             "methods": [
                 {
                     "key": "GetSystemConfigSpec_High",
                     "details": {
-                        "name": "Get System Config Spec_ High"
+                        "name": "High"
                     },
                     "results": [
                         {

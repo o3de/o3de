@@ -5,13 +5,14 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Transform Mode_ Translation"
+                "name": "Translation",
+                "category": "Constants/Transform/Mode"
             },
             "methods": [
                 {
                     "key": "GetTransformMode_Translation",
                     "details": {
-                        "name": "Get Transform Mode_ Translation"
+                        "name": "Translation"
                     },
                     "results": [
                         {

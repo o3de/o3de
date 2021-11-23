@@ -5,13 +5,14 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "e UiH Align_ Center"
+                "name": "Horizontal Align Center",
+                "category": "Constants/UI/Align"
             },
             "methods": [
                 {
                     "key": "GeteUiHAlign_Center",
                     "details": {
-                        "name": "Gete UiH Align_ Center"
+                        "name": "Horizontal Align: Center"
                     },
                     "results": [
                         {

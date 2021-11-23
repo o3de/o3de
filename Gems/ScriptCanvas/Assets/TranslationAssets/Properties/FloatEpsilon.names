@@ -5,13 +5,14 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Float Epsilon"
+                "name": "Float Epsilon",
+                "category": "Constants/Numeric"
             },
             "methods": [
                 {
                     "key": "GetFloatEpsilon",
                     "details": {
-                        "name": "Get Float Epsilon"
+                        "name": "Float Epsilon"
                     },
                     "results": [
                         {

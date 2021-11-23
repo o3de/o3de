@@ -5,13 +5,14 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Shadow Filter Method_ None"
+                "name": "None",
+                "category": "Constants/Shadowmap/Filter"
             },
             "methods": [
                 {
                     "key": "GetShadowFilterMethod_None",
                     "details": {
-                        "name": "Get Shadow Filter Method_ None"
+                        "name": "None"
                     },
                     "results": [
                         {

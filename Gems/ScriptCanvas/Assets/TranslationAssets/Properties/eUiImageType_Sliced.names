@@ -5,13 +5,14 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "e Ui Image Type_ Sliced"
+                "name": "Sliced",
+                "category": "Constants/UI/Image Type"
             },
             "methods": [
                 {
                     "key": "GeteUiImageType_Sliced",
                     "details": {
-                        "name": "Gete Ui Image Type_ Sliced"
+                        "name": "Sliced"
                     },
                     "results": [
                         {
