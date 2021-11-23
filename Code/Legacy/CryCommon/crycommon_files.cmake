@@ -102,7 +102,6 @@ set(FILES
     Maestro/Bus/SequenceAgentComponentBus.h
     Maestro/Types/AnimNodeType.h
     Maestro/Types/AnimParamType.h
-    Maestro/Types/AnimValue.h
     Maestro/Types/AnimValueType.h
     Maestro/Types/AssetBlendKey.h
     Maestro/Types/AssetBlends.h
