@@ -5,7 +5,7 @@
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "UiImageSequenceBus",
+                "name": "UI Image Sequence",
                 "category": "UI"
             },
             "methods": [

@@ -5,7 +5,7 @@
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "AssetEditorRequestBus"
+                "name": "Asset Editor"
             },
             "methods": [
                 {

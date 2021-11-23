@@ -5,7 +5,7 @@
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "UiCheckboxBus",
+                "name": "UI Checkbox",
                 "category": "UI"
             },
             "methods": [

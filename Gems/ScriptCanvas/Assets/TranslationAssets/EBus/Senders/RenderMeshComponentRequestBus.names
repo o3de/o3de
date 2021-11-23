@@ -5,7 +5,7 @@
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "RenderMeshComponentRequestBus"
+                "name": "Render Mesh Component"
             },
             "methods": [
                 {

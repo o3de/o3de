@@ -5,7 +5,7 @@
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "UiMarkupButtonBus",
+                "name": "UI Markup Button",
                 "category": "UI"
             },
             "methods": [

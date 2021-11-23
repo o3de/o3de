@@ -5,7 +5,7 @@
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "UiLayoutCellBus",
+                "name": "UI Layout Cell",
                 "category": "UI"
             },
             "methods": [
