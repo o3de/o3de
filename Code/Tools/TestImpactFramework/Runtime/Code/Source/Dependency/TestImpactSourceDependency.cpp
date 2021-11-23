@@ -32,7 +32,7 @@ namespace TestImpact
         return buildTarget;
     }
 
-    const SpecializedNativeTarget& ParentTarget::GetSpecializedBuildTarget() const
+    const SpecializedNativeTarget& ParentTarget::GetTarget() const
     {
         return m_target;
     }

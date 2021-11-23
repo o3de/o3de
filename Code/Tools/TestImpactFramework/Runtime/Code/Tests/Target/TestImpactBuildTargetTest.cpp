@@ -267,15 +267,15 @@
 //        TargetListType targetList(AZStd::move(descriptors));
 //
 //        // Expect the number of targets in the list to match the number of target descriptors used to construct the list
-//        EXPECT_EQ(targetList.GetNumBuildTargets(), m_numTargets);
+//        EXPECT_EQ(targetList.GetNumTargets(), m_numTargets);
 //
-//        for (size_t i = 0; i < targetList.GetNumBuildTargets(); i++)
+//        for (size_t i = 0; i < targetList.GetNumTargets(); i++)
 //        {
 //            // Expect the target to match the procedurally generated target descriptor
 //            ValidateTarget(targetList.GetTargets()[i], i);
 //
 //            // Expect the target obtained by name to match the procedurally generated target descriptor
-//            auto target = targetList.GetSpecializedBuildTarget(GenerateBuildTargetName(i));
+//            auto target = targetList.GetTarget(GenerateBuildTargetName(i));
 //            EXPECT_TRUE(target);
 //            EXPECT_EQ(target->GetName(), GenerateBuildTargetName(i));
 //        }
@@ -295,12 +295,12 @@
 //        TargetListType targetList(AZStd::move(descriptors));
 //
 //        // Expect the number of targets in the list to match the number of target descriptors used to construct the list
-//        EXPECT_EQ(targetList.GetNumBuildTargets(), m_numTargets);
+//        EXPECT_EQ(targetList.GetNumTargets(), m_numTargets);
 //
-//        for (size_t i = 0; i < targetList.GetNumBuildTargets(); i++)
+//        for (size_t i = 0; i < targetList.GetNumTargets(); i++)
 //        {
 //            // When attempting to find a target that does not exist
-//            auto target = targetList.GetSpecializedBuildTarget(GenerateBuildTargetName(i + targetList.GetNumBuildTargets()));
+//            auto target = targetList.GetTarget(GenerateBuildTargetName(i + targetList.GetNumTargets()));
 //
 //            // Expect an empty result
 //            EXPECT_FALSE(target);
@@ -321,14 +321,14 @@
 //        TargetListType targetList(AZStd::move(descriptors));
 //
 //        // Expect the number of targets in the list to match the number of target descriptors used to construct the list
-//        EXPECT_EQ(targetList.GetNumBuildTargets(), m_numTargets);
+//        EXPECT_EQ(targetList.GetNumTargets(), m_numTargets);
 //
-//        for (size_t i = 0; i < targetList.GetNumBuildTargets(); i++)
+//        for (size_t i = 0; i < targetList.GetNumTargets(); i++)
 //        {
 //            try
 //            {
 //                // When attempting to find a target that does not exist
-//                targetList.GetSpecializedBuildTargetOrThrow(GenerateBuildTargetName(i + targetList.GetNumBuildTargets()));
+//                targetList.GetTargetOrThrow(GenerateBuildTargetName(i + targetList.GetNumTargets()));
 //
 //                // Do not expect the target list construction to succeed
 //                FAIL();

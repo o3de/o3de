@@ -158,7 +158,7 @@ namespace UnitTest
         EXPECT_EQ(m_dynamicDependencyMap->GetTestTargetList().GetNumTargets(), m_testTargets->GetNumTargets());
 
         // Expect the total number of build targets in the repository to match the total number of descriptors used to construct those targets
-        EXPECT_EQ(m_dynamicDependencyMap->GetNumBuildTargets(), m_productionTargets->GetNumTargets() + m_testTargets->GetNumTargets());
+        EXPECT_EQ(m_dynamicDependencyMap->GetNumTargets(), m_productionTargets->GetNumTargets() + m_testTargets->GetNumTargets());
 
         // Expect no orphaned source files as each file belongs to at least one parent build target
         const auto orphans = m_dynamicDependencyMap->GetOrphanSourceFiles();
@@ -278,11 +278,14 @@ namespace UnitTest
 
             // Expect the parent build data to match the expected parent Lib B production target
             EXPECT_EQ(sourceDependency.GetNumParentTargets(), 1);
-            const auto autogenTarget = m_dynamicDependencyMap->GetBuildTargetOrThrow("Lib B");
-            for (const auto& parentTarget : sourceDependency.GetParentTargets())
+
+            AZStd::visit([&sourceDependency](auto&& autogenTarget)
             {
-                ValidateBuildTarget(*parentTarget.GetBuildTarget(), *autogenTarget);
-            }
+                    for (const auto& parentTarget : sourceDependency.GetParentTargets())
+                    {
+                        ValidateBuildTarget(*parentTarget.GetBuildTarget(), *autogenTarget);
+                    }
+            },  m_dynamicDependencyMap->GetTargetOrThrow("Lib B"));
         };
 
         // Expect the input source and two output sources for this autogen coupling to refer to the same build data
@@ -516,63 +519,71 @@ namespace UnitTest
         }
     }
 
-    //TEST_F(DynamicDependencyMapFixture, GetBuildTarget_ValidBuildTargets_ExpectValidBuildTarget)
-    //{
-    //    // Given a list of production and test targets representing the build system of a repository
-    //    m_productionTargets = AZStd::make_unique<TestImpact::NativeProductionTargetList>(MicroRepo::CreateProductionTargetDescriptors());
-    //    m_testTargets = AZStd::make_unique<TestImpact::NativeTestTargetList>(MicroRepo::CreateTestTargetDescriptors());
-    //
-    //    // Given a dynamic dependency map with valid production and test targets
-    //    m_dynamicDependencyMap =
-    //        AZStd::make_unique<TestImpact::DynamicDependencyMap>(MicroRepo::CreateProductionTargetDescriptors(), MicroRepo::CreateTestTargetDescriptors());
-    //
-    //    for (const auto& expectedProductionTarget : m_productionTargets->GetTargets())
-    //    {
-    //        // When retrieving the production target in the dynamic dependency map
-    //        auto buildTarget = m_dynamicDependencyMap->GetBuildTarget(expectedProductionTarget.GetName());
-    //
-    //        // Expect the build target to be valid
-    //        EXPECT_TRUE(buildTarget);
-    //
-    //        // Expect the build type to be a production target
-    //        EXPECT_EQ(buildTarget->GetSpecializedBuildTargetType(), TestImpact::SpecializedNativeTargetType::Production);
-    //
-    //        // Expect the retrieved build target to match the production target we queried
-    //        ValidateBuildTarget(*buildTarget, expectedProductionTarget);
-    //    }
-    //
-    //    for (const auto& expectedTestTarget : m_testTargets->GetTargets())
-    //    {
-    //        // When retrieving the test target in the dynamic dependency map
-    //        auto buildTarget = m_dynamicDependencyMap->GetBuildTarget(expectedTestTarget.GetName());
-    //
-    //        // Expect the build target to be valid
-    //        EXPECT_TRUE(buildTarget);
-    //
-    //        // Expect the build type to be a test target
-    //        EXPECT_EQ(buildTarget->GetSpecializedBuildTargetType(), TestImpact::SpecializedNativeTargetType::Test);
-    //
-    //        // Expect the retrieved build target to match the test target we queried
-    //        ValidateBuildTarget(*buildTarget, expectedTestTarget);
-    //    }
-    //}
-    //
-    //TEST_F(DynamicDependencyMapFixture, GetBuildTarget_InvalidBuildTargets_ExpectEmpty)
-    //{
-    //    // Given a list of production and test targets representing the build system of a repository
-    //    m_productionTargets = AZStd::make_unique<TestImpact::NativeProductionTargetList>(MicroRepo::CreateProductionTargetDescriptors());
-    //    m_testTargets = AZStd::make_unique<TestImpact::NativeTestTargetList>(MicroRepo::CreateTestTargetDescriptors());
-    //
-    //    // Given a dynamic dependency map with valid production and test targets
-    //    m_dynamicDependencyMap =
-    //        AZStd::make_unique<TestImpact::DynamicDependencyMap>(MicroRepo::CreateProductionTargetDescriptors(), MicroRepo::CreateTestTargetDescriptors());
-    //
-    //    // When retrieving a target not in the dynamic dependency map
-    //    auto invalidTarget = m_dynamicDependencyMap->GetBuildTarget("invalid");
-    //
-    //    // Expect the retrieved target to be empty
-    //    EXPECT_FALSE(invalidTarget);
-    //}
+    TEST_F(DynamicDependencyMapFixture, GetBuildTarget_ValidBuildTargets_ExpectValidBuildTarget)
+    {
+        // Given a list of production and test targets representing the build system of a repository
+        m_productionTargets = AZStd::make_unique<TestImpact::NativeProductionTargetList>(MicroRepo::CreateProductionTargetDescriptors());
+        m_testTargets = AZStd::make_unique<TestImpact::NativeTestTargetList>(MicroRepo::CreateTestTargetDescriptors());
+    
+        // Given a dynamic dependency map with valid production and test targets
+        m_dynamicDependencyMap =
+            AZStd::make_unique<TestImpact::DynamicDependencyMap>(MicroRepo::CreateProductionTargetDescriptors(), MicroRepo::CreateTestTargetDescriptors());
+    
+        for (const auto& expectedProductionTarget : m_productionTargets->GetTargets())
+        {
+            AZStd::visit([&expectedProductionTarget](auto&& buildTarget)
+            {
+                // Expect the build target to be valid
+                EXPECT_TRUE(buildTarget);
+
+                // Expect the build type to be a production target
+                EXPECT_EQ(buildTarget->GetSpecializedBuildTargetType(), TestImpact::SpecializedNativeTargetType::Production);
+
+                // Expect the retrieved build target to match the production target we queried
+                ValidateBuildTarget(*buildTarget, expectedProductionTarget);
+            },  m_dynamicDependencyMap->GetTargetOrThrow(expectedProductionTarget.GetName()));
+        }
+    
+        for (const auto& expectedTestTarget : m_testTargets->GetTargets())
+        {
+            AZStd::visit([&expectedTestTarget](auto&& buildTarget)
+            {
+                // Expect the build target to be valid
+                EXPECT_TRUE(buildTarget);
+    
+                // Expect the build type to be a test target
+                EXPECT_EQ(buildTarget->GetSpecializedBuildTargetType(), TestImpact::SpecializedNativeTargetType::Test);
+    
+                // Expect the retrieved build target to match the test target we queried
+                ValidateBuildTarget(*buildTarget, expectedTestTarget);
+            },  m_dynamicDependencyMap->GetTargetOrThrow(expectedTestTarget.GetName()));
+        }
+    }
+    
+    TEST_F(DynamicDependencyMapFixture, GetBuildTarget_InvalidBuildTargets_ExpectEmpty)
+    {
+        // Given a list of production and test targets representing the build system of a repository
+        m_productionTargets = AZStd::make_unique<TestImpact::NativeProductionTargetList>(MicroRepo::CreateProductionTargetDescriptors());
+        m_testTargets = AZStd::make_unique<TestImpact::NativeTestTargetList>(MicroRepo::CreateTestTargetDescriptors());
+    
+        // Given a dynamic dependency map with valid production and test targets
+        m_dynamicDependencyMap =
+            AZStd::make_unique<TestImpact::DynamicDependencyMap>(MicroRepo::CreateProductionTargetDescriptors(), MicroRepo::CreateTestTargetDescriptors());
+
+        AZStd::visit([](auto&& invalidTarget)
+        {
+            // Expect the retrieved target to be empty
+            //EXPECT_FALSE(invalidTarget);
+            if constexpr (TestImpact::IsProductionTarget<decltype(invalidTarget)> || TestImpact::IsTestTarget<decltype(invalidTarget)>)
+            {
+                FAIL();
+            }
+            else
+            {
+                SUCCEED();
+            }
+        },  m_dynamicDependencyMap->GetTarget("invalid"));
+    }
 
     TEST_F(DynamicDependencyMapFixture, GetBuildTargetOrThrow_ValidBuildTargets_ExpectValidBuildTarget)
     {
@@ -586,26 +597,26 @@ namespace UnitTest
 
         for (const auto& expectedProductionTarget : m_productionTargets->GetTargets())
         {
-            // When retrieving the production target in the dynamic dependency map
-            auto buildTarget = m_dynamicDependencyMap->GetBuildTargetOrThrow(expectedProductionTarget.GetName());
+            AZStd::visit([&expectedProductionTarget](auto&& buildTarget)
+            {
+                // Expect the build type to be a production target
+                EXPECT_EQ(buildTarget->GetSpecializedBuildTargetType(), TestImpact::SpecializedNativeTargetType::Production);
 
-            // Expect the build type to be a production target
-            EXPECT_EQ(buildTarget->GetSpecializedBuildTargetType(), TestImpact::SpecializedNativeTargetType::Production);
-
-            // Expect the retrieved build target to match the production target we queried
-            ValidateBuildTarget(*buildTarget, expectedProductionTarget);
+                // Expect the retrieved build target to match the production target we queried
+                ValidateBuildTarget(*buildTarget, expectedProductionTarget);
+            },  m_dynamicDependencyMap->GetTargetOrThrow(expectedProductionTarget.GetName()));
         }
-
+        
         for (const auto& expectedTestTarget : m_testTargets->GetTargets())
         {
-            // When retrieving the test target in the dynamic dependency map
-            auto buildTarget = m_dynamicDependencyMap->GetBuildTargetOrThrow(expectedTestTarget.GetName());
+            AZStd::visit([&expectedTestTarget](auto&& buildTarget)
+            {
+                // Expect the build type to be a test target
+                EXPECT_EQ(buildTarget->GetSpecializedBuildTargetType(), TestImpact::SpecializedNativeTargetType::Test);
 
-            // Expect the build type to be a test target
-            EXPECT_EQ(buildTarget->GetSpecializedBuildTargetType(), TestImpact::SpecializedNativeTargetType::Test);
-
-            // Expect the retrieved build target to match the test target we queried
-            ValidateBuildTarget(*buildTarget, expectedTestTarget);
+                // Expect the retrieved build target to match the test target we queried
+                ValidateBuildTarget(*buildTarget, expectedTestTarget);
+            },  m_dynamicDependencyMap->GetTargetOrThrow(expectedTestTarget.GetName()));
         }
     }
 
@@ -619,24 +630,24 @@ namespace UnitTest
         m_dynamicDependencyMap =
             AZStd::make_unique<TestImpact::DynamicDependencyMap>(MicroRepo::CreateProductionTargetDescriptors(), MicroRepo::CreateTestTargetDescriptors());
 
-        try
-        {
-            // When retrieving a target not in the dynamic dependency map
-            m_dynamicDependencyMap->GetBuildTargetOrThrow("invalid");
-
-            // Do not expect this statement to be reachable
-            FAIL();
-        }
-        catch ([[maybe_unused]] const TestImpact::TargetException& e)
-        {
-            // Expect a target exception
-            SUCCEED();
-        }
-        catch (...)
-        {
-            // Do not expect any other exceptions
-            FAIL();
-        }
+       try
+       {
+           // When retrieving a target not in the dynamic dependency map
+           m_dynamicDependencyMap->GetTargetOrThrow("invalid");
+       
+           // Do not expect this statement to be reachable
+           FAIL();
+       }
+       catch ([[maybe_unused]] const TestImpact::TargetException& e)
+       {
+           // Expect a target exception
+           SUCCEED();
+       }
+       catch (...)
+       {
+           // Do not expect any other exceptions
+           FAIL();
+       }
     }
 
     TEST_F(DynamicDependencyMapFixture, GetTarget_ValidTargets_ExpectValidTargets)
@@ -652,7 +663,7 @@ namespace UnitTest
         for (const auto& expectedProductionTarget : m_productionTargets->GetTargets())
         {
             // When retrieving the production target in the dynamic dependency map
-            auto productionTarget = m_dynamicDependencyMap->GetSpecializedBuildTarget(expectedProductionTarget.GetName());
+            auto productionTarget = m_dynamicDependencyMap->GetTarget(expectedProductionTarget.GetName());
 
             // Expect the retrieved production target to match the production target we queried
             AZStd::visit([&expectedProductionTarget](auto&& productionTarget)
@@ -672,7 +683,7 @@ namespace UnitTest
         for (const auto& expectedTestTarget : m_testTargets->GetTargets())
         {
             // When retrieving the test target in the dynamic dependency map
-            auto testTarget = m_dynamicDependencyMap->GetSpecializedBuildTarget(expectedTestTarget.GetName());
+            auto testTarget = m_dynamicDependencyMap->GetTarget(expectedTestTarget.GetName());
 
             // Expect the retrieved production target to match the production target we queried
             AZStd::visit([&expectedTestTarget](auto&& testTarget)
@@ -701,7 +712,7 @@ namespace UnitTest
             AZStd::make_unique<TestImpact::DynamicDependencyMap>(MicroRepo::CreateProductionTargetDescriptors(), MicroRepo::CreateTestTargetDescriptors());
 
         // When retrieving a target not in the dynamic dependency map
-        auto invalidTarget = m_dynamicDependencyMap->GetSpecializedBuildTarget("invalid");
+        auto invalidTarget = m_dynamicDependencyMap->GetTarget("invalid");
 
         // Expect the retrieved target to be empty
         EXPECT_EQ(invalidTarget.index(), 0);
@@ -720,7 +731,7 @@ namespace UnitTest
         try
         {
             // When retrieving a target not in the dynamic dependency map
-            m_dynamicDependencyMap->GetSpecializedBuildTargetOrThrow("invalid");
+            m_dynamicDependencyMap->GetTargetOrThrow("invalid");
 
             // Do not expect this statement to be reachable
             FAIL();

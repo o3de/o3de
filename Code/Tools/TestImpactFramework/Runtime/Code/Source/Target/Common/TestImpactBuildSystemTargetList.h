@@ -21,7 +21,7 @@ namespace TestImpact
     {
     public:
         //! Gets the total number of production and test targets in the repository.
-        size_t GetNumBuildTargets() const;
+        size_t GetNumTargets() const;
 
         //! Attempts to get the specified build target.
         //! @param name The name of the build target to get.
@@ -35,11 +35,11 @@ namespace TestImpact
         //! Attempts to get the specified target's specialized type.
         //! @param name The name of the target to get.
         //! @returns If found, the pointer to the specialized target, otherwise AZStd::monostate.
-        OptionalSpecializedNativeTarget GetSpecializedBuildTarget(const AZStd::string& name) const;
+        OptionalSpecializedNativeTarget GetTarget(const AZStd::string& name) const;
 
         //! Attempts to get the specified target's specialized type or throw TargetException.
         //! @param name The name of the target to get.
-        SpecializedNativeTarget GetSpecializedBuildTargetOrThrow(const AZStd::string& name) const;
+        SpecializedNativeTarget GetTargetOrThrow(const AZStd::string& name) const;
 
         //! Get the list of production targets in the repository.
         const NativeProductionTargetList& GetProductionTargetList() const;

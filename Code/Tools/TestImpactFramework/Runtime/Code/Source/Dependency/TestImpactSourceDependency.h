@@ -34,7 +34,7 @@ namespace TestImpact
         const NativeTarget* GetBuildTarget() const;
 
         //! Returns the specialized target pointer for this parent.
-        const SpecializedNativeTarget& GetSpecializedBuildTarget() const;
+        const SpecializedNativeTarget& GetTarget() const;
 
         bool operator==(const ParentTarget& other) const;
     private:

@@ -56,7 +56,7 @@ namespace TestImpact
         }
     }
 
-    size_t DynamicDependencyMap::GetNumBuildTargets() const
+    size_t DynamicDependencyMap::GetNumTargets() const
     {
         return m_productionTargets.GetNumTargets() + m_testTargets.GetNumTargets();
     }
@@ -66,36 +66,7 @@ namespace TestImpact
         return m_sourceDependencyMap.size();
     }
 
-    const NativeTarget* DynamicDependencyMap::GetBuildTarget(const AZStd::string& name) const
-    {
-        const NativeTarget* buildTarget = nullptr;
-        AZStd::visit([&buildTarget](auto&& target)
-        {
-            if constexpr (IsProductionTarget<decltype(target)> || IsTestTarget<decltype(target)>)
-            {
-                buildTarget = target;
-            }
-
-        }, GetSpecializedBuildTarget(name));
-
-        return buildTarget;
-    }
-
-    const NativeTarget* DynamicDependencyMap::GetBuildTargetOrThrow(const AZStd::string& name) const
-    {
-        const NativeTarget* buildTarget = nullptr;
-        AZStd::visit([&buildTarget](auto&& target)
-        {
-            if constexpr (IsProductionTarget<decltype(target)> || IsTestTarget<decltype(target)>)
-            {
-                buildTarget = target;
-            }
-        }, GetSpecializedBuildTargetOrThrow(name));
-
-        return buildTarget;
-    }
-
-    OptionalSpecializedNativeTarget DynamicDependencyMap::GetSpecializedBuildTarget(const AZStd::string& name) const
+    OptionalSpecializedNativeTarget DynamicDependencyMap::GetTarget(const AZStd::string& name) const
     {
         if (const auto testTarget = m_testTargets.GetTarget(name);
             testTarget != nullptr)
@@ -111,7 +82,7 @@ namespace TestImpact
         return AZStd::monostate{};
     }
 
-    SpecializedNativeTarget DynamicDependencyMap::GetSpecializedBuildTargetOrThrow(const AZStd::string& name) const
+    SpecializedNativeTarget DynamicDependencyMap::GetTargetOrThrow(const AZStd::string& name) const
     {
         SpecializedNativeTarget buildTarget;
         AZStd::visit([&buildTarget, &name](auto&& target)
@@ -124,7 +95,7 @@ namespace TestImpact
             {
                 throw(TargetException(AZStd::string::format("Couldn't find target %s", name.c_str()).c_str()));
             }
-        }, GetSpecializedBuildTarget(name));
+        }, GetTarget(name));
 
         return buildTarget;
     }
