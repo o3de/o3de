@@ -8,6 +8,7 @@
 
 file(REAL_PATH "${CPACK_SOURCE_DIR}/.." LY_ROOT_FOLDER)
 include(${LY_ROOT_FOLDER}/cmake/Platform/Common/PackagingPreBuild_common.cmake)
+include(${LY_ROOT_FOLDER}/cmake/Platform/Common/PackagingCodeBuild.cmake)
 
 if(NOT CPACK_UPLOAD_URL) # Skip signing if we are not uploading the package
     return()
