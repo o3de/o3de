@@ -13,10 +13,10 @@
 #include <Artifact/Factory/TestImpactNativeTestTargetMetaMapFactory.h>
 #include <Artifact/Static/TestImpactNativeTargetDescriptorCompiler.h>
 #include <Artifact/TestImpactArtifactException.h>
+#include <BuildSystem/Common/TestImpactBuildTargetList.h>
 #include <BuildSystem/Native/TestImpactNativeBuildSystemTraits.h>
 #include <Dependency/TestImpactDependencyException.h>
 #include <Dependency/TestImpactDynamicDependencyMap.h>
-#include <Target/Common/TestImpactBuildTargetList.h>
 #include <Target/Native/TestImpactNativeTestTargetList.h>
 #include <Target/Native/TestImpactNativeProductionTargetList.h>
 

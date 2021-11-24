@@ -14,11 +14,11 @@
 
 #include <Artifact/Static/TestImpactNativeTestTargetMeta.h>
 #include <Artifact/Static/TestImpactNativeTargetDescriptor.h>
+#include <BuildSystem/Common/TestImpactBuildTarget.h>
 #include <BuildSystem/Native/TestImpactNativeBuildSystemTraits.h>
 #include <Dependency/TestImpactDynamicDependencyMap.h>
 #include <Dependency/TestImpactSourceCoveringTestsList.h>
 #include <Target/Native/TestImpactNativeTestTarget.h>
-#include <Target/Common/TestImpactBuildTargetList.h>
 #include <TestEngine/Common/Enumeration/TestImpactTestEnumeration.h>
 #include <TestEngine/TestImpactTestEngineInstrumentedRun.h>
 #include <TestImpactTestTargetExclusionList.h>

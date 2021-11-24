@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <Target/Common/TestImpactBuildTarget.h>
+#include <BuildSystem/Common/TestImpactBuildTarget.h>
 
 #include <AzCore/std/typetraits/is_same.h>
 

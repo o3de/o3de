@@ -11,11 +11,11 @@
 #include <TestImpactFramework/TestImpactRuntimeException.h>
 
 #include <TestImpactRuntimeUtils.h>
+#include <BuildSystem/Common/TestImpactBuildTarget.h>
 #include <Dependency/TestImpactDependencyException.h>
 #include <Dependency/TestImpactDynamicDependencyMap.h>
 #include <Dependency/TestImpactSourceCoveringTestsSerializer.h>
 #include <Dependency/TestImpactTestSelectorAndPrioritizer.h>
-#include <Target/Common/TestImpactBuildTargetList.h>
 #include <Target/Native/TestImpactNativeTestTargetList.h>
 #include <Target/Native/TestImpactNativeProductionTargetList.h>
 #include <TestEngine/TestImpactTestEngine.h>

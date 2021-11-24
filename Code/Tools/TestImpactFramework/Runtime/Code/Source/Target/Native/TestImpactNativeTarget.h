@@ -9,8 +9,8 @@
 #pragma once
 
 #include <Artifact/Static/TestImpactNativeTargetDescriptor.h>
+#include <BuildSystem/Common/TestImpactBuildTarget.h>
 #include <Target/Common/TestImpactTarget.h>
-#include <Target/Common/TestImpactBuildTarget.h>
 
 namespace TestImpact
 {
@@ -18,10 +18,10 @@ namespace TestImpact
     class NativeProductionTarget;
 
     //! Holder for specializations of NativeTarget.
-    using SpecializedNativeTarget = BuildTarget<NativeTestTarget, NativeProductionTarget>;
+    using SpecializedNativeTarget = BuildTarget<NativeTestTarget, NativeProductionTarget>; // TODO: KILL 00000000000000000000000000000000000000000000000000000000000000000000
 
     //! Optional holder for specializations of NativeTarget.
-    using OptionalSpecializedNativeTarget = OptionalBuildTarget<NativeTestTarget, NativeProductionTarget>;
+    using OptionalSpecializedNativeTarget = OptionalBuildTarget<NativeTestTarget, NativeProductionTarget>; // TODO: KILL 00000000000000000000000000000000000000000000000000000000000000000000
 
     //! Type id for querying specialized derived target types from base pointer/reference.
     enum class SpecializedNativeTargetType : bool

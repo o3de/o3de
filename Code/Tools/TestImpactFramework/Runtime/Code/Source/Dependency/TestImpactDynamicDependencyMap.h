@@ -11,11 +11,11 @@
 #include <TestImpactFramework/TestImpactChangeList.h>
 #include <TestImpactFramework/TestImpactPolicy.h>
 
+#include <BuildSystem/Common/TestImpactBuildTargetList.h>
 #include <Dependency/TestImpactDependencyException.h>
 #include <Dependency/TestImpactSourceCoveringTestsList.h>
 #include <Dependency/TestImpactSourceDependency.h>
 #include <Dependency/TestImpactChangeDependencyList.h>
-#include <Target/Common/TestImpactBuildTargetList.h>
 
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/containers/unordered_set.h>
