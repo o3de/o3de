@@ -70,7 +70,6 @@ set(FILES
     Source/Process/JobRunner/TestImpactProcessJobRunner.h
     Source/Process/Scheduler/TestImpactProcessScheduler.cpp
     Source/Process/Scheduler/TestImpactProcessScheduler.h
-    Source/Dependency/TestImpactDynamicDependencyMap.cpp
     Source/Dependency/TestImpactDynamicDependencyMap.h
     Source/Dependency/TestImpactChangeDependencyList.cpp
     Source/Dependency/TestImpactChangeDependencyList.h
