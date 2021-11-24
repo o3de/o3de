@@ -1173,6 +1173,7 @@ void ApplicationManagerBase::InitBuilderManager()
         {
             m_builderManager->ConnectionLost(connId);
         });
+    
 }
 
 void ApplicationManagerBase::ShutdownBuilderManager()

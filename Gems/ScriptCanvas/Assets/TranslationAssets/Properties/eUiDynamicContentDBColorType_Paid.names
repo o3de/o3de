@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "eUiDynamicContentDBColorType_Paid",
+            "base": "eUiDynamicContentDBColorType_Paid",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "eUiDynamicContentDBColorType_Paid::Getter",
-                "category": "Constants"
-            }
+                "name": "Color Type Paid",
+                "category": "Constants/UI/Dynamic ContentDB"
+            },
+            "methods": [
+                {
+                    "base": "GeteUiDynamicContentDBColorType_Paid",
+                    "details": {
+                        "name": "Color Type Paid"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

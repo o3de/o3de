@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "SpawnerConfig",
+            "base": "SpawnerConfig",
             "context": "BehaviorClass",
             "variant": "",
             "details": {

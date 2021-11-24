@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "{FDD3D684-2C9A-0C05-D2A3-FD67685D8F26}",
+            "base": "{FDD3D684-2C9A-0C05-D2A3-FD67685D8F26}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
@@ -12,55 +12,55 @@
             },
             "slots": [
                 {
-                    "key": "Input_Get Internal Vector",
+                    "base": "Input_Get Internal Vector",
                     "details": {
                         "name": "Get Internal Vector"
                     }
                 },
                 {
-                    "key": "Output_On Get Internal Vector",
+                    "base": "Output_On Get Internal Vector",
                     "details": {
                         "name": "On Get Internal Vector"
                     }
                 },
                 {
-                    "key": "DataOutput_Result",
+                    "base": "DataOutput_Result",
                     "details": {
                         "name": "Result"
                     }
                 },
                 {
-                    "key": "Input_Branches On Input Type",
+                    "base": "Input_Branches On Input Type",
                     "details": {
                         "name": "Branches On Input Type"
                     }
                 },
                 {
-                    "key": "DataInput_Input Type",
+                    "base": "DataInput_Input Type",
                     "details": {
                         "name": "Input Type"
                     }
                 },
                 {
-                    "key": "Output_By Value",
+                    "base": "Output_By Value",
                     "details": {
                         "name": "By Value"
                     }
                 },
                 {
-                    "key": "DataOutput_Value Input",
+                    "base": "DataOutput_Value Input",
                     "details": {
                         "name": "Value Input"
                     }
                 },
                 {
-                    "key": "Output_By Pointer",
+                    "base": "Output_By Pointer",
                     "details": {
                         "name": "By Pointer"
                     }
                 },
                 {
-                    "key": "DataOutput_Pointer Input",
+                    "base": "DataOutput_Pointer Input",
                     "details": {
                         "name": "Pointer Input"
                     }

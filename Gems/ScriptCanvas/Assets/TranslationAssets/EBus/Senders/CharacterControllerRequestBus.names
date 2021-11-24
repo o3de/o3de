@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "CharacterControllerRequestBus",
+            "base": "CharacterControllerRequestBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "SetSlopeLimitDegrees",
+                    "base": "SetSlopeLimitDegrees",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Slope Limit Degrees"
@@ -32,7 +32,7 @@
                     ]
                 },
                 {
-                    "key": "GetSlopeLimitDegrees",
+                    "base": "GetSlopeLimitDegrees",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Slope Limit Degrees"
@@ -54,7 +54,7 @@
                     ]
                 },
                 {
-                    "key": "SetMaximumSpeed",
+                    "base": "SetMaximumSpeed",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Maximum Speed"
@@ -76,7 +76,7 @@
                     ]
                 },
                 {
-                    "key": "GetUpDirection",
+                    "base": "GetUpDirection",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Up Direction"
@@ -98,7 +98,7 @@
                     ]
                 },
                 {
-                    "key": "AddVelocity",
+                    "base": "AddVelocity",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Add Velocity"
@@ -120,7 +120,7 @@
                     ]
                 },
                 {
-                    "key": "SetBasePosition",
+                    "base": "SetBasePosition",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Base Position"
@@ -142,7 +142,7 @@
                     ]
                 },
                 {
-                    "key": "GetCenterPosition",
+                    "base": "GetCenterPosition",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Center Position"
@@ -164,7 +164,7 @@
                     ]
                 },
                 {
-                    "key": "GetStepHeight",
+                    "base": "GetStepHeight",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Step Height"
@@ -186,7 +186,7 @@
                     ]
                 },
                 {
-                    "key": "GetBasePosition",
+                    "base": "GetBasePosition",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Base Position"
@@ -208,7 +208,7 @@
                     ]
                 },
                 {
-                    "key": "SetStepHeight",
+                    "base": "SetStepHeight",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Step Height"
@@ -230,7 +230,7 @@
                     ]
                 },
                 {
-                    "key": "GetMaximumSpeed",
+                    "base": "GetMaximumSpeed",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Maximum Speed"
@@ -252,7 +252,7 @@
                     ]
                 },
                 {
-                    "key": "GetVelocity",
+                    "base": "GetVelocity",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Velocity"

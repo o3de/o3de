@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "ShadowFilterMethod_None",
+            "base": "ShadowFilterMethod_None",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "ShadowFilterMethod_None::Getter",
-                "category": "Constants"
-            }
+                "name": "None",
+                "category": "Constants/Shadowmap/Filter"
+            },
+            "methods": [
+                {
+                    "base": "GetShadowFilterMethod_None",
+                    "details": {
+                        "name": "None"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
+                            "details": {
+                                "name": "unsigned int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

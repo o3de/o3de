@@ -103,6 +103,8 @@ set(FILES
     native/utilities/PlatformConfiguration.cpp
     native/utilities/PlatformConfiguration.h
     native/utilities/PotentialDependencies.h
+    native/utilities/StatsCapture.cpp
+    native/utilities/StatsCapture.h
     native/utilities/SpecializedDependencyScanner.h
     native/utilities/ThreadHelper.cpp
     native/utilities/ThreadHelper.h

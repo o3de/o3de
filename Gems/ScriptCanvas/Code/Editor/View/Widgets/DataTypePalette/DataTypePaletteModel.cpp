@@ -16,7 +16,6 @@
 #include <AzCore/Serialization/Utils.h>
 #include <AzCore/UserSettings/UserSettings.h>
 
-#include <GraphCanvas/Types/TranslationTypes.h>
 #include <GraphCanvas/Components/SceneBus.h>
 #include <GraphCanvas/Components/StyleBus.h>
 
@@ -200,7 +199,7 @@ namespace ScriptCanvasEditor
     
     AZ::TypeId DataTypePaletteModel::FindTypeIdForIndex(const QModelIndex& index) const
     {   
-        AZ::TypeId retVal;
+        AZ::TypeId retVal = AZ::TypeId::CreateNull();
 
         if (index.row() >= 0 && index.row() < m_variableTypes.size())
         {

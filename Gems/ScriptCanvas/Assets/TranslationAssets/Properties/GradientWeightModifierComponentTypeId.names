@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "GradientWeightModifierComponentTypeId",
+            "base": "GradientWeightModifierComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "GradientWeightModifierComponentTypeId::Getter",
-                "category": "Constants"
-            }
+                "name": "Gradient Weight Modifier Component Type Id",
+                "category": "Constants/Editor"
+            },
+            "methods": [
+                {
+                    "base": "GetGradientWeightModifierComponentTypeId",
+                    "details": {
+                        "name": "Get Gradient Weight Modifier Component Type Id"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}",
+                            "details": {
+                                "name": "AZ:: Uuid"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

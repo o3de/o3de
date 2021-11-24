@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "LightAttenuationRadiusMode_Explicit",
+            "base": "LightAttenuationRadiusMode_Explicit",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "LightAttenuationRadiusMode_Explicit::Getter",
-                "category": "Constants"
-            }
+                "name": "Explicit",
+                "category": "Constants/Light Attenuation Radius Mode"
+            },
+            "methods": [
+                {
+                    "base": "GetLightAttenuationRadiusMode_Explicit",
+                    "details": {
+                        "name": "Explicit"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

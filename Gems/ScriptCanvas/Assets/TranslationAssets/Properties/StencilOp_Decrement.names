@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "StencilOp_Decrement",
+            "base": "StencilOp_Decrement",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "StencilOp_Decrement::Getter",
-                "category": "Constants"
-            }
+                "name": "Decrement",
+                "category": "Constants/Stencil Op"
+            },
+            "methods": [
+                {
+                    "base": "GetStencilOp_Decrement",
+                    "details": {
+                        "name": "Decrement"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

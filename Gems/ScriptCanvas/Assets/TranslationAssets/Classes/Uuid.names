@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "Uuid",
+            "base": "Uuid",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
@@ -9,7 +9,7 @@
             },
             "methods": [
                 {
-                    "key": "CreateRandom",
+                    "base": "CreateRandom",
                     "context": "Uuid",
                     "entry": {
                         "name": "In",
@@ -32,7 +32,7 @@
                     ]
                 },
                 {
-                    "key": "CreateNull",
+                    "base": "CreateNull",
                     "context": "Uuid",
                     "entry": {
                         "name": "In",
@@ -55,7 +55,7 @@
                     ]
                 },
                 {
-                    "key": "Create",
+                    "base": "Create",
                     "context": "Uuid",
                     "entry": {
                         "name": "In",
@@ -78,7 +78,7 @@
                     ]
                 },
                 {
-                    "key": "CreateName",
+                    "base": "CreateName",
                     "context": "Uuid",
                     "entry": {
                         "name": "In",
@@ -109,7 +109,7 @@
                     ]
                 },
                 {
-                    "key": "Clone",
+                    "base": "Clone",
                     "context": "Uuid",
                     "entry": {
                         "name": "In",
@@ -140,7 +140,7 @@
                     ]
                 },
                 {
-                    "key": "LessThan",
+                    "base": "LessThan",
                     "context": "Uuid",
                     "entry": {
                         "name": "In",
@@ -171,13 +171,13 @@
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": "Is Less Than"
+                                "name": "Less Than"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "IsNull",
+                    "base": "IsNull",
                     "context": "Uuid",
                     "entry": {
                         "name": "In",
@@ -208,7 +208,7 @@
                     ]
                 },
                 {
-                    "key": "CreateString",
+                    "base": "CreateString",
                     "context": "Uuid",
                     "entry": {
                         "name": "In",
@@ -225,7 +225,7 @@
                         {
                             "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
                             "details": {
-                                "name": "Name"
+                                "name": "String"
                             }
                         },
                         {
@@ -245,7 +245,7 @@
                     ]
                 },
                 {
-                    "key": "ToString",
+                    "base": "ToString",
                     "context": "Uuid",
                     "entry": {
                         "name": "In",
@@ -276,7 +276,7 @@
                     ]
                 },
                 {
-                    "key": "Equal",
+                    "base": "Equal",
                     "context": "Uuid",
                     "entry": {
                         "name": "In",
@@ -307,7 +307,7 @@
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": "Equal"
+                                "name": "Is Equal"
                             }
                         }
                     ]

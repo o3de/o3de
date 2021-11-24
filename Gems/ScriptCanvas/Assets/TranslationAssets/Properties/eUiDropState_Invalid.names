@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "eUiDropState_Invalid",
+            "base": "eUiDropState_Invalid",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "eUiDropState_Invalid::Getter",
-                "category": "Constants"
-            }
+                "name": "Invalid",
+                "category": "Constants/UI/Drop State"
+            },
+            "methods": [
+                {
+                    "base": "GeteUiDropState_Invalid",
+                    "details": {
+                        "name": "Invalid"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

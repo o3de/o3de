@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "EditorRequestBus",
+            "base": "EditorRequestBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
@@ -9,7 +9,7 @@
             },
             "methods": [
                 {
-                    "key": "RegisterCustomViewPane",
+                    "base": "RegisterCustomViewPane",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke RegisterCustomViewPane"
@@ -43,7 +43,7 @@
                     ]
                 },
                 {
-                    "key": "UnregisterViewPane",
+                    "base": "UnregisterViewPane",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke UnregisterViewPane"

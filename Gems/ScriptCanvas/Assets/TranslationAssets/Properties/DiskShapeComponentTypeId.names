@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "DiskShapeComponentTypeId",
+            "base": "DiskShapeComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "DiskShapeComponentTypeId::Getter",
-                "category": "Constants"
-            }
+                "name": "Disk Shape Component Type Id",
+                "category": "Constants/Editor"
+            },
+            "methods": [
+                {
+                    "base": "GetDiskShapeComponentTypeId",
+                    "details": {
+                        "name": "Get Disk Shape Component Type Id"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}",
+                            "details": {
+                                "name": "AZ:: Uuid"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

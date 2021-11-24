@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "RaySplineQueryResult",
+            "base": "RaySplineQueryResult",
             "context": "BehaviorClass",
             "variant": "",
             "details": {

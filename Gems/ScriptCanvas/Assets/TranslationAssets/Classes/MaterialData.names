@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "MaterialData",
+            "base": "MaterialData",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
@@ -9,7 +9,7 @@
             },
             "methods": [
                 {
-                    "key": "GetBaseColor",
+                    "base": "GetBaseColor",
                     "context": "MaterialData",
                     "entry": {
                         "name": "In",
@@ -42,7 +42,7 @@
                     ]
                 },
                 {
-                    "key": "GetUseRoughnessMap",
+                    "base": "GetUseRoughnessMap",
                     "context": "MaterialData",
                     "entry": {
                         "name": "In",
@@ -75,7 +75,7 @@
                     ]
                 },
                 {
-                    "key": "GetShininess",
+                    "base": "GetShininess",
                     "context": "MaterialData",
                     "entry": {
                         "name": "In",
@@ -108,7 +108,7 @@
                     ]
                 },
                 {
-                    "key": "GetUseEmissiveMap",
+                    "base": "GetUseEmissiveMap",
                     "context": "MaterialData",
                     "entry": {
                         "name": "In",
@@ -141,7 +141,7 @@
                     ]
                 },
                 {
-                    "key": "GetEmissiveColor",
+                    "base": "GetEmissiveColor",
                     "context": "MaterialData",
                     "entry": {
                         "name": "In",
@@ -174,7 +174,7 @@
                     ]
                 },
                 {
-                    "key": "GetSpecularColor",
+                    "base": "GetSpecularColor",
                     "context": "MaterialData",
                     "entry": {
                         "name": "In",
@@ -207,7 +207,7 @@
                     ]
                 },
                 {
-                    "key": "GetUniqueId",
+                    "base": "GetUniqueId",
                     "context": "MaterialData",
                     "entry": {
                         "name": "In",
@@ -240,7 +240,7 @@
                     ]
                 },
                 {
-                    "key": "GetDiffuseColor",
+                    "base": "GetDiffuseColor",
                     "context": "MaterialData",
                     "entry": {
                         "name": "In",
@@ -273,7 +273,7 @@
                     ]
                 },
                 {
-                    "key": "GetEmissiveIntensity",
+                    "base": "GetEmissiveIntensity",
                     "context": "MaterialData",
                     "entry": {
                         "name": "In",
@@ -306,7 +306,7 @@
                     ]
                 },
                 {
-                    "key": "GetMaterialName",
+                    "base": "GetMaterialName",
                     "context": "MaterialData",
                     "entry": {
                         "name": "In",
@@ -339,7 +339,7 @@
                     ]
                 },
                 {
-                    "key": "GetUseMetallicMap",
+                    "base": "GetUseMetallicMap",
                     "context": "MaterialData",
                     "entry": {
                         "name": "In",
@@ -372,7 +372,7 @@
                     ]
                 },
                 {
-                    "key": "GetMetallicFactor",
+                    "base": "GetMetallicFactor",
                     "context": "MaterialData",
                     "entry": {
                         "name": "In",
@@ -405,7 +405,7 @@
                     ]
                 },
                 {
-                    "key": "GetRoughnessFactor",
+                    "base": "GetRoughnessFactor",
                     "context": "MaterialData",
                     "entry": {
                         "name": "In",
@@ -438,7 +438,7 @@
                     ]
                 },
                 {
-                    "key": "GetUseAOMap",
+                    "base": "GetUseAOMap",
                     "context": "MaterialData",
                     "entry": {
                         "name": "In",
@@ -471,7 +471,7 @@
                     ]
                 },
                 {
-                    "key": "GetTexture",
+                    "base": "GetTexture",
                     "context": "MaterialData",
                     "entry": {
                         "name": "In",
@@ -510,7 +510,7 @@
                     ]
                 },
                 {
-                    "key": "IsNoDraw",
+                    "base": "IsNoDraw",
                     "context": "MaterialData",
                     "entry": {
                         "name": "In",
@@ -543,7 +543,7 @@
                     ]
                 },
                 {
-                    "key": "GetOpacity",
+                    "base": "GetOpacity",
                     "context": "MaterialData",
                     "entry": {
                         "name": "In",
@@ -576,7 +576,7 @@
                     ]
                 },
                 {
-                    "key": "GetUseColorMap",
+                    "base": "GetUseColorMap",
                     "context": "MaterialData",
                     "entry": {
                         "name": "In",

@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "SimpleAssetReferenceBase",
+            "base": "SimpleAssetReferenceBase",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
@@ -9,7 +9,7 @@
             },
             "methods": [
                 {
-                    "key": "SetAssetPath",
+                    "base": "SetAssetPath",
                     "context": "SimpleAssetReferenceBase",
                     "entry": {
                         "name": "In",
@@ -39,7 +39,7 @@
                     ]
                 },
                 {
-                    "key": "assetPath",
+                    "base": "assetPath",
                     "details": {
                         "name": "Get Asset Path"
                     },
@@ -62,7 +62,7 @@
                     ]
                 },
                 {
-                    "key": "assetType",
+                    "base": "assetType",
                     "details": {
                         "name": "Get Asset Type"
                     },
@@ -85,7 +85,7 @@
                     ]
                 },
                 {
-                    "key": "fileFilter",
+                    "base": "fileFilter",
                     "details": {
                         "name": "Get File Filter"
                     },

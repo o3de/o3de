@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "ReferenceGradientComponentTypeId",
+            "base": "ReferenceGradientComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "ReferenceGradientComponentTypeId::Getter",
-                "category": "Constants"
-            }
+                "name": "Reference Gradient Component Type Id",
+                "category": "Constants/Editor"
+            },
+            "methods": [
+                {
+                    "base": "GetReferenceGradientComponentTypeId",
+                    "details": {
+                        "name": "Get Reference Gradient Component Type Id"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}",
+                            "details": {
+                                "name": "AZ:: Uuid"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

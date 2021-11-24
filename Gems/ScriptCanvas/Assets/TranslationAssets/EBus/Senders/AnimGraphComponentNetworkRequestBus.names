@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "AnimGraphComponentNetworkRequestBus",
+            "base": "AnimGraphComponentNetworkRequestBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetActiveStates",
+                    "base": "GetActiveStates",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Active States"
@@ -32,7 +32,7 @@
                     ]
                 },
                 {
-                    "key": "CreateSnapshot",
+                    "base": "CreateSnapshot",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Create Snapshot"
@@ -54,7 +54,7 @@
                     ]
                 },
                 {
-                    "key": "SetActiveStates",
+                    "base": "SetActiveStates",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetActiveStates"
@@ -76,7 +76,7 @@
                     ]
                 },
                 {
-                    "key": "IsAssetReady",
+                    "base": "IsAssetReady",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Is Asset Ready"
@@ -98,7 +98,7 @@
                     ]
                 },
                 {
-                    "key": "HasSnapshot",
+                    "base": "HasSnapshot",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Has Snapshot"

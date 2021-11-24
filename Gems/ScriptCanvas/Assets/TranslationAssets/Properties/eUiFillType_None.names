@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "eUiFillType_None",
+            "base": "eUiFillType_None",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "eUiFillType_None::Getter",
-                "category": "Constants"
-            }
+                "name": "None",
+                "category": "Constants/UI/Fill Type"
+            },
+            "methods": [
+                {
+                    "base": "GeteUiFillType_None",
+                    "details": {
+                        "name": "None"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

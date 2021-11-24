@@ -877,17 +877,14 @@ namespace ScriptCanvasEditor
         {
             QModelIndexList indexList = GetTreeView()->selectionModel()->selectedRows();
 
-            if (indexList.size() == 1)
+            QSortFilterProxyModel* filterModel = static_cast<QSortFilterProxyModel*>(GetTreeView()->model());
+
+            for (const QModelIndex& index : indexList)
             {
-                QSortFilterProxyModel* filterModel = static_cast<QSortFilterProxyModel*>(GetTreeView()->model());
+                QModelIndex sourceIndex = filterModel->mapToSource(index);
 
-                for (const QModelIndex& index : indexList)
-                {
-                    QModelIndex sourceIndex = filterModel->mapToSource(index);
-
-                    GraphCanvas::NodePaletteTreeItem* nodePaletteItem = static_cast<GraphCanvas::NodePaletteTreeItem*>(sourceIndex.internalPointer());
-                    nodePaletteItem->GenerateTranslationData();
-                }
+                GraphCanvas::NodePaletteTreeItem* nodePaletteItem = static_cast<GraphCanvas::NodePaletteTreeItem*>(sourceIndex.internalPointer());
+                nodePaletteItem->GenerateTranslationData();
             }
         }
 
