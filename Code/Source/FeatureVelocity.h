@@ -39,12 +39,6 @@ namespace EMotionFX
             AZ_RTTI(FeatureVelocity, "{DEEA4F0F-CE70-4F16-9136-C2BFDDA29336}", Feature)
             AZ_CLASS_ALLOCATOR_DECL
 
-            struct EMFX_API Velocity
-            {
-                AZ::Vector3 m_direction; /**< Direction we are moving to. */
-                float m_speed; /**< The speed at which we move into this direction (m/s). */
-            };
-
             FeatureVelocity();
             ~FeatureVelocity() override = default;
 
@@ -62,8 +56,7 @@ namespace EMotionFX
                 }
 
                 const FeatureMatrix& m_featureMatrix;
-                AZ::Vector3 m_direction;
-                float m_speed;
+                AZ::Vector3 m_velocity;
             };
             float CalculateFrameCost(size_t frameIndex, const FrameCostContext& context) const;
 
@@ -75,8 +68,8 @@ namespace EMotionFX
 
             size_t GetNumDimensions() const override;
             AZStd::string GetDimensionName(size_t index, Skeleton* skeleton) const override;
-            Velocity GetFeatureData(const FeatureMatrix& featureMatrix, size_t frameIndex) const;
-            void SetFeatureData(FeatureMatrix& featureMatrix, size_t frameIndex, const Velocity& velocity);
+            AZ::Vector3 GetFeatureData(const FeatureMatrix& featureMatrix, size_t frameIndex) const;
+            void SetFeatureData(FeatureMatrix& featureMatrix, size_t frameIndex, const AZ::Vector3& velocity);
 
         private:
             size_t m_nodeIndex = InvalidIndex; /**< The node to grab the data from. */
