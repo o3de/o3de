@@ -154,6 +154,7 @@ class AtomComponentProperties:
         """
         properties = {
             'name': 'Display Mapper',
+            'LDR color Grading LUT': 'Controller|Configuration|LDR color Grading LUT',
         }
         return properties[property]
 
