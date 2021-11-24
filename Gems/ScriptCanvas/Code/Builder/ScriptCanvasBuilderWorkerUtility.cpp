@@ -30,6 +30,8 @@
 #include <ScriptCanvas/Utils/BehaviorContextUtils.h>
 #include <Source/Components/SceneComponent.h>
 #include <ScriptCanvas/Core/Core.h>
+#include <AzCore/Asset/AssetManagerBus.h>
+
 
 namespace ScriptCanvasBuilder
 {
@@ -93,19 +95,6 @@ namespace ScriptCanvasBuilder
         request.printModelToConsole = ScriptCanvas::Grammar::g_printAbstractCodeModel;
         request.path = fullPath;
 
-        bool pathFound = false;
-        AZStd::string relativePath;
-        AzToolsFramework::AssetSystemRequestBus::BroadcastResult
-            ( pathFound
-            , &AzToolsFramework::AssetSystem::AssetSystemRequest::GetRelativeProductPathFromFullSourceOrProductPath
-            , fullPath.c_str(), relativePath);
-
-        if (!pathFound)
-        {
-            AZ::Failure(AZStd::string::format("Failed to get engine relative path from %s", fullPath.c_str()));
-        }
-
-        request.namespacePath = relativePath;
         const ScriptCanvas::Translation::Result translationResult = TranslateToLua(request);
 
         auto isSuccessOutcome = translationResult.IsSuccess(ScriptCanvas::Translation::TargetFlags::Lua);

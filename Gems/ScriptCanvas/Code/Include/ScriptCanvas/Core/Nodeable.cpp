@@ -22,12 +22,16 @@ namespace ScriptCanvas
 
     Nodeable::Nodeable()
         : m_noOpFunctor(&NodeableOutCpp::NoOp)
-    {}
+    {
+        AZ_TracePrintf("SCDB", "How many times does this get called? Because it should....NOT GET CALLED!");
+    }
 
     Nodeable::Nodeable(ExecutionStateWeakPtr executionState)
         : m_noOpFunctor(&NodeableOutCpp::NoOp)
         , m_executionState(executionState)
-    {}   
+    {
+        AZ_TracePrintf("SCDB", "How many times does this get called 2?");
+    }   
 
 #if !defined(RELEASE) 
     void Nodeable::CallOut(size_t index, AZ::BehaviorValueParameter* resultBVP, AZ::BehaviorValueParameter* argsBVPs, int numArguments) const
@@ -80,6 +84,7 @@ namespace ScriptCanvas
                 ->Attribute(AZ::ScriptCanvasAttributes::VariableCreationForbidden, AZ::AttributeIsValid::IfPresent)
                 ->Attribute(AZ::Script::Attributes::UseClassIndexAllowNil, AZ::AttributeIsValid::IfPresent)
                 ->Constructor<ExecutionStateWeakPtr>()
+                    ->Attribute(AZ::Script::Attributes::DefaultConstructorOverrideIndex, 0)
                 ->Method("Deactivate", &Nodeable::Deactivate)
                 ->Method("InitializeExecutionState", &Nodeable::InitializeExecutionState)
                 ->Method("InitializeExecutionOuts", &Nodeable::InitializeExecutionOuts)
