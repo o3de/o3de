@@ -445,6 +445,7 @@ namespace Profiler
             frameBoundaryHash = frameBoundaryName.GetHash();
         }
 
+        AZStd::sys_time_t frameTime = 0;
         for (const auto& entry : deserializedData)
         {
             const auto [groupNameItr, wasGroupNameInserted] = m_deserializedStringPool.emplace(entry.m_groupName.GetCStr());
@@ -457,6 +458,10 @@ namespace Profiler
 
             if (entry.m_regionName.GetHash() == frameBoundaryHash)
             {
+                if (!m_frameEndTicks.empty())
+                {
+                    frameTime = entry.m_endTick - m_frameEndTicks.back();
+                }
                 m_frameEndTicks.push_back(entry.m_endTick);
             }
 
@@ -470,9 +475,10 @@ namespace Profiler
             m_groupRegionMap[*groupNameItr][*regionNameItr].RecordRegion(newRegion, entry.m_threadId);
         }
 
-        // Update viewport bounds with some added UX fudge factor
-        m_viewportStartTick = deserializedData.back().m_startTick - 1000;
-        m_viewportEndTick = deserializedData.back().m_endTick + 1000;
+        // Update viewport bounds to the estimated final frame time with some padding
+        const AZStd::sys_time_t padding = 5000;
+        m_viewportStartTick = m_frameEndTicks.back() - frameTime - padding;
+        m_viewportEndTick = m_frameEndTicks.back() + padding;
 
         // Invariant: each vector in m_savedData must be sorted so that we can efficiently cull region data.
         for (auto& [threadId, singleThreadData] : m_savedData)
