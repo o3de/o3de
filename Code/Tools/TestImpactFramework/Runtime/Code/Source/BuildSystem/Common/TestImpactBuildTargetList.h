@@ -32,7 +32,7 @@ namespace TestImpact
         //! Attempts to get the specified target's specialized type.
         //! @param name The name of the target to get.
         //! @returns If found, the pointer to the specialized target, otherwise AZStd::monostate.
-        typename BuildSystem::OptionalBuildTarget GetBuildTarget(const AZStd::string& name) const;
+        typename BuildSystem::OptionalBuildTarget GetBuildTarget2(const AZStd::string& name) const;
 
         //! Attempts to get the specified target's specialized type or throw TargetException.
         //! @param name The name of the target to get.
@@ -67,7 +67,7 @@ namespace TestImpact
     }
 
     template<typename BuildSystem>
-    typename BuildSystem::OptionalBuildTarget BuildTargetList<BuildSystem>::GetBuildTarget(const AZStd::string& name) const
+    typename BuildSystem::OptionalBuildTarget BuildTargetList<BuildSystem>::GetBuildTarget2(const AZStd::string& name) const
     {
         if (const auto testTarget = m_testTargets.GetTarget(name); testTarget != nullptr)
         {
@@ -95,7 +95,7 @@ namespace TestImpact
             {
                 throw(TargetException(AZStd::string::format("Couldn't find target %s", name.c_str()).c_str()));
             }
-        }, GetBuildTarget(name));
+        }, GetBuildTarget2(name));
 
         return buildTarget;
     }

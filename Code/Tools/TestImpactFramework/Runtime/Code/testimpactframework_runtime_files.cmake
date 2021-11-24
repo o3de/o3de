@@ -76,11 +76,9 @@ set(FILES
     Source/Process/Scheduler/TestImpactProcessScheduler.cpp
     Source/Process/Scheduler/TestImpactProcessScheduler.h
     Source/Dependency/TestImpactDynamicDependencyMap.h
-    Source/Dependency/TestImpactChangeDependencyList.cpp
     Source/Dependency/TestImpactChangeDependencyList.h
     Source/Dependency/TestImpactDependencyException.h
     Source/Dependency/TestImpactSourceDependency.h
-    Source/Dependency/TestImpactSourceDependency.cpp
     Source/Dependency/TestImpactTestSelectorAndPrioritizer.h
     Source/Dependency/TestImpactSourceCoveringTestsList.h
     Source/Dependency/TestImpactSourceCoveringTestsList.cpp

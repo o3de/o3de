@@ -360,7 +360,7 @@ namespace TestImpact
     //                    {
     //                        testTargets.push_back(target);
     //                    }
-    //                }, parentTarget.GetTarget());
+    //                }, parentTarget.GetBuildTarget());
     //            }
     //        }
     //    };

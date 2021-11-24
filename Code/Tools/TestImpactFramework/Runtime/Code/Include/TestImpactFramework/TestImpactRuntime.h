@@ -24,8 +24,7 @@
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 
 namespace TestImpact
-{
-    class ChangeDependencyList;
+{    
     class TestEngine;
     class NativeTestTarget;
     class NativeTestTargetList;
@@ -34,6 +33,9 @@ namespace TestImpact
     class TestEngineInstrumentedRun;
     class TestTargetExclusionList;
     struct NativeBuildSystem;
+
+    template<typename BuildSystem>
+    class ChangeDependencyList;
 
     template<typename BuildSystem>
     class BuildTargetList;

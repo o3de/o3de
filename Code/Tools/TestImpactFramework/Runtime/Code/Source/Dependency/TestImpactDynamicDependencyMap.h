@@ -45,10 +45,10 @@ namespace TestImpact
         //! Gets the source dependency for the specified source file.
         //! @note Autogen input source dependencies are the consolidated source dependencies of all of their generated output sources.
         //! @returns If found, the source dependency information for the specified source file, otherwise empty.
-        AZStd::optional<SourceDependency> GetSourceDependency(const RepoPath& path) const;
+        AZStd::optional<SourceDependency<BuildSystem>> GetSourceDependency(const RepoPath& path) const;
 
         //! Gets the source dependency for the specified source file or throw DependencyException.
-        SourceDependency GetSourceDependencyOrThrow(const RepoPath& path) const;
+        SourceDependency<BuildSystem> GetSourceDependencyOrThrow(const RepoPath& path) const;
 
         //! Replaces the source coverage of the specified sources with the specified source coverage.
         //! @param sourceCoverageDelta The source coverage delta to replace in the dependency map.
@@ -68,7 +68,7 @@ namespace TestImpact
         //! @param changeList The change list to apply and resolve.
         //! @param integrityFailurePolicy The policy to use for handling integrity errors in the source dependency map.
         //! @returns The change list as resolved to the appropriate source dependencies.
-        [[nodiscard]] ChangeDependencyList ApplyAndResoveChangeList(
+        [[nodiscard]] ChangeDependencyList<BuildSystem> ApplyAndResoveChangeList(
             const ChangeList& changeList, Policy::IntegrityFailure integrityFailurePolicy);
 
         //! Removes the specified test target from all source coverage.
@@ -93,7 +93,7 @@ namespace TestImpact
         void ClearSourceCoverage(const AZStd::vector<RepoPath>& paths);
 
         //! The dependency map of sources to their parent build targets and covering test targets.
-        AZStd::unordered_map<AZStd::string, DependencyData> m_sourceDependencyMap;
+        AZStd::unordered_map<AZStd::string, DependencyData<BuildSystem>> m_sourceDependencyMap;
 
         //! Map of all test targets and the sources they cover.
         AZStd::unordered_map<const typename BuildSystem::TestTarget*, AZStd::unordered_set<AZStd::string>> m_testTargetSourceCoverage;
@@ -125,7 +125,7 @@ namespace TestImpact
                 else
                 {
                     // This is a new entry on the dependency map so create an entry with this parent target and no covering targets
-                    m_sourceDependencyMap.emplace(source.String(), DependencyData{ { target }, { /* No covering test targets */ } });
+                    m_sourceDependencyMap.emplace(source.String(), DependencyData<BuildSystem>{ { target }, { /* No covering test targets */ } });
                 }
             }
 
@@ -223,7 +223,7 @@ namespace TestImpact
                     // Build target to covering test target mapping
                     for (const auto& parentTarget : sourceDependency.m_parentTargets)
                     {
-                        m_buildTargetCoverage[parentTarget.GetBuildTarget()].insert(testTarget);
+                        m_buildTargetCoverage[parentTarget.GetTarget()].insert(testTarget);
                     }
                 }
                 else
@@ -303,9 +303,9 @@ namespace TestImpact
     }
 
     template<typename BuildSystem>
-    AZStd::optional<SourceDependency> DynamicDependencyMap<BuildSystem>::GetSourceDependency(const RepoPath& path) const
+    AZStd::optional<SourceDependency<BuildSystem>> DynamicDependencyMap<BuildSystem>::GetSourceDependency(const RepoPath& path) const
     {
-        AZStd::unordered_set<ParentTarget> parentTargets;
+        AZStd::unordered_set<ParentTarget<BuildSystem>> parentTargets;
         AZStd::unordered_set<const typename BuildSystem::TestTarget*> coveringTestTargets;
 
         const auto getSourceDependency = [&parentTargets, &coveringTestTargets, this](const AZStd::string& path)
@@ -340,14 +340,14 @@ namespace TestImpact
 
         if (!parentTargets.empty() || !coveringTestTargets.empty())
         {
-            return SourceDependency(path, DependencyData{ AZStd::move(parentTargets), AZStd::move(coveringTestTargets) });
+            return SourceDependency<BuildSystem>(path, DependencyData<BuildSystem>{ AZStd::move(parentTargets), AZStd::move(coveringTestTargets) });
         }
 
         return AZStd::nullopt;
     }
 
     template<typename BuildSystem>
-    SourceDependency DynamicDependencyMap<BuildSystem>::GetSourceDependencyOrThrow(const RepoPath& path) const
+    SourceDependency<BuildSystem> DynamicDependencyMap<BuildSystem>::GetSourceDependencyOrThrow(const RepoPath& path) const
     {
         auto sourceDependency = GetSourceDependency(path);
         AZ_TestImpact_Eval(
@@ -389,12 +389,12 @@ namespace TestImpact
     }
 
     template<typename BuildSystem>
-    ChangeDependencyList DynamicDependencyMap<BuildSystem>::ApplyAndResoveChangeList(
+    ChangeDependencyList<BuildSystem> DynamicDependencyMap<BuildSystem>::ApplyAndResoveChangeList(
         const ChangeList& changeList, Policy::IntegrityFailure integrityFailurePolicy)
     {
-        AZStd::vector<SourceDependency> createDependencies;
-        AZStd::vector<SourceDependency> updateDependencies;
-        AZStd::vector<SourceDependency> deleteDependencies;
+        AZStd::vector<SourceDependency<BuildSystem>> createDependencies;
+        AZStd::vector<SourceDependency<BuildSystem>> updateDependencies;
+        AZStd::vector<SourceDependency<BuildSystem>> deleteDependencies;
 
         // Keep track of the coverage to delete as a post step rather than deleting it in situ so that erroneous change lists
         // do not corrupt the dynamic dependency map
@@ -515,7 +515,7 @@ namespace TestImpact
             ClearSourceCoverage(coverageToDelete);
         }
 
-        return ChangeDependencyList(AZStd::move(createDependencies), AZStd::move(updateDependencies), AZStd::move(deleteDependencies));
+        return ChangeDependencyList<BuildSystem>(AZStd::move(createDependencies), AZStd::move(updateDependencies), AZStd::move(deleteDependencies));
     }
 
     template<typename BuildSystem>
