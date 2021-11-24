@@ -82,7 +82,6 @@ set(FILES
     Source/Dependency/TestImpactSourceDependency.h
     Source/Dependency/TestImpactSourceDependency.cpp
     Source/Dependency/TestImpactTestSelectorAndPrioritizer.h
-    Source/Dependency/TestImpactTestSelectorAndPrioritizer.cpp
     Source/Dependency/TestImpactSourceCoveringTestsList.h
     Source/Dependency/TestImpactSourceCoveringTestsList.cpp
     Source/Dependency/TestImpactSourceCoveringTestsSerializer.cpp

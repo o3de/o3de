@@ -273,7 +273,8 @@ namespace TestImpact
         m_dynamicDependencyMap = AZStd::make_unique<DynamicDependencyMap<NativeBuildSystem>>(m_buildTargets.get());
 
         // Construct the test selector and prioritizer from the dependency graph data (NOTE: currently not implemented)
-        m_testSelectorAndPrioritizer = AZStd::make_unique<TestSelectorAndPrioritizer>(m_dynamicDependencyMap.get(), DependencyGraphDataMap{});
+        m_testSelectorAndPrioritizer =
+            AZStd::make_unique<TestSelectorAndPrioritizer<NativeBuildSystem>>(m_dynamicDependencyMap.get(), DependencyGraphDataMap{});
 
         // Construct the target exclude list from the target configuration data
         const auto& testTargetList = m_dynamicDependencyMap->GetBuildTargets()->GetTestTargetList();

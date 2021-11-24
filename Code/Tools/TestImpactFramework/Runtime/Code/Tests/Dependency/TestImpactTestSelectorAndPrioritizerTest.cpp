@@ -12,6 +12,7 @@
 //#include <Dependency/TestImpactDynamicDependencyMap.h>
 //#include <Dependency/TestImpactDependencyException.h>
 //#include <Dependency/TestImpactTestSelectorAndPrioritizer.h>
+//#include <BuildSystem/Native/TestImpactNativeBuildSystemTraits.h>
 //
 //#include <AzCore/std/algorithm.h>
 //#include <AzCore/std/smart_ptr/unique_ptr.h>
@@ -25,8 +26,13 @@
 //    {
 //    public:
 //    protected:
-//        AZStd::unique_ptr<TestImpact::DynamicDependencyMap> m_dynamicDependencyMap;
-//        AZStd::unique_ptr<TestImpact::TestSelectorAndPrioritizer> m_testSelectorAndPrioritizer;
+//        using NativeBuildTargetList = TestImpact::BuildTargetList<TestImpact::NativeBuildSystem>; 
+//        using NativeDynamicDependencyMap = TestImpact::DynamicDependencyMap<TestImpact::NativeBuildSystem>;
+//        using NativeTestSelectorAndPrioritizer = TestImpact::TestSelectorAndPrioritizer<TestImpact::NativeBuildSystem>;
+//
+//        AZStd::unique_ptr<NativeBuildTargetList> m_buildTargets;
+//        AZStd::unique_ptr<NativeDynamicDependencyMap> m_dynamicDependencyMap;
+//        AZStd::unique_ptr<NativeTestSelectorAndPrioritizer> m_testSelectorAndPrioritizer;
 //    };
 //
 //    class TestSelectorAndPrioritizerFixtureWithParams
@@ -62,10 +68,11 @@
 //    // Coverage: No
 //    TEST_P(TestSelectorAndPrioritizerFixtureWithAllSources, CreateProductionFile_ParentYesCoverageNo_ExpectSelectAllTestTargetsCoveringParentTargets)
 //    {
-//        m_dynamicDependencyMap = AZStd::make_unique<TestImpact::DynamicDependencyMap>(
-//            MicroRepo::CreateProductionTargetDescriptorsWithSharedSources(), MicroRepo::CreateTestTargetDescriptorsWithSharedSources());
+//        m_buildTargets = AZStd::make_unique<NativeBuildTargetList>(
+//            MicroRepo::CreateTestTargetDescriptorsWithSharedSources(), MicroRepo::CreateProductionTargetDescriptorsWithSharedSources());
+//        m_dynamicDependencyMap = AZStd::make_unique<NativeDynamicDependencyMap>(m_buildTargets.get());
 //    
-//        m_testSelectorAndPrioritizer = AZStd::make_unique< TestImpact::TestSelectorAndPrioritizer>(
+//        m_testSelectorAndPrioritizer = AZStd::make_unique< NativeTestSelectorAndPrioritizer>(
 //            m_dynamicDependencyMap.get(), TestImpact::DependencyGraphDataMap{});
 //    
 //        m_dynamicDependencyMap->ReplaceSourceCoverage(
@@ -74,7 +81,7 @@
 //        TestImpact::ChangeList changeList;
 //        changeList.m_createdFiles.push_back(m_source.first.c_str());
 //
-//        const auto changeDependecyList = m_dynamicDependencyMap->ApplyAndResoveChangeList(changeList);
+//        const auto changeDependecyList = m_dynamicDependencyMap->ApplyAndResoveChangeList(changeList, TestImpact::Policy::IntegrityFailure::Continue);
 //
 //        const auto selectedTestTargets = m_testSelectorAndPrioritizer->SelectTestTargets(changeDependecyList, m_testSelectionStrategy);
 //    
@@ -95,11 +102,12 @@
 //    // Source  : Indeterminate
 //    TEST_P(TestSelectorAndPrioritizerFixtureWithAllSourcesExceptAutogenSources, CreateFile_ParentNoCoverageYes_ExpectDependencyException)
 //    {
-//        m_dynamicDependencyMap = AZStd::make_unique<TestImpact::DynamicDependencyMap>(
-//            MicroRepo::CreateTargetDescriptorWithoutSpecifiedSource(MicroRepo::CreateProductionTargetDescriptorsWithSharedSources(), m_source.first.c_str()),
-//            MicroRepo::CreateTargetDescriptorWithoutSpecifiedSource(MicroRepo::CreateTestTargetDescriptorsWithSharedSources(), m_source.first.c_str()));
+//        m_buildTargets = AZStd::make_unique<NativeBuildTargetList>(
+//            MicroRepo::CreateTargetDescriptorWithoutSpecifiedSource(MicroRepo::CreateTestTargetDescriptorsWithSharedSources(), m_source.first.c_str()),
+//            MicroRepo::CreateTargetDescriptorWithoutSpecifiedSource(MicroRepo::CreateProductionTargetDescriptorsWithSharedSources(), m_source.first.c_str()));
+//        m_dynamicDependencyMap = AZStd::make_unique<NativeDynamicDependencyMap>(m_buildTargets.get());
 //
-//        m_testSelectorAndPrioritizer = AZStd::make_unique< TestImpact::TestSelectorAndPrioritizer>(
+//        m_testSelectorAndPrioritizer = AZStd::make_unique< NativeTestSelectorAndPrioritizer>(
 //            m_dynamicDependencyMap.get(), TestImpact::DependencyGraphDataMap{});
 //
 //        m_dynamicDependencyMap->ReplaceSourceCoverage(TestImpact::SourceCoveringTestsList(MicroRepo::CreateSourceCoveringTestListWithSharedSources()));
@@ -109,7 +117,7 @@
 //
 //        try
 //        {
-//            const auto changeDependecyList = m_dynamicDependencyMap->ApplyAndResoveChangeList(changeList);
+//            const auto changeDependecyList = m_dynamicDependencyMap->ApplyAndResoveChangeList(changeList, TestImpact::Policy::IntegrityFailure::Continue);
 //
 //            // Do not expect this statement to be reachable
 //            FAIL();
@@ -131,11 +139,12 @@
 //    // Coverage: No
 //    TEST_P(TestSelectorAndPrioritizerFixtureWithAllSources, CreateFile_ParentNoCoverageNo_ExpectFileSkipped)
 //    {
-//        m_dynamicDependencyMap = AZStd::make_unique<TestImpact::DynamicDependencyMap>(
-//            MicroRepo::CreateTargetDescriptorWithoutSpecifiedSource(MicroRepo::CreateProductionTargetDescriptorsWithSharedSources(), m_source.first.c_str()),
-//            MicroRepo::CreateTargetDescriptorWithoutSpecifiedSource(MicroRepo::CreateTestTargetDescriptorsWithSharedSources(), m_source.first.c_str()));
+//        m_buildTargets = AZStd::make_unique<NativeBuildTargetList>(
+//            MicroRepo::CreateTargetDescriptorWithoutSpecifiedSource(MicroRepo::CreateTestTargetDescriptorsWithSharedSources(), m_source.first.c_str()),
+//            MicroRepo::CreateTargetDescriptorWithoutSpecifiedSource(MicroRepo::CreateProductionTargetDescriptorsWithSharedSources(), m_source.first.c_str()));
+//        m_dynamicDependencyMap = AZStd::make_unique<NativeDynamicDependencyMap>(m_buildTargets.get());
 //    
-//        m_testSelectorAndPrioritizer = AZStd::make_unique< TestImpact::TestSelectorAndPrioritizer>(
+//        m_testSelectorAndPrioritizer = AZStd::make_unique< NativeTestSelectorAndPrioritizer>(
 //            m_dynamicDependencyMap.get(), TestImpact::DependencyGraphDataMap{});
 //    
 //        m_dynamicDependencyMap->ReplaceSourceCoverage(
@@ -143,7 +152,7 @@
 //    
 //        TestImpact::ChangeList changeList;
 //        changeList.m_createdFiles.push_back(m_source.first.c_str());
-//        const auto changeDependecyList = m_dynamicDependencyMap->ApplyAndResoveChangeList(changeList);
+//        const auto changeDependecyList = m_dynamicDependencyMap->ApplyAndResoveChangeList(changeList, TestImpact::Policy::IntegrityFailure::Continue);
 //
 //        const auto selectedTestTargets = m_testSelectorAndPrioritizer->SelectTestTargets(changeDependecyList, m_testSelectionStrategy);
 //    
@@ -155,11 +164,11 @@
 //    // Coverage: Yes
 //    TEST_P(TestSelectorAndPrioritizerFixtureWithAllSources, CreateFile_ParentYesCoverageYes_ExpectDependencyException)
 //    {
-//        m_dynamicDependencyMap = AZStd::make_unique<TestImpact::DynamicDependencyMap>(
-//            MicroRepo::CreateProductionTargetDescriptorsWithSharedSources(),
-//            MicroRepo::CreateTestTargetDescriptorsWithSharedSources());
+//        m_buildTargets = AZStd::make_unique<NativeBuildTargetList>(
+//            MicroRepo::CreateTestTargetDescriptorsWithSharedSources(), MicroRepo::CreateProductionTargetDescriptorsWithSharedSources());
+//        m_dynamicDependencyMap = AZStd::make_unique<NativeDynamicDependencyMap>(m_buildTargets.get());
 //
-//        m_testSelectorAndPrioritizer = AZStd::make_unique< TestImpact::TestSelectorAndPrioritizer>(
+//        m_testSelectorAndPrioritizer = AZStd::make_unique< NativeTestSelectorAndPrioritizer>(
 //            m_dynamicDependencyMap.get(), TestImpact::DependencyGraphDataMap{});
 //
 //        m_dynamicDependencyMap->ReplaceSourceCoverage(TestImpact::SourceCoveringTestsList(MicroRepo::CreateSourceCoveringTestListWithSharedSources()));
@@ -169,7 +178,7 @@
 //
 //        try
 //        {
-//            const auto changeDependecyList = m_dynamicDependencyMap->ApplyAndResoveChangeList(changeList);
+//            const auto changeDependecyList = m_dynamicDependencyMap->ApplyAndResoveChangeList(changeList, TestImpact::Policy::IntegrityFailure::Continue);
 //
 //            // Do not expect this statement to be reachable
 //            FAIL();
@@ -191,11 +200,11 @@
 //    // Coverage: No
 //    TEST_P(TestSelectorAndPrioritizerFixtureWithAllSources, UpdateTestFile_ParentYesCoverageNo_ExpectSelectAllParentTestTargets)
 //    {
-//        m_dynamicDependencyMap = AZStd::make_unique<TestImpact::DynamicDependencyMap>(
-//            MicroRepo::CreateProductionTargetDescriptorsWithSharedSources(),
-//            MicroRepo::CreateTestTargetDescriptorsWithSharedSources());
+//        m_buildTargets = AZStd::make_unique<NativeBuildTargetList>(
+//            MicroRepo::CreateTestTargetDescriptorsWithSharedSources(), MicroRepo::CreateProductionTargetDescriptorsWithSharedSources());
+//        m_dynamicDependencyMap = AZStd::make_unique<NativeDynamicDependencyMap>(m_buildTargets.get());
 //
-//        m_testSelectorAndPrioritizer = AZStd::make_unique< TestImpact::TestSelectorAndPrioritizer>(
+//        m_testSelectorAndPrioritizer = AZStd::make_unique< NativeTestSelectorAndPrioritizer>(
 //            m_dynamicDependencyMap.get(), TestImpact::DependencyGraphDataMap{});
 //
 //        m_dynamicDependencyMap->ReplaceSourceCoverage(
@@ -203,7 +212,7 @@
 //
 //        TestImpact::ChangeList changeList;
 //        changeList.m_updatedFiles.push_back(m_source.first.c_str());
-//        const auto changeDependecyList = m_dynamicDependencyMap->ApplyAndResoveChangeList(changeList);
+//        const auto changeDependecyList = m_dynamicDependencyMap->ApplyAndResoveChangeList(changeList, TestImpact::Policy::IntegrityFailure::Continue);
 //
 //        const auto selectedTestTargets = m_testSelectorAndPrioritizer->SelectTestTargets(changeDependecyList, m_testSelectionStrategy);
 //
@@ -223,11 +232,12 @@
 //    // Coverage: Yes
 //    TEST_P(TestSelectorAndPrioritizerFixtureWithAllSourcesExceptAutogenSources, UpdateFile_ParentNoCoverageYes_ExpectSelectAllTestsCoveringThisFileAndDeleteExistingCoverage)
 //    {
-//        m_dynamicDependencyMap = AZStd::make_unique<TestImpact::DynamicDependencyMap>(
-//            MicroRepo::CreateTargetDescriptorWithoutSpecifiedSource(MicroRepo::CreateProductionTargetDescriptorsWithSharedSources(), m_source.first.c_str()),
-//            MicroRepo::CreateTargetDescriptorWithoutSpecifiedSource(MicroRepo::CreateTestTargetDescriptorsWithSharedSources(), m_source.first.c_str()));
+//        m_buildTargets = AZStd::make_unique<NativeBuildTargetList>(
+//            MicroRepo::CreateTargetDescriptorWithoutSpecifiedSource(MicroRepo::CreateTestTargetDescriptorsWithSharedSources(), m_source.first.c_str()),
+//            MicroRepo::CreateTargetDescriptorWithoutSpecifiedSource(MicroRepo::CreateProductionTargetDescriptorsWithSharedSources(), m_source.first.c_str()));
+//        m_dynamicDependencyMap = AZStd::make_unique<NativeDynamicDependencyMap>(m_buildTargets.get());
 //
-//        m_testSelectorAndPrioritizer = AZStd::make_unique< TestImpact::TestSelectorAndPrioritizer>(
+//        m_testSelectorAndPrioritizer = AZStd::make_unique< NativeTestSelectorAndPrioritizer>(
 //            m_dynamicDependencyMap.get(), TestImpact::DependencyGraphDataMap{});
 //
 //        m_dynamicDependencyMap->ReplaceSourceCoverage(TestImpact::SourceCoveringTestsList(MicroRepo::CreateSourceCoveringTestListWithSharedSources()));
@@ -235,7 +245,7 @@
 //        TestImpact::ChangeList changeList;
 //        changeList.m_updatedFiles.push_back(m_source.first.c_str());
 //
-//        const auto changeDependecyList = m_dynamicDependencyMap->ApplyAndResoveChangeList(changeList);
+//        const auto changeDependecyList = m_dynamicDependencyMap->ApplyAndResoveChangeList(changeList, TestImpact::Policy::IntegrityFailure::Continue);
 //        const auto sourceDependency = m_dynamicDependencyMap->GetSourceDependency(m_source.first.c_str());
 //        EXPECT_FALSE(sourceDependency.has_value());
 //
@@ -257,11 +267,12 @@
 //    // Coverage: No
 //    TEST_P(TestSelectorAndPrioritizerFixtureWithAllSources, UpdateFile_ParentNoCoverageNo_ExpectFileSkipped)
 //    {
-//        m_dynamicDependencyMap = AZStd::make_unique<TestImpact::DynamicDependencyMap>(
-//            MicroRepo::CreateTargetDescriptorWithoutSpecifiedSource(MicroRepo::CreateProductionTargetDescriptorsWithSharedSources(), m_source.first.c_str()),
-//            MicroRepo::CreateTargetDescriptorWithoutSpecifiedSource(MicroRepo::CreateTestTargetDescriptorsWithSharedSources(), m_source.first.c_str()));
+//        m_buildTargets = AZStd::make_unique<NativeBuildTargetList>(
+//            MicroRepo::CreateTargetDescriptorWithoutSpecifiedSource(MicroRepo::CreateTestTargetDescriptorsWithSharedSources(), m_source.first.c_str()),
+//            MicroRepo::CreateTargetDescriptorWithoutSpecifiedSource(MicroRepo::CreateProductionTargetDescriptorsWithSharedSources(), m_source.first.c_str()));
+//        m_dynamicDependencyMap = AZStd::make_unique<NativeDynamicDependencyMap>(m_buildTargets.get());
 //
-//        m_testSelectorAndPrioritizer = AZStd::make_unique< TestImpact::TestSelectorAndPrioritizer>(
+//        m_testSelectorAndPrioritizer = AZStd::make_unique< NativeTestSelectorAndPrioritizer>(
 //            m_dynamicDependencyMap.get(), TestImpact::DependencyGraphDataMap{});
 //
 //        m_dynamicDependencyMap->ReplaceSourceCoverage(
@@ -269,7 +280,7 @@
 //
 //        TestImpact::ChangeList changeList;
 //        changeList.m_updatedFiles.push_back(m_source.first.c_str());
-//        const auto changeDependecyList = m_dynamicDependencyMap->ApplyAndResoveChangeList(changeList);
+//        const auto changeDependecyList = m_dynamicDependencyMap->ApplyAndResoveChangeList(changeList, TestImpact::Policy::IntegrityFailure::Continue);
 //
 //        const auto selectedTestTargets = m_testSelectorAndPrioritizer->SelectTestTargets(changeDependecyList, m_testSelectionStrategy);
 //
@@ -281,18 +292,18 @@
 //    // Coverage: Yes
 //    TEST_P(TestSelectorAndPrioritizerFixtureWithAllSources, UpdateProductionFile_ParentYesCoverageYes_ExpectSelectAllTestsCoveringThisFile)
 //    {
-//        m_dynamicDependencyMap = AZStd::make_unique<TestImpact::DynamicDependencyMap>(
-//            MicroRepo::CreateProductionTargetDescriptorsWithSharedSources(),
-//            MicroRepo::CreateTestTargetDescriptorsWithSharedSources());
+//        m_buildTargets = AZStd::make_unique<NativeBuildTargetList>(
+//            MicroRepo::CreateTestTargetDescriptorsWithSharedSources(), MicroRepo::CreateProductionTargetDescriptorsWithSharedSources());
+//        m_dynamicDependencyMap = AZStd::make_unique<NativeDynamicDependencyMap>(m_buildTargets.get());
 //    
-//        m_testSelectorAndPrioritizer = AZStd::make_unique< TestImpact::TestSelectorAndPrioritizer>(
+//        m_testSelectorAndPrioritizer = AZStd::make_unique< NativeTestSelectorAndPrioritizer>(
 //            m_dynamicDependencyMap.get(), TestImpact::DependencyGraphDataMap{});
 //    
 //        m_dynamicDependencyMap->ReplaceSourceCoverage(TestImpact::SourceCoveringTestsList(MicroRepo::CreateSourceCoveringTestListWithSharedSources()));
 //    
 //        TestImpact::ChangeList changeList;
 //        changeList.m_updatedFiles.push_back(m_source.first.c_str());
-//        const auto changeDependecyList = m_dynamicDependencyMap->ApplyAndResoveChangeList(changeList);
+//        const auto changeDependecyList = m_dynamicDependencyMap->ApplyAndResoveChangeList(changeList, TestImpact::Policy::IntegrityFailure::Continue);
 //    
 //        const auto selectedTestTargets = m_testSelectorAndPrioritizer->SelectTestTargets(changeDependecyList, m_testSelectionStrategy);
 //    
@@ -312,11 +323,11 @@
 //    // Coverage: No
 //    TEST_P(TestSelectorAndPrioritizerFixtureWithAllSources, DeleteFile_ParentYesCoverageNo_ExpectDependencyException)
 //    {
-//        m_dynamicDependencyMap = AZStd::make_unique<TestImpact::DynamicDependencyMap>(
-//            MicroRepo::CreateProductionTargetDescriptorsWithSharedSources(),
-//            MicroRepo::CreateTestTargetDescriptorsWithSharedSources());
+//        m_buildTargets = AZStd::make_unique<NativeBuildTargetList>(
+//            MicroRepo::CreateTestTargetDescriptorsWithSharedSources(), MicroRepo::CreateProductionTargetDescriptorsWithSharedSources());
+//        m_dynamicDependencyMap = AZStd::make_unique<NativeDynamicDependencyMap>(m_buildTargets.get());
 //
-//        m_testSelectorAndPrioritizer = AZStd::make_unique< TestImpact::TestSelectorAndPrioritizer>(
+//        m_testSelectorAndPrioritizer = AZStd::make_unique< NativeTestSelectorAndPrioritizer>(
 //            m_dynamicDependencyMap.get(), TestImpact::DependencyGraphDataMap{});
 //
 //        m_dynamicDependencyMap->ReplaceSourceCoverage(
@@ -327,7 +338,7 @@
 //
 //        try
 //        {
-//            const auto changeDependecyList = m_dynamicDependencyMap->ApplyAndResoveChangeList(changeList);
+//            const auto changeDependecyList = m_dynamicDependencyMap->ApplyAndResoveChangeList(changeList, TestImpact::Policy::IntegrityFailure::Continue);
 //
 //            // Do not expect this statement to be reachable
 //            FAIL();
@@ -349,11 +360,12 @@
 //    // Coverage: Yes
 //    TEST_P(TestSelectorAndPrioritizerFixtureWithAllSources, DeleteFile_ParentNoCoverageYes_ExpectSelectAllTestsCoveringThisFileAndDeleteExistingCoverage)
 //    {
-//        m_dynamicDependencyMap = AZStd::make_unique<TestImpact::DynamicDependencyMap>(
-//            MicroRepo::CreateTargetDescriptorWithoutSpecifiedSource(MicroRepo::CreateProductionTargetDescriptorsWithSharedSources(), m_source.first.c_str()),
-//            MicroRepo::CreateTargetDescriptorWithoutSpecifiedSource(MicroRepo::CreateTestTargetDescriptorsWithSharedSources(), m_source.first.c_str()));
+//        m_buildTargets = AZStd::make_unique<NativeBuildTargetList>(
+//            MicroRepo::CreateTargetDescriptorWithoutSpecifiedSource(MicroRepo::CreateTestTargetDescriptorsWithSharedSources(), m_source.first.c_str()),
+//            MicroRepo::CreateTargetDescriptorWithoutSpecifiedSource(MicroRepo::CreateProductionTargetDescriptorsWithSharedSources(), m_source.first.c_str()));
+//        m_dynamicDependencyMap = AZStd::make_unique<NativeDynamicDependencyMap>(m_buildTargets.get());
 //
-//        m_testSelectorAndPrioritizer = AZStd::make_unique< TestImpact::TestSelectorAndPrioritizer>(
+//        m_testSelectorAndPrioritizer = AZStd::make_unique< NativeTestSelectorAndPrioritizer>(
 //            m_dynamicDependencyMap.get(), TestImpact::DependencyGraphDataMap{});
 //
 //        m_dynamicDependencyMap->ReplaceSourceCoverage(TestImpact::SourceCoveringTestsList(MicroRepo::CreateSourceCoveringTestListWithSharedSources()));
@@ -361,7 +373,7 @@
 //        TestImpact::ChangeList changeList;
 //        changeList.m_deletedFiles.push_back(m_source.first.c_str());
 //
-//        const auto changeDependecyList = m_dynamicDependencyMap->ApplyAndResoveChangeList(changeList);
+//        const auto changeDependecyList = m_dynamicDependencyMap->ApplyAndResoveChangeList(changeList, TestImpact::Policy::IntegrityFailure::Continue);
 //        const auto sourceDependency = m_dynamicDependencyMap->GetSourceDependency(m_source.first.c_str());
 //        EXPECT_FALSE(sourceDependency.has_value());
 //
@@ -383,11 +395,12 @@
 //    // Coverage: No
 //    TEST_P(TestSelectorAndPrioritizerFixtureWithAllSources, DeleteFile_ParentNoCoverageNo_ExpectFileSkipped)
 //    {
-//        m_dynamicDependencyMap = AZStd::make_unique<TestImpact::DynamicDependencyMap>(
-//            MicroRepo::CreateTargetDescriptorWithoutSpecifiedSource(MicroRepo::CreateProductionTargetDescriptorsWithSharedSources(), m_source.first.c_str()),
-//            MicroRepo::CreateTargetDescriptorWithoutSpecifiedSource(MicroRepo::CreateTestTargetDescriptorsWithSharedSources(), m_source.first.c_str()));
+//        m_buildTargets = AZStd::make_unique<NativeBuildTargetList>(
+//            MicroRepo::CreateTargetDescriptorWithoutSpecifiedSource(MicroRepo::CreateTestTargetDescriptorsWithSharedSources(), m_source.first.c_str()),
+//            MicroRepo::CreateTargetDescriptorWithoutSpecifiedSource(MicroRepo::CreateProductionTargetDescriptorsWithSharedSources(), m_source.first.c_str()));
+//        m_dynamicDependencyMap = AZStd::make_unique<NativeDynamicDependencyMap>(m_buildTargets.get());
 //
-//        m_testSelectorAndPrioritizer = AZStd::make_unique< TestImpact::TestSelectorAndPrioritizer>(
+//        m_testSelectorAndPrioritizer = AZStd::make_unique< NativeTestSelectorAndPrioritizer>(
 //            m_dynamicDependencyMap.get(), TestImpact::DependencyGraphDataMap{});
 //
 //        m_dynamicDependencyMap->ReplaceSourceCoverage(
@@ -395,7 +408,7 @@
 //
 //        TestImpact::ChangeList changeList;
 //        changeList.m_deletedFiles.push_back(m_source.first.c_str());
-//        const auto changeDependecyList = m_dynamicDependencyMap->ApplyAndResoveChangeList(changeList);
+//        const auto changeDependecyList = m_dynamicDependencyMap->ApplyAndResoveChangeList(changeList, TestImpact::Policy::IntegrityFailure::Continue);
 //
 //        const auto selectedTestTargets = m_testSelectorAndPrioritizer->SelectTestTargets(changeDependecyList, m_testSelectionStrategy);
 //
@@ -407,11 +420,11 @@
 //    // Coverage: Yes
 //    TEST_P(TestSelectorAndPrioritizerFixtureWithAllSources, DeleteFile_ParentYesCoverageYes_ExpectDependencyException)
 //    {
-//        m_dynamicDependencyMap = AZStd::make_unique<TestImpact::DynamicDependencyMap>(
-//            MicroRepo::CreateProductionTargetDescriptorsWithSharedSources(),
-//            MicroRepo::CreateTestTargetDescriptorsWithSharedSources());
+//        m_buildTargets = AZStd::make_unique<NativeBuildTargetList>(
+//            MicroRepo::CreateTestTargetDescriptorsWithSharedSources(), MicroRepo::CreateProductionTargetDescriptorsWithSharedSources());
+//        m_dynamicDependencyMap = AZStd::make_unique<NativeDynamicDependencyMap>(m_buildTargets.get());
 //
-//        m_testSelectorAndPrioritizer = AZStd::make_unique< TestImpact::TestSelectorAndPrioritizer>(
+//        m_testSelectorAndPrioritizer = AZStd::make_unique< NativeTestSelectorAndPrioritizer>(
 //            m_dynamicDependencyMap.get(), TestImpact::DependencyGraphDataMap{});
 //
 //        m_dynamicDependencyMap->ReplaceSourceCoverage(TestImpact::SourceCoveringTestsList(MicroRepo::CreateSourceCoveringTestListWithSharedSources()));
@@ -421,7 +434,7 @@
 //
 //        try
 //        {
-//            const auto changeDependecyList = m_dynamicDependencyMap->ApplyAndResoveChangeList(changeList);
+//            const auto changeDependecyList = m_dynamicDependencyMap->ApplyAndResoveChangeList(changeList, TestImpact::Policy::IntegrityFailure::Continue);
 //
 //            // Do not expect this statement to be reachable
 //            FAIL();

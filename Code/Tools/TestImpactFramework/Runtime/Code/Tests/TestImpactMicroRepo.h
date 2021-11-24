@@ -189,8 +189,8 @@ namespace UnitTest
         {
             for (auto& targetDescriptor : targetDescriptors)
             {
-                auto& staticSources = targetDescriptor.m_sources.m_staticSources;
-                auto& autogenSources = targetDescriptor.m_sources.m_autogenSources;
+                auto& staticSources = targetDescriptor->m_sources.m_staticSources;
+                auto& autogenSources = targetDescriptor->m_sources.m_autogenSources;
                 AZStd::erase_if(staticSources, [&sourceToRemove](const TestImpact::RepoPath& staticSource)
                 {
                     return sourceToRemove == staticSource;

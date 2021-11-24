@@ -26,7 +26,6 @@
 namespace TestImpact
 {
     class ChangeDependencyList;
-    class TestSelectorAndPrioritizer;
     class TestEngine;
     class NativeTestTarget;
     class NativeTestTargetList;
@@ -41,6 +40,9 @@ namespace TestImpact
 
     template<typename BuildSystem>
     class DynamicDependencyMap;
+
+    template<typename BuildSystem>
+    class TestSelectorAndPrioritizer;
 
     //! Callback for a test sequence that isn't using test impact analysis to determine selected tests.
     //! @parm suiteType The test suite to select tests from.
@@ -237,7 +239,7 @@ namespace TestImpact
         size_t m_maxConcurrency = 0;
         AZStd::unique_ptr<BuildTargetList<NativeBuildSystem>> m_buildTargets;
         AZStd::unique_ptr<DynamicDependencyMap<NativeBuildSystem>> m_dynamicDependencyMap;
-        AZStd::unique_ptr<TestSelectorAndPrioritizer> m_testSelectorAndPrioritizer;
+        AZStd::unique_ptr<TestSelectorAndPrioritizer<NativeBuildSystem>> m_testSelectorAndPrioritizer;
         AZStd::unique_ptr<TestEngine> m_testEngine;
         AZStd::unique_ptr<TestTargetExclusionList> m_regularTestTargetExcludeList;
         AZStd::unique_ptr<TestTargetExclusionList> m_instrumentedTestTargetExcludeList;
