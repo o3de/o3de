@@ -5,7 +5,7 @@
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "UiCanvasAssetRefBus",
+                "name": "UI Canvas Asset Ref",
                 "category": "UI"
             },
             "methods": [

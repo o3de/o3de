@@ -5,7 +5,7 @@
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "UiMaskBus",
+                "name": "UI Mask",
                 "category": "UI"
             },
             "methods": [

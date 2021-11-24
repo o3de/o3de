@@ -5,7 +5,7 @@
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "AssetCollectionAsyncLoaderTestBus"
+                "name": "Asset Collection Async Loader Test"
             },
             "methods": [
                 {
