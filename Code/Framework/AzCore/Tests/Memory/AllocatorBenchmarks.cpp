@@ -322,7 +322,7 @@ namespace Benchmark
 
         void internalSetUp(const ::benchmark::State& state) override
         {
-            AllocatorBenchmarkFixture<TAllocator>::SetUp(state);
+            AllocatorBenchmarkFixture<TAllocator>::internalSetUp(state);
 
             m_allocations.resize(state.range_x(), nullptr);
         }
@@ -332,7 +332,7 @@ namespace Benchmark
             m_allocations.clear();
             m_allocations.shrink_to_fit();
 
-            AllocatorBenchmarkFixture<TAllocator>::TearDown(state);
+            AllocatorBenchmarkFixture<TAllocator>::internalTearDown(state);
         }
 
     public:
@@ -386,7 +386,7 @@ namespace Benchmark
 
         void internalSetUp(const ::benchmark::State& state) override
         {
-            AllocatorBenchmarkFixture<TAllocator>::SetUp(state);
+            AllocatorBenchmarkFixture<TAllocator>::internalSetUp(state);
 
             m_allocations.resize(state.range_x(), nullptr);
         }
@@ -396,7 +396,7 @@ namespace Benchmark
             m_allocations.clear();
             m_allocations.shrink_to_fit();
 
-            AllocatorBenchmarkFixture<TAllocator>::TearDown(state);
+            AllocatorBenchmarkFixture<TAllocator>::internalTearDown(state);
         }
     public:
         void Benchmark(benchmark::State& state)
