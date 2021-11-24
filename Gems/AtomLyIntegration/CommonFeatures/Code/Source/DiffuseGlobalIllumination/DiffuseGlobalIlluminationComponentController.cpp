@@ -7,6 +7,7 @@
  */
 
 #include <AzCore/RTTI/BehaviorContext.h>
+#include <AzFramework/Entity/GameEntityContextBus.h>
 #include <Atom/RPI.Public/Scene.h>
 #include <DiffuseGlobalIllumination/DiffuseGlobalIlluminationComponentController.h>
 
@@ -46,9 +47,19 @@ namespace AZ
         {
         }
 
-        void DiffuseGlobalIlluminationComponentController::Activate(EntityId entityId)
+        void DiffuseGlobalIlluminationComponentController::Activate([[maybe_unused]] EntityId entityId)
         {
-            m_featureProcessor = AZ::RPI::Scene::GetFeatureProcessorForEntity<DiffuseGlobalIlluminationFeatureProcessorInterface>(entityId);
+            // DiffuseGlobalIllumination settings are global settings that should be applied
+            // to the scene associated with the main game entity context
+            AzFramework::EntityContextId entityContextId;
+            AzFramework::GameEntityContextRequestBus::BroadcastResult(
+                entityContextId, &AzFramework::GameEntityContextRequestBus::Events::GetGameEntityContextId);
+
+            // GetFeaturePcoressorForEntityId won't work here because the DiffuseGlobalIlluminationComponent is part of the level entity,
+            // and the level entity is part of the EditorEntityContext, not the GameEntityContext
+            m_featureProcessor =
+                AZ::RPI::Scene::GetFeatureProcessorForEntityContextId<DiffuseGlobalIlluminationFeatureProcessorInterface>(entityContextId);
+
             OnConfigChanged();
         }
 

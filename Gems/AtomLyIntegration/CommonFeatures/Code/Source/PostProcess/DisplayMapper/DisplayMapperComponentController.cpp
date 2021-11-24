@@ -9,6 +9,7 @@
 #include "AtomLyIntegration/CommonFeatures/CoreLights/AreaLightBus.h"
 
 #include <AzCore/RTTI/BehaviorContext.h>
+#include <AzFramework/Entity/GameEntityContextBus.h>
 
 #include <Atom/RPI.Public/Scene.h>
 
@@ -356,8 +357,17 @@ namespace AZ
 
         void DisplayMapperComponentController::OnConfigChanged()
         {
-            // Register the configuration with the  AcesDisplayMapperFeatureProcessor for this scene.
-            DisplayMapperFeatureProcessorInterface* fp = AZ::RPI::Scene::GetFeatureProcessorForEntity<DisplayMapperFeatureProcessorInterface>(m_entityId);
+            // DisplayMapper settings are global settings that should be applied
+            // to the scene associated with the main game entity context
+            AzFramework::EntityContextId entityContextId;
+            AzFramework::GameEntityContextRequestBus::BroadcastResult(
+                entityContextId, &AzFramework::GameEntityContextRequestBus::Events::GetGameEntityContextId);
+
+            // GetFeaturePcoressorForEntityId won't work here because the DisplayMapperComponent is part of the level entity,
+            // and the level entity is part of the EditorEntityContext, not the GameEntityContext
+            DisplayMapperFeatureProcessorInterface* fp =
+                AZ::RPI::Scene::GetFeatureProcessorForEntityContextId<DisplayMapperFeatureProcessorInterface>(entityContextId);
+
             DisplayMapperConfigurationDescriptor desc;
             desc.m_operationType = m_configuration.m_displayMapperOperation;
             desc.m_ldrGradingLutEnabled = m_configuration.m_ldrColorGradingLutEnabled;
