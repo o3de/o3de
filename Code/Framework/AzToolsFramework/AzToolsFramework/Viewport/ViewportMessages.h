@@ -21,7 +21,12 @@
 namespace AzFramework
 {
     struct ScreenPoint;
-}
+
+    namespace RenderGeometry
+    {
+        struct RayRequest;
+    }
+} // namespace AzFramework
 
 namespace AzToolsFramework
 {
@@ -177,6 +182,17 @@ namespace AzToolsFramework
         //! Type to inherit to implement ViewportInteractionRequests.
         using ViewportInteractionRequestBus = AZ::EBus<ViewportInteractionRequests, ViewportEBusTraits>;
 
+        //! Utility function to return a viewport ray.
+        inline ProjectedViewportRay ViewportScreenToWorldRay(
+            const AzFramework::ViewportId viewportId, const AzFramework::ScreenPoint& screenPoint)
+        {
+            ProjectedViewportRay viewportRay{};
+            ViewportInteractionRequestBus::EventResult(
+                viewportRay, viewportId, &ViewportInteractionRequestBus::Events::ViewportScreenToWorldRay, screenPoint);
+
+            return viewportRay;
+        }
+
         //! Interface to return only viewport specific settings (e.g. snapping).
         class ViewportSettingsRequests
         {
@@ -228,10 +244,6 @@ namespace AzToolsFramework
         class MainEditorViewportInteractionRequests
         {
         public:
-            //! Given a point in screen space, return the terrain position in world space.
-            virtual AZ::Vector3 PickTerrain(const AzFramework::ScreenPoint& point) = 0;
-            //! Return the terrain height given a world position in 2d (xy plane).
-            virtual float TerrainHeight(const AZ::Vector2& position) = 0;
             //! Is the user holding a modifier key to move the manipulator space from local to world.
             virtual bool ShowingWorldSpace() = 0;
             //! Return the widget to use as the parent for the viewport context menu.
@@ -339,6 +351,13 @@ namespace AzToolsFramework
     //! origin of the ray will be returned.
     AZ::Vector3 FindClosestPickIntersection(
         AzFramework::ViewportId viewportId, const AzFramework::ScreenPoint& screenPoint, float rayLength, float defaultDistance);
+
+    //! Overload of FindClosestPickIntersection taking a RenderGeometry::RayRequest directly.
+    AZ::Vector3 FindClosestPickIntersection(const AzFramework::RenderGeometry::RayRequest& rayRequest, float defaultDistance);
+
+    //! Update the in/out parameter rayRequest based on the latest viewport ray.
+    void RefreshRayRequest(
+        AzFramework::RenderGeometry::RayRequest& rayRequest, const ViewportInteraction::ProjectedViewportRay& viewportRay, float rayLength);
 
     //! Maps a mouse interaction event to a ClickDetector event.
     //! @note Function only cares about up or down events, all other events are mapped to Nil (ignored).
