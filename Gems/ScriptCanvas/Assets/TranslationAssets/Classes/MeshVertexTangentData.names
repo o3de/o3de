@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "MeshVertexTangentData",
+            "base": "MeshVertexTangentData",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
@@ -9,7 +9,7 @@
             },
             "methods": [
                 {
-                    "key": "GetCount",
+                    "base": "GetCount",
                     "context": "MeshVertexTangentData",
                     "entry": {
                         "name": "In",
@@ -41,7 +41,7 @@
                     ]
                 },
                 {
-                    "key": "GetTangent",
+                    "base": "GetTangent",
                     "context": "MeshVertexTangentData",
                     "entry": {
                         "name": "In",
@@ -79,7 +79,7 @@
                     ]
                 },
                 {
-                    "key": "GetTangentSetIndex",
+                    "base": "GetTangentSetIndex",
                     "context": "MeshVertexTangentData",
                     "entry": {
                         "name": "In",
@@ -111,7 +111,7 @@
                     ]
                 },
                 {
-                    "key": "GetGenerationMethod",
+                    "base": "GetGenerationMethod",
                     "context": "MeshVertexTangentData",
                     "entry": {
                         "name": "In",

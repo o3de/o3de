@@ -1,15 +1,16 @@
 {
     "entries": [
         {
-            "key": "SurfaceSlopeGradientComponentTypeId",
+            "base": "SurfaceSlopeGradientComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Surface Slope Gradient Component Type Id"
+                "name": "Surface Slope Gradient Component Type Id",
+                "category": "Constants/Editor"
             },
             "methods": [
                 {
-                    "key": "GetSurfaceSlopeGradientComponentTypeId",
+                    "base": "GetSurfaceSlopeGradientComponentTypeId",
                     "details": {
                         "name": "Get Surface Slope Gradient Component Type Id"
                     },

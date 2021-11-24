@@ -1,15 +1,16 @@
 {
     "entries": [
         {
-            "key": "EditorNonUniformScaleComponentTypeId",
+            "base": "EditorNonUniformScaleComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Editor Non Uniform Scale Component Type Id"
+                "name": "Editor Non Uniform Scale Component Type Id",
+                "category": "Constants/Editor"
             },
             "methods": [
                 {
-                    "key": "GetEditorNonUniformScaleComponentTypeId",
+                    "base": "GetEditorNonUniformScaleComponentTypeId",
                     "details": {
                         "name": "Get Editor Non Uniform Scale Component Type Id"
                     },

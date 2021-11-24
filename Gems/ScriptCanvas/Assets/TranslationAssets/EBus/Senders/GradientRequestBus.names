@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "GradientRequestBus",
+            "base": "GradientRequestBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
@@ -9,7 +9,7 @@
             },
             "methods": [
                 {
-                    "key": "GetValue",
+                    "base": "GetValue",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetValue"

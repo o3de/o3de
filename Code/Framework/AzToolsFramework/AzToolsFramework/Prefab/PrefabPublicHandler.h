@@ -78,6 +78,8 @@ namespace AzToolsFramework
 
             InstanceOptionalReference GetOwnerInstanceByEntityId(AZ::EntityId entityId) const;
             bool EntitiesBelongToSameInstance(const EntityIdList& entityIds) const;
+            void AddNewEntityToSortOrder(Instance& owningInstance, PrefabDom& domToAddEntityUnder,
+                const EntityAlias& parentEntityAlias, const EntityAlias& entityToAddAlias);
 
             /**
              * Duplicate a list of entities owned by a common owning instance by directly

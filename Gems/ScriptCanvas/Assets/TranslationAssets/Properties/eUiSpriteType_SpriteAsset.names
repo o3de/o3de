@@ -1,17 +1,18 @@
 {
     "entries": [
         {
-            "key": "eUiSpriteType_SpriteAsset",
+            "base": "eUiSpriteType_SpriteAsset",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "e Ui Sprite Type_ Sprite Asset"
+                "name": "Sprite Asset",
+                "category": "Constants/UI/Sprite Type"
             },
             "methods": [
                 {
-                    "key": "GeteUiSpriteType_SpriteAsset",
+                    "base": "GeteUiSpriteType_SpriteAsset",
                     "details": {
-                        "name": "Gete Ui Sprite Type_ Sprite Asset"
+                        "name": "Sprite Asset"
                     },
                     "results": [
                         {

@@ -3497,7 +3497,7 @@ namespace AzToolsFramework
         // get the editor cameras current orientation
         const int viewportId = viewportInfo.m_viewportId;
         const AzFramework::CameraState editorCameraState = GetCameraState(viewportId);
-        const AZ::Matrix3x3& editorCameraOrientation = AZ::Matrix3x3::CreateFromMatrix4x4(AzFramework::CameraTransform(editorCameraState));
+        const AZ::Matrix3x3& editorCameraOrientation = AZ::Matrix3x3::CreateFromMatrix3x4(AzFramework::CameraTransform(editorCameraState));
 
         // create a gizmo camera transform about the origin matching the orientation of the editor camera
         // (10 units back in the y axis to produce an orbit effect)

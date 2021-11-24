@@ -8,11 +8,17 @@
 #include "EditorEntitySortComponent.h"
 #include "EditorEntityInfoBus.h"
 #include "EditorEntityHelpers.h"
+#include <AzCore/Component/TransformBus.h>
 #include <AzCore/Debug/Profiler.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <AzCore/Serialization/Json/RegistrationContext.h>
 #include <AzCore/std/sort.h>
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzToolsFramework/Prefab/PrefabPublicInterface.h>
+#include <AzToolsFramework/Prefab/PrefabPublicRequestBus.h>
+#include <AzToolsFramework/Undo/UndoSystem.h>
+#include <AzCore/Serialization/Json/RegistrationContext.h>
+#include <AzToolsFramework/Entity/EditorEntitySortComponentSerializer.h>
 
 static_assert(sizeof(AZ::u64) == sizeof(AZ::EntityId), "We use AZ::EntityId for Persistent ID, which is a u64 under the hood. These must be the same size otherwise the persistent id will have to be rewritten");
 
@@ -50,6 +56,12 @@ namespace AzToolsFramework
                         ->Attribute(AZ::Edit::Attributes::SliceFlags, AZ::Edit::SliceFlags::HideOnAdd | AZ::Edit::SliceFlags::PushWhenHidden | AZ::Edit::SliceFlags::DontGatherReference)
                         ;
                 }
+            }
+
+            AZ::JsonRegistrationContext* jsonRegistration = azrtti_cast<AZ::JsonRegistrationContext*>(context);
+            if (jsonRegistration)
+            {
+                jsonRegistration->Serializer<JsonEditorEntitySortComponentSerializer>()->HandlesType<EditorEntitySortComponent>();
             }
         }
 
@@ -167,9 +179,6 @@ namespace AzToolsFramework
                 }
 
                 MarkDirtyAndSendChangedEvent();
-
-                // Use the ToolsApplication to mark the entity dirty, this will only do something if we already have an undo batch
-                ToolsApplicationRequestBus::Broadcast(&ToolsApplicationRequestBus::Events::AddDirtyEntity, GetEntityId());
                 
                 return true;
             }
@@ -187,6 +196,10 @@ namespace AzToolsFramework
             else
             {
                 EntityOrderArray::iterator insertPosition = GetFirstSelectedEntityPosition();
+                if (insertPosition != m_childEntityOrderArray.end())
+                {
+                    ++insertPosition;
+                }
                 retval = AddChildEntityInternal(entityId, false, insertPosition);
             }
 
@@ -219,9 +232,6 @@ namespace AzToolsFramework
                 RebuildEntityOrderCache();
 
                 MarkDirtyAndSendChangedEvent();
-
-                // Use the ToolsApplication to mark the entity dirty, this will only do something if we already have an undo batch
-                ToolsApplicationRequestBus::Broadcast(&ToolsApplicationRequestBus::Events::AddDirtyEntity, GetEntityId());
 
                 return true;
             }
@@ -272,6 +282,12 @@ namespace AzToolsFramework
         void EditorEntitySortComponent::OnPrefabInstancePropagationEnd()
         {
             m_ignoreIncomingOrderChanges = false;
+
+            if (m_shouldSanityCheckStateAfterPropagation)
+            {
+                SanitizeOrderEntryArray();
+                m_shouldSanityCheckStateAfterPropagation = false;
+            }
         }
 
         void EditorEntitySortComponent::MarkDirtyAndSendChangedEvent()
@@ -280,14 +296,8 @@ namespace AzToolsFramework
             // one of the event listeners needs to build the InstanceDataHierarchy
             m_entityOrderIsDirty = true;
 
-            // Force an immediate update for prefabs, which won't receive PrepareSave
-            bool isPrefabEnabled = false;
-            AzFramework::ApplicationRequests::Bus::BroadcastResult(
-                isPrefabEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
-            if (isPrefabEnabled)
-            {
-                PrepareSave();
-            }
+            // Use the ToolsApplication to mark the entity dirty, this will only do something if we already have an undo batch
+            ToolsApplicationRequestBus::Broadcast(&ToolsApplicationRequestBus::Events::AddDirtyEntity, GetEntityId());
             EditorEntitySortNotificationBus::Event(GetEntityId(), &EditorEntitySortNotificationBus::Events::ChildEntityOrderArrayUpdated);
         }
 
@@ -308,9 +318,8 @@ namespace AzToolsFramework
                 isPrefabEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
             if (isPrefabEnabled)
             {
-                PostLoad();
+                m_shouldSanityCheckStateAfterPropagation = true;
             }
-
             // Send out that the order for our entity is now updated
             EditorEntitySortNotificationBus::Event(GetEntityId(), &EditorEntitySortNotificationBus::Events::ChildEntityOrderArrayUpdated);
         }
@@ -331,6 +340,73 @@ namespace AzToolsFramework
             for (size_t entityIndex = 0; entityIndex < m_childEntityOrderArray.size(); ++entityIndex)
             {
                 m_childEntityOrderEntryArray.push_back({ m_childEntityOrderArray[entityIndex], entityIndex });
+            }
+
+            m_entityOrderIsDirty = false;
+        }
+
+        void EditorEntitySortComponent::SanitizeOrderEntryArray()
+        {
+            bool shouldEmitDirtyState = false;
+
+            // Remove invalid and duplicate entries that point at non-existent entities
+            AZStd::unordered_set<AZ::EntityId> duplicateIds;
+            for (auto it = m_childEntityOrderArray.begin(); it != m_childEntityOrderArray.end();)
+            {
+                if (!it->IsValid() || GetEntityById(*it) == nullptr || duplicateIds.contains(*it))
+                {
+                    it = m_childEntityOrderArray.erase(it);
+                    shouldEmitDirtyState = true;
+                }
+                else
+                {
+                    duplicateIds.insert(*it);
+                    ++it;
+                }
+            }
+
+            // Append any missing children
+            EntityIdList children;
+            AZ::TransformBus::EventResult(children, GetEntityId(), &AZ::TransformBus::Events::GetChildren);
+            for (auto it = m_childEntityOrderArray.begin(); it != m_childEntityOrderArray.end(); ++it)
+            {
+                if (auto removedChildrenIt = AZStd::remove(children.begin(), children.end(), *it); removedChildrenIt != children.end())
+                {
+                    children.erase(removedChildrenIt);
+                }
+            }
+
+            AZStd::sort(children.begin(), children.end(), [](AZ::EntityId lhs, AZ::EntityId rhs)
+            {
+                return GetEntityById(lhs)->GetName() < GetEntityById(rhs)->GetName();
+            });
+
+            if (!children.empty())
+            {
+                shouldEmitDirtyState = true;
+                EntityOrderArray::iterator insertPosition = GetFirstSelectedEntityPosition();
+                if (insertPosition != m_childEntityOrderArray.end())
+                {
+                    ++insertPosition;
+                }
+                m_childEntityOrderArray.insert(insertPosition, children.begin(), children.end());
+            }
+
+            // Clear out the vector to be rebuilt from persistent id
+            m_childEntityOrderEntryArray.resize(m_childEntityOrderArray.size());
+            for (size_t i = 0; i < m_childEntityOrderArray.size(); ++i)
+            {
+                m_childEntityOrderEntryArray[i] = {
+                    m_childEntityOrderArray[i],
+                    static_cast<AZ::u64>(i)
+                };
+            }
+
+            RebuildEntityOrderCache();
+
+            if (shouldEmitDirtyState)
+            {
+                ToolsApplicationRequests::Bus::Broadcast(&ToolsApplicationRequests::Bus::Events::AddDirtyEntity, GetEntityId());
             }
 
             m_entityOrderIsDirty = false;
@@ -383,7 +459,7 @@ namespace AzToolsFramework
                 firstSelectedEntityPos = selectedEntityPos < firstSelectedEntityPos ? selectedEntityPos : firstSelectedEntityPos;
             }
 
-            return firstSelectedEntityPos == m_childEntityOrderArray.end() ? m_childEntityOrderArray.begin() : firstSelectedEntityPos;
+            return firstSelectedEntityPos;
         }
     }
 } // namespace AzToolsFramework

@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "Name",
+            "base": "Name",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
@@ -9,7 +9,7 @@
             },
             "methods": [
                 {
-                    "key": "ToString",
+                    "base": "ToString",
                     "context": "Name",
                     "entry": {
                         "name": "In",
@@ -41,7 +41,7 @@
                     ]
                 },
                 {
-                    "key": "Set",
+                    "base": "Set",
                     "context": "Name",
                     "entry": {
                         "name": "In",
@@ -71,7 +71,7 @@
                     ]
                 },
                 {
-                    "key": "IsEmpty",
+                    "base": "IsEmpty",
                     "context": "Name",
                     "entry": {
                         "name": "In",
@@ -103,7 +103,7 @@
                     ]
                 },
                 {
-                    "key": "Equal",
+                    "base": "Equal",
                     "context": "Name",
                     "entry": {
                         "name": "In",

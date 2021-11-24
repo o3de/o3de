@@ -1,15 +1,16 @@
 {
     "entries": [
         {
-            "key": "BoxShapeComponentTypeId",
+            "base": "BoxShapeComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Box Shape Component Type Id"
+                "name": "Box Shape Component Type Id",
+                "category": "Constants/Editor"
             },
             "methods": [
                 {
-                    "key": "GetBoxShapeComponentTypeId",
+                    "base": "GetBoxShapeComponentTypeId",
                     "details": {
                         "name": "Get Box Shape Component Type Id"
                     },

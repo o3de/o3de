@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "CollisionNotificationBus",
+            "base": "CollisionNotificationBus",
             "context": "EBusHandler",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "OnCollisionBegin",
+                    "base": "OnCollisionBegin",
                     "details": {
                         "name": "On Collision Begin"
                     },
@@ -31,7 +31,7 @@
                     ]
                 },
                 {
-                    "key": "OnCollisionPersist",
+                    "base": "OnCollisionPersist",
                     "details": {
                         "name": "On Collision Persist",
                         "tooltip": "Raised while this collider is in contact with another collider"
@@ -53,7 +53,7 @@
                     ]
                 },
                 {
-                    "key": "OnCollisionEnd",
+                    "base": "OnCollisionEnd",
                     "details": {
                         "name": "On Collision End",
                         "tooltip": "Raised when a collider loses contact with another collider"

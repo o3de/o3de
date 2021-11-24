@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "message_box",
+            "base": "message_box",
             "context": "Method",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "message_box",
+                    "base": "message_box",
                     "context": "Global",
                     "entry": {
                         "name": "In",

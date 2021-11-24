@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "LookAt",
+            "base": "LookAt",
             "context": "EBusSender",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "SetTarget",
+                    "base": "SetTarget",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Target"
@@ -34,7 +34,7 @@
                     ]
                 },
                 {
-                    "key": "SetTargetPosition",
+                    "base": "SetTargetPosition",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Target Position"
@@ -58,7 +58,7 @@
                     ]
                 },
                 {
-                    "key": "SetAxis",
+                    "base": "SetAxis",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Axis"

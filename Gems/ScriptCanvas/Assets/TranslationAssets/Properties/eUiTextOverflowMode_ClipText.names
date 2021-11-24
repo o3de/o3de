@@ -1,17 +1,18 @@
 {
     "entries": [
         {
-            "key": "eUiTextOverflowMode_ClipText",
+            "base": "eUiTextOverflowMode_ClipText",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "e Ui Text Overflow Mode_ Clip Text"
+                "name": "Clip Text",
+                "category": "Constants/UI/Text Overflow Mode"
             },
             "methods": [
                 {
-                    "key": "GeteUiTextOverflowMode_ClipText",
+                    "base": "GeteUiTextOverflowMode_ClipText",
                     "details": {
-                        "name": "Gete Ui Text Overflow Mode_ Clip Text"
+                        "name": "Clip Text"
                     },
                     "results": [
                         {

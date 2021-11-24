@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "RenderMeshComponentRequestBus",
+            "base": "RenderMeshComponentRequestBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
@@ -9,7 +9,7 @@
             },
             "methods": [
                 {
-                    "key": "GetLodOverride",
+                    "base": "GetLodOverride",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetLodOverride"
@@ -31,7 +31,7 @@
                     ]
                 },
                 {
-                    "key": "GetSortKey",
+                    "base": "GetSortKey",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetSortKey"
@@ -53,7 +53,7 @@
                     ]
                 },
                 {
-                    "key": "SetQualityDecayRate",
+                    "base": "SetQualityDecayRate",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetQualityDecayRate"
@@ -75,7 +75,7 @@
                     ]
                 },
                 {
-                    "key": "SetSortKey",
+                    "base": "SetSortKey",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetSortKey"
@@ -97,7 +97,7 @@
                     ]
                 },
                 {
-                    "key": "GetModelAssetPath",
+                    "base": "GetModelAssetPath",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetModelAssetPath"
@@ -119,7 +119,7 @@
                     ]
                 },
                 {
-                    "key": "SetLodType",
+                    "base": "SetLodType",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetLodType"
@@ -141,7 +141,7 @@
                     ]
                 },
                 {
-                    "key": "SetLodOverride",
+                    "base": "SetLodOverride",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetLodOverride"
@@ -163,7 +163,7 @@
                     ]
                 },
                 {
-                    "key": "SetMinimumScreenCoverage",
+                    "base": "SetMinimumScreenCoverage",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetMinimumScreenCoverage"
@@ -185,7 +185,7 @@
                     ]
                 },
                 {
-                    "key": "SetModelAssetId",
+                    "base": "SetModelAssetId",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetModelAssetId"
@@ -207,7 +207,7 @@
                     ]
                 },
                 {
-                    "key": "GetLodType",
+                    "base": "GetLodType",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetLodType"
@@ -229,7 +229,7 @@
                     ]
                 },
                 {
-                    "key": "GetMinimumScreenCoverage",
+                    "base": "GetMinimumScreenCoverage",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetMinimumScreenCoverage"
@@ -251,7 +251,7 @@
                     ]
                 },
                 {
-                    "key": "GetModelAssetId",
+                    "base": "GetModelAssetId",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetModelAssetId"
@@ -273,7 +273,7 @@
                     ]
                 },
                 {
-                    "key": "SetModelAssetPath",
+                    "base": "SetModelAssetPath",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetModelAssetPath"
@@ -295,7 +295,7 @@
                     ]
                 },
                 {
-                    "key": "GetQualityDecayRate",
+                    "base": "GetQualityDecayRate",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetQualityDecayRate"

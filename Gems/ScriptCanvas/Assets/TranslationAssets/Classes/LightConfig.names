@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "LightConfig",
+            "base": "LightConfig",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
@@ -9,7 +9,7 @@
             },
             "methods": [
                 {
-                    "key": "GetshadowmapSize",
+                    "base": "GetshadowmapSize",
                     "details": {
                         "name": "Get Shadowmap Size"
                     },
@@ -31,7 +31,7 @@
                     ]
                 },
                 {
-                    "key": "SetshadowmapSize",
+                    "base": "SetshadowmapSize",
                     "details": {
                         "name": "Set Shadowmap Size"
                     },
@@ -51,7 +51,7 @@
                     ]
                 },
                 {
-                    "key": "GetshadowCascadeCount",
+                    "base": "GetshadowCascadeCount",
                     "details": {
                         "name": "Get Shadow Cascade Count"
                     },
@@ -73,7 +73,7 @@
                     ]
                 },
                 {
-                    "key": "SetshadowCascadeCount",
+                    "base": "SetshadowCascadeCount",
                     "details": {
                         "name": "Set Shadow Cascade Count"
                     },
@@ -93,7 +93,7 @@
                     ]
                 },
                 {
-                    "key": "GetenableShadowDebugColoring",
+                    "base": "GetenableShadowDebugColoring",
                     "details": {
                         "name": "Get Enable Shadow Debug Coloring"
                     },
@@ -115,7 +115,7 @@
                     ]
                 },
                 {
-                    "key": "SetenableShadowDebugColoring",
+                    "base": "SetenableShadowDebugColoring",
                     "details": {
                         "name": "Set Enable Shadow Debug Coloring"
                     },
@@ -135,7 +135,7 @@
                     ]
                 },
                 {
-                    "key": "Getintensity",
+                    "base": "Getintensity",
                     "details": {
                         "name": "Get Intensity"
                     },
@@ -157,7 +157,7 @@
                     ]
                 },
                 {
-                    "key": "Setintensity",
+                    "base": "Setintensity",
                     "details": {
                         "name": "Set Intensity"
                     },
@@ -177,7 +177,7 @@
                     ]
                 },
                 {
-                    "key": "GetshadowRatioLogarithmUniform",
+                    "base": "GetshadowRatioLogarithmUniform",
                     "details": {
                         "name": "Get Shadow Ratio Logarithm Uniform"
                     },
@@ -199,7 +199,7 @@
                     ]
                 },
                 {
-                    "key": "SetshadowRatioLogarithmUniform",
+                    "base": "SetshadowRatioLogarithmUniform",
                     "details": {
                         "name": "Set Shadow Ratio Logarithm Uniform"
                     },
@@ -219,7 +219,7 @@
                     ]
                 },
                 {
-                    "key": "Getcolor",
+                    "base": "Getcolor",
                     "details": {
                         "name": "Get Color"
                     },
@@ -241,7 +241,7 @@
                     ]
                 },
                 {
-                    "key": "Setcolor",
+                    "base": "Setcolor",
                     "details": {
                         "name": "Set Color"
                     },
@@ -261,7 +261,7 @@
                     ]
                 },
                 {
-                    "key": "Getdirection",
+                    "base": "Getdirection",
                     "details": {
                         "name": "Get Direction"
                     },
@@ -283,7 +283,7 @@
                     ]
                 },
                 {
-                    "key": "Setdirection",
+                    "base": "Setdirection",
                     "details": {
                         "name": "Set Direction"
                     },
@@ -303,7 +303,7 @@
                     ]
                 },
                 {
-                    "key": "GetshadowFarClipDistance",
+                    "base": "GetshadowFarClipDistance",
                     "details": {
                         "name": "Get Shadow Far Clip Distance"
                     },
@@ -325,7 +325,7 @@
                     ]
                 },
                 {
-                    "key": "SetshadowFarClipDistance",
+                    "base": "SetshadowFarClipDistance",
                     "details": {
                         "name": "Set Shadow Far Clip Distance"
                     },

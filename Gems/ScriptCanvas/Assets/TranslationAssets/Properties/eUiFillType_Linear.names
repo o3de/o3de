@@ -1,17 +1,18 @@
 {
     "entries": [
         {
-            "key": "eUiFillType_Linear",
+            "base": "eUiFillType_Linear",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "e Ui Fill Type_ Linear"
+                "name": "Linear",
+                "category": "Constants/UI/Fill Type"
             },
             "methods": [
                 {
-                    "key": "GeteUiFillType_Linear",
+                    "base": "GeteUiFillType_Linear",
                     "details": {
-                        "name": "Gete Ui Fill Type_ Linear"
+                        "name": "Linear"
                     },
                     "results": [
                         {

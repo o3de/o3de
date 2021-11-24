@@ -1,17 +1,18 @@
 {
     "entries": [
         {
-            "key": "eUiDropState_Normal",
+            "base": "eUiDropState_Normal",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "e Ui Drop State_ Normal"
+                "name": "Normal",
+                "category": "Constants/UI/Drop State"
             },
             "methods": [
                 {
-                    "key": "GeteUiDropState_Normal",
+                    "base": "GeteUiDropState_Normal",
                     "details": {
-                        "name": "Gete Ui Drop State_ Normal"
+                        "name": "Normal"
                     },
                     "results": [
                         {

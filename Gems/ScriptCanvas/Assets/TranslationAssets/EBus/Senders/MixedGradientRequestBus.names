@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "MixedGradientRequestBus",
+            "base": "MixedGradientRequestBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
@@ -9,7 +9,7 @@
             },
             "methods": [
                 {
-                    "key": "GetNumLayers",
+                    "base": "GetNumLayers",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetNumLayers"
@@ -31,7 +31,7 @@
                     ]
                 },
                 {
-                    "key": "AddLayer",
+                    "base": "AddLayer",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke AddLayer"
@@ -45,7 +45,7 @@
                     }
                 },
                 {
-                    "key": "RemoveLayer",
+                    "base": "RemoveLayer",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke RemoveLayer"
@@ -67,7 +67,7 @@
                     ]
                 },
                 {
-                    "key": "GetLayer",
+                    "base": "GetLayer",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetLayer"

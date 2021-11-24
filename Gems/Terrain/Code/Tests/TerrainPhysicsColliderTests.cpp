@@ -21,7 +21,7 @@
 #include <AzTest/AzTest.h>
 
 #include <MockAxisAlignedBoxShapeComponent.h>
-#include <Terrain/MockTerrain.h>
+#include <Tests/Mocks/Terrain/MockTerrainDataRequestBus.h>
 
 using ::testing::NiceMock;
 using ::testing::AtLeast;

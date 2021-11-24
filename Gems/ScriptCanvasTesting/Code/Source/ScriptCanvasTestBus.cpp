@@ -26,9 +26,12 @@ namespace ScriptCanvasTesting
 
         if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
-            behaviorContext->EnumProperty<(AZ::u32)TestEnum::Alpha>("ALPHA");
-            behaviorContext->EnumProperty<(AZ::u32)TestEnum::Bravo>("BRAVO");
-            behaviorContext->EnumProperty<(AZ::u32)TestEnum::Charlie>("CHARLIE");
+            behaviorContext->EnumProperty<(AZ::u32)TestEnum::Alpha>("ALPHA")
+                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All);
+            behaviorContext->EnumProperty<(AZ::u32)TestEnum::Bravo>("BRAVO")
+                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All);
+            behaviorContext->EnumProperty<(AZ::u32)TestEnum::Charlie>("CHARLIE")
+                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All);
         }
     }
 

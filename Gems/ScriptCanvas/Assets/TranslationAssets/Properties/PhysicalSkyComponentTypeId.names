@@ -1,15 +1,16 @@
 {
     "entries": [
         {
-            "key": "PhysicalSkyComponentTypeId",
+            "base": "PhysicalSkyComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Physical Sky Component Type Id"
+                "name": "Physical Sky Component Type Id",
+                "category": "Constants/Editor"
             },
             "methods": [
                 {
-                    "key": "GetPhysicalSkyComponentTypeId",
+                    "base": "GetPhysicalSkyComponentTypeId",
                     "details": {
                         "name": "Get Physical Sky Component Type Id"
                     },

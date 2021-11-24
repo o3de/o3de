@@ -1,15 +1,16 @@
 {
     "entries": [
         {
-            "key": "EditorShapeWeightModifierComponentTypeId",
+            "base": "EditorShapeWeightModifierComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Editor Shape Weight Modifier Component Type Id"
+                "name": "Editor Shape Weight Modifier Component Type Id",
+                "category": "Constants/Editor"
             },
             "methods": [
                 {
-                    "key": "GetEditorShapeWeightModifierComponentTypeId",
+                    "base": "GetEditorShapeWeightModifierComponentTypeId",
                     "details": {
                         "name": "Get Editor Shape Weight Modifier Component Type Id"
                     },

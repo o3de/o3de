@@ -1,15 +1,16 @@
 {
     "entries": [
         {
-            "key": "QuadShapeComponentTypeId",
+            "base": "QuadShapeComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Quad Shape Component Type Id"
+                "name": "Quad Shape Component Type Id",
+                "category": "Constants/Editor"
             },
             "methods": [
                 {
-                    "key": "GetQuadShapeComponentTypeId",
+                    "base": "GetQuadShapeComponentTypeId",
                     "details": {
                         "name": "Get Quad Shape Component Type Id"
                     },

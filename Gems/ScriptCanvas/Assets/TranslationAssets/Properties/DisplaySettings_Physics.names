@@ -1,17 +1,18 @@
 {
     "entries": [
         {
-            "key": "DisplaySettings_Physics",
+            "base": "DisplaySettings_Physics",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Display Settings_ Physics"
+                "name": "Physics",
+                "category": "Constants/Display Settings"
             },
             "methods": [
                 {
-                    "key": "GetDisplaySettings_Physics",
+                    "base": "GetDisplaySettings_Physics",
                     "details": {
-                        "name": "Get Display Settings_ Physics"
+                        "name": "Get Physics"
                     },
                     "results": [
                         {

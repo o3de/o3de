@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "Entity Transform",
+            "base": "Entity Transform",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
@@ -9,7 +9,7 @@
             },
             "methods": [
                 {
-                    "key": "Rotate",
+                    "base": "Rotate",
                     "context": "Entity Transform",
                     "entry": {
                         "name": "In",

@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "QuadShapeComponentRequestsBus",
+            "base": "QuadShapeComponentRequestsBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
@@ -9,7 +9,7 @@
             },
             "methods": [
                 {
-                    "key": "SetQuadHeight",
+                    "base": "SetQuadHeight",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetQuadHeight"
@@ -31,7 +31,7 @@
                     ]
                 },
                 {
-                    "key": "GetQuadWidth",
+                    "base": "GetQuadWidth",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetQuadWidth"
@@ -53,7 +53,7 @@
                     ]
                 },
                 {
-                    "key": "GetQuadHeight",
+                    "base": "GetQuadHeight",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetQuadHeight"
@@ -75,7 +75,7 @@
                     ]
                 },
                 {
-                    "key": "GetQuadConfiguration",
+                    "base": "GetQuadConfiguration",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetQuadConfiguration"
@@ -98,7 +98,7 @@
                     ]
                 },
                 {
-                    "key": "SetQuadWidth",
+                    "base": "SetQuadWidth",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetQuadWidth"
@@ -120,7 +120,7 @@
                     ]
                 },
                 {
-                    "key": "GetQuadOrientation",
+                    "base": "GetQuadOrientation",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetQuadOrientation"

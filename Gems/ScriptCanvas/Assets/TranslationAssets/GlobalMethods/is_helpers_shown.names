@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "is_helpers_shown",
+            "base": "is_helpers_shown",
             "context": "Method",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "is_helpers_shown",
+                    "base": "is_helpers_shown",
                     "context": "Global",
                     "entry": {
                         "name": "In",

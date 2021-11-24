@@ -1,15 +1,16 @@
 {
     "entries": [
         {
-            "key": "ShapeIntersectionFilterComponentTypeId",
+            "base": "ShapeIntersectionFilterComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Shape Intersection Filter Component Type Id"
+                "name": "Shape Intersection Filter Component Type Id",
+                "category": "Constants/Editor"
             },
             "methods": [
                 {
-                    "key": "GetShapeIntersectionFilterComponentTypeId",
+                    "base": "GetShapeIntersectionFilterComponentTypeId",
                     "details": {
                         "name": "Get Shape Intersection Filter Component Type Id"
                     },

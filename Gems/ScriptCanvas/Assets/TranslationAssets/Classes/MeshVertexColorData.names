@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "MeshVertexColorData",
+            "base": "MeshVertexColorData",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
@@ -9,7 +9,7 @@
             },
             "methods": [
                 {
-                    "key": "GetCustomName",
+                    "base": "GetCustomName",
                     "context": "MeshVertexColorData",
                     "entry": {
                         "name": "In",
@@ -41,7 +41,7 @@
                     ]
                 },
                 {
-                    "key": "GetCount",
+                    "base": "GetCount",
                     "context": "MeshVertexColorData",
                     "entry": {
                         "name": "In",
@@ -73,7 +73,7 @@
                     ]
                 },
                 {
-                    "key": "GetColor",
+                    "base": "GetColor",
                     "context": "MeshVertexColorData",
                     "entry": {
                         "name": "In",

@@ -1,17 +1,18 @@
 {
     "entries": [
         {
-            "key": "BlendFactor_AlphaSource",
+            "base": "BlendFactor_AlphaSource",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Blend Factor_ Alpha Source"
+                "name": "Alpha Source",
+                "category": "Constants/Blend Factor"
             },
             "methods": [
                 {
-                    "key": "GetBlendFactor_AlphaSource",
+                    "base": "AlphaSource",
                     "details": {
-                        "name": "Get Blend Factor_ Alpha Source"
+                        "name": "Get Alpha Source"
                     },
                     "results": [
                         {

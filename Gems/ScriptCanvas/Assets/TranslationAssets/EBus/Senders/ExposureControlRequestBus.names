@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "ExposureControlRequestBus",
+            "base": "ExposureControlRequestBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
@@ -9,7 +9,7 @@
             },
             "methods": [
                 {
-                    "key": "SetEyeAdaptationSpeedDownOverride",
+                    "base": "SetEyeAdaptationSpeedDownOverride",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetEyeAdaptationSpeedDownOverride"
@@ -31,7 +31,7 @@
                     ]
                 },
                 {
-                    "key": "GetEnabled",
+                    "base": "GetEnabled",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetEnabled"
@@ -53,7 +53,7 @@
                     ]
                 },
                 {
-                    "key": "SetEnabledOverride",
+                    "base": "SetEnabledOverride",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetEnabledOverride"
@@ -75,7 +75,7 @@
                     ]
                 },
                 {
-                    "key": "SetManualCompensation",
+                    "base": "SetManualCompensation",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetManualCompensation"
@@ -97,7 +97,7 @@
                     ]
                 },
                 {
-                    "key": "SetEyeAdaptationSpeedDown",
+                    "base": "SetEyeAdaptationSpeedDown",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetEyeAdaptationSpeedDown"
@@ -119,7 +119,7 @@
                     ]
                 },
                 {
-                    "key": "GetExposureControlTypeOverride",
+                    "base": "GetExposureControlTypeOverride",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetExposureControlTypeOverride"
@@ -141,7 +141,7 @@
                     ]
                 },
                 {
-                    "key": "GetHeatmapEnabled",
+                    "base": "GetHeatmapEnabled",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetHeatmapEnabled"
@@ -163,7 +163,7 @@
                     ]
                 },
                 {
-                    "key": "SetEyeAdaptationSpeedUpOverride",
+                    "base": "SetEyeAdaptationSpeedUpOverride",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetEyeAdaptationSpeedUpOverride"
@@ -185,7 +185,7 @@
                     ]
                 },
                 {
-                    "key": "SetExposureControlType",
+                    "base": "SetExposureControlType",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetExposureControlType"
@@ -207,7 +207,7 @@
                     ]
                 },
                 {
-                    "key": "SetEnabled",
+                    "base": "SetEnabled",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetEnabled"
@@ -229,7 +229,7 @@
                     ]
                 },
                 {
-                    "key": "GetExposureControlType",
+                    "base": "GetExposureControlType",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetExposureControlType"
@@ -251,7 +251,7 @@
                     ]
                 },
                 {
-                    "key": "SetEyeAdaptationExposureMax",
+                    "base": "SetEyeAdaptationExposureMax",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetEyeAdaptationExposureMax"
@@ -273,7 +273,7 @@
                     ]
                 },
                 {
-                    "key": "GetEyeAdaptationSpeedDownOverride",
+                    "base": "GetEyeAdaptationSpeedDownOverride",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetEyeAdaptationSpeedDownOverride"
@@ -295,7 +295,7 @@
                     ]
                 },
                 {
-                    "key": "GetManualCompensationOverride",
+                    "base": "GetManualCompensationOverride",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetManualCompensationOverride"
@@ -317,7 +317,7 @@
                     ]
                 },
                 {
-                    "key": "GetHeatmapEnabledOverride",
+                    "base": "GetHeatmapEnabledOverride",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetHeatmapEnabledOverride"
@@ -339,7 +339,7 @@
                     ]
                 },
                 {
-                    "key": "SetEyeAdaptationSpeedUp",
+                    "base": "SetEyeAdaptationSpeedUp",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetEyeAdaptationSpeedUp"
@@ -361,7 +361,7 @@
                     ]
                 },
                 {
-                    "key": "GetEyeAdaptationSpeedUpOverride",
+                    "base": "GetEyeAdaptationSpeedUpOverride",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetEyeAdaptationSpeedUpOverride"
@@ -383,7 +383,7 @@
                     ]
                 },
                 {
-                    "key": "GetEyeAdaptationExposureMinOverride",
+                    "base": "GetEyeAdaptationExposureMinOverride",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetEyeAdaptationExposureMinOverride"
@@ -405,7 +405,7 @@
                     ]
                 },
                 {
-                    "key": "GetEyeAdaptationExposureMaxOverride",
+                    "base": "GetEyeAdaptationExposureMaxOverride",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetEyeAdaptationExposureMaxOverride"
@@ -427,7 +427,7 @@
                     ]
                 },
                 {
-                    "key": "GetEnabledOverride",
+                    "base": "GetEnabledOverride",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetEnabledOverride"
@@ -449,7 +449,7 @@
                     ]
                 },
                 {
-                    "key": "SetExposureControlTypeOverride",
+                    "base": "SetExposureControlTypeOverride",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetExposureControlTypeOverride"
@@ -471,7 +471,7 @@
                     ]
                 },
                 {
-                    "key": "GetEyeAdaptationExposureMin",
+                    "base": "GetEyeAdaptationExposureMin",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetEyeAdaptationExposureMin"
@@ -493,7 +493,7 @@
                     ]
                 },
                 {
-                    "key": "GetManualCompensation",
+                    "base": "GetManualCompensation",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetManualCompensation"
@@ -515,7 +515,7 @@
                     ]
                 },
                 {
-                    "key": "SetEyeAdaptationExposureMinOverride",
+                    "base": "SetEyeAdaptationExposureMinOverride",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetEyeAdaptationExposureMinOverride"
@@ -537,7 +537,7 @@
                     ]
                 },
                 {
-                    "key": "SetManualCompensationOverride",
+                    "base": "SetManualCompensationOverride",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetManualCompensationOverride"
@@ -559,7 +559,7 @@
                     ]
                 },
                 {
-                    "key": "GetEyeAdaptationSpeedDown",
+                    "base": "GetEyeAdaptationSpeedDown",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetEyeAdaptationSpeedDown"
@@ -581,7 +581,7 @@
                     ]
                 },
                 {
-                    "key": "GetEyeAdaptationSpeedUp",
+                    "base": "GetEyeAdaptationSpeedUp",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetEyeAdaptationSpeedUp"
@@ -603,7 +603,7 @@
                     ]
                 },
                 {
-                    "key": "SetEyeAdaptationExposureMin",
+                    "base": "SetEyeAdaptationExposureMin",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetEyeAdaptationExposureMin"
@@ -625,7 +625,7 @@
                     ]
                 },
                 {
-                    "key": "SetHeatmapEnabled",
+                    "base": "SetHeatmapEnabled",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetHeatmapEnabled"
@@ -647,7 +647,7 @@
                     ]
                 },
                 {
-                    "key": "SetEyeAdaptationExposureMaxOverride",
+                    "base": "SetEyeAdaptationExposureMaxOverride",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetEyeAdaptationExposureMaxOverride"
@@ -669,7 +669,7 @@
                     ]
                 },
                 {
-                    "key": "GetEyeAdaptationExposureMax",
+                    "base": "GetEyeAdaptationExposureMax",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetEyeAdaptationExposureMax"
@@ -691,7 +691,7 @@
                     ]
                 },
                 {
-                    "key": "SetHeatmapEnabledOverride",
+                    "base": "SetHeatmapEnabledOverride",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetHeatmapEnabledOverride"

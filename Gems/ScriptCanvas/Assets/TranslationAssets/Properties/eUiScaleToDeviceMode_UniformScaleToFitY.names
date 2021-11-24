@@ -1,17 +1,18 @@
 {
     "entries": [
         {
-            "key": "eUiScaleToDeviceMode_UniformScaleToFitY",
+            "base": "eUiScaleToDeviceMode_UniformScaleToFitY",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "e Ui Scale To Device Mode_ Uniform Scale To FitY"
+                "name": "Uniform Scale To Fit Y",
+                "category": "Constants/UI/Scale To Device Mode"
             },
             "methods": [
                 {
-                    "key": "GeteUiScaleToDeviceMode_UniformScaleToFitY",
+                    "base": "GeteUiScaleToDeviceMode_UniformScaleToFitY",
                     "details": {
-                        "name": "Gete Ui Scale To Device Mode_ Uniform Scale To FitY"
+                        "name": "Uniform Scale To Fit Y"
                     },
                     "results": [
                         {

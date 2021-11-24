@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "CollisionEvent",
+            "base": "CollisionEvent",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
@@ -9,7 +9,7 @@
             },
             "methods": [
                 {
-                    "key": "GetBody1EntityId",
+                    "base": "GetBody1EntityId",
                     "context": "CollisionEvent",
                     "entry": {
                         "name": "In",
@@ -41,7 +41,7 @@
                     ]
                 },
                 {
-                    "key": "GetBody2EntityId",
+                    "base": "GetBody2EntityId",
                     "context": "CollisionEvent",
                     "entry": {
                         "name": "In",
@@ -73,7 +73,7 @@
                     ]
                 },
                 {
-                    "key": "GetContacts",
+                    "base": "GetContacts",
                     "details": {
                         "name": "Get Contacts"
                     },

@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "{C5BDF392-9669-4928-A0F5-F55B8A5B3BAC}",
+            "base": "{C5BDF392-9669-4928-A0F5-F55B8A5B3BAC}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
@@ -11,26 +11,26 @@
             },
             "slots": [
                 {
-                    "key": "DataInput_Condition",
+                    "base": "DataInput_Condition",
                     "details": {
                         "name": "Condition"
                     }
                 },
                 {
-                    "key": "Input_In",
+                    "base": "Input_In",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out",
                     "details": {
                         "name": "Out",
                         "tooltip": "Signalled if the condition is false, or if the loop calls the break node"
                     }
                 },
                 {
-                    "key": "Output_Loop",
+                    "base": "Output_Loop",
                     "details": {
                         "name": "Loop",
                         "tooltip": "Signalled if the condition is true, and every time the last node of 'Loop' finishes"

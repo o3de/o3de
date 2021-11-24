@@ -1,15 +1,16 @@
 {
     "entries": [
         {
-            "key": "InvalidTemplateId",
+            "base": "InvalidTemplateId",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Invalid Template Id"
+                "name": "Invalid Template Id",
+                "category": "Constants/Editor"
             },
             "methods": [
                 {
-                    "key": "GetInvalidTemplateId",
+                    "base": "GetInvalidTemplateId",
                     "details": {
                         "name": "Get Invalid Template Id"
                     },

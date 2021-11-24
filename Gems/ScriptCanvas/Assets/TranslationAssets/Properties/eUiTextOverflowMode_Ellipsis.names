@@ -1,17 +1,18 @@
 {
     "entries": [
         {
-            "key": "eUiTextOverflowMode_Ellipsis",
+            "base": "eUiTextOverflowMode_Ellipsis",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "e Ui Text Overflow Mode_ Ellipsis"
+                "name": "Ellipsis",
+                "category": "Constants/UI/Text Overflow Mode"
             },
             "methods": [
                 {
-                    "key": "GeteUiTextOverflowMode_Ellipsis",
+                    "base": "GeteUiTextOverflowMode_Ellipsis",
                     "details": {
-                        "name": "Gete Ui Text Overflow Mode_ Ellipsis"
+                        "name": "Ellipsis"
                     },
                     "results": [
                         {

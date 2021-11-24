@@ -216,6 +216,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                     AZ::AzTestShared
                     AZ::AzTest
                     AZ::AzToolsFrameworkTestCommon
+                    AZ::AzManipulatorTestFramework.Static
                     Gem::PhysX.Static
                     Gem::PhysX.Mocks
                     Gem::PhysX.Editor.Static

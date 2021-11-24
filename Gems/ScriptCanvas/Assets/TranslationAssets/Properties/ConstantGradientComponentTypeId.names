@@ -1,15 +1,16 @@
 {
     "entries": [
         {
-            "key": "ConstantGradientComponentTypeId",
+            "base": "ConstantGradientComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Constant Gradient Component Type Id"
+                "name": "Constant Gradient Component Type Id",
+                "category": "Constants/Editor"
             },
             "methods": [
                 {
-                    "key": "GetConstantGradientComponentTypeId",
+                    "base": "GetConstantGradientComponentTypeId",
                     "details": {
                         "name": "Get Constant Gradient Component Type Id"
                     },

@@ -1,15 +1,16 @@
 {
     "entries": [
         {
-            "key": "DescriptorListComponentTypeId",
+            "base": "DescriptorListComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Descriptor List Component Type Id"
+                "name": "Descriptor List Component Type Id",
+                "category": "Constants/Editor"
             },
             "methods": [
                 {
-                    "key": "GetDescriptorListComponentTypeId",
+                    "base": "GetDescriptorListComponentTypeId",
                     "details": {
                         "name": "Get Descriptor List Component Type Id"
                     },

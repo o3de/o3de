@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "ShaderCollectionItem",
+            "base": "ShaderCollectionItem",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
@@ -9,7 +9,7 @@
             },
             "methods": [
                 {
-                    "key": "GetShaderAsset",
+                    "base": "GetShaderAsset",
                     "context": "ShaderCollectionItem",
                     "entry": {
                         "name": "In",
@@ -41,7 +41,7 @@
                     ]
                 },
                 {
-                    "key": "GetShaderAssetId",
+                    "base": "GetShaderAssetId",
                     "context": "ShaderCollectionItem",
                     "entry": {
                         "name": "In",
@@ -73,7 +73,7 @@
                     ]
                 },
                 {
-                    "key": "GetShaderVariantId",
+                    "base": "GetShaderVariantId",
                     "context": "ShaderCollectionItem",
                     "entry": {
                         "name": "In",
@@ -105,7 +105,7 @@
                     ]
                 },
                 {
-                    "key": "GetShaderOptionGroup",
+                    "base": "GetShaderOptionGroup",
                     "context": "ShaderCollectionItem",
                     "entry": {
                         "name": "In",

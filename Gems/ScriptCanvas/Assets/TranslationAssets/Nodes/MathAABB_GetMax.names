@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "{6C71D076-0427-56B4-8A95-1DCB1835D1BF}",
+            "base": "{6C71D076-0427-56B4-8A95-1DCB1835D1BF}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
@@ -12,25 +12,25 @@
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "key": "DataInput_AABB: Source",
+                    "base": "DataInput_AABB: Source",
                     "details": {
                         "name": "Source"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Vector3",
+                    "base": "DataOutput_Result: Vector3",
                     "details": {
                         "name": "Max"
                     }

@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "SurfaceAltitudeGradientConfig",
+            "base": "SurfaceAltitudeGradientConfig",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
@@ -9,7 +9,7 @@
             },
             "methods": [
                 {
-                    "key": "GetNumTags",
+                    "base": "GetNumTags",
                     "context": "SurfaceAltitudeGradientConfig",
                     "entry": {
                         "name": "In",
@@ -42,7 +42,7 @@
                     ]
                 },
                 {
-                    "key": "GetTag",
+                    "base": "GetTag",
                     "context": "SurfaceAltitudeGradientConfig",
                     "entry": {
                         "name": "In",
@@ -81,7 +81,7 @@
                     ]
                 },
                 {
-                    "key": "RemoveTag",
+                    "base": "RemoveTag",
                     "context": "SurfaceAltitudeGradientConfig",
                     "entry": {
                         "name": "In",
@@ -112,7 +112,7 @@
                     ]
                 },
                 {
-                    "key": "AddTag",
+                    "base": "AddTag",
                     "context": "SurfaceAltitudeGradientConfig",
                     "entry": {
                         "name": "In",

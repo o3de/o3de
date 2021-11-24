@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "UiCheckboxNotificationBus",
+            "base": "UiCheckboxNotificationBus",
             "context": "EBusHandler",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "OnCheckboxStateChange",
+                    "base": "OnCheckboxStateChange",
                     "details": {
                         "name": "On Checkbox State Change",
                         "tooltip": "Executes when the checkbox state has changed"

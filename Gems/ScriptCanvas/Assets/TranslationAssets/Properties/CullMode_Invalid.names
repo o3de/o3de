@@ -1,17 +1,18 @@
 {
     "entries": [
         {
-            "key": "CullMode_Invalid",
+            "base": "CullMode_Invalid",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Cull Mode_ Invalid"
+                "name": "Invalid",
+                "category": "Constants/Cull Mode"
             },
             "methods": [
                 {
-                    "key": "GetCullMode_Invalid",
+                    "base": "GetCullMode_Invalid",
                     "details": {
-                        "name": "Get Cull Mode_ Invalid"
+                        "name": "Get Invalid"
                     },
                     "results": [
                         {

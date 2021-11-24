@@ -1,17 +1,18 @@
 {
     "entries": [
         {
-            "key": "FrameCaptureResult_FileWriteError",
+            "base": "FrameCaptureResult_FileWriteError",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Frame Capture Result_ File Write Error"
+                "name": "File Write Error",
+                "category": "Constants/Frame Capture Result"
             },
             "methods": [
                 {
-                    "key": "GetFrameCaptureResult_FileWriteError",
+                    "base": "GetFrameCaptureResult_FileWriteError",
                     "details": {
-                        "name": "Get Frame Capture Result_ File Write Error"
+                        "name": "File Write Error"
                     },
                     "results": [
                         {

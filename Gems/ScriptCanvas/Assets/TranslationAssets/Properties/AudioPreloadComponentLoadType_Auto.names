@@ -1,17 +1,18 @@
 {
     "entries": [
         {
-            "key": "AudioPreloadComponentLoadType_Auto",
+            "base": "AudioPreloadComponentLoadType_Auto",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Audio Preload Component Load Type_ Auto"
+                "name": "Load Type Auto",
+                "category": "Constants/Audio Preload"
             },
             "methods": [
                 {
-                    "key": "GetAudioPreloadComponentLoadType_Auto",
+                    "base": "GetAudioPreloadComponentLoadType_Auto",
                     "details": {
-                        "name": "Get Audio Preload Component Load Type_ Auto"
+                        "name": "Load Type Auto"
                     },
                     "results": [
                         {

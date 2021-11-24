@@ -1,17 +1,18 @@
 {
     "entries": [
         {
-            "key": "BlendFactor_ColorSource1",
+            "base": "BlendFactor_ColorSource1",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Blend Factor_ Color Source 1"
+                "name": "Color Source 1",
+                "category": "Constants/Blend Factor"
             },
             "methods": [
                 {
-                    "key": "GetBlendFactor_ColorSource1",
+                    "base": "GetBlendFactor_ColorSource1",
                     "details": {
-                        "name": "Get Blend Factor_ Color Source 1"
+                        "name": "Get Color Source 1"
                     },
                     "results": [
                         {
