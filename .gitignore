@@ -3,7 +3,7 @@
 .vscode/
 __pycache__
 AssetProcessorTemp/**
-[Bb]uild/**
+[Bb]uild/
 [Oo]ut/**
 CMakeUserPresets.json
 [Cc]ache/
