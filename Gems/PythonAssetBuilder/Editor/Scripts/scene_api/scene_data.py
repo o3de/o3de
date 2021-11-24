@@ -95,7 +95,7 @@ class SceneManifest():
     def __init__(self):
         self.manifest = {'values': []}
 
-    def add_mesh_group(self, name) -> dict:
+    def add_mesh_group(self, name: str) -> dict:
         meshGroup =  {}
         meshGroup['$type'] = '{07B356B7-3635-40B5-878A-FAC4EFD5AD86} MeshGroup'
         meshGroup['name'] = name
@@ -104,7 +104,7 @@ class SceneManifest():
         self.manifest['values'].append(meshGroup)
         return meshGroup
 
-    def add_prefab_group(self, name, id, json) -> dict:
+    def add_prefab_group(self, name: str, id: str, json: dict) -> dict:
         prefabGroup = {}
         prefabGroup['$type'] = '{99FE3C6F-5B55-4D8B-8013-2708010EC715} PrefabGroup'
         prefabGroup['name'] = name
@@ -113,30 +113,33 @@ class SceneManifest():
         self.manifest['values'].append(prefabGroup)
         return prefabGroup
 
-    def mesh_group_select_node(self, meshGroup, nodeName):
-        meshGroup['nodeSelectionList']['selectedNodes'].append(nodeName)
+    def mesh_group_select_node(self, mesh_group: dict, node_name: str) -> None:
+        mesh_group['nodeSelectionList']['selectedNodes'].append(node_name)
 
-    def mesh_group_unselect_node(self, meshGroup, nodeName):
-        meshGroup['nodeSelectionList']['unselectedNodes'].append(nodeName)
+    def mesh_group_unselect_node(self, mesh_group: dict, node_name: str) -> None:
+        mesh_group['nodeSelectionList']['unselectedNodes'].append(node_name)
 
-    def mesh_group_add_advanced_coordinate_system(self, meshGroup, originNodeName, translation, rotation, scale):
-        originRule =  {}
-        originRule['$type'] = 'CoordinateSystemRule'
-        originRule['useAdvancedData'] = True
-        originRule['originNodeName'] = '' if originNodeName is None else originNodeName
+    def mesh_group_add_advanced_coordinate_system(self, mesh_group: dict, origin_node_name: str, translation: object,
+                                                  rotation: object, scale: float) -> None:
+        origin_rule = {
+            '$type': 'CoordinateSystemRule',
+            'useAdvancedData': True,
+            'originNodeName': '' if origin_node_name is None else origin_node_name
+        }
         if translation is not None:
-            originRule['translation'] = translation
+            origin_rule['translation'] = translation
         if rotation is not None:
-            originRule['rotation'] = rotation
+            origin_rule['rotation'] = rotation
         if scale != 1.0:
-            originRule['scale'] = scale
-        meshGroup['rules']['rules'].append(originRule)
+            origin_rule['scale'] = scale
+        mesh_group['rules']['rules'].append(origin_rule)
 
-    def mesh_group_add_comment(self, meshGroup, comment):
-        commentRule =  {}
-        commentRule['$type'] = 'CommentRule'
-        commentRule['comment'] = comment
-        meshGroup['rules']['rules'].append(commentRule)
+    def mesh_group_add_comment(self, mesh_group: dict, comment: str) -> None:
+        commentRule = {
+            '$type': 'CommentRule',
+            'comment': comment
+        }
+        mesh_group['rules']['rules'].append(commentRule)
 
     def DefaultOrValue(self, val, default):
         return default if val is None else val
@@ -145,69 +148,80 @@ class SceneManifest():
     # 1 Green
     # 2 Blue
     # 3 Alpha
-    def mesh_group_add_cloth_rule(self, meshGroup, clothNodeName,
-        inverseMassesStreamName, inverseMassesChannel,
-        motionConstrainsStreamName, motionConstraintsChannel, 
-        backstopStreamName, backstopOffsetChannel, backstopRadiusChannel):
-        cloth_rule = {}
-        cloth_rule['$type'] = 'ClothRule'
-        cloth_rule['meshNodeName'] = clothNodeName
-        cloth_rule['inverseMassesStreamName'] = self.DefaultOrValue(inverseMassesStreamName, 'Default: 1.0')
-        if inverseMassesChannel is not None:
-            cloth_rule['inverseMassesChannel'] = inverseMassesChannel
-        cloth_rule['motionConstraintsStreamName'] = self.DefaultOrValue(motionConstrainsStreamName, 'Default: 1.0')
-        if motionConstraintsChannel is not None:
-            cloth_rule['motionConstraintsChannel'] = motionConstraintsChannel
-        cloth_rule['backstopStreamName'] = self.DefaultOrValue(backstopStreamName, 'None')
-        if backstopOffsetChannel is not None:
-            cloth_rule['backstopOffsetChannel'] = backstopOffsetChannel
-        if backstopRadiusChannel is not None:
-            cloth_rule['backstopRadiusChannel'] = backstopRadiusChannel
-        meshGroup['rules']['rules'].append(cloth_rule)
+    def mesh_group_add_cloth_rule(self, mesh_group: dict, cloth_node_name: str,
+                                  inverse_masses_stream_name: str, inverse_masses_channel: int,
+                                  motion_constraints_stream_name: str, motion_constraints_channel: int,
+                                  backstop_stream_name: str, backstop_offset_channel: int,
+                                  backstop_radius_channel: int) -> None:
+        cloth_rule = {
+            '$type': 'ClothRule',
+            'meshNodeName': cloth_node_name,
+            'inverseMassesStreamName': self.DefaultOrValue(inverse_masses_stream_name, 'Default: 1.0')
+        }
 
-    def mesh_group_add_lod_rule(self, meshGroup):
-        lod_rule = {}
-        lod_rule['$type'] = '{6E796AC8-1484-4909-860A-6D3F22A7346F} LodRule'
-        lod_rule['nodeSelectionList'] = []
-        meshGroup['rules']['rules'].append(lod_rule)
+        if inverse_masses_channel is not None:
+            cloth_rule['inverseMassesChannel'] = inverse_masses_channel
+        cloth_rule['motionConstraintsStreamName'] = self.DefaultOrValue(motion_constraints_stream_name, 'Default: 1.0')
+        if motion_constraints_channel is not None:
+            cloth_rule['motionConstraintsChannel'] = motion_constraints_channel
+        cloth_rule['backstopStreamName'] = self.DefaultOrValue(backstop_stream_name, 'None')
+        if backstop_offset_channel is not None:
+            cloth_rule['backstopOffsetChannel'] = backstop_offset_channel
+        if backstop_radius_channel is not None:
+            cloth_rule['backstopRadiusChannel'] = backstop_radius_channel
+        mesh_group['rules']['rules'].append(cloth_rule)
+
+    def mesh_group_add_lod_rule(self, mesh_group: dict) -> dict:
+        lod_rule = {
+            '$type': '{6E796AC8-1484-4909-860A-6D3F22A7346F} LodRule',
+            'nodeSelectionList': []
+        }
+
+        mesh_group['rules']['rules'].append(lod_rule)
         return lod_rule
 
-    def lod_rule_add_lod(self, lodRule):
+    def lod_rule_add_lod(self, lod_rule: dict) -> dict:
         lod = {'selectedNodes': [], 'unselectedNodes': []}
-        lodRule['nodeSelectionList'].append(lod)
+        lod_rule['nodeSelectionList'].append(lod)
         return lod
 
-    def lod_select_node(self, lod, selectedNode):
-        lod['selectedNodes'].append(selectedNode)
+    def lod_select_node(self, lod: dict, selected_node: str) -> None:
+        lod['selectedNodes'].append(selected_node)
 
-    def lod_unselect_node(self, lod, unselectedNode):
-        lod['unselectedNodes'].append(unselectedNode)
+    def lod_unselect_node(self, lod: dict, unselected_node: str) -> None:
+        lod['unselectedNodes'].append(unselected_node)
 
-    def mesh_group_add_advanced_mesh_rule(self, mesh_group, use_32bit_vertices, merge_meshes, use_custom_normals, vertex_color_stream):
-        rule = {}
-        rule['$type'] = 'StaticMeshAdvancedRule'
-        rule['use32bitVertices'] = self.DefaultOrValue(use_32bit_vertices, False)
-        rule['mergeMeshes'] = self.DefaultOrValue(merge_meshes, True)
-        rule['useCustomNormals'] = self.DefaultOrValue(use_custom_normals, True)
+    def mesh_group_add_advanced_mesh_rule(self, mesh_group: dict, use_32bit_vertices: bool, merge_meshes: bool,
+                                          use_custom_normals: bool,
+                                          vertex_color_stream: str) -> None:
+        rule = {
+            '$type': 'StaticMeshAdvancedRule',
+            'use32bitVertices': self.DefaultOrValue(use_32bit_vertices, False),
+            'mergeMeshes': self.DefaultOrValue(merge_meshes, True),
+            'useCustomNormals': self.DefaultOrValue(use_custom_normals, True)
+        }
 
         if vertex_color_stream is not None:
             rule['vertexColorStreamName'] = vertex_color_stream
 
         mesh_group['rules']['rules'].append(rule)
 
-    def mesh_group_add_skin_rule(self, mesh_group, max_weights_per_vertex, weight_threshold):
-        rule = {}
-        rule['$type'] = 'SkinRule'
-        rule['maxWeightsPerVertex'] = self.DefaultOrValue(max_weights_per_vertex, 4)
-        rule['weightThreshold'] = self.DefaultOrValue(weight_threshold, 0.001)
+    def mesh_group_add_skin_rule(self, mesh_group: dict, max_weights_per_vertex: int, weight_threshold: float) -> None:
+        rule = {
+            '$type': 'SkinRule',
+            'maxWeightsPerVertex': self.DefaultOrValue(max_weights_per_vertex, 4),
+            'weightThreshold': self.DefaultOrValue(weight_threshold, 0.001)
+        }
 
         mesh_group['rules']['rules'].append(rule)
 
-    def mesh_group_add_tangent_rule(self, mesh_group, tangent_space, tspace_method):
-        rule = {}
-        rule['$type'] = 'TangentsRule'
-        rule['tangentSpace'] = self.DefaultOrValue(tangent_space, 1)
-        rule['tSpaceMethod'] = self.DefaultOrValue(tspace_method, 0)
+    def mesh_group_add_tangent_rule(self, mesh_group: dict, tangent_space: int, tspace_method: int) -> None:
+        rule = {
+            '$type': 'TangentsRule',
+            'tangentSpace': self.DefaultOrValue(tangent_space, 1),
+            'tSpaceMethod': self.DefaultOrValue(tspace_method, 0)
+        }
+
         mesh_group['rules']['rules'].append(rule)
 
     def export(self):
