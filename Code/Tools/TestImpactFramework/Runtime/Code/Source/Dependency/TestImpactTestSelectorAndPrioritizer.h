@@ -45,6 +45,8 @@ namespace TestImpact
             const DynamicDependencyMap<NativeTestTargetList, NativeProductionTargetList>* dynamicDependencyMap,
             DependencyGraphDataMap&& dependencyGraphDataMap);
 
+        virtual ~TestSelectorAndPrioritizer() = default;
+
         //! Select the covering test targets for the given set of source changes and optionally prioritizes said test selection.
         //! @param changeDependencyList The resolved list of source dependencies for the CRUD source changes.
         //! @param testSelectionStrategy The test selection and prioritization strategy to apply to the given CRUD source changes.
@@ -69,5 +71,42 @@ namespace TestImpact
 
         const DynamicDependencyMap<NativeTestTargetList, NativeProductionTargetList>* m_dynamicDependencyMap;
         DependencyGraphDataMap m_dependencyGraphDataMap;
+
+    protected:
+        //!
+        virtual void CreateProductionSourceAction(const NativeProductionTarget* target, SelectedTestTargetAndDependerMap& selectedTestTargetMap);
+
+        //!
+        virtual void CreateTestSourceAction(const NativeTestTarget* target, SelectedTestTargetAndDependerMap& selectedTestTargetMap);
+
+        //!
+        virtual void UpdateProductionSourceWithCoverageAction(
+            const NativeProductionTarget* target,
+            SelectedTestTargetAndDependerMap& selectedTestTargetMap,
+            const SourceDependency& sourceDependency);
+
+        //!
+        virtual void UpdateTestSourceWithCoverageAction(
+            const NativeTestTarget* target,
+            SelectedTestTargetAndDependerMap& selectedTestTargetMap);
+
+        //!
+        virtual void UpdateProductionSourceWithoutCoverageAction(
+            const NativeProductionTarget* target,
+            SelectedTestTargetAndDependerMap& selectedTestTargetMap);
+
+        //!
+        virtual void UpdateTestSourceWithoutCoverageAction(
+            const NativeTestTarget* target,
+            SelectedTestTargetAndDependerMap& selectedTestTargetMap);
+
+        //!
+        virtual void UpdateIndeterminateSourceWithoutCoverageAction(
+            SelectedTestTargetAndDependerMap& selectedTestTargetMap,
+            const SourceDependency& sourceDependency);
+
+        //!
+        virtual void DeleteIndeterminateSourceWithoutCoverageAction(
+            SelectedTestTargetAndDependerMap& selectedTestTargetMap, const SourceDependency& sourceDependency);
     };
 } // namespace TestImpact

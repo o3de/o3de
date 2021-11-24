@@ -39,6 +39,86 @@ namespace TestImpact
     static constexpr bool IsTestTarget =
         AZStd::is_same_v<NativeTestTarget, AZStd::remove_const_t<AZStd::remove_pointer_t<AZStd::decay_t<Target>>>>;
 
+    void TestSelectorAndPrioritizer::CreateProductionSourceAction(
+        const NativeProductionTarget* target, SelectedTestTargetAndDependerMap& selectedTestTargetMap)
+    {
+        // Action
+        // 1. Select all test targets covering the parent production targets
+        const auto coverage = m_dynamicDependencyMap->GetCoveringTestTargetsForProductionTarget(*target);
+        for (const auto* testTarget : coverage)
+        {
+            selectedTestTargetMap[testTarget].insert(target);
+        }
+    }
+
+    void TestSelectorAndPrioritizer::CreateTestSourceAction(
+        const NativeTestTarget* target, SelectedTestTargetAndDependerMap& selectedTestTargetMap)
+    {
+        // Action
+        // 1. Select all parent test targets
+        selectedTestTargetMap.insert(target);
+    }
+
+    void TestSelectorAndPrioritizer::UpdateProductionSourceWithCoverageAction(
+        const NativeProductionTarget* target, SelectedTestTargetAndDependerMap& selectedTestTargetMap, const SourceDependency& sourceDependency)
+    {
+        // Action
+        // 1. Select all test targets covering this file
+        for (const auto* testTarget : sourceDependency.GetCoveringTestTargets())
+        {
+            selectedTestTargetMap[testTarget].insert(target);
+        }
+    }
+
+    void TestSelectorAndPrioritizer::UpdateTestSourceWithCoverageAction(
+        const NativeTestTarget* target, SelectedTestTargetAndDependerMap& selectedTestTargetMap)
+    {
+        // Action
+        // 1. Select the parent test targets for this file
+        selectedTestTargetMap.insert(target);
+    }
+
+    void TestSelectorAndPrioritizer::UpdateProductionSourceWithoutCoverageAction(
+        [[maybe_unused]] const NativeProductionTarget* target, [[maybe_unused]] SelectedTestTargetAndDependerMap& selectedTestTargetMap)
+    {
+        // Action
+        // 1. Do nothing
+    }
+
+    void TestSelectorAndPrioritizer::UpdateTestSourceWithoutCoverageAction(
+        const NativeTestTarget* target, SelectedTestTargetAndDependerMap& selectedTestTargetMap)
+    {
+        // Action
+        // 1. Select the parent test targets for this file
+        selectedTestTargetMap.insert(target);
+    }
+
+    void TestSelectorAndPrioritizer::UpdateIndeterminateSourceWithoutCoverageAction(
+        SelectedTestTargetAndDependerMap& selectedTestTargetMap, const SourceDependency& sourceDependency)
+    {
+        // Action
+        // 1. Log potential orphaned source file warning (handled prior by DynamicDependencyMap)
+        // 2. Select all test targets covering this file
+        // 3. Delete the existing coverage data from the source covering test list (handled prior by DynamicDependencyMap)
+
+        for (const auto* testTarget : sourceDependency.GetCoveringTestTargets())
+        {
+            selectedTestTargetMap.insert(testTarget);
+        }
+    }
+
+    void TestSelectorAndPrioritizer::DeleteIndeterminateSourceWithoutCoverageAction(
+        SelectedTestTargetAndDependerMap& selectedTestTargetMap, const SourceDependency& sourceDependency)
+    {
+        // Action
+        // 1. Select all test targets covering this file
+        // 2. Delete the existing coverage data from the source covering test list (handled prior by DynamicDependencyMap)
+        for (const auto* testTarget : sourceDependency.GetCoveringTestTargets())
+        {
+            selectedTestTargetMap.insert(testTarget);
+        }
+    }
+
     TestSelectorAndPrioritizer::SelectedTestTargetAndDependerMap TestSelectorAndPrioritizer::SelectTestTargets(
         const ChangeDependencyList& changeDependencyList)
     {
@@ -61,14 +141,7 @@ namespace TestImpact
                         // 1. The file has been newly created
                         // 2. This file exists in one or more source to production target mapping artifacts
                         // 3. There exists no coverage data for this file in the source covering test list
-                        //
-                        // Action
-                        // 1. Select all test targets covering the parent production targets
-                        const auto coverage = m_dynamicDependencyMap->GetCoveringTestTargetsForProductionTarget(*target);
-                        for (const auto* testTarget : coverage)
-                        {
-                            selectedTestTargetMap[testTarget].insert(target);
-                        }
+                        CreateProductionSourceAction(target, selectedTestTargetMap);
                     }
                     else
                     {
@@ -80,10 +153,7 @@ namespace TestImpact
                         // 1. The file has been newly created
                         // 2. This file exists in one or more source to test target mapping artifacts
                         // 3. There exists no coverage data for this file in the source covering test list
-                        //
-                        // Action
-                        // 1. Select all parent test targets
-                        selectedTestTargetMap.insert(target);
+                        CreateTestSourceAction(target, selectedTestTargetMap);
                     }
                 }, parentTarget.GetTarget());
             }
@@ -98,7 +168,7 @@ namespace TestImpact
                 {
                     for (const auto& parentTarget : sourceDependency.GetParentTargets())
                     {
-                        AZStd::visit([&selectedTestTargetMap, &sourceDependency](auto&& target)
+                        AZStd::visit([&selectedTestTargetMap, &sourceDependency, this](auto&& target)
                         {
                             if constexpr (IsProductionTarget<decltype(target)>)
                             {
@@ -110,13 +180,7 @@ namespace TestImpact
                                 // 1. The existing file has been modified
                                 // 2. This file exists in one or more source to production target mapping artifacts
                                 // 3. There exists coverage data for this file in the source covering test list
-                                //
-                                // Action
-                                // 1. Select all test targets covering this file
-                                for (const auto* testTarget : sourceDependency.GetCoveringTestTargets())
-                                {
-                                    selectedTestTargetMap[testTarget].insert(target);
-                                }
+                                UpdateProductionSourceWithCoverageAction(target, selectedTestTargetMap, sourceDependency);
                             }
                             else
                             {
@@ -128,10 +192,7 @@ namespace TestImpact
                                 // 1. The existing file has been modified
                                 // 2. This file exists in one or more source to test target mapping artifacts
                                 // 3. There exists coverage data for this file in the source covering test list
-                                //
-                                // Action
-                                // 1. Select the parent test targets for this file
-                                selectedTestTargetMap.insert(target);
+                                UpdateTestSourceWithCoverageAction(target, selectedTestTargetMap);
                             }
                         }, parentTarget.GetTarget());
                     }
@@ -140,9 +201,21 @@ namespace TestImpact
                 {
                     for (const auto& parentTarget : sourceDependency.GetParentTargets())
                     {
-                        AZStd::visit([&selectedTestTargetMap](auto&& target)
+                        AZStd::visit([&selectedTestTargetMap, this](auto&& target)
                         {
-                            if constexpr (IsTestTarget<decltype(target)>)
+                            if constexpr (IsProductionTarget<decltype(target)>)
+                            {
+                                // Parent Targets: Yes
+                                // Coverage Data : No
+                                // Source Type   : Production
+                                //
+                                // Scenario
+                                // 1. The existing file has been modified
+                                // 2. This file exists in one or more source to test target mapping artifacts
+                                // 3. There exists no coverage data for this file in the source covering test list
+                                UpdateProductionSourceWithoutCoverageAction(target, selectedTestTargetMap);
+                            }
+                            else
                             {
                                 // Parent Targets: Yes
                                 // Coverage Data : No
@@ -152,10 +225,7 @@ namespace TestImpact
                                 // 1. The existing file has been modified
                                 // 2. This file exists in one or more source to test target mapping artifacts
                                 // 3. There exists no coverage data for this file in the source covering test list
-                                //
-                                // Action
-                                // 1. Select the parent test targets for this file
-                                selectedTestTargetMap.insert(target);
+                                UpdateTestSourceWithoutCoverageAction(target, selectedTestTargetMap);
                             }
                         }, parentTarget.GetTarget());
                     }
@@ -177,16 +247,7 @@ namespace TestImpact
                 //  a) The file is being used by build targets but has erroneously not been explicitly added to the build
                 //     system (e.g. include directive pulling in a header from the repository that has not been added to
                 //     any build targets due to an oversight)
-                //
-                // Action
-                // 1. Log potential orphaned source file warning
-                // 2. Select all test targets covering this file
-                // 3. Delete the existing coverage data from the source covering test list
-    
-                for (const auto* testTarget : sourceDependency.GetCoveringTestTargets())
-                {
-                    selectedTestTargetMap.insert(testTarget);
-                }
+                UpdateIndeterminateSourceWithoutCoverageAction(selectedTestTargetMap, sourceDependency);
             }
         }
     
@@ -202,14 +263,7 @@ namespace TestImpact
             // 2. This file previously existed in one or more source to target mapping artifacts
             // 2. This file does not exist in any source to target mapping artifacts
             // 4. The coverage data for this file was has yet to be deleted from the source covering test list
-            //
-            // Action
-            // 1. Select all test targets covering this file
-            // 2. Delete the existing coverage data from the source covering test list
-            for (const auto* testTarget : sourceDependency.GetCoveringTestTargets())
-            {
-                selectedTestTargetMap.insert(testTarget);
-            }
+            DeleteIndeterminateSourceWithoutCoverageAction(selectedTestTargetMap, sourceDependency);
         }
     
         return selectedTestTargetMap;
