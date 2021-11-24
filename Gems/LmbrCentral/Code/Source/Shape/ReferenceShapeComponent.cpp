@@ -11,7 +11,7 @@
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 
-namespace Vegetation
+namespace LmbrCentral
 {
     void ReferenceShapeConfig::Reflect(AZ::ReflectContext* context)
     {
@@ -27,7 +27,7 @@ namespace Vegetation
             if (edit)
             {
                 edit->Class<ReferenceShapeConfig>(
-                    "Vegetation Reference Shape", "")
+                    "Reference Shape", "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)

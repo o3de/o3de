@@ -8,24 +8,24 @@
 
 #pragma once
 
-#include <Components/ReferenceShapeComponent.h>
-#include <Vegetation/Editor/EditorVegetationComponentBase.h>
+#include<LmbrCentral/Component/EditorWrappedComponentBase.h>
+#include <Shape/ReferenceShapeComponent.h>
 
-namespace Vegetation
+namespace LmbrCentral
 {
     class EditorReferenceShapeComponent
-        : public EditorVegetationComponentBase<ReferenceShapeComponent, ReferenceShapeConfig>
+        : public EditorWrappedComponentBase<ReferenceShapeComponent, ReferenceShapeConfig>
     {
     public:
-        using BaseClassType = EditorVegetationComponentBase<ReferenceShapeComponent, ReferenceShapeConfig>;
+        using BaseClassType = EditorWrappedComponentBase<ReferenceShapeComponent, ReferenceShapeConfig>;
         AZ_EDITOR_COMPONENT(EditorReferenceShapeComponent, EditorReferenceShapeComponentTypeId, BaseClassType);
         static void Reflect(AZ::ReflectContext* context);
 
-        static constexpr const char* const s_categoryName = "Vegetation";
-        static constexpr const char* const s_componentName = "Vegetation Reference Shape";
+        static constexpr const char* const s_categoryName = "Shape";
+        static constexpr const char* const s_componentName = "Reference Shape";
         static constexpr const char* const s_componentDescription = "Enables the entity to reference and reuse shape entities";
         static constexpr const char* const s_icon = "Editor/Icons/Components/Vegetation.svg";
-        static constexpr const char* const s_viewportIcon = "Editor/Icons/Components/Viewport/Vegetation.svg";
+        static constexpr const char* const s_viewportIcon = "Icons/Components/Viewport/Component_Placeholder.svg";
         static constexpr const char* const s_helpUrl = "https://o3de.org/docs/user-guide/components/reference/";
     };
 }

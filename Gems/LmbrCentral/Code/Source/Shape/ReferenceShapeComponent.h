@@ -12,16 +12,13 @@
 #include <AzCore/Component/EntityBus.h>
 #include <AzCore/Component/TransformBus.h>
 #include <LmbrCentral/Shape/ShapeComponentBus.h>
-#include <Vegetation/Ebuses/ReferenceShapeRequestBus.h>
+#include <LmbrCentral/Shape/ReferenceShapeComponentBus.h>
 
 namespace LmbrCentral
 {
     template<typename, typename>
     class EditorWrappedComponentBase;
-}
 
-namespace Vegetation
-{
     class ReferenceShapeConfig
         : public AZ::ComponentConfig
     {

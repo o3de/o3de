@@ -104,6 +104,8 @@
 #include <Editor/Nodes/UI/GradientPreviewThumbnailItem.h>
 #include <EditorLandscapeCanvasComponent.h>
 
+#include <LmbrCentral/Shape/ReferenceShapeComponentBus.h>
+
 namespace LandscapeCanvasEditor
 {
     static const int NODE_OFFSET_X_PIXELS = 350;
@@ -1303,7 +1305,7 @@ namespace LandscapeCanvasEditor
             }
 
             // Special case for the Vegetation Area Placement Bounds, the slot actually represents a separate
-            // Vegetation Reference Shape or actual Shape component on the same Entity
+            // Reference Shape or actual Shape component on the same Entity
             AZ::Component* component = nullptr;
             auto targetBaseNode = static_cast<LandscapeCanvas::BaseNode*>(targetNode.get());
             if (targetBaseNode->GetBaseNodeType() == LandscapeCanvas::BaseNode::BaseNodeType::VegetationArea && targetSlot->GetName() == LandscapeCanvas::PLACEMENT_BOUNDS_SLOT_ID)
@@ -1379,7 +1381,7 @@ namespace LandscapeCanvasEditor
                     AzToolsFramework::EditorDisabledCompositionRequestBus::Event(targetEntityId, &AzToolsFramework::EditorDisabledCompositionRequests::GetDisabledComponents, disabledComponents);
                     for (auto disabledComponent : disabledComponents)
                     {
-                        if (disabledComponent->RTTI_GetType() == Vegetation::EditorReferenceShapeComponentTypeId)
+                        if (disabledComponent->RTTI_GetType() == LmbrCentral::EditorReferenceShapeComponentTypeId)
                         {
                             component = disabledComponent;
 
@@ -1401,7 +1403,7 @@ namespace LandscapeCanvasEditor
                     // If 'component' is still null then that means there is no Reference Shape component on our Entity, so we need to add one
                     if (!component)
                     {
-                        AZ::ComponentId componentId = AddComponentTypeIdToEntity(targetEntityId, Vegetation::EditorReferenceShapeComponentTypeId);
+                        AZ::ComponentId componentId = AddComponentTypeIdToEntity(targetEntityId, LmbrCentral::EditorReferenceShapeComponentTypeId);
 
                         component = targetEntity->FindComponent(componentId);
                     }
