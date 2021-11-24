@@ -1,0 +1,253 @@
+{
+    "entries": [
+        {
+            "base": "EditorEntityInfoRequestBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "EditorEntityInfoRequestBus"
+            },
+            "methods": [
+                {
+                    "base": "GetName",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetName"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetName is invoked"
+                    },
+                    "details": {
+                        "name": "GetName"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZStd::string"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "IsVisible",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke IsVisible"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after IsVisible is invoked"
+                    },
+                    "details": {
+                        "name": "IsVisible"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetChildIndex",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetChildIndex"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetChildIndex is invoked"
+                    },
+                    "details": {
+                        "name": "GetChildIndex"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "EntityId",
+                                "tooltip": "Entity Unique Id"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{D6597933-47CD-4FC8-B911-63F3E2B0993A}",
+                            "details": {
+                                "name": "AZ::u64"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetStartStatus",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetStartStatus"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetStartStatus is invoked"
+                    },
+                    "details": {
+                        "name": "GetStartStatus"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetChild",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetChild"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetChild is invoked"
+                    },
+                    "details": {
+                        "name": "GetChild"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{D6597933-47CD-4FC8-B911-63F3E2B0993A}",
+                            "details": {
+                                "name": "AZ::u64"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "EntityId",
+                                "tooltip": "Entity Unique Id"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetChildCount",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetChildCount"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetChildCount is invoked"
+                    },
+                    "details": {
+                        "name": "GetChildCount"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{D6597933-47CD-4FC8-B911-63F3E2B0993A}",
+                            "details": {
+                                "name": "AZ::u64"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetChildren",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetChildren"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetChildren is invoked"
+                    },
+                    "details": {
+                        "name": "GetChildren"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{4841CFF0-7A5C-519C-BD16-D3625E99605E}",
+                            "details": {
+                                "name": "AZStd::vector"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "IsLocked",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke IsLocked"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after IsLocked is invoked"
+                    },
+                    "details": {
+                        "name": "IsLocked"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetParent",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetParent"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetParent is invoked"
+                    },
+                    "details": {
+                        "name": "GetParent"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "EntityId",
+                                "tooltip": "Entity Unique Id"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "IsHidden",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke IsHidden"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after IsHidden is invoked"
+                    },
+                    "details": {
+                        "name": "IsHidden"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

@@ -1,0 +1,42 @@
+{
+    "entries": [
+        {
+            "base": "{B16259BA-9CF6-4143-B09B-5A0F3B4585E6}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "Build String",
+                "category": "String",
+                "tooltip": "Formats and creates a string from the provided text.\nAny word within {} will create a data pin on this node.",
+                "subtitle": "String"
+            },
+            "slots": [
+                {
+                    "base": "Input_In",
+                    "details": {
+                        "name": "In",
+                        "tooltip": "Input signal"
+                    }
+                },
+                {
+                    "base": "Output_Out",
+                    "details": {
+                        "name": "Out"
+                    }
+                },
+                {
+                    "base": "DataInput_Value",
+                    "details": {
+                        "name": "Value"
+                    }
+                },
+                {
+                    "base": "DataOutput_String",
+                    "details": {
+                        "name": "String"
+                    }
+                }
+            ]
+        }
+    ]
+}

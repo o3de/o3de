@@ -1,0 +1,235 @@
+{
+    "entries": [
+        {
+            "base": "UiDynamicScrollBoxDataBus",
+            "context": "EBusHandler",
+            "variant": "",
+            "details": {
+                "name": "UI Dynamic Scroll Box Data",
+                "category": "UI",
+                "tooltip": "Provides a dynamic scrollbox with the information it needs to build the list"
+            },
+            "methods": [
+                {
+                    "base": "GetNumElements",
+                    "details": {
+                        "name": "Get Number Of Elements",
+                        "tooltip": "Gets the number of elements in the list. Called when the list is being constructed (in the component's InGamePostActivate or when RefreshContent is being called explicitly). Used with lists that are not divided into sections"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetElementWidth",
+                    "details": {
+                        "name": "Get Element Width",
+                        "tooltip": "Gets the width of an element at the specified index. Called when an element’s size is needed by a horizontal list of variable element sizes, and the “auto calculate size” option is disabled. Used with lists that are not divided into sections"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "Element Index",
+                                "tooltip": "The index of the element"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Element Index",
+                                "tooltip": "The index of the element"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetElementHeight",
+                    "details": {
+                        "name": "Get Element Height",
+                        "tooltip": "Gets the height of an element at the specified index. Called when an element’s size is needed by a vertical list of variable element sizes, and the “auto calculate size” option is disabled. Used with lists that are not divided into sections"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "Element Index",
+                                "tooltip": "The index of the element"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Element Index",
+                                "tooltip": "The index of the element"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetNumSections",
+                    "details": {
+                        "name": "Get Number Of Sections",
+                        "tooltip": "Gets the number of sections in the list. Called when the list is being constructed (in the component's InGamePostActivate or when RefreshContent is being called explicitly). Used with lists that are divided into section"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetNumElementsInSection",
+                    "details": {
+                        "name": "Get Num Elements in Section",
+                        "tooltip": "Gets the number of elements in the specified section. Called when the list is being constructed (in the component's InGamePostActivate or when RefreshContent is being called explicitly). Used with lists that are divided into sections"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "Section Index",
+                                "tooltip": "The index of the section"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "Section Index",
+                                "tooltip": "The index of the section"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetElementInSectionWidth",
+                    "details": {
+                        "name": "Get Element In Section Width",
+                        "tooltip": "Gets the width of an element at the specified section and element index. Called when an element’s size is needed by a horizontal list of variable element sizes, and the “auto calculate size” option is disabled. Used with lists that are divided into sections"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "Section Index",
+                                "tooltip": "The index of the section"
+                            }
+                        },
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "Element Index",
+                                "tooltip": "The index of the element in the specified section"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Section Index",
+                                "tooltip": "The index of the section"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetElementInSectionHeight",
+                    "details": {
+                        "name": "Get Element In Section Height",
+                        "tooltip": "Gets the height of an element at the specified section and element index. Called when an element’s size is needed by a vertical list of variable element sizes, and the “auto calculate size” option is disabled. Used with lists that are divided into sections"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "Section Index",
+                                "tooltip": "The index of the section"
+                            }
+                        },
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "Element Index",
+                                "tooltip": "The index of the element in the specified section"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Section Index",
+                                "tooltip": "The index of the section"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetSectionHeaderWidth",
+                    "details": {
+                        "name": "Get Section Header Width",
+                        "tooltip": "Gets the width of a header at the specified section. Called when a header’s size is needed by a horizontal list of variable header sizes, and the “auto calculate size” option is disabled. Used with lists that are divided into sections"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "Section Index",
+                                "tooltip": "The index of the section"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Section Index",
+                                "tooltip": "The index of the section"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetSectionHeaderHeight",
+                    "details": {
+                        "name": "Get Section Header Height",
+                        "tooltip": "Gets the height of a header at the specified section. Called when a header's size is needed by a vertical list of variable header sizes, and the “auto calculate size” option is disabled. Used with lists that are divided into sections"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "Section Index",
+                                "tooltip": "The index of the section"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Section Index",
+                                "tooltip": "The index of the section"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

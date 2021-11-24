@@ -13,7 +13,6 @@ set(FILES
     IConsole.h
     IEntityRenderState.h
     IFont.h
-    IFunctorBase.h
     IGem.h
     IIndexedMesh.h
     ILevelSystem.h
@@ -34,14 +33,10 @@ set(FILES
     StatObjBus.h
     ISystem.h
     ITexture.h
-    ITimer.h
     IValidator.h
-    IViewSystem.h
     IWindowMessageHandler.h
     IXml.h
     MicrophoneBus.h
-    HMDBus.h
-    VRCommon.h
     INavigationSystem.h
     IMNM.h
     SerializationTypes.h
@@ -71,7 +66,6 @@ set(FILES
     SimpleSerialize.h
     smartptr.h
     StlUtils.h
-    Timer.h
     TimeValue.h
     VectorMap.h
     VertexFormats.h
@@ -81,7 +75,6 @@ set(FILES
     Cry_Matrix34.h
     Cry_Matrix44.h
     Cry_Vector4.h
-    Cry_Camera.h
     Cry_Color.h
     Cry_Geo.h
     Cry_GeoDistance.h
@@ -100,8 +93,6 @@ set(FILES
     CryAssert_iOS.h
     CryAssert_Linux.h
     CryAssert_Mac.h
-    CryLibrary.cpp
-    CryLibrary.h
     Linux32Specific.h
     Linux64Specific.h
     Linux_Win32Wrapper.h

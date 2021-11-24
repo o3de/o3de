@@ -231,79 +231,83 @@ namespace Multiplayer
 
     void MultiplayerEditorSystemComponent::OnGameEntitiesStarted()
     {
+        IMultiplayerTools* mpTools = AZ::Interface<IMultiplayerTools>::Get();
+        if (!editorsv_enabled || !mpTools)
+        {
+            // Early out if Editor server is not enabled.
+            // This allows to avoid printing an error about missing PrefabEditorEntityOwnershipInterface for non-prefab levels.
+            return;
+        }
+
         auto prefabEditorEntityOwnershipInterface = AZ::Interface<AzToolsFramework::PrefabEditorEntityOwnershipInterface>::Get();
         if (!prefabEditorEntityOwnershipInterface)
         {
             AZ_Error("MultiplayerEditor", prefabEditorEntityOwnershipInterface != nullptr, "PrefabEditorEntityOwnershipInterface unavailable");
+            return;
         }
 
         // BeginGameMode and Prefab Processing have completed at this point
-        IMultiplayerTools* mpTools = AZ::Interface<IMultiplayerTools>::Get();
-        if (editorsv_enabled && mpTools != nullptr)
-        {
-            const AZStd::vector<AZ::Data::Asset<AZ::Data::AssetData>>& assetData = prefabEditorEntityOwnershipInterface->GetPlayInEditorAssetData();
+        const AZStd::vector<AZ::Data::Asset<AZ::Data::AssetData>>& assetData = prefabEditorEntityOwnershipInterface->GetPlayInEditorAssetData();
         
-            AZStd::vector<uint8_t> buffer;
-            AZ::IO::ByteContainerStream byteStream(&buffer);
+        AZStd::vector<uint8_t> buffer;
+        AZ::IO::ByteContainerStream byteStream(&buffer);
 
-            // Serialize Asset information and AssetData into a potentially large buffer
-            for (const auto& asset : assetData)
+        // Serialize Asset information and AssetData into a potentially large buffer
+        for (const auto& asset : assetData)
+        {
+            AZ::Data::AssetId assetId = asset.GetId();
+            AZStd::string assetHint = asset.GetHint();
+            uint32_t hintSize = aznumeric_cast<uint32_t>(assetHint.size());
+
+            byteStream.Write(sizeof(AZ::Data::AssetId), reinterpret_cast<void*>(&assetId));
+            byteStream.Write(sizeof(uint32_t), reinterpret_cast<void*>(&hintSize));
+            byteStream.Write(assetHint.size(), assetHint.data());
+            AZ::Utils::SaveObjectToStream(byteStream, AZ::DataStream::ST_BINARY, asset.GetData(), asset.GetData()->GetType());
+        }
+
+        const AZ::CVarFixedString remoteAddress = editorsv_serveraddr;
+        if (editorsv_launch)
+        {
+            if (LocalHost != remoteAddress)
             {
-                AZ::Data::AssetId assetId = asset.GetId();
-                AZStd::string assetHint = asset.GetHint();
-                uint32_t hintSize = aznumeric_cast<uint32_t>(assetHint.size());
-
-                byteStream.Write(sizeof(AZ::Data::AssetId), reinterpret_cast<void*>(&assetId));
-                byteStream.Write(sizeof(uint32_t), reinterpret_cast<void*>(&hintSize));
-                byteStream.Write(assetHint.size(), assetHint.data());
-                AZ::Utils::SaveObjectToStream(byteStream, AZ::DataStream::ST_BINARY, asset.GetData(), asset.GetData()->GetType());
+                AZ_Warning(
+                    "MultiplayerEditor", false,
+                    "Launching editor server skipped because of incompatible settings. "
+                    "When using editorsv_launch=true editorsv_serveraddr must be set to local address (127.0.0.1) instead %s",
+                    remoteAddress.c_str())
+                return;
             }
 
-            const AZ::CVarFixedString remoteAddress = editorsv_serveraddr;
-            if (editorsv_launch)
-            {
-                if (LocalHost != remoteAddress)
-                {
-                    AZ_Warning(
-                        "MultiplayerEditor", false,
-                        "Launching EditorServer skipped because incompatible cvars. editorsv_launch=true, meaning you want to launch an editor-server on this machine, but the editorsv_serveraddr is %s instead of the local address (127.0.0.1). "
-                        "Please either set editorsv_launch=false and keep the remote editor-server, or set editorsv_launch=true and editorsv_serveraddr=127.0.0.1.",
-                        remoteAddress.c_str())
-                    return;
-                }
+            // Begin listening for MPEditor packets before we launch the editor-server.
+            // The editor-server will send us (the editor) an "EditorServerReadyForLevelData" packet to let us know it's ready to receive data.
+            INetworkInterface* editorNetworkInterface =
+                AZ::Interface<INetworking>::Get()->RetrieveNetworkInterface(AZ::Name(MpEditorInterfaceName));
+            AZ_Assert(editorNetworkInterface, "MP Editor Network Interface was unregistered before Editor could connect.");
+            editorNetworkInterface->Listen(editorsv_port);
+
+            // Launch the editor-server
+            m_serverProcess = LaunchEditorServer();
+        }
+        else
+        {
+            // Editorsv_launch=false, so we're expecting an editor-server already exists.
+            // Connect to the editor-server and then send the EditorServerLevelData packet.
+            INetworkInterface* editorNetworkInterface = AZ::Interface<INetworking>::Get()->RetrieveNetworkInterface(AZ::Name(MpEditorInterfaceName));
+            AZ_Assert(editorNetworkInterface, "MP Editor Network Interface was unregistered before Editor could connect.")
                 
-                // Begin listening for MPEditor packets before we launch the editor-server.
-                // The editor-server will send us (the editor) an "EditorServerReadyForLevelData" packet to let us know it's ready to receive data.
-                INetworkInterface* editorNetworkInterface =
-                    AZ::Interface<INetworking>::Get()->RetrieveNetworkInterface(AZ::Name(MpEditorInterfaceName));
-                AZ_Assert(editorNetworkInterface, "MP Editor Network Interface was unregistered before Editor could connect.");
-                editorNetworkInterface->Listen(editorsv_port);
+            m_editorConnId = editorNetworkInterface->Connect(AzNetworking::IpAddress(remoteAddress.c_str(), editorsv_port, AzNetworking::ProtocolType::Tcp));
 
-                // Launch the editor-server
-                m_serverProcess = LaunchEditorServer();
-            }
-            else
+            if (m_editorConnId == AzNetworking::InvalidConnectionId)
             {
-                // Editorsv_launch=false, so we're expecting an editor-server already exists.
-                // Connect to the editor-server and then send the EditorServerLevelData packet.
-                INetworkInterface* editorNetworkInterface = AZ::Interface<INetworking>::Get()->RetrieveNetworkInterface(AZ::Name(MpEditorInterfaceName));
-                AZ_Assert(editorNetworkInterface, "MP Editor Network Interface was unregistered before Editor could connect.")
-                
-                m_editorConnId = editorNetworkInterface->Connect(AzNetworking::IpAddress(remoteAddress.c_str(), editorsv_port, AzNetworking::ProtocolType::Tcp));
-
-                if (m_editorConnId == AzNetworking::InvalidConnectionId)
-                {
-                    AZ_Warning(
-                        "MultiplayerEditor", false,
-                        "Editor multiplayer game-mode failed! Could not connect to an editor-server. editorsv_launch is false so we're assuming you're running your own editor-server at editorsv_serveraddr(%s) on editorsv_port(%i). "
-                        "Either set editorsv_launch=true so the editor launches an editor-server for you, or launch your own editor-server by hand before entering game-mode. Remember editor-servers must use editorsv_isDedicated=true.",
-                        remoteAddress.c_str(),
-                        static_cast<uint16_t>(editorsv_port))
-                    return;
-                }
-
-                SendEditorServerLevelDataPacket(editorNetworkInterface->GetConnectionSet().GetConnection(m_editorConnId));
+                AZ_Warning(
+                    "MultiplayerEditor", false,
+                    "Could not connect to a server at editorsv_serveraddr(%s) on editorsv_port(%i). Check server is active or use editorsv_launch to auto-launch a server.",
+                    remoteAddress.c_str(),
+                    static_cast<uint16_t>(editorsv_port))
+                return;
             }
+
+            SendEditorServerLevelDataPacket(editorNetworkInterface->GetConnectionSet().GetConnection(m_editorConnId));
         }
     }
 

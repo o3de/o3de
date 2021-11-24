@@ -139,9 +139,8 @@ namespace PhysX
             else if (auto* shapeColliderPairList = AZStd::get_if<AZStd::vector<AzPhysics::ShapeColliderPair>>(&shapeData))
             {
                 bool shapeAdded = false;
-                if (!shapeColliderPairList->empty())
+                for (const auto& shapeColliderConfigs : *shapeColliderPairList)
                 {
-                    const auto& shapeColliderConfigs = shapeColliderPairList->front();
                     auto shapePtr = AZStd::make_shared<Shape>(*(shapeColliderConfigs.first), *(shapeColliderConfigs.second));
                     AZStd::visit([shapePtr, &shapeAdded](auto&& body)
                         {
@@ -151,8 +150,8 @@ namespace PhysX
                                 shapeAdded = true;
                             }
                         }, simulatedBody);
-                    return shapeAdded;
                 }
+                return shapeAdded;
             }
             else if (auto* shape = AZStd::get_if<AZStd::shared_ptr<Physics::Shape>>(&shapeData))
             {
@@ -1225,6 +1224,7 @@ namespace PhysX
         AZ_PROFILE_DATAPOINT(Physics, stats.getNbBroadPhaseAdds(), RootCategory, BroadphaseSubCategory, "BroadPhaseAdds");
         AZ_PROFILE_DATAPOINT(Physics, stats.getNbBroadPhaseRemoves(), RootCategory, BroadphaseSubCategory, "BroadPhaseRemoves");
 
+#if AZ_PROFILE_DATAPOINT
         // Compute pair stats for all geometry types
         AZ::u32 ccdPairs = 0;
         AZ::u32 modifiedPairs = 0;
@@ -1242,7 +1242,7 @@ namespace PhysX
                 triggerPairs += stats.getRbPairStats(physx::PxSimulationStatistics::eTRIGGER_PAIRS, firstGeom, secondGeom);
             }
         }
-
+#endif
         [[maybe_unused]] const char* CollisionsSubCategory = "Collisions";
         AZ_PROFILE_DATAPOINT(Physics, ccdPairs, RootCategory, CollisionsSubCategory, "CCDPairs");
         AZ_PROFILE_DATAPOINT(Physics, modifiedPairs, RootCategory, CollisionsSubCategory, "ModifiedPairs");

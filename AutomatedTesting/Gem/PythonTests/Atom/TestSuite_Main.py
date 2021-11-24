@@ -13,6 +13,8 @@ from ly_test_tools.o3de.editor_test import EditorSharedTest, EditorTestSuite
 @pytest.mark.parametrize("launcher_platform", ['windows_editor'])
 class TestAutomation(EditorTestSuite):
 
+    enable_prefab_system = False
+
     @pytest.mark.test_case_id("C36525657")
     class AtomEditorComponents_BloomAdded(EditorSharedTest):
         from Atom.tests import hydra_AtomEditorComponents_BloomAdded as test_module
@@ -29,6 +31,10 @@ class TestAutomation(EditorTestSuite):
     class AtomEditorComponents_DepthOfFieldAdded(EditorSharedTest):
         from Atom.tests import hydra_AtomEditorComponents_DepthOfFieldAdded as test_module
 
+    @pytest.mark.test_case_id("C36525659")
+    class AtomEditorComponents_DiffuseProbeGridAdded(EditorSharedTest):
+        from Atom.tests import hydra_AtomEditorComponents_DiffuseProbeGridAdded as test_module
+
     @pytest.mark.test_case_id("C32078120")
     class AtomEditorComponents_DirectionalLightAdded(EditorSharedTest):
         from Atom.tests import hydra_AtomEditorComponents_DirectionalLightAdded as test_module
@@ -36,6 +42,10 @@ class TestAutomation(EditorTestSuite):
     @pytest.mark.test_case_id("C36525660")
     class AtomEditorComponents_DisplayMapperAdded(EditorSharedTest):
         from Atom.tests import hydra_AtomEditorComponents_DisplayMapperAdded as test_module
+
+    @pytest.mark.test_case_id("C36525661")
+    class AtomEditorComponents_EntityReferenceAdded(EditorSharedTest):
+        from Atom.tests import hydra_AtomEditorComponents_EntityReferenceAdded as test_module
 
     @pytest.mark.test_case_id("C32078121")
     class AtomEditorComponents_ExposureControlAdded(EditorSharedTest):
@@ -53,9 +63,17 @@ class TestAutomation(EditorTestSuite):
     class AtomEditorComponents_HDRColorGradingAdded(EditorSharedTest):
         from Atom.tests import hydra_AtomEditorComponents_HDRColorGradingAdded as test_module
 
+    @pytest.mark.test_case_id("C32078116")
+    class AtomEditorComponents_HDRiSkyboxAdded(EditorSharedTest):
+        from Atom.tests import hydra_AtomEditorComponents_HDRiSkyboxAdded as test_module
+
     @pytest.mark.test_case_id("C32078117")
     class AtomEditorComponents_LightAdded(EditorSharedTest):
         from Atom.tests import hydra_AtomEditorComponents_LightAdded as test_module
+
+    @pytest.mark.test_case_id("C36525662")
+    class AtomEditorComponents_LookModificationAdded(EditorSharedTest):
+        from Atom.tests import hydra_AtomEditorComponents_LookModificationAdded as test_module
 
     @pytest.mark.test_case_id("C32078123")
     class AtomEditorComponents_MaterialAdded(EditorSharedTest):
@@ -93,6 +111,10 @@ class TestAutomation(EditorTestSuite):
     @pytest.mark.test_case_id("C32078128")
     class AtomEditorComponents_ReflectionProbeAdded(EditorSharedTest):
         from Atom.tests import hydra_AtomEditorComponents_ReflectionProbeAdded as test_module
+
+    @pytest.mark.test_case_id("C36525666")
+    class AtomEditorComponents_SSAOAdded(EditorSharedTest):
+        from Atom.tests import hydra_AtomEditorComponents_SSAOAdded as test_module
 
     class ShaderAssetBuilder_RecompilesShaderAsChainOfDependenciesChanges(EditorSharedTest):
         from Atom.tests import hydra_ShaderAssetBuilder_RecompilesShaderAsChainOfDependenciesChanges as test_module

@@ -27,7 +27,6 @@
 
 // Editor
 #include "MainStatusBarItems.h"
-#include "CryLibrary.h"
 #include "ProcessInfo.h"
 
 

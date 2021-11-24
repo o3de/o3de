@@ -119,6 +119,11 @@ namespace GraphCanvas
         m_nodePalette->setProperty("HasNoWindowDecorations", true);
         m_nodePalette->SetupNodePalette(config);
 
+        if (m_userNodePaletteWidth > 0)
+        {
+            m_nodePalette->setFixedWidth(m_userNodePaletteWidth);
+        }
+
         QWidgetAction* actionWidget = new QWidgetAction(this);
         actionWidget->setDefaultWidget(m_nodePalette);
 

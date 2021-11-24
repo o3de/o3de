@@ -1,0 +1,235 @@
+{
+    "entries": [
+        {
+            "base": "UiDraggableBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "UiDraggableBus",
+                "category": "UI"
+            },
+            "methods": [
+                {
+                    "base": "ProxyDragEnd",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Proxy Drag End"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Proxy Drag End is invoked"
+                    },
+                    "details": {
+                        "name": "Proxy Drag End",
+                        "tooltip": "Concludes the drag of the proxy. Call \"Proxy Drag End\" at the end of a drag if \"Set As Proxy\" was used for the drag.\n\nCall \"Proxy Drag End\" from the \"On Drag End\" handler of the proxy element. This results in a call to \"On Drag End\" for the original draggable element"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3D80F623-C85C-4741-90D0-E4E66164E6BF}",
+                            "details": {
+                                "name": "Position",
+                                "tooltip": "The released position"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "RedoDrag",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Redo Drag"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Redo Drag is invoked"
+                    },
+                    "details": {
+                        "name": "Redo Drag",
+                        "tooltip": "Causes the draggable component to redetect the drop targets that are underneath the pointer and resends \"On Drop Hover Start\" or \"On Drop Hover End\" messages if needed.\n\nYou can call \"Redo Drag\" from a script after the script has caused drop targets to change positions. This function is most useful for keyboard or gamepad navigation"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3D80F623-C85C-4741-90D0-E4E66164E6BF}",
+                            "details": {
+                                "name": "Position",
+                                "tooltip": "The drag position"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetAsProxy",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set As Proxy"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set As Proxy is invoked"
+                    },
+                    "details": {
+                        "name": "Set As Proxy",
+                        "tooltip": "Sets the draggable element to be a proxy for another draggable element and starts a drag on the draggable element at the specified point"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Original Draggable EntityID",
+                                "tooltip": "The original draggable element"
+                            }
+                        },
+                        {
+                            "typeid": "{3D80F623-C85C-4741-90D0-E4E66164E6BF}",
+                            "details": {
+                                "name": "Position",
+                                "tooltip": "The position at which to start the drag"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "IsProxy",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Is Proxy"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Is Proxy is invoked"
+                    },
+                    "details": {
+                        "name": "Is Proxy",
+                        "tooltip": "Returns whether the draggable element is acting as a proxy for another draggable element"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetDragState",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Drag State"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Drag State is invoked"
+                    },
+                    "details": {
+                        "name": "Set Drag State",
+                        "tooltip": "Sets the drag state"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "Drag State",
+                                "tooltip": "The drag state (0=Normal, 1=Valid, 2=Invalid)"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetCanDropOnAnyCanvas",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Can Drop On Any Canvas"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Can Drop On Any Canvas is invoked"
+                    },
+                    "details": {
+                        "name": "Get Can Drop On Any Canvas",
+                        "tooltip": "Returns whether the draggable element can be dropped on any loaded canvas"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetCanDropOnAnyCanvas",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Can Drop On Any Canvas"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Can Drop On Any Canvas is invoked"
+                    },
+                    "details": {
+                        "name": "Set Can Drop On Any Canvas",
+                        "tooltip": "Sets whether the draggable element can be dropped on any loaded canvas"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Drop on Any",
+                                "tooltip": "Indicates whether the draggable element can be dropped on any loaded canvas"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetDragState",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Drag State"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Drag State is invoked"
+                    },
+                    "details": {
+                        "name": "Get Drag State",
+                        "tooltip": "Gets the drag state"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetOriginalFromProxy",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Original From Proxy"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Original From Proxy is invoked"
+                    },
+                    "details": {
+                        "name": "Get Original From Proxy",
+                        "tooltip": "Gets the original draggable element that the element is a proxy for"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "EntityId",
+                                "tooltip": "Entity Unique Id"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

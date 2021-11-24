@@ -1,0 +1,12 @@
+{
+    "entries": [
+        {
+            "base": "ExportProduct",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "ExportProduct"
+            }
+        }
+    ]
+}

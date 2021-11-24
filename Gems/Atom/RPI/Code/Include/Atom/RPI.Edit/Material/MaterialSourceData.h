@@ -31,6 +31,7 @@ namespace AZ
         static constexpr const char UvGroupName[] = "uvSets";
 
         class MaterialAsset;
+        class MaterialAssetCreator;
 
         //! This is a simple data structure for serializing in/out material source files.
         class MaterialSourceData final
@@ -78,15 +79,33 @@ namespace AZ
 
             //! Creates a MaterialAsset from the MaterialSourceData content.
             //! @param assetId ID for the MaterialAsset
-            //! @param materialSourceFilePath Indicates the path of the .material file that the MaterialSourceData represents. Used for resolving file-relative paths.
+            //! @param materialSourceFilePath Indicates the path of the .material file that the MaterialSourceData represents. Used for
+            //! resolving file-relative paths.
             //! @param elevateWarnings Indicates whether to treat warnings as errors
             //! @param includeMaterialPropertyNames Indicates whether to save material property names into the material asset file
             Outcome<Data::Asset<MaterialAsset>> CreateMaterialAsset(
                 Data::AssetId assetId,
                 AZStd::string_view materialSourceFilePath = "",
                 bool elevateWarnings = true,
-                bool includeMaterialPropertyNames = true
-            ) const;
+                bool includeMaterialPropertyNames = true) const;
+
+            //! Creates a MaterialAsset from the MaterialSourceData content.
+            //! @param assetId ID for the MaterialAsset
+            //! @param materialSourceFilePath Indicates the path of the .material file that the MaterialSourceData represents. Used for
+            //! resolving file-relative paths.
+            //! @param elevateWarnings Indicates whether to treat warnings as errors
+            //! @param includeMaterialPropertyNames Indicates whether to save material property names into the material asset file
+            //! @param sourceDependencies if not null, will be populated with a set of all of the loaded material and material type paths
+            Outcome<Data::Asset<MaterialAsset>> CreateMaterialAssetFromSourceData(
+                Data::AssetId assetId,
+                AZStd::string_view materialSourceFilePath = "",
+                bool elevateWarnings = true,
+                bool includeMaterialPropertyNames = true,
+                AZStd::unordered_set<AZStd::string>* sourceDependencies = nullptr) const;
+
+        private:
+            void ApplyPropertiesToAssetCreator(
+                AZ::RPI::MaterialAssetCreator& materialAssetCreator, const AZStd::string_view& materialSourceFilePath) const;
         };
     } // namespace RPI
 } // namespace AZ

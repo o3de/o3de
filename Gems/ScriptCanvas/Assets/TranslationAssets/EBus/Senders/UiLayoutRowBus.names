@@ -1,0 +1,156 @@
+{
+    "entries": [
+        {
+            "base": "UiLayoutRowBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "UiLayoutRowBus",
+                "category": "UI"
+            },
+            "methods": [
+                {
+                    "base": "SetSpacing",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Spacing"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Spacing is invoked"
+                    },
+                    "details": {
+                        "name": "Set Spacing",
+                        "tooltip": "Sets the spacing between child elements"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Spacing",
+                                "tooltip": "The spacing between child elements in pixels"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetOrder",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Order"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Order is invoked"
+                    },
+                    "details": {
+                        "name": "Get Order",
+                        "tooltip": "Gets the horizontal order for the layout"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetOrder",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Order"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Order is invoked"
+                    },
+                    "details": {
+                        "name": "Set Order",
+                        "tooltip": "Sets the horizontal order for the layout"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "Order",
+                                "tooltip": "The horizontal order for the layout (0=Left to Right, 1=Right to Left)"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetSpacing",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Spacing"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Spacing is invoked"
+                    },
+                    "details": {
+                        "name": "Get Spacing",
+                        "tooltip": "Gets the spacing between child elements"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetPadding",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Padding"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Padding is invoked"
+                    },
+                    "details": {
+                        "name": "Get Padding",
+                        "tooltip": "Gets the padding inside the edges of the element"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{DE5C18B0-4214-4A37-B590-8D45CC450A96}",
+                            "details": {
+                                "name": "Padding"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetPadding",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Padding"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Padding is invoked"
+                    },
+                    "details": {
+                        "name": "Set Padding",
+                        "tooltip": "Sets the padding inside the edges of the element"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{DE5C18B0-4214-4A37-B590-8D45CC450A96}",
+                            "details": {
+                                "name": "Padding",
+                                "tooltip": "The padding inside the edges of the element in pixels"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

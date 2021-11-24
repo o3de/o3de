@@ -1,0 +1,47 @@
+{
+    "entries": [
+        {
+            "base": "{B13F8DE1-E017-484D-9910-BABFB355D72E}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "ArithmeticExpression",
+                "tooltip": "ArithmeticExpression"
+            },
+            "slots": [
+                {
+                    "base": "DataOutput_Result",
+                    "details": {
+                        "name": "Result"
+                    }
+                },
+                {
+                    "base": "Input_In",
+                    "details": {
+                        "name": "In",
+                        "tooltip": "Signal to perform the evaluation when desired."
+                    }
+                },
+                {
+                    "base": "Output_Out",
+                    "details": {
+                        "name": "Out",
+                        "tooltip": "Signaled after the arithmetic operation is done."
+                    }
+                },
+                {
+                    "base": "DataInput_Value A",
+                    "details": {
+                        "name": "Value A"
+                    }
+                },
+                {
+                    "base": "DataInput_Value B",
+                    "details": {
+                        "name": "Value B"
+                    }
+                }
+            ]
+        }
+    ]
+}

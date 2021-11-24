@@ -32,6 +32,12 @@
                     "SlotType": "Input",
                     "ScopeAttachmentUsage": "Shader"
                 },
+                { // Used as the thickness accumulation to block TT (back) lobe lighting
+                    "Name": "AccumulatedInverseAlpha",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader",
+                    "ShaderInputName": "m_accumInvAlpha"
+                },
                 { // For comparing the depth to early disqualify but not to write
                     "Name": "Depth",
                     "SlotType": "Input",

@@ -1,0 +1,37 @@
+{
+    "entries": [
+        {
+            "base": "{B7E79DC5-21DA-4001-8284-85707C71C29B}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "Get Last Element",
+                "category": "Containers",
+                "tooltip": "Get Last Element",
+                "subtitle": "Containers"
+            },
+            "slots": [
+                {
+                    "base": "DataInput_Source",
+                    "details": {
+                        "name": "Source"
+                    }
+                },
+                {
+                    "base": "Input_In",
+                    "details": {
+                        "name": "In",
+                        "tooltip": "Input signal"
+                    }
+                },
+                {
+                    "base": "Output_Out",
+                    "details": {
+                        "name": "Out",
+                        "tooltip": "Output signal"
+                    }
+                }
+            ]
+        }
+    ]
+}

@@ -14,7 +14,6 @@
 #include <IRenderer.h>
 #include <IMovieSystem.h>
 #include <ILog.h>
-#include <CryLibrary.h>
 #include <AzCore/Debug/StackTracer.h>
 #include <AzCore/IO/SystemFile.h> // for AZ_MAX_PATH_LEN
 #include <AzCore/std/allocator_stack.h>
@@ -69,39 +68,6 @@ const char* g_szModuleGroups[][2] = {
     {"Editor.exe", g_szGroupCore},
     {"CrySystem.dll", g_szGroupCore}
 };
-
-//////////////////////////////////////////////////////////////////////////
-void CSystem::SetAffinity()
-{
-    // the following code is only for Windows
-#ifdef WIN32
-    // set the process affinity
-    ICVar* pcvAffinityMask = GetIConsole()->GetCVar("sys_affinity");
-    if (!pcvAffinityMask)
-    {
-        pcvAffinityMask = REGISTER_INT("sys_affinity", 0, VF_NULL, "");
-    }
-
-    if (pcvAffinityMask)
-    {
-        unsigned nAffinity = pcvAffinityMask->GetIVal();
-        if (nAffinity)
-        {
-            typedef BOOL (WINAPI * FnSetProcessAffinityMask)(IN HANDLE hProcess, IN DWORD_PTR dwProcessAffinityMask);
-            HMODULE hKernel = CryLoadLibrary ("kernel32.dll");
-            if (hKernel)
-            {
-                FnSetProcessAffinityMask SetProcessAffinityMask = (FnSetProcessAffinityMask)GetProcAddress(hKernel, "SetProcessAffinityMask");
-                if (SetProcessAffinityMask && !SetProcessAffinityMask(GetCurrentProcess(), nAffinity))
-                {
-                    GetILog()->LogError("Error: Cannot set affinity mask %d, error code %d", nAffinity, GetLastError());
-                }
-                FreeLibrary (hKernel);
-            }
-        }
-    }
-#endif
-}
 
 #if defined(WIN32)
 #pragma pack(push,1)

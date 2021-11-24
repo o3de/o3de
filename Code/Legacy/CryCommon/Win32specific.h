@@ -84,7 +84,6 @@ typedef void* EVENT_HANDLE;
 
 
 int64 CryGetTicks();
-int64 CryGetTicksPerSec();
 
 #ifndef SAFE_DELETE
 #define SAFE_DELETE(p) { if (p) { delete (p); (p) = NULL; } \

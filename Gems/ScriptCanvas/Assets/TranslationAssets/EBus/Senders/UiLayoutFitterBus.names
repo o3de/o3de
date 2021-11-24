@@ -1,0 +1,109 @@
+{
+    "entries": [
+        {
+            "base": "UiLayoutFitterBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "UiLayoutFitterBus",
+                "category": "UI"
+            },
+            "methods": [
+                {
+                    "base": "GetHorizontalFit",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Horizontal Fit"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Horizontal Fit is invoked"
+                    },
+                    "details": {
+                        "name": "Get Horizontal Fit",
+                        "tooltip": "Returns whether to resize the element horizontally"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetHorizontalFit",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Horizontal Fit"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Horizontal Fit is invoked"
+                    },
+                    "details": {
+                        "name": "Set Horizontal Fit",
+                        "tooltip": "Sets whether to resize the element horizontally"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Resize Horizontally",
+                                "tooltip": "Indicates whether to resize the element horizontally"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetVerticalFit",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Vertical Fit"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Vertical Fit is invoked"
+                    },
+                    "details": {
+                        "name": "Get Vertical Fit",
+                        "tooltip": "Returns whether to resize the element vertically"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetVerticalFit",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Vertical Fit"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Vertical Fit is invoked"
+                    },
+                    "details": {
+                        "name": "Set Vertical Fit",
+                        "tooltip": "Sets whether to resize the element vertically"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Resize Vertically",
+                                "tooltip": "Indicates whether to resize the element vertically"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

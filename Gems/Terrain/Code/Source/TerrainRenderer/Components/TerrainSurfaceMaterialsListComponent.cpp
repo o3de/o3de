@@ -74,7 +74,7 @@ namespace Terrain
 
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default, &TerrainSurfaceMaterialsListConfig::m_surfaceMaterials,
-                        "Gradient to Material Mappings", "Maps surfaces to materials.");
+                        "Material Mappings", "Maps surfaces to materials.");
             }
         }
     }
@@ -134,12 +134,12 @@ namespace Terrain
     void TerrainSurfaceMaterialsListComponent::Deactivate()
     {
         TerrainAreaMaterialRequestBus::Handler::BusDisconnect();
-        AZ::Data::AssetBus::MultiHandler::BusDisconnect();
 
         for (auto& surfaceMaterialMapping : m_configuration.m_surfaceMaterials)
         {
             if (surfaceMaterialMapping.m_materialAsset.GetId().IsValid())
             {
+                AZ::Data::AssetBus::MultiHandler::BusDisconnect(surfaceMaterialMapping.m_materialAsset.GetId());
                 surfaceMaterialMapping.m_materialAsset.Release();
                 surfaceMaterialMapping.m_materialInstance.reset();
                 surfaceMaterialMapping.m_activeMaterialAssetId = AZ::Data::AssetId();
@@ -241,7 +241,7 @@ namespace Terrain
             // All materials have been deactivated, stop listening for requests and notifications.
             m_cachedAabb = AZ::Aabb::CreateNull();
             LmbrCentral::ShapeComponentNotificationsBus::Handler::BusDisconnect();
-            TerrainAreaMaterialRequestBus::Handler::BusConnect(GetEntityId());
+            TerrainAreaMaterialRequestBus::Handler::BusDisconnect();
         }
     }
 

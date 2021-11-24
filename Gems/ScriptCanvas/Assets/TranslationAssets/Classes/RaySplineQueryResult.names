@@ -1,0 +1,12 @@
+{
+    "entries": [
+        {
+            "base": "RaySplineQueryResult",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "RaySplineQueryResult"
+            }
+        }
+    ]
+}

@@ -1,0 +1,12 @@
+{
+    "entries": [
+        {
+            "base": "SmoothStep",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "SmoothStep"
+            }
+        }
+    ]
+}

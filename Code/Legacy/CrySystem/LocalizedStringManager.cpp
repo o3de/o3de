@@ -136,6 +136,44 @@ static const char* PLATFORM_INDEPENDENT_LANGUAGE_NAMES[ ILocalizationManager::eP
     "da-DK"   // Danish (Denmark)
 };
 
+#if defined(WIN32) || defined(WIN64)
+namespace
+{
+#if defined(WIN32)
+    time_t gmt_to_local_win32(void)
+    {
+        TIME_ZONE_INFORMATION tzinfo;
+        DWORD dwStandardDaylight;
+        long bias;
+
+        dwStandardDaylight = GetTimeZoneInformation(&tzinfo);
+        bias = tzinfo.Bias;
+
+        if (dwStandardDaylight == TIME_ZONE_ID_STANDARD)
+        {
+            bias += tzinfo.StandardBias;
+        }
+
+        if (dwStandardDaylight == TIME_ZONE_ID_DAYLIGHT)
+        {
+            bias += tzinfo.DaylightBias;
+        }
+
+        return (-bias * 60);
+    }
+#endif // #if defined(WIN32)
+
+    time_t DateToSecondsUTC(struct tm& inDate)
+    {
+#if defined(WIN32)
+        return mktime(&inDate) + gmt_to_local_win32();
+#else
+        return mktime(&inDate);
+#endif // #if defined(WIN32)
+    }
+}
+#endif // #if defined(WIN32) || defined(WIN64)
+
 //////////////////////////////////////////////////////////////////////////
 #if !defined(_RELEASE)
 static void ReloadDialogData([[maybe_unused]] IConsoleCmdArgs* pArgs)
@@ -989,8 +1027,6 @@ bool CLocalizedStringsManager::DoLoadExcelXmlSpreadsheet(const char* sFileName, 
     // key CRC
     uint32 keyCRC;
 
-    size_t nMemSize = 0;
-
     for (;; )
     {
         int nRowIndex = -1;
@@ -1471,25 +1507,6 @@ bool CLocalizedStringsManager::DoLoadExcelXmlSpreadsheet(const char* sFileName, 
             pEntry->flags |= SLocalizedStringEntry::IS_INTERCEPTED;
         }
 
-        nMemSize += sizeof(*pEntry) + pEntry->sCharacterName.length() * sizeof(char);
-        if (m_cvarLocalizationEncode == 0)
-        {
-            //Note that this isn't accurate if we're using encoding/compression to shrink the string as the encoding step hasn't happened yet
-            if (pEntry->TranslatedText.psUtf8Uncompressed)
-            {
-                nMemSize += pEntry->TranslatedText.psUtf8Uncompressed->length() * sizeof(char);
-            }
-        }
-        if (pEntry->pEditorExtension != NULL)
-        {
-            nMemSize += pEntry->pEditorExtension->sKey.length()
-                + pEntry->pEditorExtension->sOriginalActorLine.length()
-                + pEntry->pEditorExtension->sUtf8TranslatedActorLine.length() * sizeof(char)
-                + pEntry->pEditorExtension->sOriginalText.length()
-                + pEntry->pEditorExtension->sOriginalCharacterName.length();
-        }
-
-
         // Compression Preparation
         //unsigned int nSourceSize = pEntry->swTranslatedText.length()*sizeof(wchar_t);
         //if (nSourceSize)
@@ -1505,7 +1522,6 @@ bool CLocalizedStringsManager::DoLoadExcelXmlSpreadsheet(const char* sFileName, 
         {
             uint8 compressionBuffer[COMPRESSION_FIXED_BUFFER_LENGTH];
             //uint8 decompressionBuffer[COMPRESSION_FIXED_BUFFER_LENGTH];
-            size_t uncompressedTotal = 0, compressedTotal = 0;
             for (size_t stringToCompress = startOfStringsToCompress; stringToCompress < m_pLanguage->m_vLocalizedStrings.size(); stringToCompress++)
             {
                 SLocalizedStringEntry* pStringToCompress = m_pLanguage->m_vLocalizedStrings[stringToCompress];
@@ -1520,8 +1536,6 @@ bool CLocalizedStringsManager::DoLoadExcelXmlSpreadsheet(const char* sFileName, 
                     pStringToCompress->huffmanTreeIndex = iEncoder;
                     pEncoder->AddRef();
                     //CryLogAlways("Compressed %s (%u) to %s (%u)", pStringToCompress->szCompressedTranslatedText, strlen((const char*)pStringToCompress->szCompressedTranslatedText), compressionBuffer, compBufSize);
-                    uncompressedTotal += inputStringLength;
-                    compressedTotal += compBufSize;
 
                     uint8* szCompressedString = new uint8[compBufSize];
                     SAFE_DELETE_ARRAY(pStringToCompress->TranslatedText.szCompressed);
@@ -1693,7 +1707,6 @@ bool CLocalizedStringsManager::DoLoadAGSXmlDocument(const char* sFileName, uint8
         }
         {
             uint8 compressionBuffer[COMPRESSION_FIXED_BUFFER_LENGTH] = {};
-            size_t uncompressedTotal = 0, compressedTotal = 0;
             for (size_t stringToCompress = startOfStringsToCompress; stringToCompress < m_pLanguage->m_vLocalizedStrings.size(); stringToCompress++)
             {
                 SLocalizedStringEntry* pStringToCompress = m_pLanguage->m_vLocalizedStrings[stringToCompress];
@@ -1706,8 +1719,6 @@ bool CLocalizedStringsManager::DoLoadAGSXmlDocument(const char* sFileName, uint8
                     compressionBuffer[compBufSize] = 0;
                     pStringToCompress->huffmanTreeIndex = iEncoder;
                     pEncoder->AddRef();
-                    uncompressedTotal += inputStringLength;
-                    compressedTotal += compBufSize;
                     uint8* szCompressedString = new uint8[compBufSize];
                     SAFE_DELETE_ARRAY(pStringToCompress->TranslatedText.szCompressed);
                     memcpy(szCompressedString, compressionBuffer, compBufSize);
@@ -2656,7 +2667,7 @@ void CLocalizedStringsManager::LocalizeTime(time_t t, bool bMakeLocalTime, bool 
     {
         struct tm thetime;
         localtime_s(&thetime, &t);
-        t = gEnv->pTimer->DateToSecondsUTC(thetime);
+        t = DateToSecondsUTC(thetime);
     }
     outTimeString.clear();
     LCID lcID = g_currentLanguageID.lcID ? g_currentLanguageID.lcID : LOCALE_USER_DEFAULT;
@@ -2680,7 +2691,7 @@ void CLocalizedStringsManager::LocalizeDate(time_t t, bool bMakeLocalTime, bool 
     {
         struct tm thetime;
         localtime_s(&thetime, &t);
-        t = gEnv->pTimer->DateToSecondsUTC(thetime);
+        t = DateToSecondsUTC(thetime);
     }
     outDateString.resize(0);
     LCID lcID = g_currentLanguageID.lcID ? g_currentLanguageID.lcID : LOCALE_USER_DEFAULT;

@@ -1,0 +1,46 @@
+{
+    "entries": [
+        {
+            "base": "Scene",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "Scene"
+            },
+            "methods": [
+                {
+                    "base": "GetOriginalSceneOrientation",
+                    "context": "Scene",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetOriginalSceneOrientation"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetOriginalSceneOrientation is invoked"
+                    },
+                    "details": {
+                        "name": "Scene::GetOriginalSceneOrientation",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{1F2E6142-B0D8-42C6-A6E5-CD726DAA9EF0}",
+                            "details": {
+                                "name": "Scene*"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

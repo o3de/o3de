@@ -10,6 +10,7 @@
 #include "CrySystem_precompiled.h"
 #include "SerializeXMLReader.h"
 #include <ISystem.h>
+#include <AzCore/Time/ITime.h>
 
 #define TAG_SCRIPT_VALUE "v"
 #define TAG_SCRIPT_TYPE "t"
@@ -21,7 +22,6 @@
 CSerializeXMLReaderImpl::CSerializeXMLReaderImpl(const XmlNodeRef& nodeRef)
     : m_nErrors(0)
 {
-    //m_curTime = gEnv->pTimer->GetFrameStartTime();
     assert(!!nodeRef);
     m_nodeStack.push_back(CParseState());
     m_nodeStack.back().Init(nodeRef);
@@ -87,18 +87,21 @@ bool CSerializeXMLReaderImpl::Value(const char* name, CTimeValue& value)
     }
     else
     {
+        const AZ::TimeMs elaspsedTimeMs = AZ::GetRealElapsedTimeMs();
+        const double elaspedTimeSec = AZ::TimeMsToSecondsDouble(elaspsedTimeMs);
+        const CTimeValue elaspedTime(elaspedTimeSec);
         float delta;
         if (!GetAttr(nodeRef, name, delta))
         {
             //CryWarning( VALIDATOR_MODULE_SYSTEM,VALIDATOR_WARNING,"Failed to read time value %s", name);
             //Failed();
-            value = gEnv->pTimer->GetFrameStartTime(); // in case we don't find the node, it was assumed to be the default value (0.0)
+            value = elaspedTime; // in case we don't find the node, it was assumed to be the default value (0.0)
             // 0.0 means current time, whereas "zero" really means CTimeValue(0.0), see above
             return false;
         }
         else
         {
-            value = CTimeValue(gEnv->pTimer->GetFrameStartTime() + delta);
+            value = CTimeValue(elaspedTime + delta);
         }
     }
     return true;

@@ -8,13 +8,6 @@
 
 namespace AZ
 {
-    AZ_MATH_INLINE Vector2::Vector2(const Vector2& v)
-        : m_value(v.m_value)
-    {
-        ;
-    }
-
-
     AZ_MATH_INLINE Vector2::Vector2(float x)
         : m_value(Simd::Vec2::Splat(x))
     {

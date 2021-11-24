@@ -1,0 +1,46 @@
+{
+    "entries": [
+        {
+            "base": "{6FAEAA22-12D6-51E5-8600-F60103ECFF8C}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "Multiply By Vector",
+                "category": "Math/Matrix3x3",
+                "tooltip": "Returns vector created by right left multiplying matrix by supplied vector"
+            },
+            "slots": [
+                {
+                    "base": "Input_In",
+                    "details": {
+                        "name": "In"
+                    }
+                },
+                {
+                    "base": "Output_Out",
+                    "details": {
+                        "name": "Out"
+                    }
+                },
+                {
+                    "base": "DataInput_Source",
+                    "details": {
+                        "name": "Source"
+                    }
+                },
+                {
+                    "base": "DataInput_Vector",
+                    "details": {
+                        "name": "Vector"
+                    }
+                },
+                {
+                    "base": "DataOutput_Result",
+                    "details": {
+                        "name": "Result"
+                    }
+                }
+            ]
+        }
+    ]
+}

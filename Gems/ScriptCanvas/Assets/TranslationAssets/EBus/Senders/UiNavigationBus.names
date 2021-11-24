@@ -1,0 +1,254 @@
+{
+    "entries": [
+        {
+            "base": "UiNavigationBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "UiNavigationBus",
+                "category": "UI"
+            },
+            "methods": [
+                {
+                    "base": "GetOnRightEntity",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get On Right Entity"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get On Right Entity is invoked"
+                    },
+                    "details": {
+                        "name": "Get On Right Entity",
+                        "tooltip": "Gets the element to receive focus when right is pressed"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "EntityId",
+                                "tooltip": "Entity Unique Id"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetOnLeftEntity",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set On Left Entity"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set On Left Entity is invoked"
+                    },
+                    "details": {
+                        "name": "Set On Left Entity",
+                        "tooltip": "Sets the element to receive focus when left is pressed"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "EntityID",
+                                "tooltip": "The element to receive focus when left is pressed"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetOnLeftEntity",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get On Left Entity"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get On Left Entity is invoked"
+                    },
+                    "details": {
+                        "name": "Get On Left Entity",
+                        "tooltip": "Gets the element to receive focus when left is pressed"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "EntityId",
+                                "tooltip": "Entity Unique Id"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetOnDownEntity",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set On Down Entity"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set On Down Entity is invoked"
+                    },
+                    "details": {
+                        "name": "Set On Down Entity",
+                        "tooltip": "Sets the element to receive focus when down is pressed"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "EntityID",
+                                "tooltip": "The element to receive focus when down is pressed"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetOnUpEntity",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get On Up Entity"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get On Up Entity is invoked"
+                    },
+                    "details": {
+                        "name": "Get On Up Entity",
+                        "tooltip": "Gets the element to receive focus when up is pressed"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "EntityId",
+                                "tooltip": "Entity Unique Id"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetOnUpEntity",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set On Up Entity"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set On Up Entity is invoked"
+                    },
+                    "details": {
+                        "name": "Set On Up Entity",
+                        "tooltip": "Sets the element to receive focus when up is pressed"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "EntityID",
+                                "tooltip": "The element to receive focus when up is pressed"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetOnRightEntity",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set On Right Entity"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set On Right Entity is invoked"
+                    },
+                    "details": {
+                        "name": "Set On Right Entity",
+                        "tooltip": "Sets the element to receive focus when right is pressed"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "EntityID",
+                                "tooltip": "The element to receive focus when right is pressed"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetNavigationMode",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Navigation Mode"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Navigation Mode is invoked"
+                    },
+                    "details": {
+                        "name": "Set Navigation Mode",
+                        "tooltip": "Sets how the next element to receive focus is chosen when a navigation event occurs"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "Navigation Mode",
+                                "tooltip": "Indicates how the next element to receive focus is chosen when a navigation event occurs (0=Automatic, 1=Custom, 2=None)"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetOnDownEntity",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get On Down Entity"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get On Down Entity is invoked"
+                    },
+                    "details": {
+                        "name": "Get On Down Entity",
+                        "tooltip": "Gets the element to receive focus when down is pressed"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "EntityId",
+                                "tooltip": "Entity Unique Id"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetNavigationMode",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Navigation Mode"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Navigation Mode is invoked"
+                    },
+                    "details": {
+                        "name": "Get Navigation Mode",
+                        "tooltip": "Gets how the next element to receive focus is chosen when a navigation event occurs"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

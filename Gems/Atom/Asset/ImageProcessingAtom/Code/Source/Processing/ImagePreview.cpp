@@ -86,7 +86,7 @@ namespace ImageProcessingAtom
 
     IImageObjectPtr ImagePreview::GetOutputImage()
     {
-        return m_output.GetOutputImage(ImageConvertOutput::Preview);
+        return m_output.GetOutputImage();
     }
 
     ImagePreview::~ImagePreview()
@@ -101,6 +101,8 @@ namespace ImageProcessingAtom
     void ImagePreview::InitializeJobSettings()
     {
         AZ::JobManagerDesc desc;
+        desc.m_jobManagerName = "ImagePreview";
+
         AZ::JobManagerThreadDesc threadDesc;
         desc.m_workerThreads.push_back(threadDesc);
         // Check to ensure these have not already been initialized.

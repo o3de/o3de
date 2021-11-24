@@ -6,9 +6,6 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_CRYCOMMON_LINUX_WIN32WRAPPER_H
-#define CRYINCLUDE_CRYCOMMON_LINUX_WIN32WRAPPER_H
 #pragma once
 
 #include <CryAssert.h>
@@ -326,56 +323,7 @@ inline uint32 GetTickCount()
 #define _strlwr_s(BUF, SIZE) strlwr(BUF)
 #define _strups strupr
 
-typedef struct __finddata64_t
-{
-    //!< atributes set by find request
-    unsigned    int attrib;         //!< attributes, only directory and readonly flag actually set
-    int64  time_create;        //!< creation time, cannot parse under linux, last modification time is used instead (game does nowhere makes decision based on this values)
-    int64  time_access;        //!< last access time
-    int64  time_write;         //!< last modification time
-    int64  size;                       //!< file size (for a directory it will be the block size)
-    char        name[256];          //!< file/directory name
-
-private:
-    int                                 m_LastIndex;                    //!< last index for findnext
-    char                                m_DirectoryName[260];           //!< directory name, needed when getting file attributes on the fly
-    char                                m_ToMatch[260];                     //!< pattern to match with
-    DIR*                                m_Dir;                                  //!< directory handle
-    std::vector<AZStd::string> m_Entries;                      //!< all file entries in the current directories
-public:
-
-    inline __finddata64_t()
-        : attrib(0)
-        , time_create(0)
-        , time_access(0)
-        , time_write(0)
-        , size(0)
-        , m_LastIndex(-1)
-        , m_Dir(NULL)
-    {
-        memset(name, '0', 256);
-    }
-    ~__finddata64_t();
-
-    //!< copies and retrieves the data for an actual match (to not waste any effort retrioeving data for unused files)
-    void CopyFoundData(const char* rMatchedFileName);
-
-public:
-    //!< global _findfirst64 function using struct above, can't be a member function due to required semantic match
-    friend intptr_t _findfirst64(const char* pFileName, __finddata64_t* pFindData);
-    //!< global _findnext64 function using struct above, can't be a member function due to required semantic match
-    friend int _findnext64(intptr_t last, __finddata64_t* pFindData);
-}__finddata64_t;
-
-typedef struct _finddata_t
-        : public __finddata64_t
-{}_finddata_t;//!< need inheritance since in many places it get used as struct _finddata_t
-extern int _findnext64(intptr_t last, __finddata64_t* pFindData);
-extern intptr_t _findfirst64(const char* pFileName, __finddata64_t* pFindData);
-
 extern DWORD GetFileAttributesW(LPCWSTR lpFileName);
-
-extern const bool GetFilenameNoCase(const char* file, char*, const bool cCreateNew = false);
 
 extern BOOL GetUserName(LPSTR lpBuffer, LPDWORD nSize);
 
@@ -427,10 +375,6 @@ extern DWORD GetCurrentProcessId(void);
 //////////////////////////////////////////////////////////////////////////
 #ifdef __cplusplus
 
-//helper function
-extern void adaptFilenameToLinux(char* rAdjustedFilename);
-extern void replaceDoublePathFilename(char* szFileName);//removes "\.\" to "\" and "/./" to "/"
-
 //////////////////////////////////////////////////////////////////////////
 extern void _makepath(char* path, const char* drive, const char* dir, const char* filename, const char* ext);
 
@@ -450,8 +394,6 @@ void _splitpath_s(const char *path, char(&drive)[drivesize], char(&dir)[dirsize]
 
 
 //////////////////////////////////////////////////////////////////////////
-extern int memicmp(LPCSTR s1, LPCSTR s2, DWORD len);
-
 extern "C" char* strlwr (char* str);
 extern "C" char* strupr(char* str);
 
@@ -646,8 +588,3 @@ inline unsigned long long   _byteswap_uint64(unsigned long long input)
             ((input & 0x000000000000ff00ull) << 40) |
             ((input & 0x00000000000000ffull) << 56));
 }
-
-#endif // CRYINCLUDE_CRYCOMMON_LINUX_WIN32WRAPPER_H
-
-// vim:ts=2
-

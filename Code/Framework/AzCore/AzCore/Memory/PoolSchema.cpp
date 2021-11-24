@@ -35,8 +35,8 @@ namespace AZ
     public:
         AZ_CLASS_ALLOCATOR(PoolAllocation<Allocator>, SystemAllocator, 0)
 
-        typedef typename Allocator::Page    PageType;
-        typedef typename Allocator::Bucket  BucketType;
+        using PageType = typename Allocator::Page;
+        using BucketType = typename Allocator::Bucket;
 
         PoolAllocation(Allocator* alloc, size_t pageSize, size_t minAllocationSize, size_t maxAllocationSize);
         virtual ~PoolAllocation();
@@ -89,7 +89,7 @@ namespace AZ
             void SetupFreeList(size_t elementSize, size_t pageDataBlockSize);
 
             /// We just use a free list of nodes which we cast to the pool type.
-            typedef AZStd::intrusive_slist<FakeNode, AZStd::slist_base_hook<FakeNode> > FreeListType;
+            using FreeListType = AZStd::intrusive_slist<FakeNode, AZStd::slist_base_hook<FakeNode>>;
 
             FreeListType m_freeList;
             u32 m_bin;
@@ -103,7 +103,7 @@ namespace AZ
         */
         struct Bucket
         {
-            typedef AZStd::intrusive_list<Page, AZStd::list_base_hook<Page> > PageListType;
+            using PageListType = AZStd::intrusive_list<Page, AZStd::list_base_hook<Page>>;
             PageListType            m_pages;
         };
 
@@ -162,7 +162,7 @@ namespace AZ
             return page;
         }
 
-        typedef PoolAllocation<PoolSchemaImpl> AllocatorType;
+        using AllocatorType = PoolAllocation<PoolSchemaImpl>;
         IAllocatorAllocate*                 m_pageAllocator;
         AllocatorType                       m_allocator;
         void*                               m_staticDataBlock;
@@ -199,7 +199,7 @@ namespace AZ
             void SetupFreeList(size_t elementSize, size_t pageDataBlockSize);
 
             /// We just use a free list of nodes which we cast to the pool type.
-            typedef AZStd::intrusive_slist<FakeNode, AZStd::slist_base_hook<FakeNode> > FreeListType;
+            using FreeListType = AZStd::intrusive_slist<FakeNode, AZStd::slist_base_hook<FakeNode>>;
 
             FreeListType m_freeList;
             AZStd::lock_free_intrusive_stack_node<Page> m_lfStack;          ///< Lock Free stack node
@@ -215,7 +215,7 @@ namespace AZ
         */
         struct Bucket
         {
-            typedef AZStd::intrusive_list<Page, AZStd::list_base_hook<Page> > PageListType;
+            using PageListType = AZStd::intrusive_list<Page, AZStd::list_base_hook<Page>>;
             PageListType            m_pages;
         };
 
@@ -291,7 +291,7 @@ namespace AZ
         ThreadPoolSchema::SetThreadPoolData m_threadPoolSetter;
 
         // Fox X64 we push/pop pages using the m_mutex to sync. Pages are
-        typedef Bucket::PageListType FreePagesType;
+        using FreePagesType = Bucket::PageListType;
         FreePagesType               m_freePages;
         AZStd::vector<ThreadPoolData*> m_threads;           ///< Array with all separate thread data. Used to traverse end free elements.
 
@@ -313,12 +313,12 @@ namespace AZ
         ThreadPoolData(ThreadPoolSchemaImpl* alloc, size_t pageSize, size_t minAllocationSize, size_t maxAllocationSize);
         ~ThreadPoolData();
 
-        typedef PoolAllocation<ThreadPoolSchemaImpl>  AllocatorType;
+        using AllocatorType = PoolAllocation<ThreadPoolSchemaImpl>;
         /**
         * Stack with freed elements from other threads. We don't need stamped stack since the ABA problem can not
         * happen here. We push from many threads and pop from only one (we don't push from it).
         */
-        typedef AZStd::lock_free_intrusive_stack<ThreadPoolSchemaImpl::Page::FakeNodeLF, AZStd::lock_free_intrusive_stack_base_hook<ThreadPoolSchemaImpl::Page::FakeNodeLF> > FreedElementsStack;
+        using FreedElementsStack = AZStd::lock_free_intrusive_stack<ThreadPoolSchemaImpl::Page::FakeNodeLF, AZStd::lock_free_intrusive_stack_base_hook<ThreadPoolSchemaImpl::Page::FakeNodeLF>>;
 
         AllocatorType           m_allocator;
         FreedElementsStack      m_freedElements;

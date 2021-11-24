@@ -163,7 +163,6 @@ namespace
 
 //////////////////////////////////////////////////////////////////////////
 CEntityObject::CEntityObject()
-    : m_listeners(1)
 {
     m_bLoadFailed = false;
 
@@ -294,11 +293,6 @@ void CEntityObject::Done()
 
     ReleaseEventTargets();
     RemoveAllEntityLinks();
-
-    for (CListenerSet<IEntityObjectListener*>::Notifier notifier(m_listeners); notifier.IsValid(); notifier.Next())
-    {
-        notifier->OnDone();
-    }
 
     CBaseObject::Done();
 }
@@ -592,11 +586,11 @@ void CEntityObject::AdjustLightProperties(CVarBlockPtr& properties, const char* 
     if (IVariable* pCastShadowVarLegacy = FindVariableInSubBlock(properties, pSubBlockVar, "bCastShadow"))
     {
         pCastShadowVarLegacy->SetFlags(pCastShadowVarLegacy->GetFlags() | IVariable::UI_INVISIBLE);
-
-        if (pCastShadowVarLegacy->GetDisplayValue()[0] != '0')
+        const QString zeroPrefix("0");
+        if (!pCastShadowVarLegacy->GetDisplayValue().startsWith(zeroPrefix))
         {
             bCastShadowLegacy = true;
-            pCastShadowVarLegacy->SetDisplayValue("0");
+            pCastShadowVarLegacy->SetDisplayValue(zeroPrefix);
         }
     }
 
@@ -680,11 +674,6 @@ void CEntityObject::SetName(const QString& name)
 
     CBaseObject::SetName(name);
 
-    CListenerSet<IEntityObjectListener*> listeners = m_listeners;
-    for (CListenerSet<IEntityObjectListener*>::Notifier notifier(listeners); notifier.IsValid(); notifier.Next())
-    {
-        notifier->OnNameChanged(name.toUtf8().data());
-    }
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -697,10 +686,6 @@ void CEntityObject::SetSelected(bool bSelect)
         UpdateLightProperty();
     }
 
-    for (CListenerSet<IEntityObjectListener*>::Notifier notifier(m_listeners); notifier.IsValid(); notifier.Next())
-    {
-        notifier->OnSelectionChanged(bSelect);
-    }
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -956,11 +941,7 @@ void CEntityObject::Serialize(CObjectArchive& ar)
         QString attachmentType;
         xmlNode->getAttr("AttachmentType", attachmentType);
 
-        if (attachmentType == "GeomCacheNode")
-        {
-            m_attachmentType = eAT_GeomCacheNode;
-        }
-        else if (attachmentType == "CharacterBone")
+        if (attachmentType == "CharacterBone")
         {
             m_attachmentType = eAT_CharacterBone;
         }
@@ -987,11 +968,7 @@ void CEntityObject::Serialize(CObjectArchive& ar)
     {
         if (m_attachmentType != eAT_Pivot)
         {
-            if (m_attachmentType == eAT_GeomCacheNode)
-            {
-                xmlNode->setAttr("AttachmentType", "GeomCacheNode");
-            }
-            else if (m_attachmentType == eAT_CharacterBone)
+            if (m_attachmentType == eAT_CharacterBone)
             {
                 xmlNode->setAttr("AttachmentType", "CharacterBone");
             }
@@ -1091,11 +1068,7 @@ XmlNodeRef CEntityObject::Export([[maybe_unused]] const QString& levelPath, XmlN
                 objNode->setAttr("ParentId", parentEntity->GetEntityId());
                 if (m_attachmentType != eAT_Pivot)
                 {
-                    if (m_attachmentType == eAT_GeomCacheNode)
-                    {
-                        objNode->setAttr("AttachmentType", "GeomCacheNode");
-                    }
-                    else if (m_attachmentType == eAT_CharacterBone)
+                    if (m_attachmentType == eAT_CharacterBone)
                     {
                         objNode->setAttr("AttachmentType", "CharacterBone");
                     }
@@ -2181,16 +2154,6 @@ void CEntityObject::StoreUndoEntityLink(CSelectionGroup* pGroup)
     {
         CUndo::Record(new CUndoEntityLink(pGroup));
     }
-}
-
-void CEntityObject::RegisterListener(IEntityObjectListener* pListener)
-{
-    m_listeners.Add(pListener);
-}
-
-void CEntityObject::UnregisterListener(IEntityObjectListener* pListener)
-{
-    m_listeners.Remove(pListener);
 }
 
 template <typename T>

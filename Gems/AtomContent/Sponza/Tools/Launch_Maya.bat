@@ -34,7 +34,7 @@ echo     DCCSI_MAYA_VERSION = %DCCSI_MAYA_VERSION%
 IF EXIST "%~dp0Project_Env.bat" CALL %~dp0Project_Env.bat
 
 echo ________________________________
-echo Launching Maya %DCCSI_MAYA_VERSION% for Lumberyard...
+echo Launching Maya %DCCSI_MAYA_VERSION% for O3DE: %O3DE_PROJECT%...
 
 :::: Set Maya native project acess to this project
 ::set MAYA_PROJECT=%LY_PROJECT%
@@ -44,8 +44,10 @@ echo Launching Maya %DCCSI_MAYA_VERSION% for Lumberyard...
 Set MAYA_VP2_DEVICE_OVERRIDE = VirtualDeviceDx11
 
 :: Default to the right version of Maya if we can detect it... and launch
-IF EXIST "%MAYA_LOCATION%\bin\Maya.exe" (
-   start "" "%MAYA_LOCATION%\bin\Maya.exe" %*
+echo     MAYA_BIN_PATH = %MAYA_BIN_PATH%
+
+IF EXIST "%MAYA_BIN_PATH%\Maya.exe" (
+   start "" "%MAYA_BIN_PATH%\Maya.exe" %*
 ) ELSE (
    Where maya.exe 2> NUL
    IF ERRORLEVEL 1 (

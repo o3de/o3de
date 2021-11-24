@@ -1,0 +1,29 @@
+{
+    "entries": [
+        {
+            "base": "UiLayoutCellUnspecifiedSize",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "Cell Unspecified Size",
+                "category": "Constants/UI/Ui Layout"
+            },
+            "methods": [
+                {
+                    "base": "GetUiLayoutCellUnspecifiedSize",
+                    "details": {
+                        "name": "Layout Cell Unspecified Size"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

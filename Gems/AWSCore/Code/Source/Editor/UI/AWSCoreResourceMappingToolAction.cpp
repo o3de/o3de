@@ -58,7 +58,7 @@ namespace AWSCore
         if (m_isDebug)
         {
             return AZStd::string::format(
-                "\"%s\" debug -B \"%s\" --binaries-path \"%s\" --debug --profile \"%s\" --config-path \"%s\" --log-path \"%s\"",
+                "\"%s\" " AWSCORE_EDITOR_PYTHON_DEBUG_ARGUMENT "-B \"%s\" --binaries-path \"%s\" --debug --profile \"%s\" --config-path \"%s\" --log-path \"%s\"",
                 m_enginePythonEntryPath.c_str(), m_toolScriptPath.c_str(), m_toolQtBinDirectoryPath.c_str(),
                 profileName.c_str(), m_toolConfigDirectoryPath.c_str(), m_toolLogDirectoryPath.c_str());
         }

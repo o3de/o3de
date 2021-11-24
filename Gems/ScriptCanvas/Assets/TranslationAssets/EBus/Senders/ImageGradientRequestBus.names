@@ -1,0 +1,146 @@
+{
+    "entries": [
+        {
+            "base": "ImageGradientRequestBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "ImageGradientRequestBus"
+            },
+            "methods": [
+                {
+                    "base": "SetTilingX",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetTilingX"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetTilingX is invoked"
+                    },
+                    "details": {
+                        "name": "SetTilingX"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetTilingX",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetTilingX"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetTilingX is invoked"
+                    },
+                    "details": {
+                        "name": "GetTilingX"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetImageAssetPath",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetImageAssetPath"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetImageAssetPath is invoked"
+                    },
+                    "details": {
+                        "name": "SetImageAssetPath"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZStd::string"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetTilingY",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetTilingY"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetTilingY is invoked"
+                    },
+                    "details": {
+                        "name": "SetTilingY"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetImageAssetPath",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetImageAssetPath"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetImageAssetPath is invoked"
+                    },
+                    "details": {
+                        "name": "GetImageAssetPath"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZStd::string"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetTilingY",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetTilingY"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetTilingY is invoked"
+                    },
+                    "details": {
+                        "name": "GetTilingY"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

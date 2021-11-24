@@ -14,6 +14,7 @@ include(cmake/Version.cmake)
 include(cmake/OutputDirectory.cmake)
 
 if(NOT PROJECT_NAME)
+    include(cmake/CompilerSettings.cmake)
     project(O3DE
         LANGUAGES C CXX
         VERSION ${LY_VERSION_STRING}

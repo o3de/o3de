@@ -1,0 +1,318 @@
+{
+    "entries": [
+        {
+            "base": "Uuid",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "Uuid"
+            },
+            "methods": [
+                {
+                    "base": "CreateRandom",
+                    "context": "Uuid",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Create Random"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Create Random is invoked"
+                    },
+                    "details": {
+                        "name": "Create Random"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}",
+                            "details": {
+                                "name": "Uuid"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "CreateNull",
+                    "context": "Uuid",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Create Null"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Create Null is invoked"
+                    },
+                    "details": {
+                        "name": "Create Null"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}",
+                            "details": {
+                                "name": "Uuid"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "Create",
+                    "context": "Uuid",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Create"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Create is invoked"
+                    },
+                    "details": {
+                        "name": "Create"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}",
+                            "details": {
+                                "name": "Uuid"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "CreateName",
+                    "context": "Uuid",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Create Name"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Create Name is invoked"
+                    },
+                    "details": {
+                        "name": "Create Name"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "Name"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}",
+                            "details": {
+                                "name": "Uuid"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "Clone",
+                    "context": "Uuid",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Clone"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Clone is invoked"
+                    },
+                    "details": {
+                        "name": "Clone"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}",
+                            "details": {
+                                "name": "Uuid"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}",
+                            "details": {
+                                "name": "Uuid"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "LessThan",
+                    "context": "Uuid",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Less Than"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Less Than is invoked"
+                    },
+                    "details": {
+                        "name": "Less Than"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}",
+                            "details": {
+                                "name": "Uuid"
+                            }
+                        },
+                        {
+                            "typeid": "{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}",
+                            "details": {
+                                "name": "Uuid"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Less Than"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "IsNull",
+                    "context": "Uuid",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Is Null"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Is Null is invoked"
+                    },
+                    "details": {
+                        "name": "Is Null"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}",
+                            "details": {
+                                "name": "Uuid"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Is Null"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "CreateString",
+                    "context": "Uuid",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Create String"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Create String is invoked"
+                    },
+                    "details": {
+                        "name": "Create String"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "String"
+                            }
+                        },
+                        {
+                            "typeid": "{D6597933-47CD-4FC8-B911-63F3E2B0993A}",
+                            "details": {
+                                "name": "Size"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}",
+                            "details": {
+                                "name": "Uuid"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "ToString",
+                    "context": "Uuid",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke To String"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after To String is invoked"
+                    },
+                    "details": {
+                        "name": "To String"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}",
+                            "details": {
+                                "name": "Uuid"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "String"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "Equal",
+                    "context": "Uuid",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Equal"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Equal is invoked"
+                    },
+                    "details": {
+                        "name": "Equal"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}",
+                            "details": {
+                                "name": "Uuid"
+                            }
+                        },
+                        {
+                            "typeid": "{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}",
+                            "details": {
+                                "name": "Uuid"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Is Equal"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

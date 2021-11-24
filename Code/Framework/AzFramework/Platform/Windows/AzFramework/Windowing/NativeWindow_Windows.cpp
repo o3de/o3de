@@ -11,6 +11,7 @@
 
 #include <AzCore/Module/DynamicModuleHandle.h>
 #include <AzCore/PlatformIncl.h>
+#include <AzCore/std/containers/array.h>
 #include <AzCore/std/string/conversions.h>
 
 namespace AzFramework
@@ -234,14 +235,14 @@ namespace AzFramework
             const UINT rawInputHeaderSize = sizeof(RAWINPUTHEADER);
             GetRawInputData((HRAWINPUT)lParam, RID_INPUT, NULL, &rawInputSize, rawInputHeaderSize);
 
-            LPBYTE rawInputBytes = new BYTE[rawInputSize];
+            AZStd::array<BYTE, sizeof(RAWINPUT)> rawInputBytesArray;
+            LPBYTE rawInputBytes = rawInputBytesArray.data();
             GetRawInputData((HRAWINPUT)lParam, RID_INPUT, rawInputBytes, &rawInputSize, rawInputHeaderSize);
 
             RAWINPUT* rawInput = (RAWINPUT*)rawInputBytes;
             AzFramework::RawInputNotificationBusWindows::Broadcast(
                 &AzFramework::RawInputNotificationBusWindows::Events::OnRawInputEvent, *rawInput);
 
-            delete [] rawInputBytes;
             break;
         }
         case WM_CHAR:

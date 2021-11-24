@@ -94,6 +94,9 @@ namespace TrackViewPythonBindingsUnitTests
 
             m_app.Start(appDesc);
             m_app.RegisterComponentDescriptor(AzToolsFramework::TrackViewComponent::CreateDescriptor());
+
+            // Disable saving global user settings to prevent failure due to detecting file updates
+            AZ::UserSettingsComponentRequestBus::Broadcast(&AZ::UserSettingsComponentRequests::DisableSaveOnFinalize);
         }
 
         void TearDown() override

@@ -7,7 +7,6 @@
  */
 
 
-#include <AzCore/Debug/Timer.h>
 #include <AzCore/Debug/TraceMessageBus.h>
 #include <AzCore/std/typetraits/typetraits.h>
 #include <AzCore/UnitTest/TestTypes.h>

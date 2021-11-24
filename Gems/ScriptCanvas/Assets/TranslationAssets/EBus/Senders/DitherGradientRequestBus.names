@@ -1,0 +1,212 @@
+{
+    "entries": [
+        {
+            "base": "DitherGradientRequestBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "DitherGradientRequestBus"
+            },
+            "methods": [
+                {
+                    "base": "GetPatternType",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetPatternType"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetPatternType is invoked"
+                    },
+                    "details": {
+                        "name": "GetPatternType"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72B9409A-7D1A-4831-9CFE-FCB3FADD3426}",
+                            "details": {
+                                "name": "unsigned char"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetPatternType",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetPatternType"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetPatternType is invoked"
+                    },
+                    "details": {
+                        "name": "SetPatternType"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{72B9409A-7D1A-4831-9CFE-FCB3FADD3426}",
+                            "details": {
+                                "name": "unsigned char"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetPatternOffset",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetPatternOffset"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetPatternOffset is invoked"
+                    },
+                    "details": {
+                        "name": "SetPatternOffset"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Vector3"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetPatternOffset",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetPatternOffset"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetPatternOffset is invoked"
+                    },
+                    "details": {
+                        "name": "GetPatternOffset"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Vector3"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetPointsPerUnit",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetPointsPerUnit"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetPointsPerUnit is invoked"
+                    },
+                    "details": {
+                        "name": "GetPointsPerUnit"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetPointsPerUnit",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetPointsPerUnit"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetPointsPerUnit is invoked"
+                    },
+                    "details": {
+                        "name": "SetPointsPerUnit"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetUseSystemPointsPerUnit",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetUseSystemPointsPerUnit"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetUseSystemPointsPerUnit is invoked"
+                    },
+                    "details": {
+                        "name": "SetUseSystemPointsPerUnit"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetUseSystemPointsPerUnit",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetUseSystemPointsPerUnit"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetUseSystemPointsPerUnit is invoked"
+                    },
+                    "details": {
+                        "name": "GetUseSystemPointsPerUnit"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetGradientSampler",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetGradientSampler"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetGradientSampler is invoked"
+                    },
+                    "details": {
+                        "name": "GetGradientSampler"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{3768D3A6-BF70-4ABC-B4EC-73C75A886916}",
+                            "details": {
+                                "name": "Gradient Sampler"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

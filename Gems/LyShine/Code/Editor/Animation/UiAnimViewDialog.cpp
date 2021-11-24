@@ -257,6 +257,7 @@ BOOL CUiAnimViewDialog::OnInitDialog()
     m_wndSplitter->addWidget(m_wndDopeSheet);
     m_wndSplitter->setStretchFactor(0, 1);
     m_wndSplitter->setStretchFactor(1, 10);
+    m_wndSplitter->setChildrenCollapsible(false);
     l->addWidget(m_wndSplitter);
     w->setLayout(l);
     setCentralWidget(w);
@@ -282,6 +283,11 @@ BOOL CUiAnimViewDialog::OnInitDialog()
     // Close/hide by default to avoid the pane to show up as a standalone, white window when not displayed in a layout.
     m_wndCurveEditorDock->setVisible(false);
     m_wndCurveEditorDock->setEnabled(false);
+
+    // In order to prevent the track editor view from collapsing and becoming invisible, we use the
+    // minimum size of the curve editor for the track editor as well. Since both editors use the same
+    // view widget in the UI animation editor when not in 'Both' mode, the sizes can be identical.
+    m_wndDopeSheet->setMinimumSize(m_wndCurveEditor->minimumSizeHint());
 
     InitSequences();
 

@@ -1,0 +1,65 @@
+{
+    "entries": [
+        {
+            "base": "{9E334D28-CBB3-53AF-AFA1-8223F50312CE}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "ThreeGeneric",
+                "category": "Math",
+                "tooltip": "returns all columns from matrix",
+                "subtitle": "Math"
+            },
+            "slots": [
+                {
+                    "base": "Input_In",
+                    "details": {
+                        "name": "In"
+                    }
+                },
+                {
+                    "base": "Output_Out",
+                    "details": {
+                        "name": "Out"
+                    }
+                },
+                {
+                    "base": "DataInput_Vector3: One",
+                    "details": {
+                        "name": "Vector3: One"
+                    }
+                },
+                {
+                    "base": "DataInput_String: Two",
+                    "details": {
+                        "name": "String: Two"
+                    }
+                },
+                {
+                    "base": "DataInput_Boolean: Three",
+                    "details": {
+                        "name": "Boolean: Three"
+                    }
+                },
+                {
+                    "base": "DataOutput_One: Vector3",
+                    "details": {
+                        "name": "One: Vector3"
+                    }
+                },
+                {
+                    "base": "DataOutput_Two: String",
+                    "details": {
+                        "name": "Two: String"
+                    }
+                },
+                {
+                    "base": "DataOutput_Three: Boolean",
+                    "details": {
+                        "name": "Three: Boolean"
+                    }
+                }
+            ]
+        }
+    ]
+}

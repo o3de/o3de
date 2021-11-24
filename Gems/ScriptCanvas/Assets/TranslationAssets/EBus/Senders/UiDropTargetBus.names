@@ -1,0 +1,109 @@
+{
+    "entries": [
+        {
+            "base": "UiDropTargetBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "UiDropTargetBus",
+                "category": "UI"
+            },
+            "methods": [
+                {
+                    "base": "GetOnDropActionName",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get On Drop Action Name"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get On Drop Action Name is invoked"
+                    },
+                    "details": {
+                        "name": "Get On Drop Action Name",
+                        "tooltip": "Gets the name of the action triggered when a draggable component is dropped on the drop target"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZStd::string"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetOnDropActionName",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set On Drop Action Name"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set On Drop Action Name is invoked"
+                    },
+                    "details": {
+                        "name": "Set On Drop Action Name",
+                        "tooltip": "Sets the name of the action triggered when a draggable component is dropped on the drop target"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Name",
+                                "tooltip": "The name of the action triggered when a draggable component is dropped on the drop target"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetDropState",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Drop State"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Drop State is invoked"
+                    },
+                    "details": {
+                        "name": "Get Drop State",
+                        "tooltip": "Gets the drop state"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetDropState",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Drop State"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Drop State is invoked"
+                    },
+                    "details": {
+                        "name": "Set Drop State",
+                        "tooltip": "Sets the drop state"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "Drop State",
+                                "tooltip": "The drop state (0=Normal, 1=Valid, 2=Invalid)"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

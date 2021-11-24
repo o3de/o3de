@@ -75,6 +75,9 @@ namespace AZ
             //! Return True if the swap chain prefers exclusive full screen mode and a transition happened, false otherwise.
             virtual bool SetExclusiveFullScreenState([[maybe_unused]]bool fullScreenState) { return false; }
 
+            //! Recreate the swapchain if it becomes invalid during presenting. This should happen at the end of the frame
+            //! due to images being used as attachments in the frame graph.
+            virtual void ProcessRecreation() {};
         protected:
             SwapChain();
 
@@ -98,6 +101,14 @@ namespace AZ
 
             //////////////////////////////////////////////////////////////////////////
 
+            //! Shutdown and clear all the images.
+            void ShutdownImages();
+
+            //! Initialized all the images.
+            ResultCode InitImages();
+
+            //! Flag indicating if swapchain recreation is needed at the end of the frame.
+            bool m_pendingRecreation = false;
         private:
 
             bool ValidateDescriptor(const SwapChainDescriptor& descriptor) const;

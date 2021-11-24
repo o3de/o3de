@@ -37,6 +37,7 @@ ShaderResourceGroup ObjectSrg : SRG_PerObject
         float m_padding;
         bool m_useReflectionProbe;
         bool m_useParallaxCorrection;
+        float m_exposure;
     };
 
     ReflectionProbeData m_reflectionProbeData;

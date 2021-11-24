@@ -47,7 +47,6 @@ struct IConsole;
 struct IRemoteConsole;
 struct IRenderer;
 struct IProcess;
-struct ITimer;
 struct ICryFont;
 struct IMovieSystem;
 namespace Audio
@@ -57,7 +56,6 @@ namespace Audio
 struct SFileVersion;
 struct INameTable;
 struct ILevelSystem;
-struct IViewSystem;
 class IXMLBinarySerializer;
 struct IAVI_Reader;
 class CPNoise3;
@@ -75,7 +73,6 @@ namespace AZ
 
 typedef void* WIN_HWND;
 
-class CCamera;
 struct CLoadingTimeProfiler;
 
 class ICmdLine;
@@ -430,7 +427,7 @@ struct ISystemUserCallback
 
     // Description:
     //   Show message by provider.
-    virtual int ShowMessage(const char* text, const char* caption, unsigned int uType) { return CryMessageBox(text, caption, uType); }
+    virtual void ShowMessage(const char* text, const char* caption, unsigned int uType) { CryMessageBox(text, caption, uType); }
 
     // </interfuscator:shuffle>
 
@@ -612,7 +609,6 @@ struct SSystemGlobalEnvironment
 {
     AZ::IO::IArchive*          pCryPak;
     AZ::IO::FileIOBase*        pFileIO;
-    ITimer*                    pTimer;
     ICryFont*                  pCryFont;
     ::IConsole*                  pConsole;
     ISystem*                   pSystem = nullptr;
@@ -815,15 +811,13 @@ struct ISystem
     // Description:
     //   Report message by provider or by using CryMessageBox.
     //   Doesn't terminate the execution.
-    virtual int ShowMessage(const char* text, const char* caption, unsigned int uType) = 0;
+    virtual void ShowMessage(const char* text, const char* caption, unsigned int uType) = 0;
 
     // Summary:
     //   Compare specified verbosity level to the one currently set.
     virtual bool CheckLogVerbosity(int verbosity) = 0;
 
     // return the related subsystem interface
-    //
-    virtual IViewSystem* GetIViewSystem() = 0;
     virtual ILevelSystem* GetILevelSystem() = 0;
     virtual ICmdLine* GetICmdLine() = 0;
     virtual ILog* GetILog() = 0;
@@ -833,8 +827,6 @@ struct ISystem
     virtual ::IConsole* GetIConsole() = 0;
     virtual IRemoteConsole* GetIRemoteConsole() = 0;
     virtual ISystemEventDispatcher* GetISystemEventDispatcher() = 0;
-
-    virtual ITimer* GetITimer() = 0;
 
     virtual bool IsDevMode() const = 0;
     //////////////////////////////////////////////////////////////////////////
@@ -1061,22 +1053,14 @@ inline ISystem* GetISystem()
 //   This function must be called once by each module at the beginning, to setup global pointers.
 void ModuleInitISystem(ISystem* pSystem, const char* moduleName);
 void ModuleShutdownISystem(ISystem* pSystem);
-extern "C" AZ_DLL_EXPORT void InjectEnvironment(void* env);
-extern "C" AZ_DLL_EXPORT void DetachEnvironment();
 
 void* GetModuleInitISystemSymbol();
 void* GetModuleShutdownISystemSymbol();
-void* GetInjectEnvironmentSymbol();
-void* GetDetachEnvironmentSymbol();
 
 #define PREVENT_MODULE_AND_ENVIRONMENT_SYMBOL_STRIPPING \
     AZ_UNUSED(GetModuleInitISystemSymbol()); \
-    AZ_UNUSED(GetModuleShutdownISystemSymbol()); \
-    AZ_UNUSED(GetInjectEnvironmentSymbol()); \
-    AZ_UNUSED(GetDetachEnvironmentSymbol());
+    AZ_UNUSED(GetModuleShutdownISystemSymbol());
 
-
-extern bool g_bProfilerEnabled;
 
 // Summary:
 //   Interface of the DLL.

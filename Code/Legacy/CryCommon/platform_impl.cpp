@@ -102,22 +102,6 @@ void ModuleShutdownISystem([[maybe_unused]] ISystem* pSystem)
     AZ::Environment::Detach();
 }
 
-extern "C" AZ_DLL_EXPORT void InjectEnvironment(void* env)
-{
-    static bool injected = false;
-    if (!injected)
-    {
-        AZ::Environment::Attach(reinterpret_cast<AZ::EnvironmentInstance>(env));
-        AZ::AllocatorManager::Instance();  // Force the AllocatorManager to instantiate and register any allocators defined in data sections
-        injected = true;
-    }
-}
-
-extern "C" AZ_DLL_EXPORT void DetachEnvironment()
-{
-    AZ::Environment::Detach();
-}
-
 void* GetModuleInitISystemSymbol()
 {
     return reinterpret_cast<void*>(&ModuleInitISystem);
@@ -126,16 +110,6 @@ void* GetModuleShutdownISystemSymbol()
 {
     return reinterpret_cast<void*>(&ModuleShutdownISystem);
 }
-void* GetInjectEnvironmentSymbol()
-{
-    return reinterpret_cast<void*>(&InjectEnvironment);
-}
-void* GetDetachEnvironmentSymbol()
-{
-    return reinterpret_cast<void*>(&DetachEnvironment);
-}
-
-bool g_bProfilerEnabled = false;
 
 //////////////////////////////////////////////////////////////////////////
 // global random number generator used by cry_random functions
@@ -304,13 +278,6 @@ int64 CryGetTicks()
 {
     LARGE_INTEGER li;
     QueryPerformanceCounter(&li);
-    return li.QuadPart;
-}
-
-int64 CryGetTicksPerSec()
-{
-    LARGE_INTEGER li;
-    QueryPerformanceFrequency(&li);
     return li.QuadPart;
 }
 #endif

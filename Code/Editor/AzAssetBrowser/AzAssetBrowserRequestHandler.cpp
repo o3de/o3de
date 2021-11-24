@@ -199,41 +199,6 @@ namespace AzAssetBrowserRequestHandlerPrivate
             }
         }
     }
-
-    // Helper utility - determines if the thing being dragged is a FBX from the scene import pipeline
-    // This is important to differentiate.
-    // when someone drags a MTL file directly into the viewport, even from a FBX, we want to spawn it as a decal
-    // but when someone drags a FBX that contains MTL files, we want only to spawn the meshes.
-    // so we have to specifically differentiate here between the mimeData type that contains the source as the root
-    // (dragging the fbx file itself)
-    // and one which contains the actual product at its root.
-
-    bool IsDragOfFBX(const QMimeData* mimeData)
-    {
-        AZStd::vector<AssetBrowserEntry*> entries;
-        if (!AssetBrowserEntry::FromMimeData(mimeData, entries))
-        {
-            // if mimedata does not even contain entries, no point in proceeding.
-            return false;
-        }
-
-        for (auto entry : entries)
-        {
-            if (entry->GetEntryType() != AssetBrowserEntry::AssetEntryType::Source)
-            {
-                continue;
-            }
-            // this is a source file.  Is it the filetype we're looking for?
-            if (SourceAssetBrowserEntry* source = azrtti_cast<SourceAssetBrowserEntry*>(entry))
-            {
-                if (AzFramework::StringFunc::Equal(source->GetExtension().c_str(), ".fbx", false))
-                {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
 }
 
 AzAssetBrowserRequestHandler::AzAssetBrowserRequestHandler()

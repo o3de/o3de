@@ -104,7 +104,7 @@ PSOutput MainPS(VSOutput IN, in uint sampleIndex : SV_SampleIndex)
     blendWeight /= max(1.0f, blendWeightAllProbes);
 
     // apply exposure setting
-    specular *= pow(2.0, SceneSrg::m_iblExposure);
+    specular *= pow(2.0, ObjectSrg::m_exposure);
 
     // apply blend weight for additive blending
     specular *= blendWeight;

@@ -581,15 +581,15 @@ namespace AzToolsFramework
     {
         if (m_rootInstance && m_playInEditorData.m_isEnabled)
         {
-            AZ_Assert(m_playInEditorData.m_entities.IsSet(),
+            AZ_Assert(
+                m_playInEditorData.m_entities.IsSet(),
                 "Invalid Game Mode Entities Container encountered after play-in-editor stopped. "
                 "Confirm that the container was initialized correctly");
 
             m_playInEditorData.m_entities.DespawnAllEntities();
             m_playInEditorData.m_entities.Alert(
                 [assets = AZStd::move(m_playInEditorData.m_assets),
-                 deactivatedEntities = AZStd::move(m_playInEditorData.m_deactivatedEntities)]
-                ([[maybe_unused]]uint32_t generation) mutable
+                 deactivatedEntities = AZStd::move(m_playInEditorData.m_deactivatedEntities)]([[maybe_unused]] uint32_t generation) mutable
                 {
                     auto end = deactivatedEntities.rend();
                     for (auto it = deactivatedEntities.rbegin(); it != end; ++it)
@@ -614,15 +614,15 @@ namespace AzToolsFramework
                     AzFramework::GameEntityContextEventBus::Broadcast(&AzFramework::GameEntityContextEventBus::Events::OnGameEntitiesReset);
                 });
             m_playInEditorData.m_entities.Clear();
-        }
 
-        // Game entity cleanup is queued onto the next tick via the DespawnEntities call.
-        // To avoid both game entities and Editor entities active at the same time
-        // we flush the tick queue to ensure the game entities are cleared first.
-        // The Alert callback that follows the DespawnEntities call will then reactivate the editor entities
-        // This should be considered temporary as a move to a less rigid event sequence that supports async entity clean up
-        // is the desired direction forward.
-        AZ::TickBus::ExecuteQueuedEvents();
+            // Game entity cleanup is queued onto the next tick via the DespawnEntities call.
+            // To avoid both game entities and Editor entities active at the same time
+            // we flush the tick queue to ensure the game entities are cleared first.
+            // The Alert callback that follows the DespawnEntities call will then reactivate the editor entities
+            // This should be considered temporary as a move to a less rigid event sequence that supports async entity clean up
+            // is the desired direction forward.
+            AZ::TickBus::ExecuteQueuedEvents();
+        }
 
         m_playInEditorData.m_isEnabled = false;
     }

@@ -7,7 +7,6 @@
  */
 #pragma once
 #include <ISystem.h>
-#include <Cry_Camera.h>
 
 #ifdef GetUserName
 #undef GetUserName
@@ -53,11 +52,9 @@ public:
     void Warning([[maybe_unused]] EValidatorModule module, [[maybe_unused]] EValidatorSeverity severity, [[maybe_unused]] int flags, [[maybe_unused]] const char* file, [[maybe_unused]] const char* format, ...) override {}
 
     MOCK_METHOD3(ShowMessage,
-        int(const char* text, const char* caption, unsigned int uType));
+        void(const char* text, const char* caption, unsigned int uType));
     MOCK_METHOD1(CheckLogVerbosity,
         bool(int verbosity));
-    MOCK_METHOD0(GetIViewSystem,
-        IViewSystem * ());
     MOCK_METHOD0(GetILevelSystem,
         ILevelSystem * ());
     MOCK_METHOD0(GetICmdLine,
@@ -78,8 +75,6 @@ public:
         IRemoteConsole * ());
     MOCK_METHOD0(GetISystemEventDispatcher,
         ISystemEventDispatcher * ());
-    MOCK_METHOD0(GetITimer,
-        ITimer * ());
     MOCK_CONST_METHOD0(IsDevMode,
         bool());
     MOCK_METHOD3(CreateXmlNode,

@@ -125,13 +125,7 @@ namespace AZ::Render
     }
 
     template<typename DataType, typename IndexType>
-    inline AZStd::vector<IndexType>& IndexedDataVector<DataType, IndexType>::GetIndexVector()
-    {
-        return m_dataToIndices;
-    }
-
-    template<typename DataType, typename IndexType>
-    inline const AZStd::vector<IndexType>& IndexedDataVector<DataType, IndexType>::GetIndexVector() const
+    inline const AZStd::vector<IndexType>& IndexedDataVector<DataType, IndexType>::GetDataToIndexVector() const
     {
         return m_dataToIndices;
     }

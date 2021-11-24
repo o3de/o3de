@@ -1,0 +1,54 @@
+{
+    "entries": [
+        {
+            "base": "{78D20EB6-BA07-4071-B646-7C2D68A0A4A6}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "EqualityExpression",
+                "tooltip": "EqualityExpression"
+            },
+            "slots": [
+                {
+                    "base": "DataOutput_Result",
+                    "details": {
+                        "name": "Result"
+                    }
+                },
+                {
+                    "base": "Input_In",
+                    "details": {
+                        "name": "In",
+                        "tooltip": "Signal to perform the evaluation when desired."
+                    }
+                },
+                {
+                    "base": "Output_True",
+                    "details": {
+                        "name": "True",
+                        "tooltip": "Signaled if the result of the operation is true."
+                    }
+                },
+                {
+                    "base": "Output_False",
+                    "details": {
+                        "name": "False",
+                        "tooltip": "Signaled if the result of the operation is false."
+                    }
+                },
+                {
+                    "base": "DataInput_Value A",
+                    "details": {
+                        "name": "Value A"
+                    }
+                },
+                {
+                    "base": "DataInput_Value B",
+                    "details": {
+                        "name": "Value B"
+                    }
+                }
+            ]
+        }
+    ]
+}

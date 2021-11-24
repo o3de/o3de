@@ -11,6 +11,7 @@
 #include <AzFramework/Viewport/CameraState.h>
 #include <AZTestShared/Math/MathTestHelpers.h>
 #include <AzCore/Math/SimdMath.h>
+#include <AzCore/Math/MatrixUtils.h>
 #include <AzCore/Math/Matrix4x4.h>
 
 namespace UnitTest
@@ -50,22 +51,6 @@ namespace UnitTest
         , public ::testing::WithParamInterface<AZStd::tuple<float, float, float, float>>
     {
     };
-
-    // Taken from Atom::MatrixUtils for testing purposes, this can be removed if MakePerspectiveFovMatrixRH makes it into AZ
-    static AZ::Matrix4x4 MakePerspectiveMatrixRH(float fovY, float aspectRatio, float nearClip, float farClip)
-    {
-        float sinFov, cosFov;
-        AZ::SinCos(0.5f * fovY, sinFov, cosFov);
-        float yScale = cosFov / sinFov; //cot(fovY/2)
-        float xScale = yScale / aspectRatio;
-
-        AZ::Matrix4x4 out;
-        out.SetRow(0,   xScale, 0.f,    0.f,                                0.f                                     );
-        out.SetRow(1,   0.f,    yScale, 0.f,                                0.f                                     );
-        out.SetRow(2,   0.f,    0.f,    farClip / (nearClip - farClip),     nearClip*farClip / (nearClip - farClip) );
-        out.SetRow(3,   0.f,    0.f,    -1.f,                               0.f                                     );
-        return out;
-    }
 
     TEST_P(Translation, Permutation)
     {
@@ -176,7 +161,8 @@ namespace UnitTest
     {
         auto [fovY, aspectRatio, nearClip, farClip] = GetParam();
 
-        AZ::Matrix4x4 clipFromView = MakePerspectiveMatrixRH(fovY, aspectRatio, nearClip, farClip);
+        AZ::Matrix4x4 clipFromView;
+        MakePerspectiveFovMatrixRH(clipFromView, fovY, aspectRatio, nearClip, farClip);
 
         AzFramework::SetCameraClippingVolumeFromPerspectiveFovMatrixRH(m_cameraState, clipFromView);
 

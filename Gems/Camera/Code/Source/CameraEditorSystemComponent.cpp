@@ -20,6 +20,7 @@
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/API/EntityCompositionRequestBus.h>
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
+#include <AzToolsFramework/Entity/PrefabEditorEntityOwnershipInterface.h>
 
 #include <AzToolsFramework/API/EditorCameraBus.h>
 #include "ViewportCameraSelectorWindow.h"
@@ -70,7 +71,20 @@ namespace Camera
         if (!(flags & AzToolsFramework::EditorEvents::eECMF_HIDE_ENTITY_CREATION))
         {
             QAction* action = menu->addAction(QObject::tr("Create camera entity from view"));
-            QObject::connect(action, &QAction::triggered, [this]() { CreateCameraEntityFromViewport(); });
+            const auto prefabEditorEntityOwnershipInterface = AZ::Interface<AzToolsFramework::PrefabEditorEntityOwnershipInterface>::Get();
+            if (prefabEditorEntityOwnershipInterface && !prefabEditorEntityOwnershipInterface->IsRootPrefabAssigned())
+            {
+                action->setEnabled(false);
+            }
+            else
+            {
+                QObject::connect(
+                    action, &QAction::triggered,
+                    [this]()
+                    {
+                        CreateCameraEntityFromViewport();
+                    });
+            }
         }
     }
 
@@ -99,7 +113,7 @@ namespace Camera
         // Set transform to that of the viewport, otherwise default to Identity matrix and 60 degree FOV
         const auto worldFromView = AzFramework::CameraTransform(cameraState);
         const auto cameraTransform = AZ::Transform::CreateFromMatrix3x3AndTranslation(
-            AZ::Matrix3x3::CreateFromMatrix4x4(worldFromView), worldFromView.GetTranslation());
+            AZ::Matrix3x3::CreateFromMatrix3x4(worldFromView), worldFromView.GetTranslation());
         AZ::TransformBus::Event(newEntityId, &AZ::TransformInterface::SetWorldTM, cameraTransform);
         CameraRequestBus::Event(newEntityId, &CameraComponentRequests::SetFov, AZ::RadToDeg(cameraState.m_fovOrZoom));
         undoBatch.MarkEntityDirty(newEntityId);

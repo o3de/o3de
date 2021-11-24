@@ -1,0 +1,322 @@
+{
+    "entries": [
+        {
+            "base": "RenderMeshComponentRequestBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "RenderMeshComponentRequestBus"
+            },
+            "methods": [
+                {
+                    "base": "GetLodOverride",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetLodOverride"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetLodOverride is invoked"
+                    },
+                    "details": {
+                        "name": "GetLodOverride"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72B9409A-7D1A-4831-9CFE-FCB3FADD3426}",
+                            "details": {
+                                "name": "unsigned char"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetSortKey",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetSortKey"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetSortKey is invoked"
+                    },
+                    "details": {
+                        "name": "GetSortKey"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{70D8A282-A1EA-462D-9D04-51EDE81FAC2F}",
+                            "details": {
+                                "name": "AZ::s64"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetQualityDecayRate",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetQualityDecayRate"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetQualityDecayRate is invoked"
+                    },
+                    "details": {
+                        "name": "SetQualityDecayRate"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetSortKey",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetSortKey"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetSortKey is invoked"
+                    },
+                    "details": {
+                        "name": "SetSortKey"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{70D8A282-A1EA-462D-9D04-51EDE81FAC2F}",
+                            "details": {
+                                "name": "AZ::s64"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetModelAssetPath",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetModelAssetPath"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetModelAssetPath is invoked"
+                    },
+                    "details": {
+                        "name": "GetModelAssetPath"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZStd::string"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetLodType",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetLodType"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetLodType is invoked"
+                    },
+                    "details": {
+                        "name": "SetLodType"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{72B9409A-7D1A-4831-9CFE-FCB3FADD3426}",
+                            "details": {
+                                "name": "unsigned char"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetLodOverride",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetLodOverride"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetLodOverride is invoked"
+                    },
+                    "details": {
+                        "name": "SetLodOverride"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{72B9409A-7D1A-4831-9CFE-FCB3FADD3426}",
+                            "details": {
+                                "name": "unsigned char"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetMinimumScreenCoverage",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetMinimumScreenCoverage"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetMinimumScreenCoverage is invoked"
+                    },
+                    "details": {
+                        "name": "SetMinimumScreenCoverage"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetModelAssetId",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetModelAssetId"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetModelAssetId is invoked"
+                    },
+                    "details": {
+                        "name": "SetModelAssetId"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{652ED536-3402-439B-AEBE-4A5DBC554085}",
+                            "details": {
+                                "name": "AssetId"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetLodType",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetLodType"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetLodType is invoked"
+                    },
+                    "details": {
+                        "name": "GetLodType"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72B9409A-7D1A-4831-9CFE-FCB3FADD3426}",
+                            "details": {
+                                "name": "unsigned char"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetMinimumScreenCoverage",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetMinimumScreenCoverage"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetMinimumScreenCoverage is invoked"
+                    },
+                    "details": {
+                        "name": "GetMinimumScreenCoverage"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetModelAssetId",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetModelAssetId"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetModelAssetId is invoked"
+                    },
+                    "details": {
+                        "name": "GetModelAssetId"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{652ED536-3402-439B-AEBE-4A5DBC554085}",
+                            "details": {
+                                "name": "AssetId"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetModelAssetPath",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetModelAssetPath"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetModelAssetPath is invoked"
+                    },
+                    "details": {
+                        "name": "SetModelAssetPath"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZStd::string"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetQualityDecayRate",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetQualityDecayRate"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetQualityDecayRate is invoked"
+                    },
+                    "details": {
+                        "name": "GetQualityDecayRate"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

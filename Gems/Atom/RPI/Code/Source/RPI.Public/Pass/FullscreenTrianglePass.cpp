@@ -142,6 +142,12 @@ namespace AZ
             RHI::DrawLinear draw = RHI::DrawLinear();
             draw.m_vertexCount = 3;
 
+            if (m_shader == nullptr)
+            {
+                AZ_Error("PassSystem", false, "[FullscreenTrianglePass]: Shader not loaded!");
+                return;
+            }
+
             RHI::PipelineStateDescriptorForDraw pipelineStateDescriptor;
 
             // [GFX TODO][ATOM-872] The pass should be able to drive the shader variant

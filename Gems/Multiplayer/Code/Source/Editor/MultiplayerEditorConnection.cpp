@@ -20,6 +20,8 @@
 #include <AzCore/Serialization/Utils.h>
 #include <AzNetworking/ConnectionLayer/IConnection.h>
 #include <AzNetworking/Framework/INetworking.h>
+#include <AzCore/Console/IConsole.h>
+#include <AzCore/Component/ComponentApplicationLifecycle.h>
 
 namespace Multiplayer
 {
@@ -33,10 +35,28 @@ namespace Multiplayer
     {
         m_networkEditorInterface = AZ::Interface<INetworking>::Get()->CreateNetworkInterface(
             AZ::Name(MpEditorInterfaceName), ProtocolType::Tcp, TrustZone::ExternalClientToServer, *this);
-        m_networkEditorInterface->SetTimeoutMs(AZ::TimeMs{ 0 }); // Disable timeouts on this network interface
-        ActivateDedicatedEditorServer();
-    }
+        m_networkEditorInterface->SetTimeoutMs(AZ::Time::ZeroTimeMs); // Disable timeouts on this network interface
 
+        // Wait to activate the editor-server until LegacySystemInterfaceCreated so that the logging system is ready
+        // Automated testing listens for these logs
+        if (editorsv_isDedicated)
+        {
+            // If the settings registry is not available at this point,
+            // then something catastrophic has happened in the application startup.
+            // That should have been caught and messaged out earlier in startup.
+            if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
+            {
+                AZ::ComponentApplicationLifecycle::RegisterHandler(
+                    *settingsRegistry, m_componentApplicationLifecycleHandler,
+                    [this](AZStd::string_view /*path*/, AZ::SettingsRegistryInterface::Type /*type*/)
+                    {
+                        ActivateDedicatedEditorServer();
+                    },
+                    "LegacySystemInterfaceCreated");
+            }
+        }
+    }
+    
     void MultiplayerEditorConnection::ActivateDedicatedEditorServer() const
     {
         if (m_isActivated || !editorsv_isDedicated)

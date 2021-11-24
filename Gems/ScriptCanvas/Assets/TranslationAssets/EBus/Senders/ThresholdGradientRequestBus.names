@@ -1,0 +1,80 @@
+{
+    "entries": [
+        {
+            "base": "ThresholdGradientRequestBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "ThresholdGradientRequestBus"
+            },
+            "methods": [
+                {
+                    "base": "GetThreshold",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetThreshold"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetThreshold is invoked"
+                    },
+                    "details": {
+                        "name": "GetThreshold"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetThreshold",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetThreshold"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetThreshold is invoked"
+                    },
+                    "details": {
+                        "name": "SetThreshold"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetGradientSampler",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetGradientSampler"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetGradientSampler is invoked"
+                    },
+                    "details": {
+                        "name": "GetGradientSampler"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{3768D3A6-BF70-4ABC-B4EC-73C75A886916}",
+                            "details": {
+                                "name": "Gradient Sampler"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

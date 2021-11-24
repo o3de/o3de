@@ -25,8 +25,8 @@ namespace Terrain
         static constexpr const char* const s_categoryName = "Terrain";
         static constexpr const char* const s_componentName = "Terrain Surface Materials List";
         static constexpr const char* const s_componentDescription = "Provides a mapping between surface tags and render materials.";
-        static constexpr const char* const s_icon = "Editor/Icons/Components/TerrainHeight.svg";
-        static constexpr const char* const s_viewportIcon = "Editor/Icons/Components/Viewport/TerrainHeight.svg";
-        static constexpr const char* const s_helpUrl = "";
+        static constexpr const char* const s_icon = "Editor/Icons/Components/TerrainSurfaceMaterials.svg";
+        static constexpr const char* const s_viewportIcon = "Editor/Icons/Components/Viewport/TerrainSurfaceMaterials.svg";
+        static constexpr const char* const s_helpUrl = "https://o3de.org/docs/user-guide/components/reference/terrain/surface-material-list/";
     };
 }
