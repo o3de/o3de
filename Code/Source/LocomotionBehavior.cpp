@@ -190,9 +190,9 @@ namespace EMotionFX
             FeatureVelocity::FrameCostContext leftFootVelocityContext(m_features.GetFeatureMatrix());
             FeatureVelocity::FrameCostContext rightFootVelocityContext(m_features.GetFeatureMatrix());
             FeatureVelocity::FrameCostContext pelvisVelocityContext(m_features.GetFeatureMatrix());
-            Feature::CalculateVelocity(m_leftFootNodeIndex, m_rootNodeIndex, motionInstance, leftFootVelocityContext.m_direction, leftFootVelocityContext.m_speed);
-            Feature::CalculateVelocity(m_rightFootNodeIndex, m_rootNodeIndex, motionInstance, rightFootVelocityContext.m_direction, rightFootVelocityContext.m_speed); // TODO: group this with left foot for faster performance
-            Feature::CalculateVelocity(m_pelvisNodeIndex, m_rootNodeIndex, motionInstance, pelvisVelocityContext.m_direction, pelvisVelocityContext.m_speed);
+            Feature::CalculateVelocity(m_leftFootNodeIndex, m_rootNodeIndex, motionInstance, leftFootVelocityContext.m_velocity);
+            Feature::CalculateVelocity(m_rightFootNodeIndex, m_rootNodeIndex, motionInstance, rightFootVelocityContext.m_velocity); // TODO: group this with left foot for faster performance
+            Feature::CalculateVelocity(m_pelvisNodeIndex, m_rootNodeIndex, motionInstance, pelvisVelocityContext.m_velocity);
             rootTrajectoryContext.m_pose = &inputPose;
             rootTrajectoryContext.m_facingDirectionRelative = AZ::Vector3(0.0f, 1.0f, 0.0f);
             rootTrajectoryContext.m_trajectoryQuery = &behaviorInstance->GetTrajectoryQuery();

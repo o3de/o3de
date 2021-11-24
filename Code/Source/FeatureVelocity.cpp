@@ -53,17 +53,15 @@ namespace EMotionFX
 
         void FeatureVelocity::FillQueryFeatureValues(size_t startIndex, AZStd::vector<float>& queryFeatureValues, const FrameCostContext& context)
         {
-            queryFeatureValues[startIndex + 0] = context.m_direction.GetX();
-            queryFeatureValues[startIndex + 1] = context.m_direction.GetY();
-            queryFeatureValues[startIndex + 2] = context.m_direction.GetZ();
-            queryFeatureValues[startIndex + 3] = context.m_speed;
+            queryFeatureValues[startIndex + 0] = context.m_velocity.GetX();
+            queryFeatureValues[startIndex + 1] = context.m_velocity.GetY();
+            queryFeatureValues[startIndex + 2] = context.m_velocity.GetZ();
         }
 
         void FeatureVelocity::ExtractFeatureValues(const ExtractFrameContext& context)
         {
-            Velocity velocity;
-            CalculateVelocity(m_nodeIndex, m_relativeToNodeIndex, context.m_motionInstance, velocity.m_direction, velocity.m_speed);
-
+            AZ::Vector3 velocity;
+            CalculateVelocity(m_nodeIndex, m_relativeToNodeIndex, context.m_motionInstance, velocity);
             SetFeatureData(context.m_featureMatrix, context.m_frameIndex, velocity);
         }
 
@@ -76,17 +74,23 @@ namespace EMotionFX
                 return;
             }
 
+            const Behavior* behavior = behaviorInstance->GetBehavior();
+            const AZ::Vector3 velocity = GetFeatureData(behavior->GetFeatures().GetFeatureMatrix(), frameIndex);
+
+            // Don't visualize joints that remain motionless (zero velocity).
+            if (velocity.GetLength() < AZ::Constants::FloatEpsilon)
+            {
+                return;
+            }
+
+            const float scale = 0.15f;
             const ActorInstance* actorInstance = behaviorInstance->GetActorInstance();
             const Pose* pose = actorInstance->GetTransformData()->GetCurrentPose();
             const Transform jointModelTM = pose->GetModelSpaceTransform(m_nodeIndex);
             const Transform relativeToWorldTM = pose->GetWorldSpaceTransform(m_relativeToNodeIndex);
-
-            const Behavior* behavior = behaviorInstance->GetBehavior();
-            const Velocity velocity = GetFeatureData(behavior->GetFeatures().GetFeatureMatrix(), frameIndex);
-            const float scale = 0.15f;
             const AZ::Vector3 jointPosition = relativeToWorldTM.TransformPoint(jointModelTM.m_position);
-            const AZ::Vector3 directionWorldSpace = relativeToWorldTM.TransformVector(velocity.m_direction * velocity.m_speed * scale);
-            const AZ::Vector3 arrowPosition = jointPosition + directionWorldSpace;
+            const AZ::Vector3 velocityWorldSpace = relativeToWorldTM.TransformVector(velocity * scale);
+            const AZ::Vector3 arrowPosition = jointPosition + velocityWorldSpace ;
 
             debugDisplay.DepthTestOff();
             debugDisplay.SetColor(m_debugColor);
@@ -97,8 +101,8 @@ namespace EMotionFX
                 /*height=*/(arrowPosition - jointPosition).GetLength(),
                 /*drawShaded=*/false);
 
-            debugDisplay.DrawSolidCone(jointPosition + directionWorldSpace,
-                directionWorldSpace,
+            debugDisplay.DrawSolidCone(jointPosition + velocityWorldSpace,
+                velocityWorldSpace ,
                 0.1f * scale,
                 scale * 0.5f,
                 /*drawShaded=*/false);
@@ -106,15 +110,15 @@ namespace EMotionFX
 
         float FeatureVelocity::CalculateFrameCost(size_t frameIndex, const FrameCostContext& context) const
         {
-            const Velocity& frameVelocity = GetFeatureData(context.m_featureMatrix, frameIndex);
+            const AZ::Vector3 frameVelocity = GetFeatureData(context.m_featureMatrix, frameIndex);
 
             // Direction difference
-            const float directionDifferenceCost = GetNormalizedDirectionDifference(frameVelocity.m_direction, context.m_direction);
+            const float directionDifferenceCost = GetNormalizedDirectionDifference(frameVelocity.GetNormalized(), context.m_velocity.GetNormalized());
 
             // Speed difference
             // TODO: This needs to be normalized later on, else wise it could be that the direction difference is weights
             // too heavily or too less compared to what the speed values are
-            const float speedDifferenceCost = AZ::GetAbs(frameVelocity.m_speed - context.m_speed);
+            const float speedDifferenceCost = AZ::GetAbs(frameVelocity.GetLength() - context.m_velocity.GetLength());
 
             return directionDifferenceCost + speedDifferenceCost;
         }
@@ -144,7 +148,7 @@ namespace EMotionFX
 
         size_t FeatureVelocity::GetNumDimensions() const
         {
-            return 4;
+            return 3;
         }
 
         AZStd::string FeatureVelocity::GetDimensionName(size_t index, Skeleton* skeleton) const
@@ -160,28 +164,23 @@ namespace EMotionFX
 
             switch (index)
             {
-                case 0: { result += "Velocity.DirX"; break; }
-                case 1: { result += "Velocity.DirY"; break; }
-                case 2: { result += "Velocity.DirZ"; break; }
-                case 3: { result += "Velocity.Speed"; break; }
+                case 0: { result += "VelocityX"; break; }
+                case 1: { result += "VelocityY"; break; }
+                case 2: { result += "VelocityZ"; break; }
                 default: { result += Feature::GetDimensionName(index, skeleton); }
             }
 
             return result;
         }
 
-        EMotionFX::MotionMatching::FeatureVelocity::Velocity FeatureVelocity::GetFeatureData(const FeatureMatrix& featureMatrix, size_t frameIndex) const
+        AZ::Vector3 FeatureVelocity::GetFeatureData(const FeatureMatrix& featureMatrix, size_t frameIndex) const
         {
-            Velocity result;
-            result.m_direction = featureMatrix.GetVector3(frameIndex, m_featureColumnOffset);
-            result.m_speed = featureMatrix(frameIndex, m_featureColumnOffset + 3);
-            return result;
+            return featureMatrix.GetVector3(frameIndex, m_featureColumnOffset);
         }
 
-        void FeatureVelocity::SetFeatureData(FeatureMatrix& featureMatrix, size_t frameIndex, const Velocity& velocity)
+        void FeatureVelocity::SetFeatureData(FeatureMatrix& featureMatrix, size_t frameIndex, const AZ::Vector3& velocity)
         {
-            featureMatrix.SetVector3(frameIndex, m_featureColumnOffset, velocity.m_direction);
-            featureMatrix(frameIndex, m_featureColumnOffset + 3) = velocity.m_speed;
+            featureMatrix.SetVector3(frameIndex, m_featureColumnOffset, velocity);
         }
     } // namespace MotionMatching
 } // namespace EMotionFX

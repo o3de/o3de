@@ -74,7 +74,7 @@ namespace EMotionFX
             sourceMotion->Update(bindPose, samplePose, motionInstance);
         }
 
-        void Feature::CalculateVelocity(size_t jointIndex, const Pose* curPose, const Pose* nextPose, float timeDelta, AZ::Vector3& outDirection, float& outSpeed)
+        void Feature::CalculateVelocity(size_t jointIndex, const Pose* curPose, const Pose* nextPose, float timeDelta, AZ::Vector3& outVelocity)
         {
             const AZ::Vector3 currentPosition = curPose->GetWorldSpaceTransform(jointIndex).m_position;
             const AZ::Vector3 nextPosition = nextPose->GetWorldSpaceTransform(jointIndex).m_position;
@@ -82,17 +82,15 @@ namespace EMotionFX
             float speed = velocity.GetLength();
             if (speed > AZ::Constants::FloatEpsilon)
             {
-                outSpeed = speed;
-                outDirection = velocity / speed;
+                outVelocity = velocity;
             }
             else
             {
-                outSpeed = 0.0f;
-                outDirection = AZ::Vector3::CreateZero();
+                outVelocity = AZ::Vector3::CreateZero();
             }
         }
 
-        void Feature::CalculateVelocity(size_t jointIndex, size_t relativeToJointIndex, MotionInstance* motionInstance, AZ::Vector3& outDirection, float& outSpeed)
+        void Feature::CalculateVelocity(size_t jointIndex, size_t relativeToJointIndex, MotionInstance* motionInstance, AZ::Vector3& outVelocity)
         {
             const float originalTime = motionInstance->GetCurrentTime();
 
@@ -109,8 +107,7 @@ namespace EMotionFX
             const float startTime = originalTime - halfTimeRange;
             const float frameDelta = timeRange / numSamples;
 
-            AZ::Vector3 accumulatedDirection = AZ::Vector3::CreateZero();
-            float accumulatedSpeed = 0.0f;
+            AZ::Vector3 accumulatedVelocity = AZ::Vector3::CreateZero();
 
             for (size_t sampleIndex = 0; sampleIndex < numSamples + 1; ++sampleIndex)
             {
@@ -137,19 +134,14 @@ namespace EMotionFX
                 const Transform inverseJointWorldTransform = currentPose->GetPose().GetWorldSpaceTransform(relativeToJointIndex).Inversed();
 
                 // Calculate the velocity.
-                AZ::Vector3 direction = AZ::Vector3::CreateZero();
-                float speed = 0.0f;
-                CalculateVelocity(jointIndex, &prevPose->GetPose(), &currentPose->GetPose(), frameDelta, direction, speed);
-                
-                accumulatedDirection += inverseJointWorldTransform.TransformVector(direction);
-                accumulatedSpeed += speed;
+                AZ::Vector3 velocity;
+                CalculateVelocity(jointIndex, &prevPose->GetPose(), &currentPose->GetPose(), frameDelta, velocity);
+                accumulatedVelocity += inverseJointWorldTransform.TransformVector(velocity);
 
                 *prevPose = *currentPose;
             }
 
-            outDirection = accumulatedDirection;
-            outDirection.NormalizeSafe();
-            outSpeed = accumulatedSpeed / numSamples;
+            outVelocity = accumulatedVelocity / aznumeric_cast<float>(numSamples);
 
             motionInstance->SetCurrentTime(originalTime); // set back to what it was
 
