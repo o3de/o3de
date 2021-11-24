@@ -24,14 +24,14 @@
 namespace TestImpact
 {
     //! Representation of the repository source tree and its relation to the build targets and coverage data.
-    template<typename BuildSystemType>
+    template<typename BuildSystem>
     class DynamicDependencyMap
     {
     public:
         //! Constructs the dependency map with entries for each build target's source files with empty test coverage data.
-        DynamicDependencyMap(const BuildTargetList<BuildSystemType>* buildTargetList);
+        DynamicDependencyMap(const BuildTargetList<BuildSystem>* buildTargetList);
 
-        const BuildTargetList<BuildSystemType>* GetBuildTargets() const;
+        const BuildTargetList<BuildSystem>* GetBuildTargets() const;
 
         //! Gets the total number of unique source files in the repository.
         //! @note This includes autogen output sources.
@@ -39,8 +39,8 @@ namespace TestImpact
 
         //! Gets the test targets covering the specified production target.
         //! @param productionTarget The production target to retrieve the covering tests for.
-        AZStd::vector<const typename BuildSystemType::TestTarget*> GetCoveringTestTargetsForProductionTarget(
-            const typename BuildSystemType::ProductionTarget& productionTarget) const;
+        AZStd::vector<const typename BuildSystem::TestTarget*> GetCoveringTestTargetsForProductionTarget(
+            const typename BuildSystem::ProductionTarget& productionTarget) const;
 
         //! Gets the source dependency for the specified source file.
         //! @note Autogen input source dependencies are the consolidated source dependencies of all of their generated output sources.
@@ -72,13 +72,13 @@ namespace TestImpact
             const ChangeList& changeList, Policy::IntegrityFailure integrityFailurePolicy);
 
         //! Removes the specified test target from all source coverage.
-        void RemoveTestTargetFromSourceCoverage(const typename BuildSystemType::TestTarget* testTarget);
+        void RemoveTestTargetFromSourceCoverage(const typename BuildSystem::TestTarget* testTarget);
 
         //! Returns the test targets that cover one or more sources in the repository.
-        AZStd::vector<const typename BuildSystemType::TestTarget*> GetCoveringTests() const;
+        AZStd::vector<const typename BuildSystem::TestTarget*> GetCoveringTests() const;
 
         //! Returns the test targets that do not cover any sources in the repository.
-        AZStd::vector<const typename BuildSystemType::TestTarget*> GetNotCoveringTests() const;
+        AZStd::vector<const typename BuildSystem::TestTarget*> GetNotCoveringTests() const;
 
     private:
         //! Internal handler for ReplaceSourceCoverage where the pruning of parentless and coverageless source depenencies after the
@@ -96,21 +96,21 @@ namespace TestImpact
         AZStd::unordered_map<AZStd::string, DependencyData> m_sourceDependencyMap;
 
         //! Map of all test targets and the sources they cover.
-        AZStd::unordered_map<const typename BuildSystemType::TestTarget*, AZStd::unordered_set<AZStd::string>> m_testTargetSourceCoverage;
+        AZStd::unordered_map<const typename BuildSystem::TestTarget*, AZStd::unordered_set<AZStd::string>> m_testTargetSourceCoverage;
 
         //! The map of build targets and their covering test targets.
         //! @note As per the note for ReplaceSourceCoverageInternal, this map is currently not pruned when source coverage is replaced.
-        AZStd::unordered_map<const Target*, AZStd::unordered_set<const typename BuildSystemType::TestTarget*>> m_buildTargetCoverage;
+        AZStd::unordered_map<const Target*, AZStd::unordered_set<const typename BuildSystem::TestTarget*>> m_buildTargetCoverage;
 
         //! Mapping of autogen input sources to their generated output sources.
         AZStd::unordered_map<AZStd::string, AZStd::vector<AZStd::string>> m_autogenInputToOutputMap;
 
         //!
-        const BuildTargetList<BuildSystemType>* m_buildTargets;
+        const BuildTargetList<BuildSystem>* m_buildTargets;
     };
 
-    template<typename BuildSystemType>
-    DynamicDependencyMap<BuildSystemType>::DynamicDependencyMap(const BuildTargetList<BuildSystemType>* buildTargetList)
+    template<typename BuildSystem>
+    DynamicDependencyMap<BuildSystem>::DynamicDependencyMap(const BuildTargetList<BuildSystem>* buildTargetList)
         : m_buildTargets(buildTargetList)
     {
         const auto mapBuildTargetSources = [this](const auto* target)
@@ -151,20 +151,20 @@ namespace TestImpact
         }
     }
 
-    template<typename BuildSystemType>
-    const BuildTargetList<BuildSystemType>* DynamicDependencyMap<BuildSystemType>::GetBuildTargets() const
+    template<typename BuildSystem>
+    const BuildTargetList<BuildSystem>* DynamicDependencyMap<BuildSystem>::GetBuildTargets() const
     {
         return m_buildTargets;
     }
 
-    template<typename BuildSystemType>
-    size_t DynamicDependencyMap<BuildSystemType>::GetNumSources() const
+    template<typename BuildSystem>
+    size_t DynamicDependencyMap<BuildSystem>::GetNumSources() const
     {
         return m_sourceDependencyMap.size();
     }
 
-    template<typename BuildSystemType>
-    void DynamicDependencyMap<BuildSystemType>::ReplaceSourceCoverageInternal(
+    template<typename BuildSystem>
+    void DynamicDependencyMap<BuildSystem>::ReplaceSourceCoverageInternal(
         const SourceCoveringTestsList& sourceCoverageDelta, bool pruneIfNoParentsOrCoverage)
     {
         AZStd::vector<AZStd::string> killList;
@@ -210,7 +210,7 @@ namespace TestImpact
             // Update the dependency with any new coverage data
             for (const auto& unresolvedTestTarget : sourceCoverage.GetCoveringTestTargets())
             {
-                if (const typename BuildSystemType::TestTarget* testTarget =
+                if (const typename BuildSystem::TestTarget* testTarget =
                         m_buildTargets->GetTestTargetList().GetTarget(unresolvedTestTarget);
                     testTarget)
                 {
@@ -246,14 +246,14 @@ namespace TestImpact
         }
     }
 
-    template<typename BuildSystemType>
-    void DynamicDependencyMap<BuildSystemType>::ReplaceSourceCoverage(const SourceCoveringTestsList& sourceCoverageDelta)
+    template<typename BuildSystem>
+    void DynamicDependencyMap<BuildSystem>::ReplaceSourceCoverage(const SourceCoveringTestsList& sourceCoverageDelta)
     {
         ReplaceSourceCoverageInternal(sourceCoverageDelta, true);
     }
 
-    template<typename BuildSystemType>
-    void DynamicDependencyMap<BuildSystemType>::ClearSourceCoverage(const AZStd::vector<RepoPath>& paths)
+    template<typename BuildSystem>
+    void DynamicDependencyMap<BuildSystem>::ClearSourceCoverage(const AZStd::vector<RepoPath>& paths)
     {
         for (const auto& path : paths)
         {
@@ -273,8 +273,8 @@ namespace TestImpact
         }
     }
 
-    template<typename BuildSystemType>
-    void DynamicDependencyMap<BuildSystemType>::ClearAllSourceCoverage()
+    template<typename BuildSystem>
+    void DynamicDependencyMap<BuildSystem>::ClearAllSourceCoverage()
     {
         for (auto it = m_sourceDependencyMap.begin(); it != m_sourceDependencyMap.end(); ++it)
         {
@@ -288,11 +288,11 @@ namespace TestImpact
         }
     }
 
-    template<typename BuildSystemType>
-    AZStd::vector<const typename BuildSystemType::TestTarget*> DynamicDependencyMap<BuildSystemType>::
-        GetCoveringTestTargetsForProductionTarget(const typename BuildSystemType::ProductionTarget& productionTarget) const
+    template<typename BuildSystem>
+    AZStd::vector<const typename BuildSystem::TestTarget*> DynamicDependencyMap<BuildSystem>::
+        GetCoveringTestTargetsForProductionTarget(const typename BuildSystem::ProductionTarget& productionTarget) const
     {
-        AZStd::vector<const typename BuildSystemType::TestTarget*> coveringTestTargets;
+        AZStd::vector<const typename BuildSystem::TestTarget*> coveringTestTargets;
         if (const auto coverage = m_buildTargetCoverage.find(&productionTarget); coverage != m_buildTargetCoverage.end())
         {
             coveringTestTargets.reserve(coverage->second.size());
@@ -302,11 +302,11 @@ namespace TestImpact
         return coveringTestTargets;
     }
 
-    template<typename BuildSystemType>
-    AZStd::optional<SourceDependency> DynamicDependencyMap<BuildSystemType>::GetSourceDependency(const RepoPath& path) const
+    template<typename BuildSystem>
+    AZStd::optional<SourceDependency> DynamicDependencyMap<BuildSystem>::GetSourceDependency(const RepoPath& path) const
     {
         AZStd::unordered_set<ParentTarget> parentTargets;
-        AZStd::unordered_set<const typename BuildSystemType::TestTarget*> coveringTestTargets;
+        AZStd::unordered_set<const typename BuildSystem::TestTarget*> coveringTestTargets;
 
         const auto getSourceDependency = [&parentTargets, &coveringTestTargets, this](const AZStd::string& path)
         {
@@ -346,8 +346,8 @@ namespace TestImpact
         return AZStd::nullopt;
     }
 
-    template<typename BuildSystemType>
-    SourceDependency DynamicDependencyMap<BuildSystemType>::GetSourceDependencyOrThrow(const RepoPath& path) const
+    template<typename BuildSystem>
+    SourceDependency DynamicDependencyMap<BuildSystem>::GetSourceDependencyOrThrow(const RepoPath& path) const
     {
         auto sourceDependency = GetSourceDependency(path);
         AZ_TestImpact_Eval(
@@ -355,8 +355,8 @@ namespace TestImpact
         return sourceDependency.value();
     }
 
-    template<typename BuildSystemType>
-    SourceCoveringTestsList DynamicDependencyMap<BuildSystemType>::ExportSourceCoverage() const
+    template<typename BuildSystem>
+    SourceCoveringTestsList DynamicDependencyMap<BuildSystem>::ExportSourceCoverage() const
     {
         AZStd::vector<SourceCoveringTests> coverage;
         for (const auto& [path, dependency] : m_sourceDependencyMap)
@@ -373,8 +373,8 @@ namespace TestImpact
         return SourceCoveringTestsList(AZStd::move(coverage));
     }
 
-    template<typename BuildSystemType>
-    AZStd::vector<AZStd::string> DynamicDependencyMap<BuildSystemType>::GetOrphanSourceFiles() const
+    template<typename BuildSystem>
+    AZStd::vector<AZStd::string> DynamicDependencyMap<BuildSystem>::GetOrphanSourceFiles() const
     {
         AZStd::vector<AZStd::string> orphans;
         for (const auto& [source, dependency] : m_sourceDependencyMap)
@@ -388,8 +388,8 @@ namespace TestImpact
         return orphans;
     }
 
-    template<typename BuildSystemType>
-    ChangeDependencyList DynamicDependencyMap<BuildSystemType>::ApplyAndResoveChangeList(
+    template<typename BuildSystem>
+    ChangeDependencyList DynamicDependencyMap<BuildSystem>::ApplyAndResoveChangeList(
         const ChangeList& changeList, Policy::IntegrityFailure integrityFailurePolicy)
     {
         AZStd::vector<SourceDependency> createDependencies;
@@ -518,8 +518,8 @@ namespace TestImpact
         return ChangeDependencyList(AZStd::move(createDependencies), AZStd::move(updateDependencies), AZStd::move(deleteDependencies));
     }
 
-    template<typename BuildSystemType>
-    void DynamicDependencyMap<BuildSystemType>::RemoveTestTargetFromSourceCoverage(const typename BuildSystemType::TestTarget* testTarget)
+    template<typename BuildSystem>
+    void DynamicDependencyMap<BuildSystem>::RemoveTestTargetFromSourceCoverage(const typename BuildSystem::TestTarget* testTarget)
     {
         if (const auto& it = m_testTargetSourceCoverage.find(testTarget); it != m_testTargetSourceCoverage.end())
         {
@@ -539,10 +539,10 @@ namespace TestImpact
         }
     }
 
-    template<typename BuildSystemType>
-    AZStd::vector<const typename BuildSystemType::TestTarget*> DynamicDependencyMap<BuildSystemType>::GetCoveringTests() const
+    template<typename BuildSystem>
+    AZStd::vector<const typename BuildSystem::TestTarget*> DynamicDependencyMap<BuildSystem>::GetCoveringTests() const
     {
-        AZStd::vector<const typename BuildSystemType::TestTarget*> covering;
+        AZStd::vector<const typename BuildSystem::TestTarget*> covering;
         for (const auto& [testTarget, coveringSources] : m_testTargetSourceCoverage)
         {
             if (!coveringSources.empty())
@@ -554,10 +554,10 @@ namespace TestImpact
         return covering;
     }
 
-    template<typename BuildSystemType>
-    AZStd::vector<const typename BuildSystemType::TestTarget*> DynamicDependencyMap<BuildSystemType>::GetNotCoveringTests() const
+    template<typename BuildSystem>
+    AZStd::vector<const typename BuildSystem::TestTarget*> DynamicDependencyMap<BuildSystem>::GetNotCoveringTests() const
     {
-        AZStd::vector<const typename BuildSystemType::TestTarget*> notCovering;
+        AZStd::vector<const typename BuildSystem::TestTarget*> notCovering;
         for (const auto& [testTarget, coveringSources] : m_testTargetSourceCoverage)
         {
             if (coveringSources.empty())

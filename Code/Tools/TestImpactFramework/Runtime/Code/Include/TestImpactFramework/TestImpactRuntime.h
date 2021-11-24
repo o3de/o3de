@@ -36,10 +36,10 @@ namespace TestImpact
     class TestTargetExclusionList;
     struct NativeBuildSystem;
 
-    template<typename BuildSystemType>
+    template<typename BuildSystem>
     class BuildTargetList;
 
-    template<typename BuildSystemType>
+    template<typename BuildSystem>
     class DynamicDependencyMap;
 
     //! Callback for a test sequence that isn't using test impact analysis to determine selected tests.

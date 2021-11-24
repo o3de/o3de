@@ -20,7 +20,7 @@
 
 namespace TestImpact
 {
-    template<typename BuildSystemType>
+    template<typename BuildSystem>
     class DynamicDependencyMap;
 
     class Target;
