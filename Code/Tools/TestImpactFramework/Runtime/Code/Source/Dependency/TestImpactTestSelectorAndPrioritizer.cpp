@@ -16,7 +16,7 @@
 namespace TestImpact
 {
     TestSelectorAndPrioritizer::TestSelectorAndPrioritizer(
-        const DynamicDependencyMap<NativeTestTargetList, NativeProductionTargetList>* dynamicDependencyMap,
+        const DynamicDependencyMap<NativeBuildSystem>* dynamicDependencyMap,
         DependencyGraphDataMap&& dependencyGraphDataMap)
         : m_dynamicDependencyMap(dynamicDependencyMap)
         , m_dependencyGraphDataMap(AZStd::move(dependencyGraphDataMap))
@@ -30,14 +30,6 @@ namespace TestImpact
         const auto prioritizedSelectedTests = PrioritizeSelectedTestTargets(selectedTestTargetAndDependerMap, testSelectionStrategy);
         return prioritizedSelectedTests;
     }
-
-    template<typename Target>
-    static constexpr bool IsProductionTarget =
-        AZStd::is_same_v<NativeProductionTarget, AZStd::remove_const_t<AZStd::remove_pointer_t<AZStd::decay_t<Target>>>>;
-
-    template<typename Target>
-    static constexpr bool IsTestTarget =
-        AZStd::is_same_v<NativeTestTarget, AZStd::remove_const_t<AZStd::remove_pointer_t<AZStd::decay_t<Target>>>>;
 
     void TestSelectorAndPrioritizer::CreateProductionSourceAction(
         const NativeProductionTarget* target, SelectedTestTargetAndDependerMap& selectedTestTargetMap)
@@ -131,7 +123,7 @@ namespace TestImpact
             {
                 AZStd::visit([&selectedTestTargetMap, this](auto&& target)
                 {
-                    if constexpr (IsProductionTarget<decltype(target)>)
+                    if constexpr (NativeBuildSystem::IsProductionTarget<decltype(target)>)
                     {
                         // Parent Targets: Yes
                         // Coverage Data : No
@@ -170,7 +162,7 @@ namespace TestImpact
                     {
                         AZStd::visit([&selectedTestTargetMap, &sourceDependency, this](auto&& target)
                         {
-                            if constexpr (IsProductionTarget<decltype(target)>)
+                            if constexpr (NativeBuildSystem::IsProductionTarget<decltype(target)>)
                             {
                                 // Parent Targets: Yes
                                 // Coverage Data : Yes
@@ -203,7 +195,7 @@ namespace TestImpact
                     {
                         AZStd::visit([&selectedTestTargetMap, this](auto&& target)
                         {
-                            if constexpr (IsProductionTarget<decltype(target)>)
+                            if constexpr (NativeBuildSystem::IsProductionTarget<decltype(target)>)
                             {
                                 // Parent Targets: Yes
                                 // Coverage Data : No

@@ -13,6 +13,7 @@
 #include <Artifact/Factory/TestImpactNativeTestTargetMetaMapFactory.h>
 #include <Artifact/Static/TestImpactNativeTargetDescriptorCompiler.h>
 #include <Artifact/TestImpactArtifactException.h>
+#include <BuildSystem/Native/TestImpactNativeBuildSystemTraits.h>
 #include <Dependency/TestImpactDependencyException.h>
 #include <Dependency/TestImpactDynamicDependencyMap.h>
 #include <Target/Common/TestImpactBuildTargetList.h>
@@ -27,8 +28,8 @@ namespace UnitTest
 {
     namespace
     {
-        using NativeBuildTargetList = TestImpact::BuildTargetList<TestImpact::NativeTestTargetList, TestImpact::NativeProductionTargetList>;
-        using NativeDynamicDependencyMap = TestImpact::DynamicDependencyMap<TestImpact::NativeTestTargetList, TestImpact::NativeProductionTargetList>;
+        using NativeBuildTargetList = TestImpact::BuildTargetList<TestImpact::NativeBuildSystem>;
+        using NativeDynamicDependencyMap = TestImpact::DynamicDependencyMap<TestImpact::NativeBuildSystem>;
 
         void ValidateBuildTarget(const TestImpact::NativeTarget& target, const TestImpact::NativeTarget& expectedTarget)
         {
@@ -311,7 +312,7 @@ namespace UnitTest
                         ValidateBuildTarget(*parentTarget.GetBuildTarget(), *autogenTarget);
                     }
                 },
-                m_dynamicDependencyMap->GetBuildTargets()->GetTargetOrThrow("Lib B"));
+                m_dynamicDependencyMap->GetBuildTargets()->GetBuildTargetOrThrow("Lib B"));
         };
 
         // Expect the input source and two output sources for this autogen coupling to refer to the same build data
@@ -586,7 +587,7 @@ namespace UnitTest
                     // Expect the retrieved build target to match the production target we queried
                     ValidateBuildTarget(*buildTarget, expectedProductionTarget);
                 },
-                m_dynamicDependencyMap->GetBuildTargets()->GetTargetOrThrow(expectedProductionTarget.GetName()));
+                m_dynamicDependencyMap->GetBuildTargets()->GetBuildTargetOrThrow(expectedProductionTarget.GetName()));
         }
 
         for (const auto& expectedTestTarget : m_testTargets->GetTargets())
@@ -603,7 +604,7 @@ namespace UnitTest
                     // Expect the retrieved build target to match the test target we queried
                     ValidateBuildTarget(*buildTarget, expectedTestTarget);
                 },
-                m_dynamicDependencyMap->GetBuildTargets()->GetTargetOrThrow(expectedTestTarget.GetName()));
+                m_dynamicDependencyMap->GetBuildTargets()->GetBuildTargetOrThrow(expectedTestTarget.GetName()));
         }
     }
 
@@ -623,7 +624,7 @@ namespace UnitTest
             {
                 // Expect the retrieved target to be empty
                 // EXPECT_FALSE(invalidTarget);
-                if constexpr (NativeBuildTargetList::IsProductionTarget<decltype(invalidTarget)> || NativeBuildTargetList::IsTestTarget<decltype(invalidTarget)>)
+                if constexpr (TestImpact::NativeBuildSystem::IsProductionTarget<decltype(invalidTarget)> || TestImpact::NativeBuildSystem::IsTestTarget<decltype(invalidTarget)>)
                 {
                     FAIL();
                 }
@@ -632,7 +633,7 @@ namespace UnitTest
                     SUCCEED();
                 }
             },
-            m_dynamicDependencyMap->GetBuildTargets()->GetTarget("invalid"));
+            m_dynamicDependencyMap->GetBuildTargets()->GetBuildTarget("invalid"));
     }
 
     TEST_F(DynamicDependencyMapFixture, GetBuildTargetOrThrow_ValidBuildTargets_ExpectValidBuildTarget)
@@ -657,7 +658,7 @@ namespace UnitTest
                     // Expect the retrieved build target to match the production target we queried
                     ValidateBuildTarget(*buildTarget, expectedProductionTarget);
                 },
-                m_dynamicDependencyMap->GetBuildTargets()->GetTargetOrThrow(expectedProductionTarget.GetName()));
+                m_dynamicDependencyMap->GetBuildTargets()->GetBuildTargetOrThrow(expectedProductionTarget.GetName()));
         }
 
         for (const auto& expectedTestTarget : m_testTargets->GetTargets())
@@ -671,7 +672,7 @@ namespace UnitTest
                     // Expect the retrieved build target to match the test target we queried
                     ValidateBuildTarget(*buildTarget, expectedTestTarget);
                 },
-                m_dynamicDependencyMap->GetBuildTargets()->GetTargetOrThrow(expectedTestTarget.GetName()));
+                m_dynamicDependencyMap->GetBuildTargets()->GetBuildTargetOrThrow(expectedTestTarget.GetName()));
         }
     }
 
@@ -689,7 +690,7 @@ namespace UnitTest
         try
         {
             // When retrieving a target not in the dynamic dependency map
-            m_dynamicDependencyMap->GetBuildTargets()->GetTargetOrThrow("invalid");
+            m_dynamicDependencyMap->GetBuildTargets()->GetBuildTargetOrThrow("invalid");
 
             // Do not expect this statement to be reachable
             FAIL();
@@ -718,13 +719,13 @@ namespace UnitTest
         for (const auto& expectedProductionTarget : m_productionTargets->GetTargets())
         {
             // When retrieving the production target in the dynamic dependency map
-            auto productionTarget = m_dynamicDependencyMap->GetBuildTargets()->GetTarget(expectedProductionTarget.GetName());
+            auto productionTarget = m_dynamicDependencyMap->GetBuildTargets()->GetBuildTarget(expectedProductionTarget.GetName());
 
             // Expect the retrieved production target to match the production target we queried
             AZStd::visit(
                 [&expectedProductionTarget](auto&& productionTarget)
                 {
-                    if constexpr (NativeBuildTargetList::IsProductionTarget<decltype(productionTarget)>)
+                    if constexpr (TestImpact::NativeBuildSystem::IsProductionTarget<decltype(productionTarget)>)
                     {
                         ValidateProductionTarget(*productionTarget, expectedProductionTarget);
                     }
@@ -739,13 +740,13 @@ namespace UnitTest
         for (const auto& expectedTestTarget : m_testTargets->GetTargets())
         {
             // When retrieving the test target in the dynamic dependency map
-            auto testTarget = m_dynamicDependencyMap->GetBuildTargets()->GetTarget(expectedTestTarget.GetName());
+            auto testTarget = m_dynamicDependencyMap->GetBuildTargets()->GetBuildTarget(expectedTestTarget.GetName());
 
             // Expect the retrieved production target to match the production target we queried
             AZStd::visit(
                 [&expectedTestTarget](auto&& testTarget)
                 {
-                    if constexpr (NativeBuildTargetList::IsTestTarget<decltype(testTarget)>)
+                    if constexpr (TestImpact::NativeBuildSystem::IsTestTarget<decltype(testTarget)>)
                     {
                         ValidateTestTarget(*testTarget, expectedTestTarget);
                     }
@@ -770,7 +771,7 @@ namespace UnitTest
         m_dynamicDependencyMap = AZStd::make_unique<NativeDynamicDependencyMap>(m_buildTargets.get());
 
         // When retrieving a target not in the dynamic dependency map
-        auto invalidTarget = m_dynamicDependencyMap->GetBuildTargets()->GetTarget("invalid");
+        auto invalidTarget = m_dynamicDependencyMap->GetBuildTargets()->GetBuildTarget("invalid");
 
         // Expect the retrieved target to be empty
         EXPECT_EQ(invalidTarget.index(), 0);
@@ -790,7 +791,7 @@ namespace UnitTest
         try
         {
             // When retrieving a target not in the dynamic dependency map
-            m_dynamicDependencyMap->GetBuildTargets()->GetTargetOrThrow("invalid");
+            m_dynamicDependencyMap->GetBuildTargets()->GetBuildTargetOrThrow("invalid");
 
             // Do not expect this statement to be reachable
             FAIL();

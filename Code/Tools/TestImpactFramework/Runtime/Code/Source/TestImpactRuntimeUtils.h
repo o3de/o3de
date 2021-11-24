@@ -14,6 +14,7 @@
 
 #include <Artifact/Static/TestImpactNativeTestTargetMeta.h>
 #include <Artifact/Static/TestImpactNativeTargetDescriptor.h>
+#include <BuildSystem/Native/TestImpactNativeBuildSystemTraits.h>
 #include <Dependency/TestImpactDynamicDependencyMap.h>
 #include <Dependency/TestImpactSourceCoveringTestsList.h>
 #include <Target/Native/TestImpactNativeTestTarget.h>
@@ -27,7 +28,7 @@
 namespace TestImpact
 {
     //! Construct a build target list from the build target descriptors and test target metas.
-    AZStd::unique_ptr<BuildTargetList<NativeTestTargetList, NativeProductionTargetList>> ConstructNativeBuildTargetList(
+    AZStd::unique_ptr<BuildTargetList<NativeBuildSystem>> ConstructNativeBuildTargetList(
         SuiteType suiteFilter,
         const NativeTargetDescriptorConfig& NativeTargetDescriptorConfig,
         const TestTargetMetaConfig& testTargetMetaConfig);

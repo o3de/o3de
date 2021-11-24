@@ -12,6 +12,7 @@
 
 #include <Artifact/Static/TestImpactDependencyGraphData.h>
 #include <Dependency/TestImpactChangeDependencyList.h>
+#include <BuildSystem/Native/TestImpactNativeBuildSystemTraits.h>
 
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/containers/unordered_map.h>
@@ -19,18 +20,16 @@
 
 namespace TestImpact
 {
-    template<typename TestTargetList, typename ProductionTargetList>
+    template<typename BuildSystemType>
     class DynamicDependencyMap;
 
-    class NativeTestTarget;
-    class NativeTestTargetList;
-    class NativeProductionTargetList;
+    class Target;
 
     //! Map of build targets and their dependency graph data.
     //! For test targets, the dependency graph data is that of the build targets which the test target depends on.
     //! For production targets, the dependency graph is that of the build targets that depend on it (dependers).
     //! @note No dependency graph data is not an error, it simple means that the target cannot be prioritized.
-    using DependencyGraphDataMap = AZStd::unordered_map<AZStd::string, DependencyGraphData>;
+    using DependencyGraphDataMap = AZStd::unordered_map<const Target*, DependencyGraphData>;
 
     //! Selects the test targets that cover a given set of changes based on the CRUD rules and optionally prioritizes the test
     //! selection according to their locality of their covering production targets in the their dependency graphs.
@@ -42,7 +41,7 @@ namespace TestImpact
         //! @param dynamicDependencyMap The dynamic dependency map representing the repository source tree.
         //! @param dependencyGraphDataMap The map of build targets and their dependency graph data for use in test prioritization.
         TestSelectorAndPrioritizer(
-            const DynamicDependencyMap<NativeTestTargetList, NativeProductionTargetList>* dynamicDependencyMap,
+            const DynamicDependencyMap<NativeBuildSystem>* dynamicDependencyMap,
             DependencyGraphDataMap&& dependencyGraphDataMap);
 
         virtual ~TestSelectorAndPrioritizer() = default;
@@ -69,7 +68,7 @@ namespace TestImpact
         AZStd::vector<const NativeTestTarget*> PrioritizeSelectedTestTargets(
             const SelectedTestTargetAndDependerMap& selectedTestTargetAndDependerMap, Policy::TestPrioritization testSelectionStrategy);
 
-        const DynamicDependencyMap<NativeTestTargetList, NativeProductionTargetList>* m_dynamicDependencyMap;
+        const DynamicDependencyMap<NativeBuildSystem>* m_dynamicDependencyMap;
         DependencyGraphDataMap m_dependencyGraphDataMap;
 
     protected:
