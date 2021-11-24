@@ -114,12 +114,17 @@ namespace ScriptCanvasEditor
     {
         if (auto loadFileOutcome = LoadFromFile(graphPath); loadFileOutcome.IsSuccess())
         {
-            AZ::Outcome< AZ::Data::Asset<ScriptCanvas::RuntimeAsset>, AZStd::string> assetOutcome = AZ::Failure(AZStd::string("asset creation failed"));
-            ScriptCanvasEditor::EditorAssetConversionBus::BroadcastResult(assetOutcome, &ScriptCanvasEditor::EditorAssetConversionBusTraits::CreateRuntimeAsset, loadFileOutcome.GetValue());
+            auto& source = loadFileOutcome.GetValue();
+            auto testableSource = SourceHandle(source, AZ::Uuid::CreateRandom(), source.Path().c_str());
+
+            AZ::Outcome<AZ::Data::Asset<ScriptCanvas::RuntimeAsset>, AZStd::string> assetOutcome(AZ::Failure(AZStd::string("asset create failed")));
+            ScriptCanvasEditor::EditorAssetConversionBus::BroadcastResult(assetOutcome
+                , &ScriptCanvasEditor::EditorAssetConversionBusTraits::CreateRuntimeAsset, testableSource);
+
             if (assetOutcome.IsSuccess())
             {
                 LoadTestGraphResult result;
-                result.m_editorAsset = loadFileOutcome.TakeValue();
+                result.m_editorAsset = AZStd::move(testableSource);
                 result.m_runtimeAsset = assetOutcome.GetValue();
                 result.m_entity = AZStd::make_unique<AZ::Entity>("Loaded Graph");
                 return result;
@@ -216,6 +221,8 @@ namespace ScriptCanvasEditor
                     {
                         RuntimeDataOverrides runtimeDataOverrides;
                         runtimeDataOverrides.m_runtimeAsset = loadResult.m_runtimeAsset;
+                        runtimeDataOverrides.m_runtimeAsset.SetHint("original");
+                        runtimeDataOverrides.m_runtimeAsset.Get()->m_runtimeData.m_script.SetHint("original");
 
 #if defined(LINUX) //////////////////////////////////////////////////////////////////////////
                         // Temporarily disable testing on the Linux build until the file name casing discrepancy
@@ -261,6 +268,10 @@ namespace ScriptCanvasEditor
 
                                 RuntimeDataOverrides dependencyRuntimeDataOverrides;
                                 dependencyRuntimeDataOverrides.m_runtimeAsset = dependency.runtimeAsset;
+                                AZStd::string dependencyHint = AZStd::string::format("dependency_%d", index);
+                                dependencyRuntimeDataOverrides.m_runtimeAsset.SetHint(dependencyHint);
+                                dependencyRuntimeDataOverrides.m_runtimeAsset.Get()->m_runtimeData.m_script.SetHint(dependencyHint);
+
                                 runtimeDataOverrides.m_dependencies.push_back(dependencyRuntimeDataOverrides);
 
                                 RuntimeData& dependencyData = dependencyDataBuffer[index];
