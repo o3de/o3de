@@ -5,10 +5,11 @@
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
-import os, binascii, sys, json, pathlib
-import azlmbr.math
 import azlmbr.bus
+import azlmbr.math
+
 from scene_helpers import *
+
 
 #
 # SceneAPI Processor
@@ -24,23 +25,24 @@ def add_material_component(entity_id):
 
     # this fills out the material asset to a known product AZMaterial asset relative path
     json_update = json.dumps({
-            "Controller": { "Configuration": { "materials": [
-                {
-                    "Key": {},
-                    "Value": { "MaterialAsset":{
-                        "assetHint": "materials/basic_grey.azmaterial"
-                    }}
-                }]
-            }}
-        });
-    result = azlmbr.entity.EntityUtilityBus(azlmbr.bus.Broadcast, "UpdateComponentForEntity", entity_id, editor_material_component, json_update)
+        "Controller": {"Configuration": {"materials": [
+            {
+                "Key": {},
+                "Value": {"MaterialAsset": {
+                    "assetHint": "materials/basic_grey.azmaterial"
+                }}
+            }]
+        }}
+    })
+    result = azlmbr.entity.EntityUtilityBus(azlmbr.bus.Broadcast, "UpdateComponentForEntity", entity_id,
+                                            editor_material_component, json_update)
 
     if not result:
         raise RuntimeError("UpdateComponentForEntity for editor_material_component failed")
 
+
 def update_manifest(scene):
     import uuid, os
-    import azlmbr.scene as sceneApi
     import azlmbr.scene.graph
     from scene_api import scene_data as sceneData
 
@@ -88,16 +90,18 @@ def update_manifest(scene):
         # Create an editor entity
         entity_id = azlmbr.entity.EntityUtilityBus(azlmbr.bus.Broadcast, "CreateEditorReadyEntity", mesh_group_name)
         # Add an EditorMeshComponent to the entity
-        editor_mesh_component = azlmbr.entity.EntityUtilityBus(azlmbr.bus.Broadcast, "GetOrAddComponentByTypeName", entity_id, "AZ::Render::EditorMeshComponent")
-        # Set the ModelAsset assetHint to the relative path of the input asset + the name of the MeshGroup we just created + the azmodel extension
-        # The MeshGroup we created will be output as a product in the asset's path named mesh_group_name.azmodel
-        # The assetHint will be converted to an AssetId later during prefab loading
+        editor_mesh_component = azlmbr.entity.EntityUtilityBus(azlmbr.bus.Broadcast, "GetOrAddComponentByTypeName",
+                                                               entity_id, "AZ::Render::EditorMeshComponent")
+        # Set the ModelAsset assetHint to the relative path of the input asset + the name of the MeshGroup we just
+        # created + the azmodel extension The MeshGroup we created will be output as a product in the asset's path
+        # named mesh_group_name.azmodel The assetHint will be converted to an AssetId later during prefab loading
         json_update = json.dumps({
-            "Controller": { "Configuration": { "ModelAsset": {
-                "assetHint": os.path.join(source_relative_path, mesh_group_name) + ".azmodel" }}}
-            });
+            "Controller": {"Configuration": {"ModelAsset": {
+                "assetHint": os.path.join(source_relative_path, mesh_group_name) + ".azmodel"}}}
+        })
         # Apply the JSON above to the component we created
-        result = azlmbr.entity.EntityUtilityBus(azlmbr.bus.Broadcast, "UpdateComponentForEntity", entity_id, editor_mesh_component, json_update)
+        result = azlmbr.entity.EntityUtilityBus(azlmbr.bus.Broadcast, "UpdateComponentForEntity", entity_id,
+                                                editor_mesh_component, json_update)
 
         if not result:
             raise RuntimeError("UpdateComponentForEntity failed for Mesh component")
@@ -108,17 +112,19 @@ def update_manifest(scene):
             add_material_component(entity_id)
 
         # Get the transform component
-        transform_component = azlmbr.entity.EntityUtilityBus(azlmbr.bus.Broadcast, "GetOrAddComponentByTypeName", entity_id, "27F1E1A1-8D9D-4C3B-BD3A-AFB9762449C0")
+        transform_component = azlmbr.entity.EntityUtilityBus(azlmbr.bus.Broadcast, "GetOrAddComponentByTypeName",
+                                                             entity_id, "27F1E1A1-8D9D-4C3B-BD3A-AFB9762449C0")
 
         # Set this entity to be a child of the last entity we created
         # This is just an example of how to do parenting and isn't necessarily useful to parent everything like this
         if previous_entity_id is not None:
             transform_json = json.dumps({
-                "Parent Entity" : previous_entity_id.to_json()
-                });
+                "Parent Entity": previous_entity_id.to_json()
+            })
 
             # Apply the JSON update
-            result = azlmbr.entity.EntityUtilityBus(azlmbr.bus.Broadcast, "UpdateComponentForEntity", entity_id, transform_component, transform_json)
+            result = azlmbr.entity.EntityUtilityBus(azlmbr.bus.Broadcast, "UpdateComponentForEntity", entity_id,
+                                                    transform_component, transform_json)
 
             if not result:
                 raise RuntimeError("UpdateComponentForEntity failed for Transform component")
@@ -137,14 +143,16 @@ def update_manifest(scene):
 
     return new_manifest
 
+
 sceneJobHandler = None
+
 
 def on_update_manifest(args):
     try:
         scene = args[0]
         return update_manifest(scene)
     except RuntimeError as err:
-        print (f'ERROR - {err}')
+        print(f'ERROR - {err}')
         log_exception_traceback()
     except:
         log_exception_traceback()
@@ -152,10 +160,12 @@ def on_update_manifest(args):
     global sceneJobHandler
     sceneJobHandler = None
 
+
 # try to create SceneAPI handler for processing
 try:
     import azlmbr.scene as sceneApi
-    if (sceneJobHandler == None):
+
+    if sceneJobHandler is None:
         sceneJobHandler = sceneApi.ScriptBuildingNotificationBusHandler()
         sceneJobHandler.connect()
         sceneJobHandler.add_callback('OnUpdateManifest', on_update_manifest)
