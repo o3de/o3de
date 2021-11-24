@@ -14,7 +14,12 @@
 #define CRYINCLUDE_EDITOR_UTIL_GUIDUTIL_H
 #pragma once
 
-#include "AzCore/Math/Uuid.h"
+#include <AzCore/Math/Guid.h>
+
+#ifndef _REFGUID_DEFINED
+#define _REFGUID_DEFINED
+typedef const GUID& REFGUID;
+#endif
 
 struct GuidUtil
 {
