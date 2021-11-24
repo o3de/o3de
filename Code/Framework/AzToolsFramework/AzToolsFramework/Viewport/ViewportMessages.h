@@ -15,6 +15,7 @@
 #include <AzFramework/Viewport/CameraState.h>
 #include <AzFramework/Viewport/ClickDetector.h>
 #include <AzFramework/Viewport/ViewportId.h>
+#include <AzFramework/Viewport/ViewportScreen.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/Viewport/ViewportTypes.h>
 
@@ -181,6 +182,15 @@ namespace AzToolsFramework
 
         //! Type to inherit to implement ViewportInteractionRequests.
         using ViewportInteractionRequestBus = AZ::EBus<ViewportInteractionRequests, ViewportEBusTraits>;
+
+        //! Utility function to return a viewport ray.
+        inline ProjectedViewportRay ViewportScreenToWorldRay(
+            const AzFramework::CameraState& cameraState, const AzFramework::ScreenPoint& screenPoint)
+        {
+            const AZ::Vector3 rayOrigin = AzFramework::ScreenToWorld(screenPoint, cameraState);
+            const AZ::Vector3 rayDirection = (rayOrigin - cameraState.m_position).GetNormalized();
+            return AzToolsFramework::ViewportInteraction::ProjectedViewportRay{ rayOrigin, rayDirection };
+        }
 
         //! Utility function to return a viewport ray.
         inline ProjectedViewportRay ViewportScreenToWorldRay(
