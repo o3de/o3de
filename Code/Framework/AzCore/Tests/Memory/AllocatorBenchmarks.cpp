@@ -34,15 +34,15 @@ namespace Benchmark
 
     static AZ::Debug::DrillerManager* s_drillerManager = nullptr;
 
+    /// <summary>
+    /// Test allocator wrapper that redirects the calls to the passed TAllocator by using AZ::AllocatorInstance.
+    /// It also creates/destroys the TAllocator type and connects the driller (to reflect what happens at runtime)
+    /// </summary>
+    /// <typeparam name="TAllocator">Allocator type to wrap</typeparam>
     template<typename TAllocator>
-    class TestAllocator : public TAllocator
+    class TestAllocatorWrapper
     {
     public:
-        TestAllocator()
-            : TAllocator()
-        {
-        }
-
         static void SetUp()
         {
             AZ::AllocatorInstance<TAllocator>::Create();
@@ -59,89 +59,81 @@ namespace Benchmark
             AZ::AllocatorInstance<TAllocator>::Destroy();
         }
 
-        typename TAllocator::pointer_type Allocate(
-            typename TAllocator::size_type byteSize,
-            typename TAllocator::size_type alignment,
-            int = 0,
-            const char* = nullptr,
-            const char* = nullptr,
-            int = 0,
-            unsigned int = 0) override
+        static void* Allocate(size_t byteSize, size_t alignment)
         {
             return AZ::AllocatorInstance<TAllocator>::Get().Allocate(byteSize, alignment);
         }
 
-        void DeAllocate(
-            typename TAllocator::pointer_type ptr,
-            typename TAllocator::size_type byteSize = 0,
-            typename TAllocator::size_type = 0) override
+        static void DeAllocate(void* ptr, size_t byteSize = 0)
         {
             AZ::AllocatorInstance<TAllocator>::Get().DeAllocate(ptr, byteSize);
         }
 
-        typename TAllocator::pointer_type ReAllocate(
-            typename TAllocator::pointer_type ptr,
-            typename TAllocator::size_type newSize,
-            typename TAllocator::size_type newAlignment) override
+        static void* ReAllocate(void* ptr, size_t newSize, size_t newAlignment)
         {
             return AZ::AllocatorInstance<TAllocator>::Get().ReAllocate(ptr, newSize, newAlignment);
         }
 
-        typename TAllocator::size_type Resize(typename TAllocator::pointer_type ptr, typename TAllocator::size_type newSize) override
+        static size_t Resize(void* ptr, size_t newSize)
         {
             return AZ::AllocatorInstance<TAllocator>::Get().Resize(ptr, newSize);
         }
 
-        void GarbageCollect() override
+        static void GarbageCollect()
         {
             AZ::AllocatorInstance<TAllocator>::Get().GarbageCollect();
         }
 
-        typename TAllocator::size_type NumAllocatedBytes() const override
+        static size_t NumAllocatedBytes()
         {
             return AZ::AllocatorInstance<TAllocator>::Get().NumAllocatedBytes() +
                 AZ::AllocatorInstance<TAllocator>::Get().GetUnAllocatedMemory();
         }
     };
-}
 
-namespace AZ
-{
-    AZ_TYPE_INFO_TEMPLATE(Benchmark::TestAllocator, "{ACE2D6E5-4EB8-4DD2-AE95-6BDFD0476801}", AZ_TYPE_INFO_CLASS);
-}
-
-namespace Benchmark
-{
-    class TestRawMallocAllocator {};
-
-    template <>
-    class TestAllocator<TestRawMallocAllocator>
-        : public TestRawMallocAllocator
+    /// <summary>
+    /// Basic allocator used as a baseline. This allocator is the most basic allocation possible with the OS (AZ_OS_MALLOC).
+    /// MallocSchema cannot be used here because it has extra logic that we don't want to use as a baseline.
+    /// </summary>
+    class TestRawMallocAllocator
+        : public AZ::AllocatorBase
+        , public AZ::IAllocatorAllocate
     {
     public:
+        AZ_TYPE_INFO(TestMallocSchemaAllocator, "{08EB400A-D723-46C6-808E-D0844C8DE206}");
+
         struct Descriptor {};
 
-        TestAllocator()
-        {}
-
-        static void SetUp()
+        TestRawMallocAllocator()
+            : AllocatorBase(this, "TestRawMallocAllocator", "")
         {
-            s_numAllocatedBytes = 0;
+            m_numAllocatedBytes = 0;
         }
 
-        static void TearDown()
-        {}
-
-        void* Allocate(
-            size_t byteSize,
-            size_t alignment,
-            int = 0,
-            const char* = nullptr,
-            const char* = nullptr,
-            int = 0,
-            unsigned int = 0)
+        bool Create(const Descriptor&)
         {
-            s_numAllocatedBytes += byteSize;
+            m_numAllocatedBytes = 0;
+            return true;
+        }
+
+        // IAllocator
+        void Destroy() override
+        {
+            m_numAllocatedBytes = 0;
+        }
+        AZ::AllocatorDebugConfig GetDebugConfig() override
+        {
+            return AZ::AllocatorDebugConfig();
+        }
+        AZ::IAllocatorAllocate* GetSchema() override
+        {
+            return nullptr;
+        }
+
+        // IAllocatorAllocate
+        void* Allocate(size_t byteSize, size_t alignment, int = 0, const char* = 0, const char* = 0, int = 0, unsigned int = 0) override
+        {
+            m_numAllocatedBytes += byteSize;
             if (alignment)
             {
                 return AZ_OS_MALLOC(byteSize, alignment);
@@ -152,18 +144,18 @@ namespace Benchmark
             }
         }
 
-        static void DeAllocate(void* ptr, size_t = 0)
+        void DeAllocate(void* ptr, size_t = 0, size_type = 0) override
         {
-            s_numAllocatedBytes -= Platform::GetMemorySize(ptr);
+            m_numAllocatedBytes -= Platform::GetMemorySize(ptr);
             AZ_OS_FREE(ptr);
         }
 
-        static void* ReAllocate(void* ptr, size_t newSize, size_t newAlignment)
+        void* ReAllocate(void* ptr, size_t newSize, size_t newAlignment) override
         {
-            s_numAllocatedBytes -= Platform::GetMemorySize(ptr);
+            m_numAllocatedBytes -= Platform::GetMemorySize(ptr);
             AZ_OS_FREE(ptr);
 
-            s_numAllocatedBytes += newSize;
+            m_numAllocatedBytes += newSize;
             if (newAlignment)
             {
                 return AZ_OS_MALLOC(newSize, newAlignment);
@@ -174,7 +166,7 @@ namespace Benchmark
             }
         }
 
-        static size_t Resize(void* ptr, size_t newSize)
+        size_t Resize(void* ptr, size_t newSize) override
         {
             AZ_UNUSED(ptr);
             AZ_UNUSED(newSize);
@@ -182,19 +174,44 @@ namespace Benchmark
             return 0;
         }
 
-        static void GarbageCollect()
-        {}
-
-        static size_t NumAllocatedBytes()
+        size_t AllocationSize(void* ptr) override
         {
-            return s_numAllocatedBytes;
+            return Platform::GetMemorySize(ptr);
+        }
+
+        void GarbageCollect() override {}
+
+        size_t NumAllocatedBytes() const override
+        {
+            return m_numAllocatedBytes;
+        }
+
+        size_t Capacity() const override
+        {
+            return AZ_CORE_MAX_ALLOCATOR_SIZE; // unused
+        }
+
+        size_t GetMaxAllocationSize() const override
+        {
+            return AZ_CORE_MAX_ALLOCATOR_SIZE; // unused
+        }
+
+        size_t GetMaxContiguousAllocationSize() const override
+        {
+            return AZ_CORE_MAX_ALLOCATOR_SIZE; // unused
+        }
+        size_t  GetUnAllocatedMemory(bool = false) const override
+        {
+            return 0; // unused
+        }
+        IAllocatorAllocate* GetSubAllocator() override
+        {
+            return nullptr; // unused
         }
 
     private:
-        static size_t s_numAllocatedBytes;
+        size_t m_numAllocatedBytes;
     };
-
-    size_t TestAllocator<TestRawMallocAllocator>::s_numAllocatedBytes = 0;
 
     // Here we require to implement this to be able to configure a name for the allocator, otherswise the AllocatorManager crashes when trying to configure the overrides
     class TestMallocSchemaAllocator : public AZ::SimpleSchemaAllocator<AZ::MallocSchema>
@@ -236,19 +253,7 @@ namespace Benchmark
             : AZ::SystemAllocator()
         {}
     };
-}
 
-namespace AZ
-{
-    AZ_TYPE_INFO_SPECIALIZE(Benchmark::TestAllocator<Benchmark::TestRawMallocAllocator>,    "{1065B446-4873-4B3E-9CB1-069E148D4DF6}");
-    AZ_TYPE_INFO_SPECIALIZE(Benchmark::TestAllocator<Benchmark::TestMallocSchemaAllocator>, "{92CFDF86-02EE-4247-9809-884EE9F7BA18}");
-    AZ_TYPE_INFO_SPECIALIZE(Benchmark::TestAllocator<Benchmark::TestHeapSchemaAllocator>,   "{67DA01DF-9232-493A-B11C-6952FEDEB2A9}");
-    AZ_TYPE_INFO_SPECIALIZE(Benchmark::TestAllocator<Benchmark::TestHphaSchemaAllocator>,   "{47384CB4-6729-43A9-B0CE-402E3A7AEFB2}");
-    AZ_TYPE_INFO_SPECIALIZE(Benchmark::TestAllocator<Benchmark::TestSystemAllocator>,       "{096423BC-DC36-48D2-8E89-8F1D600F488A}");
-}
-
-namespace Benchmark
-{
     // Allocated bytes reported by the allocator / actually requested bytes
     static const char* s_counterAllocatorMemoryRatio = "Allocator_MemoryRatio";
 
@@ -277,7 +282,7 @@ namespace Benchmark
         : public ::benchmark::Fixture
     {
     protected:
-        using TestAllocatorType = TestAllocator<TAllocator>;
+        using TestAllocatorType = TestAllocatorWrapper<TAllocator>;
 
         virtual void internalSetUp(const ::benchmark::State&)
         {
@@ -333,8 +338,6 @@ namespace Benchmark
     public:
         void Benchmark(benchmark::State& state)
         {
-            TestAllocatorType allocatorType;
-
             for (auto _ : state)
             {
                 const size_t processMemoryBaseline = Platform::GetProcessMemoryUsageBytes();
@@ -347,12 +350,12 @@ namespace Benchmark
                     const size_t allocationSize = allocationArray[allocationIndex % allocationArray.size()];
                     
                     state.ResumeTiming();
-                    m_allocations[allocationIndex] = allocatorType.Allocate(allocationSize, 0);
+                    m_allocations[allocationIndex] = TestAllocatorType::Allocate(allocationSize, 0);
                 }
 
                 state.PauseTiming();
                 state.counters[s_counterAllocatorMemoryRatio] =
-                    benchmark::Counter(static_cast<double>(allocatorType.NumAllocatedBytes()), benchmark::Counter::kDefaults);
+                    benchmark::Counter(static_cast<double>(TestAllocatorType::NumAllocatedBytes()), benchmark::Counter::kDefaults);
                 state.counters[s_counterProcessMemoryRatio] = benchmark::Counter(
                     static_cast<double>(Platform::GetProcessMemoryUsageBytes() - processMemoryBaseline),
                     benchmark::Counter::kDefaults);
@@ -361,10 +364,10 @@ namespace Benchmark
                 {
                     const AllocationSizeArray& allocationArray = s_allocationSizes[TAllocationSize];
                     const size_t allocationSize = allocationArray[allocationIndex % allocationArray.size()];
-                    allocatorType.DeAllocate(m_allocations[allocationIndex], allocationSize);
+                    TestAllocatorType::DeAllocate(m_allocations[allocationIndex], allocationSize);
                     m_allocations[allocationIndex] = nullptr;
                 }
-                allocatorType.GarbageCollect();
+                TestAllocatorType::GarbageCollect();
 
                 state.SetItemsProcessed(numberOfAllocations);
                 state.ResumeTiming();
@@ -398,8 +401,6 @@ namespace Benchmark
     public:
         void Benchmark(benchmark::State& state)
         {
-            TestAllocatorType allocatorType;
-
             for (auto _ : state)
             {
                 state.PauseTiming();
@@ -410,7 +411,7 @@ namespace Benchmark
                 {
                     const AllocationSizeArray& allocationArray = s_allocationSizes[TAllocationSize];
                     const size_t allocationSize = allocationArray[allocationIndex % allocationArray.size()];
-                    m_allocations[allocationIndex] = allocatorType.Allocate(allocationSize, 0);
+                    m_allocations[allocationIndex] = TestAllocatorType::Allocate(allocationSize, 0);
                 }
 
                 for (size_t allocationIndex = 0; allocationIndex < numberOfAllocations; ++allocationIndex)
@@ -418,20 +419,20 @@ namespace Benchmark
                     const AllocationSizeArray& allocationArray = s_allocationSizes[TAllocationSize];
                     const size_t allocationSize = allocationArray[allocationIndex % allocationArray.size()];
                     state.ResumeTiming();
-                    allocatorType.DeAllocate(m_allocations[allocationIndex], allocationSize);
+                    TestAllocatorType::DeAllocate(m_allocations[allocationIndex], allocationSize);
                     state.PauseTiming();
                     m_allocations[allocationIndex] = nullptr;
                 }
 
                 state.counters[s_counterAllocatorMemoryRatio] =
-                    benchmark::Counter(static_cast<double>(allocatorType.NumAllocatedBytes()), benchmark::Counter::kDefaults);
+                    benchmark::Counter(static_cast<double>(TestAllocatorType::NumAllocatedBytes()), benchmark::Counter::kDefaults);
                 state.counters[s_counterProcessMemoryRatio] = benchmark::Counter(
                     static_cast<double>(Platform::GetProcessMemoryUsageBytes() - processMemoryBaseline),
                     benchmark::Counter::kDefaults);
 
                 state.SetItemsProcessed(numberOfAllocations);
 
-                allocatorType.GarbageCollect();
+                TestAllocatorType::GarbageCollect();
 
                 state.ResumeTiming();
             }
