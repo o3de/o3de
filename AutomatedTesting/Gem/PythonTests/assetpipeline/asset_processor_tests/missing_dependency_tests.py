@@ -185,8 +185,11 @@ class TestsMissingDependencies_WindowsAndMac(object):
         # Expected missing dependencies
         expected_dependencies = [
             #            String                                                  Asset                     #
-            ('2ef92b8D044E5C278E2BB1AC0374A4E7:1003', '{2EF92B8D-044E-5C27-8E2B-B1AC0374A4E7}:3eb'),
+            # _dev_Red.tif
+            ('2ef92b8D044E5C278E2BB1AC0374A4E7:1000', '{2EF92B8D-044E-5C27-8E2B-B1AC0374A4E7}:3e8'),
+            # _dev_Purple.tif
             ('A2482826-053D-5634-A27B-084B1326AAE5}:[1002', '{A2482826-053D-5634-A27B-084B1326AAE5}:3ea'),
+            # _dev_White.tif
             ('D83B36F1-61A6-5001-B191-4D0CE282E236}-1002', '{D83B36F1-61A6-5001-B191-4D0CE282E236}:3ea'),
         ]
 
@@ -235,11 +238,10 @@ class TestsMissingDependencies_WindowsAndMac(object):
         expected_dependencies = [
             #            String                               Asset                     #
             ('TestAssets\\WildcardScanTest1.txt', '{1CB10C43-F324-5B93-A294-C602ADEF95F9}:0'),
-            ('libs/particles/milestone2PARTICLES.XML', '{6BDE282B-49C9-57F7-B071-4B26579BCA9A}:0'),
+            ('TESTASSETS/ReportONEmISSINGdEPENDENCY.tXT', '{BE5E2373-245E-59E4-B4C6-7370EEAA2EFD}:0'),
             ('textures/_dev_Purple.tif', '{A2482826-053D-5634-A27B-084B1326AAE5}:3e8'),
             ('textures/_dev_Purple.tif', '{A2482826-053D-5634-A27B-084B1326AAE5}:3ea'),
-            ('textures/_dev_Purple.tif', '{A2482826-053D-5634-A27B-084B1326AAE5}:3eb'),
-            ('project.json', '{B076CDDC-14DF-50F4-A5E9-7518ABB3E851}:0'),
+            ('TestAssets/InvalidAssetIdNoReport.txt', '{E68A85B0-131D-5A82-B2D5-BC58EE4062AE}:0'),
             ('TestAssets/RelativeProductPathsNotDependencies.txt', '{B772953C-A08A-5D20-9491-530E87D11504}:0'),
         ]
 
@@ -280,29 +282,31 @@ class TestsMissingDependencies_WindowsAndMac(object):
         2. Set the expected missing dependencies
         3. Execute test
         """
-
-        self._asset_processor.add_source_folder_assets(f"Gems\\LyShineExamples\\Assets\\UI\\Fonts\\LyShineExamples")
-        self._asset_processor.add_scan_folder(f"Gems\\LyShineExamples\\Assets")
         # Relative path to the txt file with missing dependencies as product paths
         expected_product = f"testassets\\relativeproductpathsnotdependencies.txt"
         expected_dependencies = [
             #            String                                 Asset                     #
-            ('materials/floor_tile.mtl', '{0EFF5E4A-F544-5D87-8696-6DDFA62D6063}:0'),
-            ('materials/am_grass1.mtl', '{1151F14D-38A6-5579-888A-BE3139882E68}:0'),
-            ('2ef92b8D044E5C278E2BB1AC0374A4E7:1002', '{2EF92B8D-044E-5C27-8E2B-B1AC0374A4E7}:3ea'),
-            ('textures/milestone2/ama_grey_02.tif.streamingimage', '{3EE80AAD-EB9C-56BD-9E9C-65410578998C}:3e8'),
-            ('ui/milestone2menu.uicanvas', '{445D9AF3-6CA5-5281-82A9-5C570BCD1DB8}:0'),
-            ('libs/particles/milestone2particles.xml', '{6BDE282B-49C9-57F7-B071-4B26579BCA9A}:0'),
-            ('textures/_dev_yellow_light.tif.1002.imagemipchain', '{6C40868F-3FC1-5115-96EA-DD0A9E33DEE4}:3ea'),
-            ('textures\\\\_dev_tan.tif.streamingimage', '{8F2BCEF5-C8CE-5B80-8103-8C1D694D012C}:3e8'),
-            ('materials/am_rockground.mtl', '{A1DA3D05-A020-5BB5-A608-C4812B7BD733}:0'),
             ('textures/_dev_purple.tif.streamingimage', '{A2482826-053D-5634-A27B-084B1326AAE5}:3e8'),
-            ('A2482826-053D-5634-A27B-084B1326AAE5}:[1002', '{A2482826-053D-5634-A27B-084B1326AAE5}:3ea'),
-            ('project.json', '{B076CDDC-14DF-50F4-A5E9-7518ABB3E851}:0'),
-            ('CEAA362B4E505BCEB827CB92EF40A50E', '{CEAA362B-4E50-5BCE-B827-CB92EF40A50E}:1'),
-            ('CEAA362B4E505BCEB827CB92EF40A50E', '{CEAA362B-4E50-5BCE-B827-CB92EF40A50E}:2'),
+            ('textures\\_dev_stucco.tif.streamingimage', '{70114D85-D712-5AEB-A816-8FE3A37087AF}:3e8'),
+            ('textures\\\\_dev_tan.tif.streamingimage', '{8F2BCEF5-C8CE-5B80-8103-8C1D694D012C}:3e8'),
             ('TEXTURES/_DEV_WHITE.tif.streamingimage', '{D83B36F1-61A6-5001-B191-4D0CE282E236}:3e8'),
+            ('textures/_dev_yellow_light.tif.1002.imagemipchain', '{6C40868F-3FC1-5115-96EA-DD0A9E33DEE4}:3ea'),
+            ('textures/_dev_woodland.tif.1002.imagemipchain', '{F3DD193C-5845-569C-A974-AA338B30CF86}:3ea'),
             ('textures/_dev_woodland.tif.streamingimage', '{F3DD193C-5845-569C-A974-AA338B30CF86}:3e8'),
+            ('textures/_dev_yellow_light.tif.streamingimage', '{6C40868F-3FC1-5115-96EA-DD0A9E33DEE4}:3e8'),
+            ('textures/_dev_yellow_med.tif.1002.imagemipchain', '{BB4DFF57-52BD-525B-9628-68232E31802C}:3ea'),
+            ('textures/lights/flare01.tif.streamingimage', '{D8E49CC4-C743-5F31-A1EC-4AA89163B8F5}:3e8'),
+            # SelfReferenceUUID.txt
+            ('33BCEE02-F322-5688-ABEE-534F6058593F', '{33BCEE02-F322-5688-ABEE-534F6058593F}:0'),
+            ('textures/test_texture_sequence/test_texture_sequence000.png.streamingimage', '{6CC90BEE-0A9F-57A8-9013-7C1D643C0E8E}:3e8'),
+            # _dev_red.tif.streamingimage
+            ('2ef92b8D044E5C278E2BB1AC0374A4E7:1002', '{2EF92B8D-044E-5C27-8E2B-B1AC0374A4E7}:3ea'),
+            # SelfReferenceAssetID.txt
+            ('785A05D2-483E-5B43-A2B9-92ACDAE6E938', '{785A05D2-483E-5B43-A2B9-92ACDAE6E938}:0'),
+            ('textures/test_texture_sequence/test_texture_sequence001.png.streamingimage', '{8A8A37DD-01B9-5D70-92E4-925E2C0FE826}:3e8'),
+            # _dev_purple.tif.1002.imagemipchain
+            ('A2482826-053D-5634-A27B-084B1326AAE5}:[1002', '{A2482826-053D-5634-A27B-084B1326AAE5}:3ea'),
+            ('textures/_dev_purple_glass.tif.1002.imagemipchain', '{2FCDD831-77D1-5BE1-A4C8-CA47E4F89F19}:3ea'),
         ]
 
         self.do_missing_dependency_test(expected_product, expected_dependencies,
