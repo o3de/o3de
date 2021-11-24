@@ -255,6 +255,9 @@ class AtomComponentProperties:
         """
         properties = {
             'name': 'Light',
+            'Attenuation Radius Mode': 'Controller|Configuration|Attenuation radius|Mode',
+            'Color': 'Controller|Configuration|Color',
+            'Intensity': 'Controller|Configuration|Intensity',
             'Light type': 'Controller|Configuration|Light type',
         }
         return properties[property]
