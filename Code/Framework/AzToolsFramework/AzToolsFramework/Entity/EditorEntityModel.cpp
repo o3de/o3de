@@ -449,16 +449,23 @@ namespace AzToolsFramework
         AZStd::unordered_map<AZ::EntityId, AZStd::pair<AZ::EntityId, AZ::u64>>::const_iterator orderItr = m_savedOrderInfo.find(childId);
         if (orderItr != m_savedOrderInfo.end() && orderItr->second.first == parentId)
         {
-            bool sortOrderUpdated = AzToolsFramework::RecoverEntitySortInfo(parentId, childId, orderItr->second.second);
-            m_savedOrderInfo.erase(childId);
-
-            // force notify the child sort order changed on the parent entity info, but only if the restore didn't actually modify
-            // the order internally (and sent ChildEntityOrderArrayUpdated).  that may seem heavy handed, and it is, but necessary
-            // to combat scenarios when the initial override detection returns a false positive (see comment about IDH comparisons
-            // in OnChildSortOrderChanged) and the slice instance source-to-live mapping hasn't been fully reconstructed yet.
-            if (!sortOrderUpdated)
+            bool isPrefabEnabled = false;
+            AzFramework::ApplicationRequests::Bus::BroadcastResult(
+                isPrefabEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
+            // If prefabs are enabled, rely on the component to do a sanity check instead of restoring the order from the model
+            if (!isPrefabEnabled)
             {
-                parentInfo.OnChildSortOrderChanged();
+                bool sortOrderUpdated = AzToolsFramework::RecoverEntitySortInfo(parentId, childId, orderItr->second.second);
+                m_savedOrderInfo.erase(childId);
+
+                // force notify the child sort order changed on the parent entity info, but only if the restore didn't actually modify
+                // the order internally (and sent ChildEntityOrderArrayUpdated).  that may seem heavy handed, and it is, but necessary
+                // to combat scenarios when the initial override detection returns a false positive (see comment about IDH comparisons
+                // in OnChildSortOrderChanged) and the slice instance source-to-live mapping hasn't been fully reconstructed yet.
+                if (!sortOrderUpdated)
+                {
+                    parentInfo.OnChildSortOrderChanged();
+                }
             }
         }
         else
