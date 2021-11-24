@@ -12,7 +12,6 @@
 #include <AzFramework/Asset/AssetSystemBus.h>
 
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
-#include <AzToolsFramework/Debug/TraceContext.h>
 #include <AzToolsFramework/AssetCatalog/PlatformAddressedAssetCatalog.h>
 
 #include <AzCore/Asset/AssetManager.h>

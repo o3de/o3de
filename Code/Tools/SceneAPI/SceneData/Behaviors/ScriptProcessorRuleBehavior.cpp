@@ -18,7 +18,6 @@
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzToolsFramework/API/EditorPythonConsoleBus.h>
 #include <AzToolsFramework/API/EditorPythonRunnerRequestsBus.h>
-#include <AzToolsFramework/Debug/TraceContext.h>
 #include <Entity/EntityUtilityComponent.h>
 #include <Prefab/PrefabSystemComponentInterface.h>
 #include <Prefab/PrefabSystemScriptingBus.h>

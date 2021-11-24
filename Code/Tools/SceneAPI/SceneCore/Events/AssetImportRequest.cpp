@@ -10,7 +10,6 @@
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzFramework/StringFunc/StringFunc.h>
-#include <AzToolsFramework/Debug/TraceContext.h>
 #include <SceneAPI/SceneCore/Components/LoadingComponent.h>
 #include <SceneAPI/SceneCore/Components/SceneSystemComponent.h>
 #include <SceneAPI/SceneCore/Components/Utilities/EntityConstructor.h>
