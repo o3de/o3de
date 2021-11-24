@@ -81,7 +81,7 @@ namespace Multiplayer
         else
         {
             m_networkEditorInterface->SendReliablePacket(editorServerToEditorConnectionId, MultiplayerEditorPackets::EditorServerReadyForLevelData());
-            AZ_Printf("MultiplayerEditorConnection", "Editor-server activation has found and connected to the editor.")
+            AZ_Printf("MultiplayerEditorConnection", "Editor-server activation has found and connected to the editor.\n")
         }
     }
 
@@ -160,8 +160,7 @@ namespace Multiplayer
             }
             
             networkInterface->Listen(sv_port);
-
-            AZLOG_INFO("Editor Server completed receiving the editor's level assets, responding to Editor...");
+            AZ_Printf("MultiplayerEditorConnection", "Editor Server completed receiving the editor's level assets, responding to Editor...\n")
             return connection->SendReliablePacket(MultiplayerEditorPackets::EditorServerReady());
         }
 

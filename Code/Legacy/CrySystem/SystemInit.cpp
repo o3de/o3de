@@ -1072,7 +1072,7 @@ AZ_POP_DISABLE_WARNING
         {
             m_pUserCallback->OnInitProgress("Initializing additional systems...");
         }
-        AZ_Printf(AZ_TRACE_SYSTEM_WINDOW, "Initializing additional systems");
+        AZ_Printf(AZ_TRACE_SYSTEM_WINDOW, "Initializing additional systems\n");
 
 
         InlineInitializationProcessing("CSystem::Init AIInit");
