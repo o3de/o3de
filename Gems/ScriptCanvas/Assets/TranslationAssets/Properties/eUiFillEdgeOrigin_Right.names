@@ -1,17 +1,18 @@
 {
     "entries": [
         {
-            "key": "eUiFillEdgeOrigin_Right",
+            "base": "eUiFillEdgeOrigin_Right",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "e Ui Fill Edge Origin_ Right"
+                "name": "Right",
+                "category": "Constants/UI/Fill Edge"
             },
             "methods": [
                 {
-                    "key": "GeteUiFillEdgeOrigin_Right",
+                    "base": "GeteUiFillEdgeOrigin_Right",
                     "details": {
-                        "name": "Gete Ui Fill Edge Origin_ Right"
+                        "name": "Right"
                     },
                     "results": [
                         {

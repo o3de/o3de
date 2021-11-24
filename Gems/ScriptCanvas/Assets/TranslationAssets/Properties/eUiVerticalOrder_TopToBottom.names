@@ -1,17 +1,18 @@
 {
     "entries": [
         {
-            "key": "eUiVerticalOrder_TopToBottom",
+            "base": "eUiVerticalOrder_TopToBottom",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "e Ui Vertical Order_ Top To Bottom"
+                "name": "Top To Bottom",
+                "category": "Constants/UI/Order/Vertical"
             },
             "methods": [
                 {
-                    "key": "GeteUiVerticalOrder_TopToBottom",
+                    "base": "GeteUiVerticalOrder_TopToBottom",
                     "details": {
-                        "name": "Gete Ui Vertical Order_ Top To Bottom"
+                        "name": "Top To Bottom"
                     },
                     "results": [
                         {

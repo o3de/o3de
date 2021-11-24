@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "UiTooltipBus",
+            "base": "UiTooltipBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetText",
+                    "base": "GetText",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Text"
@@ -33,7 +33,7 @@
                     ]
                 },
                 {
-                    "key": "SetText",
+                    "base": "SetText",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Text"

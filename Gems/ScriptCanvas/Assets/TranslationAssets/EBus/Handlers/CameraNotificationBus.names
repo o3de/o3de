@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "CameraNotificationBus",
+            "base": "CameraNotificationBus",
             "context": "EBusHandler",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "OnCameraAdded",
+                    "base": "OnCameraAdded",
                     "details": {
                         "name": "On Camera Added"
                     },
@@ -25,7 +25,7 @@
                     ]
                 },
                 {
-                    "key": "OnCameraRemoved",
+                    "base": "OnCameraRemoved",
                     "details": {
                         "name": "On Camera Removed"
                     },
@@ -40,7 +40,7 @@
                     ]
                 },
                 {
-                    "key": "OnActiveViewChanged",
+                    "base": "OnActiveViewChanged",
                     "details": {
                         "name": "On Active View Changed"
                     },

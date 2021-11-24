@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "UiDraggableNotificationBus",
+            "base": "UiDraggableNotificationBus",
             "context": "EBusHandler",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "OnDragStart",
+                    "base": "OnDragStart",
                     "details": {
                         "name": "On Drag Start",
                         "tooltip": "Executes when dragging is detected on the draggable component. For mouse or touch input, this occurs when movement has been detected after the press or touch"
@@ -26,7 +26,7 @@
                     ]
                 },
                 {
-                    "key": "OnDrag",
+                    "base": "OnDrag",
                     "details": {
                         "name": "On Drag",
                         "tooltip": "Executes each time the drag position changes during dragging. \"On Drag\" events happen only between \"On Drag Start\" and \"On Drag End\" events"
@@ -42,7 +42,7 @@
                     ]
                 },
                 {
-                    "key": "OnDragEnd",
+                    "base": "OnDragEnd",
                     "details": {
                         "name": "On Drag End",
                         "tooltip": "Executes at the end of dragging when the release input event occurs. The \"On Drag End\" notification is sent before the \"On Drop\" drop target notification"

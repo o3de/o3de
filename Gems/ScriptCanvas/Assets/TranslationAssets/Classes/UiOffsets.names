@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "UiOffsets",
+            "base": "UiOffsets",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "SetBottom",
+                    "base": "SetBottom",
                     "context": "UiOffsets",
                     "entry": {
                         "name": "In",
@@ -42,7 +42,7 @@
                     ]
                 },
                 {
-                    "key": "SetRight",
+                    "base": "SetRight",
                     "context": "UiOffsets",
                     "entry": {
                         "name": "In",
@@ -74,7 +74,7 @@
                     ]
                 },
                 {
-                    "key": "SetOffsets",
+                    "base": "SetOffsets",
                     "context": "UiOffsets",
                     "entry": {
                         "name": "In",
@@ -127,7 +127,7 @@
                     ]
                 },
                 {
-                    "key": "SetTop",
+                    "base": "SetTop",
                     "context": "UiOffsets",
                     "entry": {
                         "name": "In",
@@ -159,7 +159,7 @@
                     ]
                 },
                 {
-                    "key": "SetLeft",
+                    "base": "SetLeft",
                     "context": "UiOffsets",
                     "entry": {
                         "name": "In",

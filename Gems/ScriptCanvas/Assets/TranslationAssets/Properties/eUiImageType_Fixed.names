@@ -1,17 +1,18 @@
 {
     "entries": [
         {
-            "key": "eUiImageType_Fixed",
+            "base": "eUiImageType_Fixed",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "e Ui Image Type_ Fixed"
+                "name": "Fixed",
+                "category": "Constants/UI/Image Type"
             },
             "methods": [
                 {
-                    "key": "GeteUiImageType_Fixed",
+                    "base": "GeteUiImageType_Fixed",
                     "details": {
-                        "name": "Gete Ui Image Type_ Fixed"
+                        "name": "Fixed"
                     },
                     "results": [
                         {

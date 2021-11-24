@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "UiScrollBoxNotificationBus",
+            "base": "UiScrollBoxNotificationBus",
             "context": "EBusHandler",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "OnScrollOffsetChanging",
+                    "base": "OnScrollOffsetChanging",
                     "details": {
                         "name": "On Scroll Offset Changing",
                         "tooltip": "Executes when the scroll offset is changing"
@@ -26,7 +26,7 @@
                     ]
                 },
                 {
-                    "key": "OnScrollOffsetChanged",
+                    "base": "OnScrollOffsetChanged",
                     "details": {
                         "name": "On Scroll Offset Changed",
                         "tooltip": "Executes when the scroll offset has changed"

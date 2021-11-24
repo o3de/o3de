@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "open_file_box",
+            "base": "open_file_box",
             "context": "Method",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "open_file_box",
+                    "base": "open_file_box",
                     "context": "Global",
                     "entry": {
                         "name": "In",

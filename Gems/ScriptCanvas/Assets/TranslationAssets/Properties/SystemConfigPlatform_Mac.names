@@ -1,17 +1,18 @@
 {
     "entries": [
         {
-            "key": "SystemConfigPlatform_Mac",
+            "base": "SystemConfigPlatform_Mac",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "System Config Platform_ Mac"
+                "name": "Mac",
+                "category": "Constants/System Configuration"
             },
             "methods": [
                 {
-                    "key": "GetSystemConfigPlatform_Mac",
+                    "base": "GetSystemConfigPlatform_Mac",
                     "details": {
-                        "name": "Get System Config Platform_ Mac"
+                        "name": "Mac"
                     },
                     "results": [
                         {

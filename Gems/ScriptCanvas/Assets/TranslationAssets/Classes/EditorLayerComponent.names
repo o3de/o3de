@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "EditorLayerComponent",
+            "base": "EditorLayerComponent",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
@@ -9,7 +9,7 @@
             },
             "methods": [
                 {
-                    "key": "CreateLayerEntityFromName",
+                    "base": "CreateLayerEntityFromName",
                     "context": "EditorLayerComponent",
                     "entry": {
                         "name": "In",
@@ -42,7 +42,7 @@
                     ]
                 },
                 {
-                    "key": "RecoverLayer",
+                    "base": "RecoverLayer",
                     "context": "EditorLayerComponent",
                     "entry": {
                         "name": "In",

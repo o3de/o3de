@@ -10,6 +10,7 @@
 #include <AzCore/Math/Matrix3x4.h>
 #include <AzCore/Math/Matrix3x3.h>
 #include <AzCore/Math/Quaternion.h>
+#include <AzCore/Math/VectorConversions.h>
 #include <AZTestShared/Math/MathTestHelpers.h>
 #include "MathTestData.h"
 
@@ -391,6 +392,32 @@ namespace UnitTest
     }
 
     INSTANTIATE_TEST_CASE_P(MATH_Matrix3x4, Matrix3x4CreateFromMatrix3x3Fixture, ::testing::ValuesIn(MathTestData::Matrix3x3s));
+
+    using Matrix3x4CreateFromMatrix4x4Fixture = ::testing::TestWithParam<AZ::Matrix4x4>;
+
+    TEST_P(Matrix3x4CreateFromMatrix4x4Fixture, UnsafeCreateFromMatrix4x4)
+    {
+        const AZ::Matrix4x4 matrix4x4 = GetParam();
+        const AZ::Matrix3x4 matrix3x4 = AZ::Matrix3x4::UnsafeCreateFromMatrix4x4(matrix4x4);
+        EXPECT_THAT(matrix3x4.GetTranslation(), IsClose(matrix4x4.GetTranslation()));
+        const AZ::Vector3 vector(2.3f, -0.6, 1.8f);
+        EXPECT_THAT(matrix3x4.TransformVector(vector), IsClose((matrix4x4 * AZ::Vector3ToVector4(vector, 0.0f)).GetAsVector3()));
+        const AZ::Vector3 point(12.3f, -5.6, 7.3f);
+        EXPECT_THAT(matrix3x4.TransformPoint(point), IsClose((matrix4x4 * AZ::Vector3ToVector4(point, 1.0f)).GetAsVector3()));
+    }
+
+    INSTANTIATE_TEST_CASE_P(MATH_Matrix3x4, Matrix3x4CreateFromMatrix4x4Fixture, ::testing::ValuesIn(MathTestData::Matrix4x4s));
+
+    TEST(MATH_Matrix3x4, TransformPoint)
+    {
+        const AZ::Matrix3x4 matrix3x4 = AZ::Matrix3x4::CreateFromMatrix3x3AndTranslation(
+            AZ::Matrix3x3::CreateRotationY(AZ::DegToRad(90.0f)), AZ::Vector3(5.0f, 0.0f, 0.0f));
+
+        const AZ::Vector3 result = matrix3x4.TransformPoint(AZ::Vector3(1.0f, 0.0f, 0.0f));
+        const AZ::Vector3 expected = AZ::Vector3(5.0f, 0.0f, -1.0f);
+
+        EXPECT_THAT(result, expected);
+    }
 
     TEST(MATH_Matrix3x4, CreateScale)
     {

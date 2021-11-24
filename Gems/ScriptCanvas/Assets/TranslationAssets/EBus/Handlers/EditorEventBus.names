@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "EditorEventBus",
+            "base": "EditorEventBus",
             "context": "EBusHandler",
             "variant": "",
             "details": {
@@ -9,7 +9,7 @@
             },
             "methods": [
                 {
-                    "key": "NotifyRegisterViews",
+                    "base": "NotifyRegisterViews",
                     "details": {
                         "name": "NotifyRegisterViews"
                     }

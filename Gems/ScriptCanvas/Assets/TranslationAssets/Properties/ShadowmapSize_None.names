@@ -1,17 +1,18 @@
 {
     "entries": [
         {
-            "key": "ShadowmapSize_None",
+            "base": "ShadowmapSize_None",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Shadowmap Size_ None"
+                "name": "None",
+                "category": "Constants/Shadowmap/Size"
             },
             "methods": [
                 {
-                    "key": "GetShadowmapSize_None",
+                    "base": "GetShadowmapSize_None",
                     "details": {
-                        "name": "Get Shadowmap Size_ None"
+                        "name": "None"
                     },
                     "results": [
                         {

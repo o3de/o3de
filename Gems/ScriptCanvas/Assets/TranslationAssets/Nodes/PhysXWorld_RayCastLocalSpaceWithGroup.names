@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "{BD7F9C50-62EA-56C0-9B8B-D23E5D28300D}",
+            "base": "{BD7F9C50-62EA-56C0-9B8B-D23E5D28300D}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
@@ -11,79 +11,79 @@
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "key": "DataInput_Source",
+                    "base": "DataInput_Source",
                     "details": {
                         "name": "Source"
                     }
                 },
                 {
-                    "key": "DataInput_Direction",
+                    "base": "DataInput_Direction",
                     "details": {
                         "name": "Direction"
                     }
                 },
                 {
-                    "key": "DataInput_Distance",
+                    "base": "DataInput_Distance",
                     "details": {
                         "name": "Distance"
                     }
                 },
                 {
-                    "key": "DataInput_Collision group",
+                    "base": "DataInput_Collision group",
                     "details": {
                         "name": "Collision group"
                     }
                 },
                 {
-                    "key": "DataInput_Ignore",
+                    "base": "DataInput_Ignore",
                     "details": {
                         "name": "Ignore"
                     }
                 },
                 {
-                    "key": "DataOutput_Object hit",
+                    "base": "DataOutput_Object hit",
                     "details": {
                         "name": "Object hit"
                     }
                 },
                 {
-                    "key": "DataOutput_Position",
+                    "base": "DataOutput_Position",
                     "details": {
                         "name": "Position"
                     }
                 },
                 {
-                    "key": "DataOutput_Normal",
+                    "base": "DataOutput_Normal",
                     "details": {
                         "name": "Normal"
                     }
                 },
                 {
-                    "key": "DataOutput_Distance",
+                    "base": "DataOutput_Distance",
                     "details": {
                         "name": "Distance"
                     }
                 },
                 {
-                    "key": "DataOutput_EntityId",
+                    "base": "DataOutput_EntityId",
                     "details": {
                         "name": "EntityId"
                     }
                 },
                 {
-                    "key": "DataOutput_Surface",
+                    "base": "DataOutput_Surface",
                     "details": {
                         "name": "Surface"
                     }

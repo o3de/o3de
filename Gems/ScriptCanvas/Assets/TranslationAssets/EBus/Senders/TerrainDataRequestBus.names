@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "TerrainDataRequestBus",
+            "base": "TerrainDataRequestBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
@@ -9,7 +9,7 @@
             },
             "methods": [
                 {
-                    "key": "GetIsHoleFromFloats",
+                    "base": "GetIsHoleFromFloats",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Is Hole From Floats"
@@ -52,7 +52,7 @@
                     ]
                 },
                 {
-                    "key": "GetSurfaceWeightsFromVector2",
+                    "base": "GetSurfaceWeightsFromVector2",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Surface Weights From Vector2"
@@ -93,7 +93,7 @@
                     ]
                 },
                 {
-                    "key": "GetSurfaceWeights",
+                    "base": "GetSurfaceWeights",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetSurfaceWeights"
@@ -134,7 +134,7 @@
                     ]
                 },
                 {
-                    "key": "GetMaxSurfaceWeight",
+                    "base": "GetMaxSurfaceWeight",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Max Surface Weight"
@@ -177,7 +177,7 @@
                     ]
                 },
                 {
-                    "key": "GetSurfacePointFromVector2",
+                    "base": "GetSurfacePointFromVector2",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Surface Point From Vector2"
@@ -218,7 +218,7 @@
                     ]
                 },
                 {
-                    "key": "GetTerrainHeightQueryResolution",
+                    "base": "GetTerrainHeightQueryResolution",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Terrain Height Query Resolution"
@@ -240,7 +240,7 @@
                     ]
                 },
                 {
-                    "key": "GetNormal",
+                    "base": "GetNormal",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Normal"
@@ -283,7 +283,7 @@
                     ]
                 },
                 {
-                    "key": "GetMaxSurfaceWeightFromVector2",
+                    "base": "GetMaxSurfaceWeightFromVector2",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Max Surface Weight From Vector2"
@@ -326,7 +326,7 @@
                     ]
                 },
                 {
-                    "key": "GetTerrainAabb",
+                    "base": "GetTerrainAabb",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Terrain AABB"
@@ -348,7 +348,7 @@
                     ]
                 },
                 {
-                    "key": "GetHeight",
+                    "base": "GetHeight",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Height"
@@ -391,7 +391,7 @@
                     ]
                 },
                 {
-                    "key": "GetSurfacePoint",
+                    "base": "GetSurfacePoint",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Surface Point"

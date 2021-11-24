@@ -1,17 +1,18 @@
 {
     "entries": [
         {
-            "key": "PhotometricUnit_Ev100_Luminance",
+            "base": "PhotometricUnit_Ev100_Luminance",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Photometric Unit_ Ev 100_ Luminance"
+                "name": "Ev 100 Luminance",
+                "category": "Constants/Photometric Unit"
             },
             "methods": [
                 {
-                    "key": "GetPhotometricUnit_Ev100_Luminance",
+                    "base": "GetPhotometricUnit_Ev100_Luminance",
                     "details": {
-                        "name": "Get Photometric Unit_ Ev 100_ Luminance"
+                        "name": "Ev 100 Luminance"
                     },
                     "results": [
                         {

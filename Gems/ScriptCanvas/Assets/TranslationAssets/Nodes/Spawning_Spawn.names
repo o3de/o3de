@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "{2447798B-B970-FDBA-A2E2-B563513663F0}",
+            "base": "{2447798B-B970-FDBA-A2E2-B563513663F0}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
@@ -12,43 +12,43 @@
             },
             "slots": [
                 {
-                    "key": "Input_Request Spawn",
+                    "base": "Input_Request Spawn",
                     "details": {
                         "name": "Request Spawn"
                     }
                 },
                 {
-                    "key": "DataInput_Translation",
+                    "base": "DataInput_Translation",
                     "details": {
                         "name": "Translation"
                     }
                 },
                 {
-                    "key": "DataInput_Rotation",
+                    "base": "DataInput_Rotation",
                     "details": {
                         "name": "Rotation"
                     }
                 },
                 {
-                    "key": "DataInput_Scale",
+                    "base": "DataInput_Scale",
                     "details": {
                         "name": "Scale"
                     }
                 },
                 {
-                    "key": "Output_Spawn Requested",
+                    "base": "Output_Spawn Requested",
                     "details": {
                         "name": "Spawn Requested"
                     }
                 },
                 {
-                    "key": "Output_On Spawn",
+                    "base": "Output_On Spawn",
                     "details": {
                         "name": "On Spawn"
                     }
                 },
                 {
-                    "key": "DataOutput_SpawnedEntitiesList",
+                    "base": "DataOutput_SpawnedEntitiesList",
                     "details": {
                         "name": "SpawnedEntitiesList"
                     }

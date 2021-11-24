@@ -1,15 +1,16 @@
 {
     "entries": [
         {
-            "key": "PositionModifierComponentTypeId",
+            "base": "PositionModifierComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Position Modifier Component Type Id"
+                "name": "Position Modifier Component Type Id",
+                "category": "Constants/Editor"
             },
             "methods": [
                 {
-                    "key": "GetPositionModifierComponentTypeId",
+                    "base": "GetPositionModifierComponentTypeId",
                     "details": {
                         "name": "Get Position Modifier Component Type Id"
                     },

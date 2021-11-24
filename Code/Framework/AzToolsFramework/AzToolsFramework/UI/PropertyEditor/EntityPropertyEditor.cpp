@@ -1599,7 +1599,6 @@ namespace AzToolsFramework
         for (size_t entityIndex = 1; entityIndex < m_selectedEntityIds.size(); ++entityIndex)
         {
             entity = GetSelectedEntityById(m_selectedEntityIds[entityIndex]);
-            AZ_Assert(entity, "Entity id selected for display but no such entity exists");
             if (!entity)
             {
                 continue;

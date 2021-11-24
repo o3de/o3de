@@ -1,15 +1,16 @@
 {
     "entries": [
         {
-            "key": "SystemEntityId",
+            "base": "SystemEntityId",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "System Entity Id"
+                "name": "System Entity Id",
+                "category": "Constants/System"
             },
             "methods": [
                 {
-                    "key": "GetSystemEntityId",
+                    "base": "GetSystemEntityId",
                     "details": {
                         "name": "Get System Entity Id"
                     },

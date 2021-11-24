@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "PhysicsSystemInterface",
+            "base": "PhysicsSystemInterface",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetOnPresimulateEvent",
+                    "base": "GetOnPresimulateEvent",
                     "context": "PhysicsSystemInterface",
                     "entry": {
                         "name": "In",
@@ -33,7 +33,7 @@
                     ]
                 },
                 {
-                    "key": "GetOnPostsimulateEvent",
+                    "base": "GetOnPostsimulateEvent",
                     "context": "PhysicsSystemInterface",
                     "entry": {
                         "name": "In",
@@ -56,7 +56,7 @@
                     ]
                 },
                 {
-                    "key": "GetSceneHandle",
+                    "base": "GetSceneHandle",
                     "context": "PhysicsSystemInterface",
                     "entry": {
                         "name": "In",
@@ -93,7 +93,7 @@
                     ]
                 },
                 {
-                    "key": "GetScene",
+                    "base": "GetScene",
                     "context": "PhysicsSystemInterface",
                     "entry": {
                         "name": "In",

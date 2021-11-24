@@ -53,14 +53,14 @@ static void OptimizedSetParent(QWidget* widget, QWidget* parent)
 
 namespace AzQtComponents
 {
-    static FancyDockingDropZoneConstants g_FancyDockingConstants;
+    static const FancyDockingDropZoneConstants g_FancyDockingConstants;
 
     // Constant for the threshold in pixels for snapping to edges while dragging for docking
     static const int g_snapThresholdInPixels = 15;
 
-    static QString g_minimizeButtonObjectName =     "minimizeButton";
-    static QString g_maximizeButtonObjectName =     "maximizeButton";
-    static QString g_closeButtonObjectName =        "closeButton";
+    static const QString MinimizeButtonObjectName =     QStringLiteral("minimizeButton");
+    static const QString MaximizeButtonObjectName =     QStringLiteral("maximizeButton");
+    static const QString CloseButtonObjectName =        QStringLiteral("closeButton");
 
     static Qt::Orientation orientation(Qt::DockWidgetArea area)
     {
@@ -460,7 +460,7 @@ namespace AzQtComponents
 
         // Minimize Icon
         QAction* minimizeAction = new QAction(tr("Minimize"));
-        minimizeAction->setObjectName(g_minimizeButtonObjectName);
+        minimizeAction->setObjectName(MinimizeButtonObjectName);
 
         connect(minimizeAction, &QAction::triggered, this, [titleBar]() {
             titleBar->handleMinimize();
@@ -470,7 +470,7 @@ namespace AzQtComponents
 
         // Maximize Icon
         QAction* maximizeAction = new QAction(tr("Maximize"));
-        maximizeAction->setObjectName(g_maximizeButtonObjectName);
+        maximizeAction->setObjectName(MaximizeButtonObjectName);
 
         connect(maximizeAction, &QAction::triggered, this, [titleBar]() {
             titleBar->handleMaximize();
@@ -480,7 +480,7 @@ namespace AzQtComponents
 
         // Close Icon
         QAction* closeAction = new QAction(tr("Close"));
-        closeAction->setObjectName(g_closeButtonObjectName);
+        closeAction->setObjectName(CloseButtonObjectName);
 
         connect(closeAction, &QAction::triggered, this, [titleBar]() {
             titleBar->handleClose();

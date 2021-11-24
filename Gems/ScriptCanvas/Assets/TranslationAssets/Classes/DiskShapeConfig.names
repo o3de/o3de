@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "DiskShapeConfig",
+            "base": "DiskShapeConfig",
             "context": "BehaviorClass",
             "variant": "",
             "details": {

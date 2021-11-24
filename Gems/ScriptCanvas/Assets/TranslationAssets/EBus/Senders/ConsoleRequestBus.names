@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "ConsoleRequestBus",
+            "base": "ConsoleRequestBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "ExecuteConsoleCommand",
+                    "base": "ExecuteConsoleCommand",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Execute Console Command"

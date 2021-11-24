@@ -1,17 +1,18 @@
 {
     "entries": [
         {
-            "key": "StencilOp_IncrementSaturate",
+            "base": "StencilOp_IncrementSaturate",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Stencil Op_ Increment Saturate"
+                "name": "Increment Saturate",
+                "category": "Constants/Stencil Op"
             },
             "methods": [
                 {
-                    "key": "GetStencilOp_IncrementSaturate",
+                    "base": "GetStencilOp_IncrementSaturate",
                     "details": {
-                        "name": "Get Stencil Op_ Increment Saturate"
+                        "name": "Increment Saturate"
                     },
                     "results": [
                         {
