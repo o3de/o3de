@@ -12,7 +12,7 @@
                 {
                     "base": "GetlocalWeight",
                     "details": {
-                        "name": "Getlocal Weight"
+                        "name": "Get Local Weight"
                     },
                     "params": [
                         {
@@ -26,7 +26,7 @@
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "float"
+                                "name": "Local Weight"
                             }
                         }
                     ]
@@ -34,7 +34,7 @@
                 {
                     "base": "SetlocalWeight",
                     "details": {
-                        "name": "Setlocal Weight"
+                        "name": "Set Local Weight"
                     },
                     "params": [
                         {
@@ -46,7 +46,7 @@
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "float"
+                                "name": "Local Weight"
                             }
                         }
                     ]
@@ -54,7 +54,7 @@
                 {
                     "base": "GetglobalWeight",
                     "details": {
-                        "name": "Getglobal Weight"
+                        "name": "Get Global Weight"
                     },
                     "params": [
                         {
@@ -68,7 +68,7 @@
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "float"
+                                "name": "Global Weight"
                             }
                         }
                     ]
@@ -76,7 +76,7 @@
                 {
                     "base": "SetglobalWeight",
                     "details": {
-                        "name": "Setglobal Weight"
+                        "name": "Set Global Weight"
                     },
                     "params": [
                         {
@@ -88,7 +88,7 @@
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "float"
+                                "name": "Global Weight"
                             }
                         }
                     ]
@@ -96,7 +96,7 @@
                 {
                     "base": "Gettime",
                     "details": {
-                        "name": "Gettime"
+                        "name": "Get Time"
                     },
                     "params": [
                         {
@@ -110,7 +110,7 @@
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "float"
+                                "name": "Time"
                             }
                         }
                     ]
@@ -118,7 +118,7 @@
                 {
                     "base": "Settime",
                     "details": {
-                        "name": "Settime"
+                        "name": "Set Time"
                     },
                     "params": [
                         {
@@ -130,7 +130,7 @@
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "float"
+                                "name": "Time"
                             }
                         }
                     ]
@@ -138,7 +138,7 @@
                 {
                     "base": "GeteventType",
                     "details": {
-                        "name": "Getevent Type"
+                        "name": "Get Event Type"
                     },
                     "params": [
                         {
@@ -152,7 +152,7 @@
                         {
                             "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
                             "details": {
-                                "name": "unsigned int"
+                                "name": "Event Type"
                             }
                         }
                     ]
@@ -160,7 +160,7 @@
                 {
                     "base": "SeteventType",
                     "details": {
-                        "name": "Setevent Type"
+                        "name": "Set Event Type"
                     },
                     "params": [
                         {
@@ -172,7 +172,7 @@
                         {
                             "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
                             "details": {
-                                "name": "unsigned int"
+                                "name": "Event Type"
                             }
                         }
                     ]
@@ -180,7 +180,7 @@
                 {
                     "base": "GeteventTypeName",
                     "details": {
-                        "name": "Getevent Type Name"
+                        "name": "Get Event Type Name"
                     },
                     "params": [
                         {
@@ -194,7 +194,7 @@
                         {
                             "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
                             "details": {
-                                "name": "char"
+                                "name": "Event Type Name"
                             }
                         }
                     ]
@@ -202,7 +202,7 @@
                 {
                     "base": "SeteventTypeName",
                     "details": {
-                        "name": "Setevent Type Name"
+                        "name": "Set Event Type Name"
                     },
                     "params": [
                         {
@@ -214,7 +214,7 @@
                         {
                             "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
                             "details": {
-                                "name": "char"
+                                "name": "Event Type Name"
                             }
                         }
                     ]
@@ -222,7 +222,7 @@
                 {
                     "base": "GetisEventStart",
                     "details": {
-                        "name": "Getis Event Start"
+                        "name": "Get Is Event Start"
                     },
                     "params": [
                         {
@@ -236,7 +236,7 @@
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": "bool"
+                                "name": "Is Event Start"
                             }
                         }
                     ]
@@ -244,7 +244,7 @@
                 {
                     "base": "SetisEventStart",
                     "details": {
-                        "name": "Setis Event Start"
+                        "name": "Set Is Event Start"
                     },
                     "params": [
                         {
@@ -256,7 +256,7 @@
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": "bool"
+                                "name": "Is Event Start"
                             }
                         }
                     ]
@@ -264,7 +264,7 @@
                 {
                     "base": "Getparameter",
                     "details": {
-                        "name": "Getparameter"
+                        "name": "Get Parameter"
                     },
                     "params": [
                         {
@@ -278,7 +278,7 @@
                         {
                             "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
                             "details": {
-                                "name": "char"
+                                "name": "Parameter"
                             }
                         }
                     ]
@@ -286,7 +286,7 @@
                 {
                     "base": "Setparameter",
                     "details": {
-                        "name": "Setparameter"
+                        "name": "Set Parameter"
                     },
                     "params": [
                         {
@@ -298,7 +298,7 @@
                         {
                             "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
                             "details": {
-                                "name": "char"
+                                "name": "Parameter"
                             }
                         }
                     ]
@@ -306,7 +306,7 @@
                 {
                     "base": "GetentityId",
                     "details": {
-                        "name": "Getentity Id"
+                        "name": "Get Entity Id"
                     },
                     "params": [
                         {
@@ -329,7 +329,7 @@
                 {
                     "base": "SetentityId",
                     "details": {
-                        "name": "Setentity Id"
+                        "name": "Set Entity Id"
                     },
                     "params": [
                         {
