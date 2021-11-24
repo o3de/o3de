@@ -215,8 +215,9 @@ namespace UnitTest
                 const auto* virtualFile = FindFile(relativePath);
 
                 AZ_Assert(
-                    virtualFile->size() == size, "Streamer read request size did not match size of saved file: %.*s", relativePath.size(),
-                    relativePath.data());
+                    virtualFile->size() == size, "Streamer read request size did not match size of saved file: %d vs %d (%.*s)",
+                    virtualFile->size(), size,
+                    relativePath.size(), relativePath.data());
                 AZ_Assert(size > 0, "Size is zero %.*s", relativePath.size(), relativePath.data());
 
                 memcpy(request.m_data.m_address, virtualFile->data(), size);
