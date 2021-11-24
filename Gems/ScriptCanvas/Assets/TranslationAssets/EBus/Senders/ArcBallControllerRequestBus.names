@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "ArcBallControllerRequestBus",
+            "base": "ArcBallControllerRequestBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetPan",
+                    "base": "GetPan",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetPan"
@@ -33,7 +33,7 @@
                     ]
                 },
                 {
-                    "key": "GetCenter",
+                    "base": "GetCenter",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetCenter"
@@ -56,7 +56,7 @@
                     ]
                 },
                 {
-                    "key": "SetZoomingSensitivity",
+                    "base": "SetZoomingSensitivity",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetZoomingSensitivity"
@@ -79,7 +79,7 @@
                     ]
                 },
                 {
-                    "key": "GetPitch",
+                    "base": "GetPitch",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetPitch"
@@ -102,7 +102,7 @@
                     ]
                 },
                 {
-                    "key": "SetPanningSensitivity",
+                    "base": "SetPanningSensitivity",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetPanningSensitivity"
@@ -125,7 +125,7 @@
                     ]
                 },
                 {
-                    "key": "GetZoomingSensitivity",
+                    "base": "GetZoomingSensitivity",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetZoomingSensitivity"
@@ -148,7 +148,7 @@
                     ]
                 },
                 {
-                    "key": "SetHeading",
+                    "base": "SetHeading",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetHeading"
@@ -171,7 +171,7 @@
                     ]
                 },
                 {
-                    "key": "GetMaxDistance",
+                    "base": "GetMaxDistance",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetMaxDistance"
@@ -194,7 +194,7 @@
                     ]
                 },
                 {
-                    "key": "SetDistance",
+                    "base": "SetDistance",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetDistance"
@@ -217,7 +217,7 @@
                     ]
                 },
                 {
-                    "key": "SetMinDistance",
+                    "base": "SetMinDistance",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetMinDistance"
@@ -240,7 +240,7 @@
                     ]
                 },
                 {
-                    "key": "SetMaxDistance",
+                    "base": "SetMaxDistance",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetMaxDistance"
@@ -263,7 +263,7 @@
                     ]
                 },
                 {
-                    "key": "GetMinDistance",
+                    "base": "GetMinDistance",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetMinDistance"
@@ -286,7 +286,7 @@
                     ]
                 },
                 {
-                    "key": "GetHeading",
+                    "base": "GetHeading",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetHeading"
@@ -309,7 +309,7 @@
                     ]
                 },
                 {
-                    "key": "GetPanningSensitivity",
+                    "base": "GetPanningSensitivity",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetPanningSensitivity"
@@ -332,7 +332,7 @@
                     ]
                 },
                 {
-                    "key": "SetCenter",
+                    "base": "SetCenter",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetCenter"
@@ -355,7 +355,7 @@
                     ]
                 },
                 {
-                    "key": "SetPan",
+                    "base": "SetPan",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetPan"
@@ -378,7 +378,7 @@
                     ]
                 },
                 {
-                    "key": "SetPitch",
+                    "base": "SetPitch",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetPitch"
@@ -401,7 +401,7 @@
                     ]
                 },
                 {
-                    "key": "GetDistance",
+                    "base": "GetDistance",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetDistance"

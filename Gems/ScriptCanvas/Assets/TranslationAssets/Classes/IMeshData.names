@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "IMeshData",
+            "base": "IMeshData",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
@@ -9,7 +9,7 @@
             },
             "methods": [
                 {
-                    "key": "GetUnitSizeInMeters",
+                    "base": "GetUnitSizeInMeters",
                     "context": "IMeshData",
                     "entry": {
                         "name": "In",
@@ -41,7 +41,7 @@
                     ]
                 },
                 {
-                    "key": "GetOriginalUnitSizeInMeters",
+                    "base": "GetOriginalUnitSizeInMeters",
                     "context": "IMeshData",
                     "entry": {
                         "name": "In",

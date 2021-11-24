@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "DitherGradientComponentTypeId",
+            "base": "DitherGradientComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "DitherGradientComponentTypeId::Getter",
-                "category": "Constants"
-            }
+                "name": "Dither Gradient Component Type Id",
+                "category": "Constants/Editor/Component Type Id"
+            },
+            "methods": [
+                {
+                    "base": "GetDitherGradientComponentTypeId",
+                    "details": {
+                        "name": "Get Dither Gradient Component Type Id"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}",
+                            "details": {
+                                "name": "AZ:: Uuid"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

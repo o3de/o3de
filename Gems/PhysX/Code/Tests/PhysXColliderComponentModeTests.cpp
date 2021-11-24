@@ -66,7 +66,7 @@ namespace UnitTest
 
         PhysX::ColliderComponentModeRequests::SubMode subMode = PhysX::ColliderComponentModeRequests::SubMode::NumModes;
         PhysX::ColliderComponentModeRequestBus::BroadcastResult(subMode, &PhysX::ColliderComponentModeRequests::GetCurrentMode);
-        EXPECT_EQ(PhysX::ColliderComponentModeRequests::SubMode::Dimensions, subMode);
+        EXPECT_EQ(PhysX::ColliderComponentModeRequests::SubMode::Offset, subMode);
 
         // When the mouse wheel is scrolled while holding ctrl
         AzToolsFramework::ViewportInteraction::MouseInteractionEvent
@@ -84,7 +84,7 @@ namespace UnitTest
         // Then the component mode is cycled.
         PhysX::ColliderComponentModeRequestBus::BroadcastResult(subMode, &PhysX::ColliderComponentModeRequests::GetCurrentMode);
         EXPECT_EQ(handled, MouseInteractionResult::Viewport);
-        EXPECT_EQ(PhysX::ColliderComponentModeRequests::SubMode::Offset, subMode);
+        EXPECT_EQ(PhysX::ColliderComponentModeRequests::SubMode::Dimensions, subMode);
     }
 
     TEST_F(PhysXColliderComponentModeTest, MouseWheelDownShouldSetPreviousMode)
@@ -95,7 +95,7 @@ namespace UnitTest
 
         PhysX::ColliderComponentModeRequests::SubMode subMode = PhysX::ColliderComponentModeRequests::SubMode::NumModes;
         PhysX::ColliderComponentModeRequestBus::BroadcastResult(subMode, &PhysX::ColliderComponentModeRequests::GetCurrentMode);
-        EXPECT_EQ(PhysX::ColliderComponentModeRequests::SubMode::Dimensions, subMode);
+        EXPECT_EQ(PhysX::ColliderComponentModeRequests::SubMode::Offset, subMode);
 
         // When the mouse wheel is scrolled while holding ctrl
         AzToolsFramework::ViewportInteraction::MouseInteractionEvent
@@ -116,7 +116,7 @@ namespace UnitTest
         EXPECT_EQ(PhysX::ColliderComponentModeRequests::SubMode::Rotation, subMode);
     }
 
-    TEST_F(PhysXColliderComponentModeTest, PressingKey1ShouldSetSizeMode)
+    TEST_F(PhysXColliderComponentModeTest, PressingKey1ShouldSetOffsetMode)
     {
         // Given there is a collider component in component mode.
         CreateColliderComponent();
@@ -124,17 +124,17 @@ namespace UnitTest
 
         PhysX::ColliderComponentModeRequests::SubMode subMode = PhysX::ColliderComponentModeRequests::SubMode::NumModes;
         PhysX::ColliderComponentModeRequestBus::BroadcastResult(subMode, &PhysX::ColliderComponentModeRequests::GetCurrentMode);
-        EXPECT_EQ(PhysX::ColliderComponentModeRequests::SubMode::Dimensions, subMode);
+        EXPECT_EQ(PhysX::ColliderComponentModeRequests::SubMode::Offset, subMode);
 
         // When the '1' key is pressed
         QTest::keyPress(&m_editorActions.m_componentModeWidget, Qt::Key_1);
 
-        // Then the component mode is set to Size.
+        // Then the component mode is set to Offset.
         PhysX::ColliderComponentModeRequestBus::BroadcastResult(subMode, &PhysX::ColliderComponentModeRequests::GetCurrentMode);
-        EXPECT_EQ(PhysX::ColliderComponentModeRequests::SubMode::Dimensions, subMode);
+        EXPECT_EQ(PhysX::ColliderComponentModeRequests::SubMode::Offset, subMode);
     }
 
-    TEST_F(PhysXColliderComponentModeTest, PressingKey2ShouldSetSizeMode)
+    TEST_F(PhysXColliderComponentModeTest, PressingKey2ShouldSetRotationMode)
     {
         // Given there is a collider component in component mode.
         auto colliderEntity = CreateColliderComponent();
@@ -143,14 +143,14 @@ namespace UnitTest
 
         PhysX::ColliderComponentModeRequests::SubMode subMode = PhysX::ColliderComponentModeRequests::SubMode::NumModes;
         PhysX::ColliderComponentModeRequestBus::BroadcastResult(subMode, &PhysX::ColliderComponentModeRequests::GetCurrentMode);
-        EXPECT_EQ(PhysX::ColliderComponentModeRequests::SubMode::Dimensions, subMode);
+        EXPECT_EQ(PhysX::ColliderComponentModeRequests::SubMode::Offset, subMode);
 
         // When the '2' key is pressed
         QTest::keyPress(&m_editorActions.m_componentModeWidget, Qt::Key_2);
 
-        // Then the component mode is set to Offset.
+        // Then the component mode is set to Rotation.
         PhysX::ColliderComponentModeRequestBus::BroadcastResult(subMode, &PhysX::ColliderComponentModeRequests::GetCurrentMode);
-        EXPECT_EQ(PhysX::ColliderComponentModeRequests::SubMode::Offset, subMode);
+        EXPECT_EQ(PhysX::ColliderComponentModeRequests::SubMode::Rotation, subMode);
     }
 
     TEST_F(PhysXColliderComponentModeTest, PressingKey3ShouldSetSizeMode)
@@ -162,14 +162,14 @@ namespace UnitTest
 
         PhysX::ColliderComponentModeRequests::SubMode subMode = PhysX::ColliderComponentModeRequests::SubMode::NumModes;
         PhysX::ColliderComponentModeRequestBus::BroadcastResult(subMode, &PhysX::ColliderComponentModeRequests::GetCurrentMode);
-        EXPECT_EQ(PhysX::ColliderComponentModeRequests::SubMode::Dimensions, subMode);
+        EXPECT_EQ(PhysX::ColliderComponentModeRequests::SubMode::Offset, subMode);
 
         // When the '3' key is pressed
         QTest::keyPress(&m_editorActions.m_componentModeWidget, Qt::Key_3);
 
-        // Then the component mode is set to Rotation.
+        // Then the component mode is set to Size.
         PhysX::ColliderComponentModeRequestBus::BroadcastResult(subMode, &PhysX::ColliderComponentModeRequests::GetCurrentMode);
-        EXPECT_EQ(PhysX::ColliderComponentModeRequests::SubMode::Rotation, subMode);
+        EXPECT_EQ(PhysX::ColliderComponentModeRequests::SubMode::Dimensions, subMode);
     }
 
     TEST_F(PhysXColliderComponentModeTest, PressingKeyRShouldResetSphereRadius)
@@ -292,7 +292,7 @@ namespace UnitTest
         // Check preconditions
         PhysX::ColliderComponentModeRequests::SubMode subMode = PhysX::ColliderComponentModeRequests::SubMode::NumModes;
         PhysX::ColliderComponentModeRequestBus::BroadcastResult(subMode, &PhysX::ColliderComponentModeRequests::GetCurrentMode);
-        EXPECT_EQ(PhysX::ColliderComponentModeRequests::SubMode::Dimensions, subMode);
+        EXPECT_EQ(PhysX::ColliderComponentModeRequests::SubMode::Offset, subMode);
 
         // Get the cluster and button Ids
         AzToolsFramework::ViewportUi::ClusterId modeSelectionClusterId;
@@ -327,7 +327,7 @@ namespace UnitTest
         // Check preconditions
         PhysX::ColliderComponentModeRequests::SubMode subMode = PhysX::ColliderComponentModeRequests::SubMode::NumModes;
         PhysX::ColliderComponentModeRequestBus::BroadcastResult(subMode, &PhysX::ColliderComponentModeRequests::GetCurrentMode);
-        EXPECT_EQ(PhysX::ColliderComponentModeRequests::SubMode::Dimensions, subMode);
+        EXPECT_EQ(PhysX::ColliderComponentModeRequests::SubMode::Offset, subMode);
 
         // Get the cluster and button Ids
         AzToolsFramework::ViewportUi::ClusterId modeSelectionClusterId;
@@ -362,7 +362,7 @@ namespace UnitTest
         // Check preconditions
         PhysX::ColliderComponentModeRequests::SubMode subMode = PhysX::ColliderComponentModeRequests::SubMode::NumModes;
         PhysX::ColliderComponentModeRequestBus::BroadcastResult(subMode, &PhysX::ColliderComponentModeRequests::GetCurrentMode);
-        EXPECT_EQ(PhysX::ColliderComponentModeRequests::SubMode::Dimensions, subMode);
+        EXPECT_EQ(PhysX::ColliderComponentModeRequests::SubMode::Offset, subMode);
 
         // Get the cluster and button Ids
         AzToolsFramework::ViewportUi::ClusterId modeSelectionClusterId;

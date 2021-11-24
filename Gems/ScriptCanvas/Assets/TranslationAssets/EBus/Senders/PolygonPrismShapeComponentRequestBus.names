@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "PolygonPrismShapeComponentRequestBus",
+            "base": "PolygonPrismShapeComponentRequestBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
@@ -9,7 +9,7 @@
             },
             "methods": [
                 {
-                    "key": "ClearVertices",
+                    "base": "ClearVertices",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke ClearVertices"
@@ -23,7 +23,7 @@
                     }
                 },
                 {
-                    "key": "InsertVertex",
+                    "base": "InsertVertex",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke InsertVertex"
@@ -59,7 +59,7 @@
                     ]
                 },
                 {
-                    "key": "UpdateVertex",
+                    "base": "UpdateVertex",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke UpdateVertex"
@@ -95,7 +95,7 @@
                     ]
                 },
                 {
-                    "key": "AddVertex",
+                    "base": "AddVertex",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke AddVertex"
@@ -117,7 +117,7 @@
                     ]
                 },
                 {
-                    "key": "GetPolygonPrism",
+                    "base": "GetPolygonPrism",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetPolygonPrism"
@@ -139,7 +139,7 @@
                     ]
                 },
                 {
-                    "key": "SetHeight",
+                    "base": "SetHeight",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetHeight"
@@ -161,7 +161,7 @@
                     ]
                 },
                 {
-                    "key": "RemoveVertex",
+                    "base": "RemoveVertex",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke RemoveVertex"

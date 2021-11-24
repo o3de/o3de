@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "close_pane",
+            "base": "close_pane",
             "context": "Method",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "close_pane",
+                    "base": "close_pane",
                     "context": "Global",
                     "entry": {
                         "name": "In",

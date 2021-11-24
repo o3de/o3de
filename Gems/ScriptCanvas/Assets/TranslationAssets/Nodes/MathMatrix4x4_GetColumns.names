@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "{A2A41479-B90B-5615-A72E-AAB3A6D0332E}",
+            "base": "{A2A41479-B90B-5615-A72E-AAB3A6D0332E}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
@@ -12,43 +12,43 @@
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "key": "DataInput_Matrix4x4: Source",
+                    "base": "DataInput_Matrix4x4: Source",
                     "details": {
                         "name": "Source"
                     }
                 },
                 {
-                    "key": "DataOutput_Column1: Vector4",
+                    "base": "DataOutput_Column1: Vector4",
                     "details": {
                         "name": "Column 1"
                     }
                 },
                 {
-                    "key": "DataOutput_Column2: Vector4",
+                    "base": "DataOutput_Column2: Vector4",
                     "details": {
                         "name": "Column 2"
                     }
                 },
                 {
-                    "key": "DataOutput_Column3: Vector4",
+                    "base": "DataOutput_Column3: Vector4",
                     "details": {
                         "name": "Column 3"
                     }
                 },
                 {
-                    "key": "DataOutput_Column4: Vector4",
+                    "base": "DataOutput_Column4: Vector4",
                     "details": {
                         "name": "Column 4"
                     }

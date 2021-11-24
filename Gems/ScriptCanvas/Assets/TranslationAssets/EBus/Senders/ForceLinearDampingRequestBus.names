@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "ForceLinearDampingRequestBus",
+            "base": "ForceLinearDampingRequestBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
@@ -9,7 +9,7 @@
             },
             "methods": [
                 {
-                    "key": "SetDamping",
+                    "base": "SetDamping",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Damping"
@@ -31,7 +31,7 @@
                     ]
                 },
                 {
-                    "key": "GetDamping",
+                    "base": "GetDamping",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Damping"

@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "eUiLayoutGridStartingDirection_VerticalOrder",
+            "base": "eUiLayoutGridStartingDirection_VerticalOrder",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "eUiLayoutGridStartingDirection_VerticalOrder::Getter",
-                "category": "Constants"
-            }
+                "name": "Vertical Order",
+                "category": "Constants/UI/Layout Grid Starting Direction"
+            },
+            "methods": [
+                {
+                    "base": "GeteUiLayoutGridStartingDirection_VerticalOrder",
+                    "details": {
+                        "name": "Vertical Order"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

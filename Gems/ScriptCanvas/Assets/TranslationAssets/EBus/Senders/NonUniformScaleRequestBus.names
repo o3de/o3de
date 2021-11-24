@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "NonUniformScaleRequestBus",
+            "base": "NonUniformScaleRequestBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
@@ -9,7 +9,7 @@
             },
             "methods": [
                 {
-                    "key": "GetScale",
+                    "base": "GetScale",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Scale"
@@ -31,7 +31,7 @@
                     ]
                 },
                 {
-                    "key": "SetScale",
+                    "base": "SetScale",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Scale"

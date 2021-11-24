@@ -1,24 +1,24 @@
 {
     "entries": [
         {
-            "key": "LookAtNotification",
+            "base": "LookAtNotification",
             "context": "EBusHandler",
             "variant": "",
             "details": {
-                "name": "LookAtNotification",
-                "tooltip": "Notifications for the Look At Component"
+                "name": "Look At",
+                "category": "Gameplay"
             },
             "methods": [
                 {
-                    "key": "OnTargetChanged",
+                    "base": "OnTargetChanged",
                     "details": {
-                        "name": "OnTargetChanged"
+                        "name": "On Target Changed"
                     },
                     "params": [
                         {
                             "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
                             "details": {
-                                "name": "EntityId",
+                                "name": "Entity Id",
                                 "tooltip": "Entity Unique Id"
                             }
                         }

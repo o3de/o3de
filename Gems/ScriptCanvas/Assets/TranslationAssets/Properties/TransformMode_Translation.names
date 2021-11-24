@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "TransformMode_Translation",
+            "base": "TransformMode_Translation",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "TransformMode_Translation::Getter",
-                "category": "Constants"
-            }
+                "name": "Translation",
+                "category": "Constants/Transform/Mode"
+            },
+            "methods": [
+                {
+                    "base": "GetTransformMode_Translation",
+                    "details": {
+                        "name": "Translation"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

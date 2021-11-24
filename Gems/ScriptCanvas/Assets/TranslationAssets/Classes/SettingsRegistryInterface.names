@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "SettingsRegistryInterface",
+            "base": "SettingsRegistryInterface",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetFloat",
+                    "base": "GetFloat",
                     "context": "SettingsRegistryInterface",
                     "entry": {
                         "name": "In",
@@ -47,7 +47,7 @@
                     ]
                 },
                 {
-                    "key": "SetFloat",
+                    "base": "SetFloat",
                     "context": "SettingsRegistryInterface",
                     "entry": {
                         "name": "In",
@@ -90,7 +90,7 @@
                     ]
                 },
                 {
-                    "key": "RemoveKey",
+                    "base": "RemoveKey",
                     "context": "SettingsRegistryInterface",
                     "entry": {
                         "name": "In",
@@ -127,7 +127,7 @@
                     ]
                 },
                 {
-                    "key": "SetInt",
+                    "base": "SetInt",
                     "context": "SettingsRegistryInterface",
                     "entry": {
                         "name": "In",
@@ -170,7 +170,7 @@
                     ]
                 },
                 {
-                    "key": "SetUInt",
+                    "base": "SetUInt",
                     "context": "SettingsRegistryInterface",
                     "entry": {
                         "name": "In",
@@ -213,7 +213,7 @@
                     ]
                 },
                 {
-                    "key": "GetBool",
+                    "base": "GetBool",
                     "context": "SettingsRegistryInterface",
                     "entry": {
                         "name": "In",
@@ -250,7 +250,7 @@
                     ]
                 },
                 {
-                    "key": "GetInt",
+                    "base": "GetInt",
                     "context": "SettingsRegistryInterface",
                     "entry": {
                         "name": "In",
@@ -287,7 +287,7 @@
                     ]
                 },
                 {
-                    "key": "GetUInt",
+                    "base": "GetUInt",
                     "context": "SettingsRegistryInterface",
                     "entry": {
                         "name": "In",
@@ -324,7 +324,7 @@
                     ]
                 },
                 {
-                    "key": "GetNotifyEvent",
+                    "base": "GetNotifyEvent",
                     "context": "SettingsRegistryInterface",
                     "entry": {
                         "name": "In",
@@ -355,7 +355,7 @@
                     ]
                 },
                 {
-                    "key": "MergeSettings",
+                    "base": "MergeSettings",
                     "context": "SettingsRegistryInterface",
                     "entry": {
                         "name": "In",
@@ -399,7 +399,7 @@
                     ]
                 },
                 {
-                    "key": "MergeSettingsFile",
+                    "base": "MergeSettingsFile",
                     "context": "SettingsRegistryInterface",
                     "entry": {
                         "name": "In",
@@ -449,7 +449,7 @@
                     ]
                 },
                 {
-                    "key": "GetString",
+                    "base": "GetString",
                     "context": "SettingsRegistryInterface",
                     "entry": {
                         "name": "In",
@@ -486,7 +486,7 @@
                     ]
                 },
                 {
-                    "key": "IsValid",
+                    "base": "IsValid",
                     "context": "SettingsRegistryInterface",
                     "entry": {
                         "name": "In",
@@ -517,7 +517,7 @@
                     ]
                 },
                 {
-                    "key": "MergeSettingsFolder",
+                    "base": "MergeSettingsFolder",
                     "context": "SettingsRegistryInterface",
                     "entry": {
                         "name": "In",
@@ -566,7 +566,7 @@
                     ]
                 },
                 {
-                    "key": "SetBool",
+                    "base": "SetBool",
                     "context": "SettingsRegistryInterface",
                     "entry": {
                         "name": "In",
@@ -609,7 +609,7 @@
                     ]
                 },
                 {
-                    "key": "SetString",
+                    "base": "SetString",
                     "context": "SettingsRegistryInterface",
                     "entry": {
                         "name": "In",
@@ -652,7 +652,7 @@
                     ]
                 },
                 {
-                    "key": "DumpSettings",
+                    "base": "DumpSettings",
                     "context": "SettingsRegistryInterface",
                     "entry": {
                         "name": "In",

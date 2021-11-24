@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "{38B808C5-152C-4643-A08C-463EBED55E19}",
+            "base": "{38B808C5-152C-4643-A08C-463EBED55E19}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
@@ -11,35 +11,35 @@
             },
             "slots": [
                 {
-                    "key": "Input_Connect",
+                    "base": "Input_Connect",
                     "details": {
                         "name": "Connect",
                         "tooltip": "Connect the AZ Event to this AZ Event Handler."
                     }
                 },
                 {
-                    "key": "Input_Disconnect",
+                    "base": "Input_Disconnect",
                     "details": {
                         "name": "Disconnect",
                         "tooltip": "Disconnect current AZ Event from this AZ Event Handler."
                     }
                 },
                 {
-                    "key": "Output_On Connected",
+                    "base": "Output_On Connected",
                     "details": {
                         "name": "On Connected",
                         "tooltip": "Signaled when a connection has taken place."
                     }
                 },
                 {
-                    "key": "Output_On Disconnected",
+                    "base": "Output_On Disconnected",
                     "details": {
                         "name": "On Disconnected",
                         "tooltip": "Signaled when this event handler is disconnected."
                     }
                 },
                 {
-                    "key": "Output_OnEvent",
+                    "base": "Output_OnEvent",
                     "details": {
                         "name": "OnEvent",
                         "tooltip": "Triggered when the AZ Event invokes Signal() function."

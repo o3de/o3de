@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "EditorDisplayMapperComponentTypeId",
+            "base": "EditorDisplayMapperComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "EditorDisplayMapperComponentTypeId::Getter",
-                "category": "Constants"
-            }
+                "name": "Editor Display Mapper Component Type Id",
+                "category": "Constants/Editor"
+            },
+            "methods": [
+                {
+                    "base": "GetEditorDisplayMapperComponentTypeId",
+                    "details": {
+                        "name": "Get Editor Display Mapper Component Type Id"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}",
+                            "details": {
+                                "name": "AZ:: Uuid"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

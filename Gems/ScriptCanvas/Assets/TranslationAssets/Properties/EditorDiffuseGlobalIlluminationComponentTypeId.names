@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "EditorDiffuseGlobalIlluminationComponentTypeId",
+            "base": "EditorDiffuseGlobalIlluminationComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "EditorDiffuseGlobalIlluminationComponentTypeId::Getter",
-                "category": "Constants"
-            }
+                "name": "Editor Diffuse Global Illumination Component Type Id",
+                "category": "Constants/Editor/Component Type Id"
+            },
+            "methods": [
+                {
+                    "base": "GetEditorDiffuseGlobalIlluminationComponentTypeId",
+                    "details": {
+                        "name": "Get Editor Diffuse Global Illumination Component Type Id"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}",
+                            "details": {
+                                "name": "AZ:: Uuid"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "LookModificationRequestBus",
+            "base": "LookModificationRequestBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
@@ -9,7 +9,7 @@
             },
             "methods": [
                 {
-                    "key": "SetColorGradingLutOverride",
+                    "base": "SetColorGradingLutOverride",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetColorGradingLutOverride"
@@ -31,7 +31,7 @@
                     ]
                 },
                 {
-                    "key": "SetCustomMaxExposure",
+                    "base": "SetCustomMaxExposure",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetCustomMaxExposure"
@@ -53,7 +53,7 @@
                     ]
                 },
                 {
-                    "key": "SetCustomMinExposure",
+                    "base": "SetCustomMinExposure",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetCustomMinExposure"
@@ -75,7 +75,7 @@
                     ]
                 },
                 {
-                    "key": "GetCustomMinExposure",
+                    "base": "GetCustomMinExposure",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetCustomMinExposure"
@@ -97,7 +97,7 @@
                     ]
                 },
                 {
-                    "key": "GetColorGradingLut",
+                    "base": "GetColorGradingLut",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetColorGradingLut"
@@ -119,7 +119,7 @@
                     ]
                 },
                 {
-                    "key": "GetColorGradingLutIntensity",
+                    "base": "GetColorGradingLutIntensity",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetColorGradingLutIntensity"
@@ -141,7 +141,7 @@
                     ]
                 },
                 {
-                    "key": "GetColorGradingLutOverride",
+                    "base": "GetColorGradingLutOverride",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetColorGradingLutOverride"
@@ -163,7 +163,7 @@
                     ]
                 },
                 {
-                    "key": "SetColorGradingLut",
+                    "base": "SetColorGradingLut",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetColorGradingLut"
@@ -185,7 +185,7 @@
                     ]
                 },
                 {
-                    "key": "SetColorGradingLutIntensity",
+                    "base": "SetColorGradingLutIntensity",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetColorGradingLutIntensity"
@@ -207,7 +207,7 @@
                     ]
                 },
                 {
-                    "key": "SetEnabled",
+                    "base": "SetEnabled",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetEnabled"
@@ -229,7 +229,7 @@
                     ]
                 },
                 {
-                    "key": "GetEnabled",
+                    "base": "GetEnabled",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetEnabled"
@@ -251,7 +251,7 @@
                     ]
                 },
                 {
-                    "key": "SetShaperPresetType",
+                    "base": "SetShaperPresetType",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetShaperPresetType"
@@ -273,7 +273,7 @@
                     ]
                 },
                 {
-                    "key": "GetShaperPresetType",
+                    "base": "GetShaperPresetType",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetShaperPresetType"
@@ -295,7 +295,7 @@
                     ]
                 },
                 {
-                    "key": "GetCustomMaxExposure",
+                    "base": "GetCustomMaxExposure",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetCustomMaxExposure"

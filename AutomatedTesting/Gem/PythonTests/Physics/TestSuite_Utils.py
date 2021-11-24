@@ -30,11 +30,11 @@ class TestUtils(TestAutomationBase):
 
         expected_lines = []
         unexpected_lines = ["Assert"]
-        self._run_test(request, workspace, editor, physmaterial_editor_test_module, expected_lines, unexpected_lines)
+        self._run_test(request, workspace, editor, physmaterial_editor_test_module, expected_lines, unexpected_lines, enable_prefab_system=False)
     
     def test_UtilTest_Tracer_PicksErrorsAndWarnings(self, request, workspace, launcher_platform, editor):
         from .utils import UtilTest_Tracer_PicksErrorsAndWarnings as testcase_module
-        self._run_test(request, workspace, editor, testcase_module, [], [])
+        self._run_test(request, workspace, editor, testcase_module, [], [], enable_prefab_system=False)
 
     def test_FileManagement_FindingFiles(self, workspace, launcher_platform):
         """
@@ -263,4 +263,4 @@ class TestUtils(TestAutomationBase):
 
         expected_lines = []
         unexpected_lines = ["Assert"]
-        self._run_test(request, workspace, editor, test_module, expected_lines, unexpected_lines)
+        self._run_test(request, workspace, editor, test_module, expected_lines, unexpected_lines, enable_prefab_system=False)

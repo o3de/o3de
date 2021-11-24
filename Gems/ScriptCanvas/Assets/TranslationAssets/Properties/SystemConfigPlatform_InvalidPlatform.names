@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "SystemConfigPlatform_InvalidPlatform",
+            "base": "SystemConfigPlatform_InvalidPlatform",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "SystemConfigPlatform_InvalidPlatform::Getter",
-                "category": "Constants"
-            }
+                "name": "Invalid Platform",
+                "category": "Constants/System Configuration"
+            },
+            "methods": [
+                {
+                    "base": "GetSystemConfigPlatform_InvalidPlatform",
+                    "details": {
+                        "name": "Invalid Platform"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

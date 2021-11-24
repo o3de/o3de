@@ -1,16 +1,15 @@
 {
     "entries": [
         {
-            "key": "SliceInstantiationTicket",
+            "base": "SliceInstantiationTicket",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
-                "name": "Slice Instantiation Ticket",
-                "category": "Gameplay"
+                "name": "Slice Instantiation Ticket"
             },
             "methods": [
                 {
-                    "key": "Equal",
+                    "base": "Equal",
                     "context": "SliceInstantiationTicket",
                     "entry": {
                         "name": "In",
@@ -21,20 +20,19 @@
                         "tooltip": "Signaled after Equal is invoked"
                     },
                     "details": {
-                        "name": "SliceInstantiationTicket::Equal",
-                        "category": "Gameplay"
+                        "name": "Equal"
                     },
                     "params": [
                         {
                             "typeid": "{E6E7C0C5-07C9-44BB-A38C-930431948667}",
                             "details": {
-                                "name": "SliceInstantiationTicket*"
+                                "name": "Slice Instantiation Ticket*"
                             }
                         },
                         {
                             "typeid": "{E6E7C0C5-07C9-44BB-A38C-930431948667}",
                             "details": {
-                                "name": "const SliceInstantiationTicket&"
+                                "name": "const  Slice Instantiation Ticket&"
                             }
                         }
                     ],
@@ -42,31 +40,30 @@
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": "Boolean"
+                                "name": "Equal"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "ToString",
+                    "base": "ToString",
                     "context": "SliceInstantiationTicket",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke ToString"
+                        "tooltip": "When signaled, this will invoke To String"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after ToString is invoked"
+                        "tooltip": "Signaled after To String is invoked"
                     },
                     "details": {
-                        "name": "SliceInstantiationTicket::ToString",
-                        "category": "Gameplay"
+                        "name": "To String"
                     },
                     "params": [
                         {
                             "typeid": "{E6E7C0C5-07C9-44BB-A38C-930431948667}",
                             "details": {
-                                "name": "SliceInstantiationTicket*"
+                                "name": "Slice Instantiation Ticket*"
                             }
                         }
                     ],
@@ -74,31 +71,30 @@
                         {
                             "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
                             "details": {
-                                "name": "AZStd::basic_string<char, AZStd::char_traits<char>, allocator>"
+                                "name": "String"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "IsValid",
+                    "base": "IsValid",
                     "context": "SliceInstantiationTicket",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke IsValid"
+                        "tooltip": "When signaled, this will invoke Is Valid"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after IsValid is invoked"
+                        "tooltip": "Signaled after Is Valid is invoked"
                     },
                     "details": {
-                        "name": "SliceInstantiationTicket::IsValid",
-                        "category": "Gameplay"
+                        "name": "Is Valid"
                     },
                     "params": [
                         {
                             "typeid": "{E6E7C0C5-07C9-44BB-A38C-930431948667}",
                             "details": {
-                                "name": "SliceInstantiationTicket*"
+                                "name": "Slice Instantiation Ticket*"
                             }
                         }
                     ],
@@ -106,7 +102,7 @@
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": "Boolean"
+                                "name": "Is Valid"
                             }
                         }
                     ]

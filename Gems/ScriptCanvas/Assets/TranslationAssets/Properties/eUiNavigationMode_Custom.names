@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "eUiNavigationMode_Custom",
+            "base": "eUiNavigationMode_Custom",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "eUiNavigationMode_Custom::Getter",
-                "category": "Constants"
-            }
+                "name": "Custom",
+                "category": "Constants/UI/Navigation Mode"
+            },
+            "methods": [
+                {
+                    "base": "GeteUiNavigationMode_Custom",
+                    "details": {
+                        "name": "Custom"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

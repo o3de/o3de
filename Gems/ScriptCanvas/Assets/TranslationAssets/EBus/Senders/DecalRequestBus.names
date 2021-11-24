@@ -1,185 +1,186 @@
 {
     "entries": [
         {
-            "key": "DecalRequestBus",
+            "base": "DecalRequestBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "DecalRequestBus"
+                "name": "Decal",
+                "category": "Rendering"
             },
             "methods": [
                 {
-                    "key": "GetMaterial",
+                    "base": "GetMaterial",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetMaterial"
+                        "tooltip": "When signaled, this will invoke Get Material"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetMaterial is invoked"
+                        "tooltip": "Signaled after Get Material is invoked"
                     },
                     "details": {
-                        "name": "GetMaterial"
+                        "name": "Get Material"
                     },
                     "results": [
                         {
                             "typeid": "{652ED536-3402-439B-AEBE-4A5DBC554085}",
                             "details": {
-                                "name": "AssetId"
+                                "name": "Asset Id"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "GetSortKey",
+                    "base": "GetSortKey",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetSortKey"
+                        "tooltip": "When signaled, this will invoke Get Sort Key"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetSortKey is invoked"
+                        "tooltip": "Signaled after Get Sort Key is invoked"
                     },
                     "details": {
-                        "name": "GetSortKey"
+                        "name": "Get Sort Key"
                     },
                     "results": [
                         {
                             "typeid": "{72B9409A-7D1A-4831-9CFE-FCB3FADD3426}",
                             "details": {
-                                "name": "unsigned char"
+                                "name": "Sort Key"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "SetSortKey",
+                    "base": "SetSortKey",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetSortKey"
+                        "tooltip": "When signaled, this will invoke Set Sort Key"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetSortKey is invoked"
+                        "tooltip": "Signaled after Set Sort Key is invoked"
                     },
                     "details": {
-                        "name": "SetSortKey"
+                        "name": "Set Sort Key"
                     },
                     "params": [
                         {
                             "typeid": "{72B9409A-7D1A-4831-9CFE-FCB3FADD3426}",
                             "details": {
-                                "name": "unsigned char"
+                                "name": "Sort Key"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "SetMaterial",
+                    "base": "SetMaterial",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetMaterial"
+                        "tooltip": "When signaled, this will invoke Set Material"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetMaterial is invoked"
+                        "tooltip": "Signaled after Set Material is invoked"
                     },
                     "details": {
-                        "name": "SetMaterial"
+                        "name": "Set Material"
                     },
                     "params": [
                         {
                             "typeid": "{652ED536-3402-439B-AEBE-4A5DBC554085}",
                             "details": {
-                                "name": "AssetId"
+                                "name": "Asset Id"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "SetAttenuationAngle",
+                    "base": "SetAttenuationAngle",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetAttenuationAngle"
+                        "tooltip": "When signaled, this will invoke Set Attenuation Angle"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetAttenuationAngle is invoked"
+                        "tooltip": "Signaled after Set Attenuation Angle is invoked"
                     },
                     "details": {
-                        "name": "SetAttenuationAngle"
+                        "name": "Set Attenuation Angle"
                     },
                     "params": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "float"
+                                "name": "Attenuation Angle"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "GetOpacity",
+                    "base": "GetOpacity",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetOpacity"
+                        "tooltip": "When signaled, this will invoke Get Opacity"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetOpacity is invoked"
+                        "tooltip": "Signaled after Get Opacity is invoked"
                     },
                     "details": {
-                        "name": "GetOpacity"
+                        "name": "Get Opacity"
                     },
                     "results": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "float"
+                                "name": "Opacity"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "SetOpacity",
+                    "base": "SetOpacity",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetOpacity"
+                        "tooltip": "When signaled, this will invoke Set Opacity"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetOpacity is invoked"
+                        "tooltip": "Signaled after Set Opacity is invoked"
                     },
                     "details": {
-                        "name": "SetOpacity"
+                        "name": "Set Opacity"
                     },
                     "params": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "float"
+                                "name": "Opacity"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "GetAttenuationAngle",
+                    "base": "GetAttenuationAngle",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetAttenuationAngle"
+                        "tooltip": "When signaled, this will invoke Get Attenuation Angle"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetAttenuationAngle is invoked"
+                        "tooltip": "Signaled after Get Attenuation Angle is invoked"
                     },
                     "details": {
-                        "name": "GetAttenuationAngle"
+                        "name": "Get Attenuation Angle"
                     },
                     "results": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "float"
+                                "name": "Attenuation Angle"
                             }
                         }
                     ]

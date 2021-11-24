@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "BlendFactor_Zero",
+            "base": "BlendFactor_Zero",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "BlendFactor_Zero::Getter",
-                "category": "Constants"
-            }
+                "name": "Zero",
+                "category": "Constants/Blend Factor"
+            },
+            "methods": [
+                {
+                    "base": "GetBlendFactor_Zero",
+                    "details": {
+                        "name": "Get Zero"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

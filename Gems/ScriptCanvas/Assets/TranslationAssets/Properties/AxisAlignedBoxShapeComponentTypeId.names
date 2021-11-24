@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "AxisAlignedBoxShapeComponentTypeId",
+            "base": "AxisAlignedBoxShapeComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "AxisAlignedBoxShapeComponentTypeId::Getter",
-                "category": "Constants"
-            }
+                "name": "Axis Aligned Box Shape Component Type Id",
+                "category": "Constants/Editor"
+            },
+            "methods": [
+                {
+                    "base": "GetAxisAlignedBoxShapeComponentTypeId",
+                    "details": {
+                        "name": "Get Axis Aligned Box Shape Component Type Id"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}",
+                            "details": {
+                                "name": "AZ:: Uuid"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

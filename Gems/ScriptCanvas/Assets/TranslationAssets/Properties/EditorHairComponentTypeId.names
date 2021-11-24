@@ -1,0 +1,29 @@
+{
+    "entries": [
+        {
+            "base": "EditorHairComponentTypeId",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "Editor Hair Component Type Id",
+                "category": "Constants/Editor"
+            },
+            "methods": [
+                {
+                    "base": "GetEditorHairComponentTypeId",
+                    "details": {
+                        "name": "Get Editor Hair Component Type Id"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}",
+                            "details": {
+                                "name": "AZ:: Uuid"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

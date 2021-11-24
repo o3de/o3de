@@ -335,7 +335,7 @@ namespace ScriptCanvasEditor::Nodes
         AZStd::string updatedMethodName = methodName;
         if (isAccessor)
         {
-            if (methodNode->GetMethodType() == ScriptCanvas::MethodType::Getter)
+            if (methodNode->GetMethodType() == ScriptCanvas::MethodType::Getter || methodNode->GetMethodType() == ScriptCanvas::MethodType::Free)
             {
                 updatedMethodName = "Get";
             }
@@ -351,7 +351,7 @@ namespace ScriptCanvasEditor::Nodes
 
         if (methodDetails.m_subtitle.empty())
         {
-            methodDetails.m_subtitle = details.m_name;
+            methodDetails.m_subtitle = details.m_category;
         }
 
         // Add to the tooltip the C++ class for reference

@@ -1,68 +1,51 @@
 {
     "entries": [
         {
-            "key": "MaterialAssignmentId",
+            "base": "MaterialAssignmentId",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
-                "name": "MaterialAssignmentId"
+                "name": "Material Assignment Id",
+                "category": "Rendering"
             },
             "methods": [
                 {
-                    "key": "ToString",
+                    "base": "ToString",
                     "context": "MaterialAssignmentId",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke ToString"
+                        "tooltip": "When signaled, this will invoke To String"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after ToString is invoked"
+                        "tooltip": "Signaled after To String is invoked"
                     },
                     "details": {
-                        "name": "MaterialAssignmentId::ToString",
-                        "category": "Other"
+                        "name": "To String"
                     },
-                    "params": [
-                        {
-                            "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
-                            "details": {
-                                "name": "AZ::Render::MaterialAssignmentId*"
-                            }
-                        }
-                    ],
                     "results": [
                         {
                             "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
                             "details": {
-                                "name": "AZStd::basic_string<char, AZStd::char_traits<char>, allocator>"
+                                "name": "AZ Std::basic_string<char, AZ Std::char_traits<char>, allocator>"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "IsAssetOnly",
+                    "base": "IsAssetOnly",
                     "context": "MaterialAssignmentId",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke IsAssetOnly"
+                        "tooltip": "When signaled, this will invoke Is Asset Only"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after IsAssetOnly is invoked"
+                        "tooltip": "Signaled after Is Asset Only is invoked"
                     },
                     "details": {
-                        "name": "MaterialAssignmentId::IsAssetOnly",
-                        "category": "Other"
+                        "name": "Is Asset Only"
                     },
-                    "params": [
-                        {
-                            "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
-                            "details": {
-                                "name": "AZ::Render::MaterialAssignmentId*"
-                            }
-                        }
-                    ],
                     "results": [
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
@@ -73,28 +56,19 @@
                     ]
                 },
                 {
-                    "key": "IsSlotIdOnly",
+                    "base": "IsSlotIdOnly",
                     "context": "MaterialAssignmentId",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke IsSlotIdOnly"
+                        "tooltip": "When signaled, this will invoke Is Slot Id Only"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after IsSlotIdOnly is invoked"
+                        "tooltip": "Signaled after Is Slot Id Only is invoked"
                     },
                     "details": {
-                        "name": "MaterialAssignmentId::IsSlotIdOnly",
-                        "category": "Other"
+                        "name": "Is Slot Id Only"
                     },
-                    "params": [
-                        {
-                            "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
-                            "details": {
-                                "name": "AZ::Render::MaterialAssignmentId*"
-                            }
-                        }
-                    ],
                     "results": [
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
@@ -105,28 +79,19 @@
                     ]
                 },
                 {
-                    "key": "IsLodAndSlotId",
+                    "base": "IsLodAndSlotId",
                     "context": "MaterialAssignmentId",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke IsLodAndSlotId"
+                        "tooltip": "When signaled, this will invoke Is Lod And Slot Id"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after IsLodAndSlotId is invoked"
+                        "tooltip": "Signaled after Is Lod And Slot Id is invoked"
                     },
                     "details": {
-                        "name": "MaterialAssignmentId::IsLodAndSlotId",
-                        "category": "Other"
+                        "name": "Is Lod And Slot Id"
                     },
-                    "params": [
-                        {
-                            "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
-                            "details": {
-                                "name": "AZ::Render::MaterialAssignmentId*"
-                            }
-                        }
-                    ],
                     "results": [
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
@@ -137,28 +102,19 @@
                     ]
                 },
                 {
-                    "key": "IsDefault",
+                    "base": "IsDefault",
                     "context": "MaterialAssignmentId",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke IsDefault"
+                        "tooltip": "When signaled, this will invoke Is Default"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after IsDefault is invoked"
+                        "tooltip": "Signaled after Is Default is invoked"
                     },
                     "details": {
-                        "name": "MaterialAssignmentId::IsDefault",
-                        "category": "Other"
+                        "name": "Is Default"
                     },
-                    "params": [
-                        {
-                            "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
-                            "details": {
-                                "name": "AZ::Render::MaterialAssignmentId*"
-                            }
-                        }
-                    ],
                     "results": [
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
@@ -169,33 +125,108 @@
                     ]
                 },
                 {
-                    "key": "IsLodAndAsset",
+                    "base": "IsLodAndAsset",
                     "context": "MaterialAssignmentId",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke IsLodAndAsset"
+                        "tooltip": "When signaled, this will invoke Is Lod And Asset"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after IsLodAndAsset is invoked"
+                        "tooltip": "Signaled after Is Lod And Asset is invoked"
                     },
                     "details": {
-                        "name": "MaterialAssignmentId::IsLodAndAsset",
-                        "category": "Other"
+                        "name": "Is Lod And Asset"
                     },
-                    "params": [
-                        {
-                            "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
-                            "details": {
-                                "name": "AZ::Render::MaterialAssignmentId*"
-                            }
-                        }
-                    ],
                     "results": [
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
                                 "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetlodIndex",
+                    "details": {
+                        "name": "Getlod Index"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
+                            "details": {
+                                "name": ""
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{D6597933-47CD-4FC8-B911-63F3E2B0993A}",
+                            "details": {
+                                "name": ""
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetlodIndex",
+                    "details": {
+                        "name": "Setlod Index"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
+                            "details": {
+                                "name": ""
+                            }
+                        },
+                        {
+                            "typeid": "{D6597933-47CD-4FC8-B911-63F3E2B0993A}",
+                            "details": {
+                                "name": ""
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetmaterialSlotStableId",
+                    "details": {
+                        "name": "Getmaterial Slot Stable Id"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
+                            "details": {
+                                "name": ""
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
+                            "details": {
+                                "name": ""
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetmaterialSlotStableId",
+                    "details": {
+                        "name": "Setmaterial Slot Stable Id"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
+                            "details": {
+                                "name": ""
+                            }
+                        },
+                        {
+                            "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
+                            "details": {
+                                "name": ""
                             }
                         }
                     ]

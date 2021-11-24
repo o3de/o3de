@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "EditorCameraRequestBus",
+            "base": "EditorCameraRequestBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "SetViewFromEntityPerspective",
+                    "base": "SetViewFromEntityPerspective",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set View From Entity Perspective"
@@ -33,7 +33,7 @@
                     ]
                 },
                 {
-                    "key": "SetViewAndMovementLockFromEntityPerspective",
+                    "base": "SetViewAndMovementLockFromEntityPerspective",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set View And Movement Lock From Entity Perspective"
@@ -62,7 +62,7 @@
                     ]
                 },
                 {
-                    "key": "GetCurrentViewEntityId",
+                    "base": "GetCurrentViewEntityId",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Current View Entity Id"
@@ -85,7 +85,7 @@
                     ]
                 },
                 {
-                    "key": "GetActiveCameraPosition",
+                    "base": "GetActiveCameraPosition",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Active Camera Position"
