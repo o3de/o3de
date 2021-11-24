@@ -230,6 +230,9 @@
       "nightly-clean",
       "nightly-installer"
     ],
+    "PIPELINE_ENV":{
+      "NODE_LABEL":"linux-707531fc7-packaging"
+    },
     "COMMAND": "build_installer_linux.sh",
     "PARAMETERS": {
         "CONFIGURATION": "profile",
