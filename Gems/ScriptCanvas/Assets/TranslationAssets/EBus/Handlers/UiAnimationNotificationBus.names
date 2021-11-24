@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "UiAnimationNotificationBus",
+            "base": "UiAnimationNotificationBus",
             "context": "EBusHandler",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "OnUiAnimationEvent",
+                    "base": "OnUiAnimationEvent",
                     "details": {
                         "name": "On Animation Event",
                         "tooltip": "Executes when an animation event occurs"
@@ -33,7 +33,7 @@
                     ]
                 },
                 {
-                    "key": "OnUiTrackEvent",
+                    "base": "OnUiTrackEvent",
                     "details": {
                         "name": "OnUiTrackEvent"
                     },

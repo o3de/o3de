@@ -1,33 +1,32 @@
 {
     "entries": [
         {
-            "key": "PhysicsScene",
+            "base": "PhysicsScene",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
-                "name": "PhysicsScene"
+                "name": "Physics Scene"
             },
             "methods": [
                 {
-                    "key": "GetOnGravityChangeEvent",
+                    "base": "GetOnGravityChangeEvent",
                     "context": "PhysicsScene",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetOnGravityChangeEvent"
+                        "tooltip": "When signaled, this will invoke Get On Gravity Change Event"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetOnGravityChangeEvent is invoked"
+                        "tooltip": "Signaled after Get On Gravity Change Event is invoked"
                     },
                     "details": {
-                        "name": "PhysicsScene::GetOnGravityChangeEvent",
-                        "category": "Other"
+                        "name": "Get On Gravity Change Event"
                     },
                     "params": [
                         {
                             "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
                             "details": {
-                                "name": "const AZStd::basic_string<char, AZStd::char_traits<char>, alloc"
+                                "name": "Scene Name"
                             }
                         }
                     ],
@@ -35,31 +34,30 @@
                         {
                             "typeid": "{4985DFB0-7CD9-5B28-980B-BA2C701BE3D6}",
                             "details": {
-                                "name": "Event<tuple<Crc32 AZ::s8 > const Vector3& >*"
+                                "name": "Gravity Change Event"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "QueryScene",
+                    "base": "QueryScene",
                     "context": "PhysicsScene",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke QueryScene"
+                        "tooltip": "When signaled, this will invoke Query Scene"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after QueryScene is invoked"
+                        "tooltip": "Signaled after Query Scene is invoked"
                     },
                     "details": {
-                        "name": "PhysicsScene::QueryScene",
-                        "category": "Other"
+                        "name": "Query Scene"
                     },
                     "params": [
                         {
                             "typeid": "{52BD8163-BDC4-4B09-ABB2-11DD1F601FFD}",
                             "details": {
-                                "name": "Scene*"
+                                "name": "Scene"
                             }
                         },
                         {
@@ -74,7 +72,7 @@
                         {
                             "typeid": "{BAFCC4E7-A06B-4909-B2AE-C89D9E84FE4E}",
                             "details": {
-                                "name": "SceneQueryHits"
+                                "name": "Scene Query Hits"
                             }
                         }
                     ]

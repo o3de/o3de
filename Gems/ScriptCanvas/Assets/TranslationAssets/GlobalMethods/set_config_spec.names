@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "set_config_spec",
+            "base": "set_config_spec",
             "context": "Method",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "set_config_spec",
+                    "base": "set_config_spec",
                     "context": "Global",
                     "entry": {
                         "name": "In",

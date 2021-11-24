@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "SystemConfigPlatform_Provo",
+            "base": "SystemConfigPlatform_Provo",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "SystemConfigPlatform_Provo::Getter",
-                "category": "Constants"
-            }
+                "name": "Provo",
+                "category": "Constants/System Configuration"
+            },
+            "methods": [
+                {
+                    "base": "GetSystemConfigPlatform_Provo",
+                    "details": {
+                        "name": "Provo"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

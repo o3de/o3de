@@ -24,7 +24,8 @@ namespace O3DE::ProjectManager
     QT_FORWARD_DECLARE_CLASS(GemCatalogScreen)
     QT_FORWARD_DECLARE_CLASS(GemRepoScreen)
 
-    class UpdateProjectCtrl : public ScreenWidget
+    class UpdateProjectCtrl
+        : public ScreenWidget
     {
         Q_OBJECT
     public:
@@ -32,7 +33,8 @@ namespace O3DE::ProjectManager
         ~UpdateProjectCtrl() = default;
         ProjectManagerScreen GetScreenEnum() override;
 
-    protected:
+        bool ContainsScreen(ProjectManagerScreen screen) override;
+        void GoToScreen(ProjectManagerScreen screen) override;
         void NotifyCurrentScreen() override;
 
     protected slots:

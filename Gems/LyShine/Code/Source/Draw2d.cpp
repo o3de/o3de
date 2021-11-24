@@ -497,7 +497,7 @@ void CDraw2d::SetSortKey(int64_t key)
 AZ::Vector2 CDraw2d::Align(AZ::Vector2 position, AZ::Vector2 size,
     HAlign horizontalAlignment, VAlign verticalAlignment)
 {
-    AZ::Vector2 result;
+    AZ::Vector2 result = AZ::Vector2::CreateZero();
     switch (horizontalAlignment)
     {
     case HAlign::Left:

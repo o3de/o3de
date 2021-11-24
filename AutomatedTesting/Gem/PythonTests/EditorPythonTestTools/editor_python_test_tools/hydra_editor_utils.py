@@ -57,6 +57,10 @@ def add_level_component(component_name):
                                                                  level_component_list, entity.EntityType().Level)
     level_component_outcome = editor.EditorLevelComponentAPIBus(bus.Broadcast, 'AddComponentsOfType',
                                                                 [level_component_type_ids_list[0]])
+    if not level_component_outcome.IsSuccess():
+        print('Failed to add {} level component'.format(component_name))
+        return None
+
     level_component = level_component_outcome.GetValue()[0]
     return level_component
 

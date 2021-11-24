@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "ShadowmapSize_256",
+            "base": "ShadowmapSize_256",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "ShadowmapSize_256::Getter",
-                "category": "Constants"
-            }
+                "name": "256",
+                "category": "Constants/Shadowmap/Size"
+            },
+            "methods": [
+                {
+                    "base": "GetShadowmapSize_256",
+                    "details": {
+                        "name": "256"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
+                            "details": {
+                                "name": "unsigned int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

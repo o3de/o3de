@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "Tag Helper",
+            "base": "Tag Helper",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
@@ -9,7 +9,7 @@
             },
             "methods": [
                 {
-                    "key": "GetEntitiesbyTag",
+                    "base": "GetEntitiesbyTag",
                     "context": "Tag Helper",
                     "entry": {
                         "name": "In",

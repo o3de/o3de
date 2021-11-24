@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "ShadowFilterMethod_PCF",
+            "base": "ShadowFilterMethod_PCF",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "ShadowFilterMethod_PCF::Getter",
-                "category": "Constants"
-            }
+                "name": "PCF",
+                "category": "Constants/Shadowmap/Filter"
+            },
+            "methods": [
+                {
+                    "base": "GetShadowFilterMethod_PCF",
+                    "details": {
+                        "name": "PCF"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
+                            "details": {
+                                "name": "unsigned int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "MathCrc32_VM",
+            "base": "MathCrc32_VM",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
@@ -9,7 +9,7 @@
             },
             "methods": [
                 {
-                    "key": "FromString",
+                    "base": "FromString",
                     "context": "MathCrc32_VM",
                     "entry": {
                         "name": "In",

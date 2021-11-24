@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "get_current_level_path",
+            "base": "get_current_level_path",
             "context": "Method",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "get_current_level_path",
+                    "base": "get_current_level_path",
                     "context": "Global",
                     "entry": {
                         "name": "In",

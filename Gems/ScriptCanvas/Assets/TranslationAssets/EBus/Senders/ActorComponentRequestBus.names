@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "ActorComponentRequestBus",
+            "base": "ActorComponentRequestBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetRenderCharacter",
+                    "base": "GetRenderCharacter",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Render Character"
@@ -32,7 +32,7 @@
                     ]
                 },
                 {
-                    "key": "DetachFromEntity",
+                    "base": "DetachFromEntity",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Detach From Entity"
@@ -46,7 +46,7 @@
                     }
                 },
                 {
-                    "key": "GetRenderActorVisible",
+                    "base": "GetRenderActorVisible",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Render Actor Visible"
@@ -68,7 +68,7 @@
                     ]
                 },
                 {
-                    "key": "AttachToEntity",
+                    "base": "AttachToEntity",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Attach To Entity"
@@ -99,7 +99,7 @@
                     ]
                 },
                 {
-                    "key": "SetRenderCharacter",
+                    "base": "SetRenderCharacter",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Render Character"
@@ -121,7 +121,7 @@
                     ]
                 },
                 {
-                    "key": "GetJointTransform",
+                    "base": "GetJointTransform",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Joint Transform"
@@ -158,7 +158,7 @@
                     ]
                 },
                 {
-                    "key": "GetJointIndexByName",
+                    "base": "GetJointIndexByName",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Joint Index By Name"

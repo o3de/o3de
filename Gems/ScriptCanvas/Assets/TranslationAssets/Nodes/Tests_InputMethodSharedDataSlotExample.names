@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "{32B1B2DB-59E6-88D7-14A3-9C5366A39A81}",
+            "base": "{32B1B2DB-59E6-88D7-14A3-9C5366A39A81}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
@@ -12,67 +12,67 @@
             },
             "slots": [
                 {
-                    "key": "Input_Append Hello",
+                    "base": "Input_Append Hello",
                     "details": {
                         "name": "Append Hello"
                     }
                 },
                 {
-                    "key": "DataInput_str",
+                    "base": "DataInput_str",
                     "details": {
                         "name": "str"
                     }
                 },
                 {
-                    "key": "Output_On Append Hello",
+                    "base": "Output_On Append Hello",
                     "details": {
                         "name": "On Append Hello"
                     }
                 },
                 {
-                    "key": "DataOutput_Output",
+                    "base": "DataOutput_Output",
                     "details": {
                         "name": "Output"
                     }
                 },
                 {
-                    "key": "Input_Concatenate Two",
+                    "base": "Input_Concatenate Two",
                     "details": {
                         "name": "Concatenate Two"
                     }
                 },
                 {
-                    "key": "DataInput_a",
+                    "base": "DataInput_a",
                     "details": {
                         "name": "a"
                     }
                 },
                 {
-                    "key": "DataInput_b",
+                    "base": "DataInput_b",
                     "details": {
                         "name": "b"
                     }
                 },
                 {
-                    "key": "Output_On Concatenate Two",
+                    "base": "Output_On Concatenate Two",
                     "details": {
                         "name": "On Concatenate Two"
                     }
                 },
                 {
-                    "key": "Input_Concatenate Three",
+                    "base": "Input_Concatenate Three",
                     "details": {
                         "name": "Concatenate Three"
                     }
                 },
                 {
-                    "key": "DataInput_c",
+                    "base": "DataInput_c",
                     "details": {
                         "name": "c"
                     }
                 },
                 {
-                    "key": "Output_On Concatenate Three",
+                    "base": "Output_On Concatenate Three",
                     "details": {
                         "name": "On Concatenate Three"
                     }

@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "SystemConfigPlatform_Mac",
+            "base": "SystemConfigPlatform_Mac",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "SystemConfigPlatform_Mac::Getter",
-                "category": "Constants"
-            }
+                "name": "Mac",
+                "category": "Constants/System Configuration"
+            },
+            "methods": [
+                {
+                    "base": "GetSystemConfigPlatform_Mac",
+                    "details": {
+                        "name": "Mac"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

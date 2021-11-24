@@ -84,7 +84,7 @@ static constexpr const char TEST_VALID_EMPTY_ACCOUNTID_RESOURCE_MAPPING_CONFIG_F
     },
     "AccountId": "",
     "Region": "us-west-2",
-    "Version": "1.0.0"
+    "Version": "1.1.0"
 })";
 
 static constexpr const char TEST_INVALID_RESOURCE_MAPPING_CONFIG_FILE[] =
@@ -121,7 +121,7 @@ public:
 
     void SetUp() override
     {
-        AWSCoreFixture::SetUp();
+        AWSCoreFixture::SetUpFixture(false);
 
         m_normalizedSourceProjectFolder = AZStd::string::format("%s/%s%s/", AZ::Test::GetCurrentExecutablePath().c_str(),
             "AWSResourceMappingManager", AZ::Uuid::CreateRandom().ToString<AZStd::string>(false, false).c_str());
@@ -142,7 +142,7 @@ public:
         m_resourceMappingManager->DeactivateManager();
         m_resourceMappingManager.reset();
 
-        AWSCoreFixture::TearDown();
+        AWSCoreFixture::TearDownFixture(false);
     }
 
     // AWSCoreInternalRequestBus interface implementation

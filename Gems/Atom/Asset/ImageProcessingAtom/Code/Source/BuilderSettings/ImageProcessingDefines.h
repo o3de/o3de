@@ -39,7 +39,8 @@ namespace ImageProcessingAtom
 #define STRING_OUTCOME_ERROR(error) AZ::Failure(AZStd::string(error))
 
     // Common typedefs (with dependent forward-declarations)
-    typedef AZStd::string PlatformName, FileMask;
+    typedef AZStd::string PlatformName;
+    typedef AZStd::string FileMask;
     typedef AZ::Name PresetName;
     typedef AZStd::vector<PlatformName> PlatformNameVector;
     typedef AZStd::list<PlatformName> PlatformNameList;

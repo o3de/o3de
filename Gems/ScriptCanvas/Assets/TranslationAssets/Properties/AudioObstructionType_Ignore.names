@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "AudioObstructionType_Ignore",
+            "base": "AudioObstructionType_Ignore",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "AudioObstructionType_Ignore::Getter",
-                "category": "Constants"
-            }
+                "name": " Ignore",
+                "category": "Constants/Audio Obstruction"
+            },
+            "methods": [
+                {
+                    "base": "GetAudioObstructionType_Ignore",
+                    "details": {
+                        "name": "Ignore"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
+                            "details": {
+                                "name": "unsigned int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

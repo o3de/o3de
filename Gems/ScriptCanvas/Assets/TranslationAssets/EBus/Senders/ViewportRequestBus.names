@@ -1,25 +1,26 @@
 {
     "entries": [
         {
-            "key": "ViewportRequestBus",
+            "base": "ViewportRequestBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "ViewportRequestBus"
+                "name": "Viewport",
+                "category": "Rendering"
             },
             "methods": [
                 {
-                    "key": "SetCameraTransform",
+                    "base": "SetCameraTransform",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetCameraTransform"
+                        "tooltip": "When signaled, this will invoke Set Camera Transform"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetCameraTransform is invoked"
+                        "tooltip": "Signaled after Set Camera Transform is invoked"
                     },
                     "details": {
-                        "name": "SetCameraTransform"
+                        "name": "Set Camera Transform"
                     },
                     "params": [
                         {
@@ -31,105 +32,105 @@
                     ]
                 },
                 {
-                    "key": "GetCameraProjectionMatrix",
+                    "base": "GetCameraProjectionMatrix",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetCameraProjectionMatrix"
+                        "tooltip": "When signaled, this will invoke Get Camera Projection Matrix"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetCameraProjectionMatrix is invoked"
+                        "tooltip": "Signaled after Get Camera Projection Matrix is invoked"
                     },
                     "details": {
-                        "name": "GetCameraProjectionMatrix"
+                        "name": "Get Camera Projection Matrix"
                     },
                     "results": [
                         {
                             "typeid": "{157193C7-B673-4A2B-8B43-5681DCC3DEC3}",
                             "details": {
-                                "name": "Matrix4x4"
+                                "name": "Matrix 4x 4"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "SetCameraViewMatrix",
+                    "base": "SetCameraViewMatrix",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetCameraViewMatrix"
+                        "tooltip": "When signaled, this will invoke Set Camera View Matrix"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetCameraViewMatrix is invoked"
+                        "tooltip": "Signaled after Set Camera View Matrix is invoked"
                     },
                     "details": {
-                        "name": "SetCameraViewMatrix"
+                        "name": "Set Camera View Matrix"
                     },
                     "params": [
                         {
                             "typeid": "{157193C7-B673-4A2B-8B43-5681DCC3DEC3}",
                             "details": {
-                                "name": "Matrix4x4"
+                                "name": "Matrix 4x 4"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "GetCameraViewMatrix",
+                    "base": "GetCameraViewMatrix",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetCameraViewMatrix"
+                        "tooltip": "When signaled, this will invoke Get Camera View Matrix"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetCameraViewMatrix is invoked"
+                        "tooltip": "Signaled after Get Camera View Matrix is invoked"
                     },
                     "details": {
-                        "name": "GetCameraViewMatrix"
+                        "name": "Get Camera View Matrix"
                     },
                     "results": [
                         {
                             "typeid": "{157193C7-B673-4A2B-8B43-5681DCC3DEC3}",
                             "details": {
-                                "name": "Matrix4x4"
+                                "name": "Matrix 4x 4"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "SetCameraProjectionMatrix",
+                    "base": "SetCameraProjectionMatrix",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetCameraProjectionMatrix"
+                        "tooltip": "When signaled, this will invoke Set Camera Projection Matrix"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetCameraProjectionMatrix is invoked"
+                        "tooltip": "Signaled after Set Camera Projection Matrix is invoked"
                     },
                     "details": {
-                        "name": "SetCameraProjectionMatrix"
+                        "name": "Set Camera Projection Matrix"
                     },
                     "params": [
                         {
                             "typeid": "{157193C7-B673-4A2B-8B43-5681DCC3DEC3}",
                             "details": {
-                                "name": "Matrix4x4"
+                                "name": "Matrix 4x 4"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "GetCameraTransform",
+                    "base": "GetCameraTransform",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetCameraTransform"
+                        "tooltip": "When signaled, this will invoke Get Camera Transform"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetCameraTransform is invoked"
+                        "tooltip": "Signaled after Get Camera Transform is invoked"
                     },
                     "details": {
-                        "name": "GetCameraTransform"
+                        "name": "Get Camera Transform"
                     },
                     "results": [
                         {

@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "Scene",
+            "base": "Scene",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
@@ -9,7 +9,7 @@
             },
             "methods": [
                 {
-                    "key": "GetOriginalSceneOrientation",
+                    "base": "GetOriginalSceneOrientation",
                     "context": "Scene",
                     "entry": {
                         "name": "In",

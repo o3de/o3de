@@ -85,6 +85,19 @@ namespace AzFramework
     //! Extracts Euler angles (orientation) and translation from the transform and writes the values to the camera.
     void UpdateCameraFromTransform(Camera& camera, const AZ::Transform& transform);
 
+    //! Writes the translation value and Euler angles to the camera.
+    void UpdateCameraFromTranslationAndRotation(Camera& camera, const AZ::Vector3& translation, const AZ::Vector3& eulerAngles);
+
+    //! Returns the time ('t') input value to use with SmoothValue.
+    //! Useful if it is to be reused for multiple calls to SmoothValue.
+    float SmoothValueTime(float smoothness, float deltaTime);
+
+    // Smoothly interpolate a value from current to target according to a smoothing parameter.
+    float SmoothValue(float target, float current, float smoothness, float deltaTime);
+
+    // Overload of SmoothValue that takes time ('t') value directly.
+    float SmoothValue(float target, float current, float time);
+
     //! Generic motion type.
     template<typename MotionTag>
     struct MotionEvent
@@ -334,6 +347,7 @@ namespace AzFramework
         AZStd::function<float()> m_rotateSpeedFn;
         AZStd::function<bool()> m_invertPitchFn;
         AZStd::function<bool()> m_invertYawFn;
+        AZStd::function<bool()> m_constrainPitch;
 
     private:
         InputChannelId m_rotateChannelId; //!< Input channel to begin the rotate camera input.

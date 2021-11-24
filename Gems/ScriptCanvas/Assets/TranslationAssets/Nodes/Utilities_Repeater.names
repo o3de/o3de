@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "{0A38EDCA-0571-48F0-9199-F6168C1EAAF0}",
+            "base": "{0A38EDCA-0571-48F0-9199-F6168C1EAAF0}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
@@ -12,34 +12,34 @@
             },
             "slots": [
                 {
-                    "key": "DataInput_Repetitions",
+                    "base": "DataInput_Repetitions",
                     "details": {
                         "name": "Repetitions"
                     }
                 },
                 {
-                    "key": "Input_In",
+                    "base": "Input_In",
                     "details": {
                         "name": "In",
                         "tooltip": "Input signal"
                     }
                 },
                 {
-                    "key": "Output_Complete",
+                    "base": "Output_Complete",
                     "details": {
                         "name": "Complete",
                         "tooltip": "Signaled upon node exit"
                     }
                 },
                 {
-                    "key": "Output_Action",
+                    "base": "Output_Action",
                     "details": {
                         "name": "Action",
                         "tooltip": "The signal that will be repeated"
                     }
                 },
                 {
-                    "key": "DataInput_Interval",
+                    "base": "DataInput_Interval",
                     "details": {
                         "name": "Interval"
                     }

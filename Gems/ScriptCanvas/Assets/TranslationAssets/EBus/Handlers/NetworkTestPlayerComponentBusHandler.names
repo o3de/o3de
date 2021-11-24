@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "NetworkTestPlayerComponentBusHandler",
+            "base": "NetworkTestPlayerComponentBusHandler",
             "context": "EBusHandler",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "CreateInput",
+                    "base": "CreateInput",
                     "details": {
                         "name": "Create Input"
                     },
@@ -32,7 +32,7 @@
                     ]
                 },
                 {
-                    "key": "ProcessInput",
+                    "base": "ProcessInput",
                     "details": {
                         "name": "Process Input"
                     },

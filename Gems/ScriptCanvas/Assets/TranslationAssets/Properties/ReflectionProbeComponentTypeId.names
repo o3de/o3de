@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "ReflectionProbeComponentTypeId",
+            "base": "ReflectionProbeComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "ReflectionProbeComponentTypeId::Getter",
-                "category": "Constants"
-            }
+                "name": "Reflection Probe Component Type Id",
+                "category": "Constants/Editor"
+            },
+            "methods": [
+                {
+                    "base": "GetReflectionProbeComponentTypeId",
+                    "details": {
+                        "name": "Get Reflection Probe Component Type Id"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}",
+                            "details": {
+                                "name": "AZ:: Uuid"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

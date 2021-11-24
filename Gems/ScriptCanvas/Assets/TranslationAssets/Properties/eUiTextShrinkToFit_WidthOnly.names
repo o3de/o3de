@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "eUiTextShrinkToFit_WidthOnly",
+            "base": "eUiTextShrinkToFit_WidthOnly",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "eUiTextShrinkToFit_WidthOnly::Getter",
-                "category": "Constants"
-            }
+                "name": "Width Only",
+                "category": "Constants/UI/Text Shrink To Fit"
+            },
+            "methods": [
+                {
+                    "base": "GeteUiTextShrinkToFit_WidthOnly",
+                    "details": {
+                        "name": "Width Only"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

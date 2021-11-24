@@ -4932,7 +4932,7 @@ AZStd::string UiTextComponent::GetLocalizedText([[maybe_unused]] const AZStd::st
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 AZ::Vector2 UiTextComponent::CalculateAlignedPositionWithYOffset(const UiTransformInterface::RectPoints& points)
 {
-    AZ::Vector2 pos;
+    AZ::Vector2 pos = AZ::Vector2::CreateZero();
     const DrawBatchLines& drawBatchLines = GetDrawBatchLines();
     size_t numLinesOfText = drawBatchLines.batchLines.size();
 

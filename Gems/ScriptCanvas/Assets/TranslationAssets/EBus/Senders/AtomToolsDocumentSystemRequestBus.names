@@ -1,31 +1,32 @@
 {
     "entries": [
         {
-            "key": "AtomToolsDocumentSystemRequestBus",
+            "base": "AtomToolsDocumentSystemRequestBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "AtomToolsDocumentSystemRequestBus"
+                "name": "Document",
+                "category": "Atom Tools"
             },
             "methods": [
                 {
-                    "key": "SaveDocument",
+                    "base": "SaveDocument",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SaveDocument"
+                        "tooltip": "When signaled, this will invoke Save Document"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SaveDocument is invoked"
+                        "tooltip": "Signaled after Save Document is invoked"
                     },
                     "details": {
-                        "name": "SaveDocument"
+                        "name": "Save Document"
                     },
                     "params": [
                         {
                             "typeid": "{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}",
                             "details": {
-                                "name": "AZ::Uuid"
+                                "name": "Document Id"
                             }
                         }
                     ],
@@ -33,35 +34,35 @@
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": "bool"
+                                "name": "Success"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "SaveDocumentAsChild",
+                    "base": "SaveDocumentAsChild",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SaveDocumentAsChild"
+                        "tooltip": "When signaled, this will invoke Save Document As Child"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SaveDocumentAsChild is invoked"
+                        "tooltip": "Signaled after Save Document As Child is invoked"
                     },
                     "details": {
-                        "name": "SaveDocumentAsChild"
+                        "name": "Save Document As Child"
                     },
                     "params": [
                         {
                             "typeid": "{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}",
                             "details": {
-                                "name": "AZ::Uuid"
+                                "name": "Document Id"
                             }
                         },
                         {
                             "typeid": "{7114E998-A8B4-519B-9342-A86D1587B4F7}",
                             "details": {
-                                "name": ""
+                                "name": "Target Path"
                             }
                         }
                     ],
@@ -69,29 +70,29 @@
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": "bool"
+                                "name": "Success"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "OpenDocument",
+                    "base": "OpenDocument",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke OpenDocument"
+                        "tooltip": "When signaled, this will invoke Open Document"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after OpenDocument is invoked"
+                        "tooltip": "Signaled after Open Document is invoked"
                     },
                     "details": {
-                        "name": "OpenDocument"
+                        "name": "Open Document"
                     },
                     "params": [
                         {
                             "typeid": "{7114E998-A8B4-519B-9342-A86D1587B4F7}",
                             "details": {
-                                "name": ""
+                                "name": "Source Path"
                             }
                         }
                     ],
@@ -99,35 +100,35 @@
                         {
                             "typeid": "{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}",
                             "details": {
-                                "name": "AZ::Uuid"
+                                "name": "Document Id"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "CreateDocumentFromFile",
+                    "base": "CreateDocumentFromFile",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke CreateDocumentFromFile"
+                        "tooltip": "When signaled, this will invoke Create Document From File"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after CreateDocumentFromFile is invoked"
+                        "tooltip": "Signaled after Create Document From File is invoked"
                     },
                     "details": {
-                        "name": "CreateDocumentFromFile"
+                        "name": "Create Document From File"
                     },
                     "params": [
                         {
                             "typeid": "{7114E998-A8B4-519B-9342-A86D1587B4F7}",
                             "details": {
-                                "name": ""
+                                "name": "Source Path"
                             }
                         },
                         {
                             "typeid": "{7114E998-A8B4-519B-9342-A86D1587B4F7}",
                             "details": {
-                                "name": ""
+                                "name": "Target Path"
                             }
                         }
                     ],
@@ -135,29 +136,29 @@
                         {
                             "typeid": "{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}",
                             "details": {
-                                "name": "AZ::Uuid"
+                                "name": "Document Id"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "CloseDocument",
+                    "base": "CloseDocument",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke CloseDocument"
+                        "tooltip": "When signaled, this will invoke Close Document"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after CloseDocument is invoked"
+                        "tooltip": "Signaled after Close Document is invoked"
                     },
                     "details": {
-                        "name": "CloseDocument"
+                        "name": "Close Document"
                     },
                     "params": [
                         {
                             "typeid": "{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}",
                             "details": {
-                                "name": "AZ::Uuid"
+                                "name": "Document Id"
                             }
                         }
                     ],
@@ -165,51 +166,51 @@
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": "bool"
+                                "name": "Success"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "CloseAllDocuments",
+                    "base": "CloseAllDocuments",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke CloseAllDocuments"
+                        "tooltip": "When signaled, this will invoke Close All Documents"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after CloseAllDocuments is invoked"
+                        "tooltip": "Signaled after Close All Documents is invoked"
                     },
                     "details": {
-                        "name": "CloseAllDocuments"
+                        "name": "Close All Documents"
                     },
                     "results": [
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": "bool"
+                                "name": "Success"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "CloseAllDocumentsExcept",
+                    "base": "CloseAllDocumentsExcept",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke CloseAllDocumentsExcept"
+                        "tooltip": "When signaled, this will invoke Close All Documents Except"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after CloseAllDocumentsExcept is invoked"
+                        "tooltip": "Signaled after Close All Documents Except is invoked"
                     },
                     "details": {
-                        "name": "CloseAllDocumentsExcept"
+                        "name": "Close All Documents Except"
                     },
                     "params": [
                         {
                             "typeid": "{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}",
                             "details": {
-                                "name": "AZ::Uuid"
+                                "name": "Document Id"
                             }
                         }
                     ],
@@ -217,51 +218,51 @@
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": "bool"
+                                "name": "Success"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "CreateDocument",
+                    "base": "CreateDocument",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke CreateDocument"
+                        "tooltip": "When signaled, this will invoke Create Document"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after CreateDocument is invoked"
+                        "tooltip": "Signaled after Create Document is invoked"
                     },
                     "details": {
-                        "name": "CreateDocument"
+                        "name": "Create Document"
                     },
                     "results": [
                         {
                             "typeid": "{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}",
                             "details": {
-                                "name": "AZ::Uuid"
+                                "name": "Document Id"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "DestroyDocument",
+                    "base": "DestroyDocument",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke DestroyDocument"
+                        "tooltip": "When signaled, this will invoke Destroy Document"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after DestroyDocument is invoked"
+                        "tooltip": "Signaled after Destroy Document is invoked"
                     },
                     "details": {
-                        "name": "DestroyDocument"
+                        "name": "Destroy Document"
                     },
                     "params": [
                         {
                             "typeid": "{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}",
                             "details": {
-                                "name": "AZ::Uuid"
+                                "name": "Document Id"
                             }
                         }
                     ],
@@ -269,35 +270,35 @@
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": "bool"
+                                "name": "Success"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "SaveDocumentAsCopy",
+                    "base": "SaveDocumentAsCopy",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SaveDocumentAsCopy"
+                        "tooltip": "When signaled, this will invoke Save Document As Copy"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SaveDocumentAsCopy is invoked"
+                        "tooltip": "Signaled after Save Document As Copy is invoked"
                     },
                     "details": {
-                        "name": "SaveDocumentAsCopy"
+                        "name": "Save Document As Copy"
                     },
                     "params": [
                         {
                             "typeid": "{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}",
                             "details": {
-                                "name": "AZ::Uuid"
+                                "name": "Document Id"
                             }
                         },
                         {
                             "typeid": "{7114E998-A8B4-519B-9342-A86D1587B4F7}",
                             "details": {
-                                "name": ""
+                                "name": "Target Path"
                             }
                         }
                     ],
@@ -305,29 +306,29 @@
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": "bool"
+                                "name": "Success"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "SaveAllDocuments",
+                    "base": "SaveAllDocuments",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SaveAllDocuments"
+                        "tooltip": "When signaled, this will invoke Save All Documents"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SaveAllDocuments is invoked"
+                        "tooltip": "Signaled after Save All Documents is invoked"
                     },
                     "details": {
-                        "name": "SaveAllDocuments"
+                        "name": "Save All Documents"
                     },
                     "results": [
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": "bool"
+                                "name": "Success"
                             }
                         }
                     ]

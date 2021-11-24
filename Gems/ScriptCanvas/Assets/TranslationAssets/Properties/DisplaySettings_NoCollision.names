@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "DisplaySettings_NoCollision",
+            "base": "DisplaySettings_NoCollision",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "DisplaySettings_NoCollision::Getter",
-                "category": "Constants"
-            }
+                "name": "No Collision",
+                "category": "Constants/Display Settings"
+            },
+            "methods": [
+                {
+                    "base": "GetDisplaySettings_NoCollision",
+                    "details": {
+                        "name": "Get No Collision"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

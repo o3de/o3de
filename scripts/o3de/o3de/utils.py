@@ -125,7 +125,8 @@ def download_file(parsed_uri, download_path: pathlib.Path, force_overwrite: bool
     """
     if download_path.is_file():
         if not force_overwrite:
-            logger.warn(f'File already downloaded to {download_path}.')
+            logger.error(f'File already downloaded to {download_path} and force_overwrite is not set.')
+            return 1
         else:
             try:
                 os.unlink(download_path)
@@ -134,20 +135,25 @@ def download_file(parsed_uri, download_path: pathlib.Path, force_overwrite: bool
                 return 1
 
     if parsed_uri.scheme in ['http', 'https', 'ftp', 'ftps']:
-        with urllib.request.urlopen(parsed_uri.geturl()) as s:
-            download_file_size = 0
-            try:
-                download_file_size = s.headers['content-length']
-            except KeyError:
-                pass
-            def download_progress(downloaded_bytes):
-                if download_progress_callback:
-                    return download_progress_callback(int(downloaded_bytes), int(download_file_size))
-                return False
-            with download_path.open('wb') as f:
-                download_cancelled = copyfileobj(s, f, download_progress)
-                if download_cancelled:
-                    return 1
+        try:
+            with urllib.request.urlopen(parsed_uri.geturl()) as s:
+                download_file_size = 0
+                try:
+                    download_file_size = s.headers['content-length']
+                except KeyError:
+                    pass
+                def download_progress(downloaded_bytes):
+                    if download_progress_callback:
+                        return download_progress_callback(int(downloaded_bytes), int(download_file_size))
+                    return False
+                with download_path.open('wb') as f:
+                    download_cancelled = copyfileobj(s, f, download_progress)
+                    if download_cancelled:
+                        logger.info(f'Download of file to {download_path} cancelled.')
+                        return 1
+        except urllib.error.HTTPError as e:
+            logger.error(f'HTTP Error {e.code} opening {parsed_uri.geturl()}')
+            return 1
     else:
         origin_file = pathlib.Path(parsed_uri.geturl()).resolve()
         if not origin_file.is_file():
@@ -167,7 +173,7 @@ def download_zip_file(parsed_uri, download_zip_path: pathlib.Path, force_overwri
         return download_file_result
 
     if not zipfile.is_zipfile(download_zip_path):
-        logger.error(f"File zip {download_zip_path} is invalid.")
+        logger.error(f"File zip {download_zip_path} is invalid. Try re-downloading the file.")
         download_zip_path.unlink()
         return 1
 

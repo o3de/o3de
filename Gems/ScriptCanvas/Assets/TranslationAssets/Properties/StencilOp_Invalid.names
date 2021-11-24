@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "StencilOp_Invalid",
+            "base": "StencilOp_Invalid",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "StencilOp_Invalid::Getter",
-                "category": "Constants"
-            }
+                "name": "Invalid",
+                "category": "Constants/Stencil Op"
+            },
+            "methods": [
+                {
+                    "base": "GetStencilOp_Invalid",
+                    "details": {
+                        "name": "Invalid"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

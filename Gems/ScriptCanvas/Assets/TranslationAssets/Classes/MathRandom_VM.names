@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "MathRandom_VM",
+            "base": "MathRandom_VM",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
@@ -9,7 +9,7 @@
             },
             "methods": [
                 {
-                    "key": "RandomPointOnSphere",
+                    "base": "RandomPointOnSphere",
                     "context": "MathRandom_VM",
                     "entry": {
                         "name": "In",
@@ -41,7 +41,7 @@
                     ]
                 },
                 {
-                    "key": "RandomPointInCircle",
+                    "base": "RandomPointInCircle",
                     "context": "MathRandom_VM",
                     "entry": {
                         "name": "In",
@@ -73,7 +73,7 @@
                     ]
                 },
                 {
-                    "key": "RandomPointInSquare",
+                    "base": "RandomPointInSquare",
                     "context": "MathRandom_VM",
                     "entry": {
                         "name": "In",
@@ -105,7 +105,7 @@
                     ]
                 },
                 {
-                    "key": "RandomUnitVector2",
+                    "base": "RandomUnitVector2",
                     "context": "MathRandom_VM",
                     "entry": {
                         "name": "In",
@@ -129,7 +129,7 @@
                     ]
                 },
                 {
-                    "key": "RandomVector2",
+                    "base": "RandomVector2",
                     "context": "MathRandom_VM",
                     "entry": {
                         "name": "In",
@@ -167,7 +167,7 @@
                     ]
                 },
                 {
-                    "key": "RandomPointInCylinder",
+                    "base": "RandomPointInCylinder",
                     "context": "MathRandom_VM",
                     "entry": {
                         "name": "In",
@@ -205,7 +205,7 @@
                     ]
                 },
                 {
-                    "key": "RandomQuaternion",
+                    "base": "RandomQuaternion",
                     "context": "MathRandom_VM",
                     "entry": {
                         "name": "In",
@@ -243,7 +243,7 @@
                     ]
                 },
                 {
-                    "key": "RandomVector4",
+                    "base": "RandomVector4",
                     "context": "MathRandom_VM",
                     "entry": {
                         "name": "In",
@@ -281,7 +281,7 @@
                     ]
                 },
                 {
-                    "key": "RandomPointInBox",
+                    "base": "RandomPointInBox",
                     "context": "MathRandom_VM",
                     "entry": {
                         "name": "In",
@@ -313,7 +313,7 @@
                     ]
                 },
                 {
-                    "key": "RandomPointOnCircle",
+                    "base": "RandomPointOnCircle",
                     "context": "MathRandom_VM",
                     "entry": {
                         "name": "In",
@@ -345,7 +345,7 @@
                     ]
                 },
                 {
-                    "key": "RandomPointInEllipsoid",
+                    "base": "RandomPointInEllipsoid",
                     "context": "MathRandom_VM",
                     "entry": {
                         "name": "In",
@@ -377,7 +377,7 @@
                     ]
                 },
                 {
-                    "key": "RandomInteger",
+                    "base": "RandomInteger",
                     "context": "MathRandom_VM",
                     "entry": {
                         "name": "In",
@@ -415,7 +415,7 @@
                     ]
                 },
                 {
-                    "key": "RandomPointInWedge",
+                    "base": "RandomPointInWedge",
                     "context": "MathRandom_VM",
                     "entry": {
                         "name": "In",
@@ -477,7 +477,7 @@
                     ]
                 },
                 {
-                    "key": "RandomGrayscale",
+                    "base": "RandomGrayscale",
                     "context": "MathRandom_VM",
                     "entry": {
                         "name": "In",
@@ -515,7 +515,7 @@
                     ]
                 },
                 {
-                    "key": "RandomPointInCone",
+                    "base": "RandomPointInCone",
                     "context": "MathRandom_VM",
                     "entry": {
                         "name": "In",
@@ -553,7 +553,7 @@
                     ]
                 },
                 {
-                    "key": "RandomColor",
+                    "base": "RandomColor",
                     "context": "MathRandom_VM",
                     "entry": {
                         "name": "In",
@@ -591,7 +591,7 @@
                     ]
                 },
                 {
-                    "key": "RandomNumber",
+                    "base": "RandomNumber",
                     "context": "MathRandom_VM",
                     "entry": {
                         "name": "In",
@@ -629,7 +629,7 @@
                     ]
                 },
                 {
-                    "key": "RandomPointInSphere",
+                    "base": "RandomPointInSphere",
                     "context": "MathRandom_VM",
                     "entry": {
                         "name": "In",
@@ -661,7 +661,7 @@
                     ]
                 },
                 {
-                    "key": "RandomUnitVector3",
+                    "base": "RandomUnitVector3",
                     "context": "MathRandom_VM",
                     "entry": {
                         "name": "In",
@@ -685,7 +685,7 @@
                     ]
                 },
                 {
-                    "key": "RandomVector3",
+                    "base": "RandomVector3",
                     "context": "MathRandom_VM",
                     "entry": {
                         "name": "In",
@@ -723,7 +723,7 @@
                     ]
                 },
                 {
-                    "key": "RandomPointInArc",
+                    "base": "RandomPointInArc",
                     "context": "MathRandom_VM",
                     "entry": {
                         "name": "In",

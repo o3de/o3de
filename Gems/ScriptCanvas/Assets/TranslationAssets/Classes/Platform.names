@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "Platform",
+            "base": "Platform",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
@@ -10,25 +10,24 @@
             },
             "methods": [
                 {
-                    "key": "GetName",
+                    "base": "GetName",
                     "context": "Platform",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetName"
+                        "tooltip": "When signaled, this will invoke Get Name"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetName is invoked"
+                        "tooltip": "Signaled after Get Name is invoked"
                     },
                     "details": {
-                        "name": "Platform::GetName",
-                        "category": "Utilities"
+                        "name": "Get Name"
                     },
                     "params": [
                         {
                             "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
                             "details": {
-                                "name": "int"
+                                "name": "Id"
                             }
                         }
                     ],
@@ -36,7 +35,91 @@
                         {
                             "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
                             "details": {
-                                "name": "Number"
+                                "name": "Name"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetMac",
+                    "details": {
+                        "name": "Get Mac"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "Id"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetLinux",
+                    "details": {
+                        "name": "Get Linux"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "Id"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetiOS",
+                    "details": {
+                        "name": "Get iOS"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "Id"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetWindows64",
+                    "details": {
+                        "name": "Get Windows64"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "Id"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetAndroid64",
+                    "details": {
+                        "name": "Get Android64"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "Id"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetCurrent",
+                    "details": {
+                        "name": "Get Current"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "Id"
                             }
                         }
                     ]

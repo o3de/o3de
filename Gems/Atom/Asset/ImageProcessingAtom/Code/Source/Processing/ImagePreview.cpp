@@ -86,7 +86,7 @@ namespace ImageProcessingAtom
 
     IImageObjectPtr ImagePreview::GetOutputImage()
     {
-        return m_output.GetOutputImage(ImageConvertOutput::Preview);
+        return m_output.GetOutputImage();
     }
 
     ImagePreview::~ImagePreview()

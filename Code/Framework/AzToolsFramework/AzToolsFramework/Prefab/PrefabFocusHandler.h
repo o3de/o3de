@@ -73,16 +73,19 @@ namespace AzToolsFramework::Prefab
         void RefreshInstanceFocusList();
         void RefreshInstanceFocusPath();
 
-        void OpenInstanceContainers(const AZStd::vector<InstanceOptionalReference>& instances) const;
-        void CloseInstanceContainers(const AZStd::vector<InstanceOptionalReference>& instances) const;
+        void OpenInstanceContainers(const AZStd::vector<AZ::EntityId>& instances) const;
+        void CloseInstanceContainers(const AZStd::vector<AZ::EntityId>& instances) const;
 
-        //! The instance the editor is currently focusing on.
-        InstanceOptionalReference m_focusedInstance;
+        InstanceOptionalReference GetReferenceFromContainerEntityId(AZ::EntityId containerEntityId) const;
+
+        //! The EntityId of the prefab container entity for the instance the editor is currently focusing on.
+        AZ::EntityId m_focusedInstanceContainerEntityId = AZ::EntityId();
         //! The templateId of the focused instance.
         TemplateId m_focusedTemplateId;
-        //! The list of instances going from the root (index 0) to the focused instance.
-        AZStd::vector<InstanceOptionalReference> m_instanceFocusHierarchy;
-        //! A path containing the names of the containers in the instance focus hierarchy, separated with a /.
+        //! The list of instances going from the root (index 0) to the focused instance,
+        //! referenced by their prefab container's EntityId.
+        AZStd::vector<AZ::EntityId> m_instanceFocusHierarchy;
+        //! A path containing the filenames of the instances in the focus hierarchy, separated with a /.
         AZ::IO::Path m_instanceFocusPath;
 
         ContainerEntityInterface* m_containerEntityInterface = nullptr;

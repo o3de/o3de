@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "DiskShapeComponentRequestsBus",
+            "base": "DiskShapeComponentRequestsBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
@@ -9,7 +9,7 @@
             },
             "methods": [
                 {
-                    "key": "GetDiskConfiguration",
+                    "base": "GetDiskConfiguration",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetDiskConfiguration"
@@ -32,7 +32,7 @@
                     ]
                 },
                 {
-                    "key": "SetRadius",
+                    "base": "SetRadius",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetRadius"
@@ -54,7 +54,7 @@
                     ]
                 },
                 {
-                    "key": "GetRadius",
+                    "base": "GetRadius",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetRadius"

@@ -1,106 +1,107 @@
 {
     "entries": [
         {
-            "key": "EditorCameraRequestBus",
+            "base": "EditorCameraRequestBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "EditorCameraRequestBus"
+                "name": "Editor Camera",
+                "category": "Editor"
             },
             "methods": [
                 {
-                    "key": "SetViewFromEntityPerspective",
+                    "base": "SetViewFromEntityPerspective",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetViewFromEntityPerspective"
+                        "tooltip": "When signaled, this will invoke Set View From Entity Perspective"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetViewFromEntityPerspective is invoked"
+                        "tooltip": "Signaled after Set View From Entity Perspective is invoked"
                     },
                     "details": {
-                        "name": "SetViewFromEntityPerspective"
+                        "name": "Set View From Entity Perspective"
                     },
                     "params": [
                         {
                             "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
                             "details": {
-                                "name": "EntityId",
+                                "name": "Entity Id",
                                 "tooltip": "Entity Unique Id"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "SetViewAndMovementLockFromEntityPerspective",
+                    "base": "SetViewAndMovementLockFromEntityPerspective",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetViewAndMovementLockFromEntityPerspective"
+                        "tooltip": "When signaled, this will invoke Set View And Movement Lock From Entity Perspective"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetViewAndMovementLockFromEntityPerspective is invoked"
+                        "tooltip": "Signaled after Set View And Movement Lock From Entity Perspective is invoked"
                     },
                     "details": {
-                        "name": "SetViewAndMovementLockFromEntityPerspective"
+                        "name": "Set View And Movement Lock From Entity Perspective"
                     },
                     "params": [
                         {
                             "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
                             "details": {
-                                "name": "EntityId",
+                                "name": "Entity Id",
                                 "tooltip": "Entity Unique Id"
                             }
                         },
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": "bool"
+                                "name": "Lock Camera Movement"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "GetCurrentViewEntityId",
+                    "base": "GetCurrentViewEntityId",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetCurrentViewEntityId"
+                        "tooltip": "When signaled, this will invoke Get Current View Entity Id"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetCurrentViewEntityId is invoked"
+                        "tooltip": "Signaled after Get Current View Entity Id is invoked"
                     },
                     "details": {
-                        "name": "GetCurrentViewEntityId"
+                        "name": "Get Current View Entity Id"
                     },
                     "results": [
                         {
                             "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
                             "details": {
-                                "name": "EntityId",
+                                "name": "Entity Id",
                                 "tooltip": "Entity Unique Id"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "GetActiveCameraPosition",
+                    "base": "GetActiveCameraPosition",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetActiveCameraPosition"
+                        "tooltip": "When signaled, this will invoke Get Active Camera Position"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetActiveCameraPosition is invoked"
+                        "tooltip": "Signaled after Get Active Camera Position is invoked"
                     },
                     "details": {
-                        "name": "GetActiveCameraPosition"
+                        "name": "Get Active Camera Position"
                     },
                     "params": [
                         {
                             "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
                             "details": {
-                                "name": "Vector3"
+                                "name": "Position"
                             }
                         }
                     ],
@@ -108,7 +109,7 @@
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": "bool"
+                                "name": "Success"
                             }
                         }
                     ]

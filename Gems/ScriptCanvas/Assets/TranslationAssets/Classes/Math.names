@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "Math",
+            "base": "Math",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "DivideByNumber",
+                    "base": "DivideByNumber",
                     "context": "Math",
                     "entry": {
                         "name": "In",
@@ -48,7 +48,7 @@
                     ]
                 },
                 {
-                    "key": "Round",
+                    "base": "Round",
                     "context": "Math",
                     "entry": {
                         "name": "In",
@@ -80,7 +80,7 @@
                     ]
                 },
                 {
-                    "key": "Sqrt",
+                    "base": "Sqrt",
                     "context": "Math",
                     "entry": {
                         "name": "In",
@@ -112,7 +112,7 @@
                     ]
                 },
                 {
-                    "key": "Mod",
+                    "base": "Mod",
                     "context": "Math",
                     "entry": {
                         "name": "In",
@@ -150,7 +150,7 @@
                     ]
                 },
                 {
-                    "key": "Ceil",
+                    "base": "Ceil",
                     "context": "Math",
                     "entry": {
                         "name": "In",
@@ -182,7 +182,7 @@
                     ]
                 },
                 {
-                    "key": "IsEven",
+                    "base": "IsEven",
                     "context": "Math",
                     "entry": {
                         "name": "In",
@@ -214,7 +214,7 @@
                     ]
                 },
                 {
-                    "key": "IsClose",
+                    "base": "IsClose",
                     "context": "Math",
                     "entry": {
                         "name": "In",
@@ -258,7 +258,7 @@
                     ]
                 },
                 {
-                    "key": "ArcSin",
+                    "base": "ArcSin",
                     "context": "Math",
                     "entry": {
                         "name": "In",
@@ -290,7 +290,7 @@
                     ]
                 },
                 {
-                    "key": "ArcTan",
+                    "base": "ArcTan",
                     "context": "Math",
                     "entry": {
                         "name": "In",
@@ -322,7 +322,7 @@
                     ]
                 },
                 {
-                    "key": "Max",
+                    "base": "Max",
                     "context": "Math",
                     "entry": {
                         "name": "In",
@@ -360,7 +360,7 @@
                     ]
                 },
                 {
-                    "key": "Tan",
+                    "base": "Tan",
                     "context": "Math",
                     "entry": {
                         "name": "In",
@@ -392,7 +392,7 @@
                     ]
                 },
                 {
-                    "key": "ArcTan2",
+                    "base": "ArcTan2",
                     "context": "Math",
                     "entry": {
                         "name": "In",
@@ -430,7 +430,7 @@
                     ]
                 },
                 {
-                    "key": "Floor",
+                    "base": "Floor",
                     "context": "Math",
                     "entry": {
                         "name": "In",
@@ -462,7 +462,7 @@
                     ]
                 },
                 {
-                    "key": "Min",
+                    "base": "Min",
                     "context": "Math",
                     "entry": {
                         "name": "In",
@@ -500,7 +500,7 @@
                     ]
                 },
                 {
-                    "key": "Lerp",
+                    "base": "Lerp",
                     "context": "Math",
                     "entry": {
                         "name": "In",
@@ -544,7 +544,7 @@
                     ]
                 },
                 {
-                    "key": "LerpInverse",
+                    "base": "LerpInverse",
                     "context": "Math",
                     "entry": {
                         "name": "In",
@@ -588,7 +588,7 @@
                     ]
                 },
                 {
-                    "key": "IsOdd",
+                    "base": "IsOdd",
                     "context": "Math",
                     "entry": {
                         "name": "In",
@@ -620,7 +620,7 @@
                     ]
                 },
                 {
-                    "key": "Abs",
+                    "base": "Abs",
                     "context": "Math",
                     "entry": {
                         "name": "In",
@@ -651,7 +651,7 @@
                     ]
                 },
                 {
-                    "key": "RadToDeg",
+                    "base": "RadToDeg",
                     "context": "Math",
                     "entry": {
                         "name": "In",
@@ -683,7 +683,7 @@
                     ]
                 },
                 {
-                    "key": "Sin",
+                    "base": "Sin",
                     "context": "Math",
                     "entry": {
                         "name": "In",
@@ -715,7 +715,7 @@
                     ]
                 },
                 {
-                    "key": "Cos",
+                    "base": "Cos",
                     "context": "Math",
                     "entry": {
                         "name": "In",
@@ -747,7 +747,7 @@
                     ]
                 },
                 {
-                    "key": "ArcCos",
+                    "base": "ArcCos",
                     "context": "Math",
                     "entry": {
                         "name": "In",
@@ -779,7 +779,7 @@
                     ]
                 },
                 {
-                    "key": "Sign",
+                    "base": "Sign",
                     "context": "Math",
                     "entry": {
                         "name": "In",
@@ -811,7 +811,7 @@
                     ]
                 },
                 {
-                    "key": "Clamp",
+                    "base": "Clamp",
                     "context": "Math",
                     "entry": {
                         "name": "In",
@@ -855,7 +855,7 @@
                     ]
                 },
                 {
-                    "key": "GetSinCos",
+                    "base": "GetSinCos",
                     "context": "Math",
                     "entry": {
                         "name": "In",
@@ -891,7 +891,7 @@
                     ]
                 },
                 {
-                    "key": "DegToRad",
+                    "base": "DegToRad",
                     "context": "Math",
                     "entry": {
                         "name": "In",
@@ -923,7 +923,7 @@
                     ]
                 },
                 {
-                    "key": "Pow",
+                    "base": "Pow",
                     "context": "Math",
                     "entry": {
                         "name": "In",
