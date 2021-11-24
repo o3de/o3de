@@ -130,7 +130,6 @@ def update_manifest(scene):
         created_entities.append(entity_id)
 
     # Create a prefab with all our entities
-    
     create_prefab(scene_manifest, source_filename_only, created_entities)
 
     # Convert the manifest to a JSON string and return it
