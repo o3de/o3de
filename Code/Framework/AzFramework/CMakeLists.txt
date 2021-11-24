@@ -52,6 +52,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
         FILES_CMAKE
             Tests/framework_shared_tests_files.cmake
             AzFramework/Physics/physics_mock_files.cmake
+            Tests/terrain_mock_files.cmake
         INCLUDE_DIRECTORIES
             PUBLIC
                 Tests
