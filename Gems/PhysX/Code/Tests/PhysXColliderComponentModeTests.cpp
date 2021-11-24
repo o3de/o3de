@@ -14,7 +14,7 @@
 #include <AzToolsFramework/UnitTest/AzToolsFrameworkTestHelpers.h>
 #include <AzToolsFramework/ViewportSelection/EditorInteractionSystemViewportSelectionRequestBus.h>
 #include <AzToolsFramework/ViewportSelection/EditorDefaultSelection.h>
-#include <AzToolsFramework/ViewPortSelection/EditorSelectionUtil.h>
+#include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 #include <AzToolsFramework/ViewportUi/ViewportUiManager.h>
 #include <Tests/Viewport/ViewportUiManagerTests.cpp>
