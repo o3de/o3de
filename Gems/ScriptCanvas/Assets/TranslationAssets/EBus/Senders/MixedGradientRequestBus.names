@@ -1,0 +1,102 @@
+{
+    "entries": [
+        {
+            "base": "MixedGradientRequestBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "MixedGradientRequestBus"
+            },
+            "methods": [
+                {
+                    "base": "GetNumLayers",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetNumLayers"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetNumLayers is invoked"
+                    },
+                    "details": {
+                        "name": "GetNumLayers"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{D6597933-47CD-4FC8-B911-63F3E2B0993A}",
+                            "details": {
+                                "name": "AZ::u64"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "AddLayer",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke AddLayer"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after AddLayer is invoked"
+                    },
+                    "details": {
+                        "name": "AddLayer"
+                    }
+                },
+                {
+                    "base": "RemoveLayer",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke RemoveLayer"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after RemoveLayer is invoked"
+                    },
+                    "details": {
+                        "name": "RemoveLayer"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetLayer",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetLayer"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetLayer is invoked"
+                    },
+                    "details": {
+                        "name": "GetLayer"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{957264F7-A169-4D47-B94C-659B078026D4}",
+                            "details": {
+                                "name": "Mixed Gradient Layer"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

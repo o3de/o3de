@@ -1,0 +1,62 @@
+{
+    "entries": [
+        {
+            "base": "UiTooltipBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "UiTooltipBus",
+                "category": "UI"
+            },
+            "methods": [
+                {
+                    "base": "GetText",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Text"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Text is invoked"
+                    },
+                    "details": {
+                        "name": "Get Text",
+                        "tooltip": "Gets the tooltip text"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZStd::string"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetText",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Text"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Text is invoked"
+                    },
+                    "details": {
+                        "name": "Set Text",
+                        "tooltip": "Sets the tooltip text"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Text",
+                                "tooltip": "The tooltip text"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

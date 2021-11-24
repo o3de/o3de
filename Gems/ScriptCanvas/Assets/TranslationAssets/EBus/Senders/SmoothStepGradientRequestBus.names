@@ -1,0 +1,36 @@
+{
+    "entries": [
+        {
+            "base": "SmoothStepGradientRequestBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "SmoothStepGradientRequestBus"
+            },
+            "methods": [
+                {
+                    "base": "GetGradientSampler",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetGradientSampler"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetGradientSampler is invoked"
+                    },
+                    "details": {
+                        "name": "GetGradientSampler"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{3768D3A6-BF70-4ABC-B4EC-73C75A886916}",
+                            "details": {
+                                "name": "Gradient Sampler"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

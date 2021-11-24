@@ -20,7 +20,8 @@ namespace AzManipulatorTestFramework
     {
     public:
         IndirectCallManipulatorManager(ViewportInteractionInterface& viewportInteraction);
-        // ManipulatorManagerInterface ...
+
+        // ManipulatorManagerInterface overrides ...
         void ConsumeMouseInteractionEvent(const MouseInteractionEvent& event) override;
         AzToolsFramework::ManipulatorManagerId GetId() const override;
         bool ManipulatorBeingInteracted() const override;

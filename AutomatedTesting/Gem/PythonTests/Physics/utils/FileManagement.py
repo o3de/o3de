@@ -218,6 +218,7 @@ class FileManagement:
         src_file_path = os.path.join(src_path, src_file)
         if os.path.exists(target_file_path):
             fs.unlock_file(target_file_path)
+        os.makedirs(target_path, exist_ok=True)
         shutil.copyfile(src_file_path, target_file_path)
 
     @staticmethod

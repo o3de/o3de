@@ -1,0 +1,54 @@
+{
+    "entries": [
+        {
+            "base": "{6C1CECA6-C155-4ED5-96BC-1D4F11C7A0FE}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "Ends With",
+                "category": "String",
+                "tooltip": ".",
+                "subtitle": "String"
+            },
+            "slots": [
+                {
+                    "base": "DataInput_Source",
+                    "details": {
+                        "name": "Source"
+                    }
+                },
+                {
+                    "base": "DataInput_Pattern",
+                    "details": {
+                        "name": "Pattern"
+                    }
+                },
+                {
+                    "base": "DataInput_Case Sensitive",
+                    "details": {
+                        "name": "Case Sensitive"
+                    }
+                },
+                {
+                    "base": "Input_In",
+                    "details": {
+                        "name": "In",
+                        "tooltip": "Input signal"
+                    }
+                },
+                {
+                    "base": "Output_True",
+                    "details": {
+                        "name": "True"
+                    }
+                },
+                {
+                    "base": "Output_False",
+                    "details": {
+                        "name": "False"
+                    }
+                }
+            ]
+        }
+    ]
+}

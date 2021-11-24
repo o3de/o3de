@@ -759,6 +759,7 @@ namespace AZ
             else
             {
                 typeIdResult.m_determination = JsonDeserializer::TypeIdDetermination::FailedToDetermine;
+                typeIdResult.m_typeId = Uuid::CreateNull();
             }
         }
         else if (input.IsString())
@@ -768,6 +769,7 @@ namespace AZ
         else
         {
             typeIdResult.m_determination = JsonDeserializer::TypeIdDetermination::FailedToDetermine;
+            typeIdResult.m_typeId = Uuid::CreateNull();
         }
 
         switch (typeIdResult.m_determination)

@@ -1,0 +1,244 @@
+{
+    "entries": [
+        {
+            "base": "SurfaceAltitudeGradientRequestBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "SurfaceAltitudeGradientRequestBus"
+            },
+            "methods": [
+                {
+                    "base": "GetNumTags",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetNumTags"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetNumTags is invoked"
+                    },
+                    "details": {
+                        "name": "GetNumTags"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{D6597933-47CD-4FC8-B911-63F3E2B0993A}",
+                            "details": {
+                                "name": "AZ::u64"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "RemoveTag",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke RemoveTag"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after RemoveTag is invoked"
+                    },
+                    "details": {
+                        "name": "RemoveTag"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetAltitudeMax",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetAltitudeMax"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetAltitudeMax is invoked"
+                    },
+                    "details": {
+                        "name": "GetAltitudeMax"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetAltitudeMin",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetAltitudeMin"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetAltitudeMin is invoked"
+                    },
+                    "details": {
+                        "name": "SetAltitudeMin"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetAltitudeMin",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetAltitudeMin"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetAltitudeMin is invoked"
+                    },
+                    "details": {
+                        "name": "GetAltitudeMin"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetTag",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetTag"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetTag is invoked"
+                    },
+                    "details": {
+                        "name": "GetTag"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{9F4E062E-06A0-46D4-85DF-E0DA96467D3A}",
+                            "details": {
+                                "name": "Crc32"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "AddTag",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke AddTag"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after AddTag is invoked"
+                    },
+                    "details": {
+                        "name": "AddTag"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZStd::string"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetShapeEntityId",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetShapeEntityId"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetShapeEntityId is invoked"
+                    },
+                    "details": {
+                        "name": "SetShapeEntityId"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "EntityId",
+                                "tooltip": "Entity Unique Id"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetAltitudeMax",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetAltitudeMax"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetAltitudeMax is invoked"
+                    },
+                    "details": {
+                        "name": "SetAltitudeMax"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetShapeEntityId",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetShapeEntityId"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetShapeEntityId is invoked"
+                    },
+                    "details": {
+                        "name": "GetShapeEntityId"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "EntityId",
+                                "tooltip": "Entity Unique Id"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

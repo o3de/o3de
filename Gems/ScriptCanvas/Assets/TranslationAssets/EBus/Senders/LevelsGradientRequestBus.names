@@ -1,0 +1,256 @@
+{
+    "entries": [
+        {
+            "base": "LevelsGradientRequestBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "LevelsGradientRequestBus"
+            },
+            "methods": [
+                {
+                    "base": "GetOutputMax",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetOutputMax"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetOutputMax is invoked"
+                    },
+                    "details": {
+                        "name": "GetOutputMax"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetInputMax",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetInputMax"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetInputMax is invoked"
+                    },
+                    "details": {
+                        "name": "SetInputMax"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetOutputMax",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetOutputMax"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetOutputMax is invoked"
+                    },
+                    "details": {
+                        "name": "SetOutputMax"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetInputMid",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetInputMid"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetInputMid is invoked"
+                    },
+                    "details": {
+                        "name": "SetInputMid"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetOutputMin",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetOutputMin"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetOutputMin is invoked"
+                    },
+                    "details": {
+                        "name": "SetOutputMin"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetGradientSampler",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetGradientSampler"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetGradientSampler is invoked"
+                    },
+                    "details": {
+                        "name": "GetGradientSampler"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{3768D3A6-BF70-4ABC-B4EC-73C75A886916}",
+                            "details": {
+                                "name": "Gradient Sampler"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetInputMin",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetInputMin"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetInputMin is invoked"
+                    },
+                    "details": {
+                        "name": "SetInputMin"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetInputMid",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetInputMid"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetInputMid is invoked"
+                    },
+                    "details": {
+                        "name": "GetInputMid"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetInputMax",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetInputMax"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetInputMax is invoked"
+                    },
+                    "details": {
+                        "name": "GetInputMax"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetOutputMin",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetOutputMin"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetOutputMin is invoked"
+                    },
+                    "details": {
+                        "name": "GetOutputMin"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetInputMin",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetInputMin"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetInputMin is invoked"
+                    },
+                    "details": {
+                        "name": "GetInputMin"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

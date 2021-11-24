@@ -1,0 +1,47 @@
+{
+    "entries": [
+        {
+            "base": "{5829F3E6-1F1D-58C2-BD72-66D4DE866AB9}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "From Vector3 And Number",
+                "category": "Math/Color",
+                "tooltip": "returns a Color with R, G, B set to X, Y, Z values of RGB, respectively. A is set to A",
+                "subtitle": "Color"
+            },
+            "slots": [
+                {
+                    "base": "Input_In",
+                    "details": {
+                        "name": "In"
+                    }
+                },
+                {
+                    "base": "Output_Out",
+                    "details": {
+                        "name": "Out"
+                    }
+                },
+                {
+                    "base": "DataInput_Vector3: RGB",
+                    "details": {
+                        "name": "Red, Green, Blue"
+                    }
+                },
+                {
+                    "base": "DataInput_Number: A",
+                    "details": {
+                        "name": "Alpha"
+                    }
+                },
+                {
+                    "base": "DataOutput_Result: Color",
+                    "details": {
+                        "name": "Color"
+                    }
+                }
+            ]
+        }
+    ]
+}

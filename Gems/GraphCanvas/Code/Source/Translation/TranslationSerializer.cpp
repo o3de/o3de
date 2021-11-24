@@ -11,17 +11,6 @@
 
 namespace GraphCanvas
 {
-    namespace Schema
-    {
-        namespace Field
-        {
-            static constexpr char key[]     = "key";
-            static constexpr char context[] = "context";
-            static constexpr char variant[] = "variant";
-            static constexpr char entries[] = "entries";
-        }
-    }
-
     AZ_CLASS_ALLOCATOR_IMPL(TranslationFormatSerializer, AZ::SystemAllocator, 0);
 
     void AddEntryToDatabase(const AZStd::string& baseKey, const AZStd::string& name, const rapidjson::Value& it, TranslationFormat* translationFormat)
@@ -35,8 +24,10 @@ namespace GraphCanvas
             }
             else
             {
+                AZStd::string existingValue = translationFormat->m_database[finalKey.c_str()];
+
                 // There is a name collision
-                AZStd::string error = AZStd::string::format("Unable to store key: %s with value: %s because that key already exists", finalKey.c_str(), it.GetString());
+                AZStd::string error = AZStd::string::format("Unable to store key: %s with value: %s because that key already exists with value: %s (proposed: %s)", finalKey.c_str(), it.GetString(), existingValue.c_str(), it.GetString());
                 AZ_Error("TranslationSerializer", false, error.c_str());
             }
         }
@@ -74,11 +65,15 @@ namespace GraphCanvas
             const rapidjson::Value& array = it;
             for (rapidjson::SizeType i = 0; i < array.Size(); ++i)
             {
-                // so, here, I need to go in and if there is a "key" member within the object, then I need to use that,
-                // if there isn't, I can use the %d
+                // if there is a "base" member within the object, then use it, otherwise use the index
                 if (array[i].IsObject())
                 {
-                    if (array[i].HasMember(Schema::Field::key))
+                    if (array[i].HasMember(Schema::Field::deprecated_key))
+                    {
+                        AZStd::string innerKey = array[i].FindMember(Schema::Field::deprecated_key)->value.GetString();
+                        itemKey.append(AZStd::string::format(".%s", innerKey.c_str()));
+                    }
+                    else if (array[i].HasMember(Schema::Field::key))
                     {
                         AZStd::string innerKey = array[i].FindMember(Schema::Field::key)->value.GetString();
                         itemKey.append(AZStd::string::format(".%s", innerKey.c_str()));
@@ -131,7 +126,12 @@ namespace GraphCanvas
 
                 AZStd::string keyStr;
                 rapidjson::Value::ConstMemberIterator keyValue;
-                if (entry.HasMember(Schema::Field::key))
+                if (entry.HasMember(Schema::Field::deprecated_key))
+                {
+                    keyValue = entry.FindMember(Schema::Field::deprecated_key);
+                    keyStr = keyValue->value.GetString();
+                }
+                else if (entry.HasMember(Schema::Field::key))
                 {
                     keyValue = entry.FindMember(Schema::Field::key);
                     keyStr = keyValue->value.GetString();

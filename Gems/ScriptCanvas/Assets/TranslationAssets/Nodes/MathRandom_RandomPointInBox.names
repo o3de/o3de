@@ -1,0 +1,40 @@
+{
+    "entries": [
+        {
+            "base": "{8F7532AC-DABD-5EE6-8D84-A063032A82D4}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "Random Point In Box",
+                "category": "Math/Random",
+                "tooltip": "Returns a random point in a box"
+            },
+            "slots": [
+                {
+                    "base": "Input_In",
+                    "details": {
+                        "name": "In"
+                    }
+                },
+                {
+                    "base": "Output_Out",
+                    "details": {
+                        "name": "Out"
+                    }
+                },
+                {
+                    "base": "DataInput_Dimensions",
+                    "details": {
+                        "name": "Dimensions"
+                    }
+                },
+                {
+                    "base": "DataOutput_Result",
+                    "details": {
+                        "name": "Result"
+                    }
+                }
+            ]
+        }
+    ]
+}

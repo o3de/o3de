@@ -1,0 +1,246 @@
+{
+    "entries": [
+        {
+            "base": "EditorToolsApplicationRequestBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "EditorToolsApplicationRequestBus"
+            },
+            "methods": [
+                {
+                    "base": "Exit",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Exit"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Exit is invoked"
+                    },
+                    "details": {
+                        "name": "Exit"
+                    }
+                },
+                {
+                    "base": "GetCurrentLevelName",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetCurrentLevelName"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetCurrentLevelName is invoked"
+                    },
+                    "details": {
+                        "name": "GetCurrentLevelName"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZStd::string"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetGameFolder",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetGameFolder"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetGameFolder is invoked"
+                    },
+                    "details": {
+                        "name": "GetGameFolder"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZStd::string"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "CreateLevelNoPrompt",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke CreateLevelNoPrompt"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after CreateLevelNoPrompt is invoked"
+                    },
+                    "details": {
+                        "name": "CreateLevelNoPrompt"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{7114E998-A8B4-519B-9342-A86D1587B4F7}",
+                            "details": {
+                                "name": ""
+                            }
+                        },
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        },
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "OpenLevelNoPrompt",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke OpenLevelNoPrompt"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after OpenLevelNoPrompt is invoked"
+                    },
+                    "details": {
+                        "name": "OpenLevelNoPrompt"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{7114E998-A8B4-519B-9342-A86D1587B4F7}",
+                            "details": {
+                                "name": ""
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetCurrentLevelPath",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetCurrentLevelPath"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetCurrentLevelPath is invoked"
+                    },
+                    "details": {
+                        "name": "GetCurrentLevelPath"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZStd::string"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "ExitNoPrompt",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke ExitNoPrompt"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after ExitNoPrompt is invoked"
+                    },
+                    "details": {
+                        "name": "ExitNoPrompt"
+                    }
+                },
+                {
+                    "base": "OpenLevel",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke OpenLevel"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after OpenLevel is invoked"
+                    },
+                    "details": {
+                        "name": "OpenLevel"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{7114E998-A8B4-519B-9342-A86D1587B4F7}",
+                            "details": {
+                                "name": ""
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "CreateLevel",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke CreateLevel"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after CreateLevel is invoked"
+                    },
+                    "details": {
+                        "name": "CreateLevel"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{7114E998-A8B4-519B-9342-A86D1587B4F7}",
+                            "details": {
+                                "name": ""
+                            }
+                        },
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

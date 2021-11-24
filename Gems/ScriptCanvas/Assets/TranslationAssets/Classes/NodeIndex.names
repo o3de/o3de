@@ -1,0 +1,186 @@
+{
+    "entries": [
+        {
+            "base": "NodeIndex",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "NodeIndex"
+            },
+            "methods": [
+                {
+                    "base": "Equal",
+                    "context": "NodeIndex",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Equal"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Equal is invoked"
+                    },
+                    "details": {
+                        "name": "NodeIndex::Equal",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{4AD18037-E629-480D-8165-997A137327FD}",
+                            "details": {
+                                "name": "AZ::SceneAPI::Containers::SceneGraph::NodeIndex*"
+                            }
+                        },
+                        {
+                            "typeid": "{4AD18037-E629-480D-8165-997A137327FD}",
+                            "details": {
+                                "name": "AZ::SceneAPI::Containers::SceneGraph::NodeIndex"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "ToString",
+                    "context": "NodeIndex",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke ToString"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after ToString is invoked"
+                    },
+                    "details": {
+                        "name": "NodeIndex::ToString",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{4AD18037-E629-480D-8165-997A137327FD}",
+                            "details": {
+                                "name": "const AZ::SceneAPI::Containers::SceneGraph::NodeIndex&"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZStd::basic_string<char, AZStd::char_traits<char>, allocator>"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "IsValid",
+                    "context": "NodeIndex",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke IsValid"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after IsValid is invoked"
+                    },
+                    "details": {
+                        "name": "NodeIndex::IsValid",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{4AD18037-E629-480D-8165-997A137327FD}",
+                            "details": {
+                                "name": "AZ::SceneAPI::Containers::SceneGraph::NodeIndex*"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "Distance",
+                    "context": "NodeIndex",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Distance"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Distance is invoked"
+                    },
+                    "details": {
+                        "name": "NodeIndex::Distance",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{4AD18037-E629-480D-8165-997A137327FD}",
+                            "details": {
+                                "name": "AZ::SceneAPI::Containers::SceneGraph::NodeIndex*"
+                            }
+                        },
+                        {
+                            "typeid": "{4AD18037-E629-480D-8165-997A137327FD}",
+                            "details": {
+                                "name": "AZ::SceneAPI::Containers::SceneGraph::NodeIndex"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "AsNumber",
+                    "context": "NodeIndex",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke AsNumber"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after AsNumber is invoked"
+                    },
+                    "details": {
+                        "name": "NodeIndex::AsNumber",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{4AD18037-E629-480D-8165-997A137327FD}",
+                            "details": {
+                                "name": "AZ::SceneAPI::Containers::SceneGraph::NodeIndex*"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
+                            "details": {
+                                "name": "unsigned int"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

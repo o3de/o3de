@@ -31,7 +31,6 @@ struct IRenderer;
 struct IRenderAuxGeom;
 struct IIconManager;
 class CDisplaySettings;
-class CCamera;
 class QPoint;
 
 enum DisplayFlags
@@ -66,7 +65,6 @@ struct SANDBOX_API DisplayContext
     IDisplayViewport* view;
     IRenderAuxGeom* pRenderAuxGeom;
     IIconManager* pIconManager;
-    CCamera*    camera;
     AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
     AABB    box;    // Bounding box of volume that need to be repainted.
     AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING

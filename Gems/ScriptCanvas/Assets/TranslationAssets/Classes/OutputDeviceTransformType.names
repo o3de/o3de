@@ -1,0 +1,12 @@
+{
+    "entries": [
+        {
+            "base": "OutputDeviceTransformType",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "OutputDeviceTransformType"
+            }
+        }
+    ]
+}

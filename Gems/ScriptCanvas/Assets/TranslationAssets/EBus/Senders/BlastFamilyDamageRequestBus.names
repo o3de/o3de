@@ -1,0 +1,315 @@
+{
+    "entries": [
+        {
+            "base": "BlastFamilyDamageRequestBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "Blast Family Damage"
+            },
+            "methods": [
+                {
+                    "base": "Get Family Id",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Family Id"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Family Id is invoked"
+                    },
+                    "details": {
+                        "name": "Get Family Id"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Entity Id",
+                                "tooltip": "Entity Unique Id"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "Destroy actor",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Destroy actor"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Destroy actor is invoked"
+                    },
+                    "details": {
+                        "name": "Destroy Actor"
+                    }
+                },
+                {
+                    "base": "Triangle Damage",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Triangle Damage"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Triangle Damage is invoked"
+                    },
+                    "details": {
+                        "name": "Triangle Damage"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Position 0",
+                                "tooltip": "Vertex of the triangle."
+                            }
+                        },
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Position 1",
+                                "tooltip": "Vertex of the triangle."
+                            }
+                        },
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Position 2",
+                                "tooltip": "Vertex of the triangle."
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Damage",
+                                "tooltip": "How much damage to deal."
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "Impact Spread Damage",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Impact Spread Damage"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Impact Spread Damage is invoked"
+                    },
+                    "details": {
+                        "name": "Impact Spread Damage"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Position",
+                                "tooltip": "The global position of the damage's hit."
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Min Radius",
+                                "tooltip": "Damages all chunks/bonds that are in the range [0, minRadius] with full damage"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Max Radius",
+                                "tooltip": "Damages all chunks/bonds that are in the range [minRadius, maxRadius] with linearly decreasing damage."
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Damage",
+                                "tooltip": "How much damage to deal."
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "Stress Damage",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Stress Damage"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Stress Damage is invoked"
+                    },
+                    "details": {
+                        "name": "Stress Damage"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Position",
+                                "tooltip": "The global position of the damage's hit."
+                            }
+                        },
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Force",
+                                "tooltip": "The force applied at the position."
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "Shear Damage",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Shear Damage"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Shear Damage is invoked"
+                    },
+                    "details": {
+                        "name": "Shear Damage"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Position",
+                                "tooltip": "The global position of the damage's hit."
+                            }
+                        },
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Normal",
+                                "tooltip": "The normal of the damage's hit."
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Min Radius",
+                                "tooltip": "Damages all chunks/bonds that are in the range [0, minRadius] with full damage."
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Max Radius",
+                                "tooltip": "Damages all chunks/bonds that are in the range [minRadius, maxRadius] with linearly decreasing damage."
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Damage",
+                                "tooltip": "How much damage to deal."
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "Capsule Damage",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Capsule Damage"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Capsule Damage is invoked"
+                    },
+                    "details": {
+                        "name": "Capsule Damage"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Position 0",
+                                "tooltip": "The global position of one of the capsule's ends."
+                            }
+                        },
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Position 1",
+                                "tooltip": "The global position of another of the capsule's ends."
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Min Radius",
+                                "tooltip": "Damages all chunks/bonds that are in the range [0, minRadius] with full damage."
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Max Radius",
+                                "tooltip": "Damages all chunks/bonds that are in the range [minRadius, maxRadius] with linearly decreasing damage."
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Damage",
+                                "tooltip": "How much damage to deal."
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "Radial Damage",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Radial Damage"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Radial Damage is invoked"
+                    },
+                    "details": {
+                        "name": "Radial Damage"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Position",
+                                "tooltip": "The global position of the damage's hit."
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Min Radius",
+                                "tooltip": "Damages all chunks/bonds that are in the range [0, minRadius] with full damage."
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Max Radius",
+                                "tooltip": "Damages all chunks/bonds that are in the range [minRadius, maxRadius] with linearly decreasing damage."
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Damage",
+                                "tooltip": "How much damage to deal."
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

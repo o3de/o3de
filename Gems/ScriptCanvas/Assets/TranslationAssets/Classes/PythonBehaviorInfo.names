@@ -1,0 +1,12 @@
+{
+    "entries": [
+        {
+            "base": "PythonBehaviorInfo",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "PythonBehaviorInfo"
+            }
+        }
+    ]
+}

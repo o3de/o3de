@@ -23,6 +23,7 @@
 #include <AzManipulatorTestFramework/AzManipulatorTestFrameworkTestHelpers.h>
 #include <AzManipulatorTestFramework/IndirectManipulatorViewportInteraction.h>
 #include <AzManipulatorTestFramework/ImmediateModeActionDispatcher.h>
+#include <Tests/Utils/Printers.h>
 
 using namespace AzToolsFramework;
 

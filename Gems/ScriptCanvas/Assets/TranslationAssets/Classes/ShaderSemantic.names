@@ -1,0 +1,122 @@
+{
+    "entries": [
+        {
+            "base": "ShaderSemantic",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "Shader Semantic",
+                "category": "Rendering"
+            },
+            "methods": [
+                {
+                    "base": "ToString",
+                    "context": "ShaderSemantic",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke To String"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after To String is invoked"
+                    },
+                    "details": {
+                        "name": "To String"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZ Std::basic_string<char, AZ Std::char_traits<char>, allocator>"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "Getname",
+                    "details": {
+                        "name": "Getname"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{C6FFF25F-FE52-4D08-8D96-D04C14048816}",
+                            "details": {
+                                "name": ""
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{3D2B920C-9EFD-40D5-AAE0-DF131C3D4931}",
+                            "details": {
+                                "name": ""
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "Setname",
+                    "details": {
+                        "name": "Setname"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{C6FFF25F-FE52-4D08-8D96-D04C14048816}",
+                            "details": {
+                                "name": ""
+                            }
+                        },
+                        {
+                            "typeid": "{3D2B920C-9EFD-40D5-AAE0-DF131C3D4931}",
+                            "details": {
+                                "name": ""
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "Getindex",
+                    "details": {
+                        "name": "Getindex"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{C6FFF25F-FE52-4D08-8D96-D04C14048816}",
+                            "details": {
+                                "name": ""
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
+                            "details": {
+                                "name": ""
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "Setindex",
+                    "details": {
+                        "name": "Setindex"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{C6FFF25F-FE52-4D08-8D96-D04C14048816}",
+                            "details": {
+                                "name": ""
+                            }
+                        },
+                        {
+                            "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
+                            "details": {
+                                "name": ""
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

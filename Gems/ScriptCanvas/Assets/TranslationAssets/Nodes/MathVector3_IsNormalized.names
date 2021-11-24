@@ -1,0 +1,46 @@
+{
+    "entries": [
+        {
+            "base": "{7C895C3A-972B-5CF4-9F1D-62C2A9BBBEAD}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "Is Normalized",
+                "category": "Math/Vector3",
+                "tooltip": "Returns true if the length of the source is within tolerance of 1.0, else false"
+            },
+            "slots": [
+                {
+                    "base": "Input_In",
+                    "details": {
+                        "name": "In"
+                    }
+                },
+                {
+                    "base": "Output_Out",
+                    "details": {
+                        "name": "Out"
+                    }
+                },
+                {
+                    "base": "DataInput_Source",
+                    "details": {
+                        "name": "Source"
+                    }
+                },
+                {
+                    "base": "DataInput_Tolerance",
+                    "details": {
+                        "name": "Tolerance"
+                    }
+                },
+                {
+                    "base": "DataOutput_Result",
+                    "details": {
+                        "name": "Result"
+                    }
+                }
+            ]
+        }
+    ]
+}

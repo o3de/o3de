@@ -1,0 +1,110 @@
+{
+    "entries": [
+        {
+            "base": "SurfaceMaskGradientRequestBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "SurfaceMaskGradientRequestBus"
+            },
+            "methods": [
+                {
+                    "base": "GetNumTags",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetNumTags"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetNumTags is invoked"
+                    },
+                    "details": {
+                        "name": "GetNumTags"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{D6597933-47CD-4FC8-B911-63F3E2B0993A}",
+                            "details": {
+                                "name": "AZ::u64"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetTag",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetTag"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetTag is invoked"
+                    },
+                    "details": {
+                        "name": "GetTag"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{9F4E062E-06A0-46D4-85DF-E0DA96467D3A}",
+                            "details": {
+                                "name": "Crc32"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "RemoveTag",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke RemoveTag"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after RemoveTag is invoked"
+                    },
+                    "details": {
+                        "name": "RemoveTag"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "AddTag",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke AddTag"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after AddTag is invoked"
+                    },
+                    "details": {
+                        "name": "AddTag"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZStd::string"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

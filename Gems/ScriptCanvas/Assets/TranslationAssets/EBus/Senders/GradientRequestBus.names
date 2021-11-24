@@ -1,0 +1,44 @@
+{
+    "entries": [
+        {
+            "base": "GradientRequestBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "GradientRequestBus"
+            },
+            "methods": [
+                {
+                    "base": "GetValue",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetValue"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetValue is invoked"
+                    },
+                    "details": {
+                        "name": "GetValue"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{DC4B9269-CB3C-4071-989D-C885FB9946A5}",
+                            "details": {
+                                "name": ""
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

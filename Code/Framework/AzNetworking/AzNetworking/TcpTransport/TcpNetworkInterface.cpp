@@ -107,7 +107,7 @@ namespace AzNetworking
 
         auto readCallback = [this, startTimeMs](SocketFd socketFd) { HandleConnectionRecv(socketFd, startTimeMs); };
         auto writeCallback = [this](SocketFd socketFd) { HandleConnectionSend(socketFd); };
-        m_tcpSocketManager.ProcessEvents(AZ::TimeMs{ 0 }, readCallback, writeCallback);
+        m_tcpSocketManager.ProcessEvents(AZ::Time::ZeroTimeMs, readCallback, writeCallback);
 
         FlushQueuedRemoves();
 

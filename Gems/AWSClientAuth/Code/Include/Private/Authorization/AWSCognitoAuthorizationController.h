@@ -9,6 +9,7 @@
 #pragma once
 
 #include <Authorization/AWSCognitoAuthorizationBus.h>
+#include <Authorization/AWSClientAuthCognitoCachingAuthenticatedCredentialsProvider.h>
 #include <Authorization/AWSClientAuthPersistentCognitoIdentityProvider.h>
 #include <Authentication/AuthenticationProviderBus.h>
 #include <Credential/AWSCredentialBus.h>
@@ -51,8 +52,8 @@ namespace AWSClientAuth
 
         std::shared_ptr<AWSClientAuthPersistentCognitoIdentityProvider> m_persistentCognitoIdentityProvider;
         std::shared_ptr<AWSClientAuthPersistentCognitoIdentityProvider> m_persistentAnonymousCognitoIdentityProvider;
-        std::shared_ptr<Aws::Auth::CognitoCachingAuthenticatedCredentialsProvider> m_cognitoCachingCredentialsProvider;
-        std::shared_ptr<Aws::Auth::CognitoCachingAnonymousCredentialsProvider> m_cognitoCachingAnonymousCredentialsProvider;
+        std::shared_ptr<AWSClientAuthCognitoCachingAuthenticatedCredentialsProvider> m_cognitoCachingCredentialsProvider;
+        std::shared_ptr<AWSClientAuthCachingAnonymousCredsProvider> m_cognitoCachingAnonymousCredentialsProvider;
 
         AZStd::string m_cognitoIdentityPoolId;
         AZStd::string m_formattedCognitoUserPoolId;

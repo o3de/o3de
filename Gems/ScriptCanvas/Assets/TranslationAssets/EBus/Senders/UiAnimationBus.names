@@ -1,0 +1,380 @@
+{
+    "entries": [
+        {
+            "base": "UiAnimationBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "UiAnimationBus",
+                "category": "UI"
+            },
+            "methods": [
+                {
+                    "base": "ResetSequence",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Reset Sequence"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Reset Sequence is invoked"
+                    },
+                    "details": {
+                        "name": "Reset Sequence",
+                        "tooltip": "Resets the sequence to the first frame"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Sequence Name",
+                                "tooltip": "The name of the sequence"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetSequencePlayingSpeed",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Sequence Playing Speed"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Sequence Playing Speed is invoked"
+                    },
+                    "details": {
+                        "name": "Get Sequence Playing Speed",
+                        "tooltip": "Gets the speed of the playing sequence"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Sequence Name",
+                                "tooltip": "The name of the sequence"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float",
+                                "tooltip": "The name of the sequence"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetSequencePlayingTime",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Sequence Playing Time"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Sequence Playing Time is invoked"
+                    },
+                    "details": {
+                        "name": "Get Sequence Playing Time",
+                        "tooltip": "Gets the current time of the playing sequence"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Sequence Name",
+                                "tooltip": "The name of the sequence"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float",
+                                "tooltip": "The name of the sequence"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "AbortSequence",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Abort Sequence"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Abort Sequence is invoked"
+                    },
+                    "details": {
+                        "name": "Abort Sequence",
+                        "tooltip": "Stops playing the sequence and displays the last frame"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Sequence Name",
+                                "tooltip": "The name of the sequence"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "IsSequencePlaying",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Is Sequence Playing"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Is Sequence Playing is invoked"
+                    },
+                    "details": {
+                        "name": "Is Sequence Playing",
+                        "tooltip": "Returns whether the sequence is currently playing"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Sequence Name",
+                                "tooltip": "The name of the sequence"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool",
+                                "tooltip": "The name of the sequence"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetSequenceLength",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Sequence Length"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Sequence Length is invoked"
+                    },
+                    "details": {
+                        "name": "Get Sequence Length",
+                        "tooltip": "Gets the length of the sequence"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Sequence Name",
+                                "tooltip": "The name of the sequence"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float",
+                                "tooltip": "The name of the sequence"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "StopSequence",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Stop Sequence"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Stop Sequence is invoked"
+                    },
+                    "details": {
+                        "name": "Stop Sequence",
+                        "tooltip": "Stops playing the sequence and displays the last frame"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Sequence Name",
+                                "tooltip": "The name of the sequence"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "PlaySequenceRange",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke PlaySequenceRange"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after PlaySequenceRange is invoked"
+                    },
+                    "details": {
+                        "name": "PlaySequenceRange"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZStd::string"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "PauseSequence",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Pause Sequence"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Pause Sequence is invoked"
+                    },
+                    "details": {
+                        "name": "Pause Sequence",
+                        "tooltip": "Pauses the playing sequence"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Sequence Name",
+                                "tooltip": "The name of the sequence"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "ResumeSequence",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Resume Sequence"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Resume Sequence is invoked"
+                    },
+                    "details": {
+                        "name": "Resume Sequence",
+                        "tooltip": "Resumes the paused sequence"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Sequence Name",
+                                "tooltip": "The name of the sequence"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "StartSequence",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Start Sequence"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Start Sequence is invoked"
+                    },
+                    "details": {
+                        "name": "Start Sequence",
+                        "tooltip": "Starts playing the sequence"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Sequence Name",
+                                "tooltip": "The name of the sequence"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetSequencePlayingSpeed",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Sequence Playing Speed"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Sequence Playing Speed is invoked"
+                    },
+                    "details": {
+                        "name": "Set Sequence Playing Speed",
+                        "tooltip": "Sets the speed of the playing sequence"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Sequence Name",
+                                "tooltip": "The name of the sequence"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Speed",
+                                "tooltip": "The speed of the playing sequence"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetSequenceStopBehavior",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Sequence Stop Behavior"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Sequence Stop Behavior is invoked"
+                    },
+                    "details": {
+                        "name": "Set Sequence Stop Behavior",
+                        "tooltip": "Sets the behavior a sequence will exhibit when it stops playing"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "Stop Behavior",
+                                "tooltip": "The behavior a sequence will exhibit when it stops playing (0=Leave Time, 1=Go To End Time, 2=Go To Start Time)"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

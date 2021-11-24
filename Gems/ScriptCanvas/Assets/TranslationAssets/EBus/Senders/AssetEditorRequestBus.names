@@ -1,0 +1,99 @@
+{
+    "entries": [
+        {
+            "base": "AssetEditorRequestBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "AssetEditorRequestBus"
+            },
+            "methods": [
+                {
+                    "base": "CreateNewGraph",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke CreateNewGraph"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after CreateNewGraph is invoked"
+                    },
+                    "details": {
+                        "name": "CreateNewGraph"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "EntityId",
+                                "tooltip": "Entity Unique Id"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "ContainsGraph",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke ContainsGraph"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after ContainsGraph is invoked"
+                    },
+                    "details": {
+                        "name": "ContainsGraph"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "EntityId",
+                                "tooltip": "Entity Unique Id"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "CloseGraph",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke CloseGraph"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after CloseGraph is invoked"
+                    },
+                    "details": {
+                        "name": "CloseGraph"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "EntityId",
+                                "tooltip": "Entity Unique Id"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

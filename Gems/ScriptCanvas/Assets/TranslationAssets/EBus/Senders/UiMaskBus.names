@@ -1,0 +1,297 @@
+{
+    "entries": [
+        {
+            "base": "UiMaskBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "UiMaskBus",
+                "category": "UI"
+            },
+            "methods": [
+                {
+                    "base": "SetDrawInFront",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Draw In Front"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Draw In Front is invoked"
+                    },
+                    "details": {
+                        "name": "Set Draw In Front",
+                        "tooltip": "Sets whether the mask should be drawn in front of the child elements"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Draw In Front",
+                                "tooltip": "Indicates whether the mask should be drawn in front of the child elements"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetUseRenderToTexture",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Use Render To Texture"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Use Render To Texture is invoked"
+                    },
+                    "details": {
+                        "name": "Get Use Render To Texture",
+                        "tooltip": "Get the flag that indicates whether the mask should use render to texture which allows an alpha gradient for soft-edged masks"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetDrawInFront",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Draw In Front"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Draw In Front is invoked"
+                    },
+                    "details": {
+                        "name": "Get Draw In Front",
+                        "tooltip": "Returns whether the mask is drawn in front of the child elements"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetDrawBehind",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Draw Behind"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Draw Behind is invoked"
+                    },
+                    "details": {
+                        "name": "Get Draw Behind",
+                        "tooltip": "Returns whether the mask is drawn behind the child elements"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetIsInteractionMaskingEnabled",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Is Interaction Masking Enabled"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Is Interaction Masking Enabled is invoked"
+                    },
+                    "details": {
+                        "name": "Is Interaction Masking Enabled",
+                        "tooltip": "Returns whether children hidden by the mask are prevented from getting input events"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetUseAlphaTest",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Use Alpha Test"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Use Alpha Test is invoked"
+                    },
+                    "details": {
+                        "name": "Get Use Alpha Test",
+                        "tooltip": "Returns whether to use the alpha channel in the mask visual's texture to define the mask"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetIsMaskingEnabled",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Is Masking Enabled"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Is Masking Enabled is invoked"
+                    },
+                    "details": {
+                        "name": "Set Is Masking Enabled",
+                        "tooltip": "Sets whether masking should be enabled"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Enabled",
+                                "tooltip": "Indicates whether masking should be enabled"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetUseRenderToTexture",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Use Render To Texture"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Use Render To Texture is invoked"
+                    },
+                    "details": {
+                        "name": "Set Use Render To Texture",
+                        "tooltip": "Set the flag that indicates whether the mask should use render to texture which allows an alpha gradient for soft-edged masks"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Use Render To Texture",
+                                "tooltip": "Whether the mask should use render to texture"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetIsMaskingEnabled",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Is Masking Enabled"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Is Masking Enabled is invoked"
+                    },
+                    "details": {
+                        "name": "Is Masking Enabled",
+                        "tooltip": "Returns whether masking is enabled"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetIsInteractionMaskingEnabled",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Is Interaction Masking Enabled"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Is Interaction Masking Enabled is invoked"
+                    },
+                    "details": {
+                        "name": "Set Is Interaction Masking Enabled",
+                        "tooltip": "Sets whether children hidden by the mask should be prevented from getting input events"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Interaction Masking",
+                                "tooltip": "Indicates whether children hidden by the mask should be prevented from getting input events"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetDrawBehind",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Draw Behind"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Draw Behind is invoked"
+                    },
+                    "details": {
+                        "name": "Set Draw Behind",
+                        "tooltip": "Sets whether the mask should be drawn behind the child elements"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Draw Behind",
+                                "tooltip": "Indicates whether the mask should be drawn behind the child elements"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetUseAlphaTest",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Use Alpha Test"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Use Alpha Test is invoked"
+                    },
+                    "details": {
+                        "name": "Set Use Alpha Test",
+                        "tooltip": "Sets whether to use the alpha channel in the mask visual's texture to define the mask"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Use Alpha Test",
+                                "tooltip": "Indicates whether to use the alpha channel in the mask visual's texture to define the mask"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

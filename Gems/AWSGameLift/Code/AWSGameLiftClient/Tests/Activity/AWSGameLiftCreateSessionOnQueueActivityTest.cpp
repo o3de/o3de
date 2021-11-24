@@ -9,6 +9,8 @@
 #include <AWSGameLiftClientFixture.h>
 #include <Activity/AWSGameLiftCreateSessionOnQueueActivity.h>
 
+#include <aws/gamelift/model/StartGameSessionPlacementRequest.h>
+
 using namespace AWSGameLift;
 
 using AWSGameLiftCreateSessionOnQueueActivityTest = AWSGameLiftClientFixture;

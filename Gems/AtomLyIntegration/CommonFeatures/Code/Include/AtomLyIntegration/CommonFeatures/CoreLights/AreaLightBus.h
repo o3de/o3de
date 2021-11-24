@@ -132,6 +132,13 @@ namespace AZ
             //! Sets the Esm exponent. Higher values produce a steeper falloff between light and shadow.
             virtual void SetEsmExponent(float exponent) = 0;
 
+            //! Reduces acne by biasing the shadowmap lookup along the geometric normal.
+            //! @return Returns the amount of bias to apply.
+            virtual float GetNormalShadowBias() const = 0;
+
+            //! Reduces acne by biasing the shadowmap lookup along the geometric normal.
+            //! @param normalShadowBias Sets the amount of normal shadow bias to apply.
+            virtual void SetNormalShadowBias(float normalShadowBias) = 0;
         };
 
         //! The EBus for requests to for setting and getting light component properties.

@@ -1,0 +1,948 @@
+{
+    "entries": [
+        {
+            "base": "MathAABB_VM",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "MathAABB_VM"
+            },
+            "methods": [
+                {
+                    "base": "Overlaps",
+                    "context": "MathAABB_VM",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Overlaps"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Overlaps is invoked"
+                    },
+                    "details": {
+                        "name": "MathAABB_VM::Overlaps",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A54C2B36-D5B8-46A1-A529-4EBDBD2450E7}",
+                            "details": {
+                                "name": "const Aabb&"
+                            }
+                        },
+                        {
+                            "typeid": "{A54C2B36-D5B8-46A1-A529-4EBDBD2450E7}",
+                            "details": {
+                                "name": "const Aabb&"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SurfaceArea",
+                    "context": "MathAABB_VM",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SurfaceArea"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SurfaceArea is invoked"
+                    },
+                    "details": {
+                        "name": "MathAABB_VM::SurfaceArea",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A54C2B36-D5B8-46A1-A529-4EBDBD2450E7}",
+                            "details": {
+                                "name": "const Aabb&"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{110C4B14-11A8-4E9D-8638-5051013A56AC}",
+                            "details": {
+                                "name": "double"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "ToSphere",
+                    "context": "MathAABB_VM",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke ToSphere"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after ToSphere is invoked"
+                    },
+                    "details": {
+                        "name": "MathAABB_VM::ToSphere",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A54C2B36-D5B8-46A1-A529-4EBDBD2450E7}",
+                            "details": {
+                                "name": "const Aabb&"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{CD6328B1-6CC4-54CE-97F4-9D91F5A242F4}",
+                            "details": {
+                                "name": "tuple<Vector3 double >"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "FromOBB",
+                    "context": "MathAABB_VM",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke FromOBB"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after FromOBB is invoked"
+                    },
+                    "details": {
+                        "name": "MathAABB_VM::FromOBB",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{004ABD25-CF14-4EB3-BD41-022C247C07FA}",
+                            "details": {
+                                "name": "const Obb&"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A54C2B36-D5B8-46A1-A529-4EBDBD2450E7}",
+                            "details": {
+                                "name": "Aabb"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "Translate",
+                    "context": "MathAABB_VM",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Translate"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Translate is invoked"
+                    },
+                    "details": {
+                        "name": "MathAABB_VM::Translate",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A54C2B36-D5B8-46A1-A529-4EBDBD2450E7}",
+                            "details": {
+                                "name": "const Aabb&"
+                            }
+                        },
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Vector3"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A54C2B36-D5B8-46A1-A529-4EBDBD2450E7}",
+                            "details": {
+                                "name": "Aabb"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "ContainsVector3",
+                    "context": "MathAABB_VM",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke ContainsVector3"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after ContainsVector3 is invoked"
+                    },
+                    "details": {
+                        "name": "MathAABB_VM::ContainsVector3",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A54C2B36-D5B8-46A1-A529-4EBDBD2450E7}",
+                            "details": {
+                                "name": "const Aabb&"
+                            }
+                        },
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "const Vector3&"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "Distance",
+                    "context": "MathAABB_VM",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Distance"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Distance is invoked"
+                    },
+                    "details": {
+                        "name": "MathAABB_VM::Distance",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A54C2B36-D5B8-46A1-A529-4EBDBD2450E7}",
+                            "details": {
+                                "name": "const Aabb&"
+                            }
+                        },
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Vector3"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{110C4B14-11A8-4E9D-8638-5051013A56AC}",
+                            "details": {
+                                "name": "double"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "FromPoint",
+                    "context": "MathAABB_VM",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke FromPoint"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after FromPoint is invoked"
+                    },
+                    "details": {
+                        "name": "MathAABB_VM::FromPoint",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "const Vector3&"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A54C2B36-D5B8-46A1-A529-4EBDBD2450E7}",
+                            "details": {
+                                "name": "Aabb"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "Null",
+                    "context": "MathAABB_VM",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Null"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Null is invoked"
+                    },
+                    "details": {
+                        "name": "MathAABB_VM::Null",
+                        "category": "Other"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A54C2B36-D5B8-46A1-A529-4EBDBD2450E7}",
+                            "details": {
+                                "name": "Aabb"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "YExtent",
+                    "context": "MathAABB_VM",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke YExtent"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after YExtent is invoked"
+                    },
+                    "details": {
+                        "name": "MathAABB_VM::YExtent",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A54C2B36-D5B8-46A1-A529-4EBDBD2450E7}",
+                            "details": {
+                                "name": "const Aabb&"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{110C4B14-11A8-4E9D-8638-5051013A56AC}",
+                            "details": {
+                                "name": "double"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "Clamp",
+                    "context": "MathAABB_VM",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Clamp"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Clamp is invoked"
+                    },
+                    "details": {
+                        "name": "MathAABB_VM::Clamp",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A54C2B36-D5B8-46A1-A529-4EBDBD2450E7}",
+                            "details": {
+                                "name": "const Aabb&"
+                            }
+                        },
+                        {
+                            "typeid": "{A54C2B36-D5B8-46A1-A529-4EBDBD2450E7}",
+                            "details": {
+                                "name": "const Aabb&"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A54C2B36-D5B8-46A1-A529-4EBDBD2450E7}",
+                            "details": {
+                                "name": "Aabb"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "ContainsAABB",
+                    "context": "MathAABB_VM",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke ContainsAABB"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after ContainsAABB is invoked"
+                    },
+                    "details": {
+                        "name": "MathAABB_VM::ContainsAABB",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A54C2B36-D5B8-46A1-A529-4EBDBD2450E7}",
+                            "details": {
+                                "name": "const Aabb&"
+                            }
+                        },
+                        {
+                            "typeid": "{A54C2B36-D5B8-46A1-A529-4EBDBD2450E7}",
+                            "details": {
+                                "name": "const Aabb&"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "Expand",
+                    "context": "MathAABB_VM",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Expand"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Expand is invoked"
+                    },
+                    "details": {
+                        "name": "MathAABB_VM::Expand",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A54C2B36-D5B8-46A1-A529-4EBDBD2450E7}",
+                            "details": {
+                                "name": "const Aabb&"
+                            }
+                        },
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Vector3"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A54C2B36-D5B8-46A1-A529-4EBDBD2450E7}",
+                            "details": {
+                                "name": "Aabb"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "Extents",
+                    "context": "MathAABB_VM",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Extents"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Extents is invoked"
+                    },
+                    "details": {
+                        "name": "MathAABB_VM::Extents",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A54C2B36-D5B8-46A1-A529-4EBDBD2450E7}",
+                            "details": {
+                                "name": "const Aabb&"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Vector3"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "FromCenterHalfExtents",
+                    "context": "MathAABB_VM",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke FromCenterHalfExtents"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after FromCenterHalfExtents is invoked"
+                    },
+                    "details": {
+                        "name": "MathAABB_VM::FromCenterHalfExtents",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Vector3"
+                            }
+                        },
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Vector3"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A54C2B36-D5B8-46A1-A529-4EBDBD2450E7}",
+                            "details": {
+                                "name": "Aabb"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetMin",
+                    "context": "MathAABB_VM",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetMin"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetMin is invoked"
+                    },
+                    "details": {
+                        "name": "MathAABB_VM::GetMin",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A54C2B36-D5B8-46A1-A529-4EBDBD2450E7}",
+                            "details": {
+                                "name": "const Aabb&"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Vector3"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "ApplyTransform",
+                    "context": "MathAABB_VM",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke ApplyTransform"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after ApplyTransform is invoked"
+                    },
+                    "details": {
+                        "name": "MathAABB_VM::ApplyTransform",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A54C2B36-D5B8-46A1-A529-4EBDBD2450E7}",
+                            "details": {
+                                "name": "Aabb"
+                            }
+                        },
+                        {
+                            "typeid": "{5D9958E9-9F1E-4985-B532-FFFDE75FEDFD}",
+                            "details": {
+                                "name": "const Transform&"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A54C2B36-D5B8-46A1-A529-4EBDBD2450E7}",
+                            "details": {
+                                "name": "Aabb"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "Center",
+                    "context": "MathAABB_VM",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Center"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Center is invoked"
+                    },
+                    "details": {
+                        "name": "MathAABB_VM::Center",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A54C2B36-D5B8-46A1-A529-4EBDBD2450E7}",
+                            "details": {
+                                "name": "const Aabb&"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Vector3"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "FromMinMax",
+                    "context": "MathAABB_VM",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke FromMinMax"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after FromMinMax is invoked"
+                    },
+                    "details": {
+                        "name": "MathAABB_VM::FromMinMax",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Vector3"
+                            }
+                        },
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Vector3"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A54C2B36-D5B8-46A1-A529-4EBDBD2450E7}",
+                            "details": {
+                                "name": "Aabb"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "IsFinite",
+                    "context": "MathAABB_VM",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke IsFinite"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after IsFinite is invoked"
+                    },
+                    "details": {
+                        "name": "MathAABB_VM::IsFinite",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A54C2B36-D5B8-46A1-A529-4EBDBD2450E7}",
+                            "details": {
+                                "name": "const Aabb&"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "IsValid",
+                    "context": "MathAABB_VM",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke IsValid"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after IsValid is invoked"
+                    },
+                    "details": {
+                        "name": "MathAABB_VM::IsValid",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A54C2B36-D5B8-46A1-A529-4EBDBD2450E7}",
+                            "details": {
+                                "name": "const Aabb&"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetMax",
+                    "context": "MathAABB_VM",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetMax"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetMax is invoked"
+                    },
+                    "details": {
+                        "name": "MathAABB_VM::GetMax",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A54C2B36-D5B8-46A1-A529-4EBDBD2450E7}",
+                            "details": {
+                                "name": "const Aabb&"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Vector3"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "XExtent",
+                    "context": "MathAABB_VM",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke XExtent"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after XExtent is invoked"
+                    },
+                    "details": {
+                        "name": "MathAABB_VM::XExtent",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A54C2B36-D5B8-46A1-A529-4EBDBD2450E7}",
+                            "details": {
+                                "name": "const Aabb&"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{110C4B14-11A8-4E9D-8638-5051013A56AC}",
+                            "details": {
+                                "name": "double"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "AddPoint",
+                    "context": "MathAABB_VM",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke AddPoint"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after AddPoint is invoked"
+                    },
+                    "details": {
+                        "name": "MathAABB_VM::AddPoint",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A54C2B36-D5B8-46A1-A529-4EBDBD2450E7}",
+                            "details": {
+                                "name": "Aabb"
+                            }
+                        },
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Vector3"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A54C2B36-D5B8-46A1-A529-4EBDBD2450E7}",
+                            "details": {
+                                "name": "Aabb"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "AddAABB",
+                    "context": "MathAABB_VM",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke AddAABB"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after AddAABB is invoked"
+                    },
+                    "details": {
+                        "name": "MathAABB_VM::AddAABB",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A54C2B36-D5B8-46A1-A529-4EBDBD2450E7}",
+                            "details": {
+                                "name": "Aabb"
+                            }
+                        },
+                        {
+                            "typeid": "{A54C2B36-D5B8-46A1-A529-4EBDBD2450E7}",
+                            "details": {
+                                "name": "const Aabb&"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A54C2B36-D5B8-46A1-A529-4EBDBD2450E7}",
+                            "details": {
+                                "name": "Aabb"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "FromCenterRadius",
+                    "context": "MathAABB_VM",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke FromCenterRadius"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after FromCenterRadius is invoked"
+                    },
+                    "details": {
+                        "name": "MathAABB_VM::FromCenterRadius",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Vector3"
+                            }
+                        },
+                        {
+                            "typeid": "{110C4B14-11A8-4E9D-8638-5051013A56AC}",
+                            "details": {
+                                "name": "double"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A54C2B36-D5B8-46A1-A529-4EBDBD2450E7}",
+                            "details": {
+                                "name": "Aabb"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "ZExtent",
+                    "context": "MathAABB_VM",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke ZExtent"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after ZExtent is invoked"
+                    },
+                    "details": {
+                        "name": "MathAABB_VM::ZExtent",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A54C2B36-D5B8-46A1-A529-4EBDBD2450E7}",
+                            "details": {
+                                "name": "const Aabb&"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{110C4B14-11A8-4E9D-8638-5051013A56AC}",
+                            "details": {
+                                "name": "double"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

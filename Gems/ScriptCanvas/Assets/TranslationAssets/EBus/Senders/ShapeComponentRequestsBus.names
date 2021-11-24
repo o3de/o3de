@@ -1,0 +1,160 @@
+{
+    "entries": [
+        {
+            "base": "ShapeComponentRequestsBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "ShapeComponentRequestsBus",
+                "category": "Shape"
+            },
+            "methods": [
+                {
+                    "base": "DistanceSquaredFromPoint",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Distance Squared From Point"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Distance Squared From Point is invoked"
+                    },
+                    "details": {
+                        "name": "Distance Squared From Point",
+                        "tooltip": "Returns the minimum squared distance between a specified point and the shape"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Point",
+                                "tooltip": "Point from which to calculate square distance"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float",
+                                "tooltip": "Point from which to calculate square distance"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "DistanceFromPoint",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Distance From Point"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Distance From Point is invoked"
+                    },
+                    "details": {
+                        "name": "Distance From Point",
+                        "tooltip": "Returns the minimum distance between a specified point and the shape"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Point",
+                                "tooltip": "Point from which to calculate distance"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float",
+                                "tooltip": "Point from which to calculate distance"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "IsPointInside",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Is Point Inside"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Is Point Inside is invoked"
+                    },
+                    "details": {
+                        "name": "Is Point Inside",
+                        "tooltip": "Checks if a given point is inside a shape or outside it"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Point",
+                                "tooltip": "The point to be checked"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool",
+                                "tooltip": "The point to be checked"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetEncompassingAabb",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Encompassing Aabb"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Encompassing Aabb is invoked"
+                    },
+                    "details": {
+                        "name": "Get Encompassing Aabb",
+                        "tooltip": "Returns an AABB that encompasses this entire shape"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A54C2B36-D5B8-46A1-A529-4EBDBD2450E7}",
+                            "details": {
+                                "name": "Aabb"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetShapeType",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Shape Type"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Shape Type is invoked"
+                    },
+                    "details": {
+                        "name": "Get Shape Type",
+                        "tooltip": "Allows users to fetch the type of shape that this component is using"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{9F4E062E-06A0-46D4-85DF-E0DA96467D3A}",
+                            "details": {
+                                "name": "Crc32"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

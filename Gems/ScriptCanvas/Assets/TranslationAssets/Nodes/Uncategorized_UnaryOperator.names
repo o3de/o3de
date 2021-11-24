@@ -1,0 +1,22 @@
+{
+    "entries": [
+        {
+            "base": "{B0BF8615-D718-4115-B3D8-CAB554BC6863}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "UnaryOperator",
+                "tooltip": "UnaryOperator"
+            },
+            "slots": [
+                {
+                    "base": "Input_In",
+                    "details": {
+                        "name": "In",
+                        "tooltip": "Signal to perform the evaluation when desired."
+                    }
+                }
+            ]
+        }
+    ]
+}

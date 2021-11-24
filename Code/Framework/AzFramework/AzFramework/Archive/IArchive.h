@@ -18,13 +18,13 @@
 #include <AzCore/std/string/fixed_string.h>
 
 #include <AzFramework/Archive/ArchiveFindData.h>
-
+#include <AzFramework/Archive/ArchiveVars.h>
 
 enum EStreamSourceMediaType : int32_t;
 
 namespace AZ::IO
 {
-    enum class ArchiveLocationPriority;
+    enum class FileSearchPriority;
     struct IResourceList;
     struct INestedArchive;
     struct IArchive;
@@ -114,14 +114,6 @@ namespace AZ::IO
             RFOM_NextLevel                          // used for level2level loading
         };
 
-        //file location enum used in isFileExist to control where the archive system looks for the file.
-        enum EFileSearchLocation
-        {
-            eFileLocation_Any = 0,
-            eFileLocation_OnDisk,
-            eFileLocation_InPak,
-        };
-
         enum EInMemoryArchiveLocation
         {
             eInMemoryPakLocale_Unload = 0,
@@ -130,12 +122,6 @@ namespace AZ::IO
             eInMemoryPakLocale_PAK,
         };
 
-        enum EFileSearchType
-        {
-            eFileSearchType_AllowInZipsOnly = 0,
-            eFileSearchType_AllowOnDiskAndInZips,
-            eFileSearchType_AllowOnDiskOnly
-        };
 
         using SignedFileSize = int64_t;
 
@@ -213,7 +199,7 @@ namespace AZ::IO
         virtual AZStd::intrusive_ptr<AZ::IO::MemoryBlock> PoolAllocMemoryBlock(size_t nSize, const char* sUsage, size_t nAlign = 1) = 0;
 
         // Arguments:
-        virtual ArchiveFileIterator FindFirst(AZStd::string_view pDir, EFileSearchType searchType = eFileSearchType_AllowInZipsOnly) = 0;
+        virtual ArchiveFileIterator FindFirst(AZStd::string_view pDir, FileSearchLocation searchType = FileSearchLocation::InPak) = 0;
         virtual ArchiveFileIterator FindNext(AZ::IO::ArchiveFileIterator handle) = 0;
         virtual bool FindClose(AZ::IO::ArchiveFileIterator handle) = 0;
         //returns file modification time
@@ -221,7 +207,7 @@ namespace AZ::IO
 
         // Description:
         //    Checks if specified file exist in filesystem.
-        virtual bool IsFileExist(AZStd::string_view sFilename, EFileSearchLocation = eFileLocation_Any) = 0;
+        virtual bool IsFileExist(AZStd::string_view sFilename, FileSearchLocation = FileSearchLocation::Any) = 0;
 
         // Checks if path is a folder
         virtual bool IsFolder(AZStd::string_view sPath) = 0;
@@ -283,7 +269,7 @@ namespace AZ::IO
         virtual bool DisableRuntimeFileAccess(bool status, AZStd::thread_id threadId) = 0;
 
         // gets the current pak priority
-        virtual ArchiveLocationPriority GetPakPriority() const = 0;
+        virtual FileSearchPriority GetPakPriority() const = 0;
 
         // Summary:
         // Return offset in archive file (ideally has to return offset on DVD) for streaming requests sorting
@@ -295,7 +281,7 @@ namespace AZ::IO
 
         // Event sent when a archive file is opened that contains a level.pak
         // @param const AZStd::vector<AZStd::string>& - Array of directories containing level.pak files
-        using LevelPackOpenEvent = AZ::Event<const AZStd::vector<AZStd::string>&>;
+        using LevelPackOpenEvent = AZ::Event<const AZStd::vector<AZ::IO::Path>&>;
         virtual auto GetLevelPackOpenEvent()->LevelPackOpenEvent* = 0;
         // Event sent when a archive contains a level.pak is closed
         // @param const AZStd::string_view - Name of the pak file that was closed

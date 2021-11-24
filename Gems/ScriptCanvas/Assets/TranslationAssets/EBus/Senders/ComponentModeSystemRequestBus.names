@@ -1,0 +1,50 @@
+{
+    "entries": [
+        {
+            "base": "ComponentModeSystemRequestBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "ComponentModeSystemRequestBus"
+            },
+            "methods": [
+                {
+                    "base": "EnterComponentMode",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke EnterComponentMode"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after EnterComponentMode is invoked"
+                    },
+                    "details": {
+                        "name": "EnterComponentMode"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}",
+                            "details": {
+                                "name": "AZ::Uuid"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "EndComponentMode",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke EndComponentMode"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after EndComponentMode is invoked"
+                    },
+                    "details": {
+                        "name": "EndComponentMode"
+                    }
+                }
+            ]
+        }
+    ]
+}

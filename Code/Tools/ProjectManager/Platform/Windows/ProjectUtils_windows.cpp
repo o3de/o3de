@@ -13,6 +13,7 @@
 #include <QFileInfo>
 #include <QProcess>
 #include <QProcessEnvironment>
+#include <QStandardPaths>
 
 #include <AzCore/Utils/Utils.h>
 
@@ -20,7 +21,7 @@ namespace O3DE::ProjectManager
 {
     namespace ProjectUtils
     {
-        AZ::Outcome<QProcessEnvironment, QString> GetCommandLineProcessEnvironment()
+        AZ::Outcome<void, QString> SetupCommandLineProcessEnvironment()
         {
             // Use the engine path to insert a path for cmake
             auto engineInfoResult = PythonBindingsInterface::Get()->GetEngineInfo();
@@ -30,26 +31,34 @@ namespace O3DE::ProjectManager
             }
             auto engineInfo = engineInfoResult.GetValue();
 
-            QProcessEnvironment currentEnvironment(QProcessEnvironment::systemEnvironment());
-
-            // Append cmake path to PATH incase it is missing
+            // Append cmake path to the current environment PATH incase it is missing, since if
+            // we are starting CMake itself the current application needs to find it using Path
+            // This also takes affect for all child processes.
             QDir cmakePath(engineInfo.m_path);
             cmakePath.cd("cmake/runtime/bin");
-            QString pathValue = currentEnvironment.value("PATH");
-            pathValue += ";" + cmakePath.path();
-            currentEnvironment.insert("PATH", pathValue);
-            return AZ::Success(currentEnvironment);
+            QString pathEnv = qEnvironmentVariable("Path");
+            QStringList pathEnvList = pathEnv.split(";");
+            if (!pathEnvList.contains(cmakePath.path()))
+            {
+                pathEnv += ";" + cmakePath.path();
+                if (!qputenv("Path", pathEnv.toStdString().c_str()))
+                {
+                    return AZ::Failure(QObject::tr("Failed to set Path environment variable"));
+                }
+            }
+
+            return AZ::Success();
         }
 
         AZ::Outcome<QString, QString> FindSupportedCompilerForPlatform()
         {
             // Validate that cmake is installed 
-            auto cmakeProcessEnvResult = GetCommandLineProcessEnvironment();
+            auto cmakeProcessEnvResult = SetupCommandLineProcessEnvironment();
             if (!cmakeProcessEnvResult.IsSuccess())
             {
                 return AZ::Failure(cmakeProcessEnvResult.GetError());
             }
-            auto cmakeVersionQueryResult = ExecuteCommandResult("cmake", QStringList{"--version"}, cmakeProcessEnvResult.GetValue());
+            auto cmakeVersionQueryResult = ExecuteCommandResult("cmake", QStringList{"--version"});
             if (!cmakeVersionQueryResult.IsSuccess())
             {
                 return AZ::Failure(QObject::tr("CMake not found. \n\n"
@@ -103,7 +112,7 @@ namespace O3DE::ProjectManager
         
         AZ::Outcome<void, QString> OpenCMakeGUI(const QString& projectPath)
         {
-            AZ::Outcome processEnvResult = GetCommandLineProcessEnvironment();
+            AZ::Outcome processEnvResult = SetupCommandLineProcessEnvironment();
             if (!processEnvResult.IsSuccess())
             {
                 return AZ::Failure(processEnvResult.GetError());
@@ -117,7 +126,6 @@ namespace O3DE::ProjectManager
             }
 
             QProcess process;
-            process.setProcessEnvironment(processEnvResult.GetValue());
 
             // if the project build path is relative, it should be relative to the project path 
             process.setWorkingDirectory(projectPath);
@@ -138,13 +146,33 @@ namespace O3DE::ProjectManager
             return ExecuteCommandResultModalDialog(
                 "cmd.exe",
                 QStringList{"/c", batPath},
-                QProcessEnvironment::systemEnvironment(),
                 QObject::tr("Running get_python script..."));
         }
 
         AZ::IO::FixedMaxPath GetEditorDirectory()
         {
             return AZ::Utils::GetExecutableDirectory();
+        }
+
+        AZ::Outcome<QString, QString> CreateDesktopShortcut(const QString& filename, const QString& targetPath, const QStringList& arguments)
+        {
+            const QString cmd{"powershell.exe"};
+            const QString desktopPath = QStandardPaths::writableLocation(QStandardPaths::DesktopLocation);
+            const QString shortcutPath = QString("%1/%2.lnk").arg(desktopPath).arg(filename);
+            const QString arg = QString("$s=(New-Object -COM WScript.Shell).CreateShortcut('%1');$s.TargetPath='%2';$s.Arguments='%3';$s.Save();")
+                    .arg(shortcutPath)
+                    .arg(targetPath)
+                    .arg(arguments.join(' '));
+            auto createShortcutResult = ExecuteCommandResult(cmd, QStringList{"-Command", arg});
+            if (!createShortcutResult.IsSuccess())
+            {
+                return AZ::Failure(QObject::tr("Failed to create desktop shortcut %1 <br><br>"
+                                               "Please verify you have permission to create files at the specified location.<br><br> %2")
+                                    .arg(shortcutPath)
+                                    .arg(createShortcutResult.GetError()));
+            }
+
+            return AZ::Success(QObject::tr("Desktop shortcut created at<br><a href=\"%1\">%2</a>").arg(desktopPath).arg(shortcutPath));
         }
     } // namespace ProjectUtils
 } // namespace O3DE::ProjectManager

@@ -1,0 +1,48 @@
+{
+    "entries": [
+        {
+            "base": "{327EFC0F-F71E-4028-BAF9-C4223B933FB6}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "Split",
+                "category": "String",
+                "tooltip": ".",
+                "subtitle": "String"
+            },
+            "slots": [
+                {
+                    "base": "DataInput_Source",
+                    "details": {
+                        "name": "Source"
+                    }
+                },
+                {
+                    "base": "DataInput_Delimiters",
+                    "details": {
+                        "name": "Delimiters"
+                    }
+                },
+                {
+                    "base": "DataOutput_String Array",
+                    "details": {
+                        "name": "String Array"
+                    }
+                },
+                {
+                    "base": "Input_In",
+                    "details": {
+                        "name": "In",
+                        "tooltip": "Input signal"
+                    }
+                },
+                {
+                    "base": "Output_Out",
+                    "details": {
+                        "name": "Out"
+                    }
+                }
+            ]
+        }
+    ]
+}

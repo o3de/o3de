@@ -1,0 +1,190 @@
+{
+    "entries": [
+        {
+            "base": "PerlinGradientRequestBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "PerlinGradientRequestBus"
+            },
+            "methods": [
+                {
+                    "base": "SetOctaves",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetOctaves"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetOctaves is invoked"
+                    },
+                    "details": {
+                        "name": "SetOctaves"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetFrequency",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetFrequency"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetFrequency is invoked"
+                    },
+                    "details": {
+                        "name": "GetFrequency"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetOctaves",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetOctaves"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetOctaves is invoked"
+                    },
+                    "details": {
+                        "name": "GetOctaves"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetFrequency",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetFrequency"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetFrequency is invoked"
+                    },
+                    "details": {
+                        "name": "SetFrequency"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetAmplitude",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetAmplitude"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetAmplitude is invoked"
+                    },
+                    "details": {
+                        "name": "SetAmplitude"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetAmplitude",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetAmplitude"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetAmplitude is invoked"
+                    },
+                    "details": {
+                        "name": "GetAmplitude"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetRandomSeed",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetRandomSeed"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetRandomSeed is invoked"
+                    },
+                    "details": {
+                        "name": "GetRandomSeed"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetRandomSeed",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetRandomSeed"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetRandomSeed is invoked"
+                    },
+                    "details": {
+                        "name": "SetRandomSeed"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

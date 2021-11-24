@@ -1,0 +1,259 @@
+{
+    "entries": [
+        {
+            "base": "GraphControllerRequestBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "GraphControllerRequestBus"
+            },
+            "methods": [
+                {
+                    "base": "RemoveConnection",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke RemoveConnection"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after RemoveConnection is invoked"
+                    },
+                    "details": {
+                        "name": "RemoveConnection"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{B51CFD94-318D-5E30-BE18-6ACC6CFCC2EC}",
+                            "details": {
+                                "name": "AZStd::shared_ptr"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "AddConnection",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke AddConnection"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after AddConnection is invoked"
+                    },
+                    "details": {
+                        "name": "AddConnection"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{444B2C18-8D7E-5B43-9524-0C9F6C351542}",
+                            "details": {
+                                "name": "AZStd::shared_ptr"
+                            }
+                        },
+                        {
+                            "typeid": "{444B2C18-8D7E-5B43-9524-0C9F6C351542}",
+                            "details": {
+                                "name": "AZStd::shared_ptr"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{B51CFD94-318D-5E30-BE18-6ACC6CFCC2EC}",
+                            "details": {
+                                "name": "AZStd::shared_ptr"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "WrapNode",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke WrapNode"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after WrapNode is invoked"
+                    },
+                    "details": {
+                        "name": "WrapNode"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{9A6CD726-97FC-54C4-A34B-5996F6948697}",
+                            "details": {
+                                "name": "AZStd::shared_ptr"
+                            }
+                        },
+                        {
+                            "typeid": "{9A6CD726-97FC-54C4-A34B-5996F6948697}",
+                            "details": {
+                                "name": "AZStd::shared_ptr"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "AddConnectionBySlotId",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke AddConnectionBySlotId"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after AddConnectionBySlotId is invoked"
+                    },
+                    "details": {
+                        "name": "AddConnectionBySlotId"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{9A6CD726-97FC-54C4-A34B-5996F6948697}",
+                            "details": {
+                                "name": "AZStd::shared_ptr"
+                            }
+                        },
+                        {
+                            "typeid": "{D24130B9-89C4-4EAA-9A5D-3469B05C5065}",
+                            "details": {
+                                "name": "SlotIdData"
+                            }
+                        },
+                        {
+                            "typeid": "{9A6CD726-97FC-54C4-A34B-5996F6948697}",
+                            "details": {
+                                "name": "AZStd::shared_ptr"
+                            }
+                        },
+                        {
+                            "typeid": "{D24130B9-89C4-4EAA-9A5D-3469B05C5065}",
+                            "details": {
+                                "name": "SlotIdData"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{B51CFD94-318D-5E30-BE18-6ACC6CFCC2EC}",
+                            "details": {
+                                "name": "AZStd::shared_ptr"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "AddNode",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke AddNode"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after AddNode is invoked"
+                    },
+                    "details": {
+                        "name": "AddNode"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{9A6CD726-97FC-54C4-A34B-5996F6948697}",
+                            "details": {
+                                "name": "AZStd::shared_ptr"
+                            }
+                        },
+                        {
+                            "typeid": "{3D80F623-C85C-4741-90D0-E4E66164E6BF}",
+                            "details": {
+                                "name": "Vector2"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "EntityId",
+                                "tooltip": "Entity Unique Id"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "RemoveNode",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke RemoveNode"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after RemoveNode is invoked"
+                    },
+                    "details": {
+                        "name": "RemoveNode"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{9A6CD726-97FC-54C4-A34B-5996F6948697}",
+                            "details": {
+                                "name": "AZStd::shared_ptr"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "ExtendSlot",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke ExtendSlot"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after ExtendSlot is invoked"
+                    },
+                    "details": {
+                        "name": "ExtendSlot"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{9A6CD726-97FC-54C4-A34B-5996F6948697}",
+                            "details": {
+                                "name": "AZStd::shared_ptr"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZStd::string"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{D24130B9-89C4-4EAA-9A5D-3469B05C5065}",
+                            "details": {
+                                "name": "SlotIdData"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

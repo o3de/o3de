@@ -1,0 +1,81 @@
+{
+    "entries": [
+        {
+            "base": "AWSScriptBehaviorDynamoDB",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "AWS Dynamo DB",
+                "category": "AWS Core"
+            },
+            "methods": [
+                {
+                    "base": "GetItem",
+                    "context": "AWSScriptBehaviorDynamoDB",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetItem"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetItem is invoked"
+                    },
+                    "details": {
+                        "name": "Get Item",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Table Resource Key"
+                            }
+                        },
+                        {
+                            "typeid": "{F8A7460C-2CC2-5755-AFDA-49B1109A751E}",
+                            "details": {
+                                "name": "Key Map"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetItemRaw",
+                    "context": "AWSScriptBehaviorDynamoDB",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetItemRaw"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetItemRaw is invoked"
+                    },
+                    "details": {
+                        "name": "Get Item Raw",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Table"
+                            }
+                        },
+                        {
+                            "typeid": "{F8A7460C-2CC2-5755-AFDA-49B1109A751E}",
+                            "details": {
+                                "name": "Key Map"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Region"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

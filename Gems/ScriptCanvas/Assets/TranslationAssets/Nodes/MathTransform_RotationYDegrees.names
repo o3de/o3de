@@ -1,0 +1,40 @@
+{
+    "entries": [
+        {
+            "base": "{380DB52D-3BEB-553C-B903-F5824AE1A0C6}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "Rotation Y (Degrees)",
+                "category": "Math/Transform",
+                "tooltip": "Returns a transform representing a rotation Degrees around the Y-Axis"
+            },
+            "slots": [
+                {
+                    "base": "Input_In",
+                    "details": {
+                        "name": "In"
+                    }
+                },
+                {
+                    "base": "Output_Out",
+                    "details": {
+                        "name": "Out"
+                    }
+                },
+                {
+                    "base": "DataInput_Degrees",
+                    "details": {
+                        "name": "Degrees"
+                    }
+                },
+                {
+                    "base": "DataOutput_Result",
+                    "details": {
+                        "name": "Result"
+                    }
+                }
+            ]
+        }
+    ]
+}

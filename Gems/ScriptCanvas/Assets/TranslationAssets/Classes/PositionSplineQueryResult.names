@@ -1,0 +1,12 @@
+{
+    "entries": [
+        {
+            "base": "PositionSplineQueryResult",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "PositionSplineQueryResult"
+            }
+        }
+    ]
+}

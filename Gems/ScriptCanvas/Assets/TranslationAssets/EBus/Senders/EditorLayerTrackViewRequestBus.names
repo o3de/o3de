@@ -1,0 +1,654 @@
+{
+    "entries": [
+        {
+            "base": "EditorLayerTrackViewRequestBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "EditorLayerTrackViewRequestBus"
+            },
+            "methods": [
+                {
+                    "base": "NewSequence",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke NewSequence"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after NewSequence is invoked"
+                    },
+                    "details": {
+                        "name": "NewSequence"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        },
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetRecording",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetRecording"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetRecording is invoked"
+                    },
+                    "details": {
+                        "name": "SetRecording"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetNumSequences",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetNumSequences"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetNumSequences is invoked"
+                    },
+                    "details": {
+                        "name": "GetNumSequences"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetSequenceName",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetSequenceName"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetSequenceName is invoked"
+                    },
+                    "details": {
+                        "name": "GetSequenceName"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
+                            "details": {
+                                "name": "unsigned int"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZStd::string"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetSequenceTimeRange",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetSequenceTimeRange"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetSequenceTimeRange is invoked"
+                    },
+                    "details": {
+                        "name": "GetSequenceTimeRange"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{515CF4CF-4992-4139-BDE5-42A887432B45}",
+                            "details": {
+                                "name": "Range"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "PlaySequence",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke PlaySequence"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after PlaySequence is invoked"
+                    },
+                    "details": {
+                        "name": "PlaySequence"
+                    }
+                },
+                {
+                    "base": "GetNodeName",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetNodeName"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetNodeName is invoked"
+                    },
+                    "details": {
+                        "name": "GetNodeName"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        },
+                        {
+                            "typeid": "{7114E998-A8B4-519B-9342-A86D1587B4F7}",
+                            "details": {
+                                "name": ""
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZStd::string"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetSequenceTimeRange",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetSequenceTimeRange"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetSequenceTimeRange is invoked"
+                    },
+                    "details": {
+                        "name": "SetSequenceTimeRange"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "DeleteSequence",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke DeleteSequence"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after DeleteSequence is invoked"
+                    },
+                    "details": {
+                        "name": "DeleteSequence"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetKeyValue",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetKeyValue"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetKeyValue is invoked"
+                    },
+                    "details": {
+                        "name": "GetKeyValue"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        },
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        },
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        },
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        },
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}",
+                            "details": {
+                                "name": "any"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "StopSequence",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke StopSequence"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after StopSequence is invoked"
+                    },
+                    "details": {
+                        "name": "StopSequence"
+                    }
+                },
+                {
+                    "base": "AddSelectedEntities",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke AddSelectedEntities"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after AddSelectedEntities is invoked"
+                    },
+                    "details": {
+                        "name": "AddSelectedEntities"
+                    }
+                },
+                {
+                    "base": "GetNumTrackKeys",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetNumTrackKeys"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetNumTrackKeys is invoked"
+                    },
+                    "details": {
+                        "name": "GetNumTrackKeys"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        },
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        },
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        },
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "AddLayerNode",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke AddLayerNode"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after AddLayerNode is invoked"
+                    },
+                    "details": {
+                        "name": "AddLayerNode"
+                    }
+                },
+                {
+                    "base": "DeleteNode",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke DeleteNode"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after DeleteNode is invoked"
+                    },
+                    "details": {
+                        "name": "DeleteNode"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{7114E998-A8B4-519B-9342-A86D1587B4F7}",
+                            "details": {
+                                "name": ""
+                            }
+                        },
+                        {
+                            "typeid": "{7114E998-A8B4-519B-9342-A86D1587B4F7}",
+                            "details": {
+                                "name": ""
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetInterpolatedValue",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetInterpolatedValue"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetInterpolatedValue is invoked"
+                    },
+                    "details": {
+                        "name": "GetInterpolatedValue"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        },
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        },
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        },
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}",
+                            "details": {
+                                "name": "any"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetNumNodes",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetNumNodes"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetNumNodes is invoked"
+                    },
+                    "details": {
+                        "name": "GetNumNodes"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{7114E998-A8B4-519B-9342-A86D1587B4F7}",
+                            "details": {
+                                "name": ""
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "AddNode",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke AddNode"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after AddNode is invoked"
+                    },
+                    "details": {
+                        "name": "AddNode"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        },
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "AddTrack",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke AddTrack"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after AddTrack is invoked"
+                    },
+                    "details": {
+                        "name": "AddTrack"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        },
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        },
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "DeleteTrack",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke DeleteTrack"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after DeleteTrack is invoked"
+                    },
+                    "details": {
+                        "name": "DeleteTrack"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        },
+                        {
+                            "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
+                            "details": {
+                                "name": "unsigned int"
+                            }
+                        },
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        },
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetCurrentSequence",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetCurrentSequence"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetCurrentSequence is invoked"
+                    },
+                    "details": {
+                        "name": "SetCurrentSequence"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetTime",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetTime"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetTime is invoked"
+                    },
+                    "details": {
+                        "name": "SetTime"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}
