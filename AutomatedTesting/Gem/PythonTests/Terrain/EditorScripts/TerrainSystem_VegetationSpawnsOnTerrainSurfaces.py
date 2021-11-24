@@ -148,7 +148,10 @@ def TerrainSystem_VegetationSpawnsOnTerrainSurfaces():
     general.set_current_view_position(17.0, -66.0, 41.0)
     general.set_current_view_rotation(-15, 0, 0)
 
-    # Expected item counts under conditions to be tested
+    # Expected item counts under conditions to be tested.
+    # By default, vegetation spawns at a density of 20 items per 16 meters, 
+    # so in a 20m square, there should be around 25 ^ 2 items depending on whether area edges are included.
+    # In this case there are 26 ^ 2 items.
     expected_surface_tag_excluded_item_count = 338
     expected_no_exclusions_item_count = 676
 
@@ -172,7 +175,7 @@ def TerrainSystem_VegetationSpawnsOnTerrainSurfaces():
     terrain_entity_1.get_set_test(3, "Configuration|Gradient to Surface Mappings|[0]|Surface Tag", surface_data.SurfaceTag("test_tag2"))
     terrain_entity_2.get_set_test(3, "Configuration|Gradient to Surface Mappings|[0]|Surface Tag", surface_data.SurfaceTag("test_tag3"))
 
-    # Give the VegetationSurfaceFilter an exclusion list, set it to excude test_tag2 which should remove all the lower items which are in terrain_entity_1.
+    # Give the VegetationSurfaceFilter an exclusion list, set it to exclude test_tag2 which should remove all the lower items which are in terrain_entity_1.
     vegetation_entity.get_set_test(3, "Configuration|Exclusion|Surface Tags", [surface_data.SurfaceTag()])
     vegetation_entity.get_set_test(3, "Configuration|Exclusion|Surface Tags|[0]", surface_data.SurfaceTag("test_tag2"))
   
