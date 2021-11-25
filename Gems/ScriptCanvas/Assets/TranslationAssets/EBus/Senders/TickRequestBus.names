@@ -5,7 +5,8 @@
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "Tick"
+                "name": "Tick",
+                "category": "Timing"
             },
             "methods": [
                 {
@@ -25,7 +26,7 @@
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Delta Time"
+                                "name": "float"
                             }
                         }
                     ]

@@ -5,7 +5,7 @@
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "UiCustomImageBus",
+                "name": "UI Custom Image",
                 "category": "UI/LyShine Examples"
             },
             "methods": [

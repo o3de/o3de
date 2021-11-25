@@ -17,6 +17,7 @@
 #include <LmbrCentral/Shape/MockShapes.h>
 #include <Terrain/MockTerrainLayerSpawner.h>
 #include <Terrain/MockTerrain.h>
+#include <Tests/Mocks/Terrain/MockTerrainDataRequestBus.h>
 
 using ::testing::_;
 using ::testing::Mock;

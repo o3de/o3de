@@ -561,12 +561,10 @@ uint32_t AZ::FFont::GetNumQuadsForText(const char* str, const bool asciiMultiLin
             ++numQuads;
         }
 
-        uint32_t nextCh = 0;
         const wchar_t* pChar = strW.c_str();
         while (uint32_t ch = *pChar)
         {
             ++pChar;
-            nextCh = *pChar;
 
             switch (ch)
             {
