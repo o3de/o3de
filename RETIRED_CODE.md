@@ -9,4 +9,6 @@ The main goal of this list, is to enable future developers to find old code that
 | 2021-11-25 |  | ObjectManager - remove unused named selection group support|
 | 2021-11-25 |  | ObjectManager - remove unused xml export functionality|
 | 2021-11-25 |  | ObjectManager - remove unused object hiding and freezing functionality|
+| 2021-11-25 |  | ObjectManager - remove unused object renaming and duplicate name detection|
+
 

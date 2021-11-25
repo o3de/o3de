@@ -179,9 +179,6 @@ public:
     virtual void LoadObjects(CObjectArchive& ar, bool bSelect) = 0;
 
     virtual void ChangeObjectId(REFGUID oldId, REFGUID newId) = 0;
-    virtual bool IsDuplicateObjectName(const QString& newName) const = 0;
-    virtual void ShowDuplicationMsgWarning(CBaseObject* obj, const QString& newName, bool bShowMsgBox) const = 0;
-    virtual void ChangeObjectName(CBaseObject* obj, const QString& newName) = 0;
 
     //! while loading PreFabs we need to force this IDs
     //! to force always the same IDs, on each load.

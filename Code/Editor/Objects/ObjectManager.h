@@ -198,12 +198,6 @@ public:
     bool AddObject(CBaseObject* obj);
     void RemoveObject(CBaseObject* obj);
     void ChangeObjectId(REFGUID oldId, REFGUID newId) override;
-    bool IsDuplicateObjectName(const QString& newName) const override
-    {
-        return FindObject(newName) ? true : false;
-    }
-    void ShowDuplicationMsgWarning(CBaseObject* obj, const QString& newName, bool bShowMsgBox) const override;
-    void ChangeObjectName(CBaseObject* obj, const QString& newName) override;
 
     //! Convert object of one type to object of another type.
     //! Original object is deleted.
