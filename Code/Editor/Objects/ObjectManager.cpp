@@ -81,12 +81,10 @@ CObjectManager* g_pObjectManager = nullptr;
 
 //////////////////////////////////////////////////////////////////////////
 CObjectManager::CObjectManager()
-    : m_lastHideMask(0)
-    , m_maxObjectViewDistRatio(0.00001f)
+    : m_maxObjectViewDistRatio(0.00001f)
     , m_currSelection(&m_defaultSelection)
     , m_nLastSelCount(0)
     , m_bSelectionChanged(false)
-    , m_selectCallback(nullptr)
     , m_currEditObject(nullptr)
     , m_createGameObjects(true)
     , m_bGenUniqObjectNames(true)
@@ -760,14 +758,6 @@ bool CObjectManager::SelectObject(CBaseObject* obj, bool bUseMask)
         return false;
     }
 
-    if (m_selectCallback)
-    {
-        if (!m_selectCallback->OnSelectObject(obj))
-        {
-            return true;
-        }
-    }
-
     m_currSelection->AddObject(obj);
 
     // while in ComponentMode we never explicitly change selection (the entity will always be selected).
@@ -1420,111 +1410,6 @@ void CObjectManager::RegisterCVars()
         "Adjust the hit radius used for axis helpers, like the transform gizmo.");
 }
 
-//////////////////////////////////////////////////////////////////////////
-void CObjectManager::Serialize(XmlNodeRef& xmlNode, bool bLoading, int flags)
-{
-    if (!xmlNode)
-    {
-        return;
-    }
-
-    if (bLoading)
-    {
-        m_loadedObjects = 0;
-
-        if (flags == SERIALIZE_ONLY_NOTSHARED)
-        {
-            DeleteNotSharedObjects();
-        }
-        else if (flags == SERIALIZE_ONLY_SHARED)
-        {
-            DeleteSharedObjects();
-        }
-        else
-        {
-            DeleteAllObjects();
-        }
-
-
-        XmlNodeRef root = xmlNode->findChild("Objects");
-
-        int totalObjects = 0;
-
-        if (root)
-        {
-            root->getAttr("NumObjects", totalObjects);
-        }
-
-
-        StartObjectsLoading(totalObjects);
-
-        CObjectArchive ar(this, xmlNode, true);
-
-        // Loading.
-        if (root)
-        {
-            ar.node = root;
-            LoadObjects(ar, false);
-        }
-        EndObjectsLoading();
-    }
-    else
-    {
-        // Saving.
-        XmlNodeRef root = xmlNode->newChild("Objects");
-
-        CObjectArchive ar(this, root, false);
-
-        // Save all objects to XML.
-        for (Objects::iterator it = m_objects.begin(); it != m_objects.end(); ++it)
-        {
-            CBaseObject* obj = it->second;
-
-            if (obj->CheckFlags(OBJFLAG_DONT_SAVE))
-            {
-                continue;
-            }
-
-            if ((flags == SERIALIZE_ONLY_SHARED) && !obj->CheckFlags(OBJFLAG_SHARED))
-            {
-                continue;
-            }
-            else if ((flags == SERIALIZE_ONLY_NOTSHARED) && obj->CheckFlags(OBJFLAG_SHARED))
-            {
-                continue;
-            }
-
-            XmlNodeRef objNode = root->newChild("Object");
-            ar.node = objNode;
-            obj->Serialize(ar);
-        }
-    }
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CObjectManager::LoadObjects(CObjectArchive& objectArchive, bool bSelect)
-{
-    m_bLoadingObjects = true;
-
-    XmlNodeRef objectsNode = objectArchive.node;
-    int numObjects = objectsNode->getChildCount();
-    for (int i = 0; i < numObjects; i++)
-    {
-        objectArchive.node = objectsNode->getChild(i);
-        CBaseObject* obj = objectArchive.LoadObject(objectsNode->getChild(i));
-        if (obj && bSelect)
-        {
-            SelectObject(obj);
-        }
-    }
-    EndObjectsLoading(); // End progress bar, here, Resolve objects have his own.
-    objectArchive.ResolveObjects();
-
-    InvalidateVisibleList();
-
-    m_bLoadingObjects = false;
-}
-
 void CObjectManager::DeleteNotSharedObjects()
 {
     TBaseObjects objects;
@@ -1551,14 +1436,6 @@ void CObjectManager::DeleteSharedObjects()
             DeleteObject(obj);
         }
     }
-}
-
-//////////////////////////////////////////////////////////////////////////
-IObjectSelectCallback* CObjectManager::SetSelectCallback(IObjectSelectCallback* callback)
-{
-    IObjectSelectCallback* prev = m_selectCallback;
-    m_selectCallback = callback;
-    return prev;
 }
 
 //////////////////////////////////////////////////////////////////////////

@@ -182,14 +182,6 @@ public:
     void    GetClassCategoryToolClassNamePairs(std::vector< std::pair<QString, QString> >& categoryToolClassNamePairs) override;
     void    GetClassTypes(const QString& category, QStringList& types) override;
 
-    //! Serialize Objects in manager to specified XML Node.
-    //! @param flags Can be one of SerializeFlags.
-    void    Serialize(XmlNodeRef& rootNode, bool bLoading, int flags = SERIALIZE_ALL) override;
-
-    //! Load objects from object archive.
-    //! @param bSelect if set newly loaded object will be selected.
-    void LoadObjects(CObjectArchive& ar, bool bSelect) override;
-
     //! Delete from Object manager all objects without SHARED flag.
     void    DeleteNotSharedObjects();
     //! Delete from Object manager all objects with SHARED flag.
@@ -202,10 +194,6 @@ public:
     //! Convert object of one type to object of another type.
     //! Original object is deleted.
     bool ConvertToType(CBaseObject* pObject, const QString& typeName) override;
-
-    //! Set new selection callback.
-    //! @return previous selection callback.
-    IObjectSelectCallback* SetSelectCallback(IObjectSelectCallback* callback) override;
 
     // Enables/Disables creating of game objects.
     void SetCreateGameObject(bool enable) override { m_createGameObjects = enable; };
@@ -296,7 +284,6 @@ private:
     CSelectionGroup* m_currSelection;
     int m_nLastSelCount;
     bool m_bSelectionChanged;
-    IObjectSelectCallback* m_selectCallback;
     bool m_bLoadingObjects;
 
     // True while performing a select or deselect operation on more than one object.
