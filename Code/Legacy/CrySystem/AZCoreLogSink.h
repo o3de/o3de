@@ -36,9 +36,10 @@ public:
         Disconnect();
     }
 
-    inline static void Connect()
+    inline static void Connect(bool suppressSystemOutput)
     {
         GetInstance().m_ignoredAsserts = new IgnoredAssertMap();
+        GetInstance().m_suppressSystemOutput = suppressSystemOutput;
         GetInstance().BusConnect();
     }
 
@@ -179,23 +180,13 @@ public:
         {
             CryLog("(%s) - %s", window, message);
         }
-
-        // If this is an editor-server, then allow the default trace behavior (fwrites to stdout) to occur
-        // The editor will being listening to the stdout of this server
-        if (const auto console = AZ::Interface<AZ::IConsole>::Get())
-        {
-            bool editorsv_isDedicated = false;
-            if (console->GetCvarValue("editorsv_isDedicated", editorsv_isDedicated) == AZ::GetValueResult::Success)
-            {
-                return !editorsv_isDedicated;
-            }
-        }
-
-        return true; // suppress default AzCore behavior.
+        
+        return m_suppressSystemOutput;
     }
 
 private:
 
     using IgnoredAssertMap = AZStd::unordered_map<AZ::Crc32, bool, AZStd::hash<AZ::Crc32>, AZStd::equal_to<AZ::Crc32>, AZ::OSStdAllocator>;
     IgnoredAssertMap* m_ignoredAsserts;
+    bool m_suppressSystemOutput = true;
 };
