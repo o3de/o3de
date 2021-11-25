@@ -106,6 +106,15 @@ namespace EMStudio
         void SetSelectedJointIndices(const AZStd::unordered_set<size_t>& selectedJointIndices);
         const AZStd::unordered_set<size_t>& GetSelectedJointIndices() const                                { return m_selectedJointIndices; }
 
+        const AZStd::unordered_set<size_t>* FindSelectedJointIndices(EMotionFX::ActorInstance* instance) const
+        {
+            if (instance == m_commandManager->GetCurrentSelection().GetSingleActorInstance())
+            {
+                return &m_selectedJointIndices;
+            }
+            return nullptr;
+        }
+
         Workspace* GetWorkspace()                                                               { return &m_workspace; }
 
         // functions for adding/removing gizmos

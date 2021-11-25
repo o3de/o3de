@@ -217,8 +217,9 @@ namespace AZ::Render
         m_auxColors.reserve(numJoints * 2);
         AZ::Color renderColor;
 
-        AZStd::unordered_set<size_t> selectedJoints;
-        EMotionFX::JointSelectionRequestBus::BroadcastResult(selectedJoints, &EMotionFX::JointSelectionRequests::GetSelectedJointIndices);
+        const AZStd::unordered_set<size_t>* cachedSelectedJointIndices;
+        EMotionFX::JointSelectionRequestBus::BroadcastResult(
+            cachedSelectedJointIndices, &EMotionFX::JointSelectionRequests::FindSelectedJointIndices, instance);
 
         for (size_t jointIndex = 0; jointIndex < numJoints; ++jointIndex)
         {
@@ -234,7 +235,7 @@ namespace AZ::Render
                 continue;
             }
 
-            if (selectedJoints.find(jointIndex) != selectedJoints.end())
+            if (cachedSelectedJointIndices && cachedSelectedJointIndices->find(jointIndex) != cachedSelectedJointIndices->end())
             {
                 renderColor = SelectedColor;
             }
@@ -271,8 +272,9 @@ namespace AZ::Render
         const size_t numEnabled = instance->GetNumEnabledNodes();
 
         AZ::Color renderColor = skeletonColor;
-        AZStd::unordered_set<size_t> selectedJoints;
-        EMotionFX::JointSelectionRequestBus::BroadcastResult(selectedJoints, &EMotionFX::JointSelectionRequests::GetSelectedJointIndices);
+        const AZStd::unordered_set<size_t>* cachedSelectedJointIndices;
+        EMotionFX::JointSelectionRequestBus::BroadcastResult(
+            cachedSelectedJointIndices, &EMotionFX::JointSelectionRequests::FindSelectedJointIndices, instance);
 
         for (size_t i = 0; i < numEnabled; ++i)
         {
@@ -296,7 +298,7 @@ namespace AZ::Render
             const float parentBoneScale = CalculateBoneScale(instance, skeleton->GetNode(parentIndex));
             const float cylinderSize = boneLength - boneScale - parentBoneScale;
 
-            if (selectedJoints.find(jointIndex) != selectedJoints.end())
+            if (cachedSelectedJointIndices && cachedSelectedJointIndices->find(jointIndex) != cachedSelectedJointIndices->end())
             {
                 renderColor = SelectedColor;
             }
@@ -628,8 +630,9 @@ namespace AZ::Render
             return;
         }
 
-        AZStd::unordered_set<size_t> selectedJoints;
-        EMotionFX::JointSelectionRequestBus::BroadcastResult(selectedJoints, &EMotionFX::JointSelectionRequests::GetSelectedJointIndices);
+        const AZStd::unordered_set<size_t>* cachedSelectedJointIndices;
+        EMotionFX::JointSelectionRequestBus::BroadcastResult(
+            cachedSelectedJointIndices, &EMotionFX::JointSelectionRequests::FindSelectedJointIndices, actorInstance);
 
         const EMotionFX::Actor* actor = actorInstance->GetActor();
         const EMotionFX::Skeleton* skeleton = actor->GetSkeleton();
@@ -657,7 +660,7 @@ namespace AZ::Render
             const AZ::Vector3 worldPos = pose->GetWorldSpaceTransform(jointIndex).m_position;
 
             m_drawParams.m_position = worldPos;
-            if (selectedJoints.find(jointIndex) != selectedJoints.end())
+            if (cachedSelectedJointIndices && cachedSelectedJointIndices->find(jointIndex) != cachedSelectedJointIndices->end())
             {
                 m_drawParams.m_color = SelectedColor;
             }
@@ -681,8 +684,9 @@ namespace AZ::Render
         const EMotionFX::Pose* pose = transformData->GetCurrentPose();
         const float constPreScale = scale * unitScale * 3.0f;
 
-        AZStd::unordered_set<size_t> selectedJoints;
-        EMotionFX::JointSelectionRequestBus::BroadcastResult(selectedJoints, &EMotionFX::JointSelectionRequests::GetSelectedJointIndices);
+        const AZStd::unordered_set<size_t>* cachedSelectedJointIndices;
+        EMotionFX::JointSelectionRequestBus::BroadcastResult(
+            cachedSelectedJointIndices, &EMotionFX::JointSelectionRequests::FindSelectedJointIndices, actorInstance);
 
         const size_t numEnabled = actorInstance->GetNumEnabledNodes();
         for (size_t i = 0; i < numEnabled; ++i)
@@ -694,7 +698,7 @@ namespace AZ::Render
             const float size = CalculateBoneScale(actorInstance, joint) * constPreScale * axisBoneScale;
             AZ::Transform worldTM = pose->GetWorldSpaceTransform(jointIndex).ToAZTransform();
             bool selected = false;
-            if (selectedJoints.find(jointIndex) != selectedJoints.end())
+            if (cachedSelectedJointIndices && cachedSelectedJointIndices->find(jointIndex) != cachedSelectedJointIndices->end())
             {
                 selected = true;
             }

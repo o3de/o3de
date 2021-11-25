@@ -17,7 +17,7 @@ namespace EMotionFX
         : public AZ::EBusTraits
     {
     public:
-        virtual const AZStd::unordered_set<size_t>& GetSelectedJointIndices() const = 0;
+        virtual const AZStd::unordered_set<size_t>* FindSelectedJointIndices(EMotionFX::ActorInstance* instance) const = 0;
     };
     using JointSelectionRequestBus = AZ::EBus<JointSelectionRequests>;
 }
