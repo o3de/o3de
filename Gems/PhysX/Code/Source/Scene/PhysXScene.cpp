@@ -1225,10 +1225,10 @@ namespace PhysX
         AZ_PROFILE_DATAPOINT(Physics, stats.getNbBroadPhaseRemoves(), RootCategory, BroadphaseSubCategory, "BroadPhaseRemoves");
 
         // Compute pair stats for all geometry types
+#if AZ_PROFILE_DATAPOINT
         AZ::u32 ccdPairs = 0;
         AZ::u32 modifiedPairs = 0;
         AZ::u32 triggerPairs = 0;
-
         for (AZ::u32 i = 0; i < PxGeometryType::eGEOMETRY_COUNT; i++)
         {
             // stat[i][j] = stat[j][i], hence, discarding the symmetric entries
@@ -1241,6 +1241,7 @@ namespace PhysX
                 triggerPairs += stats.getRbPairStats(physx::PxSimulationStatistics::eTRIGGER_PAIRS, firstGeom, secondGeom);
             }
         }
+#endif
 
         [[maybe_unused]] const char* CollisionsSubCategory = "Collisions";
         AZ_PROFILE_DATAPOINT(Physics, ccdPairs, RootCategory, CollisionsSubCategory, "CCDPairs");
