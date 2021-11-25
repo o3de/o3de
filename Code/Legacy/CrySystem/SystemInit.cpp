@@ -737,7 +737,18 @@ bool CSystem::Init(const SSystemInitParams& startupParams)
 
     m_pCmdLine = new CCmdLine(startupParams.szSystemCmdLine);
 
-    AZCoreLogSink::Connect();
+    // Init AZCoreLogSink. Don't suppress system output if we're running as an editor-server
+    bool suppressSystemOutput = true;
+    if (const ICmdLineArg* isEditorServerArg = m_pCmdLine->FindArg(eCLAT_Pre, "editorsv_isDedicated"))
+    {
+        AZ::CVarFixedString lowercaseValue(isEditorServerArg->GetValue());
+        AZStd::to_lower(lowercaseValue.begin(), lowercaseValue.end());
+        if (lowercaseValue == "true")
+        {
+            suppressSystemOutput = false;
+        }
+    }
+    AZCoreLogSink::Connect(suppressSystemOutput);
 
     // Registers all AZ Console Variables functors specified within CrySystem
     if (auto azConsole = AZ::Interface<AZ::IConsole>::Get(); azConsole)
