@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "LocalScriptEvents",
+            "base": "LocalScriptEvents",
             "context": "EBusHandler",
             "variant": "",
             "details": {
@@ -9,13 +9,13 @@
             },
             "methods": [
                 {
-                    "key": "Void",
+                    "base": "Void",
                     "details": {
                         "name": "Void"
                     }
                 },
                 {
-                    "key": "Not",
+                    "base": "Not",
                     "details": {
                         "name": "Not"
                     },
@@ -37,7 +37,7 @@
                     ]
                 },
                 {
-                    "key": "Increment",
+                    "base": "Increment",
                     "details": {
                         "name": "Increment"
                     },

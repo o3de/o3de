@@ -12,6 +12,7 @@
 #include <Atom/RPI.Edit/Material/MaterialPropertyId.h>
 #include <Atom/RPI.Edit/Material/MaterialUtils.h>
 #include <Atom/RPI.Public/Material/Material.h>
+#include <Atom/RPI.Public/Image/ImageSystemInterface.h>
 #include <Atom/RPI.Reflect/Image/Image.h>
 #include <Atom/RPI.Reflect/Image/StreamingImageAsset.h>
 #include <Atom/RPI.Reflect/Material/MaterialFunctor.h>
@@ -594,7 +595,7 @@ namespace MaterialEditor
                 MaterialPropertyValue propertyValue = AtomToolsFramework::ConvertToRuntimeType(it->second.GetValue());
                 if (propertyValue.IsValid())
                 {
-                    if (!AtomToolsFramework::ConvertToExportFormat(exportPath, propertyDefinition, propertyValue))
+                    if (!AtomToolsFramework::ConvertToExportFormat(exportPath, propertyId.GetFullName(), propertyDefinition, propertyValue))
                     {
                         AZ_Error("MaterialDocument", false, "Material document property could not be converted: '%s' in '%s'.", propertyId.GetFullName().GetCStr(), m_absolutePath.c_str());
                         result = false;
@@ -708,6 +709,8 @@ namespace MaterialEditor
             AZ_Error("MaterialDocument", false, "Material document extension not supported: '%s'.", m_absolutePath.c_str());
             return false;
         }
+        
+        const bool elevateWarnings = false;
 
         // In order to support automation, general usability, and 'save as' functionality, the user must not have to wait
         // for their JSON file to be cooked by the asset processor before opening or editing it.
@@ -716,7 +719,7 @@ namespace MaterialEditor
         // Long term, the material document should not be concerned with assets at all. The viewport window should be the
         // only thing concerned with assets or instances.
         auto materialAssetResult =
-            m_materialSourceData.CreateMaterialAssetFromSourceData(Uuid::CreateRandom(), m_absolutePath, true, true, &m_sourceDependencies);
+            m_materialSourceData.CreateMaterialAssetFromSourceData(Uuid::CreateRandom(), m_absolutePath, elevateWarnings, true, &m_sourceDependencies);
         if (!materialAssetResult)
         {
             AZ_Error("MaterialDocument", false, "Material asset could not be created from source data: '%s'.", m_absolutePath.c_str());
@@ -754,7 +757,7 @@ namespace MaterialEditor
                 AZ_Error("MaterialDocument", false, "Material parent asset ID could not be created: '%s'.", m_materialSourceData.m_parentMaterial.c_str());
                 return false;
             }
-
+            
             auto parentMaterialAssetResult = parentMaterialSourceData.CreateMaterialAssetFromSourceData(
                 parentMaterialAssetIdResult.GetValue(), m_materialSourceData.m_parentMaterial, true, true);
             if (!parentMaterialAssetResult)

@@ -1,12 +1,140 @@
 {
     "entries": [
         {
-            "key": "ModelPreset",
+            "base": "ModelPreset",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
-                "name": "ModelPreset"
-            }
+                "name": "Model Preset"
+            },
+            "methods": [
+                {
+                    "base": "GetdisplayName",
+                    "details": {
+                        "name": "Get Display Name"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A7304AE2-EC26-44A4-8C00-89D9731CCB13}",
+                            "details": {
+                                "name": "Model Preset"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Display Name"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetdisplayName",
+                    "details": {
+                        "name": "Set Display Name"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A7304AE2-EC26-44A4-8C00-89D9731CCB13}",
+                            "details": {
+                                "name": "Model Preset"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Display Name"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetmodelAsset",
+                    "details": {
+                        "name": "Get Model Asset"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A7304AE2-EC26-44A4-8C00-89D9731CCB13}",
+                            "details": {
+                                "name": "Model Preset"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A1F6761B-B5CA-59E6-89FF-EB0ABDF6BD68}",
+                            "details": {
+                                "name": "Model Asset"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetmodelAsset",
+                    "details": {
+                        "name": "Set Model Asset"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A7304AE2-EC26-44A4-8C00-89D9731CCB13}",
+                            "details": {
+                                "name": "Model Preset"
+                            }
+                        },
+                        {
+                            "typeid": "{A1F6761B-B5CA-59E6-89FF-EB0ABDF6BD68}",
+                            "details": {
+                                "name": "Model Asset"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetpreviewImageAsset",
+                    "details": {
+                        "name": "Get Preview Image Asset"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A7304AE2-EC26-44A4-8C00-89D9731CCB13}",
+                            "details": {
+                                "name": "Model Preset"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{403A7CFE-B218-5D57-8540-BD58E734BCFE}",
+                            "details": {
+                                "name": "Preview Image Asset"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetpreviewImageAsset",
+                    "details": {
+                        "name": "Set Preview Image Asset"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A7304AE2-EC26-44A4-8C00-89D9731CCB13}",
+                            "details": {
+                                "name": "Model Preset"
+                            }
+                        },
+                        {
+                            "typeid": "{403A7CFE-B218-5D57-8540-BD58E734BCFE}",
+                            "details": {
+                                "name": "Preview Image Asset"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

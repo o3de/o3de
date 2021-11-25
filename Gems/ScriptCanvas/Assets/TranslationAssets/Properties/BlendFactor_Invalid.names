@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "BlendFactor_Invalid",
+            "base": "BlendFactor_Invalid",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "BlendFactor_Invalid::Getter",
-                "category": "Constants"
-            }
+                "name": "Invalid",
+                "category": "Constants/Blend Factor"
+            },
+            "methods": [
+                {
+                    "base": "GetBlendFactor_Invalid",
+                    "details": {
+                        "name": "Get Invalid"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

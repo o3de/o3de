@@ -1,38 +1,38 @@
 {
     "entries": [
         {
-            "key": "TransformBus",
+            "base": "TransformBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "TransformBus",
+                "name": "Transform",
                 "category": "Entity"
             },
             "methods": [
                 {
-                    "key": "SetLocalUniformScale",
+                    "base": "SetLocalUniformScale",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetLocalUniformScale"
+                        "tooltip": "When signaled, this will invoke Set Local Uniform Scale"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetLocalUniformScale is invoked"
+                        "tooltip": "Signaled after Set Local Uniform Scale is invoked"
                     },
                     "details": {
-                        "name": "SetLocalUniformScale"
+                        "name": "Set Local Uniform Scale"
                     },
                     "params": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "float"
+                                "name": "Local Uniform Scale"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "SetLocalRotationQuaternion",
+                    "base": "SetLocalRotationQuaternion",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Local Rotation Quaternion"
@@ -42,21 +42,19 @@
                         "tooltip": "Signaled after Set Local Rotation Quaternion is invoked"
                     },
                     "details": {
-                        "name": "Set Local Rotation Quaternion",
-                        "tooltip": "Sets the entity's rotation in local space using a quaternion"
+                        "name": "Set Local Rotation Quaternion"
                     },
                     "params": [
                         {
                             "typeid": "{73103120-3DD3-4873-BAB3-9713FA2804FB}",
                             "details": {
-                                "name": "Rotation",
-                                "tooltip": "The quaternion to rotate around"
+                                "name": "Quaternion"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "GetLocalRotation",
+                    "base": "GetLocalRotation",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Local Rotation"
@@ -66,20 +64,19 @@
                         "tooltip": "Signaled after Get Local Rotation is invoked"
                     },
                     "details": {
-                        "name": "Get Local Rotation",
-                        "tooltip": "Gets the entity's rotation in radians in local space"
+                        "name": "Get Local Rotation"
                     },
                     "results": [
                         {
                             "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
                             "details": {
-                                "name": "Vector3"
+                                "name": "Angles (Radians)"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "GetLocalTM",
+                    "base": "GetLocalTM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Local Transform"
@@ -102,30 +99,29 @@
                     ]
                 },
                 {
-                    "key": "GetEntityAndAllDescendants",
+                    "base": "GetEntityAndAllDescendants",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke Get Entity and Descendants"
+                        "tooltip": "When signaled, this will invoke Get Entity And All Descendants"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after Get Entity and Descendants is invoked"
+                        "tooltip": "Signaled after Get Entity And All Descendants is invoked"
                     },
                     "details": {
-                        "name": "Get Entity and Descendants",
-                        "tooltip": "Returns the EntityID of the entity, the entity's children, the children's children, and so on"
+                        "name": "Get Entity And All Descendants"
                     },
                     "results": [
                         {
                             "typeid": "{4841CFF0-7A5C-519C-BD16-D3625E99605E}",
                             "details": {
-                                "name": "AZStd::vector"
+                                "name": "Entity and Descendants"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "SetLocalZ",
+                    "base": "SetLocalZ",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Local Z"
@@ -135,75 +131,69 @@
                         "tooltip": "Signaled after Set Local Z is invoked"
                     },
                     "details": {
-                        "name": "Set Local Z",
-                        "tooltip": "Gets the entity's Z coordinate in local space"
+                        "name": "Set Local Z"
                     },
                     "params": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Z Translation",
-                                "tooltip": "The entity's Z coordinate in local space"
+                                "name": "Z"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "GetAllDescendants",
+                    "base": "GetAllDescendants",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke Get Descendants"
+                        "tooltip": "When signaled, this will invoke Get All Descendants"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after Get Descendants is invoked"
+                        "tooltip": "Signaled after Get All Descendants is invoked"
                     },
                     "details": {
-                        "name": "Get Descendants",
-                        "tooltip": "Returns the entity's children, the children's children, and so on"
+                        "name": "Get All Descendants"
                     },
                     "results": [
                         {
                             "typeid": "{4841CFF0-7A5C-519C-BD16-D3625E99605E}",
                             "details": {
-                                "name": "AZStd::vector"
+                                "name": "Descendants"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "GetLocalAndWorld",
+                    "base": "GetLocalAndWorld",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke Get Local and World"
+                        "tooltip": "When signaled, this will invoke Get Local And World"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after Get Local and World is invoked"
+                        "tooltip": "Signaled after Get Local And World is invoked"
                     },
                     "details": {
-                        "name": "Get Local and World",
-                        "tooltip": "Retrieves the entity's local and world transforms"
+                        "name": "Get Local And World Transforms"
                     },
                     "params": [
                         {
                             "typeid": "{5D9958E9-9F1E-4985-B532-FFFDE75FEDFD}",
                             "details": {
-                                "name": "Local Transform",
-                                "tooltip": "A reference to a transform that represents the entity's position relative to its parent entity"
+                                "name": "Local"
                             }
                         },
                         {
                             "typeid": "{5D9958E9-9F1E-4985-B532-FFFDE75FEDFD}",
                             "details": {
-                                "name": "Global Transform",
-                                "tooltip": "A reference to a transform that represents the entity's position within the world"
+                                "name": "World"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "RotateAroundLocalZ",
+                    "base": "RotateAroundLocalZ",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Rotate Around Local Z"
@@ -213,21 +203,19 @@
                         "tooltip": "Signaled after Rotate Around Local Z is invoked"
                     },
                     "details": {
-                        "name": "Rotate Around Local Z",
-                        "tooltip": "Rotates the entity around the Z axis in local space"
+                        "name": "Rotate Around Local Z"
                     },
                     "params": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Z Rotation",
-                                "tooltip": "The angle, in radians, to rotate the entity around the Z axis in local space"
+                                "name": "Angle (Radians)"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "GetWorldRotationQuaternion",
+                    "base": "GetWorldRotationQuaternion",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get World Rotation Quaternion"
@@ -237,8 +225,7 @@
                         "tooltip": "Signaled after Get World Rotation Quaternion is invoked"
                     },
                     "details": {
-                        "name": "Get World Rotation Quaternion",
-                        "tooltip": "Gets the entity's rotation in quaternion in world space"
+                        "name": "Get World Rotation Quaternion"
                     },
                     "results": [
                         {
@@ -250,7 +237,7 @@
                     ]
                 },
                 {
-                    "key": "RotateAroundLocalX",
+                    "base": "RotateAroundLocalX",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Rotate Around Local X"
@@ -260,21 +247,19 @@
                         "tooltip": "Signaled after Rotate Around Local X is invoked"
                     },
                     "details": {
-                        "name": "Rotate Around Local X",
-                        "tooltip": "Rotates the entity around the X axis in local space"
+                        "name": "Rotate Around Local X"
                     },
                     "params": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "X Rotation",
-                                "tooltip": "The angle, in radians, to rotate the entity around the X axis in local space"
+                                "name": "Angle (Radians)"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "SetParent",
+                    "base": "SetParent",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Parent"
@@ -284,21 +269,20 @@
                         "tooltip": "Signaled after Set Parent is invoked"
                     },
                     "details": {
-                        "name": "Set Parent",
-                        "tooltip": "Sets the entity's parent entity"
+                        "name": "Set Parent"
                     },
                     "params": [
                         {
                             "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
                             "details": {
                                 "name": "Parent",
-                                "tooltip": "The ID of the entity to set as the parent"
+                                "tooltip": "Entity Unique Id"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "GetLocalZ",
+                    "base": "GetLocalZ",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Local Z"
@@ -308,44 +292,41 @@
                         "tooltip": "Signaled after Get Local Z is invoked"
                     },
                     "details": {
-                        "name": "Get Local Z",
-                        "tooltip": "Gets the entity's Z coordinate in local space"
+                        "name": "Get Local Z"
                     },
                     "results": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "float"
+                                "name": "Z"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "SetLocalRotation",
+                    "base": "SetLocalRotation",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Local Rotation"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after Set Local Rotation is invoked"
+                        "tooltip": "Signaled after SetLocalRotation is invoked"
                     },
                     "details": {
-                        "name": "Set Local Rotation",
-                        "tooltip": "Sets the entity's rotation in local space using a composition of rotations around the three axes"
+                        "name": "Set Local Rotation"
                     },
                     "params": [
                         {
                             "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
                             "details": {
-                                "name": "Rotation",
-                                "tooltip": "A three-dimensional vector, containing Euler angles in radians, that specifies a rotation around each axis"
+                                "name": "Euler Angles (Radians)"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "SetLocalX",
+                    "base": "SetLocalX",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Local X"
@@ -355,21 +336,19 @@
                         "tooltip": "Signaled after Set Local X is invoked"
                     },
                     "details": {
-                        "name": "Set Local X",
-                        "tooltip": "Sets the entity's X coordinate in local space"
+                        "name": "Set Local X"
                     },
                     "params": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "X Translation",
-                                "tooltip": "A new value for the entity's X coordinate in local space"
+                                "name": "X"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "GetLocalRotationQuaternion",
+                    "base": "GetLocalRotationQuaternion",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Local Rotation Quaternion"
@@ -379,8 +358,7 @@
                         "tooltip": "Signaled after Get Local Rotation Quaternion is invoked"
                     },
                     "details": {
-                        "name": "Get Local Rotation Quaternion",
-                        "tooltip": "Gets the quaternion representing the entity's rotation in local space"
+                        "name": "Get Local Rotation Quaternion"
                     },
                     "results": [
                         {
@@ -392,7 +370,7 @@
                     ]
                 },
                 {
-                    "key": "GetWorldX",
+                    "base": "GetWorldX",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get World X"
@@ -402,20 +380,19 @@
                         "tooltip": "Signaled after Get World X is invoked"
                     },
                     "details": {
-                        "name": "Get World X",
-                        "tooltip": "Gets the entity's X coordinate in world space"
+                        "name": "Get World X"
                     },
                     "results": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "float"
+                                "name": "X"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "SetWorldTranslation",
+                    "base": "SetWorldTranslation",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set World Translation"
@@ -425,21 +402,19 @@
                         "tooltip": "Signaled after Set World Translation is invoked"
                     },
                     "details": {
-                        "name": "Set World Translation",
-                        "tooltip": "Sets the entity's world space translation, which represents how to move the entity to a new position within the world"
+                        "name": "Set World Translation"
                     },
                     "params": [
                         {
                             "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
                             "details": {
-                                "name": "Translation",
-                                "tooltip": "A three-dimensional translation vector"
+                                "name": "World Translation"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "MoveEntity",
+                    "base": "MoveEntity",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Move Entity"
@@ -449,21 +424,19 @@
                         "tooltip": "Signaled after Move Entity is invoked"
                     },
                     "details": {
-                        "name": "Move Entity",
-                        "tooltip": "Moves the entity within world space"
+                        "name": "Move Entity"
                     },
                     "params": [
                         {
                             "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
                             "details": {
-                                "name": "Direction",
-                                "tooltip": "A three-dimensional vector that contains the offset to apply to the entity"
+                                "name": "Offset"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "GetChildren",
+                    "base": "GetChildren",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Children"
@@ -473,20 +446,19 @@
                         "tooltip": "Signaled after Get Children is invoked"
                     },
                     "details": {
-                        "name": "Get Children",
-                        "tooltip": "Returns the EntityIDs of the entity's immediate children"
+                        "name": "Get Children"
                     },
                     "results": [
                         {
                             "typeid": "{4841CFF0-7A5C-519C-BD16-D3625E99605E}",
                             "details": {
-                                "name": "AZStd::vector"
+                                "name": "Children"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "SetParentRelative",
+                    "base": "SetParentRelative",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Parent Relative"
@@ -496,21 +468,20 @@
                         "tooltip": "Signaled after Set Parent Relative is invoked"
                     },
                     "details": {
-                        "name": "Set Parent Relative",
-                        "tooltip": "Sets the entity's parent entity, moves the transform relative to the parent entity, and notifies all listeners"
+                        "name": "Set Parent Relative"
                     },
                     "params": [
                         {
                             "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
                             "details": {
                                 "name": "Parent",
-                                "tooltip": "The ID of the entity to set as the parent"
+                                "tooltip": "Entity Unique Id"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "SetWorldTM",
+                    "base": "SetWorldTM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set World Transform"
@@ -520,31 +491,29 @@
                         "tooltip": "Signaled after Set World Transform is invoked"
                     },
                     "details": {
-                        "name": "Set World Transform",
-                        "tooltip": "Sets the world transform and notifies all listeners"
+                        "name": "Set World Transform"
                     },
                     "params": [
                         {
                             "typeid": "{5D9958E9-9F1E-4985-B532-FFFDE75FEDFD}",
                             "details": {
-                                "name": "Transform",
-                                "tooltip": "A reference to a transform for positioning the entity within the world"
+                                "name": "Transform"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "SetWorldRotationQuaternion",
+                    "base": "SetWorldRotationQuaternion",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetWorldRotationQuaternion"
+                        "tooltip": "When signaled, this will invoke Set World Rotation Quaternion"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetWorldRotationQuaternion is invoked"
+                        "tooltip": "Signaled after Set World Rotation Quaternion is invoked"
                     },
                     "details": {
-                        "name": "SetWorldRotationQuaternion"
+                        "name": "Set World Rotation Quaternion"
                     },
                     "params": [
                         {
@@ -556,7 +525,7 @@
                     ]
                 },
                 {
-                    "key": "SetWorldX",
+                    "base": "SetWorldX",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set World X"
@@ -566,21 +535,19 @@
                         "tooltip": "Signaled after Set World X is invoked"
                     },
                     "details": {
-                        "name": "Set World X",
-                        "tooltip": "Sets the entity's X coordinate in world space"
+                        "name": "Set World X"
                     },
                     "params": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "X Translation",
-                                "tooltip": "A new value for the entity's X coordinate in world space"
+                                "name": "X"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "GetWorldY",
+                    "base": "GetWorldY",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get World Y"
@@ -590,42 +557,41 @@
                         "tooltip": "Signaled after Get World Y is invoked"
                     },
                     "details": {
-                        "name": "Get World Y",
-                        "tooltip": "Gets the entity's Y coordinate in world space"
+                        "name": "Get World Y"
                     },
                     "results": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "float"
+                                "name": "Y"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "GetLocalUniformScale",
+                    "base": "GetLocalUniformScale",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetLocalUniformScale"
+                        "tooltip": "When signaled, this will invoke Get Local Uniform Scale"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetLocalUniformScale is invoked"
+                        "tooltip": "Signaled after Get Local Uniform Scale is invoked"
                     },
                     "details": {
-                        "name": "GetLocalUniformScale"
+                        "name": "Get Local Uniform Scale"
                     },
                     "results": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "float"
+                                "name": "Uniform Scale"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "SetWorldZ",
+                    "base": "SetWorldZ",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set World Z"
@@ -635,21 +601,19 @@
                         "tooltip": "Signaled after Set World Z is invoked"
                     },
                     "details": {
-                        "name": "Set World Z",
-                        "tooltip": "Sets the entity's Z coordinate in world space"
+                        "name": "Set World Z"
                     },
                     "params": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Z Translation",
-                                "tooltip": "A new value for the entity's Z coordinate in world space"
+                                "name": "Z"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "SetLocalTM",
+                    "base": "SetLocalTM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Local Transform"
@@ -659,21 +623,19 @@
                         "tooltip": "Signaled after Set Local Transform is invoked"
                     },
                     "details": {
-                        "name": "Set Local Transform",
-                        "tooltip": "Sets the entity's local transform and notifies all listeners"
+                        "name": "Set Local Transform"
                     },
                     "params": [
                         {
                             "typeid": "{5D9958E9-9F1E-4985-B532-FFFDE75FEDFD}",
                             "details": {
-                                "name": "Transform",
-                                "tooltip": "A reference to a transform for positioning the entity relative to its parent entity"
+                                "name": "Transform"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "SetLocalTranslation",
+                    "base": "SetLocalTranslation",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Local Translation"
@@ -683,21 +645,19 @@
                         "tooltip": "Signaled after Set Local Translation is invoked"
                     },
                     "details": {
-                        "name": "Set Local Translation",
-                        "tooltip": "Sets the entity's local space translation, which represents how to move the entity to a new position relative to its parent"
+                        "name": "Set Local Translation"
                     },
                     "params": [
                         {
                             "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
                             "details": {
-                                "name": "Translation",
-                                "tooltip": "A three-dimensional translation vector"
+                                "name": "Translation"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "GetLocalScale",
+                    "base": "GetLocalScale",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Local Scale"
@@ -707,20 +667,19 @@
                         "tooltip": "Signaled after Get Local Scale is invoked"
                     },
                     "details": {
-                        "name": "Get Local Scale",
-                        "tooltip": "Gets the scale of the entity along each axis in local space"
+                        "name": "Get Local Scale"
                     },
                     "results": [
                         {
                             "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
                             "details": {
-                                "name": "Vector3"
+                                "name": "Scale"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "SetWorldY",
+                    "base": "SetWorldY",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set World Y"
@@ -730,21 +689,19 @@
                         "tooltip": "Signaled after Set World Y is invoked"
                     },
                     "details": {
-                        "name": "Set World Y",
-                        "tooltip": "Sets the entity's Y coordinate in world space"
+                        "name": "Set World Y"
                     },
                     "params": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Y Translation",
-                                "tooltip": "A new value for the entity's Y coordinate in world space"
+                                "name": "Y"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "RotateAroundLocalY",
+                    "base": "RotateAroundLocalY",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Rotate Around Local Y"
@@ -754,21 +711,19 @@
                         "tooltip": "Signaled after Rotate Around Local Y is invoked"
                     },
                     "details": {
-                        "name": "Rotate Around Local Y",
-                        "tooltip": "Rotates the entity around the Y axis in local space"
+                        "name": "Rotate Around Local Y"
                     },
                     "params": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Y Rotation",
-                                "tooltip": "The angle, in radians, to rotate the entity around the Y axis in local space"
+                                "name": "Euler Angle (Radians)"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "GetLocalTranslation",
+                    "base": "GetLocalTranslation",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Local Translation"
@@ -778,20 +733,19 @@
                         "tooltip": "Signaled after Get Local Translation is invoked"
                     },
                     "details": {
-                        "name": "Get Local Translation",
-                        "tooltip": "Gets the entity's local space translation"
+                        "name": "Get Local Translation"
                     },
                     "results": [
                         {
                             "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
                             "details": {
-                                "name": "Vector3"
+                                "name": "Translation"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "GetWorldRotation",
+                    "base": "GetWorldRotation",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get World Rotation"
@@ -801,20 +755,20 @@
                         "tooltip": "Signaled after Get World Rotation is invoked"
                     },
                     "details": {
-                        "name": "Get World Rotation",
-                        "tooltip": "Gets the entity's rotation in radians in world space"
+                        "name": "Get World Rotation"
                     },
                     "results": [
                         {
                             "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
                             "details": {
-                                "name": "Vector3"
+                                "name": "Euler Angles (Radians)",
+                                "tooltip": "Euler angles (Pitch, Yaw, Roll), in radians"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "GetWorldZ",
+                    "base": "GetWorldZ",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get World Z"
@@ -824,20 +778,19 @@
                         "tooltip": "Signaled after Get World Z is invoked"
                     },
                     "details": {
-                        "name": "Get World Z",
-                        "tooltip": "Gets the entity's Z coordinate in world space"
+                        "name": "Get World Z"
                     },
                     "results": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "float"
+                                "name": "Z"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "GetLocalY",
+                    "base": "GetLocalY",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Local Y"
@@ -847,20 +800,19 @@
                         "tooltip": "Signaled after Get Local Y is invoked"
                     },
                     "details": {
-                        "name": "Get Local Y",
-                        "tooltip": "Gets the entity's Y coordinate in local space"
+                        "name": "Get Local Y"
                     },
                     "results": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "float"
+                                "name": "Y"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "GetWorldTranslation",
+                    "base": "GetWorldTranslation",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get World Translation"
@@ -870,20 +822,19 @@
                         "tooltip": "Signaled after Get World Translation is invoked"
                     },
                     "details": {
-                        "name": "Get World Translation",
-                        "tooltip": "Gets the entity's world space translation"
+                        "name": "Get World Translation"
                     },
                     "results": [
                         {
                             "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
                             "details": {
-                                "name": "Vector3"
+                                "name": "Translation"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "SetLocalY",
+                    "base": "SetLocalY",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Local Y"
@@ -893,21 +844,19 @@
                         "tooltip": "Signaled after Set Local Y is invoked"
                     },
                     "details": {
-                        "name": "Set Local Y",
-                        "tooltip": "Sets the entity's Y coordinate in local space"
+                        "name": "Set Local Y"
                     },
                     "params": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Y Position",
-                                "tooltip": "A new value for the entity's Y coordinate in local space"
+                                "name": "Y"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "GetLocalX",
+                    "base": "GetLocalX",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Local X"
@@ -917,20 +866,19 @@
                         "tooltip": "Signaled after Get Local X is invoked"
                     },
                     "details": {
-                        "name": "Get Local X",
-                        "tooltip": "Gets the entity's X coordinate in local space"
+                        "name": "Get Local X"
                     },
                     "results": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "float"
+                                "name": "X"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "GetWorldTM",
+                    "base": "GetWorldTM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get World Transform"
@@ -940,8 +888,7 @@
                         "tooltip": "Signaled after Get World Transform is invoked"
                     },
                     "details": {
-                        "name": "Get World Transform",
-                        "tooltip": "Returns the entity's world transform, including the parent transform"
+                        "name": "Get World Transform"
                     },
                     "results": [
                         {
@@ -953,48 +900,46 @@
                     ]
                 },
                 {
-                    "key": "GetParentId",
+                    "base": "GetParentId",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke Get Parent ID"
+                        "tooltip": "When signaled, this will invoke Get Parent Id"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after Get Parent ID is invoked"
+                        "tooltip": "Signaled after Get Parent Id is invoked"
                     },
                     "details": {
-                        "name": "Get Parent ID",
-                        "tooltip": "Returns the EntityID of the entity's parent"
+                        "name": "Get Parent Id"
                     },
                     "results": [
                         {
                             "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
                             "details": {
-                                "name": "EntityId",
+                                "name": "Parent Id",
                                 "tooltip": "Entity Unique Id"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "IsStaticTransform",
+                    "base": "IsStaticTransform",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke Is Static"
+                        "tooltip": "When signaled, this will invoke Is Static Transform"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after Is Static is invoked"
+                        "tooltip": "Signaled after Is Static Transform is invoked"
                     },
                     "details": {
-                        "name": "Is Static",
-                        "tooltip": "Returns whether the transform is static"
+                        "name": "Is Static Transform"
                     },
                     "results": [
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": "bool"
+                                "name": "Is Static Transform"
                             }
                         }
                     ]

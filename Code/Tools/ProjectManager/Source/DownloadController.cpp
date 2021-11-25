@@ -73,13 +73,25 @@ namespace O3DE::ProjectManager
         emit GemDownloadProgress(m_gemNames.front(), bytesDownloaded, totalBytes);
     }
 
-    void DownloadController::HandleResults(const QString& result)
+    void DownloadController::HandleResults(const QString& result, const QString& detailedError)
     {
         bool succeeded = true;
         
         if (!result.isEmpty())
         {
-            QMessageBox::critical(nullptr, tr("Gem download"), result);
+            if (!detailedError.isEmpty())
+            {
+                QMessageBox gemDownloadError;
+                gemDownloadError.setIcon(QMessageBox::Critical);
+                gemDownloadError.setWindowTitle(tr("Gem download"));
+                gemDownloadError.setText(result);
+                gemDownloadError.setDetailedText(detailedError);
+                gemDownloadError.exec();
+            }
+            else
+            {
+                QMessageBox::critical(nullptr, tr("Gem download"), result);
+            }
             succeeded = false;
         }
 

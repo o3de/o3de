@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "eUiHAlign_Center",
+            "base": "eUiHAlign_Center",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "eUiHAlign_Center::Getter",
-                "category": "Constants"
-            }
+                "name": "Horizontal Align Center",
+                "category": "Constants/UI/Align"
+            },
+            "methods": [
+                {
+                    "base": "GeteUiHAlign_Center",
+                    "details": {
+                        "name": "Horizontal Align: Center"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

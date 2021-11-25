@@ -1,16 +1,16 @@
 {
     "entries": [
         {
-            "key": "UiCanvasRefBus",
+            "base": "UiCanvasRefBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "UiCanvasRefBus",
+                "name": "UI Canvas Ref",
                 "category": "UI"
             },
             "methods": [
                 {
-                    "key": "GetCanvas",
+                    "base": "GetCanvas",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Canvas"

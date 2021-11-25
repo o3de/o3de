@@ -14,6 +14,7 @@
 #include <Atom/RPI/Math.azsli>
 #include "BicubicPcfFilters.azsli"
 #include "Shadow.azsli"
+#include "NormalOffsetShadows.azsli"
 
 // ProjectedShadow calculates shadowed area projected from a light.
 class ProjectedShadow
@@ -123,6 +124,7 @@ float ProjectedShadow::GetThickness(uint shadowIndex, float3 worldPosition)
 
     ProjectedShadow shadow;
     shadow.m_worldPosition = worldPosition;
+    shadow.m_normalVector = 0; // The normal vector is used to reduce acne, this is not an issue when using the shadowmap to determine thickness. 
     shadow.m_shadowIndex = shadowIndex;
     shadow.SetShadowPosition();
     return shadow.GetThickness();
@@ -317,8 +319,13 @@ bool ProjectedShadow::IsShadowed(float3 shadowPosition)
 
 void ProjectedShadow::SetShadowPosition()
 {
+    const float normalBias = ViewSrg::m_projectedShadows[m_shadowIndex].m_normalShadowBias;
+    const float shadowmapSize = ViewSrg::m_projectedFilterParams[m_shadowIndex].m_shadowmapSize;
+    const float3 shadowOffset = ComputeNormalShadowOffset(normalBias, m_normalVector, shadowmapSize);
     const float4x4 depthBiasMatrix = ViewSrg::m_projectedShadows[m_shadowIndex].m_depthBiasMatrix;
-    float4 shadowPositionHomogeneous = mul(depthBiasMatrix, float4(m_worldPosition, 1));
+    
+    float4 shadowPositionHomogeneous = mul(depthBiasMatrix, float4(m_worldPosition + shadowOffset, 1));
+         
     m_shadowPosition = shadowPositionHomogeneous.xyz / shadowPositionHomogeneous.w;
     
     m_bias = ViewSrg::m_projectedShadows[m_shadowIndex].m_bias / shadowPositionHomogeneous.w;

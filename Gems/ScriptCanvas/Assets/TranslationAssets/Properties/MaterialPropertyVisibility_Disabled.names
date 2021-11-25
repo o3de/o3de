@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "MaterialPropertyVisibility_Disabled",
+            "base": "MaterialPropertyVisibility_Disabled",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "MaterialPropertyVisibility_Disabled::Getter",
-                "category": "Constants"
-            }
+                "name": "Disabled",
+                "category": "Constants/Material Property Visibility"
+            },
+            "methods": [
+                {
+                    "base": "GetMaterialPropertyVisibility_Disabled",
+                    "details": {
+                        "name": "Disabled"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

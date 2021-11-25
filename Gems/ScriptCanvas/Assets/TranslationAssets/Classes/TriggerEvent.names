@@ -1,33 +1,33 @@
 {
     "entries": [
         {
-            "key": "TriggerEvent",
+            "base": "TriggerEvent",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
-                "name": "TriggerEvent"
+                "name": "Trigger Event"
             },
             "methods": [
                 {
-                    "key": "GetTriggerEntityId",
+                    "base": "GetTriggerEntityId",
                     "context": "TriggerEvent",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetTriggerEntityId"
+                        "tooltip": "When signaled, this will invoke Get Trigger Entity Id"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetTriggerEntityId is invoked"
+                        "tooltip": "Signaled after Get Trigger Entity Id is invoked"
                     },
                     "details": {
-                        "name": "TriggerEvent::Get Trigger EntityId",
+                        "name": "Get Trigger Entity Id",
                         "category": "Other"
                     },
                     "params": [
                         {
                             "typeid": "{7A0851A3-2CBD-4A03-85D5-1C40221E7F61}",
                             "details": {
-                                "name": "TriggerEvent*"
+                                "name": "Trigger Event"
                             }
                         }
                     ],
@@ -35,32 +35,32 @@
                         {
                             "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
                             "details": {
-                                "name": "EntityId",
+                                "name": "Entity Id",
                                 "tooltip": "Entity Unique Id"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "GetOtherEntityId",
+                    "base": "GetOtherEntityId",
                     "context": "TriggerEvent",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetOtherEntityId"
+                        "tooltip": "When signaled, this will invoke Get Other Entity Id"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetOtherEntityId is invoked"
+                        "tooltip": "Signaled after Get Other Entity Id is invoked"
                     },
                     "details": {
-                        "name": "TriggerEvent::Get Other EntityId",
+                        "name": "Get Other Entity Id",
                         "category": "Other"
                     },
                     "params": [
                         {
                             "typeid": "{7A0851A3-2CBD-4A03-85D5-1C40221E7F61}",
                             "details": {
-                                "name": "TriggerEvent*"
+                                "name": "Trigger Event"
                             }
                         }
                     ],
@@ -68,7 +68,7 @@
                         {
                             "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
                             "details": {
-                                "name": "EntityId",
+                                "name": "Entity Id",
                                 "tooltip": "Entity Unique Id"
                             }
                         }

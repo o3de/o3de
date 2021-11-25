@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "InvalidParameterIndex",
+            "base": "InvalidParameterIndex",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "InvalidParameterIndex::Getter",
-                "category": "Constants"
-            }
+                "name": "Invalid Parameter Index",
+                "category": "Constants/Editor"
+            },
+            "methods": [
+                {
+                    "base": "GetInvalidParameterIndex",
+                    "details": {
+                        "name": "Get Invalid Parameter Index"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{D6597933-47CD-4FC8-B911-63F3E2B0993A}",
+                            "details": {
+                                "name": "AZ::u 64"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

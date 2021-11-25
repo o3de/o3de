@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "eUiFillCornerOrigin_BottomLeft",
+            "base": "eUiFillCornerOrigin_BottomLeft",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "eUiFillCornerOrigin_BottomLeft::Getter",
-                "category": "Constants"
-            }
+                "name": "Bottom Left",
+                "category": "Constants/UI/Fill Corner"
+            },
+            "methods": [
+                {
+                    "base": "GeteUiFillCornerOrigin_BottomLeft",
+                    "details": {
+                        "name": "Bottom Left"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

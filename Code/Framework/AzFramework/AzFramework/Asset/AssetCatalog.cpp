@@ -1186,7 +1186,7 @@ namespace AzFramework
     }
 
 
-    bool AssetCatalog::CreateBundleManifest(const AZStd::string& deltaCatalogPath, const AZStd::vector<AZStd::string>& dependentBundleNames, const AZStd::string& fileDirectory, int bundleVersion, const AZStd::vector<AZStd::string>& levelDirs)
+    bool AssetCatalog::CreateBundleManifest(const AZStd::string& deltaCatalogPath, const AZStd::vector<AZStd::string>& dependentBundleNames, const AZStd::string& fileDirectory, int bundleVersion, const AZStd::vector<AZ::IO::Path>& levelDirs)
     {
         if (bundleVersion > AzFramework::AssetBundleManifest::CurrentBundleVersion || bundleVersion < 0)
         {

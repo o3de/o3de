@@ -828,7 +828,7 @@ void CObjectManager::ShowLastHiddenObject()
 {
     uint64 mostRecentID = CBaseObject::s_invalidHiddenID;
     CBaseObject* mostRecentObject = nullptr;
-    for (auto it : m_objects)
+    for (const auto& it : m_objects)
     {
         CBaseObject* obj = it.second;
 

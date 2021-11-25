@@ -1,15 +1,15 @@
 {
     "entries": [
         {
-            "key": "ProfilingCaptureRequestBus",
+            "base": "ProfilingCaptureRequestBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "ProfilingCaptureRequestBus"
+                "name": "Profiling Capture"
             },
             "methods": [
                 {
-                    "key": "CapturePassTimestamp",
+                    "base": "CapturePassTimestamp",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke CapturePassTimestamp"
@@ -39,7 +39,7 @@
                     ]
                 },
                 {
-                    "key": "CaptureCpuFrameTime",
+                    "base": "CaptureCpuFrameTime",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke CaptureCpuFrameTime"
@@ -69,7 +69,7 @@
                     ]
                 },
                 {
-                    "key": "CapturePassPipelineStatistics",
+                    "base": "CapturePassPipelineStatistics",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke CapturePassPipelineStatistics"
@@ -99,7 +99,7 @@
                     ]
                 },
                 {
-                    "key": "CaptureBenchmarkMetadata",
+                    "base": "CaptureBenchmarkMetadata",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke CaptureBenchmarkMetadata"

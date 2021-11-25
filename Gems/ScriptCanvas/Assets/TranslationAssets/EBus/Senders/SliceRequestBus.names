@@ -1,15 +1,15 @@
 {
     "entries": [
         {
-            "key": "SliceRequestBus",
+            "base": "SliceRequestBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "SliceRequestBus"
+                "name": "Slice"
             },
             "methods": [
                 {
-                    "key": "CreateNewSlice",
+                    "base": "CreateNewSlice",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke CreateNewSlice"
@@ -46,7 +46,7 @@
                     ]
                 },
                 {
-                    "key": "InstantiateSliceFromAssetId",
+                    "base": "InstantiateSliceFromAssetId",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke InstantiateSliceFromAssetId"
@@ -82,7 +82,7 @@
                     ]
                 },
                 {
-                    "key": "SetSliceDynamic",
+                    "base": "SetSliceDynamic",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetSliceDynamic"
@@ -110,7 +110,7 @@
                     ]
                 },
                 {
-                    "key": "ShowPushDialog",
+                    "base": "ShowPushDialog",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke ShowPushDialog"
@@ -132,7 +132,7 @@
                     ]
                 },
                 {
-                    "key": "IsSliceDynamic",
+                    "base": "IsSliceDynamic",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke IsSliceDynamic"

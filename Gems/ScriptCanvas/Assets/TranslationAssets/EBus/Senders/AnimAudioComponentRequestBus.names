@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "AnimAudioComponentRequestBus",
+            "base": "AnimAudioComponentRequestBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "AddTriggerEvent",
+                    "base": "AddTriggerEvent",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Add Trigger Event"
@@ -45,7 +45,7 @@
                     ]
                 },
                 {
-                    "key": "ClearTriggerEvents",
+                    "base": "ClearTriggerEvents",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Clear Trigger Events"
@@ -60,7 +60,7 @@
                     }
                 },
                 {
-                    "key": "RemoveTriggerEvent",
+                    "base": "RemoveTriggerEvent",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Remove Trigger Event"

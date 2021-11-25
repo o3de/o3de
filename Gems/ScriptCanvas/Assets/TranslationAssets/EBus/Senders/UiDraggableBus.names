@@ -1,16 +1,16 @@
 {
     "entries": [
         {
-            "key": "UiDraggableBus",
+            "base": "UiDraggableBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "UiDraggableBus",
+                "name": "UI Draggable",
                 "category": "UI"
             },
             "methods": [
                 {
-                    "key": "ProxyDragEnd",
+                    "base": "ProxyDragEnd",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Proxy Drag End"
@@ -34,7 +34,7 @@
                     ]
                 },
                 {
-                    "key": "RedoDrag",
+                    "base": "RedoDrag",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Redo Drag"
@@ -58,7 +58,7 @@
                     ]
                 },
                 {
-                    "key": "SetAsProxy",
+                    "base": "SetAsProxy",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set As Proxy"
@@ -89,7 +89,7 @@
                     ]
                 },
                 {
-                    "key": "IsProxy",
+                    "base": "IsProxy",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Is Proxy"
@@ -112,7 +112,7 @@
                     ]
                 },
                 {
-                    "key": "SetDragState",
+                    "base": "SetDragState",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Drag State"
@@ -136,7 +136,7 @@
                     ]
                 },
                 {
-                    "key": "GetCanDropOnAnyCanvas",
+                    "base": "GetCanDropOnAnyCanvas",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Can Drop On Any Canvas"
@@ -159,7 +159,7 @@
                     ]
                 },
                 {
-                    "key": "SetCanDropOnAnyCanvas",
+                    "base": "SetCanDropOnAnyCanvas",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Can Drop On Any Canvas"
@@ -183,7 +183,7 @@
                     ]
                 },
                 {
-                    "key": "GetDragState",
+                    "base": "GetDragState",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Drag State"
@@ -206,7 +206,7 @@
                     ]
                 },
                 {
-                    "key": "GetOriginalFromProxy",
+                    "base": "GetOriginalFromProxy",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Original From Proxy"

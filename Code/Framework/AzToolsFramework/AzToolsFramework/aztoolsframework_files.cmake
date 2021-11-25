@@ -148,6 +148,8 @@ set(FILES
     Entity/EditorEntitySortBus.h
     Entity/EditorEntitySortComponent.cpp
     Entity/EditorEntitySortComponent.h
+    Entity/EditorEntitySortComponentSerializer.cpp
+    Entity/EditorEntitySortComponentSerializer.h
     Entity/EditorEntityTransformBus.h
     Entity/PrefabEditorEntityOwnershipInterface.h
     Entity/PrefabEditorEntityOwnershipService.h

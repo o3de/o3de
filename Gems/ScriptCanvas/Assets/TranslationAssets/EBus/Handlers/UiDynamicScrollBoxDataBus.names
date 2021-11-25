@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "UiDynamicScrollBoxDataBus",
+            "base": "UiDynamicScrollBoxDataBus",
             "context": "EBusHandler",
             "variant": "",
             "details": {
@@ -11,7 +11,7 @@
             },
             "methods": [
                 {
-                    "key": "GetNumElements",
+                    "base": "GetNumElements",
                     "details": {
                         "name": "Get Number Of Elements",
                         "tooltip": "Gets the number of elements in the list. Called when the list is being constructed (in the component's InGamePostActivate or when RefreshContent is being called explicitly). Used with lists that are not divided into sections"
@@ -26,7 +26,7 @@
                     ]
                 },
                 {
-                    "key": "GetElementWidth",
+                    "base": "GetElementWidth",
                     "details": {
                         "name": "Get Element Width",
                         "tooltip": "Gets the width of an element at the specified index. Called when an element’s size is needed by a horizontal list of variable element sizes, and the “auto calculate size” option is disabled. Used with lists that are not divided into sections"
@@ -51,7 +51,7 @@
                     ]
                 },
                 {
-                    "key": "GetElementHeight",
+                    "base": "GetElementHeight",
                     "details": {
                         "name": "Get Element Height",
                         "tooltip": "Gets the height of an element at the specified index. Called when an element’s size is needed by a vertical list of variable element sizes, and the “auto calculate size” option is disabled. Used with lists that are not divided into sections"
@@ -76,7 +76,7 @@
                     ]
                 },
                 {
-                    "key": "GetNumSections",
+                    "base": "GetNumSections",
                     "details": {
                         "name": "Get Number Of Sections",
                         "tooltip": "Gets the number of sections in the list. Called when the list is being constructed (in the component's InGamePostActivate or when RefreshContent is being called explicitly). Used with lists that are divided into section"
@@ -91,7 +91,7 @@
                     ]
                 },
                 {
-                    "key": "GetNumElementsInSection",
+                    "base": "GetNumElementsInSection",
                     "details": {
                         "name": "Get Num Elements in Section",
                         "tooltip": "Gets the number of elements in the specified section. Called when the list is being constructed (in the component's InGamePostActivate or when RefreshContent is being called explicitly). Used with lists that are divided into sections"
@@ -116,7 +116,7 @@
                     ]
                 },
                 {
-                    "key": "GetElementInSectionWidth",
+                    "base": "GetElementInSectionWidth",
                     "details": {
                         "name": "Get Element In Section Width",
                         "tooltip": "Gets the width of an element at the specified section and element index. Called when an element’s size is needed by a horizontal list of variable element sizes, and the “auto calculate size” option is disabled. Used with lists that are divided into sections"
@@ -148,7 +148,7 @@
                     ]
                 },
                 {
-                    "key": "GetElementInSectionHeight",
+                    "base": "GetElementInSectionHeight",
                     "details": {
                         "name": "Get Element In Section Height",
                         "tooltip": "Gets the height of an element at the specified section and element index. Called when an element’s size is needed by a vertical list of variable element sizes, and the “auto calculate size” option is disabled. Used with lists that are divided into sections"
@@ -180,7 +180,7 @@
                     ]
                 },
                 {
-                    "key": "GetSectionHeaderWidth",
+                    "base": "GetSectionHeaderWidth",
                     "details": {
                         "name": "Get Section Header Width",
                         "tooltip": "Gets the width of a header at the specified section. Called when a header’s size is needed by a horizontal list of variable header sizes, and the “auto calculate size” option is disabled. Used with lists that are divided into sections"
@@ -205,7 +205,7 @@
                     ]
                 },
                 {
-                    "key": "GetSectionHeaderHeight",
+                    "base": "GetSectionHeaderHeight",
                     "details": {
                         "name": "Get Section Header Height",
                         "tooltip": "Gets the height of a header at the specified section. Called when a header's size is needed by a vertical list of variable header sizes, and the “auto calculate size” option is disabled. Used with lists that are divided into sections"

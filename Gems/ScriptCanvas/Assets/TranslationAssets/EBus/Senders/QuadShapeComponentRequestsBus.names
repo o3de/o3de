@@ -1,25 +1,26 @@
 {
     "entries": [
         {
-            "key": "QuadShapeComponentRequestsBus",
+            "base": "QuadShapeComponentRequestsBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "QuadShapeComponentRequestsBus"
+                "name": "Quad Shape Component",
+                "category": "Rendering/Shapes"
             },
             "methods": [
                 {
-                    "key": "SetQuadHeight",
+                    "base": "SetQuadHeight",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetQuadHeight"
+                        "tooltip": "When signaled, this will invoke Set Quad Height"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetQuadHeight is invoked"
+                        "tooltip": "Signaled after Set Quad Height is invoked"
                     },
                     "details": {
-                        "name": "SetQuadHeight"
+                        "name": "Set Quad Height"
                     },
                     "params": [
                         {
@@ -31,17 +32,17 @@
                     ]
                 },
                 {
-                    "key": "GetQuadWidth",
+                    "base": "GetQuadWidth",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetQuadWidth"
+                        "tooltip": "When signaled, this will invoke Get Quad Width"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetQuadWidth is invoked"
+                        "tooltip": "Signaled after Get Quad Width is invoked"
                     },
                     "details": {
-                        "name": "GetQuadWidth"
+                        "name": "Get Quad Width"
                     },
                     "results": [
                         {
@@ -53,17 +54,17 @@
                     ]
                 },
                 {
-                    "key": "GetQuadHeight",
+                    "base": "GetQuadHeight",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetQuadHeight"
+                        "tooltip": "When signaled, this will invoke Get Quad Height"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetQuadHeight is invoked"
+                        "tooltip": "Signaled after Get Quad Height is invoked"
                     },
                     "details": {
-                        "name": "GetQuadHeight"
+                        "name": "Get Quad Height"
                     },
                     "results": [
                         {
@@ -75,17 +76,17 @@
                     ]
                 },
                 {
-                    "key": "GetQuadConfiguration",
+                    "base": "GetQuadConfiguration",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetQuadConfiguration"
+                        "tooltip": "When signaled, this will invoke Get Quad Configuration"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetQuadConfiguration is invoked"
+                        "tooltip": "Signaled after Get Quad Configuration is invoked"
                     },
                     "details": {
-                        "name": "GetQuadConfiguration"
+                        "name": "Get Quad Configuration"
                     },
                     "results": [
                         {
@@ -98,17 +99,17 @@
                     ]
                 },
                 {
-                    "key": "SetQuadWidth",
+                    "base": "SetQuadWidth",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetQuadWidth"
+                        "tooltip": "When signaled, this will invoke Set Quad Width"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetQuadWidth is invoked"
+                        "tooltip": "Signaled after Set Quad Width is invoked"
                     },
                     "details": {
-                        "name": "SetQuadWidth"
+                        "name": "Set Quad Width"
                     },
                     "params": [
                         {
@@ -120,17 +121,17 @@
                     ]
                 },
                 {
-                    "key": "GetQuadOrientation",
+                    "base": "GetQuadOrientation",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetQuadOrientation"
+                        "tooltip": "When signaled, this will invoke Get Quad Orientation"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetQuadOrientation is invoked"
+                        "tooltip": "Signaled after Get Quad Orientation is invoked"
                     },
                     "details": {
-                        "name": "GetQuadOrientation"
+                        "name": "Get Quad Orientation"
                     },
                     "results": [
                         {

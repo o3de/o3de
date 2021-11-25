@@ -1,38 +1,38 @@
 {
     "entries": [
         {
-            "key": "AWSCognitoAuthorizationNotificationBus",
+            "base": "AWSCognitoAuthorizationNotificationBus",
             "context": "EBusHandler",
             "variant": "",
             "details": {
-                "name": "AWSCognitoAuthorizationNotificationBus",
-                "category": "EBus Handlers"
+                "name": "AWS Cognito Authorization",
+                "category": "AWS Core"
             },
             "methods": [
                 {
-                    "key": "OnRequestAWSCredentialsSuccess",
+                    "base": "OnRequestAWSCredentialsSuccess",
                     "details": {
-                        "name": "OnRequestAWSCredentialsSuccess"
+                        "name": "On Request AWS Credentials Success"
                     },
                     "params": [
                         {
                             "typeid": "{02FB32C4-B94E-4084-9049-3DF32F87BD76}",
                             "details": {
-                                "name": "ClientAuthAWSCredentials"
+                                "name": "AWS Client Auth Credentials"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "OnRequestAWSCredentialsFail",
+                    "base": "OnRequestAWSCredentialsFail",
                     "details": {
-                        "name": "OnRequestAWSCredentialsFail"
+                        "name": "On Request AWS Credentials Fail"
                     },
                     "params": [
                         {
                             "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
                             "details": {
-                                "name": "AZStd::string"
+                                "name": "Error"
                             }
                         }
                     ]

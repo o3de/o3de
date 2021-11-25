@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "{4EE28D9F-67FB-4E61-B777-5DC5B059710F}",
+            "base": "{4EE28D9F-67FB-4E61-B777-5DC5B059710F}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
@@ -12,13 +12,13 @@
             },
             "slots": [
                 {
-                    "key": "Input_ ",
+                    "base": "Input_ ",
                     "details": {
                         "name": " "
                     }
                 },
                 {
-                    "key": "Output_ ",
+                    "base": "Output_ ",
                     "details": {
                         "name": " "
                     }

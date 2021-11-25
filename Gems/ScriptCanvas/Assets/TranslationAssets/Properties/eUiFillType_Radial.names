@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "eUiFillType_Radial",
+            "base": "eUiFillType_Radial",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "eUiFillType_Radial::Getter",
-                "category": "Constants"
-            }
+                "name": "Radial",
+                "category": "Constants/UI/Fill Type"
+            },
+            "methods": [
+                {
+                    "base": "GeteUiFillType_Radial",
+                    "details": {
+                        "name": "Radial"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "{B522091B-B802-5B9C-97CB-B208F58FC535}",
+            "base": "{B522091B-B802-5B9C-97CB-B208F58FC535}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
@@ -12,25 +12,25 @@
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "key": "DataInput_Quaternion: Source",
+                    "base": "DataInput_Quaternion: Source",
                     "details": {
                         "name": "Quaternion: Source"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Matrix4x4",
+                    "base": "DataOutput_Result: Matrix4x4",
                     "details": {
                         "name": "Result: Matrix4x4"
                     }

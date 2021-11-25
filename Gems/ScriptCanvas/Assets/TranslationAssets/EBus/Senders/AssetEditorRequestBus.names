@@ -1,15 +1,15 @@
 {
     "entries": [
         {
-            "key": "AssetEditorRequestBus",
+            "base": "AssetEditorRequestBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "AssetEditorRequestBus"
+                "name": "Asset Editor"
             },
             "methods": [
                 {
-                    "key": "CreateNewGraph",
+                    "base": "CreateNewGraph",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke CreateNewGraph"
@@ -32,7 +32,7 @@
                     ]
                 },
                 {
-                    "key": "ContainsGraph",
+                    "base": "ContainsGraph",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke ContainsGraph"
@@ -63,7 +63,7 @@
                     ]
                 },
                 {
-                    "key": "CloseGraph",
+                    "base": "CloseGraph",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke CloseGraph"

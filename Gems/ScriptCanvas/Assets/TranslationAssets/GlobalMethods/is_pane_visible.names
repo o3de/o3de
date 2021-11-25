@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "is_pane_visible",
+            "base": "is_pane_visible",
             "context": "Method",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "is_pane_visible",
+                    "base": "is_pane_visible",
                     "context": "Global",
                     "entry": {
                         "name": "In",

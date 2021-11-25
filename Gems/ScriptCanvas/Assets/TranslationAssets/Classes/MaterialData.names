@@ -1,70 +1,51 @@
 {
     "entries": [
         {
-            "key": "MaterialData",
+            "base": "MaterialData",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
-                "name": "MaterialData"
+                "name": "Material Data",
+                "category": "Rendering"
             },
             "methods": [
                 {
-                    "key": "GetBaseColor",
+                    "base": "GetBaseColor",
                     "context": "MaterialData",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetBaseColor"
+                        "tooltip": "When signaled, this will invoke Get Base Color"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetBaseColor is invoked"
+                        "tooltip": "Signaled after Get Base Color is invoked"
                     },
                     "details": {
-                        "name": "MaterialData::GetBaseColor",
-                        "category": "Other"
+                        "name": "Get Base Color"
                     },
-                    "params": [
-                        {
-                            "typeid": "{F2EE1768-183B-483E-9778-CB3D3D0DA68A}",
-                            "details": {
-                                "name": "const MaterialData&",
-                                "tooltip": "Material configuration for the parent."
-                            }
-                        }
-                    ],
                     "results": [
                         {
                             "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
                             "details": {
-                                "name": "Vector3"
+                                "name": "Vector 3"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "GetUseRoughnessMap",
+                    "base": "GetUseRoughnessMap",
                     "context": "MaterialData",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetUseRoughnessMap"
+                        "tooltip": "When signaled, this will invoke Get Use Roughness Map"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetUseRoughnessMap is invoked"
+                        "tooltip": "Signaled after Get Use Roughness Map is invoked"
                     },
                     "details": {
-                        "name": "MaterialData::GetUseRoughnessMap",
-                        "category": "Other"
+                        "name": "Get Use Roughness Map"
                     },
-                    "params": [
-                        {
-                            "typeid": "{F2EE1768-183B-483E-9778-CB3D3D0DA68A}",
-                            "details": {
-                                "name": "const MaterialData&",
-                                "tooltip": "Material configuration for the parent."
-                            }
-                        }
-                    ],
                     "results": [
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
@@ -75,29 +56,19 @@
                     ]
                 },
                 {
-                    "key": "GetShininess",
+                    "base": "GetShininess",
                     "context": "MaterialData",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetShininess"
+                        "tooltip": "When signaled, this will invoke Get Shininess"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetShininess is invoked"
+                        "tooltip": "Signaled after Get Shininess is invoked"
                     },
                     "details": {
-                        "name": "MaterialData::GetShininess",
-                        "category": "Other"
+                        "name": "Get Shininess"
                     },
-                    "params": [
-                        {
-                            "typeid": "{F2EE1768-183B-483E-9778-CB3D3D0DA68A}",
-                            "details": {
-                                "name": "MaterialData*",
-                                "tooltip": "Material configuration for the parent."
-                            }
-                        }
-                    ],
                     "results": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
@@ -108,29 +79,19 @@
                     ]
                 },
                 {
-                    "key": "GetUseEmissiveMap",
+                    "base": "GetUseEmissiveMap",
                     "context": "MaterialData",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetUseEmissiveMap"
+                        "tooltip": "When signaled, this will invoke Get Use Emissive Map"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetUseEmissiveMap is invoked"
+                        "tooltip": "Signaled after Get Use Emissive Map is invoked"
                     },
                     "details": {
-                        "name": "MaterialData::GetUseEmissiveMap",
-                        "category": "Other"
+                        "name": "Get Use Emissive Map"
                     },
-                    "params": [
-                        {
-                            "typeid": "{F2EE1768-183B-483E-9778-CB3D3D0DA68A}",
-                            "details": {
-                                "name": "const MaterialData&",
-                                "tooltip": "Material configuration for the parent."
-                            }
-                        }
-                    ],
                     "results": [
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
@@ -141,161 +102,111 @@
                     ]
                 },
                 {
-                    "key": "GetEmissiveColor",
+                    "base": "GetEmissiveColor",
                     "context": "MaterialData",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetEmissiveColor"
+                        "tooltip": "When signaled, this will invoke Get Emissive Color"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetEmissiveColor is invoked"
+                        "tooltip": "Signaled after Get Emissive Color is invoked"
                     },
                     "details": {
-                        "name": "MaterialData::GetEmissiveColor",
-                        "category": "Other"
+                        "name": "Get Emissive Color"
                     },
-                    "params": [
-                        {
-                            "typeid": "{F2EE1768-183B-483E-9778-CB3D3D0DA68A}",
-                            "details": {
-                                "name": "MaterialData*",
-                                "tooltip": "Material configuration for the parent."
-                            }
-                        }
-                    ],
                     "results": [
                         {
                             "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
                             "details": {
-                                "name": "const Vector3&"
+                                "name": "const Vector 3&"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "GetSpecularColor",
+                    "base": "GetSpecularColor",
                     "context": "MaterialData",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetSpecularColor"
+                        "tooltip": "When signaled, this will invoke Get Specular Color"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetSpecularColor is invoked"
+                        "tooltip": "Signaled after Get Specular Color is invoked"
                     },
                     "details": {
-                        "name": "MaterialData::GetSpecularColor",
-                        "category": "Other"
+                        "name": "Get Specular Color"
                     },
-                    "params": [
-                        {
-                            "typeid": "{F2EE1768-183B-483E-9778-CB3D3D0DA68A}",
-                            "details": {
-                                "name": "MaterialData*",
-                                "tooltip": "Material configuration for the parent."
-                            }
-                        }
-                    ],
                     "results": [
                         {
                             "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
                             "details": {
-                                "name": "const Vector3&"
+                                "name": "const Vector 3&"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "GetUniqueId",
+                    "base": "GetUniqueId",
                     "context": "MaterialData",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetUniqueId"
+                        "tooltip": "When signaled, this will invoke Get Unique Id"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetUniqueId is invoked"
+                        "tooltip": "Signaled after Get Unique Id is invoked"
                     },
                     "details": {
-                        "name": "MaterialData::GetUniqueId",
-                        "category": "Other"
+                        "name": "Get Unique Id"
                     },
-                    "params": [
-                        {
-                            "typeid": "{F2EE1768-183B-483E-9778-CB3D3D0DA68A}",
-                            "details": {
-                                "name": "MaterialData*",
-                                "tooltip": "Material configuration for the parent."
-                            }
-                        }
-                    ],
                     "results": [
                         {
                             "typeid": "{D6597933-47CD-4FC8-B911-63F3E2B0993A}",
                             "details": {
-                                "name": "AZ::u64"
+                                "name": "AZ::u 64"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "GetDiffuseColor",
+                    "base": "GetDiffuseColor",
                     "context": "MaterialData",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetDiffuseColor"
+                        "tooltip": "When signaled, this will invoke Get Diffuse Color"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetDiffuseColor is invoked"
+                        "tooltip": "Signaled after Get Diffuse Color is invoked"
                     },
                     "details": {
-                        "name": "MaterialData::GetDiffuseColor",
-                        "category": "Other"
+                        "name": "Get Diffuse Color"
                     },
-                    "params": [
-                        {
-                            "typeid": "{F2EE1768-183B-483E-9778-CB3D3D0DA68A}",
-                            "details": {
-                                "name": "MaterialData*",
-                                "tooltip": "Material configuration for the parent."
-                            }
-                        }
-                    ],
                     "results": [
                         {
                             "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
                             "details": {
-                                "name": "const Vector3&"
+                                "name": "const Vector 3&"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "GetEmissiveIntensity",
+                    "base": "GetEmissiveIntensity",
                     "context": "MaterialData",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetEmissiveIntensity"
+                        "tooltip": "When signaled, this will invoke Get Emissive Intensity"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetEmissiveIntensity is invoked"
+                        "tooltip": "Signaled after Get Emissive Intensity is invoked"
                     },
                     "details": {
-                        "name": "MaterialData::GetEmissiveIntensity",
-                        "category": "Other"
+                        "name": "Get Emissive Intensity"
                     },
-                    "params": [
-                        {
-                            "typeid": "{F2EE1768-183B-483E-9778-CB3D3D0DA68A}",
-                            "details": {
-                                "name": "const MaterialData&",
-                                "tooltip": "Material configuration for the parent."
-                            }
-                        }
-                    ],
                     "results": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
@@ -306,62 +217,42 @@
                     ]
                 },
                 {
-                    "key": "GetMaterialName",
+                    "base": "GetMaterialName",
                     "context": "MaterialData",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetMaterialName"
+                        "tooltip": "When signaled, this will invoke Get Material Name"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetMaterialName is invoked"
+                        "tooltip": "Signaled after Get Material Name is invoked"
                     },
                     "details": {
-                        "name": "MaterialData::GetMaterialName",
-                        "category": "Other"
+                        "name": "Get Material Name"
                     },
-                    "params": [
-                        {
-                            "typeid": "{F2EE1768-183B-483E-9778-CB3D3D0DA68A}",
-                            "details": {
-                                "name": "MaterialData*",
-                                "tooltip": "Material configuration for the parent."
-                            }
-                        }
-                    ],
                     "results": [
                         {
                             "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
                             "details": {
-                                "name": "const AZStd::basic_string<char, AZStd::char_traits<char>, alloc"
+                                "name": "const AZ Std::basic_string<char, AZ Std::char_traits<char>, alloc"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "GetUseMetallicMap",
+                    "base": "GetUseMetallicMap",
                     "context": "MaterialData",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetUseMetallicMap"
+                        "tooltip": "When signaled, this will invoke Get Use Metallic Map"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetUseMetallicMap is invoked"
+                        "tooltip": "Signaled after Get Use Metallic Map is invoked"
                     },
                     "details": {
-                        "name": "MaterialData::GetUseMetallicMap",
-                        "category": "Other"
+                        "name": "Get Use Metallic Map"
                     },
-                    "params": [
-                        {
-                            "typeid": "{F2EE1768-183B-483E-9778-CB3D3D0DA68A}",
-                            "details": {
-                                "name": "const MaterialData&",
-                                "tooltip": "Material configuration for the parent."
-                            }
-                        }
-                    ],
                     "results": [
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
@@ -372,29 +263,19 @@
                     ]
                 },
                 {
-                    "key": "GetMetallicFactor",
+                    "base": "GetMetallicFactor",
                     "context": "MaterialData",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetMetallicFactor"
+                        "tooltip": "When signaled, this will invoke Get Metallic Factor"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetMetallicFactor is invoked"
+                        "tooltip": "Signaled after Get Metallic Factor is invoked"
                     },
                     "details": {
-                        "name": "MaterialData::GetMetallicFactor",
-                        "category": "Other"
+                        "name": "Get Metallic Factor"
                     },
-                    "params": [
-                        {
-                            "typeid": "{F2EE1768-183B-483E-9778-CB3D3D0DA68A}",
-                            "details": {
-                                "name": "const MaterialData&",
-                                "tooltip": "Material configuration for the parent."
-                            }
-                        }
-                    ],
                     "results": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
@@ -405,29 +286,19 @@
                     ]
                 },
                 {
-                    "key": "GetRoughnessFactor",
+                    "base": "GetRoughnessFactor",
                     "context": "MaterialData",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetRoughnessFactor"
+                        "tooltip": "When signaled, this will invoke Get Roughness Factor"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetRoughnessFactor is invoked"
+                        "tooltip": "Signaled after Get Roughness Factor is invoked"
                     },
                     "details": {
-                        "name": "MaterialData::GetRoughnessFactor",
-                        "category": "Other"
+                        "name": "Get Roughness Factor"
                     },
-                    "params": [
-                        {
-                            "typeid": "{F2EE1768-183B-483E-9778-CB3D3D0DA68A}",
-                            "details": {
-                                "name": "const MaterialData&",
-                                "tooltip": "Material configuration for the parent."
-                            }
-                        }
-                    ],
                     "results": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
@@ -438,29 +309,19 @@
                     ]
                 },
                 {
-                    "key": "GetUseAOMap",
+                    "base": "GetUseAOMap",
                     "context": "MaterialData",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetUseAOMap"
+                        "tooltip": "When signaled, this will invoke Get UseAO Map"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetUseAOMap is invoked"
+                        "tooltip": "Signaled after Get UseAO Map is invoked"
                     },
                     "details": {
-                        "name": "MaterialData::GetUseAOMap",
-                        "category": "Other"
+                        "name": "Get UseAO Map"
                     },
-                    "params": [
-                        {
-                            "typeid": "{F2EE1768-183B-483E-9778-CB3D3D0DA68A}",
-                            "details": {
-                                "name": "const MaterialData&",
-                                "tooltip": "Material configuration for the parent."
-                            }
-                        }
-                    ],
                     "results": [
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
@@ -471,28 +332,20 @@
                     ]
                 },
                 {
-                    "key": "GetTexture",
+                    "base": "GetTexture",
                     "context": "MaterialData",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetTexture"
+                        "tooltip": "When signaled, this will invoke Get Texture"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetTexture is invoked"
+                        "tooltip": "Signaled after Get Texture is invoked"
                     },
                     "details": {
-                        "name": "MaterialData::GetTexture",
-                        "category": "Other"
+                        "name": "Get Texture"
                     },
                     "params": [
-                        {
-                            "typeid": "{F2EE1768-183B-483E-9778-CB3D3D0DA68A}",
-                            "details": {
-                                "name": "MaterialData*",
-                                "tooltip": "Material configuration for the parent."
-                            }
-                        },
                         {
                             "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
                             "details": {
@@ -504,35 +357,25 @@
                         {
                             "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
                             "details": {
-                                "name": "const AZStd::basic_string<char, AZStd::char_traits<char>, alloc"
+                                "name": "const AZ Std::basic_string<char, AZ Std::char_traits<char>, alloc"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "IsNoDraw",
+                    "base": "IsNoDraw",
                     "context": "MaterialData",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke IsNoDraw"
+                        "tooltip": "When signaled, this will invoke Is No Draw"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after IsNoDraw is invoked"
+                        "tooltip": "Signaled after Is No Draw is invoked"
                     },
                     "details": {
-                        "name": "MaterialData::IsNoDraw",
-                        "category": "Other"
+                        "name": "Is No Draw"
                     },
-                    "params": [
-                        {
-                            "typeid": "{F2EE1768-183B-483E-9778-CB3D3D0DA68A}",
-                            "details": {
-                                "name": "MaterialData*",
-                                "tooltip": "Material configuration for the parent."
-                            }
-                        }
-                    ],
                     "results": [
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
@@ -543,29 +386,19 @@
                     ]
                 },
                 {
-                    "key": "GetOpacity",
+                    "base": "GetOpacity",
                     "context": "MaterialData",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetOpacity"
+                        "tooltip": "When signaled, this will invoke Get Opacity"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetOpacity is invoked"
+                        "tooltip": "Signaled after Get Opacity is invoked"
                     },
                     "details": {
-                        "name": "MaterialData::GetOpacity",
-                        "category": "Other"
+                        "name": "Get Opacity"
                     },
-                    "params": [
-                        {
-                            "typeid": "{F2EE1768-183B-483E-9778-CB3D3D0DA68A}",
-                            "details": {
-                                "name": "MaterialData*",
-                                "tooltip": "Material configuration for the parent."
-                            }
-                        }
-                    ],
                     "results": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
@@ -576,34 +409,150 @@
                     ]
                 },
                 {
-                    "key": "GetUseColorMap",
+                    "base": "GetUseColorMap",
                     "context": "MaterialData",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetUseColorMap"
+                        "tooltip": "When signaled, this will invoke Get Use Color Map"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetUseColorMap is invoked"
+                        "tooltip": "Signaled after Get Use Color Map is invoked"
                     },
                     "details": {
-                        "name": "MaterialData::GetUseColorMap",
-                        "category": "Other"
+                        "name": "Get Use Color Map"
                     },
-                    "params": [
-                        {
-                            "typeid": "{F2EE1768-183B-483E-9778-CB3D3D0DA68A}",
-                            "details": {
-                                "name": "const MaterialData&",
-                                "tooltip": "Material configuration for the parent."
-                            }
-                        }
-                    ],
                     "results": [
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
                                 "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetNormal",
+                    "details": {
+                        "name": "Get Normal"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetDiffuse",
+                    "details": {
+                        "name": "Get Diffuse"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetSpecular",
+                    "details": {
+                        "name": "Get Specular"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetBump",
+                    "details": {
+                        "name": "Get Bump"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetEmissive",
+                    "details": {
+                        "name": "Get Emissive"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetRoughness",
+                    "details": {
+                        "name": "Get Roughness"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetBaseColor",
+                    "details": {
+                        "name": "Get Base Color"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetAmbientOcclusion",
+                    "details": {
+                        "name": "Get Ambient Occlusion"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetMetallic",
+                    "details": {
+                        "name": "Get Metallic"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
                             }
                         }
                     ]

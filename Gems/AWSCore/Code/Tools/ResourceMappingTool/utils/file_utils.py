@@ -33,8 +33,29 @@ def get_current_directory_path() -> str:
     return str(pathlib.Path.cwd())
 
 
-def get_parent_directory_path(file_path: str) -> str:
-    return pathlib.Path(file_path).parent
+def get_parent_directory_path(file_path: str, level: int = 1) -> str:
+    """
+    Get parent directory path based on requested file path
+    :param file_path: The requested file path
+    :param level: The level of parent directory, default value is 1
+    :return The string value of parent directory path if exist; otherwise empty string
+    """
+    if not pathlib.Path(file_path).exists():
+        return ""
+
+    result: pathlib.Path = pathlib.Path(file_path).parent
+    current_level: int = 1
+    while current_level < level:
+        current_level += 1
+        if result.exists():
+            result = result.parent
+        else:
+            return ""
+
+    if not result.exists():
+        return ""
+    else:
+        return result.resolve()
 
 
 def find_files_with_suffix_under_directory(dir_path: str, suffix: str) -> List[str]:

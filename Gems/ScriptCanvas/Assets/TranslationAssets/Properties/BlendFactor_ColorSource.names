@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "BlendFactor_ColorSource",
+            "base": "BlendFactor_ColorSource",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "BlendFactor_ColorSource::Getter",
-                "category": "Constants"
-            }
+                "name": "Color Source",
+                "category": "Constants/Blend Factor"
+            },
+            "methods": [
+                {
+                    "base": "GetBlendFactor_ColorSource",
+                    "details": {
+                        "name": "Get Color Source"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

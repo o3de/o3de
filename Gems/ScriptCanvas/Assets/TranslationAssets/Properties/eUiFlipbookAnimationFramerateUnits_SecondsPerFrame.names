@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "eUiFlipbookAnimationFramerateUnits_SecondsPerFrame",
+            "base": "eUiFlipbookAnimationFramerateUnits_SecondsPerFrame",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "eUiFlipbookAnimationFramerateUnits_SecondsPerFrame::Getter",
-                "category": "Constants"
-            }
+                "name": "Seconds Per Frame",
+                "category": "Constants/UI/Flipbook Animation"
+            },
+            "methods": [
+                {
+                    "base": "GeteUiFlipbookAnimationFramerateUnits_SecondsPerFrame",
+                    "details": {
+                        "name": "Seconds Per Frame"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

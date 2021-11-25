@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "AudioPreloadComponentLoadType_Manual",
+            "base": "AudioPreloadComponentLoadType_Manual",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "AudioPreloadComponentLoadType_Manual::Getter",
-                "category": "Constants"
-            }
+                "name": "Load Type Manual",
+                "category": "Constants/Audio Preload"
+            },
+            "methods": [
+                {
+                    "base": "GetAudioPreloadComponentLoadType_Manual",
+                    "details": {
+                        "name": "Load Type Manual"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
+                            "details": {
+                                "name": "unsigned int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

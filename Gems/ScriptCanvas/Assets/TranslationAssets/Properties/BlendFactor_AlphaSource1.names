@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "BlendFactor_AlphaSource1",
+            "base": "BlendFactor_AlphaSource1",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "BlendFactor_AlphaSource1::Getter",
-                "category": "Constants"
-            }
+                "name": "Alpha Source 1",
+                "category": "Constants/Blend Factor"
+            },
+            "methods": [
+                {
+                    "base": "GetBlendFactor_AlphaSource1",
+                    "details": {
+                        "name": "Get Alpha Source 1"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

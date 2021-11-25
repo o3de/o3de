@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "QuadShapeComponentTypeId",
+            "base": "QuadShapeComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "QuadShapeComponentTypeId::Getter",
-                "category": "Constants"
-            }
+                "name": "Quad Shape Component Type Id",
+                "category": "Constants/Editor"
+            },
+            "methods": [
+                {
+                    "base": "GetQuadShapeComponentTypeId",
+                    "details": {
+                        "name": "Get Quad Shape Component Type Id"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}",
+                            "details": {
+                                "name": "AZ:: Uuid"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

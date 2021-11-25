@@ -1,15 +1,15 @@
 {
     "entries": [
         {
-            "key": "TubeShapeComponentRequestsBus",
+            "base": "TubeShapeComponentRequestsBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "TubeShapeComponentRequestsBus"
+                "name": "Tube Shape Component"
             },
             "methods": [
                 {
-                    "key": "GetVariableRadius",
+                    "base": "GetVariableRadius",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetVariableRadius"
@@ -39,7 +39,7 @@
                     ]
                 },
                 {
-                    "key": "SetVariableRadius",
+                    "base": "SetVariableRadius",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetVariableRadius"
@@ -67,7 +67,7 @@
                     ]
                 },
                 {
-                    "key": "SetRadius",
+                    "base": "SetRadius",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetRadius"
@@ -89,7 +89,7 @@
                     ]
                 },
                 {
-                    "key": "GetRadius",
+                    "base": "GetRadius",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetRadius"
@@ -111,7 +111,7 @@
                     ]
                 },
                 {
-                    "key": "GetTotalRadius",
+                    "base": "GetTotalRadius",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetTotalRadius"
