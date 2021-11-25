@@ -37,8 +37,8 @@ def asset_processor(request: pytest.fixture, workspace: pytest.fixture) -> asset
         ap.stop()
 
     request.addfinalizer(teardown)
-    assert not check_ap_running("AssetProcessor.exe") and check_ap_running("AssetProcessorBatch.exe"), \
-        "Asset Processor or Asset Processor Batch did not shutdown."
+    assert not (check_ap_running("AssetProcessor") and check_ap_running("AssetProcessorBatch") and
+                check_ap_running("AssetBuilder")), "Process did not shutdown correctly."
 
 
     return ap
