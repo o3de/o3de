@@ -88,7 +88,6 @@ CObjectManager::CObjectManager()
     , m_bSelectionChanged(false)
     , m_selectCallback(nullptr)
     , m_currEditObject(nullptr)
-    , m_bSingleSelection(false)
     , m_createGameObjects(true)
     , m_bGenUniqObjectNames(true)
     , m_gizmoManager(new CGizmoManager())
@@ -454,18 +453,8 @@ void CObjectManager::DeleteAllObjects()
     EndEditParams();
 
     ClearSelection();
-    int i;
 
     InvalidateVisibleList();
-
-    // Delete all selection groups.
-    std::vector<CSelectionGroup*> sel;
-    stl::map_to_vector(m_selections, sel);
-    for (i = 0; i < sel.size(); i++)
-    {
-        delete sel[i];
-    }
-    m_selections.clear();
 
     TBaseObjects objectsHolder;
     GetAllObjects(objectsHolder);
@@ -474,7 +463,7 @@ void CObjectManager::DeleteAllObjects()
     m_objects.clear();
     m_objectsByName.clear();
 
-    for (i = 0; i < objectsHolder.size(); i++)
+    for (int i = 0; i < objectsHolder.size(); i++)
     {
         objectsHolder[i]->Done();
     }
@@ -630,12 +619,6 @@ void CObjectManager::RemoveObject(CBaseObject* obj)
 
     // Remove this object from selection groups.
     m_currSelection->RemoveObject(obj);
-    std::vector<CSelectionGroup*> sel;
-    stl::map_to_vector(m_selections, sel);
-    for (int i = 0; i < sel.size(); i++)
-    {
-        sel[i]->RemoveObject(obj);
-    }
 
     m_objectsByName.erase(AZ::Crc32(obj->GetName().toUtf8().data(), obj->GetName().toUtf8().count(), true));
 
@@ -936,139 +919,6 @@ void CObjectManager::UnselectObject(CBaseObject* obj)
     m_currSelection->RemoveObject(obj);
 }
 
-CSelectionGroup* CObjectManager::GetSelection(const QString& name) const
-{
-    CSelectionGroup* selection = stl::find_in_map(m_selections, name, (CSelectionGroup*)nullptr);
-    return selection;
-}
-
-void CObjectManager::GetNameSelectionStrings(QStringList& names)
-{
-    for (TNameSelectionMap::iterator it = m_selections.begin(); it != m_selections.end(); ++it)
-    {
-        names.push_back(it->first);
-    }
-}
-
-void CObjectManager::NameSelection(const QString& name)
-{
-    if (m_currSelection->IsEmpty())
-    {
-        return;
-    }
-
-    CSelectionGroup* selection = stl::find_in_map(m_selections, name, (CSelectionGroup*)nullptr);
-    if (selection)
-    {
-        assert(selection != 0);
-        // Check if trying to rename itself to the same name.
-        if (selection == m_currSelection)
-        {
-            return;
-        }
-        m_selections.erase(name);
-        delete selection;
-    }
-    selection = new CSelectionGroup;
-    selection->Copy(*m_currSelection);
-    selection->SetName(name);
-    m_selections[name] = selection;
-    m_currSelection = selection;
-    m_defaultSelection.RemoveAll();
-}
-
-void CObjectManager::SerializeNameSelection(XmlNodeRef& rootNode, bool bLoading)
-{
-    if (!rootNode)
-    {
-        return;
-    }
-
-    _smart_ptr<CSelectionGroup> tmpGroup(nullptr);
-
-    QString selRootStr("NameSelection");
-    QString selNodeStr("NameSelectionNode");
-    QString selNodeNameStr("name");
-    QString idStr("id");
-    QString objAttrStr("obj");
-
-    XmlNodeRef startNode = rootNode->findChild(selRootStr.toUtf8().data());
-
-    if (bLoading)
-    {
-        m_selections.erase(m_selections.begin(), m_selections.end());
-
-        if (startNode)
-        {
-            for (int selNodeNo = 0; selNodeNo < startNode->getChildCount(); ++selNodeNo)
-            {
-                XmlNodeRef selNode = startNode->getChild(selNodeNo);
-                tmpGroup = new CSelectionGroup;
-
-                for (int objIDNodeNo = 0; objIDNodeNo < selNode->getChildCount(); ++objIDNodeNo)
-                {
-                    GUID curID = GUID_NULL;
-                    XmlNodeRef idNode = selNode->getChild(objIDNodeNo);
-                    if (!idNode->getAttr(idStr.toUtf8().data(), curID))
-                    {
-                        continue;
-                    }
-
-                    if (curID != GUID_NULL)
-                    {
-                        if (GetIEditor()->GetObjectManager()->FindObject(curID))
-                        {
-                            tmpGroup->AddObject(GetIEditor()->GetObjectManager()->FindObject(curID));
-                        }
-                    }
-                }
-
-                if (tmpGroup->GetCount() > 0)
-                {
-                    QString nameStr;
-                    if (!selNode->getAttr(selNodeNameStr.toUtf8().data(), nameStr))
-                    {
-                        continue;
-                    }
-                    tmpGroup->SetName(nameStr);
-                    m_selections[nameStr] = tmpGroup;
-                }
-            }
-        }
-    }
-    else
-    {
-        startNode = rootNode->newChild(selRootStr.toUtf8().data());
-        CSelectionGroup* objSelection = nullptr;
-
-        for (TNameSelectionMap::iterator it = m_selections.begin(); it != m_selections.end(); ++it)
-        {
-            XmlNodeRef selectionNameNode = startNode->newChild(selNodeStr.toUtf8().data());
-            selectionNameNode->setAttr(selNodeNameStr.toUtf8().data(), it->first.toUtf8().data());
-            objSelection = it->second;
-
-            if (!objSelection)
-            {
-                continue;
-            }
-
-            if (objSelection->GetCount() == 0)
-            {
-                continue;
-            }
-
-            for (int i = 0; i < objSelection->GetCount(); ++i)
-            {
-                if (objSelection->GetObject(i))
-                {
-                    XmlNodeRef objNode = selectionNameNode->newChild(objAttrStr.toUtf8().data());
-                    objNode->setAttr(idStr.toUtf8().data(), GuidUtil::ToString(objSelection->GetObject(i)->GetId()));
-                }
-            }
-        }
-    }
-}
-
 //////////////////////////////////////////////////////////////////////////
 int CObjectManager::ClearSelection()
 {
@@ -1120,63 +970,6 @@ int CObjectManager::ClearSelection()
     }
 
     return numSel;
-}
-
-//////////////////////////////////////////////////////////////////////////
-int CObjectManager::InvertSelection()
-{
-    AZ_PROFILE_FUNCTION(Editor);
-
-    int selCount = 0;
-    // iterate all objects.
-    for (Objects::const_iterator it = m_objects.begin(); it != m_objects.end(); ++it)
-    {
-        CBaseObject* pObj = it->second;
-        if (pObj->IsSelected())
-        {
-            UnselectObject(pObj);
-        }
-        else
-        {
-            if (SelectObject(pObj))
-            {
-                selCount++;
-            }
-        }
-    }
-    return selCount;
-}
-
-void CObjectManager::SetSelection(const QString& name)
-{
-    AZ_PROFILE_FUNCTION(Editor);
-    CSelectionGroup* selection = stl::find_in_map(m_selections, name, (CSelectionGroup*)nullptr);
-    if (selection)
-    {
-        UnselectCurrent();
-        assert(selection != 0);
-        m_currSelection = selection;
-        SelectCurrent();
-    }
-}
-
-void CObjectManager::RemoveSelection(const QString& name)
-{
-    AZ_PROFILE_FUNCTION(Editor);
-
-    QString selName = name;
-    CSelectionGroup* selection = stl::find_in_map(m_selections, name, (CSelectionGroup*)nullptr);
-    if (selection)
-    {
-        if (selection == m_currSelection)
-        {
-            UnselectCurrent();
-            m_currSelection = &m_defaultSelection;
-            m_defaultSelection.RemoveAll();
-        }
-        delete selection;
-        m_selections.erase(selName);
-    }
 }
 
 void CObjectManager::SelectCurrent()
@@ -1260,53 +1053,8 @@ void CObjectManager::FindDisplayableObjects([[maybe_unused]] DisplayContext& dc,
     AZ_Assert(false, "CObjectManager::FindDisplayableObjects is legacy/deprecated and should not be used.");
 }
 
-void CObjectManager::BeginEditParams(CBaseObject* obj, int flags)
-{
-    assert(obj != 0);
-    if (obj == m_currEditObject)
-    {
-        return;
-    }
-
-    if (GetSelection()->GetCount() > 1)
-    {
-        return;
-    }
-
-    QWidget* prevActiveWindow = QApplication::activeWindow();
-
-    if (m_currEditObject)
-    {
-        //if (obj->GetClassDesc() != m_currEditObject->GetClassDesc())
-        if (!obj->IsSameClass(m_currEditObject))
-        {
-            EndEditParams(flags);
-        }
-    }
-
-    m_currEditObject = obj;
-
-    if (flags & OBJECT_CREATE)
-    {
-        // Unselect all other objects.
-        ClearSelection();
-        // Select this object.
-        SelectObject(obj, false);
-    }
-
-    m_bSingleSelection = true;
-
-    // Restore focus if it changed.
-    //  OBJECT_EDIT is used by the EntityOutliner when items are selected. Using it here to prevent shifting focus to the EntityInspector on select.
-    if (!(flags & OBJECT_EDIT) && prevActiveWindow && QApplication::activeWindow() != prevActiveWindow)
-    {
-        prevActiveWindow->setFocus();
-    }
-}
-
 void CObjectManager::EndEditParams([[maybe_unused]] int flags)
 {
-    m_bSingleSelection = false;
     m_currEditObject = nullptr;
     //m_bSelectionChanged = false; // don't need to clear for ungroup
 }
@@ -1431,7 +1179,6 @@ void CObjectManager::DeleteSelection()
         objects.AddObject(m_currSelection->GetObject(i));
     }
 
-    RemoveSelection(m_currSelection->GetName());
     m_currSelection = &m_defaultSelection;
     m_defaultSelection.RemoveAll();
 
@@ -2069,19 +1816,6 @@ void CObjectManager::SetObjectSelected(CBaseObject* pObject, bool bSelect)
 void CObjectManager::HideTransformManipulators()
 {
     m_gizmoManager->DeleteAllTransformManipulators();
-}
-
-//////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////
-void CObjectManager::AddObjectEventListener(EventListener* listener)
-{
-    stl::push_back_unique(m_objectEventListeners, listener);
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CObjectManager::RemoveObjectEventListener(EventListener* listener)
-{
-    stl::find_and_erase(m_objectEventListeners, listener);
 }
 
 //////////////////////////////////////////////////////////////////////////

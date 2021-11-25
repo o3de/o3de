@@ -120,15 +120,6 @@ enum ObjectFlags
 #define ERF_GET_WRITABLE(flags) (flags)
 
 //////////////////////////////////////////////////////////////////////////
-//! This flags passed to CBaseObject::BeginEditParams method.
-enum ObjectEditFlags
-{
-    OBJECT_CREATE   = 0x001,
-    OBJECT_EDIT     = 0x002,
-    OBJECT_COLLAPSE_OBJECTPANEL = 0x004
-};
-
-//////////////////////////////////////////////////////////////////////////
 //! Return values from CBaseObject::MouseCreateCallback method.
 enum MouseCreateResult
 {

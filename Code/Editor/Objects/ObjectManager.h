@@ -8,10 +8,6 @@
 
 
 // Description : ObjectManager definition.
-
-
-#ifndef CRYINCLUDE_EDITOR_OBJECTS_OBJECTMANAGER_H
-#define CRYINCLUDE_EDITOR_OBJECTS_OBJECTMANAGER_H
 #pragma once
 
 #include "IObjectManager.h"
@@ -76,7 +72,6 @@ public:
     void    DeleteAllObjects() override;
     CBaseObject* CloneObject(CBaseObject* obj) override;
 
-    void BeginEditParams(CBaseObject* obj, int flags) override;
     void EndEditParams(int flags = 0) override;
     // Hides all transform manipulators.
     void HideTransformManipulators();
@@ -170,22 +165,8 @@ public:
     //! @Return number of objects removed from selection.
     int ClearSelection() override;
 
-    //! Deselect all current selected objects and selects object that were unselected.
-    //! @Return number of selected objects.
-    int InvertSelection() override;
-
     //! Get current selection.
     CSelectionGroup*    GetSelection() const override { return m_currSelection; };
-    //! Get named selection.
-    CSelectionGroup*    GetSelection(const QString& name) const override;
-    // Get selection group names
-    void GetNameSelectionStrings(QStringList& names) override;
-    //! Change name of current selection group.
-    //! And store it in list.
-    void    NameSelection(const QString& name) override;
-    //! Set one of name selections as current selection.
-    void    SetSelection(const QString& name) override;
-    void    RemoveSelection(const QString& name) override;
 
     bool IsObjectDeletionAllowed(CBaseObject* pObject);
 
@@ -228,8 +209,6 @@ public:
     //! @param flags Can be one of SerializeFlags.
     void    Serialize(XmlNodeRef& rootNode, bool bLoading, int flags = SERIALIZE_ALL) override;
 
-    void SerializeNameSelection(XmlNodeRef& rootNode, bool bLoading) override;
-
     //! Load objects from object archive.
     //! @param bSelect if set newly loaded object will be selected.
     void LoadObjects(CObjectArchive& ar, bool bSelect) override;
@@ -269,12 +248,6 @@ public:
     //////////////////////////////////////////////////////////////////////////
     //! Invalidate visibily settings of objects.
     void InvalidateVisibleList() override;
-
-    //////////////////////////////////////////////////////////////////////////
-    // ObjectManager notification Callbacks.
-    //////////////////////////////////////////////////////////////////////////
-    void AddObjectEventListener(EventListener* listener) override;
-    void RemoveObjectEventListener(EventListener* listener) override;
 
     //////////////////////////////////////////////////////////////////////////
     // Used to indicate starting and ending of objects loading.
@@ -334,9 +307,6 @@ private:
     typedef std::unordered_map<AZ::u32, CBaseObjectPtr> ObjectsByNameCrc;
     ObjectsByNameCrc m_objectsByName;
 
-    typedef std::map<QString, CSelectionGroup*> TNameSelectionMap;
-    TNameSelectionMap m_selections;
-
     //! Used for forcing IDs of "GetEditorObjectID" of PreFabs, as they used to have random IDs on each load
     uint32  m_ForceID;
 
@@ -368,7 +338,6 @@ private:
     CSelectionGroup m_defaultSelection;
 
     CBaseObjectPtr m_currEditObject;
-    bool m_bSingleSelection;
 
     bool m_createGameObjects;
     bool m_bGenUniqObjectNames;
@@ -426,4 +395,3 @@ namespace AzToolsFramework
 
 } // namespace AzToolsFramework
 
-#endif // CRYINCLUDE_EDITOR_OBJECTS_OBJECTMANAGER_H
