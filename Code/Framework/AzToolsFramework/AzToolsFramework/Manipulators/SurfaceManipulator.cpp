@@ -12,9 +12,6 @@
 #include <AzToolsFramework/Manipulators/ManipulatorView.h>
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
 
-#pragma optimize("", off)
-#pragma inline_depth(0)
-
 namespace AzToolsFramework
 {
     SurfaceManipulator::StartInternal SurfaceManipulator::CalculateManipulationDataStart(
@@ -178,6 +175,3 @@ namespace AzToolsFramework
         m_manipulatorView = AZStd::move(view);
     }
 } // namespace AzToolsFramework
-
-#pragma optimize("", on)
-#pragma inline_depth()

@@ -3028,7 +3028,7 @@ namespace UnitTest
     TEST_F(
         EditorTransformComponentSelectionRenderGeometryIntersectionManipulatorFixture, BoxCanBePlacedOnMeshSurfaceUsingSurfaceManipulator)
     {
-        // camera - 0.00, 20.00, 12.00, -35.00, 180.00
+        // camera - 0.00, 20.00, 12.00, -35.00, -180.00
         m_cameraState.m_viewportSize = AZ::Vector2(1280.0f, 720.0f);
         AzFramework::SetCameraTransform(
             m_cameraState,
@@ -3036,9 +3036,9 @@ namespace UnitTest
                 AZ::Matrix3x3::CreateRotationZ(AZ::DegToRad(-180.0f)) * AZ::Matrix3x3::CreateRotationX(AZ::DegToRad(-35.0f)),
                 AZ::Vector3(0.0f, 20.0f, 12.0f)));
 
-        // the initial starting position of the entity (in front and to the left of the camera)
+        // the initial starting position of the entity
         const auto initialTransformWorld = AzToolsFramework::GetWorldTransform(m_entityIdBox);
-        // where the entity should end up (in front and to the right of the camera)
+        // where the entity should end up (snapped to the larger ground surface)
         const auto finalTransformWorld =
             AZ::Transform::CreateFromQuaternionAndTranslation(initialTransformWorld.GetRotation(), AZ::Vector3(2.5f, 12.5f, 5.5f));
 
@@ -3050,10 +3050,7 @@ namespace UnitTest
         // select the entity (this will cause the manipulators to appear in EditorTransformComponentSelection)
         AzToolsFramework::SelectEntity(m_entityIdBox);
 
-        // refresh the manipulators so that they update to the position of the entity
-        // note: could skip this by selecting the entity after moving it but its useful to have this for reference
-        RefreshManipulators(AzToolsFramework::EditorTransformComponentSelectionRequestBus::Events::RefreshType::All);
-
+        // press and drag the mouse (starting where the surface manipulator is)
         m_actionDispatcher->CameraState(m_cameraState)
             ->MousePosition(initialPositionScreen)
             ->MouseLButtonDown()
@@ -3071,16 +3068,16 @@ namespace UnitTest
         EditorTransformComponentSelectionRenderGeometryIntersectionManipulatorFixture,
         SurfaceManipulatorFollowsMouseAtDefaultEditorDistanceFromCameraWhenNoMeshIntersection)
     {
-        // camera - 0.00, 20.00, 12.00, -35.00, 180.00
+        // camera - 0.00, 25.00, 12.00, 0.00, -180.00
         m_cameraState.m_viewportSize = AZ::Vector2(1280.0f, 720.0f);
         AzFramework::SetCameraTransform(
             m_cameraState,
             AZ::Transform::CreateFromMatrix3x3AndTranslation(
                 AZ::Matrix3x3::CreateRotationZ(AZ::DegToRad(-180.0f)), AZ::Vector3(0.0f, 25.0f, 12.0f)));
 
-        // the initial starting position of the entity (in front and to the left of the camera)
+        // the initial starting position of the entity
         const auto initialTransformWorld = AzToolsFramework::GetWorldTransform(m_entityIdBox);
-        // where the entity should end up (in front and to the right of the camera)
+        // where the entity should end up (default distance away from the camera/near clip under where the mouse is)
         const auto finalTransformWorld =
             AZ::Transform::CreateFromQuaternionAndTranslation(initialTransformWorld.GetRotation(), AZ::Vector3(0.0f, 14.9f, 12.0f));
 
@@ -3092,10 +3089,7 @@ namespace UnitTest
         // select the entity (this will cause the manipulators to appear in EditorTransformComponentSelection)
         AzToolsFramework::SelectEntity(m_entityIdBox);
 
-        // refresh the manipulators so that they update to the position of the entity
-        // note: could skip this by selecting the entity after moving it but its useful to have this for reference
-        RefreshManipulators(AzToolsFramework::EditorTransformComponentSelectionRequestBus::Events::RefreshType::All);
-
+        // press and drag the mouse (starting where the surface manipulator is)
         m_actionDispatcher->CameraState(m_cameraState)
             ->MousePosition(initialPositionScreen)
             ->MouseLButtonDown()
@@ -3110,6 +3104,7 @@ namespace UnitTest
 
         // ensure final world positions match
         EXPECT_THAT(finalEntityTransform, IsCloseTolerance(finalTransformWorld, 0.01f));
+        // ensure distance away is what we expect
         EXPECT_NEAR(distanceAway, AzToolsFramework::GetDefaultEntityPlacementDistance(), 0.001f);
     }
 } // namespace UnitTest
