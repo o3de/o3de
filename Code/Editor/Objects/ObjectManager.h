@@ -93,10 +93,6 @@ public:
     //! Display objects on display context.
     void    Display(DisplayContext& dc) override;
 
-    //! Called when selecting without selection helpers - this is needed since
-    //! the visible object cache is normally not updated when not displaying helpers.
-    void ForceUpdateVisibleObjectCache(DisplayContext& dc) override;
-
     //! Check intersection with objects.
     //! Find intersection with nearest to ray origin object hit by ray.
     //! If distance tollerance is specified certain relaxation applied on collision test.
@@ -200,11 +196,6 @@ public:
     void    GetClassCategoryToolClassNamePairs(std::vector< std::pair<QString, QString> >& categoryToolClassNamePairs) override;
     void    GetClassTypes(const QString& category, QStringList& types) override;
 
-    //! Export objects to xml.
-    //! When onlyShared is true ony objects with shared flags exported, overwise only not shared object exported.
-    void    Export(const QString& levelPath, XmlNodeRef& rootNode, bool onlyShared) override;
-    void    ExportEntities(XmlNodeRef& rootNode) override;
-
     //! Serialize Objects in manager to specified XML Node.
     //! @param flags Can be one of SerializeFlags.
     void    Serialize(XmlNodeRef& rootNode, bool bLoading, int flags = SERIALIZE_ALL) override;
@@ -298,8 +289,6 @@ private:
     void LoadRegistry();
 
     void NotifyObjectListeners(CBaseObject* pObject, CBaseObject::EObjectListenerEvent event);
-
-    void FindDisplayableObjects(DisplayContext& dc, bool bDisplay);
 
 private:
     typedef std::map<GUID, CBaseObjectPtr, guid_less_predicate> Objects;

@@ -5,10 +5,6 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-
-
-#ifndef CRYINCLUDE_EDITOR_INCLUDE_IOBJECTMANAGER_H
-#define CRYINCLUDE_EDITOR_INCLUDE_IOBJECTMANAGER_H
 #pragma once
 
 #include <AzCore/PlatformIncl.h>
@@ -95,10 +91,6 @@ public:
 
     //! Display objects on specified display context.
     virtual void Display(DisplayContext& dc) = 0;
-
-    //! Called when selecting without selection helpers - this is needed since
-    //! the visible object cache is normally not updated when not displaying helpers.
-    virtual void ForceUpdateVisibleObjectCache(DisplayContext& dc) = 0;
 
     //! Check intersection with objects.
     //! Find intersection with nearest to ray origin object hit by ray.
@@ -192,12 +184,6 @@ public:
     virtual void GetClassCategoryToolClassNamePairs(std::vector< std::pair<QString, QString> >& categoryToolClassNamePairs) = 0;
     virtual void GetClassTypes(const QString& category, QStringList& types) = 0;
 
-    //! Export objects to xml.
-    //! When onlyShared is true ony objects with shared flags exported, overwise only not shared object exported.
-    virtual void Export(const QString& levelPath, XmlNodeRef& rootNode, bool onlyShared) = 0;
-    //! Export only entities to xml.
-    virtual void    ExportEntities(XmlNodeRef& rootNode) = 0;
-
     //! Serialize Objects in manager to specified XML Node.
     //! @param flags Can be one of SerializeFlags.
     virtual void Serialize(XmlNodeRef& rootNode, bool bLoading, int flags = SERIALIZE_ALL) = 0;
@@ -259,5 +245,3 @@ public:
     virtual void SetExportingLevel(bool bExporting) = 0;
     virtual bool IsExportingLevelInprogress() const = 0;
 };
-
-#endif // CRYINCLUDE_EDITOR_INCLUDE_IOBJECTMANAGER_H
