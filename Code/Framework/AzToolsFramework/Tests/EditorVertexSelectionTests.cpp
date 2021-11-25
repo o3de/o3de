@@ -213,7 +213,7 @@ namespace UnitTest
                 entityComponentIdPair, vertIndex, AZ::Vector3(horizontalPositions[vertIndex], 5.0f, 0.0f));
         }
 
-        // rebuild the vertex selection after adding the new verts
+        // rebuild the vertex selection after adding the new vertices
         RecreateVertexSelection();
 
         // build a vector of the vertex positions in screen space
@@ -269,7 +269,7 @@ namespace UnitTest
         // add a single vertex (in front of the camera)
         InsertVertexAfter(entityComponentIdPair, 0, AZ::Vector3::CreateAxisY(5.0f));
 
-        // rebuild the vertex selection after adding the new verts
+        // rebuild the vertex selection after adding the new vertices
         RecreateVertexSelection();
 
         AzFramework::ScreenPoint vertexScreenPosition;
