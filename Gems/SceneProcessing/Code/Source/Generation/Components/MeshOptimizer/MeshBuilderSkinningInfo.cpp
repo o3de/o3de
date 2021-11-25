@@ -68,9 +68,19 @@ namespace AZ::MeshBuilder
         }
     }
 
+    // sort influences on ids, from small to big
+    void MeshBuilderSkinningInfo::SortInfluencesById(AZStd::vector<Influence>& influences)
+    {
+        AZStd::sort(
+            begin(influences), end(influences),
+            [](const auto& lhs, const auto& rhs)
+            {
+                return lhs.mNodeNr <= rhs.mNodeNr;
+            });
+    }
 
     // sort influences on weights, from big to small
-    void MeshBuilderSkinningInfo::SortInfluences(AZStd::vector<Influence>& influences)
+    void MeshBuilderSkinningInfo::SortInfluencesByWeight(AZStd::vector<Influence>& influences)
     {
         AZStd::sort(begin(influences), end(influences), [](const auto& lhs, const auto& rhs)
         {
@@ -78,9 +88,8 @@ namespace AZ::MeshBuilder
         });
     }
 
-
     // optimize the weight data
-    void MeshBuilderSkinningInfo::Optimize(AZ::u32 maxNumWeightsPerVertex, float weightThreshold)
+    void MeshBuilderSkinningInfo::Optimize([[maybe_unused]] AZ::u32 maxNumWeightsPerVertex, [[maybe_unused]] float weightThreshold)
     {
         AZStd::vector<Influence> influences;
 
@@ -90,26 +99,29 @@ namespace AZ::MeshBuilder
         {
             // gather all weights
             const size_t numInfluences = GetNumInfluences(v);
-            influences.resize(numInfluences);
-            for (size_t i = 0; i < numInfluences; ++i)
+            if (numInfluences > 0)
             {
-                influences[i] = GetInfluence(v, i);
-            }
+                influences.resize(numInfluences);
+                for (size_t i = 0; i < numInfluences; ++i)
+                {
+                    influences[i] = GetInfluence(v, i);
+                }
 
-            // optimize the weights and sort them from big to small weight
-            OptimizeSkinningInfluences(influences, weightThreshold, maxNumWeightsPerVertex);
-            SortInfluences(influences);
+                // optimize the weights and sort them from big to small weight
+                OptimizeSkinningInfluences(influences, weightThreshold, maxNumWeightsPerVertex);
+                SortInfluencesByWeight(influences);
 
-            // remove all influences
-            for (size_t i = 0; i < numInfluences; ++i)
-            {
-                RemoveInfluence(v, 0);
-            }
+                // remove all influences
+                for (size_t i = 0; i < numInfluences; ++i)
+                {
+                    RemoveInfluence(v, 0);
+                }
 
-            // re-add them
-            for (const Influence& influence : influences)
-            {
-                AddInfluence(v, influence);
+                // re-add them
+                for (const Influence& influence : influences)
+                {
+                    AddInfluence(v, influence);
+                }
             }
         }
     }

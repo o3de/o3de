@@ -205,9 +205,22 @@ namespace AZ::SceneGenerationComponents
         auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
         if (serializeContext)
         {
-            serializeContext->Class<MeshOptimizerComponent, GenerationComponent>()->Version(4);
+            serializeContext->Class<MeshOptimizerComponent, GenerationComponent>()->Version(5);
         }
     }
+
+    struct InfluenceAccumulator
+    {
+        AZStd::unordered_map<size_t, float> m_accumulatedInfluences;
+        float m_totalWeldedVertexCount = 1.0f;
+
+        void AddInfluence(size_t jointId, float weight)
+        {
+            //clean this up and add unit tests
+            auto iter = m_accumulatedInfluences.insert(AZStd::pair<size_t, float>(jointId, 0.0f)).first;
+            iter->second = ((iter->second * (m_totalWeldedVertexCount - 1.0f)) + weight) / m_totalWeldedVertexCount;
+        }
+    };
 
     template<class MeshDataType, class SkinWeightDataView>
     static AZStd::unique_ptr<AZ::MeshBuilder::MeshBuilderSkinningInfo> ExtractSkinningInfo(
@@ -226,6 +239,10 @@ namespace AZ::SceneGenerationComponents
 
         auto skinningInfo = AZStd::make_unique<AZ::MeshBuilder::MeshBuilderSkinningInfo>(aznumeric_cast<AZ::u32>(usedControlPointCount));
 
+        // A map from orgVertexNumber to an InfluenceAccumulator that is responsible for
+        // averaging the influences of any vertices that have been welded
+        AZStd::unordered_map<int, InfluenceAccumulator> influenceMap;
+
         for (const auto& skinData : skinWeights)
         {
             for (size_t controlPointIndex = 0; controlPointIndex < skinData.get().GetVertexCount(); ++controlPointIndex)
@@ -238,11 +255,31 @@ namespace AZ::SceneGenerationComponents
                     continue;
                 }
 
+                AZ::u32 orgVertexNumber = positionMap.at(usedPointIndex);
+                const auto& [iter, didInsert] = influenceMap.try_emplace(orgVertexNumber, InfluenceAccumulator{});
+                InfluenceAccumulator& influenceAccumulatorForOrgVertexNumber = iter->second;
+                if(!didInsert)
+                {
+                    // If more than one vertex was welded, keep track of how many
+                    influenceAccumulatorForOrgVertexNumber.m_totalWeldedVertexCount += 1.0f;
+                }
+
                 for (size_t linkIndex = 0; linkIndex < linkCount; ++linkIndex)
                 {
                     const ISkinWeightData::Link& link = skinData.get().GetLink(controlPointIndex, linkIndex);
-                    skinningInfo->AddInfluence(positionMap.at(usedPointIndex), {aznumeric_caster(link.boneId), link.weight});
+
+                    influenceAccumulatorForOrgVertexNumber.AddInfluence(aznumeric_caster(link.boneId), link.weight);
+                    
                 }
+            }
+        }
+
+        // Now that we've gathered and de-duplicated all the skin influences, add them
+        for (const auto& [orgVertexNumber, accumulator] : influenceMap)
+        {
+            for (const auto& [jointId, accumulatedWeight] : accumulator.m_accumulatedInfluences)
+            {
+                skinningInfo->AddInfluence(orgVertexNumber, {jointId, accumulatedWeight / accumulator.m_totalWeldedVertexCount});
             }
         }
 
