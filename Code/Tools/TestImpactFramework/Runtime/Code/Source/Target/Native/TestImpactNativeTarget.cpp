@@ -10,20 +10,14 @@
 
 namespace TestImpact
 {
-    NativeTarget::NativeTarget(NativeTargetDescriptor* descriptor, SpecializedNativeTargetType type)
+    NativeTarget::NativeTarget(NativeTargetDescriptor* descriptor)
         : Target(descriptor)
         , m_descriptor(descriptor)
-        , m_type(type)
     {
     }
 
     const AZStd::string& NativeTarget::GetOutputName() const
     {
         return m_descriptor->m_outputName;
-    }
-
-    SpecializedNativeTargetType NativeTarget::GetSpecializedBuildTargetType() const
-    {
-        return m_type;
     }
 } // namespace TestImpact

@@ -38,16 +38,28 @@ namespace UnitTest
             EXPECT_EQ(target.GetName(), expectedTarget.GetName());
             EXPECT_EQ(target.GetOutputName(), expectedTarget.GetOutputName());
             EXPECT_EQ(target.GetPath(), expectedTarget.GetPath());
-            EXPECT_EQ(target.GetSpecializedBuildTargetType(), expectedTarget.GetSpecializedBuildTargetType());
             EXPECT_TRUE(target.GetSources() == expectedTarget.GetSources());
         }
 
-        void ValidateBuildTarget(const typename TestImpact::NativeBuildTargetTraits::BuildTarget& buildTarget, const TestImpact::NativeTarget& expectedTarget)
+        void ValidateBuildTarget(const typename TestImpact::NativeBuildTargetTraits::BuildTarget& buildTarget, const TestImpact::NativeTestTarget& expectedTestTarget)
         {
             AZStd::visit(
-            [&expectedTarget](auto&& target)
+            [&expectedTestTarget](auto&& target)
             {
-                ValidateTarget(*target, expectedTarget);
+                EXPECT_TRUE(TestImpact::NativeBuildTargetTraits::IsTestTarget<decltype(target)>);
+                ValidateTarget(*target, expectedTestTarget);
+            },
+            buildTarget);
+        }
+
+        void ValidateBuildTarget(
+            const typename TestImpact::NativeBuildTargetTraits::BuildTarget& buildTarget, const TestImpact::NativeProductionTarget& expectedProductionTarget)
+        {
+            AZStd::visit(
+            [&expectedProductionTarget](auto&& target)
+            {
+                EXPECT_TRUE(TestImpact::NativeBuildTargetTraits::IsProductionTarget<decltype(target)>);
+                ValidateTarget(*target, expectedProductionTarget);
             },
             buildTarget);
         }
@@ -594,8 +606,6 @@ namespace UnitTest
                     // Expect the build target to be valid
                     EXPECT_TRUE(buildTarget);
 
-                    // Expect the build type to be a production target
-                    EXPECT_EQ(buildTarget->GetSpecializedBuildTargetType(), TestImpact::SpecializedNativeTargetType::Production);
 
                     // Expect the retrieved build target to match the production target we queried
                     ValidateBuildTarget(buildTarget, expectedProductionTarget);
@@ -610,9 +620,6 @@ namespace UnitTest
                 {
                     // Expect the build target to be valid
                     EXPECT_TRUE(buildTarget);
-
-                    // Expect the build type to be a test target
-                    EXPECT_EQ(buildTarget->GetSpecializedBuildTargetType(), TestImpact::SpecializedNativeTargetType::Test);
 
                     // Expect the retrieved build target to match the test target we queried
                     ValidateBuildTarget(buildTarget, expectedTestTarget);
@@ -665,9 +672,6 @@ namespace UnitTest
             AZStd::visit(
                 [&expectedProductionTarget](auto&& buildTarget)
                 {
-                    // Expect the build type to be a production target
-                    EXPECT_EQ(buildTarget->GetSpecializedBuildTargetType(), TestImpact::SpecializedNativeTargetType::Production);
-
                     // Expect the retrieved build target to match the production target we queried
                     ValidateBuildTarget(buildTarget, expectedProductionTarget);
                 },
@@ -679,9 +683,6 @@ namespace UnitTest
             AZStd::visit(
                 [&expectedTestTarget](auto&& buildTarget)
                 {
-                    // Expect the build type to be a test target
-                    EXPECT_EQ(buildTarget->GetSpecializedBuildTargetType(), TestImpact::SpecializedNativeTargetType::Test);
-
                     // Expect the retrieved build target to match the test target we queried
                     ValidateBuildTarget(buildTarget, expectedTestTarget);
                 },

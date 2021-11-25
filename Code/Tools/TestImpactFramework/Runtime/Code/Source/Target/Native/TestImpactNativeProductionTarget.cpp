@@ -11,7 +11,7 @@
 namespace TestImpact
 {
     NativeProductionTarget::NativeProductionTarget(AZStd::unique_ptr<Descriptor> descriptor)
-        : NativeTarget(descriptor.get(), SpecializedNativeTargetType::Production)
+        : NativeTarget(descriptor.get())
         , m_descriptor(AZStd::move(descriptor))
     {
     }
