@@ -169,7 +169,7 @@ namespace AzToolsFramework
         {
             AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(&PropertyEditorGUIMessages::Bus::Events::RequestWrite, newCtrl);
         });
-        this->connect(newCtrl, &PropertyControl::editingFinished, this,[newCtrl]()
+        this->connect(newCtrl, &PropertyControl::editingFinished, this, [newCtrl]()
         {
             AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(&PropertyEditorGUIMessages::Bus::Handler::OnEditingFinished, newCtrl);
         });
