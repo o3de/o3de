@@ -129,20 +129,6 @@ public:
     virtual void FindObjectsInAABB(const AABB& aabb, std::vector<CBaseObject*>& result) const = 0;
 
     //////////////////////////////////////////////////////////////////////////
-    // Operations on objects.
-    //////////////////////////////////////////////////////////////////////////
-    //! Makes object visible or invisible.
-    virtual void HideObject(CBaseObject* obj, bool hide) = 0;
-    //! Shows the last hidden object based on hidden ID
-    virtual void ShowLastHiddenObject() = 0;
-    //! Freeze object, making it unselectable.
-    virtual void FreezeObject(CBaseObject* obj, bool freeze) = 0;
-    //! Unhide all hidden objects.
-    virtual void UnhideAll() = 0;
-    //! Unfreeze all frozen objects.
-    virtual void UnfreezeAll() = 0;
-
-    //////////////////////////////////////////////////////////////////////////
     // Object Selection.
     //////////////////////////////////////////////////////////////////////////
     virtual bool    SelectObject(CBaseObject* obj, bool bUseMask = true) = 0;
