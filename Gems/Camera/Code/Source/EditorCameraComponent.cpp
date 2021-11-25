@@ -52,6 +52,12 @@ namespace Camera
                 return locked;
             });
 
+        //To unposses camera when we move in the viewport with the transform locked.
+        m_controller.SetUnpossesCurrentCameraFunction([]()
+            {
+                EditorCameraRequests::Bus::Broadcast(&EditorCameraRequests::SetViewFromEntityPerspective, AZ::EntityId());
+            });
+
         // Call base class activate, which in turn calls Activate on our controller.
         EditorCameraComponentBase::Activate();
 

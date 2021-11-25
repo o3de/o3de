@@ -159,6 +159,11 @@ namespace Camera
         m_isLockedFn = isLockedFunction;
     }
 
+    void CameraComponentController::SetUnpossesCurrentCameraFunction(AZStd::function<void()> unpossesCurrentCameraFunction)
+    {
+        m_unpossesCurrentCameraFn = unpossesCurrentCameraFunction;
+    }
+
     void CameraComponentController::Reflect(AZ::ReflectContext* context)
     {
         CameraComponentConfig::Reflect(context);
@@ -203,6 +208,10 @@ namespace Camera
             if (!m_updatingTransformFromEntity && !m_isLockedFn())
             {
                 AZ::TransformBus::Event(m_entityId, &AZ::TransformInterface::SetWorldTM, m_atomCamera->GetCameraTransform());
+            }
+            else
+            {
+                m_unpossesCurrentCameraFn();
             }
         });
     }

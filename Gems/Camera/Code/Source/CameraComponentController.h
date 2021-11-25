@@ -73,6 +73,9 @@ namespace Camera
         //! Defines a callback for determining whether this camera is currently locked by its transform.
         void SetIsLockedFunction(AZStd::function<bool()> isLockedFunction);
 
+        //! Defines a callback to unposses the current camera view.
+        void SetUnpossesCurrentCameraFunction(AZStd::function<void()> unpossesCurrentCameraFunction);
+
         // Controller interface
         static void Reflect(AZ::ReflectContext* context);
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required);
@@ -140,5 +143,6 @@ namespace Camera
 
         AZStd::function<bool()> m_shouldActivateFn;
         AZStd::function<bool()> m_isLockedFn = []{ return false; };
+        AZStd::function<void()> m_unpossesCurrentCameraFn;
     };
 } // namespace Camera
