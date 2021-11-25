@@ -80,7 +80,6 @@ public:
     virtual void DeleteAllObjects() = 0;
     virtual CBaseObject* CloneObject(CBaseObject* obj) = 0;
 
-    virtual void BeginEditParams(CBaseObject* obj, int flags) = 0;
     virtual void EndEditParams(int flags = 0) = 0;
 
     //! Get number of objects manager by ObjectManager (not contain sub objects of groups).
@@ -173,23 +172,8 @@ public:
     //! @Return number of objects removed from selection.
     virtual int ClearSelection() = 0;
 
-    //! Deselect all current selected objects and selects object that were unselected.
-    //! @Return number of selected objects.
-    virtual int InvertSelection() = 0;
-
     //! Get current selection.
     virtual CSelectionGroup*    GetSelection() const = 0;
-    //! Get named selection.
-    virtual CSelectionGroup*    GetSelection(const QString& name) const = 0;
-    // Get selection group names
-    virtual void GetNameSelectionStrings(QStringList& names) = 0;
-    //! Change name of current selection group.
-    //! And store it in list.
-    virtual void    NameSelection(const QString& name) = 0;
-    //! Set one of name selections as current selection.
-    virtual void    SetSelection(const QString& name) = 0;
-    //! Removes one of named selections.
-    virtual void    RemoveSelection(const QString& name) = 0;
 
     //! Delete all objects in current selection group.
     virtual void DeleteSelection() = 0;
@@ -217,7 +201,6 @@ public:
     //! Serialize Objects in manager to specified XML Node.
     //! @param flags Can be one of SerializeFlags.
     virtual void Serialize(XmlNodeRef& rootNode, bool bLoading, int flags = SERIALIZE_ALL) = 0;
-    virtual void SerializeNameSelection(XmlNodeRef& rootNode, bool bLoading) = 0;
 
     //! Load objects from object archive.
     //! @param bSelect if set newly loaded object will be selected.
@@ -252,12 +235,6 @@ public:
     //////////////////////////////////////////////////////////////////////////
     //! Invalidate visibily settings of objects.
     virtual void InvalidateVisibleList() = 0;
-
-    //////////////////////////////////////////////////////////////////////////
-    // ObjectManager notification Callbacks.
-    //////////////////////////////////////////////////////////////////////////
-    virtual void AddObjectEventListener(EventListener* listener) = 0;
-    virtual void RemoveObjectEventListener(EventListener* listener) = 0;
 
     //////////////////////////////////////////////////////////////////////////
     // Used to indicate starting and ending of objects loading.

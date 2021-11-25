@@ -8,11 +8,6 @@
 
 
 // Description : The game engine for editor
-
-
-#ifndef CRYINCLUDE_EDITOR_GAMEENGINE_H
-#define CRYINCLUDE_EDITOR_GAMEENGINE_H
-
 #pragma once
 
 #if !defined(Q_MOC_RUN)
@@ -159,5 +154,3 @@ private:
     AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 };
 
-
-#endif // CRYINCLUDE_EDITOR_GAMEENGINE_H

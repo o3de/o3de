@@ -308,8 +308,6 @@ void CCryEditDoc::Save(TDocMultiArchive& arrXmlAr)
 
             // Fog settings  ///////////////////////////////////////////////////////
             SerializeFogSettings((*arrXmlAr[DMAS_GENERAL]));
-
-            SerializeNameSelection((*arrXmlAr[DMAS_GENERAL]));
         }
     }
     AfterSave();
@@ -455,12 +453,6 @@ void CCryEditDoc::Load(TDocMultiArchive& arrXmlAr, const QString& szFilename)
             }
         }
 
-        if (!isPrefabEnabled)
-        {
-            // Name Selection groups
-            SerializeNameSelection((*arrXmlAr[DMAS_GENERAL]));
-        }
-
         {
             CAutoLogTime logtime("Post Load");
 
@@ -592,16 +584,6 @@ void CCryEditDoc::SerializeFogSettings(CXmlArchive& xmlAr)
         {
             CXmlTemplate::SetValues(m_fogTemplate, fog);
         }
-    }
-}
-
-void CCryEditDoc::SerializeNameSelection(CXmlArchive& xmlAr)
-{
-    IObjectManager* pObjManager = GetIEditor()->GetObjectManager();
-
-    if (pObjManager)
-    {
-        pObjManager->SerializeNameSelection(xmlAr.root, xmlAr.bLoading);
     }
 }
 
