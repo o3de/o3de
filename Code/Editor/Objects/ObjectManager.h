@@ -126,20 +126,6 @@ public:
     void FindObjectsInAABB(const AABB& aabb, std::vector<CBaseObject*>& result) const override;
 
     //////////////////////////////////////////////////////////////////////////
-    // Operations on objects.
-    //////////////////////////////////////////////////////////////////////////
-    //! Makes object visible or invisible.
-    void HideObject(CBaseObject* obj, bool hide) override;
-    //! Shows the last hidden object based on hidden ID
-    void ShowLastHiddenObject() override;
-    //! Freeze object, making it unselectable.
-    void FreezeObject(CBaseObject* obj, bool freeze) override;
-    //! Unhide all hidden objects.
-    void UnhideAll() override;
-    //! Unfreeze all frozen objects.
-    void UnfreezeAll() override;
-
-    //////////////////////////////////////////////////////////////////////////
     // Object Selection.
     //////////////////////////////////////////////////////////////////////////
     bool    SelectObject(CBaseObject* obj, bool bUseMask = true) override;

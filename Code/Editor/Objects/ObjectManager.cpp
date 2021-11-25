@@ -793,72 +793,11 @@ void CObjectManager::Update()
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CObjectManager::HideObject(CBaseObject* obj, bool hide)
-{
-    assert(obj != 0);
-    if (hide)
-    {
-        obj->SetHidden(hide, ++m_currentHideCount);
-    }
-    else
-    {
-        obj->SetHidden(false);
-    }
-    InvalidateVisibleList();
-}
-
-void CObjectManager::ShowLastHiddenObject()
-{
-    uint64 mostRecentID = CBaseObject::s_invalidHiddenID;
-    CBaseObject* mostRecentObject = nullptr;
-    for (const auto& it : m_objects)
-    {
-        CBaseObject* obj = it.second;
-
-        uint64 hiddenID = obj->GetHideOrder();
-
-        if (hiddenID > mostRecentID)
-        {
-            mostRecentID = hiddenID;
-            mostRecentObject = obj;
-        }
-    }
-
-    if (mostRecentObject != nullptr)
-    {
-        mostRecentObject->SetHidden(false);
-    }
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CObjectManager::UnhideAll()
-{
-    for (Objects::iterator it = m_objects.begin(); it != m_objects.end(); ++it)
-    {
-        CBaseObject* obj = it->second;
-        obj->SetHidden(false);
-    }
-
-    InvalidateVisibleList();
-}
-
-//////////////////////////////////////////////////////////////////////////
 void CObjectManager::FreezeObject(CBaseObject* obj, bool freeze)
 {
     assert(obj != 0);
     // Remove object from main object set and put it to hidden set.
     obj->SetFrozen(freeze);
-    InvalidateVisibleList();
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CObjectManager::UnfreezeAll()
-{
-    for (Objects::iterator it = m_objects.begin(); it != m_objects.end(); ++it)
-    {
-        CBaseObject* obj = it->second;
-        obj->SetFrozen(false);
-    }
     InvalidateVisibleList();
 }
 
@@ -2068,83 +2007,6 @@ namespace
         }
     }
 
-    bool PyIsObjectHidden(const char* objName)
-    {
-        CBaseObject* pObject =  GetIEditor()->GetObjectManager()->FindObject(objName);
-        if (!pObject)
-        {
-            throw std::logic_error((QString("\"") + objName + "\" is an invalid object name.").toUtf8().data());
-        }
-        return pObject->IsHidden();
-    }
-
-    void PyHideAllObjects()
-    {
-        CBaseObjectsArray baseObjects;
-        GetIEditor()->GetObjectManager()->GetObjects(baseObjects);
-
-        if (baseObjects.size() <= 0)
-        {
-            throw std::logic_error("Objects not found.");
-        }
-
-        CUndo undo("Hide All Objects");
-        for (int i = 0; i < baseObjects.size(); i++)
-        {
-            GetIEditor()->GetObjectManager()->HideObject(baseObjects[i], true);
-        }
-    }
-
-    void PyUnHideAllObjects()
-    {
-        CUndo undo("Unhide All Objects");
-        GetIEditor()->GetObjectManager()->UnhideAll();
-    }
-
-    void PyHideObject(const char* objName)
-    {
-        CUndo undo("Hide Object");
-
-        CBaseObject* pObject = GetIEditor()->GetObjectManager()->FindObject(objName);
-        if (pObject)
-        {
-            GetIEditor()->GetObjectManager()->HideObject(pObject, true);
-        }
-    }
-
-    void PyUnhideObject(const char* objName)
-    {
-        CUndo undo("Unhide Object");
-
-        CBaseObject* pObject = GetIEditor()->GetObjectManager()->FindObject(objName);
-        if (pObject)
-        {
-            GetIEditor()->GetObjectManager()->HideObject(pObject, false);
-        }
-    }
-
-    void PyFreezeObject(const char* objName)
-    {
-        CUndo undo("Freeze Object");
-
-        CBaseObject* pObject = GetIEditor()->GetObjectManager()->FindObject(objName);
-        if (pObject)
-        {
-            GetIEditor()->GetObjectManager()->FreezeObject(pObject, true);
-        }
-    }
-
-    void PyUnfreezeObject(const char* objName)
-    {
-        CUndo undo("Unfreeze Object");
-
-        CBaseObject* pObject = GetIEditor()->GetObjectManager()->FindObject(objName);
-        if (pObject)
-        {
-            GetIEditor()->GetObjectManager()->FreezeObject(pObject, false);
-        }
-    }
-
     bool PyIsObjectFrozen(const char* objName)
     {
         CBaseObject* pObject = GetIEditor()->GetObjectManager()->FindObject(objName);
@@ -2341,16 +2203,6 @@ namespace AzToolsFramework
 
             addLegacyGeneral(behaviorContext->Method("get_selection_center", PyGetSelectionCenter, nullptr, "Returns the center point of the selection group."));
             addLegacyGeneral(behaviorContext->Method("get_selection_aabb", PyGetSelectionAABB, nullptr, "Returns the aabb of the selection group."));
-
-            addLegacyGeneral(behaviorContext->Method("hide_object", PyHideObject, nullptr, "Hides a specified object."));
-            addLegacyGeneral(behaviorContext->Method("is_object_hidden", PyIsObjectHidden, nullptr, "Checks if object is hidden and returns a bool value."));
-            addLegacyGeneral(behaviorContext->Method("unhide_object", PyUnhideObject, nullptr, "Unhides a specified object."));
-            addLegacyGeneral(behaviorContext->Method("hide_all_objects", PyHideAllObjects, nullptr, "Hides all objects."));
-            addLegacyGeneral(behaviorContext->Method("unhide_all_objects", PyUnHideAllObjects, nullptr, "Unhides all objects."));
-
-            addLegacyGeneral(behaviorContext->Method("freeze_object", PyFreezeObject, nullptr, "Freezes a specified object."));
-            addLegacyGeneral(behaviorContext->Method("is_object_frozen", PyIsObjectFrozen, nullptr, "Checks if object is frozen and returns a bool value."));
-            addLegacyGeneral(behaviorContext->Method("unfreeze_object", PyUnfreezeObject, nullptr, "Unfreezes a specified object."));
 
             addLegacyGeneral(behaviorContext->Method("delete_object", PyDeleteObject, nullptr, "Deletes a specified object."));
             addLegacyGeneral(behaviorContext->Method("delete_selected", PyDeleteSelected, nullptr, "Deletes selected object(s)."));
