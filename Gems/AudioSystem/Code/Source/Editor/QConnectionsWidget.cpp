@@ -27,9 +27,9 @@ namespace AudioControls
     //-------------------------------------------------------------------------------------------//
     QConnectionsWidget::QConnectionsWidget(QWidget* parent)
         : QWidget(parent)
+        , m_control(nullptr)
         , m_notFoundColor(QColor(0xf3, 0x81, 0x1d))
         , m_localizedColor(QColor(0x42, 0x85, 0xf4))
-        , m_control(nullptr)
     {
         setupUi(this);
 
@@ -37,7 +37,6 @@ namespace AudioControls
         m_connectionList->installEventFilter(this);
 
         connect(m_connectionList, SIGNAL(customContextMenuRequested(const QPoint&)), SLOT(ShowConnectionContextMenu(const QPoint&)));
-        connect(m_connectionList, SIGNAL(itemSelectionChanged()), this, SLOT(SelectedConnectionChanged()));
     }
 
     //-------------------------------------------------------------------------------------------//
@@ -99,27 +98,6 @@ namespace AudioControls
         QMenu contextMenu(tr("Context menu"), this);
         contextMenu.addAction(tr("Remove Connection"), this, SLOT(RemoveSelectedConnection()));
         contextMenu.exec(m_connectionList->mapToGlobal(pos));
-    }
-
-    //-------------------------------------------------------------------------------------------//
-    void QConnectionsWidget::SelectedConnectionChanged()
-    {
-        TConnectionPtr connection;
-        EACEControlType controlType = AudioControls::eACET_NUM_TYPES;
-        if (m_control)
-        {
-            QList<QListWidgetItem*> selected = m_connectionList->selectedItems();
-            if (selected.length() == 1)
-            {
-                QListWidgetItem* currentItem = selected[0];
-                if (currentItem)
-                {
-                    const CID externalId = currentItem->data(eMDR_ID).toInt();
-                    connection = m_control->GetConnection(externalId);
-                    controlType = m_control->GetType();
-                }
-            }
-        }
     }
 
     //-------------------------------------------------------------------------------------------//
