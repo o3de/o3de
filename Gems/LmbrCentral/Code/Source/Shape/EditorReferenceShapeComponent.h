@@ -22,7 +22,7 @@ namespace LmbrCentral
         static void Reflect(AZ::ReflectContext* context);
 
         static constexpr const char* const s_categoryName = "Shape";
-        static constexpr const char* const s_componentName = "Reference Shape";
+        static constexpr const char* const s_componentName = "Shape Reference";
         static constexpr const char* const s_componentDescription = "Enables the entity to reference and reuse shape entities";
         static constexpr const char* const s_icon = "Icons/Components/Viewport/Component_Placeholder.svg";
         static constexpr const char* const s_viewportIcon = "Icons/Components/Viewport/Component_Placeholder.svg";
