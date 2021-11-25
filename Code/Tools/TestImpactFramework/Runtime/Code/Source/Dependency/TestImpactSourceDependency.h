@@ -78,7 +78,6 @@ namespace AZStd
     {
         size_t operator()(const TestImpact::ParentTarget<BuildTargetTraits>& parentTarget) const noexcept
         {
-            // TODO: get address of derived so we can not rely on Target as common ancestor
             return reinterpret_cast<size_t>(parentTarget.GetTarget());
         }
     };

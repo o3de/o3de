@@ -100,8 +100,6 @@ namespace TestImpact
 
         //! The map of build targets and their covering test targets.
         //! @note As per the note for ReplaceSourceCoverageInternal, this map is currently not pruned when source coverage is replaced.
-
-        // TODO: use BuildTarget so we can not rely on Target as common ancestor
         AZStd::unordered_map<const Target*, AZStd::unordered_set<const typename BuildTargetTraits::TestTarget*>> m_buildTargetCoverage;
 
         //! Mapping of autogen input sources to their generated output sources.
