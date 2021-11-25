@@ -662,53 +662,6 @@ void CObjectManager::ChangeObjectId(REFGUID oldGuid, REFGUID newGuid)
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CObjectManager::ShowDuplicationMsgWarning(CBaseObject* obj, const QString& newName, bool bShowMsgBox) const
-{
-    CBaseObject* pExisting = FindObject(newName);
-    if (pExisting)
-    {
-        QString sRenameWarning = QObject::tr("%1 \"%2\" was NOT renamed to \"%3\" because %4 with the same name already exists.")
-            .arg(obj->GetClassDesc()->ClassName())
-            .arg(obj->GetName())
-            .arg(newName)
-            .arg(pExisting->GetClassDesc()->ClassName()
-        );
-
-        // If id is taken.
-        CryWarning(VALIDATOR_MODULE_EDITOR, VALIDATOR_WARNING, "%s", sRenameWarning.toUtf8().data());
-
-        if (bShowMsgBox)
-        {
-            QMessageBox::critical(QApplication::activeWindow(), QString(), sRenameWarning);
-        }
-    }
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CObjectManager::ChangeObjectName(CBaseObject* obj, const QString& newName)
-{
-    assert(obj);
-
-    if (newName != obj->GetName())
-    {
-        if (IsDuplicateObjectName(newName))
-        {
-            return;
-        }
-
-        // Remove previous name from map
-        const AZ::Crc32 oldNameCrc(obj->GetName().toUtf8().data(), obj->GetName().count(), true);
-        m_objectsByName.erase(oldNameCrc);
-
-        obj->SetName(newName);
-
-        // Add new name to map
-        const AZ::Crc32 nameCrc(newName.toUtf8().data(), newName.count(), true);
-        m_objectsByName[nameCrc] = obj;
-    }
-}
-
-//////////////////////////////////////////////////////////////////////////
 int CObjectManager::GetObjectCount() const
 {
     return static_cast<int>(m_objects.size());
@@ -790,15 +743,6 @@ void CObjectManager::Update()
     {
         prevActiveWindow->setFocus();
     }
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CObjectManager::FreezeObject(CBaseObject* obj, bool freeze)
-{
-    assert(obj != 0);
-    // Remove object from main object set and put it to hidden set.
-    obj->SetFrozen(freeze);
-    InvalidateVisibleList();
 }
 
 //////////////////////////////////////////////////////////////////////////
