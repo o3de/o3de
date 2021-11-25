@@ -42,15 +42,6 @@ enum SerializeFlags
 typedef std::vector<CBaseObject*> CBaseObjectsArray;
 typedef std::pair< bool(CALLBACK*)(CBaseObject const&, void*), void* > BaseObjectFilterFunctor;
 
-struct IObjectSelectCallback
-{
-    //! Called when object is selected.
-    //! Return true if selection should proceed, or false to abort object selection.
-    virtual bool OnSelectObject(CBaseObject* obj) = 0;
-    //! Return true if object can be selected.
-    virtual bool CanSelectObject(CBaseObject* obj) = 0;
-};
-
 //////////////////////////////////////////////////////////////////////////
 //
 // Interface to access editor objects scene graph.
@@ -170,14 +161,6 @@ public:
     virtual void GetClassCategoryToolClassNamePairs(std::vector< std::pair<QString, QString> >& categoryToolClassNamePairs) = 0;
     virtual void GetClassTypes(const QString& category, QStringList& types) = 0;
 
-    //! Serialize Objects in manager to specified XML Node.
-    //! @param flags Can be one of SerializeFlags.
-    virtual void Serialize(XmlNodeRef& rootNode, bool bLoading, int flags = SERIALIZE_ALL) = 0;
-
-    //! Load objects from object archive.
-    //! @param bSelect if set newly loaded object will be selected.
-    virtual void LoadObjects(CObjectArchive& ar, bool bSelect) = 0;
-
     virtual void ChangeObjectId(REFGUID oldId, REFGUID newId) = 0;
 
     //! while loading PreFabs we need to force this IDs
@@ -189,10 +172,6 @@ public:
     //! Convert object of one type to object of another type.
     //! Original object is deleted.
     virtual bool ConvertToType(CBaseObject* pObject, const QString& typeName) = 0;
-
-    //! Set new selection callback.
-    //! @return previous selection callback.
-    virtual IObjectSelectCallback* SetSelectCallback(IObjectSelectCallback* callback) = 0;
 
     // Enables/Disables creating of game objects.
     virtual void SetCreateGameObject(bool enable) = 0;
