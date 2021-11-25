@@ -137,17 +137,6 @@ namespace ScriptCanvasEditor
                 m_additionTimer.start();
             }
         }
-        
-        if (m_updatePolicy == UpdatePolicy::SingleTime)
-        {
-            // #sc_editor_asset
-            // treeItem = CreateChildNodeWithoutAddSignal<ExecutionLogTreeItem>(loggingDataId, nodeType, graphInfo, nodeId);
-        }
-        else
-        {
-            // #sc_editor_asset
-            // treeItem = CreateChildNode<ExecutionLogTreeItem>(loggingDataId, nodeType, graphInfo, nodeId);
-        }
 
         return treeItem;
     }
@@ -206,9 +195,6 @@ namespace ScriptCanvasEditor
         m_paletteConfiguration.SetColorPalette("MethodNodeTitlePalette");
 
         AZ::NamedEntityId entityName;
-
-        // #sc_editor_asset restore this
-        //LoggingDataRequestBus::EventResult(entityName, m_loggingDataId, &LoggingDataRequests::FindNamedEntityId, m_graphInfo.m_runtimeEntity);
 
         m_sourceEntityName = entityName.ToString().c_str();
         m_displayName = nodeId.m_name.c_str();
@@ -514,7 +500,6 @@ namespace ScriptCanvasEditor
 
     const ScriptCanvas::GraphIdentifier& ExecutionLogTreeItem::GetGraphIdentifier() const
     {
-        // #sc_editor_asset
         return m_graphIdentifier;
     }
 

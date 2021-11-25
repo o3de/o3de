@@ -323,13 +323,7 @@ namespace ScriptCanvasEditor
 
                     m_view->tableWidget->setCellWidget(rowIndex, static_cast<int>(ColumnAction), upgradeButton);
                 }
-
-                char resolvedBuffer[AZ_MAX_PATH_LEN] = { 0 };
-                AZStd::string path = AZStd::string::format("@devroot@/%s", assetInfo.Path().c_str());
-                AZ::IO::FileIOBase::GetInstance()->ResolvePath(path.c_str(), resolvedBuffer, AZ_MAX_PATH_LEN);
-                AZ::StringFunc::Path::GetFullPath(resolvedBuffer, path);
-                AZ::StringFunc::Path::Normalize(path);
-
+                                
                 bool result = false;
                 AZ::Data::AssetInfo info;
                 AZStd::string watchFolder;

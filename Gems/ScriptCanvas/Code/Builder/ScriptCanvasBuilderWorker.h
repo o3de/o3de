@@ -59,10 +59,7 @@ namespace ScriptCanvasBuilder
         PrefabIntegration,
         CorrectGraphVariableVersion,
         ReflectEntityIdNodes,
-
-        ForceBuildForDevTest0,
-        ForceBuildForDevTest1,
-        ForceBuildForDevTest2,
+        FixExecutionStateNodeableConstrution,
 
         // add new entries above
         Current,

@@ -54,11 +54,7 @@ namespace ScriptCanvasEditor
 
                     if (assetSystem->GetSourceInfoBySourcePath(fullPathHandle.Path().c_str(), assetInfo, watchFolder) && assetInfo.m_assetId.IsValid())
                     {
-                        if (assetInfo.m_assetId.m_guid != source.Id())
-                        {
-                            AZ_TracePrintf("ScriptCanvas", "This is what I don't get");
-                        }
-
+                        AZ_Warning("ScriptCanvas", assetInfo.m_assetId.m_guid == source.Id(), "SourceHandle completion produced conflicting AssetId.");
                         auto path = fullPathHandle.Path();
                         return SourceHandle(source, assetInfo.m_assetId.m_guid, path.MakePreferred());
                     }

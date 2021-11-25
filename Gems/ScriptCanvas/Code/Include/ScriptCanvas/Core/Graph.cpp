@@ -72,19 +72,16 @@ namespace ScriptCanvas
             componentElementNode.AddElementWithData(context, "m_assetType", azrtti_typeid<RuntimeAsset>());
         }
 
-        if (componentElementNode.GetVersion() <= GraphCpp::GraphVersion::RemoveFunctionGraphMarker)
+        if (auto subElement = componentElementNode.FindElement(AZ_CRC_CE("isFunctionGraph")); subElement > 0)
         {
-            componentElementNode.RemoveElementByName(AZ_CRC_CE("isFunctionGraph"));
+            componentElementNode.RemoveElement(subElement);
         }
 
-        if (componentElementNode.GetVersion() < GraphCpp::GraphVersion::FixupVersionDataTypeId)
+        if (auto subElement = componentElementNode.FindSubElement(AZ_CRC_CE("versionData")))
         {
-            if (auto subElement = componentElementNode.FindSubElement(AZ_CRC_CE("versionData")))
+            if (subElement->GetId() == azrtti_typeid<SlotId>())
             {
-                if (subElement->GetId() == azrtti_typeid<SlotId>())
-                {
-                    componentElementNode.RemoveElementByName(AZ_CRC_CE("versionData"));
-                }
+                componentElementNode.RemoveElementByName(AZ_CRC_CE("versionData"));
             }
         }
 

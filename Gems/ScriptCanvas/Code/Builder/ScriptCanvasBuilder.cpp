@@ -16,6 +16,38 @@
 #include <ScriptCanvas/Assets/ScriptCanvasFileHandling.h>
 #include <ScriptCanvas/Components/EditorGraph.h>
 
+namespace BuildVariableOverridesCpp
+{
+    enum Version
+    {
+        EditorAssetRedux,
+
+        // add description above
+        Current
+    };
+
+    bool VersionConverter
+        ( [[maybe_unused]] AZ::SerializeContext& serializeContext
+        , [[maybe_unused]] AZ::SerializeContext::DataElementNode& rootElement)
+    {
+        // #sc_editor_asset
+//         ScriptCanvasBuilder::BuildVariableOverrides overrides;
+//         overrides.m_source = SourceHandle(nullptr, assetHolder.GetAssetId().m_guid, {});
+// 
+//         for (auto& variable : editableData.GetVariables())
+//         {
+//             overrides.m_overrides.push_back(variable.m_graphVariable);
+//         }
+// 
+//         if (!rootElement.AddElementWithData(serializeContext, "runtimeDataOverrides", overrides))
+//         {
+//             AZ_Error("ScriptCanvas", false, "EditorScriptCanvasComponent conversion failed: failed to add 'runtimeDataOverrides'");
+//             return false;
+//         }
+        return true;
+    }
+}
+
 namespace ScriptCanvasBuilder
 {
     void BuildVariableOverrides::Clear()
@@ -109,7 +141,7 @@ namespace ScriptCanvasBuilder
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(reflectContext))
         {
             serializeContext->Class<BuildVariableOverrides>()
-                ->Version(1)
+                ->Version(BuildVariableOverridesCpp::Version::Current, &BuildVariableOverridesCpp::VersionConverter)
                 ->Field("source", &BuildVariableOverrides::m_source)
                 ->Field("variables", &BuildVariableOverrides::m_variables)
                 ->Field("entityId", &BuildVariableOverrides::m_entityIds)
