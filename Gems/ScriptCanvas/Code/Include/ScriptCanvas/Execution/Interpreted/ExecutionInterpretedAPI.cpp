@@ -68,9 +68,7 @@ namespace ExecutionInterpretedAPICpp
     {
         if (lua_isstring(lua, -1))
         {
-            AZStd::string errorResult = lua_tostring(lua, -1);
-            AZ_TracePrintf("ScriptCanvas", errorResult.c_str());
-            AZ::ScriptContext::FromNativeContext(lua)->Error(AZ::ScriptContext::ErrorType::Error, true, "%s", lua_tostring(lua, -1));
+            AZ::ScriptContext::FromNativeContext(lua)->Error(AZ::ScriptContext::ErrorType::Error, true, lua_tostring(lua, -1));
         }
         else
         {
@@ -403,51 +401,7 @@ namespace ScriptCanvas
             // \note: the the object is being constructed, and is assumed to never leave or re-enter Lua again
             AZ_Assert(lua_isuserdata(lua, -2) && !lua_islightuserdata(lua, -2), "Error in compiled lua file, 1st argument to OverrideNodeableMetatable is not userdata (Nodeable)");
             AZ_Assert(lua_istable(lua, -1), "Error in compiled lua file, 2nd argument to OverrideNodeableMetatable is not a Lua table");
-
-            /* table is in the stack at index 't' */
-            if (lua_istable(lua, -1))
-            {
-                lua_getfield(lua, -1, "__index");
-
-                if (lua_istable(lua, -1))
-                {
-                    int t = -2;
-                    AZStd::string tableGuts;
-                    lua_pushnil(lua);
-                    /* first key */
-                    while (lua_next(lua, t) != 0)
-                    {
-                        /* uses 'key' (at index -2) and 'value' (at index -1) */
-                        if (lua_type(lua, -2) == LUA_TSTRING)
-                        {
-                            size_t len;
-                            tableGuts += AZStd::string::format("%s - %s\n",
-                                lua_tolstring(lua, -2, &len),
-                                lua_typename(lua, lua_type(lua, -1)));
-                        }
-                        else if (lua_type(lua, -2) == LUA_TNUMBER)
-                        {
-                            tableGuts += AZStd::string::format("%f - %s\n",
-                                lua_tonumber(lua, -2),
-                                lua_typename(lua, lua_type(lua, -1)));
-                        }
-                        else
-                        {
-                            tableGuts += AZStd::string::format("%s - %s\n",
-                                lua_typename(lua, lua_type(lua, -2)),
-                                lua_typename(lua, lua_type(lua, -1)));
-                        }
-
-                        /* removes 'value'; keeps 'key' for next iteration */
-                        lua_pop(lua, 1);
-                    }
-
-                    AZ_TracePrintf("SCDB", tableGuts.c_str());
-                }
-
-                lua_pop(lua, 1);
-            }                        
-
+                   
             [[maybe_unused]] auto userData = reinterpret_cast<AZ::LuaUserData*>(lua_touserdata(lua, -2));
             AZ_Assert(userData && userData->magicData == AZ_CRC_CE("AZLuaUserData"), "this isn't user data");
             // Lua: LuaUserData::nodeable, class_mt

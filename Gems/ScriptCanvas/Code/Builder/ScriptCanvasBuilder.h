@@ -49,7 +49,6 @@ namespace ScriptCanvasBuilder
         // these two variable lists are all that gets exposed to the edit context
         AZStd::vector<ScriptCanvas::GraphVariable> m_overrides;
         AZStd::vector<ScriptCanvas::GraphVariable> m_overridesUnused;
-        // AZStd::vector<size_t> m_entityIdRuntimeInputIndices; since all oSf the entity ids need to go in, they may not need indices
         AZStd::vector<BuildVariableOverrides> m_dependencies;
     };
 

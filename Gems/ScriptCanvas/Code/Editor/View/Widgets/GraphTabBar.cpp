@@ -251,16 +251,6 @@ namespace ScriptCanvasEditor
         {
             if (index >= 0 && index < count())
             {
-                QVariant tabdata = tabData(index);
-                if (tabdata.isValid())
-                {
-                    // #sc_editor_asset fix tabData
-                    auto tabAssetId = tabdata.value<GraphTabMetadata>();
-
-                    //MemoryAssetNotificationBus::MultiHandler::BusDisconnect(tabAssetId);
-                    //AssetTrackerRequestBus::Broadcast(&AssetTrackerRequests::ClearView, tabAssetId);
-                }
-
                 qobject_cast<AzQtComponents::TabWidget*>(parent())->removeTab(index);
             }
         }
@@ -271,8 +261,6 @@ namespace ScriptCanvasEditor
             {
                 Q_EMIT TabCloseNoButton(i);
             }
-
-            MemoryAssetNotificationBus::MultiHandler::BusDisconnect();
         }
 
         void GraphTabBar::OnContextMenu(const QPoint& point)
@@ -289,8 +277,6 @@ namespace ScriptCanvasEditor
                 auto tabAssetId = tabdata.value<GraphTabMetadata>();
 
                 Tracker::ScriptCanvasFileState fileState = Tracker::ScriptCanvasFileState::INVALID;
-                //AssetTrackerRequestBus::BroadcastResult(fileState , &AssetTrackerRequests::GetFileState, tabAssetId);
-
                 isModified = fileState == Tracker::ScriptCanvasFileState::NEW || fileState == Tracker::ScriptCanvasFileState::MODIFIED;
             }
 
@@ -360,22 +346,6 @@ namespace ScriptCanvasEditor
             }
 
             AzQtComponents::TabBar::mouseReleaseEvent(event);
-        }
-
-        void GraphTabBar::OnFileStateChanged(Tracker::ScriptCanvasFileState )
-        {
-            // #sc_editor_asset
-            // const AZ::Data::AssetId* fileAssetId = MemoryAssetNotificationBus::GetCurrentBusId();
-
-//             if (fileAssetId)
-//             {
-//                 SetFileState((*fileAssetId), fileState);
-// 
-//                 if (FindTab((*fileAssetId)) == currentIndex())
-//                 {
-//                     Q_EMIT OnActiveFileStateChanged();
-//                 }
-//             }
         }
 
         void GraphTabBar::SetTabText(int tabIndex, const QString& path, Tracker::ScriptCanvasFileState fileState)

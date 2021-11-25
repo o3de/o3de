@@ -42,7 +42,6 @@ namespace ScriptCanvasEditor
 
         class GraphTabBar
             : public AzQtComponents::TabBar
-            , public MemoryAssetNotificationBus::MultiHandler
         {
             Q_OBJECT
 
@@ -63,8 +62,6 @@ namespace ScriptCanvasEditor
             int InsertGraphTab(int tabIndex, ScriptCanvasEditor::SourceHandle assetId, Tracker::ScriptCanvasFileState fileState);
             bool SelectTab(ScriptCanvasEditor::SourceHandle assetId);
 
-           // void ConfigureTab(int tabIndex, ScriptCanvasEditor::SourceHandle fileAssetId, const AZStd::string& tabName);
-
             int FindTab(ScriptCanvasEditor::SourceHandle assetId) const;
             ScriptCanvasEditor::SourceHandle FindTabByPath(AZStd::string_view path) const;
             ScriptCanvasEditor::SourceHandle FindAssetId(int tabIndex);
@@ -77,10 +74,6 @@ namespace ScriptCanvasEditor
             void OnContextMenu(const QPoint& point);
 
             void mouseReleaseEvent(QMouseEvent* event) override;
-
-            // MemoryAssetNotifications
-            void OnFileStateChanged(Tracker::ScriptCanvasFileState fileState) override;
-            ////
 
             // Updates the tab at the supplied index with the GraphTabMetadata
             // The host widget field of the tabMetadata is not used and will not overwrite the tab data

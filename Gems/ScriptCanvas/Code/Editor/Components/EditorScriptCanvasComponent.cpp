@@ -51,8 +51,6 @@ namespace ScriptCanvasEditor
 {
     static bool EditorScriptCanvasComponentVersionConverter(AZ::SerializeContext& serializeContext, AZ::SerializeContext::DataElementNode& rootElement)
     {
-        AZ_TracePrintf("ScriptCanvas", "EditorScriptCanvasComponentVersionConverter called!");
-
         if (rootElement.GetVersion() <= 4)
         {
             int assetElementIndex = rootElement.FindElement(AZ::Crc32("m_asset"));

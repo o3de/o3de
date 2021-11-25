@@ -140,10 +140,6 @@ namespace ScriptCanvasEditor
         void ReleaseVariableCounter(AZ::u32 variableCounter) override;
         ////
 
-        // RuntimeBus
-        //AZ::Data::AssetId GetAssetId() const override { return m_assetId; }
-        ////
-
         // GraphCanvas::GraphModelRequestBus
         void RequestUndoPoint() override;
 
@@ -222,9 +218,6 @@ namespace ScriptCanvasEditor
         //! NodeCreationNotifications
         void OnGraphCanvasNodeCreated(const AZ::EntityId& nodeId) override;
         ///////////////////////////
-
-        // EditorGraphRequestBus
-        // void SetAssetId(const AZ::Data::AssetId& assetId) override { m_assetId = assetId; }
 
         void CreateGraphCanvasScene() override;
         void ClearGraphCanvasScene() override;

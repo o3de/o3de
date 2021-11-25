@@ -1665,42 +1665,6 @@ namespace ScriptCanvasEditor
         return SaveAssetImpl(m_activeGraph, Save::As);
     }
 
-    /*
-    bool MainWindow::SaveAssetImpl_OLD(const ScriptCanvasEditor::SourceHandle& assetId, const Callbacks::OnSave& saveCB)
-    {
-        if (!assetId.IsValid())
-        {
-            return false;
-        }
-
-        // TODO: Set graph read-only to prevent edits during save
-
-        bool saveSuccessful = false;
-
-        Tracker::ScriptCanvasFileState fileState = GetAssetFileState(assetId);
-
-        if (fileState == Tracker::ScriptCanvasFileState::NEW)
-        {
-            saveSuccessful = SaveAssetImpl(assetId, saveCB);
-        }
-        else if (fileState == Tracker::ScriptCanvasFileState::MODIFIED
-            || fileState == Tracker::ScriptCanvasFileState::SOURCE_REMOVED)
-        {
-            SaveAs(assetId.Path(), assetId, saveCB);
-            saveSuccessful = true;
-        }
-
-        return saveSuccessful;
-    }
-    */
-
-
-    // 1. SaveAssetImpl
-    //      2. SaveAs
-    //          // 3. OnSaveCallback
-    //      SaveAsEnd
-    // SaveAssetImpl end
-
     bool MainWindow::SaveAssetImpl(const ScriptCanvasEditor::SourceHandle& inMemoryAssetId, Save save)
     {
         if (!inMemoryAssetId.IsGraphValid())
@@ -1768,11 +1732,6 @@ namespace ScriptCanvasEditor
                 AZ::IO::FileIOBase::GetInstance()->ResolvePath("@engroot@", assetRootChar.data(), assetRootChar.size());
                 assetRoot = assetRootChar.data();
 
-//                 if (!AZ::StringFunc::StartsWith(filePath, assetRoot))
-//                 {
-//                     QMessageBox::information(this, "Unable to Save", AZStd::string::format("You must select a path within the current project\n\n%s", assetRoot.c_str()).c_str());
-//                 }
-//                 else
                 if (AzFramework::StringFunc::Path::GetFileName(filePath.c_str(), fileName))
                 {
                     isValidFileName = !(fileName.empty());
@@ -1923,14 +1882,6 @@ namespace ScriptCanvasEditor
         if (m_tabBar->currentIndex() != saveTabIndex)
         {
             m_tabBar->setCurrentIndex(saveTabIndex);
-        }
-        else
-        {
-//             // Something weird happens with our saving. Where we are relying on these scene changes being called.
-//             ScriptCanvasEditor::SourceHandle previousAssetId = m_activeGraph;
-// 
-//             OnChangeActiveGraphTab(ScriptCanvasEditor::SourceHandle());
-//             OnChangeActiveGraphTab(previousAssetId);
         }
 
         UpdateAssignToSelectionState();
@@ -2365,6 +2316,7 @@ namespace ScriptCanvasEditor
         GraphCanvas::ViewRequestBus::Event(viewId, &GraphCanvas::ViewRequests::CenterOnEndOfChain);
     }
 
+    // #sc_editor_asset
     void MainWindow::UpdateWorkspaceStatus(const ScriptCanvasMemoryAsset& /*memoryAsset*/)
     {
         // only occurs on file open, do it there, if necessary
@@ -2656,16 +2608,6 @@ namespace ScriptCanvasEditor
     void MainWindow::Clear()
     {
         m_tabBar->CloseAllTabs();
-        // #sc_editor_asset
-// 
-//         AssetTrackerRequests::AssetList assets;
-//         AssetTrackerRequestBus::BroadcastResult(assets, &AssetTrackerRequests::GetAssets);
-// 
-//         for (auto asset : assets)
-//         {
-//             RemoveScriptCanvasAsset(asset->GetAsset().GetId());
-//         }
-
         SetActiveAsset({});
     }
 
@@ -4093,32 +4035,6 @@ namespace ScriptCanvasEditor
 
     void MainWindow::PrepareAssetForSave(const ScriptCanvasEditor::SourceHandle& /*assetId*/)
     {
-        /*
-        ScriptCanvasMemoryAsset::pointer memoryAsset;
-        AssetTrackerRequestBus::BroadcastResult(memoryAsset, &AssetTrackerRequests::GetAsset, assetId);
-
-        if (memoryAsset)
-        {
-            AZ::EntityId graphId = memoryAsset->GetGraphId();
-            AZ::EntityId scriptCanvasId = memoryAsset->GetScriptCanvasId();
-
-            AZ::Entity* entity = nullptr;
-            GraphRequestBus::EventResult(entity, scriptCanvasId, &GraphRequests::GetGraphEntity);
-
-            if (entity)
-            {
-                GraphCanvas::GraphModelRequestBus::Event(graphId, &GraphCanvas::GraphModelRequests::OnSaveDataDirtied, entity->GetId());
-            }
-
-            GraphCanvas::GraphModelRequestBus::Event(graphId, &GraphCanvas::GraphModelRequests::OnSaveDataDirtied, graphId);
-
-            ScriptCanvasEditor::Graph* graph = AZ::EntityUtils::FindFirstDerivedComponent<ScriptCanvasEditor::Graph>(entity);
-            if (graph)
-            {
-                graph->MarkVersion();
-            }
-        }
-        */
     }
 
     void MainWindow::RestartAutoTimerSave(bool forceTimer)

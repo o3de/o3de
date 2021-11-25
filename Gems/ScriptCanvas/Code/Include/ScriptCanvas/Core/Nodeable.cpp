@@ -22,16 +22,12 @@ namespace ScriptCanvas
 
     Nodeable::Nodeable()
         : m_noOpFunctor(&NodeableOutCpp::NoOp)
-    {
-        AZ_TracePrintf("SCDB", "How many times does this get called? Because it should....NOT GET CALLED!");
-    }
+    {}
 
     Nodeable::Nodeable(ExecutionStateWeakPtr executionState)
         : m_noOpFunctor(&NodeableOutCpp::NoOp)
         , m_executionState(executionState)
-    {
-        AZ_TracePrintf("SCDB", "How many times does this get called 2?");
-    }   
+    {}   
 
 #if !defined(RELEASE) 
     void Nodeable::CallOut(size_t index, AZ::BehaviorValueParameter* resultBVP, AZ::BehaviorValueParameter* argsBVPs, int numArguments) const
