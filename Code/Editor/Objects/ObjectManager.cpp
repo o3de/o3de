@@ -1054,16 +1054,6 @@ void CObjectManager::Display(DisplayContext& dc)
     }
 }
 
-void CObjectManager::ForceUpdateVisibleObjectCache([[maybe_unused]] DisplayContext& dc)
-{
-    AZ_Assert(false, "CObjectManager::ForceUpdateVisibleObjectCache is legacy/deprecated and should not be used.");
-}
-
-void CObjectManager::FindDisplayableObjects([[maybe_unused]] DisplayContext& dc, [[maybe_unused]] bool bDisplay)
-{
-    AZ_Assert(false, "CObjectManager::FindDisplayableObjects is legacy/deprecated and should not be used.");
-}
-
 void CObjectManager::EndEditParams([[maybe_unused]] int flags)
 {
     m_currEditObject = nullptr;
@@ -1650,40 +1640,6 @@ void CObjectManager::LoadObjects(CObjectArchive& objectArchive, bool bSelect)
     InvalidateVisibleList();
 
     m_bLoadingObjects = false;
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CObjectManager::Export(const QString& levelPath, XmlNodeRef& rootNode, bool onlyShared)
-{
-    // Clear export files.
-    QFile::remove(QStringLiteral("%1TagPoints.ini").arg(levelPath));
-    QFile::remove(QStringLiteral("%1Volumes.ini").arg(levelPath));
-
-    // Save all objects to XML.
-    for (Objects::iterator it = m_objects.begin(); it != m_objects.end(); ++it)
-    {
-        CBaseObject* obj = it->second;
-        // Export Only shared objects.
-        if ((obj->CheckFlags(OBJFLAG_SHARED) && onlyShared) ||
-            (!obj->CheckFlags(OBJFLAG_SHARED) && !onlyShared))
-        {
-            obj->Export(levelPath, rootNode);
-        }
-    }
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CObjectManager::ExportEntities(XmlNodeRef& rootNode)
-{
-    // Save all objects to XML.
-    for (Objects::iterator it = m_objects.begin(); it != m_objects.end(); ++it)
-    {
-        CBaseObject* obj = it->second;
-        if (qobject_cast<CEntityObject*>(obj))
-        {
-            obj->Export("", rootNode);
-        }
-    }
 }
 
 void CObjectManager::DeleteNotSharedObjects()
