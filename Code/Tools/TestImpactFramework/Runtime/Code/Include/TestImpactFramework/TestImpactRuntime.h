@@ -32,18 +32,18 @@ namespace TestImpact
     class SourceCoveringTestsList;
     class TestEngineInstrumentedRun;
     class TestTargetExclusionList;
-    struct NativeBuildSystem;
+    struct NativeBuildTargetTraits;
 
-    template<typename BuildSystem>
+    template<typename BuildTargetTraits>
     class ChangeDependencyList;
 
-    template<typename BuildSystem>
+    template<typename BuildTargetTraits>
     class BuildTargetList;
 
-    template<typename BuildSystem>
+    template<typename BuildTargetTraits>
     class DynamicDependencyMap;
 
-    template<typename BuildSystem>
+    template<typename BuildTargetTraits>
     class TestSelectorAndPrioritizer;
 
     //! Callback for a test sequence that isn't using test impact analysis to determine selected tests.
@@ -239,9 +239,9 @@ namespace TestImpact
         Policy::TestSharding m_testShardingPolicy;
         Policy::TargetOutputCapture m_targetOutputCapture;
         size_t m_maxConcurrency = 0;
-        AZStd::unique_ptr<BuildTargetList<NativeBuildSystem>> m_buildTargets;
-        AZStd::unique_ptr<DynamicDependencyMap<NativeBuildSystem>> m_dynamicDependencyMap;
-        AZStd::unique_ptr<TestSelectorAndPrioritizer<NativeBuildSystem>> m_testSelectorAndPrioritizer;
+        AZStd::unique_ptr<BuildTargetList<NativeBuildTargetTraits>> m_buildTargets;
+        AZStd::unique_ptr<DynamicDependencyMap<NativeBuildTargetTraits>> m_dynamicDependencyMap;
+        AZStd::unique_ptr<TestSelectorAndPrioritizer<NativeBuildTargetTraits>> m_testSelectorAndPrioritizer;
         AZStd::unique_ptr<TestEngine> m_testEngine;
         AZStd::unique_ptr<TestTargetExclusionList> m_regularTestTargetExcludeList;
         AZStd::unique_ptr<TestTargetExclusionList> m_instrumentedTestTargetExcludeList;

@@ -13,8 +13,8 @@
 #include <Artifact/Factory/TestImpactNativeTestTargetMetaMapFactory.h>
 #include <Artifact/Static/TestImpactNativeTargetDescriptorCompiler.h>
 #include <Artifact/TestImpactArtifactException.h>
-#include <BuildSystem/Common/TestImpactBuildTargetList.h>
-#include <BuildSystem/Native/TestImpactNativeBuildSystemTraits.h>
+#include <BuildTarget/Common/TestImpactBuildTargetList.h>
+#include <BuildTarget/Native/TestImpactNativeBuildTargetTraits.h>
 #include <Dependency/TestImpactDependencyException.h>
 #include <Dependency/TestImpactDynamicDependencyMap.h>
 #include <Target/Native/TestImpactNativeTestTargetList.h>
@@ -28,10 +28,10 @@ namespace UnitTest
 {
     namespace
     {
-        using NativeParentTarget = TestImpact::ParentTarget<TestImpact::NativeBuildSystem>;
-        using NativeBuildTargetList = TestImpact::BuildTargetList<TestImpact::NativeBuildSystem>;
-        using NativeSourceDependency = TestImpact::SourceDependency<TestImpact::NativeBuildSystem>;
-        using NativeDynamicDependencyMap = TestImpact::DynamicDependencyMap<TestImpact::NativeBuildSystem>;
+        using NativeParentTarget = TestImpact::ParentTarget<TestImpact::NativeBuildTargetTraits>;
+        using NativeBuildTargetList = TestImpact::BuildTargetList<TestImpact::NativeBuildTargetTraits>;
+        using NativeSourceDependency = TestImpact::SourceDependency<TestImpact::NativeBuildTargetTraits>;
+        using NativeDynamicDependencyMap = TestImpact::DynamicDependencyMap<TestImpact::NativeBuildTargetTraits>;
 
         void ValidateTarget(const TestImpact::NativeTarget& target, const TestImpact::NativeTarget& expectedTarget)
         {
@@ -42,7 +42,7 @@ namespace UnitTest
             EXPECT_TRUE(target.GetSources() == expectedTarget.GetSources());
         }
 
-        void ValidateBuildTarget(const typename TestImpact::NativeBuildSystem::BuildTarget& buildTarget, const TestImpact::NativeTarget& expectedTarget)
+        void ValidateBuildTarget(const typename TestImpact::NativeBuildTargetTraits::BuildTarget& buildTarget, const TestImpact::NativeTarget& expectedTarget)
         {
             AZStd::visit(
             [&expectedTarget](auto&& target)
@@ -53,13 +53,13 @@ namespace UnitTest
         }
 
         void ValidateProductionTarget(
-            const typename TestImpact::NativeBuildSystem::ProductionTarget& productionTarget, const TestImpact::NativeProductionTarget& expectedTarget)
+            const typename TestImpact::NativeBuildTargetTraits::ProductionTarget& productionTarget, const TestImpact::NativeProductionTarget& expectedTarget)
         {
             ValidateTarget(productionTarget, expectedTarget);
         }
 
         void ValidateTestTarget(
-            const typename TestImpact::NativeBuildSystem::TestTarget& testTarget, const TestImpact::NativeTestTarget& expectedTarget)
+            const typename TestImpact::NativeBuildTargetTraits::TestTarget& testTarget, const TestImpact::NativeTestTarget& expectedTarget)
         {
             ValidateTarget(testTarget, expectedTarget);
             EXPECT_EQ(testTarget.GetSuite(), expectedTarget.GetSuite());
@@ -637,7 +637,7 @@ namespace UnitTest
             {
                 // Expect the retrieved target to be empty
                 // EXPECT_FALSE(invalidTarget);
-                if constexpr (TestImpact::NativeBuildSystem::IsProductionTarget<decltype(invalidTarget)> || TestImpact::NativeBuildSystem::IsTestTarget<decltype(invalidTarget)>)
+                if constexpr (TestImpact::NativeBuildTargetTraits::IsProductionTarget<decltype(invalidTarget)> || TestImpact::NativeBuildTargetTraits::IsTestTarget<decltype(invalidTarget)>)
                 {
                     FAIL();
                 }
@@ -738,7 +738,7 @@ namespace UnitTest
             AZStd::visit(
                 [&expectedProductionTarget](auto&& productionTarget)
                 {
-                    if constexpr (TestImpact::NativeBuildSystem::IsProductionTarget<decltype(productionTarget)>)
+                    if constexpr (TestImpact::NativeBuildTargetTraits::IsProductionTarget<decltype(productionTarget)>)
                     {
                         ValidateProductionTarget(*productionTarget, expectedProductionTarget);
                     }
@@ -759,7 +759,7 @@ namespace UnitTest
             AZStd::visit(
                 [&expectedTestTarget](auto&& testTarget)
                 {
-                    if constexpr (TestImpact::NativeBuildSystem::IsTestTarget<decltype(testTarget)>)
+                    if constexpr (TestImpact::NativeBuildTargetTraits::IsTestTarget<decltype(testTarget)>)
                     {
                         ValidateTestTarget(*testTarget, expectedTestTarget);
                     }

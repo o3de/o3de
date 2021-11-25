@@ -13,54 +13,54 @@
 namespace TestImpact
 {
     //! Representation of a change list where all CRUD sources have been resolved to source dependencies from the dynamic dependency map.
-    template<typename BuildSystem>
+    template<typename BuildTargetTraits>
     class ChangeDependencyList
     {
     public:
         ChangeDependencyList(
-            AZStd::vector<SourceDependency<BuildSystem>>&& createSourceDependencies,
-            AZStd::vector<SourceDependency<BuildSystem>>&& updateSourceDependencies,
-            AZStd::vector<SourceDependency<BuildSystem>>&& deleteSourceDependencies);
+            AZStd::vector<SourceDependency<BuildTargetTraits>>&& createSourceDependencies,
+            AZStd::vector<SourceDependency<BuildTargetTraits>>&& updateSourceDependencies,
+            AZStd::vector<SourceDependency<BuildTargetTraits>>&& deleteSourceDependencies);
 
         //! Gets the sources dependencies of the created source files from the change list.
-        const AZStd::vector<SourceDependency<BuildSystem>>& GetCreateSourceDependencies() const;
+        const AZStd::vector<SourceDependency<BuildTargetTraits>>& GetCreateSourceDependencies() const;
 
         //! Gets the sources dependencies of the updated source files from the change list.
-        const AZStd::vector<SourceDependency<BuildSystem>>& GetUpdateSourceDependencies() const;
+        const AZStd::vector<SourceDependency<BuildTargetTraits>>& GetUpdateSourceDependencies() const;
 
         //! Gets the sources dependencies of the deleted source files from the change list.
-        const AZStd::vector<SourceDependency<BuildSystem>>& GetDeleteSourceDependencies() const;
+        const AZStd::vector<SourceDependency<BuildTargetTraits>>& GetDeleteSourceDependencies() const;
     private:
-        AZStd::vector<SourceDependency<BuildSystem>> m_createSourceDependencies;
-        AZStd::vector<SourceDependency<BuildSystem>> m_updateSourceDependencies;
-        AZStd::vector<SourceDependency<BuildSystem>> m_deleteSourceDependencies;
+        AZStd::vector<SourceDependency<BuildTargetTraits>> m_createSourceDependencies;
+        AZStd::vector<SourceDependency<BuildTargetTraits>> m_updateSourceDependencies;
+        AZStd::vector<SourceDependency<BuildTargetTraits>> m_deleteSourceDependencies;
     };
 
-    template<typename BuildSystem>
-    ChangeDependencyList<BuildSystem>::ChangeDependencyList(
-        AZStd::vector<SourceDependency<BuildSystem>>&& createSourceDependencies,
-        AZStd::vector<SourceDependency<BuildSystem>>&& updateSourceDependencies,
-        AZStd::vector<SourceDependency<BuildSystem>>&& deleteSourceDependencies)
+    template<typename BuildTargetTraits>
+    ChangeDependencyList<BuildTargetTraits>::ChangeDependencyList(
+        AZStd::vector<SourceDependency<BuildTargetTraits>>&& createSourceDependencies,
+        AZStd::vector<SourceDependency<BuildTargetTraits>>&& updateSourceDependencies,
+        AZStd::vector<SourceDependency<BuildTargetTraits>>&& deleteSourceDependencies)
         : m_createSourceDependencies(AZStd::move(createSourceDependencies))
         , m_updateSourceDependencies(AZStd::move(updateSourceDependencies))
         , m_deleteSourceDependencies(AZStd::move(deleteSourceDependencies))
     {
     }
 
-    template<typename BuildSystem>
-    const AZStd::vector<SourceDependency<BuildSystem>>& ChangeDependencyList<BuildSystem>::GetCreateSourceDependencies() const
+    template<typename BuildTargetTraits>
+    const AZStd::vector<SourceDependency<BuildTargetTraits>>& ChangeDependencyList<BuildTargetTraits>::GetCreateSourceDependencies() const
     {
         return m_createSourceDependencies;
     }
 
-    template<typename BuildSystem>
-    const AZStd::vector<SourceDependency<BuildSystem>>& ChangeDependencyList<BuildSystem>::GetUpdateSourceDependencies() const
+    template<typename BuildTargetTraits>
+    const AZStd::vector<SourceDependency<BuildTargetTraits>>& ChangeDependencyList<BuildTargetTraits>::GetUpdateSourceDependencies() const
     {
         return m_updateSourceDependencies;
     }
 
-    template<typename BuildSystem>
-    const AZStd::vector<SourceDependency<BuildSystem>>& ChangeDependencyList<BuildSystem>::GetDeleteSourceDependencies() const
+    template<typename BuildTargetTraits>
+    const AZStd::vector<SourceDependency<BuildTargetTraits>>& ChangeDependencyList<BuildTargetTraits>::GetDeleteSourceDependencies() const
     {
         return m_deleteSourceDependencies;
     }

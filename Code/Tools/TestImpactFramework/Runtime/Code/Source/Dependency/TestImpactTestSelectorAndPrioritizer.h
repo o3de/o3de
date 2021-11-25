@@ -19,7 +19,7 @@
 
 namespace TestImpact
 {
-    template<typename BuildSystem>
+    template<typename BuildTargetTraits>
     class DynamicDependencyMap;
 
     class Target;
@@ -33,7 +33,7 @@ namespace TestImpact
     //! Selects the test targets that cover a given set of changes based on the CRUD rules and optionally prioritizes the test
     //! selection according to their locality of their covering production targets in the their dependency graphs.
     //! @note the CRUD rules for how tests are selected can be found in the MicroRepo header file.
-    template<typename BuildSystem>
+    template<typename BuildTargetTraits>
     class TestSelectorAndPrioritizer
     {
     public:
@@ -41,7 +41,7 @@ namespace TestImpact
         //! @param dynamicDependencyMap The dynamic dependency map representing the repository source tree.
         //! @param dependencyGraphDataMap The map of build targets and their dependency graph data for use in test prioritization.
         TestSelectorAndPrioritizer(
-            const DynamicDependencyMap<BuildSystem>* dynamicDependencyMap,
+            const DynamicDependencyMap<BuildTargetTraits>* dynamicDependencyMap,
             DependencyGraphDataMap&& dependencyGraphDataMap);
 
         virtual ~TestSelectorAndPrioritizer() = default;
@@ -49,87 +49,87 @@ namespace TestImpact
         //! Select the covering test targets for the given set of source changes and optionally prioritizes said test selection.
         //! @param changeDependencyList The resolved list of source dependencies for the CRUD source changes.
         //! @param testSelectionStrategy The test selection and prioritization strategy to apply to the given CRUD source changes.
-        AZStd::vector<const typename BuildSystem::TestTarget*> SelectTestTargets(
-            const ChangeDependencyList<BuildSystem>& changeDependencyList, Policy::TestPrioritization testSelectionStrategy);
+        AZStd::vector<const typename BuildTargetTraits::TestTarget*> SelectTestTargets(
+            const ChangeDependencyList<BuildTargetTraits>& changeDependencyList, Policy::TestPrioritization testSelectionStrategy);
 
     private:
         //! Map of selected test targets and the production targets they cover for the given set of source changes.
-        using SelectedTestTargetAndDependerMap = AZStd::unordered_map<const typename BuildSystem::TestTarget*, AZStd::unordered_set<const typename BuildSystem::ProductionTarget*>>;
+        using SelectedTestTargetAndDependerMap = AZStd::unordered_map<const typename BuildTargetTraits::TestTarget*, AZStd::unordered_set<const typename BuildTargetTraits::ProductionTarget*>>;
 
         //! Selects the test targets covering the set of source changes in the change dependency list.
         //! @param changeDependencyList The change dependency list containing the CRUD source changes to select tests for.
         //! @returns The selected tests and their covering production targets for the given set of source changes.
-        SelectedTestTargetAndDependerMap SelectTestTargets(const ChangeDependencyList<BuildSystem>& changeDependencyList);
+        SelectedTestTargetAndDependerMap SelectTestTargets(const ChangeDependencyList<BuildTargetTraits>& changeDependencyList);
 
         //! Prioritizes the selected tests according to the specified test selection strategy,
         //! @note If no dependency graph data exists for a given test target then that test target still be selected albeit not prioritized.
         //! @param selectedTestTargetAndDependerMap The selected tests to prioritize.
         //! @param testSelectionStrategy The test selection strategy to prioritize the selected tests.
         //! @returns The selected tests either in either arbitrary order or in prioritized with highest priority first.
-        AZStd::vector<const typename BuildSystem::TestTarget*> PrioritizeSelectedTestTargets(
+        AZStd::vector<const typename BuildTargetTraits::TestTarget*> PrioritizeSelectedTestTargets(
             const SelectedTestTargetAndDependerMap& selectedTestTargetAndDependerMap, Policy::TestPrioritization testSelectionStrategy);
 
-        const DynamicDependencyMap<BuildSystem>* m_dynamicDependencyMap;
+        const DynamicDependencyMap<BuildTargetTraits>* m_dynamicDependencyMap;
         DependencyGraphDataMap m_dependencyGraphDataMap;
 
     protected:
         //!
-        virtual void CreateProductionSourceAction(const typename BuildSystem::ProductionTarget* target, SelectedTestTargetAndDependerMap& selectedTestTargetMap);
+        virtual void CreateProductionSourceAction(const typename BuildTargetTraits::ProductionTarget* target, SelectedTestTargetAndDependerMap& selectedTestTargetMap);
 
         //!
-        virtual void CreateTestSourceAction(const typename BuildSystem::TestTarget* target, SelectedTestTargetAndDependerMap& selectedTestTargetMap);
+        virtual void CreateTestSourceAction(const typename BuildTargetTraits::TestTarget* target, SelectedTestTargetAndDependerMap& selectedTestTargetMap);
 
         //!
         virtual void UpdateProductionSourceWithCoverageAction(
-            const typename BuildSystem::ProductionTarget* target,
+            const typename BuildTargetTraits::ProductionTarget* target,
             SelectedTestTargetAndDependerMap& selectedTestTargetMap,
-            const SourceDependency<BuildSystem>& sourceDependency);
+            const SourceDependency<BuildTargetTraits>& sourceDependency);
 
         //!
         virtual void UpdateTestSourceWithCoverageAction(
-            const typename BuildSystem::TestTarget* target,
+            const typename BuildTargetTraits::TestTarget* target,
             SelectedTestTargetAndDependerMap& selectedTestTargetMap);
 
         //!
         virtual void UpdateProductionSourceWithoutCoverageAction(
-            const typename BuildSystem::ProductionTarget* target,
+            const typename BuildTargetTraits::ProductionTarget* target,
             SelectedTestTargetAndDependerMap& selectedTestTargetMap);
 
         //!
         virtual void UpdateTestSourceWithoutCoverageAction(
-            const typename BuildSystem::TestTarget* target,
+            const typename BuildTargetTraits::TestTarget* target,
             SelectedTestTargetAndDependerMap& selectedTestTargetMap);
 
         //!
         virtual void UpdateIndeterminateSourceWithoutCoverageAction(
             SelectedTestTargetAndDependerMap& selectedTestTargetMap,
-            const SourceDependency<BuildSystem>& sourceDependency);
+            const SourceDependency<BuildTargetTraits>& sourceDependency);
 
         //!
         virtual void DeleteIndeterminateSourceWithoutCoverageAction(
-            SelectedTestTargetAndDependerMap& selectedTestTargetMap, const SourceDependency<BuildSystem>& sourceDependency);
+            SelectedTestTargetAndDependerMap& selectedTestTargetMap, const SourceDependency<BuildTargetTraits>& sourceDependency);
     };
 
-    template<typename BuildSystem>
-    TestSelectorAndPrioritizer<BuildSystem>::TestSelectorAndPrioritizer(
-        const DynamicDependencyMap<BuildSystem>* dynamicDependencyMap, DependencyGraphDataMap&& dependencyGraphDataMap)
+    template<typename BuildTargetTraits>
+    TestSelectorAndPrioritizer<BuildTargetTraits>::TestSelectorAndPrioritizer(
+        const DynamicDependencyMap<BuildTargetTraits>* dynamicDependencyMap, DependencyGraphDataMap&& dependencyGraphDataMap)
         : m_dynamicDependencyMap(dynamicDependencyMap)
         , m_dependencyGraphDataMap(AZStd::move(dependencyGraphDataMap))
     {
     }
 
-    template<typename BuildSystem>
-    AZStd::vector<const typename BuildSystem::TestTarget*> TestSelectorAndPrioritizer<BuildSystem>::SelectTestTargets(
-        const ChangeDependencyList<BuildSystem>& changeDependencyList, Policy::TestPrioritization testSelectionStrategy)
+    template<typename BuildTargetTraits>
+    AZStd::vector<const typename BuildTargetTraits::TestTarget*> TestSelectorAndPrioritizer<BuildTargetTraits>::SelectTestTargets(
+        const ChangeDependencyList<BuildTargetTraits>& changeDependencyList, Policy::TestPrioritization testSelectionStrategy)
     {
         const auto selectedTestTargetAndDependerMap = SelectTestTargets(changeDependencyList);
         const auto prioritizedSelectedTests = PrioritizeSelectedTestTargets(selectedTestTargetAndDependerMap, testSelectionStrategy);
         return prioritizedSelectedTests;
     }
 
-    template<typename BuildSystem>
-    void TestSelectorAndPrioritizer<BuildSystem>::CreateProductionSourceAction(
-        const typename BuildSystem::ProductionTarget* target, SelectedTestTargetAndDependerMap& selectedTestTargetMap)
+    template<typename BuildTargetTraits>
+    void TestSelectorAndPrioritizer<BuildTargetTraits>::CreateProductionSourceAction(
+        const typename BuildTargetTraits::ProductionTarget* target, SelectedTestTargetAndDependerMap& selectedTestTargetMap)
     {
         // Action
         // 1. Select all test targets covering the parent production targets
@@ -140,20 +140,20 @@ namespace TestImpact
         }
     }
 
-    template<typename BuildSystem>
-    void TestSelectorAndPrioritizer<BuildSystem>::CreateTestSourceAction(
-        const typename BuildSystem::TestTarget* target, SelectedTestTargetAndDependerMap& selectedTestTargetMap)
+    template<typename BuildTargetTraits>
+    void TestSelectorAndPrioritizer<BuildTargetTraits>::CreateTestSourceAction(
+        const typename BuildTargetTraits::TestTarget* target, SelectedTestTargetAndDependerMap& selectedTestTargetMap)
     {
         // Action
         // 1. Select all parent test targets
         selectedTestTargetMap.insert(target);
     }
 
-    template<typename BuildSystem>
-    void TestSelectorAndPrioritizer<BuildSystem>::UpdateProductionSourceWithCoverageAction(
-        const typename BuildSystem::ProductionTarget* target,
+    template<typename BuildTargetTraits>
+    void TestSelectorAndPrioritizer<BuildTargetTraits>::UpdateProductionSourceWithCoverageAction(
+        const typename BuildTargetTraits::ProductionTarget* target,
         SelectedTestTargetAndDependerMap& selectedTestTargetMap,
-        const SourceDependency<BuildSystem>& sourceDependency)
+        const SourceDependency<BuildTargetTraits>& sourceDependency)
     {
         // Action
         // 1. Select all test targets covering this file
@@ -163,36 +163,36 @@ namespace TestImpact
         }
     }
 
-    template<typename BuildSystem>
-    void TestSelectorAndPrioritizer<BuildSystem>::UpdateTestSourceWithCoverageAction(
-        const typename BuildSystem::TestTarget* target, SelectedTestTargetAndDependerMap& selectedTestTargetMap)
+    template<typename BuildTargetTraits>
+    void TestSelectorAndPrioritizer<BuildTargetTraits>::UpdateTestSourceWithCoverageAction(
+        const typename BuildTargetTraits::TestTarget* target, SelectedTestTargetAndDependerMap& selectedTestTargetMap)
     {
         // Action
         // 1. Select the parent test targets for this file
         selectedTestTargetMap.insert(target);
     }
 
-    template<typename BuildSystem>
-    void TestSelectorAndPrioritizer<BuildSystem>::UpdateProductionSourceWithoutCoverageAction(
-        [[maybe_unused]] const typename BuildSystem::ProductionTarget* target,
+    template<typename BuildTargetTraits>
+    void TestSelectorAndPrioritizer<BuildTargetTraits>::UpdateProductionSourceWithoutCoverageAction(
+        [[maybe_unused]] const typename BuildTargetTraits::ProductionTarget* target,
         [[maybe_unused]] SelectedTestTargetAndDependerMap& selectedTestTargetMap)
     {
         // Action
         // 1. Do nothing
     }
 
-    template<typename BuildSystem>
-    void TestSelectorAndPrioritizer<BuildSystem>::UpdateTestSourceWithoutCoverageAction(
-        const typename BuildSystem::TestTarget* target, SelectedTestTargetAndDependerMap& selectedTestTargetMap)
+    template<typename BuildTargetTraits>
+    void TestSelectorAndPrioritizer<BuildTargetTraits>::UpdateTestSourceWithoutCoverageAction(
+        const typename BuildTargetTraits::TestTarget* target, SelectedTestTargetAndDependerMap& selectedTestTargetMap)
     {
         // Action
         // 1. Select the parent test targets for this file
         selectedTestTargetMap.insert(target);
     }
 
-    template<typename BuildSystem>
-    void TestSelectorAndPrioritizer<BuildSystem>::UpdateIndeterminateSourceWithoutCoverageAction(
-        SelectedTestTargetAndDependerMap& selectedTestTargetMap, const SourceDependency<BuildSystem>& sourceDependency)
+    template<typename BuildTargetTraits>
+    void TestSelectorAndPrioritizer<BuildTargetTraits>::UpdateIndeterminateSourceWithoutCoverageAction(
+        SelectedTestTargetAndDependerMap& selectedTestTargetMap, const SourceDependency<BuildTargetTraits>& sourceDependency)
     {
         // Action
         // 1. Log potential orphaned source file warning (handled prior by DynamicDependencyMap)
@@ -205,9 +205,9 @@ namespace TestImpact
         }
     }
 
-    template<typename BuildSystem>
-    void TestSelectorAndPrioritizer<BuildSystem>::DeleteIndeterminateSourceWithoutCoverageAction(
-        SelectedTestTargetAndDependerMap& selectedTestTargetMap, const SourceDependency<BuildSystem>& sourceDependency)
+    template<typename BuildTargetTraits>
+    void TestSelectorAndPrioritizer<BuildTargetTraits>::DeleteIndeterminateSourceWithoutCoverageAction(
+        SelectedTestTargetAndDependerMap& selectedTestTargetMap, const SourceDependency<BuildTargetTraits>& sourceDependency)
     {
         // Action
         // 1. Select all test targets covering this file
@@ -218,9 +218,9 @@ namespace TestImpact
         }
     }
 
-    template<typename BuildSystem>
-    typename TestSelectorAndPrioritizer<BuildSystem>::SelectedTestTargetAndDependerMap TestSelectorAndPrioritizer<BuildSystem>::SelectTestTargets(
-        const ChangeDependencyList<BuildSystem>& changeDependencyList)
+    template<typename BuildTargetTraits>
+    typename TestSelectorAndPrioritizer<BuildTargetTraits>::SelectedTestTargetAndDependerMap TestSelectorAndPrioritizer<BuildTargetTraits>::SelectTestTargets(
+        const ChangeDependencyList<BuildTargetTraits>& changeDependencyList)
     {
         SelectedTestTargetAndDependerMap selectedTestTargetMap;
 
@@ -232,7 +232,7 @@ namespace TestImpact
                 AZStd::visit(
                     [&selectedTestTargetMap, this](auto&& target)
                     {
-                        if constexpr (BuildSystem::template IsProductionTarget<decltype(target)>)
+                        if constexpr (BuildTargetTraits::template IsProductionTarget<decltype(target)>)
                         {
                             // Parent Targets: Yes
                             // Coverage Data : No
@@ -273,7 +273,7 @@ namespace TestImpact
                         AZStd::visit(
                             [&selectedTestTargetMap, &sourceDependency, this](auto&& target)
                             {
-                                if constexpr (BuildSystem::template IsProductionTarget<decltype(target)>)
+                                if constexpr (BuildTargetTraits::template IsProductionTarget<decltype(target)>)
                                 {
                                     // Parent Targets: Yes
                                     // Coverage Data : Yes
@@ -308,7 +308,7 @@ namespace TestImpact
                         AZStd::visit(
                             [&selectedTestTargetMap, this](auto&& target)
                             {
-                                if constexpr (BuildSystem::template IsProductionTarget<decltype(target)>)
+                                if constexpr (BuildTargetTraits::template IsProductionTarget<decltype(target)>)
                                 {
                                     // Parent Targets: Yes
                                     // Coverage Data : No
@@ -375,12 +375,12 @@ namespace TestImpact
         return selectedTestTargetMap;
     }
 
-    template<typename BuildSystem>
-    AZStd::vector<const typename BuildSystem::TestTarget*> TestSelectorAndPrioritizer<BuildSystem>::PrioritizeSelectedTestTargets(
+    template<typename BuildTargetTraits>
+    AZStd::vector<const typename BuildTargetTraits::TestTarget*> TestSelectorAndPrioritizer<BuildTargetTraits>::PrioritizeSelectedTestTargets(
         const SelectedTestTargetAndDependerMap& selectedTestTargetAndDependerMap,
         [[maybe_unused]] Policy::TestPrioritization testSelectionStrategy)
     {
-        AZStd::vector<const typename BuildSystem::TestTarget*> selectedTestTargets;
+        AZStd::vector<const typename BuildTargetTraits::TestTarget*> selectedTestTargets;
 
         // Prioritization disabled for now
         // SPEC-6563

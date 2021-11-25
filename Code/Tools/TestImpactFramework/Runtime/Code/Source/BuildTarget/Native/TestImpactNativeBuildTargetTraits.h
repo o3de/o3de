@@ -8,17 +8,14 @@
 
 #pragma once
 
-#include <BuildSystem/Common/TestImpactBuildSystemTraits.h>
+#include <BuildTarget/Common/TestImpactBuildTargetTraits.h>
 #include <Target/Native/TestImpactNativeTestTargetList.h>
 #include <Target/Native/TestImpactNativeProductionTargetList.h>
 
 namespace TestImpact
 {
-    class NativeTestTargetList;
-    class NativeProductionTargetList;
-
-    struct NativeBuildSystem
-        : public BuildSystem<NativeTestTargetList, NativeProductionTargetList>
+    struct NativeBuildTargetTraits
+        : public BuildTargetTraits<NativeTestTargetList, NativeProductionTargetList>
     {
     };
 } // namespace TestImpact

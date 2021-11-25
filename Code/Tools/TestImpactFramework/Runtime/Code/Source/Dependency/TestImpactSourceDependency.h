@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <BuildSystem/Common/TestImpactBuildTarget.h>
+#include <BuildTarget/Common/TestImpactBuildTarget.h>
 #include <Target/Common/TestImpactTarget.h>
 
 #include <AzCore/std/string/string.h>
@@ -19,7 +19,10 @@
 namespace TestImpact
 {
     //! Representation of a source dependency's parent target.
-    template<typename BuildSystem>
+
+
+    // TODO: remove this and just have BuildTarget
+    template<typename BuildTargetTraits>
     class ParentTarget
     {
     public:
@@ -33,21 +36,21 @@ namespace TestImpact
         const Target* GetTarget() const;
 
         //! Returns the build target pointer for this parent.
-        const typename BuildSystem::BuildTarget& GetBuildTarget() const;
+        const typename BuildTargetTraits::BuildTarget& GetBuildTarget() const;
 
         bool operator==(const ParentTarget& other) const;
     private:
-        typename BuildSystem::BuildTarget m_target; //! The specialized target pointer for this parent.
+        typename BuildTargetTraits::BuildTarget m_target; //! The specialized target pointer for this parent.
     };
 
-    template<typename BuildSystem>
-    bool ParentTarget<BuildSystem>::operator==(const ParentTarget& other) const
+    template<typename BuildTargetTraits>
+    bool ParentTarget<BuildTargetTraits>::operator==(const ParentTarget& other) const
     {
         return GetTarget() == other.GetTarget();
     }
 
-    template<typename BuildSystem>
-    const Target* ParentTarget<BuildSystem>::GetTarget() const
+    template<typename BuildTargetTraits>
+    const Target* ParentTarget<BuildTargetTraits>::GetTarget() const
     {
         const Target* buildTarget;
         AZStd::visit(
@@ -60,8 +63,8 @@ namespace TestImpact
         return buildTarget;
     }
 
-    template<typename BuildSystem>
-    const typename BuildSystem::BuildTarget& ParentTarget<BuildSystem>::GetBuildTarget() const
+    template<typename BuildTargetTraits>
+    const typename BuildTargetTraits::BuildTarget& ParentTarget<BuildTargetTraits>::GetBuildTarget() const
     {
         return m_target;
     }
@@ -70,11 +73,12 @@ namespace TestImpact
 namespace AZStd
 {
     //! Hash function for ParentTarget types for use in maps and sets.
-    template<typename BuildSystem>
-    struct hash<TestImpact::ParentTarget<BuildSystem>>
+    template<typename BuildTargetTraits>
+    struct hash<TestImpact::ParentTarget<BuildTargetTraits>>
     {
-        size_t operator()(const TestImpact::ParentTarget<BuildSystem>& parentTarget) const noexcept
+        size_t operator()(const TestImpact::ParentTarget<BuildTargetTraits>& parentTarget) const noexcept
         {
+            // TODO: get address of derived so we can not rely on Target as common ancestor
             return reinterpret_cast<size_t>(parentTarget.GetTarget());
         }
     };
@@ -82,19 +86,19 @@ namespace AZStd
 
 namespace TestImpact
 {
-    template<typename BuildSystem>
+    template<typename BuildTargetTraits>
     struct DependencyData
     {
-        AZStd::unordered_set<ParentTarget<BuildSystem>> m_parentTargets;
-        AZStd::unordered_set<const typename BuildSystem::TestTarget*> m_coveringTestTargets;
+        AZStd::unordered_set<ParentTarget<BuildTargetTraits>> m_parentTargets;
+        AZStd::unordered_set<const typename BuildTargetTraits::TestTarget*> m_coveringTestTargets;
     };
 
     //! Test target coverage and build target dependency information for a given source file in the dynamic dependency map.
-    template<typename BuildSystem>
+    template<typename BuildTargetTraits>
     class SourceDependency
     {
     public:
-        SourceDependency(const RepoPath& path, DependencyData<BuildSystem>&& dependencyData);
+        SourceDependency(const RepoPath& path, DependencyData<BuildTargetTraits>&& dependencyData);
 
         //! Returns the path of this source file.
         const RepoPath& GetPath() const;
@@ -106,48 +110,48 @@ namespace TestImpact
         size_t GetNumCoveringTestTargets() const;
 
         //! Returns the parent targets that this source file belongs to.
-        const AZStd::unordered_set<ParentTarget<BuildSystem>>& GetParentTargets() const;
+        const AZStd::unordered_set<ParentTarget<BuildTargetTraits>>& GetParentTargets() const;
 
         //! Returns the test targets covering this source file.
-        const AZStd::unordered_set<const typename BuildSystem::TestTarget*>& GetCoveringTestTargets() const;
+        const AZStd::unordered_set<const typename BuildTargetTraits::TestTarget*>& GetCoveringTestTargets() const;
     private:
         RepoPath m_path; //!< The path of this source file.
-        DependencyData<BuildSystem> m_dependencyData; //!< The dependency data for this source file.
+        DependencyData<BuildTargetTraits> m_dependencyData; //!< The dependency data for this source file.
     };
 
-    template<typename BuildSystem>
-    SourceDependency<BuildSystem>::SourceDependency(const RepoPath& path, DependencyData<BuildSystem>&& dependencyData)
+    template<typename BuildTargetTraits>
+    SourceDependency<BuildTargetTraits>::SourceDependency(const RepoPath& path, DependencyData<BuildTargetTraits>&& dependencyData)
         : m_path(path)
         , m_dependencyData(AZStd::move(dependencyData))
     {
     }
 
-    template<typename BuildSystem>
-    const RepoPath& SourceDependency<BuildSystem>::GetPath() const
+    template<typename BuildTargetTraits>
+    const RepoPath& SourceDependency<BuildTargetTraits>::GetPath() const
     {
         return m_path;
     }
 
-    template<typename BuildSystem>
-    size_t SourceDependency<BuildSystem>::GetNumParentTargets() const
+    template<typename BuildTargetTraits>
+    size_t SourceDependency<BuildTargetTraits>::GetNumParentTargets() const
     {
         return m_dependencyData.m_parentTargets.size();
     }
 
-    template<typename BuildSystem>
-    size_t SourceDependency<BuildSystem>::GetNumCoveringTestTargets() const
+    template<typename BuildTargetTraits>
+    size_t SourceDependency<BuildTargetTraits>::GetNumCoveringTestTargets() const
     {
         return m_dependencyData.m_coveringTestTargets.size();
     }
 
-    template<typename BuildSystem>
-    const AZStd::unordered_set<ParentTarget<BuildSystem>>& SourceDependency<BuildSystem>::GetParentTargets() const
+    template<typename BuildTargetTraits>
+    const AZStd::unordered_set<ParentTarget<BuildTargetTraits>>& SourceDependency<BuildTargetTraits>::GetParentTargets() const
     {
         return m_dependencyData.m_parentTargets;
     }
 
-    template<typename BuildSystem>
-    const AZStd::unordered_set<const typename BuildSystem::TestTarget*>& SourceDependency<BuildSystem>::GetCoveringTestTargets() const
+    template<typename BuildTargetTraits>
+    const AZStd::unordered_set<const typename BuildTargetTraits::TestTarget*>& SourceDependency<BuildTargetTraits>::GetCoveringTestTargets() const
     {
         return m_dependencyData.m_coveringTestTargets;
     }

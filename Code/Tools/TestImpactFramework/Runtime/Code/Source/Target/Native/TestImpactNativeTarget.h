@@ -9,7 +9,7 @@
 #pragma once
 
 #include <Artifact/Static/TestImpactNativeTargetDescriptor.h>
-#include <BuildSystem/Common/TestImpactBuildTarget.h>
+#include <BuildTarget/Common/TestImpactBuildTarget.h>
 #include <Target/Common/TestImpactTarget.h>
 
 namespace TestImpact

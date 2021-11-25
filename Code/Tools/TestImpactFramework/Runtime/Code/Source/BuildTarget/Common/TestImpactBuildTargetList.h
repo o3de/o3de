@@ -17,14 +17,14 @@
 
 namespace TestImpact
 {
-    template<typename BuildSystem>
+    template<typename BuildTargetTraits>
     class BuildTargetList
     {
     public:
         //! Constructs the dependency map with entries for each build target's source files with empty test coverage data.
         BuildTargetList(
-            AZStd::vector<AZStd::unique_ptr<typename BuildSystem::TestTarget::Descriptor>>&& testTargetDescriptors,
-            AZStd::vector<AZStd::unique_ptr<typename BuildSystem::ProductionTarget::Descriptor>>&& productionTargetDescriptors);
+            AZStd::vector<AZStd::unique_ptr<typename BuildTargetTraits::TestTarget::Descriptor>>&& testTargetDescriptors,
+            AZStd::vector<AZStd::unique_ptr<typename BuildTargetTraits::ProductionTarget::Descriptor>>&& productionTargetDescriptors);
 
         //! Gets the total number of production and test targets in the repository.
         size_t GetNumTargets() const;
@@ -32,42 +32,42 @@ namespace TestImpact
         //! Attempts to get the specified target's specialized type.
         //! @param name The name of the target to get.
         //! @returns If found, the pointer to the specialized target, otherwise AZStd::monostate.
-        typename BuildSystem::OptionalBuildTarget GetBuildTarget2(const AZStd::string& name) const;
+        typename BuildTargetTraits::OptionalBuildTarget GetBuildTarget2(const AZStd::string& name) const;
 
         //! Attempts to get the specified target's specialized type or throw TargetException.
         //! @param name The name of the target to get.
-        typename BuildSystem::BuildTarget GetBuildTargetOrThrow(const AZStd::string& name) const;
+        typename BuildTargetTraits::BuildTarget GetBuildTargetOrThrow(const AZStd::string& name) const;
 
         //! Get the list of test targets in the repository.
-        const typename BuildSystem::TestTargetList& GetTestTargetList() const;
+        const typename BuildTargetTraits::TestTargetList& GetTestTargetList() const;
 
         //! Get the list of production targets in the repository.
-        const typename BuildSystem::ProductionTargetList& GetProductionTargetList() const;
+        const typename BuildTargetTraits::ProductionTargetList& GetProductionTargetList() const;
     private:
         //! The sorted list of unique test targets in the repository.
-        typename BuildSystem::TestTargetList m_testTargets;
+        typename BuildTargetTraits::TestTargetList m_testTargets;
 
         //! The sorted list of unique production targets in the repository.
-        typename BuildSystem::ProductionTargetList m_productionTargets;
+        typename BuildTargetTraits::ProductionTargetList m_productionTargets;
     };
 
-    template<typename BuildSystem>
-    BuildTargetList<BuildSystem>::BuildTargetList(
-        AZStd::vector<AZStd::unique_ptr<typename BuildSystem::TestTarget::Descriptor>>&& testTargetDescriptors,
-        AZStd::vector<AZStd::unique_ptr<typename BuildSystem::ProductionTarget::Descriptor>>&& productionTargetDescriptors)
+    template<typename BuildTargetTraits>
+    BuildTargetList<BuildTargetTraits>::BuildTargetList(
+        AZStd::vector<AZStd::unique_ptr<typename BuildTargetTraits::TestTarget::Descriptor>>&& testTargetDescriptors,
+        AZStd::vector<AZStd::unique_ptr<typename BuildTargetTraits::ProductionTarget::Descriptor>>&& productionTargetDescriptors)
         : m_testTargets(AZStd::move(testTargetDescriptors))
         , m_productionTargets(AZStd::move(productionTargetDescriptors))
     {
     }
 
-    template<typename BuildSystem>
-    size_t BuildTargetList<BuildSystem>::GetNumTargets() const
+    template<typename BuildTargetTraits>
+    size_t BuildTargetList<BuildTargetTraits>::GetNumTargets() const
     {
         return m_productionTargets.GetNumTargets() + m_testTargets.GetNumTargets();
     }
 
-    template<typename BuildSystem>
-    typename BuildSystem::OptionalBuildTarget BuildTargetList<BuildSystem>::GetBuildTarget2(const AZStd::string& name) const
+    template<typename BuildTargetTraits>
+    typename BuildTargetTraits::OptionalBuildTarget BuildTargetList<BuildTargetTraits>::GetBuildTarget2(const AZStd::string& name) const
     {
         if (const auto testTarget = m_testTargets.GetTarget(name); testTarget != nullptr)
         {
@@ -81,13 +81,13 @@ namespace TestImpact
         return AZStd::monostate{};
     }
 
-    template<typename BuildSystem>
-    typename typename BuildSystem::BuildTarget BuildTargetList<BuildSystem>::GetBuildTargetOrThrow(const AZStd::string& name) const
+    template<typename BuildTargetTraits>
+    typename typename BuildTargetTraits::BuildTarget BuildTargetList<BuildTargetTraits>::GetBuildTargetOrThrow(const AZStd::string& name) const
     {
-        typename BuildSystem::BuildTarget buildTarget;
+        typename BuildTargetTraits::BuildTarget buildTarget;
         AZStd::visit([&buildTarget, &name](auto&& target)
         {
-            if constexpr (BuildSystem::template IsProductionTarget<decltype(target)> || BuildSystem::template IsTestTarget<decltype(target)>)
+            if constexpr (BuildTargetTraits::template IsProductionTarget<decltype(target)> || BuildTargetTraits::template IsTestTarget<decltype(target)>)
             {
                 buildTarget = target;
             }
@@ -100,14 +100,14 @@ namespace TestImpact
         return buildTarget;
     }
 
-    template<typename BuildSystem>
-    const typename BuildSystem::TestTargetList& BuildTargetList<BuildSystem>::GetTestTargetList() const
+    template<typename BuildTargetTraits>
+    const typename BuildTargetTraits::TestTargetList& BuildTargetList<BuildTargetTraits>::GetTestTargetList() const
     {
         return m_testTargets;
     }
 
-    template<typename BuildSystem>
-    const typename BuildSystem::ProductionTargetList& BuildTargetList<BuildSystem>::GetProductionTargetList() const
+    template<typename BuildTargetTraits>
+    const typename BuildTargetTraits::ProductionTargetList& BuildTargetList<BuildTargetTraits>::GetProductionTargetList() const
     {
         return m_productionTargets;
     }

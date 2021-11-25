@@ -8,14 +8,14 @@
 
 #pragma once
 
-#include <BuildSystem/Common/TestImpactBuildTarget.h>
+#include <BuildTarget/Common/TestImpactBuildTarget.h>
 
 #include <AzCore/std/typetraits/is_same.h>
 
 namespace TestImpact
 {
     template<typename TestTargetListType, typename ProductionTargetListType>
-    struct BuildSystem
+    struct BuildTargetTraits
     {
         //!
         using TestTargetList = TestTargetListType;

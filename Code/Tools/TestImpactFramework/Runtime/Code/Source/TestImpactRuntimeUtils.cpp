@@ -41,7 +41,7 @@ namespace TestImpact
         return NativeTargetDescriptors;
     }
 
-     AZStd::unique_ptr<BuildTargetList<NativeBuildSystem>> ConstructNativeBuildTargetList(
+     AZStd::unique_ptr<BuildTargetList<NativeBuildTargetTraits>> ConstructNativeBuildTargetList(
         SuiteType suiteFilter,
         const NativeTargetDescriptorConfig& NativeTargetDescriptorConfig,
         const TestTargetMetaConfig& testTargetMetaConfig)
@@ -50,7 +50,7 @@ namespace TestImpact
         auto NativeTargetDescriptors = ReadNativeTargetDescriptorFiles(NativeTargetDescriptorConfig);
         auto buildTargets = CompileTargetDescriptors(AZStd::move(NativeTargetDescriptors), AZStd::move(NativeTestTargetMetaMap));
         auto&& [productionTargets, testTargets] = buildTargets;
-        return AZStd::make_unique<BuildTargetList<NativeBuildSystem>>(
+        return AZStd::make_unique<BuildTargetList<NativeBuildTargetTraits>>(
             AZStd::move(testTargets), AZStd::move(productionTargets));
     }
 
