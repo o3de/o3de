@@ -72,10 +72,6 @@ public:
     void    DeleteAllObjects() override;
     CBaseObject* CloneObject(CBaseObject* obj) override;
 
-    void EndEditParams(int flags = 0) override;
-    // Hides all transform manipulators.
-    void HideTransformManipulators();
-
     //! Get number of objects manager by ObjectManager (not contain sub objects of groups).
     int     GetObjectCount() const override;
 
@@ -92,16 +88,6 @@ public:
 
     //! Display objects on display context.
     void    Display(DisplayContext& dc) override;
-
-    //! Check intersection with objects.
-    //! Find intersection with nearest to ray origin object hit by ray.
-    //! If distance tollerance is specified certain relaxation applied on collision test.
-    //! @return true if hit any object, and fills hitInfo structure.
-    bool HitTest(HitContext& hitInfo) override;
-
-    //! Check intersection with an object.
-    //! @return true if hit, and fills hitInfo structure.
-    bool HitTestObject(CBaseObject* obj, HitContext& hc) override;
 
     //! Send event to all objects.
     //! Will cause OnEvent handler to be called on all objects.
@@ -136,12 +122,6 @@ public:
     int SelectObjects(const AABB& box, bool bUnselect = false) override;
 
     void SelectEntities(std::set<CEntityObject*>& s) override;
-
-    int MoveObjects(const AABB& box, const Vec3& offset, ImageRotationDegrees rotation, bool bIsCopy = false) override;
-
-    //! Selects/Unselects all objects within 2d rectangle in given viewport.
-    void SelectObjectsInRect(CViewport* view, const QRect& rect, bool bSelect) override;
-    void FindObjectsInRect(CViewport* view, const QRect& rect, std::vector<GUID>& guids) override;
 
     //! Clear default selection set.
     //! @Return number of objects removed from selection.
@@ -292,8 +272,6 @@ private:
 
     //! Default selection.
     CSelectionGroup m_defaultSelection;
-
-    CBaseObjectPtr m_currEditObject;
 
     bool m_createGameObjects;
     bool m_bGenUniqObjectNames;

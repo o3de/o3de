@@ -85,7 +85,6 @@ CObjectManager::CObjectManager()
     , m_currSelection(&m_defaultSelection)
     , m_nLastSelCount(0)
     , m_bSelectionChanged(false)
-    , m_currEditObject(nullptr)
     , m_createGameObjects(true)
     , m_bGenUniqObjectNames(true)
     , m_gizmoManager(new CGizmoManager())
@@ -337,10 +336,6 @@ CBaseObject* CObjectManager::NewObject(const QString& typeName, CBaseObject* pre
 void    CObjectManager::DeleteObject(CBaseObject* obj)
 {
     AZ_PROFILE_FUNCTION(Editor);
-    if (m_currEditObject == obj)
-    {
-        EndEditParams();
-    }
 
     if (!obj)
     {
@@ -447,8 +442,6 @@ void CObjectManager::DeleteSelection(CSelectionGroup* pSelection)
 void CObjectManager::DeleteAllObjects()
 {
     AZ_PROFILE_FUNCTION(Editor);
-
-    EndEditParams();
 
     ClearSelection();
 
@@ -916,12 +909,6 @@ void CObjectManager::Display(DisplayContext& dc)
     }
 }
 
-void CObjectManager::EndEditParams([[maybe_unused]] int flags)
-{
-    m_currEditObject = nullptr;
-    //m_bSelectionChanged = false; // don't need to clear for ungroup
-}
-
 //! Select objects within specified distance from given position.
 int CObjectManager::SelectObjects(const AABB& box, bool bUnselect)
 {
@@ -956,62 +943,6 @@ int CObjectManager::SelectObjects(const AABB& box, bool bUnselect)
 }
 
 //////////////////////////////////////////////////////////////////////////
-int CObjectManager::MoveObjects(const AABB& box, const Vec3& offset, ImageRotationDegrees rotation, [[maybe_unused]] bool bIsCopy)
-{
-    AABB objBounds;
-
-    Vec3 src = (box.min + box.max) / 2;
-    Vec3 dst = src + offset;
-    float alpha = 0.0f;
-    switch (rotation)
-    {
-        case ImageRotationDegrees::Rotate90:
-            alpha = gf_halfPI;
-            break;
-        case ImageRotationDegrees::Rotate180:
-            alpha = gf_PI;
-            break;
-        case ImageRotationDegrees::Rotate270:
-            alpha = gf_PI + gf_halfPI;
-            break;
-        default:
-            break;
-    }
-
-    float cosa = cos(alpha);
-    float sina = sin(alpha);
-
-    for (Objects::iterator it = m_objects.begin(); it != m_objects.end(); ++it)
-    {
-        CBaseObject* obj = it->second;
-
-        if (obj->GetParent())
-        {
-            continue;
-        }
-
-        obj->GetBoundBox(objBounds);
-        if (box.IsIntersectBox(objBounds))
-        {
-            if (rotation == ImageRotationDegrees::Rotate0)
-            {
-                obj->SetPos(obj->GetPos() - src + dst);
-            }
-            else
-            {
-                Vec3 pos = obj->GetPos() - src;
-                Vec3 newPos(pos);
-                newPos.x = cosa * pos.x - sina * pos.y;
-                newPos.y = sina * pos.x + cosa * pos.y;
-                obj->SetPos(newPos + dst);
-                Quat q;
-                obj->SetRotation(q.CreateRotationZ(alpha) * obj->GetRotation());
-            }
-        }
-    }
-    return 0;
-}
-
 bool CObjectManager::IsObjectDeletionAllowed(CBaseObject* pObject)
 {
     if (!pObject)
@@ -1046,88 +977,6 @@ void CObjectManager::DeleteSelection()
     m_defaultSelection.RemoveAll();
 
     DeleteSelection(&objects);
-}
-
-//////////////////////////////////////////////////////////////////////////
-bool CObjectManager::HitTestObject(CBaseObject* obj, HitContext& hc)
-{
-    AZ_PROFILE_FUNCTION(Editor);
-
-    if (obj->IsFrozen())
-    {
-        return false;
-    }
-
-    if (obj->IsHidden())
-    {
-        return false;
-    }
-
-    // This object is rejected by deep selection.
-    if (obj->CheckFlags(OBJFLAG_NO_HITTEST))
-    {
-        return false;
-    }
-
-    ObjectType objType = obj->GetType();
-
-    // Check if this object type is masked for selection.
-    if (!(objType & gSettings.objectSelectMask))
-    {
-        return false;
-    }
-
-    const bool bSelectionHelperHit = obj->HitHelperTest(hc);
-
-    if (hc.bUseSelectionHelpers && !bSelectionHelperHit)
-    {
-        return false;
-    }
-
-    if (!bSelectionHelperHit)
-    {
-        // Fast checking.
-        if (hc.bounds && !obj->IntersectRectBounds(*hc.bounds))
-        {
-            return false;
-        }
-
-        // Do 2D space testing.
-        if (hc.nSubObjFlags == 0)
-        {
-            Ray ray(hc.raySrc, hc.rayDir);
-            if (!obj->IntersectRayBounds(ray))
-            {
-                return false;
-            }
-        }
-        else if (!obj->HitTestRect(hc))
-        {
-            return false;
-        }
-    }
-
-    return (bSelectionHelperHit || obj->HitTest(hc));
-}
-
-//////////////////////////////////////////////////////////////////////////
-bool CObjectManager::HitTest([[maybe_unused]] HitContext& hitInfo)
-{
-    AZ_Assert(false, "CObjectManager::HitTest is legacy/deprecated and should not be used.");
-    return false;
-}
-
-void CObjectManager::FindObjectsInRect(
-    [[maybe_unused]] CViewport* view, [[maybe_unused]] const QRect& rect, [[maybe_unused]] std::vector<GUID>& guids)
-{
-    AZ_Assert(false, "CObjectManager::FindObjectsInRect is legacy/deprecated and should not be used.");
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CObjectManager::SelectObjectsInRect(
-    [[maybe_unused]] CViewport* view, [[maybe_unused]] const QRect& rect, [[maybe_unused]] bool bSelect)
-{
-    AZ_Assert(false, "CObjectManager::SelectObjectsInRect is legacy/deprecated and should not be used.");
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1526,12 +1375,6 @@ void CObjectManager::SetObjectSelected(CBaseObject* pObject, bool bSelect)
     {
         NotifyObjectListeners(pObject, CBaseObject::ON_UNSELECT);
     }
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CObjectManager::HideTransformManipulators()
-{
-    m_gizmoManager->DeleteAllTransformManipulators();
 }
 
 //////////////////////////////////////////////////////////////////////////
