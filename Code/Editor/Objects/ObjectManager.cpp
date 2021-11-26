@@ -90,8 +90,6 @@ CObjectManager::CObjectManager()
 {
     g_pObjectManager = this;
 
-    RegisterObjectClasses();
-
     m_objectsByName.reserve(1024);
 }
 
@@ -103,12 +101,6 @@ CObjectManager::~CObjectManager()
 
     delete m_gizmoManager;
 }
-
-//////////////////////////////////////////////////////////////////////////
-void CObjectManager::RegisterObjectClasses()
-{
-}
-
 
 //////////////////////////////////////////////////////////////////////////
 CBaseObject* CObjectManager::NewObject(CObjectClassDesc* cls, CBaseObject* prev, const QString& file, const char* newObjectName)

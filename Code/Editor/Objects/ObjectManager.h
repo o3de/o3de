@@ -60,8 +60,6 @@ public:
     CObjectManager();
     ~CObjectManager();
 
-    void RegisterObjectClasses();
-
     CBaseObject* NewObject(CObjectClassDesc* cls, CBaseObject* prev = 0, const QString& file = "", const char* newObjectName = nullptr) override;
     CBaseObject* NewObject(const QString& typeName, CBaseObject* prev = 0, const QString& file = "", const char* newEntityName = nullptr) override;
 
