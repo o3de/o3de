@@ -647,18 +647,6 @@ void CObjectManager::SendEvent(ObjectEvent event, const AABB& bounds)
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CObjectManager::Update()
-{
-    QWidget* prevActiveWindow = QApplication::activeWindow();
-
-    // Restore focus if it changed.
-    if (prevActiveWindow && QApplication::activeWindow() != prevActiveWindow)
-    {
-        prevActiveWindow->setFocus();
-    }
-}
-
-//////////////////////////////////////////////////////////////////////////
 bool CObjectManager::SelectObject(CBaseObject* obj, bool bUseMask)
 {
     assert(obj);

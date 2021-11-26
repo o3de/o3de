@@ -76,9 +76,6 @@ public:
     //! @param layer if 0 get objects for all layers, or layer to get objects from.
     void GetObjects(CBaseObjectsArray& objects) const override;
 
-    //! Update objects.
-    void    Update();
-
     //! Display objects on display context.
     void    Display(DisplayContext& dc) override;
 

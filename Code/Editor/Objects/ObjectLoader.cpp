@@ -28,19 +28,12 @@ CObjectArchive::CObjectArchive(IObjectManager* objMan, XmlNodeRef xmlRoot, bool 
     m_nFlags = 0;
     node = xmlRoot;
     m_pCurrentErrorReport = GetIEditor()->GetErrorReport();
-    m_pGeometryPak = nullptr;
-    m_pCurrentObject = nullptr;
     m_bNeedResolveObjects = false;
-    m_bProgressBarEnabled = true;
 }
 
 //////////////////////////////////////////////////////////////////////////
 CObjectArchive::~CObjectArchive()
 {
-    if (m_pGeometryPak)
-    {
-        delete m_pGeometryPak;
-    }
     // Always make sure objects are resolved when loading from archive.
     if (bLoading && m_bNeedResolveObjects)
     {
@@ -117,10 +110,7 @@ void CObjectArchive::ResolveObjects()
 
     {
         CWaitProgress wait("Loading Objects", false);
-        if (m_bProgressBarEnabled)
-        {
-            wait.Start();
-        }
+        wait.Start();
 
         GetIEditor()->SuspendUndo();
         //////////////////////////////////////////////////////////////////////////
@@ -129,10 +119,7 @@ void CObjectArchive::ResolveObjects()
         int numObj = static_cast<int>(m_loadedObjects.size());
         for (i = 0; i < numObj; i++)
         {
-            if (m_bProgressBarEnabled)
-            {
-                wait.Step((i * 100) / numObj);
-            }
+            wait.Step((i * 100) / numObj);
 
             SLoadedObjectInfo& obj = m_loadedObjects[i];
             m_pCurrentErrorReport->SetCurrentValidatorObject(obj.pObject);
@@ -214,20 +201,14 @@ void CObjectArchive::ResolveObjects()
 
     {
         CWaitProgress wait("Creating Objects", false);
-        if (m_bProgressBarEnabled)
-        {
-            wait.Start();
-        }
+        wait.Start();
         //////////////////////////////////////////////////////////////////////////
         // Serialize All Objects from XML.
         //////////////////////////////////////////////////////////////////////////
         int numObj = static_cast<int>(m_loadedObjects.size());
         for (i = 0; i < numObj; i++)
         {
-            if (m_bProgressBarEnabled)
-            {
-                wait.Step((i * 100) / numObj);
-            }
+            wait.Step((i * 100) / numObj);
 
             SLoadedObjectInfo& obj = m_loadedObjects[i];
             m_pCurrentErrorReport->SetCurrentValidatorObject(obj.pObject);
@@ -258,8 +239,6 @@ void CObjectArchive::ResolveObjects()
 
     m_bNeedResolveObjects = false;
     m_pCurrentErrorReport->SetCurrentValidatorObject(nullptr);
-    m_sequenceIdRemap.clear();
-    m_pendingIds.clear();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -272,7 +251,6 @@ void CObjectArchive::SaveObject(CBaseObject* pObject)
 
     if (m_savedObjects.find(pObject) == m_savedObjects.end())
     {
-        m_pCurrentObject = pObject;
         m_savedObjects.insert(pObject);
         // If this object was not saved before.
         XmlNodeRef objNode = node->newChild("Object");
@@ -308,34 +286,6 @@ CBaseObject* CObjectArchive::LoadObject(const XmlNodeRef& objNode, CBaseObject* 
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CObjectArchive::ReportError(CErrorRecord& err)
-{
-    if (m_pCurrentErrorReport)
-    {
-        m_pCurrentErrorReport->ReportError(err);
-    }
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CObjectArchive::SetErrorReport(CErrorReport* errReport)
-{
-    if (errReport)
-    {
-        m_pCurrentErrorReport = errReport;
-    }
-    else
-    {
-        m_pCurrentErrorReport = GetIEditor()->GetErrorReport();
-    }
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CObjectArchive::ShowErrors()
-{
-    GetIEditor()->GetErrorReport()->Display();
-}
-
-//////////////////////////////////////////////////////////////////////////
 void CObjectArchive::MakeNewIds(bool bEnable)
 {
     if (bEnable)
@@ -349,69 +299,7 @@ void CObjectArchive::MakeNewIds(bool bEnable)
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CObjectArchive::SetShouldResetInternalMembers(bool reset)
-{
-    if (reset)
-    {
-        m_nFlags |= eObjectLoader_ResetInternalMembers;
-    }
-    else
-    {
-        m_nFlags &= ~(eObjectLoader_ResetInternalMembers);
-    }
-}
-
-//////////////////////////////////////////////////////////////////////////
 void CObjectArchive::RemapID(REFGUID oldId, REFGUID newId)
 {
     m_IdRemap[oldId] = newId;
-}
-
-//////////////////////////////////////////////////////////////////////////
-CPakFile* CObjectArchive::GetGeometryPak(const char* sFilename)
-{
-    if (m_pGeometryPak)
-    {
-        return m_pGeometryPak;
-    }
-    m_pGeometryPak = new CPakFile;
-    m_pGeometryPak->Open(sFilename);
-    return m_pGeometryPak;
-}
-
-//////////////////////////////////////////////////////////////////////////
-CBaseObject* CObjectArchive::GetCurrentObject()
-{
-    return m_pCurrentObject;
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CObjectArchive::AddSequenceIdMapping(uint32 oldId, uint32 newId)
-{
-    assert(oldId != newId);
-    assert(GetIEditor()->GetMovieSystem()->FindSequenceById(oldId) || stl::find(m_pendingIds, oldId));
-    assert(GetIEditor()->GetMovieSystem()->FindSequenceById(newId) == nullptr);
-    assert(stl::find(m_pendingIds, newId) == false);
-    m_sequenceIdRemap[oldId] = newId;
-    m_pendingIds.push_back(newId);
-}
-
-//////////////////////////////////////////////////////////////////////////
-uint32 CObjectArchive::RemapSequenceId(uint32 id) const
-{
-    std::map<uint32, uint32>::const_iterator itr = m_sequenceIdRemap.find(id);
-    if (itr == m_sequenceIdRemap.end())
-    {
-        return id;
-    }
-    else
-    {
-        return itr->second;
-    }
-}
-
-//////////////////////////////////////////////////////////////////////////
-bool CObjectArchive::IsAmongPendingIds(uint32 id) const
-{
-    return stl::find(m_pendingIds, id);
 }

@@ -287,7 +287,7 @@ QString CUndoBaseObjectMinimal::GetObjectName()
 void CUndoBaseObjectMinimal::Undo(bool bUndo)
 {
     CBaseObject* pObject = GetIEditor()->GetObjectManager()->FindObject(m_guid);
-    if (!pObject || pObject->GetType() == OBJTYPE_DUMMY)
+    if (!pObject)
     {
         return;
     }
@@ -316,7 +316,7 @@ void CUndoBaseObjectMinimal::Undo(bool bUndo)
 void CUndoBaseObjectMinimal::Redo()
 {
     CBaseObject* pObject = GetIEditor()->GetObjectManager()->FindObject(m_guid);
-    if (!pObject || pObject->GetType() == OBJTYPE_DUMMY)
+    if (!pObject)
     {
         return;
     }
@@ -522,12 +522,6 @@ void CBaseObject::GenerateUniqueName()
 const QString& CBaseObject::GetName() const
 {
     return m_name;
-}
-
-//////////////////////////////////////////////////////////////////////////
-bool CBaseObject::IsSameClass(CBaseObject* obj)
-{
-    return GetClassDesc() == obj->GetClassDesc();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1310,14 +1304,6 @@ void CBaseObject::Serialize(CObjectArchive& ar)
     if (ar.bLoading)
     {
         // Loading.
-        if (ar.ShouldResetInternalMembers())
-        {
-            m_flags = 0;
-            m_flattenArea = 0.0f;
-            m_nMinSpec = 0;
-            m_scale.Set(1.0f, 1.0f, 1.0f);
-        }
-
         int flags = 0;
         int oldFlags = m_flags;
 
@@ -1420,12 +1406,6 @@ void CBaseObject::Serialize(CObjectArchive& ar)
         SetModified(false);
 
         //////////////////////////////////////////////////////////////////////////
-
-        // We reseted the min spec and deserialized it so set it internally
-        if (ar.ShouldResetInternalMembers())
-        {
-            SetMinSpec(m_nMinSpec);
-        }
     }
     else
     {
@@ -1547,11 +1527,6 @@ CBaseObject* CBaseObject::FindObject(REFGUID id) const
 //////////////////////////////////////////////////////////////////////////
 void CBaseObject::StoreUndo(const char* UndoDescription, bool minimal, int flags)
 {
-    if (m_objType == OBJTYPE_DUMMY)
-    {
-        return;
-    }
-
     // Don't use Sandbox undo for AZ entities, except for the move & scale tools, which rely on it.
     const bool isGizmoTool = 0 != (flags & (eObjectUpdateFlags_MoveTool | eObjectUpdateFlags_ScaleTool | eObjectUpdateFlags_UserInput));
     if (!isGizmoTool && 0 != (m_flags & OBJFLAG_DONT_SAVE))
@@ -1575,10 +1550,6 @@ void CBaseObject::StoreUndo(const char* UndoDescription, bool minimal, int flags
 //////////////////////////////////////////////////////////////////////////
 QString CBaseObject::GetTypeName() const
 {
-    if (m_objType == OBJTYPE_DUMMY)
-    {
-        return "";
-    }
     QString className = m_classDesc->ClassName();
     QString subClassName = strstr(className.toUtf8().data(), "::");
     if (subClassName.isEmpty())

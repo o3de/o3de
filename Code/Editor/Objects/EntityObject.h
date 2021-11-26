@@ -82,9 +82,6 @@ public:
     // Overrides from CBaseObject.
     //////////////////////////////////////////////////////////////////////////
 
-    //////////////////////////////////////////////////////////////////////////
-    bool IsSameClass(CBaseObject* obj) override;
-
     bool Init(IEditor* ie, CBaseObject* prev, const QString& file) override;
     void InitVariables() override;
     void Done() override;
