@@ -5,7 +5,7 @@
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "UiScrollBarBus",
+                "name": "UI Scroll Bar",
                 "category": "UI"
             },
             "methods": [

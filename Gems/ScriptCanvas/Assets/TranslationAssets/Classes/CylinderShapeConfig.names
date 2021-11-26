@@ -5,7 +5,8 @@
             "context": "BehaviorClass",
             "variant": "",
             "details": {
-                "name": "Cylinder Shape Config"
+                "name": "Cylinder Shape Config",
+                "category": "Rendering/Shapes"
             },
             "methods": [
                 {

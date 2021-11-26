@@ -186,17 +186,6 @@ CBaseObject* CObjectManager::NewObject(CObjectClassDesc* cls, CBaseObject* prev,
         if (obj->GetType() != OBJTYPE_AZENTITY)
         {
             GetIEditor()->RecordUndo(new CUndoBaseObjectNew(obj));
-
-            // check for script entities
-            const char* scriptClassName = "";
-            CEntityObject* entityObj = qobject_cast<CEntityObject*>(obj);
-            QByteArray entityClass; // Leave it outside of the if. Otherwise buffer is deleted.
-            if (entityObj)
-            {
-                entityClass = entityObj->GetEntityClass().toUtf8();
-                scriptClassName = entityClass.data();
-            }
-
         }
     }
 

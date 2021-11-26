@@ -5,7 +5,8 @@
             "context": "BehaviorClass",
             "variant": "",
             "details": {
-                "name": "IMeshData"
+                "name": "IMesh Data",
+                "category": "Rendering"
             },
             "methods": [
                 {
@@ -13,24 +14,15 @@
                     "context": "IMeshData",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetUnitSizeInMeters"
+                        "tooltip": "When signaled, this will invoke Get Unit Size In Meters"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetUnitSizeInMeters is invoked"
+                        "tooltip": "Signaled after Get Unit Size In Meters is invoked"
                     },
                     "details": {
-                        "name": "IMeshData::GetUnitSizeInMeters",
-                        "category": "Other"
+                        "name": "Get Unit Size In Meters"
                     },
-                    "params": [
-                        {
-                            "typeid": "{B94A59C0-F3A5-40A0-B541-7E36B6576C4A}",
-                            "details": {
-                                "name": "IMeshData*"
-                            }
-                        }
-                    ],
                     "results": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
@@ -45,24 +37,15 @@
                     "context": "IMeshData",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetOriginalUnitSizeInMeters"
+                        "tooltip": "When signaled, this will invoke Get Original Unit Size In Meters"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetOriginalUnitSizeInMeters is invoked"
+                        "tooltip": "Signaled after Get Original Unit Size In Meters is invoked"
                     },
                     "details": {
-                        "name": "IMeshData::GetOriginalUnitSizeInMeters",
-                        "category": "Other"
+                        "name": "Get Original Unit Size In Meters"
                     },
-                    "params": [
-                        {
-                            "typeid": "{B94A59C0-F3A5-40A0-B541-7E36B6576C4A}",
-                            "details": {
-                                "name": "IMeshData*"
-                            }
-                        }
-                    ],
                     "results": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",

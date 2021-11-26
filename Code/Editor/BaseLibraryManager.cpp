@@ -606,11 +606,9 @@ void CBaseLibraryManager::RegisterItem(CBaseLibraryItem* pItem, REFGUID newGuid)
 
     if (m_bUniqGuidMap)
     {
-        bool bNewItem = true;
         REFGUID oldGuid = pItem->GetGUID();
         if (!GuidUtil::IsEmpty(oldGuid))
         {
-            bNewItem = false;
             m_itemsGuidMap.erase(oldGuid);
         }
         if (GuidUtil::IsEmpty(newGuid))

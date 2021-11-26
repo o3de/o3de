@@ -5,7 +5,7 @@
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "UiSpawnerBus",
+                "name": "UI Spawner",
                 "category": "UI"
             },
             "methods": [
