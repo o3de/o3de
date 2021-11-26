@@ -253,7 +253,6 @@ public:
     /** Check if both object are of same class.
     */
     virtual bool IsSameClass(CBaseObject* obj);
-    virtual void SetDefaultType() { m_objType = OBJTYPE_DUMMY; };
     virtual ObjectType GetType() const
     {
         if (m_objType == OBJTYPE_DUMMY)
@@ -265,7 +264,6 @@ public:
             return m_classDesc->GetObjectType();
         }
     };
-    //  const char* GetTypeName() const { return m_classDesc->ClassName(); };
     QString GetTypeName() const;
     virtual QString GetTypeDescription() const { return m_classDesc->ClassName(); };
 
@@ -538,12 +536,6 @@ public:
     virtual bool IsSimilarObject(CBaseObject* pObject);
 
     //////////////////////////////////////////////////////////////////////////
-    // Material Layers Mask.
-    //////////////////////////////////////////////////////////////////////////
-    virtual void SetMaterialLayersMask(uint32 nLayersMask) { m_nMaterialLayersMask = nLayersMask; }
-    uint32 GetMaterialLayersMask() const { return m_nMaterialLayersMask; };
-
-    //////////////////////////////////////////////////////////////////////////
     // Object minimal usage spec (All/Low/Medium/High)
     //////////////////////////////////////////////////////////////////////////
     uint32 GetMinSpec() const { return m_nMinSpec; }
@@ -801,7 +793,6 @@ private:
     mutable uint32 m_bMatrixValid : 1;
     mutable uint32 m_bWorldBoxValid : 1;
     uint32 m_bInSelectionBox : 1;
-    uint32 m_nMaterialLayersMask : 8;
     uint32 m_nMinSpec : 8;
 
     Vec3 m_vDrawIconPos;

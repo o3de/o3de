@@ -398,7 +398,6 @@ CBaseObject::CBaseObject()
     , m_bMatrixInWorldSpace(false)
     , m_bMatrixValid(false)
     , m_bWorldBoxValid(false)
-    , m_nMaterialLayersMask(0)
     , m_nMinSpec(0)
     , m_vDrawIconPos(0, 0, 0)
     , m_nIconFlags(0)
@@ -431,7 +430,6 @@ bool CBaseObject::Init([[maybe_unused]] IEditor* ie, CBaseObject* prev, [[maybe_
         SetLocalTM(prev->GetPos(), prev->GetRotation(), prev->GetScale());
         SetArea(prev->GetArea());
         SetColor(prev->GetColor());
-        m_nMaterialLayersMask = prev->m_nMaterialLayersMask;
         SetMinSpec(prev->GetMinSpec(), false);
 
         // Copy all basic variables.
