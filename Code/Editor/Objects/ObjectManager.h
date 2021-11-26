@@ -76,10 +76,6 @@ public:
     //! @param layer if 0 get objects for all layers, or layer to get objects from.
     void GetObjects(CBaseObjectsArray& objects) const override;
 
-    //! Get array of objects that pass the filter.
-    //! @param filter The filter functor, return true if you want to get the certain obj, return false if want to skip it.
-    void    GetObjects(CBaseObjectsArray& objects, BaseObjectFilterFunctor const& filter) const override;
-
     //! Update objects.
     void    Update();
 
@@ -113,10 +109,6 @@ public:
     //////////////////////////////////////////////////////////////////////////
     bool    SelectObject(CBaseObject* obj, bool bUseMask = true) override;
     void    UnselectObject(CBaseObject* obj) override;
-
-    //! Select objects within specified distance from given position.
-    //! Return number of selected objects.
-    int SelectObjects(const AABB& box, bool bUnselect = false) override;
 
     //! Clear default selection set.
     //! @Return number of objects removed from selection.

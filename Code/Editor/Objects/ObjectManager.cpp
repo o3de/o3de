@@ -627,20 +627,6 @@ void CObjectManager::GetObjects(CBaseObjectsArray& objects) const
     }
 }
 
-void CObjectManager::GetObjects(CBaseObjectsArray& objects, BaseObjectFilterFunctor const& filter) const
-{
-    objects.clear();
-    objects.reserve(m_objects.size());
-    for (Objects::const_iterator it = m_objects.begin(); it != m_objects.end(); ++it)
-    {
-        assert(it->second);
-        if (filter.first(*it->second, filter.second))
-        {
-            objects.push_back(it->second);
-        }
-    }
-}
-
 //////////////////////////////////////////////////////////////////////////
 void CObjectManager::SendEvent(ObjectEvent event)
 {
@@ -857,39 +843,6 @@ void CObjectManager::Display(DisplayContext& dc)
     {
         m_gizmoManager->Display(dc);
     }
-}
-
-//! Select objects within specified distance from given position.
-int CObjectManager::SelectObjects(const AABB& box, bool bUnselect)
-{
-    AZ_PROFILE_FUNCTION(Editor);
-    int numSel = 0;
-
-    AABB objBounds;
-    for (Objects::iterator it = m_objects.begin(); it != m_objects.end(); ++it)
-    {
-        CBaseObject* obj = it->second;
-
-        if (obj->IsHidden())
-        {
-            continue;
-        }
-
-        obj->GetBoundBox(objBounds);
-        if (box.IsIntersectBox(objBounds))
-        {
-            numSel++;
-            if (!bUnselect)
-            {
-                SelectObject(obj);
-            }
-            else
-            {
-                UnselectObject(obj);
-            }
-        }
-    }
-    return numSel;
 }
 
 //////////////////////////////////////////////////////////////////////////

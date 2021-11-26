@@ -65,9 +65,6 @@ AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
     // Save object to archive.
     void SaveObject(CBaseObject* pObject);
 
-    //! Load multiple objects from archive.
-    void LoadObjects(XmlNodeRef& rootObjectsNode);
-
     //! Load one object from archive.
     CBaseObject* LoadObject(const XmlNodeRef& objNode, CBaseObject* pPrevObject = nullptr);
 
