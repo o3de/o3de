@@ -12,10 +12,10 @@
 
 #include <Artifact/Factory/TestImpactTestRunSuiteFactory.h>
 #include <Artifact/Factory/TestImpactModuleCoverageFactory.h>
+#include <TestEngine/TestImpactTestEngineException.h>
 #include <TestRunner/Common/Job/TestImpactTestRunWithCoverageJobData.h>
 #include <TestRunner/Common/Run/TestImpactTestCoverage.h>
 #include <TestRunner/Common/Run/TestImpactTestRunnerWithCoverage.h>
-#include <TestRunner/TestImpactTestEngineException.h>
 
 namespace TestImpact
 {

@@ -17,7 +17,7 @@
 //#include <TestImpactTestUtils.h>
 //
 //#include <Artifact/TestImpactArtifactException.h>
-//#include <TestEngine/Run/TestImpactTestRunner.h>
+//#include <TestRunner/Run/TestImpactTestRunner.h>
 //
 //#include <AzCore/UnitTest/TestTypes.h>
 //#include <AzCore/std/containers/array.h>

@@ -11,12 +11,12 @@
 #include <Target/Native/TestImpactnativeTestTarget.h>
 #include <TestEngine/TestImpactTestEngineException.h>
 #include <TestEngine/TestImpactTestEngine.h>
-#include <TestEngine/Common/TestImpactErrorCodeChecker.h>
-#include <TestEngine/Native/TestImpactNativeErrorCodeHandler.h>
-#include <TestEngine/Native/Enumeration/TestImpactNativeTestEnumerator.h>
-#include <TestEngine/Native/Run/TestImpactNativeInstrumentedTestRunner.h>
-#include <TestEngine/Native/Run/TestImpactNativeRegularTestRunner.h>
-#include <TestEngine/Native/Job/TestImpactNativeTestJobInfoGenerator.h>
+#include <TestRunner/Common/TestImpactErrorCodeChecker.h>
+#include <TestRunner/Native/TestImpactNativeErrorCodeHandler.h>
+#include <TestRunner/Native/Enumeration/TestImpactNativeTestEnumerator.h>
+#include <TestRunner/Native/Run/TestImpactNativeInstrumentedTestRunner.h>
+#include <TestRunner/Native/Run/TestImpactNativeRegularTestRunner.h>
+#include <TestRunner/Native/Job/TestImpactNativeTestJobInfoGenerator.h>
 
 #include <AzCore/std/containers/unordered_map.h>
 

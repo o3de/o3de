@@ -11,7 +11,7 @@
 // */
 //
 //#include <Target/TestImpactTestTarget.h>
-//#include <TestEngine/JobRunner/TestImpactTestJobInfoGenerator.h>
+//#include <TestRunner/JobRunner/TestImpactTestJobInfoGenerator.h>
 //
 //#include <AzCore/UnitTest/TestTypes.h>
 //#include <AzTest/AzTest.h>

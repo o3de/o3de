@@ -11,7 +11,7 @@
 #include <TestImpactFramework/TestImpactUtils.h>
 
 #include <Artifact/Factory/TestImpactTestRunSuiteFactory.h>
-#include <TestRunner/TestImpactTestEngineException.h>
+#include <TestEngine/TestImpactTestEngineException.h>
 #include <TestRunner/Common/Run/TestImpactTestRunner.h>
 #include <TestRunner/Common/Job/TestImpactTestRunJobData.h>
 #include <TestRunner/Native/Job/TestImpactNativeTestRunJobData.h>

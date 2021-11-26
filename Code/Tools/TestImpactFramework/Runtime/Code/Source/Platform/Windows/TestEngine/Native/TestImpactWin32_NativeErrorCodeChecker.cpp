@@ -6,7 +6,7 @@
  *
  */
 
-#include <TestEngine/Native/TestImpactNativeErrorCodeHandler.h>
+#include <TestRunner/Native/TestImpactNativeErrorCodeHandler.h>
 
 namespace TestImpact
 {

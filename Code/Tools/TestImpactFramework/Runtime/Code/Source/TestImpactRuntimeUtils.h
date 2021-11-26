@@ -19,8 +19,8 @@
 #include <BuildTarget/Common/TestImpactBuildTarget.h>
 #include <BuildTarget/Native/TestImpactNativeBuildTargetTraits.h>
 #include <Target/Native/TestImpactNativeTestTarget.h>
-#include <TestEngine/Common/Enumeration/TestImpactTestEnumeration.h>
 #include <TestEngine/TestImpactTestEngineInstrumentedRun.h>
+#include <TestRunner/Common/Enumeration/TestImpactTestEnumeration.h>
 #include <TestImpactTestTargetExclusionList.h>
 
 #include <AzCore/std/smart_ptr/unique_ptr.h>

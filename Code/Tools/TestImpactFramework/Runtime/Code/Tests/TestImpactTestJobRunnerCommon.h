@@ -10,8 +10,8 @@
 
 #include <TestImpactTestUtils.h>
 
-#include <TestEngine/Enumeration/TestImpactTestEnumeration.h>
-#include <TestEngine/Run/TestImpactTestRun.h>
+#include <TestRunner/Enumeration/TestImpactTestEnumeration.h>
+#include <TestRunner/Run/TestImpactTestRun.h>
 
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/UnitTest/TestTypes.h>

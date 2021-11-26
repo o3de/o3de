@@ -20,9 +20,9 @@
 #include <Artifact/Static/TestImpactNativeTestTargetMeta.h>
 #include <Dependency/TestImpactSourceCoveringTestsList.h>
 #include <Process/TestImpactProcess.h>
-#include <TestEngine/Common/Enumeration/TestImpactTestEnumeration.h>
-#include <TestEngine/Common/Run/TestImpactTestCoverage.h>
-#include <TestEngine/Common/Run/TestImpactTestRun.h>
+#include <TestRunner/Common/Enumeration/TestImpactTestEnumeration.h>
+#include <TestRunner/Common/Run/TestImpactTestCoverage.h>
+#include <TestRunner/Common/Run/TestImpactTestRun.h>
 
 #include <AzCore/std/optional.h>
 #include <AzCore/std/string/string.h>

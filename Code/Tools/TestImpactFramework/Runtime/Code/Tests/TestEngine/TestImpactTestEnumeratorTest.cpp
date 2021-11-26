@@ -15,8 +15,8 @@
 //#include <TestImpactTestJobRunnerCommon.h>
 //#include <TestImpactTestUtils.h>
 //
-//#include <TestEngine/Enumeration/TestImpactTestEnumerationSerializer.h>
-//#include <TestEngine/Enumeration/TestImpactTestEnumerator.h>
+//#include <TestRunner/Enumeration/TestImpactTestEnumerationSerializer.h>
+//#include <TestRunner/Enumeration/TestImpactTestEnumerator.h>
 //
 //#include <AzCore/UnitTest/TestTypes.h>
 //#include <AzCore/std/containers/array.h>
