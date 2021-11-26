@@ -12,7 +12,7 @@
 #include <TestImpactFramework/TestImpactUtils.h>
 
 #include <Artifact/TestImpactArtifactException.h>
-#include <TestEngine/TestImpactTestEngineException.h>
+#include <TestRunner/Common/TestImpactTestRunnerException.h>
 #include <TestRunner/Common/Enumeration/TestImpactTestEnumeration.h>
 #include <TestRunner/Common/Job/TestImpactTestEnumerationJobData.h>
 #include <TestRunner/Common/Job/TestImpactTestJobRunner.h>
@@ -64,8 +64,8 @@ namespace TestImpact
                         try
                         {
                             enumeration = TestEnumeration(
-                                DeserializeTestEnumeration(ReadFileContents<TestEngineException>(jobInfo->GetCache()->m_file)));
-                        } catch (const TestEngineException& e)
+                                DeserializeTestEnumeration(ReadFileContents<TestRunnerException>(jobInfo->GetCache()->m_file)));
+                        } catch (const TestRunnerException& e)
                         {
                             AZ_Printf("Enumerate", AZStd::string::format("Enumeration cache error: %s\n", e.what()).c_str());
                             DeleteFile(jobInfo->GetCache()->m_file);
@@ -166,7 +166,7 @@ namespace TestImpact
                             if (jobInfo->GetCache().has_value() &&
                                 jobInfo->GetCache()->m_policy == TestEnumerationJobData::CachePolicy::Write)
                             {
-                                WriteFileContents<TestEngineException>(
+                                WriteFileContents<TestRunnerException>(
                                     SerializeTestEnumeration(enumeration.value()), jobInfo->GetCache()->m_file);
                             }
                         }

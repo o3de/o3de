@@ -12,7 +12,7 @@
 
 #include <Artifact/Factory/TestImpactTestRunSuiteFactory.h>
 #include <Artifact/Factory/TestImpactModuleCoverageFactory.h>
-#include <TestEngine/TestImpactTestEngineException.h>
+#include <TestRunner/Common/TestImpactTestRunnerException.h>
 #include <TestRunner/Common/Job/TestImpactTestRunWithCoverageJobData.h>
 #include <TestRunner/Common/Run/TestImpactTestCoverage.h>
 #include <TestRunner/Common/Run/TestImpactTestRunnerWithCoverage.h>
@@ -35,7 +35,7 @@ namespace TestImpact
         try
         {
             run = TestRun(
-                JUnit::TestRunSuitesFactory(ReadFileContents<TestEngineException>(jobData.GetRunArtifactPath())),
+                JUnit::TestRunSuitesFactory(ReadFileContents<TestRunnerException>(jobData.GetRunArtifactPath())),
                 jobMeta.m_duration.value());
 
             // Python tests have a separate coverage file per test case so we will attempt to parse each enumerated test case coverage
@@ -47,7 +47,7 @@ namespace TestImpact
                     const RepoPath covergeFile = jobData.GetCoverageArtifactPath() / RepoPath(AZStd::string::format("%s.pycoverage", testCase.m_name.c_str()));
                     coverage.emplace(
                         testCase.m_name,
-                        TestCoverage(PythonCoverage::ModuleCoveragesFactory(ReadFileContents<TestEngineException>(covergeFile))));
+                        TestCoverage(PythonCoverage::ModuleCoveragesFactory(ReadFileContents<TestRunnerException>(covergeFile))));
                 }
             }
 

@@ -6,7 +6,7 @@
  *
  */
 
-#include <TestEngine/TestImpactTestEngineException.h>
+#include <TestRunner/Common/TestImpactTestRunnerException.h>
 #include <TestRunner/Common/Enumeration/TestImpactTestEnumerationSerializer.h>
 
 #include <AzCore/JSON/document.h>
@@ -78,7 +78,7 @@ namespace TestImpact
 
         if (doc.Parse<0>(testEnumString.c_str()).HasParseError())
         {
-            throw TestEngineException("Could not parse enumeration data");
+            throw TestRunnerException("Could not parse enumeration data");
         }
 
         for (const auto& suite : doc[TestEnumFields::Keys[TestEnumFields::SuitesKey]].GetArray())

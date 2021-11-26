@@ -37,7 +37,7 @@ namespace TestImpact
         try
         {
             return AZ::Success(TestEnumeration(
-                GTest::TestEnumerationSuitesFactory(ReadFileContents<TestEngineException>(jobData.GetEnumerationArtifactPath()))));
+                GTest::TestEnumerationSuitesFactory(ReadFileContents<TestRunnerException>(jobData.GetEnumerationArtifactPath()))));
         } catch (const Exception& e)
         {
             return AZ::Failure(AZStd::string::format("%s\n", e.what()));
@@ -83,8 +83,8 @@ namespace TestImpact
     //                    try
     //                    {
     //                        enumeration =
-    //                            JobPayload(DeserializeTestEnumeration(ReadFileContents<TestEngineException>(jobInfo->GetCache()->m_file)));
-    //                    } catch (const TestEngineException& e)
+    //                            JobPayload(DeserializeTestEnumeration(ReadFileContents<TestRunnerException>(jobInfo->GetCache()->m_file)));
+    //                    } catch (const TestRunnerException& e)
     //                    {
     //                        AZ_Printf("Enumerate", AZStd::string::format("Enumeration cache error: %s\n", e.what()).c_str());
     //                        DeleteFile(jobInfo->GetCache()->m_file);
@@ -180,12 +180,12 @@ namespace TestImpact
     //                    {
     //                        const auto& enumeration =
     //                            (enumerations[jobId] = TestEnumeration(GTest::TestEnumerationSuitesFactory(
-    //                                 ReadFileContents<TestEngineException>(jobInfo->GetEnumerationArtifactPath()))));
+    //                                 ReadFileContents<TestRunnerException>(jobInfo->GetEnumerationArtifactPath()))));
 
     //                        // Write out the enumeration to a cache file if we have a cache write policy for this job
     //                        if (jobInfo->GetCache().has_value() && jobInfo->GetCache()->m_policy == JobData::CachePolicy::Write)
     //                        {
-    //                            WriteFileContents<TestEngineException>(
+    //                            WriteFileContents<TestRunnerException>(
     //                                SerializeTestEnumeration(enumeration.value()), jobInfo->GetCache()->m_file);
     //                        }
     //                    } catch ([[maybe_unused]] const Exception& e)

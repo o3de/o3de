@@ -11,7 +11,7 @@
 #include <TestImpactFramework/TestImpactUtils.h>
 
 #include <Artifact/Factory/TestImpactTestRunSuiteFactory.h>
-#include <TestEngine/TestImpactTestEngineException.h>
+#include <TestRunner/Common/TestImpactTestRunnerException.h>
 #include <TestRunner/Common/Run/TestImpactTestRunner.h>
 #include <TestRunner/Common/Job/TestImpactTestRunJobData.h>
 #include <TestRunner/Native/Job/TestImpactNativeTestRunJobData.h>
@@ -31,7 +31,7 @@ namespace TestImpact
         try
         {
             return AZ::Success(NativeRegularTestRunner::JobPayload(
-                GTest::TestRunSuitesFactory(ReadFileContents<TestEngineException>(jobData.GetRunArtifactPath())),
+                GTest::TestRunSuitesFactory(ReadFileContents<TestRunnerException>(jobData.GetRunArtifactPath())),
                 jobMeta.m_duration.value()));
         }
         catch (const Exception& e)

@@ -11,8 +11,8 @@
 #include <TestImpactFramework/TestImpactUtils.h>
 
 #include <Artifact/Factory/TestImpactTestRunSuiteFactory.h>
-#include <TestEngine/TestImpactTestEngineException.h>
 #include <Artifact/Factory/TestImpactModuleCoverageFactory.h>
+#include <TestRunner/Common/TestImpactTestRunnerException.h>
 #include <TestRunner/Common/Run/TestImpactTestRunnerWithCoverage.h>
 #include <TestRunner/Common/Run/TestImpactTestCoverage.h>
 #include <TestRunner/Common/Job/TestImpactTestRunWithCoverageJobData.h>
@@ -35,7 +35,7 @@ namespace TestImpact
         try
         {
             run = TestRun(
-                GTest::TestRunSuitesFactory(ReadFileContents<TestEngineException>(jobData.GetRunArtifactPath())),
+                GTest::TestRunSuitesFactory(ReadFileContents<TestRunnerException>(jobData.GetRunArtifactPath())),
                 jobMeta.m_duration.value());
         }
         catch (const Exception& e)
@@ -47,7 +47,7 @@ namespace TestImpact
         try
         {
             AZStd::vector<ModuleCoverage> moduleCoverages = Cobertura::ModuleCoveragesFactory(
-                ReadFileContents<TestEngineException>(jobData.GetCoverageArtifactPath()));
+                ReadFileContents<TestRunnerException>(jobData.GetCoverageArtifactPath()));
             return AZ::Success(NativeInstrumentedTestRunner::JobPayload{ run, TestCoverage(AZStd::move(moduleCoverages)) });
         }
         catch (const Exception& e)

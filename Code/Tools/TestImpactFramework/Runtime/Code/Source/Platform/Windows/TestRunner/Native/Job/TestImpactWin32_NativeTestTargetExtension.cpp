@@ -7,7 +7,7 @@
  */
 
 #include <Target/Native/TestImpactNativeTestTarget.h>
-#include <TestEngine/TestImpactTestEngineException.h>
+#include <TestRunner/Common/TestImpactTestRunnerException.h>
 #include <TestRunner/Native/Job/TestImpactNativeTestTargetExtension.h>
 
 namespace TestImpact
@@ -29,7 +29,7 @@ namespace TestImpact
         }
         default:
         {
-            throw TestEngineException(
+            throw TestRunnerException(
                 AZStd::string::format(
                     "Unexpected launch method for target %s: %u",
                     testTarget->GetName().c_str(),

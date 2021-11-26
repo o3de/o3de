@@ -99,6 +99,7 @@ set(FILES
     Source/Target/Python/TestImpactPythonTestTarget.cpp
     Source/Target/Python/TestImpactPythonTestTarget.h
     Source/Target/Python/TestImpactPythonTestTargetList.h
+    Source/TestRunner/Common/TestImpactTestRunnerException.h
     Source/TestRunner/Common/TestImpactTestSuiteContainer.h
     Source/TestRunner/Common/TestImpactErrorCodeChecker.cpp
     Source/TestRunner/Common/TestImpactErrorCodeChecker.h
