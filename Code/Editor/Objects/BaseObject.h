@@ -239,17 +239,9 @@ public:
 
     /** Check if both object are of same class.
     */
-    virtual bool IsSameClass(CBaseObject* obj);
     virtual ObjectType GetType() const
     {
-        if (m_objType == OBJTYPE_DUMMY)
-        {
-            return m_objType;
-        }
-        else
-        {
-            return m_classDesc->GetObjectType();
-        }
+        return m_classDesc->GetObjectType();
     };
     QString GetTypeName() const;
 

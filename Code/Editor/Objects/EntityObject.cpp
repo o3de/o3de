@@ -358,12 +358,6 @@ void CEntityObject::SetTransformDelegate(ITransformDelegate* pTransformDelegate)
 }
 
 //////////////////////////////////////////////////////////////////////////
-bool CEntityObject::IsSameClass(CBaseObject* obj)
-{
-    return (GetClassDesc() == obj->GetClassDesc());
-}
-
-//////////////////////////////////////////////////////////////////////////
 bool CEntityObject::ConvertFromObject(CBaseObject* object)
 {
     CBaseObject::ConvertFromObject(object);
