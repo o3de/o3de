@@ -20,3 +20,4 @@ The main goal of this list, is to enable future developers to find old code that
 | 2021-11-26 |  | CBaseObject - GetWarningsText/HideOrder, unused scaling functions,IsChildOf and GetLinkParent|
 | 2021-11-26 |  | CBaseObject - SubObj selection, IsParentAttachmentValid, IMouseCreateCallback,GetWorldAngles|
 | 2021-11-26 |  | CBaseObject - procedural floor management, EditTags, HelperScale|
+| 2021-11-26 |  | CBaseObject - PropertyChanged,SetNameInternal,OnMenuShowInAssetBrowser|
