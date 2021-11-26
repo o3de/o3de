@@ -402,9 +402,6 @@ public:
     // Interface to be implemented in plugins.
     //////////////////////////////////////////////////////////////////////////
 
-    //! Called when object is being created (use GetMouseCreateCallback for more advanced mouse creation callback).
-    virtual int MouseCreateCallback(CViewport* view, EMouseEvent event, QPoint& point, int flags);
-
     //! Draw object to specified viewport.
     virtual void Display([[maybe_unused]] DisplayContext& disp) {}
 
@@ -415,10 +412,6 @@ public:
     //! Perform intersection testing of this object with rectangle.
     //! Return true if was hit.
     virtual bool HitTestRect(HitContext& hc);
-
-    //! Perform intersection testing of this object based on its icon helper.
-    //! Return true if was hit.
-    virtual bool HitHelperTest(HitContext& hc);
 
     //! Get bounding box of object in world coordinate space.
     virtual void GetBoundBox(AABB& box);
@@ -492,7 +485,7 @@ public:
     //! In This function variables of the object must be initialized.
     virtual void InitVariables() {};
 
-        //! Draw a reddish highlight indicating its budget usage.
+    //! Draw a reddish highlight indicating its budget usage.
     virtual void DrawBudgetUsage(DisplayContext& dc, const QColor& color);
 
     bool IntersectRayMesh(const Vec3& raySrc, const Vec3& rayDir, SRayHitInfo& outHitInfo) const;
@@ -522,7 +515,7 @@ protected:
     virtual bool CreateGameObject() { return true; };
 
     /** Called when object is about to be deleted.
-            All Game resources should be freed in this function.
+        All Game resources should be freed in this function.
     */
     virtual void Done();
 
@@ -575,9 +568,6 @@ protected:
     // Do hit testing on specified bounding box.
     // Function can be used by derived classes.
     bool HitTestRectBounds(HitContext& hc, const AABB& box);
-
-    // Do helper hit testing as specific location.
-    bool HitHelperAtTest(HitContext& hc, const Vec3& pos);
 
     // Do helper hit testing taking child objects into account (e.g. opened prefab)
     virtual bool HitHelperTestForChildObjects([[maybe_unused]] HitContext& hc) { return false; }

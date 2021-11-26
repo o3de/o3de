@@ -799,7 +799,7 @@ namespace UnitTest
     TEST_F(Arrays, FixedVectorCXX20Erase_Succeeds)
     {
         // Erase 'l' from the phrase "Hello" World"
-        auto eraseTest = [](AZStd::initializer_list<char> testInit) constexpr
+        auto eraseTest = [](AZStd::initializer_list<char> testInit) 
         {
             AZStd::fixed_vector<char, 16> testResult{ testInit };
             AZStd::erase(testResult, 'l');
@@ -811,7 +811,7 @@ namespace UnitTest
         EXPECT_EQ(expectedEraseString, testEraseString);
 
         // Use erase_if to erase both 'H' and 'e' from the remaining eraseTest string
-        auto eraseIfTest = [](const AZStd::fixed_vector<char, 16>& testVector) constexpr
+        auto eraseIfTest = [](const AZStd::fixed_vector<char, 16>& testVector)
         {
             AZStd::fixed_vector<char, 16> testResult{ testVector };
             auto erasePredicate = [](char ch)

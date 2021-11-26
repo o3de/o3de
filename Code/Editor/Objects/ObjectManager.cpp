@@ -587,7 +587,7 @@ void CObjectManager::ChangeObjectId(REFGUID oldGuid, REFGUID newGuid)
         CBaseObjectPtr pRemappedObject = (*it).second;
         pRemappedObject->SetId(newGuid);
         m_objects.erase(it);
-        m_objects.insert(std::make_pair(newGuid, pRemappedObject));
+        m_objects.insert(AZStd::make_pair(newGuid, pRemappedObject));
     }
 }
 

@@ -350,16 +350,6 @@ void CComponentEntityObject::OnEntityLockChanged(bool locked)
     CEntityObject::SetFrozen(locked);
 }
 
-void CComponentEntityObject::SetHidden(
-    bool bHidden, [[maybe_unused]] uint64 hiddenId /*=CBaseObject::s_invalidHiddenID*/, [[maybe_unused]] bool bAnimated /*=false*/)
-{
-    if (m_visibilityFlagReentryGuard)
-    {
-        EditorActionScope flagChange(m_visibilityFlagReentryGuard);
-        AzToolsFramework::SetEntityVisibility(m_entityId, !bHidden);
-    }
-}
-
 void CComponentEntityObject::OnEntityVisibilityChanged(bool visible)
 {
     CEntityObject::SetHidden(!visible);
@@ -602,66 +592,6 @@ void CComponentEntityObject::OnTransformChanged([[maybe_unused]] const AZ::Trans
         Matrix34 worlTM = AZTransformToLYTransform(world);
         SetLocalTM(worlTM, eObjectUpdateFlags_Animated);
     }
-}
-
-int CComponentEntityObject::MouseCreateCallback(CViewport* view, EMouseEvent event, QPoint& point, int flags)
-{
-    if (event == eMouseMove || event == eMouseLDown)
-    {
-        Vec3 pos;
-        if (GetIEditor()->GetAxisConstrains() != AXIS_TERRAIN)
-        {
-            pos = view->MapViewToCP(point);
-        }
-        else
-        {
-            // Snap to terrain.
-            bool hitTerrain;
-            pos = view->ViewToWorld(point, &hitTerrain);
-            if (hitTerrain)
-            {
-                pos.z = GetIEditor()->GetTerrainElevation(pos.x, pos.y);
-            }
-            pos = view->SnapToGrid(pos);
-        }
-
-        pos = view->SnapToGrid(pos);
-        SetPos(pos);
-
-        if (event == eMouseLDown)
-        {
-            return MOUSECREATE_OK;
-        }
-
-        return MOUSECREATE_CONTINUE;
-    }
-
-    return CBaseObject::MouseCreateCallback(view, event, point, flags);
-}
-
-bool CComponentEntityObject::HitHelperTest(HitContext& hc)
-{
-    bool hit = CEntityObject::HitHelperTest(hc);
-    if (!hit && m_entityId.IsValid())
-    {
-        // Pick against icon in screen space.
-        if (IsEntityIconVisible())
-        {
-            const QPoint entityScreenPos = hc.view->WorldToView(GetWorldPos());
-            const float screenPosX = static_cast<float>(entityScreenPos.x());
-            const float screenPosY = static_cast<float>(entityScreenPos.y());
-            const float iconRange = static_cast<float>(s_kIconSize / 2);
-
-            if ((hc.point2d.x() >= screenPosX - iconRange && hc.point2d.x() <= screenPosX + iconRange)
-                && (hc.point2d.y() >= screenPosY - iconRange && hc.point2d.y() <= screenPosY + iconRange))
-            {
-                hc.dist = hc.raySrc.GetDistance(GetWorldPos());
-                hc.iconHit = true;
-                return true;
-            }
-        }
-    }
-    return hit;
 }
 
 bool CComponentEntityObject::HitTest(HitContext& hc)

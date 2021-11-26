@@ -397,11 +397,6 @@ void CEditorImpl::Update()
     // Make sure this is not called recursively
     m_bUpdates = false;
 
-    //@FIXME: Restore this latter.
-    //if (GetGameEngine() && GetGameEngine()->IsLevelLoaded())
-    {
-        m_pObjectManager->Update();
-    }
     if (IsInPreviewMode())
     {
         SetModifiedFlag(false);

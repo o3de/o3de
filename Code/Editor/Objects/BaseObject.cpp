@@ -1138,47 +1138,6 @@ bool CBaseObject::CanBeDrawn(const DisplayContext& dc, bool& outDisplaySelection
 }
 
 //////////////////////////////////////////////////////////////////////////
-int CBaseObject::MouseCreateCallback(CViewport* view, EMouseEvent event, QPoint& point, int flags)
-{
-    AZ_PROFILE_FUNCTION(Editor);
-
-    if (event == eMouseMove || event == eMouseLDown)
-    {
-        Vec3 pos;
-        if (GetIEditor()->GetAxisConstrains() != AXIS_TERRAIN)
-        {
-            pos = view->MapViewToCP(point);
-        }
-        else
-        {
-            // Snap to terrain.
-            bool hitTerrain;
-            pos = view->ViewToWorld(point, &hitTerrain);
-            if (hitTerrain)
-            {
-                pos.z = GetIEditor()->GetTerrainElevation(pos.x, pos.y) + 1.0f;
-            }
-            pos = view->SnapToGrid(pos);
-        }
-        SetPos(pos);
-
-        if (event == eMouseLDown)
-        {
-            return MOUSECREATE_OK;
-        }
-    }
-
-    if (event == eMouseWheel)
-    {
-        float angle = 1;
-        Quat rot = GetRotation();
-        rot.SetRotationXYZ(Ang3(0.f, 0.f, rot.GetRotZ() + DEG2RAD(flags > 0 ? angle * (-1) : angle)));
-        SetRotation(rot);
-    }
-    return MOUSECREATE_CONTINUE;
-}
-
-//////////////////////////////////////////////////////////////////////////
 void CBaseObject::OnEvent(ObjectEvent event)
 {
     switch (event)
@@ -1811,85 +1770,6 @@ bool CBaseObject::HitTestRect(HitContext& hc)
 }
 
 //////////////////////////////////////////////////////////////////////////
-bool CBaseObject::HitHelperTest(HitContext& hc)
-{
-    return HitHelperAtTest(hc, GetWorldPos());
-}
-
-//////////////////////////////////////////////////////////////////////////
-bool CBaseObject::HitHelperAtTest(HitContext& hc, const Vec3& pos)
-{
-    AZ_PROFILE_FUNCTION(Editor);
-
-    bool bResult = false;
-
-    if (m_nTextureIcon && (gSettings.viewports.bShowIcons || gSettings.viewports.bShowSizeBasedIcons) && !hc.bUseSelectionHelpers)
-    {
-        int iconSizeX = OBJECT_TEXTURE_ICON_SIZEX;
-        int iconSizeY = OBJECT_TEXTURE_ICON_SIZEY;
-
-        if (gSettings.viewports.bDistanceScaleIcons)
-        {
-            float fScreenScale = hc.view->GetScreenScaleFactor(pos);
-
-            iconSizeX = static_cast<int>(static_cast<float>(iconSizeX) * OBJECT_TEXTURE_ICON_SCALE / fScreenScale);
-            iconSizeY = static_cast<int>(static_cast<float>(iconSizeY) * OBJECT_TEXTURE_ICON_SCALE / fScreenScale);
-        }
-
-        // Hit Test icon of this object.
-        Vec3 testPos = pos;
-        int y0 = -(iconSizeY / 2);
-        int y1 = +(iconSizeY / 2);
-        if (CheckFlags(OBJFLAG_SHOW_ICONONTOP))
-        {
-            Vec3 objectPos = GetWorldPos();
-
-            AABB box;
-            GetBoundBox(box);
-            testPos.z = (pos.z - objectPos.z) + box.max.z;
-            y0 = -(iconSizeY);
-            y1 = 0;
-        }
-        QPoint pnt = hc.view->WorldToView(testPos);
-
-        if (hc.point2d.x() >= pnt.x() - (iconSizeX / 2) && hc.point2d.x() <= pnt.x() + (iconSizeX / 2) &&
-            hc.point2d.y() >= pnt.y() + y0 && hc.point2d.y() <= pnt.y() + y1)
-        {
-            hc.dist = hc.raySrc.GetDistance(testPos) - 0.2f;
-            hc.iconHit = true;
-            bResult = true;
-        }
-    }
-    else if (hc.bUseSelectionHelpers)
-    {
-        // Check potentially children first
-        bResult = HitHelperTestForChildObjects(hc);
-
-        // If no hit check this object
-        if (!bResult)
-        {
-            // Hit test helper.
-            Vec3 w = pos - hc.raySrc;
-            w = hc.rayDir.Cross(w);
-            float d = w.GetLengthSquared();
-
-            static const float screenScaleToRadiusFactor = 0.008f;
-            const float radius = hc.view->GetScreenScaleFactor(pos) * screenScaleToRadiusFactor;
-            const float pickDistance = hc.raySrc.GetDistance(pos);
-            if (d < radius * radius + hc.distanceTolerance && hc.dist >= pickDistance)
-            {
-                hc.dist = pickDistance;
-                hc.object = this;
-                bResult = true;
-            }
-        }
-    }
-
-
-    return bResult;
-}
-
-//////////////////////////////////////////////////////////////////////////
 CBaseObject* CBaseObject::GetChild(size_t const i) const
 {
     assert(i < m_childs.size());
@@ -2434,19 +2314,6 @@ void CBaseObject::SetMinSpec(uint32 nSpec, bool bSetChildren)
             m_childs[i]->SetMinSpec(nSpec, true);
         }
     }
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CBaseObject::OnMenuShowInAssetBrowser()
-{
-    if (!IsSelected())
-    {
-        CUndo undo("Select Object");
-        GetIEditor()->GetObjectManager()->ClearSelection();
-        GetIEditor()->SelectObject(this);
-    }
-
-    GetIEditor()->ExecuteCommand("asset_browser.show_viewport_selection");
 }
 
 //////////////////////////////////////////////////////////////////////////

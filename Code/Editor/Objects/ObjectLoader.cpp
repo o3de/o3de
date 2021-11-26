@@ -68,31 +68,6 @@ void CObjectArchive::SetResolveCallback(CBaseObject* fromObject, REFGUID objectI
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CObjectArchive::SetResolveCallback(CBaseObject* fromObject, REFGUID objectId, ResolveObjRefFunctor2 func, uint32 userData)
-{
-    if (objectId == GUID_NULL)
-    {
-        func(0, userData);
-        return;
-    }
-
-    CBaseObject* object = m_objectManager->FindObject(objectId);
-    if (object && !(m_nFlags & eObjectLoader_MakeNewIDs))
-    {
-        // Object is already resolved. immidiatly call callback.
-        func(object, userData);
-    }
-    else
-    {
-        Callback cb;
-        cb.fromObject = fromObject;
-        cb.func2 = func;
-        cb.userData = userData;
-        m_resolveCallbacks.insert(Callbacks::value_type(objectId, cb));
-    }
-}
-
-//////////////////////////////////////////////////////////////////////////
 GUID CObjectArchive::ResolveID(REFGUID id)
 {
     return stl::find_in_map(m_IdRemap, id, id);
@@ -190,10 +165,6 @@ void CObjectArchive::ResolveObjects()
         if (cb.func1)
         {
             (cb.func1)(object);
-        }
-        if (cb.func2)
-        {
-            (cb.func2)(object, cb.userData);
         }
     }
     m_resolveCallbacks.clear();

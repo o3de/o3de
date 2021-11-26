@@ -57,15 +57,12 @@ public:
     void InvalidateTM(int nWhyFlags) override;
     void Display(DisplayContext& disp) override;
     void OnContextMenu(QMenu* pMenu) override;
-    int MouseCreateCallback(CViewport* view, EMouseEvent event, QPoint& point, int flags) override;
-    bool HitHelperTest(HitContext& hc) override;
     bool HitTest(HitContext& hc) override;
     void GetLocalBounds(AABB& box) override;
     void GetBoundBox(AABB& box) override;
     void SetName(const QString& name) override;
     bool IsFrozen() const override;
     void SetFrozen(bool bFrozen) override;
-    void SetHidden(bool bHidden, uint64 hiddenId = CBaseObject::s_invalidHiddenID, bool bAnimated = false) override;
     void SetSelected(bool bSelect) override;
     void SetHighlight(bool bHighlight) override;
     IRenderNode* GetEngineNode() const override;

@@ -499,7 +499,6 @@ set(FILES
     Objects/ClassDesc.cpp
     Objects/ClassDesc.h
     Objects/DisplayContextShared.inl
-    Objects/IEntityObjectListener.h
     Objects/SelectionGroup.cpp
     Objects/SelectionGroup.h
     Objects/SubObjSelection.cpp

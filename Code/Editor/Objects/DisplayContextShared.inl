@@ -227,7 +227,9 @@ void DisplayContext::DrawWireBox(const Vec3& min, const Vec3& max)
 
 void DisplayContext::DrawWireBox(const AZ::Vector3& min, const AZ::Vector3& max)
 {
-    pRenderAuxGeom->DrawAABB(AABB(min, max), m_matrixStack[m_currentMatrix], false, m_color4b, eBBD_Faceted);
+    pRenderAuxGeom->DrawAABB(
+        AABB(Vec3(min.GetX(), min.GetY(), min.GetZ()), Vec3(max.GetX(), max.GetY(), max.GetZ())),
+        m_matrixStack[m_currentMatrix], false, m_color4b, eBBD_Faceted);
 }
 //////////////////////////////////////////////////////////////////////////
 void DisplayContext::DrawSolidBox(const Vec3& min, const Vec3& max)

@@ -9,8 +9,6 @@
 
 #pragma once
 
-#include <AzFramework/Archive/ArchiveVars_Platform.h>
-
 namespace AZ::IO
 {
     enum class FileSearchPriority

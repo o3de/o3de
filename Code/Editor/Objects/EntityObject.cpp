@@ -161,7 +161,6 @@ namespace
 
 //////////////////////////////////////////////////////////////////////////
 CEntityObject::CEntityObject()
-    : m_listeners(1)
 {
     m_bLoadFailed = false;
 
@@ -245,7 +244,6 @@ CEntityObject::CEntityObject()
     m_onSetCallbacksCache.emplace_back([this](IVariable* var) { OnProjectInAllDirsChange(var); });
     m_onSetCallbacksCache.emplace_back([this](IVariable* var) { OnProjectorFOVChange(var); });
     m_onSetCallbacksCache.emplace_back([this](IVariable* var) { OnProjectorTextureChange(var); });
-    m_onSetCallbacksCache.emplace_back([this](IVariable* var) { OnPropertyChange(var); });
     m_onSetCallbacksCache.emplace_back([this](IVariable* var) { OnRadiusChange(var); });
 }
 
@@ -292,11 +290,6 @@ void CEntityObject::Done()
 
     ReleaseEventTargets();
     RemoveAllEntityLinks();
-
-    for (CListenerSet<IEntityObjectListener*>::Notifier notifier(m_listeners); notifier.IsValid(); notifier.Next())
-    {
-        notifier->OnDone();
-    }
 
     CBaseObject::Done();
 }
@@ -451,18 +444,6 @@ bool CEntityObject::HitTest(HitContext& hc)
 }
 
 //////////////////////////////////////////////////////////////////////////
-bool CEntityObject::HitHelperTest(HitContext& hc)
-{
-    bool bResult = CBaseObject::HitHelperTest(hc);
-    if (bResult)
-    {
-        hc.object = this;
-    }
-
-    return bResult;
-}
-
-//////////////////////////////////////////////////////////////////////////
 bool CEntityObject::HitTestRect(HitContext& hc)
 {
     bool bResult = false;
@@ -484,42 +465,6 @@ bool CEntityObject::HitTestRect(HitContext& hc)
     }
 
     return bResult;
-}
-
-//////////////////////////////////////////////////////////////////////////
-int CEntityObject::MouseCreateCallback(CViewport* view, EMouseEvent event, QPoint& point, int flags)
-{
-    AZ_PROFILE_FUNCTION(Entity);
-
-    if (event == eMouseMove || event == eMouseLDown)
-    {
-        Vec3 pos;
-        // Rise Entity above ground on Bounding box amount.
-        if (GetIEditor()->GetAxisConstrains() != AXIS_TERRAIN)
-        {
-            pos = view->MapViewToCP(point);
-        }
-        else
-        {
-            // Snap to terrain.
-            bool hitTerrain;
-            pos = view->ViewToWorld(point, &hitTerrain);
-            if (hitTerrain)
-            {
-                pos.z = GetIEditor()->GetTerrainElevation(pos.x, pos.y);
-                pos.z = pos.z - m_box.min.z;
-            }
-            pos = view->SnapToGrid(pos);
-        }
-        SetPos(pos);
-
-        if (event == eMouseLDown)
-        {
-            return MOUSECREATE_OK;
-        }
-        return MOUSECREATE_CONTINUE;
-    }
-    return CBaseObject::MouseCreateCallback(view, event, point, flags);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -672,11 +617,6 @@ void CEntityObject::SetName(const QString& name)
 
     CBaseObject::SetName(name);
 
-    CListenerSet<IEntityObjectListener*> listeners = m_listeners;
-    for (CListenerSet<IEntityObjectListener*>::Notifier notifier(listeners); notifier.IsValid(); notifier.Next())
-    {
-        notifier->OnNameChanged(name.toUtf8().data());
-    }
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -689,19 +629,6 @@ void CEntityObject::SetSelected(bool bSelect)
         UpdateLightProperty();
     }
 
-    for (CListenerSet<IEntityObjectListener*>::Notifier notifier(m_listeners); notifier.IsValid(); notifier.Next())
-    {
-        notifier->OnSelectionChanged(bSelect);
-    }
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CEntityObject::OnPropertyChange([[maybe_unused]] IVariable* var)
-{
-    if (s_ignorePropertiesUpdate)
-    {
-        return;
-    }
 }
 
 template <typename T>
@@ -933,11 +860,9 @@ void CEntityObject::Serialize(CObjectArchive& ar)
                 m_eventTargets.emplace_back(AZStd::move(et));
                 if (targetId != GUID_NULL)
                 {
-                    using namespace AZStd::placeholders;
                     ar.SetResolveCallback(
                         this, targetId,
-                        [this](CBaseObject* object, unsigned int index) { ResolveEventTarget(object, index); },
-                        i);
+                        [this,i](CBaseObject* object) { ResolveEventTarget(object, i); });
                 }
             }
         }
@@ -1242,11 +1167,6 @@ void CEntityObject::OnEvent(ObjectEvent event)
 
     case EVENT_CONFIG_SPEC_CHANGE:
     {
-        IObjectManager* objMan = GetIEditor()->GetObjectManager();
-        if (objMan && objMan->IsLightClass(this))
-        {
-            OnPropertyChange(nullptr);
-        }
         break;
     }
     default:
@@ -2093,16 +2013,6 @@ void CEntityObject::StoreUndoEntityLink(CSelectionGroup* pGroup)
     {
         CUndo::Record(new CUndoEntityLink(pGroup));
     }
-}
-
-void CEntityObject::RegisterListener(IEntityObjectListener* pListener)
-{
-    m_listeners.Add(pListener);
-}
-
-void CEntityObject::UnregisterListener(IEntityObjectListener* pListener)
-{
-    m_listeners.Remove(pListener);
 }
 
 template <typename T>

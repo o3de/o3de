@@ -16,9 +16,7 @@
 #include "BaseObject.h"
 
 #include "IMovieSystem.h"
-#include "IEntityObjectListener.h"
 #include "Gizmo.h"
-#include "CryListenerSet.h"
 #include "StatObjBus.h"
 
 #include <QObject>
@@ -97,7 +95,6 @@ public:
     void SetEntityPropertyFloat(const char* name, float value);
     void SetEntityPropertyString(const char* name, const QString& value);
 
-    int MouseCreateCallback(CViewport* view, EMouseEvent event, QPoint& point, int flags) override;
     void OnContextMenu(QMenu* menu) override;
 
     void SetName(const QString& name) override;
@@ -106,7 +103,6 @@ public:
     void GetLocalBounds(AABB& box) override;
 
     bool HitTest(HitContext& hc) override;
-    bool HitHelperTest(HitContext& hc) override;
     bool HitTestRect(HitContext& hc) override;
     void UpdateVisibility(bool bVisible) override;
     bool ConvertFromObject(CBaseObject* object) override;
@@ -210,9 +206,6 @@ public:
 
     static void StoreUndoEntityLink(CSelectionGroup* pGroup);
 
-    void RegisterListener(IEntityObjectListener* pListener);
-    void UnregisterListener(IEntityObjectListener* pListener);
-
 protected:
     template <typename T>
     void SetEntityProperty(const char* name, T value);
@@ -226,10 +219,6 @@ protected:
     void OnLoadFailed();
 
     CVarBlock* CloneProperties(CVarBlock* srcProperties);
-
-    //////////////////////////////////////////////////////////////////////////
-    //! Callback called when one of entity properties have been modified.
-    void OnPropertyChange(IVariable* var);
 
     //////////////////////////////////////////////////////////////////////////
     void OnObjectEvent(CBaseObject* target, int event) override;
@@ -416,7 +405,6 @@ private:
     void ForceVariableUpdate();
 
     AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
-    CListenerSet<IEntityObjectListener*> m_listeners;
     std::vector< std::pair<IVariable*, IVariable::OnSetCallback*> > m_callbacks;
     AZStd::fixed_vector< IVariable::OnSetCallback, VariableCallbackIndex::Count > m_onSetCallbacksCache;
     AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
