@@ -2160,12 +2160,6 @@ Matrix34 CBaseObject::GetParentAttachPointWorldTM() const
 }
 
 //////////////////////////////////////////////////////////////////////////
-bool CBaseObject::IsParentAttachmentValid() const
-{
-    return true;
-}
-
-//////////////////////////////////////////////////////////////////////////
 void CBaseObject::InvalidateTM([[maybe_unused]] int flags)
 {
     bool bMatrixWasValid = m_bMatrixValid;
@@ -2438,25 +2432,6 @@ void CBaseObject::Validate(IErrorReport* report)
         report->ReportError(err);
     }
     //////////////////////////////////////////////////////////////////////////
-};
-
-//////////////////////////////////////////////////////////////////////////
-Ang3 CBaseObject::GetWorldAngles() const
-{
-    if (m_scale == Vec3(1, 1, 1))
-    {
-        Quat q = Quat(GetWorldTM());
-        Ang3 angles = RAD2DEG(Ang3::GetAnglesXYZ(Matrix33(q)));
-        return angles;
-    }
-    else
-    {
-        Matrix34 tm = GetWorldTM();
-        tm.OrthonormalizeFast();
-        Quat q = Quat(tm);
-        Ang3 angles = RAD2DEG(Ang3::GetAnglesXYZ(Matrix33(q)));
-        return angles;
-    }
 };
 
 //////////////////////////////////////////////////////////////////////////
