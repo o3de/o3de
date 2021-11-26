@@ -11,5 +11,6 @@ The main goal of this list, is to enable future developers to find old code that
 | 2021-11-25 |  | ObjectManager - remove unused object hiding and freezing functionality|
 | 2021-11-25 |  | ObjectManager - remove unused object renaming and duplicate name detection|
 | 2021-11-25 |  | ObjectManager - remove unused selection callbacks and serialization|
+| 2021-11-26 |  | ObjectManager - remove unused selection support, MoveObjects/HitTestObject/EndEditParams|
 
 

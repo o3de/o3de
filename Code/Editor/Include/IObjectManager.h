@@ -67,8 +67,6 @@ public:
     virtual void DeleteAllObjects() = 0;
     virtual CBaseObject* CloneObject(CBaseObject* obj) = 0;
 
-    virtual void EndEditParams(int flags = 0) = 0;
-
     //! Get number of objects manager by ObjectManager (not contain sub objects of groups).
     virtual int GetObjectCount() const = 0;
 
@@ -82,16 +80,6 @@ public:
 
     //! Display objects on specified display context.
     virtual void Display(DisplayContext& dc) = 0;
-
-    //! Check intersection with objects.
-    //! Find intersection with nearest to ray origin object hit by ray.
-    //! If distance tollerance is specified certain relaxation applied on collision test.
-    //! @return true if hit any object, and fills hitInfo structure.
-    virtual bool HitTest(HitContext& hitInfo) = 0;
-
-    //! Check intersection with an object.
-    //! @return true if hit, and fills hitInfo structure.
-    virtual bool HitTestObject(CBaseObject* obj, HitContext& hc) = 0;
 
     //! Gets a radius to be used for hit tests on the axis helpers, like the transform gizmo.
     //! @return the axis helper hit radius.
@@ -130,12 +118,6 @@ public:
     virtual int SelectObjects(const AABB& box, bool bUnselect = false) = 0;
 
     virtual void SelectEntities(std::set<CEntityObject*>& s) = 0;
-
-    virtual int MoveObjects(const AABB& box, const Vec3& offset, ImageRotationDegrees rotation, bool bIsCopy = false) = 0;
-
-    //! Selects/Unselects all objects within 2d rectangle in given viewport.
-    virtual void SelectObjectsInRect(CViewport* view, const QRect& rect, bool bSelect) = 0;
-    virtual void FindObjectsInRect(CViewport* view, const QRect& rect, std::vector<GUID>& guids) = 0;
 
     //! Clear default selection set.
     //! @Return number of objects removed from selection.
