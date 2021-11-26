@@ -38,12 +38,10 @@ public:
     CObjectManagerLevelIsExporting()
     {
         AZ::ObjectManagerEventBus::Broadcast(&AZ::ObjectManagerEventBus::Events::OnExportingStarting);
-        GetIEditor()->GetObjectManager()->SetExportingLevel(true);
     }
 
     ~CObjectManagerLevelIsExporting()
     {
-        GetIEditor()->GetObjectManager()->SetExportingLevel(false);
         AZ::ObjectManagerEventBus::Broadcast(&AZ::ObjectManagerEventBus::Events::OnExportingFinished);
     }
 };
@@ -152,9 +150,6 @@ public:
 
     //! Find object class by name.
     CObjectClassDesc* FindClass(const QString& className) override;
-    void    GetClassCategories(QStringList& categories) override;
-    void    GetClassCategoryToolClassNamePairs(std::vector< std::pair<QString, QString> >& categoryToolClassNamePairs) override;
-    void    GetClassTypes(const QString& category, QStringList& types) override;
 
     //! Delete from Object manager all objects without SHARED flag.
     void    DeleteNotSharedObjects();
@@ -169,11 +164,6 @@ public:
     //! Original object is deleted.
     bool ConvertToType(CBaseObject* pObject, const QString& typeName) override;
 
-    // Enables/Disables creating of game objects.
-    void SetCreateGameObject(bool enable) override { m_createGameObjects = enable; };
-    //! Return true if objects loaded from xml should immidiatly create game objects associated with them.
-    bool IsCreateGameObjects() const override { return m_createGameObjects; };
-
     //////////////////////////////////////////////////////////////////////////
     //! Get access to gizmo manager.
     IGizmoManager* GetGizmoManager() override;
@@ -183,25 +173,12 @@ public:
     void InvalidateVisibleList() override;
 
     //////////////////////////////////////////////////////////////////////////
-    // Used to indicate starting and ending of objects loading.
-    //////////////////////////////////////////////////////////////////////////
-    void StartObjectsLoading(int numObjects) override;
-    void EndObjectsLoading() override;
-
-    //////////////////////////////////////////////////////////////////////////
     // Gathers all resources used by all objects.
     void GatherUsedResources(CUsedResources& resources) override;
 
     bool IsLightClass(CBaseObject* pObject) override;
 
-    virtual void FindAndRenameProperty2(const char* property2Name, const QString& oldValue, const QString& newValue) override;
-    virtual void FindAndRenameProperty2If(const char* property2Name, const QString& oldValue, const QString& newValue, const char* otherProperty2Name, const QString& otherValue) override;
-
-    bool IsReloading() const override { return m_bInReloading; }
     void SetSkipUpdate(bool bSkipUpdate) override { m_bSkipObjectUpdate = bSkipUpdate; }
-
-    void SetExportingLevel(bool bExporting) override { m_bLevelExporting = bExporting; }
-    bool IsExportingLevelInprogress() const override { return m_bLevelExporting; }
 
     int GetAxisHelperHitRadius() const override { return m_axisHelperHitRadius; }
 
@@ -265,16 +242,9 @@ private:
     //! Default selection.
     CSelectionGroup m_defaultSelection;
 
-    bool m_createGameObjects;
-
     // Object manager also handles Gizmo manager.
     CGizmoManager* m_gizmoManager;
 
-    //////////////////////////////////////////////////////////////////////////
-    // Loading progress.
-    CWaitProgress* m_pLoadProgress;
-    int m_loadedObjects;
-    int m_totalObjectsToLoad;
     //////////////////////////////////////////////////////////////////////////
 
     //////////////////////////////////////////////////////////////////////////
@@ -291,9 +261,7 @@ private:
 
     uint64 m_currentHideCount;
 
-    bool m_bInReloading;
     bool m_bSkipObjectUpdate;
-    bool m_bLevelExporting;
 
     int m_axisHelperHitRadius = 20;
 };

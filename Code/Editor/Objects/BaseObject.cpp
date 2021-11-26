@@ -1628,12 +1628,6 @@ void CBaseObject::StoreUndo(const char* UndoDescription, bool minimal, int flags
 }
 
 //////////////////////////////////////////////////////////////////////////
-bool CBaseObject::IsCreateGameObjects() const
-{
-    return GetObjectManager()->IsCreateGameObjects();
-}
-
-//////////////////////////////////////////////////////////////////////////
 QString CBaseObject::GetTypeName() const
 {
     if (m_objType == OBJTYPE_DUMMY)

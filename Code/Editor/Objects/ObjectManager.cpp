@@ -85,17 +85,11 @@ CObjectManager::CObjectManager()
     , m_currSelection(&m_defaultSelection)
     , m_nLastSelCount(0)
     , m_bSelectionChanged(false)
-    , m_createGameObjects(true)
     , m_gizmoManager(new CGizmoManager())
-    , m_pLoadProgress(nullptr)
-    , m_loadedObjects(0)
-    , m_totalObjectsToLoad(0)
     , m_bExiting(false)
     , m_isUpdateVisibilityList(false)
     , m_currentHideCount(CBaseObject::s_invalidHiddenID)
-    , m_bInReloading(false)
     , m_bSkipObjectUpdate(false)
-    , m_bLevelExporting(false)
 {
     g_pObjectManager = this;
 
@@ -300,12 +294,6 @@ CBaseObject* CObjectManager::NewObject(CObjectArchive& ar, CBaseObject* pUndoObj
         {
             GetIEditor()->RecordUndo(new CUndoBaseObjectNew(pObject));
         }
-    }
-
-    m_loadedObjects++;
-    if (m_pLoadProgress && m_totalObjectsToLoad > 0)
-    {
-        m_pLoadProgress->Step((m_loadedObjects * 100) / m_totalObjectsToLoad);
     }
 
     return pObject;
@@ -659,11 +647,6 @@ void CObjectManager::GetObjects(CBaseObjectsArray& objects, BaseObjectFilterFunc
 //////////////////////////////////////////////////////////////////////////
 void CObjectManager::SendEvent(ObjectEvent event)
 {
-    if (event == EVENT_RELOAD_ENTITY)
-    {
-        m_bInReloading = true;
-    }
-
     for (Objects::iterator it = m_objects.begin(); it != m_objects.end(); ++it)
     {
         CBaseObject* obj = it->second;
@@ -672,7 +655,6 @@ void CObjectManager::SendEvent(ObjectEvent event)
 
     if (event == EVENT_RELOAD_ENTITY)
     {
-        m_bInReloading = false;
         GetIEditor()->Notify(eNotify_OnReloadTrackView);
     }
 }
@@ -1090,64 +1072,6 @@ CObjectClassDesc* CObjectManager::FindClass(const QString& className)
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CObjectManager::GetClassCategories(QStringList& categories)
-{
-    std::vector<IClassDesc*> classes;
-    CClassFactory::Instance()->GetClassesBySystemID(ESYSTEM_CLASS_OBJECT, classes);
-    std::set<QString> cset;
-    for (int i = 0; i < classes.size(); i++)
-    {
-        QString category = classes[i]->Category();
-        if (!category.isEmpty())
-        {
-            cset.insert(category);
-        }
-    }
-    categories.clear();
-    categories.reserve(static_cast<int>(cset.size()));
-    for (std::set<QString>::iterator cit = cset.begin(); cit != cset.end(); ++cit)
-    {
-        categories.push_back(*cit);
-    }
-}
-
-void CObjectManager::GetClassCategoryToolClassNamePairs(std::vector< std::pair<QString, QString> >& categoryToolClassNamePairs)
-{
-    std::vector<IClassDesc*> classes;
-    CClassFactory::Instance()->GetClassesBySystemID(ESYSTEM_CLASS_OBJECT, classes);
-    std::set< std::pair<QString, QString> > cset;
-    for (int i = 0; i < classes.size(); i++)
-    {
-        QString category = classes[i]->Category();
-        QString toolClassName = ((CObjectClassDesc*)classes[i])->GetToolClassName();
-        if (!category.isEmpty())
-        {
-            cset.insert(std::pair<QString, QString>(category, toolClassName));
-        }
-    }
-    categoryToolClassNamePairs.clear();
-    categoryToolClassNamePairs.reserve(cset.size());
-    for (std::set< std::pair<QString, QString> >::iterator cit = cset.begin(); cit != cset.end(); ++cit)
-    {
-        categoryToolClassNamePairs.push_back(*cit);
-    }
-}
-
-void CObjectManager::GetClassTypes(const QString& category, QStringList& types)
-{
-    std::vector<IClassDesc*> classes;
-    CClassFactory::Instance()->GetClassesBySystemID(ESYSTEM_CLASS_OBJECT, classes);
-    for (int i = 0; i < classes.size(); i++)
-    {
-        QString cat = classes[i]->Category();
-        if (QString::compare(cat, category, Qt::CaseInsensitive) == 0 && classes[i]->IsEnabled())
-        {
-            types.push_back(classes[i]->ClassName());
-        }
-    }
-}
-
-//////////////////////////////////////////////////////////////////////////
 void CObjectManager::RegisterClassTemplate(const XmlNodeRef& templ)
 {
     QString typeName = templ->getTag();
@@ -1332,28 +1256,6 @@ void CObjectManager::SetObjectSelected(CBaseObject* pObject, bool bSelect)
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CObjectManager::StartObjectsLoading(int numObjects)
-{
-    if (m_pLoadProgress)
-    {
-        return;
-    }
-    m_pLoadProgress = new CWaitProgress("Loading Objects");
-    m_totalObjectsToLoad = numObjects;
-    m_loadedObjects = 0;
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CObjectManager::EndObjectsLoading()
-{
-    if (m_pLoadProgress)
-    {
-        delete m_pLoadProgress;
-    }
-    m_pLoadProgress = nullptr;
-}
-
-//////////////////////////////////////////////////////////////////////////
 void CObjectManager::GatherUsedResources(CUsedResources& resources)
 {
     CBaseObjectsArray objects;
@@ -1396,73 +1298,6 @@ bool CObjectManager::IsLightClass(CBaseObject* pObject)
     }
 
     return false;
-}
-
-void CObjectManager::FindAndRenameProperty2(const char* property2Name, const QString& oldValue, const QString& newValue)
-{
-    CBaseObjectsArray objects;
-    GetObjects(objects);
-
-    for (size_t i = 0, n = objects.size(); i < n; ++i)
-    {
-        CBaseObject* pObject = objects[i];
-        if (qobject_cast<CEntityObject*>(pObject))
-        {
-            CEntityObject* pEntity = static_cast<CEntityObject*>(pObject);
-            CVarBlock* pProperties2 = pEntity->GetProperties2();
-            if (pProperties2)
-            {
-                IVariable* pVariable = pProperties2->FindVariable(property2Name);
-                if (pVariable)
-                {
-                    QString sValue;
-                    pVariable->Get(sValue);
-                    if (sValue == oldValue)
-                    {
-                        pEntity->StoreUndo("Rename Property2");
-
-                        pVariable->Set(newValue);
-                    }
-                }
-            }
-        }
-    }
-}
-
-void CObjectManager::FindAndRenameProperty2If(const char* property2Name, const QString& oldValue, const QString& newValue, const char* otherProperty2Name, const QString& otherValue)
-{
-    CBaseObjectsArray objects;
-    GetObjects(objects);
-
-    for (size_t i = 0, n = objects.size(); i < n; ++i)
-    {
-        CBaseObject* pObject = objects[i];
-        if (qobject_cast<CEntityObject*>(pObject))
-        {
-            CEntityObject* pEntity = static_cast<CEntityObject*>(pObject);
-            CVarBlock* pProperties2 = pEntity->GetProperties2();
-            if (pProperties2)
-            {
-                IVariable* pVariable      = pProperties2->FindVariable(property2Name);
-                IVariable* pOtherVariable = pProperties2->FindVariable(otherProperty2Name);
-                if (pVariable && pOtherVariable)
-                {
-                    QString sValue;
-                    pVariable->Get(sValue);
-
-                    QString sOtherValue;
-                    pOtherVariable->Get(sOtherValue);
-
-                    if ((sValue == oldValue) && (sOtherValue == otherValue))
-                    {
-                        pEntity->StoreUndo("Rename Property2 If");
-
-                        pVariable->Set(newValue);
-                    }
-                }
-            }
-        }
-    }
 }
 
 //////////////////////////////////////////////////////////////////////////
