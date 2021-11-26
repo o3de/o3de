@@ -22,3 +22,4 @@ The main goal of this list, is to enable future developers to find old code that
 | 2021-11-26 |  | CBaseObject - procedural floor management, EditTags, HelperScale|
 | 2021-11-26 |  | CBaseObject - PropertyChanged,SetNameInternal,OnMenuShowInAssetBrowser|
 | 2021-11-26 |  | CObjectArchive - unused sequence remapping, loaded object access |
+| 2021-11-26 |  | IDisplayViewport - unused interface `HitTestLine/GetGridStep/setHitcontext`|

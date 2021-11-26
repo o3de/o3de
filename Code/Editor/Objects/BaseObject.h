@@ -647,7 +647,7 @@ private:
     //! Flags of this object.
     int m_flags;
 
-    // Id of the texture icon for this object.
+    //! Id of the texture icon for this object.
     int m_nTextureIcon;
 
     //! Display color.
