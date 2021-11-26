@@ -31,6 +31,14 @@ AZ_CVAR(
     AZ::ConsoleFunctorFlags::Null,
     "Display additional debug drawing for manipulator bounds");
 
+AZ_CVAR(
+    float,
+    ed_planarManipulatorBoundScaleFactor,
+    1.75f,
+    nullptr,
+    AZ::ConsoleFunctorFlags::Null,
+    "The scale factor to apply to the planar manipulator bounds");
+
 namespace AzToolsFramework
 {
     const float g_defaultManipulatorSphereRadius = 0.1f;
@@ -348,31 +356,56 @@ namespace AzToolsFramework
         CameraCorrectAxis(
             axis2, m_cameraCorrectedAxis2, managerState, mouseInteraction, manipulatorState.m_worldFromLocal,
             manipulatorState.m_localPosition, cameraState);
+        CameraCorrectAxis(
+            axis1 * axis1.Dot(m_offset), m_cameraCorrectedOffsetAxis1, managerState, mouseInteraction, manipulatorState.m_worldFromLocal,
+            manipulatorState.m_localPosition, cameraState);
+        CameraCorrectAxis(
+            axis2 * axis2.Dot(m_offset), m_cameraCorrectedOffsetAxis2, managerState, mouseInteraction, manipulatorState.m_worldFromLocal,
+            manipulatorState.m_localPosition, cameraState);
 
-        const Picking::BoundShapeQuad quadBound = CalculateQuadBound(
-            manipulatorState.m_localPosition, manipulatorState, m_cameraCorrectedAxis1, m_cameraCorrectedAxis2,
-            m_size *
-                ManipulatorViewScaleMultiplier(
-                    manipulatorState.m_worldFromLocal.TransformPoint(manipulatorState.m_localPosition), cameraState));
+        const auto viewScale =
+            ManipulatorViewScaleMultiplier(manipulatorState.m_worldFromLocal.TransformPoint(manipulatorState.m_localPosition), cameraState);
+
+        const float hitSize = m_size * ed_planarManipulatorBoundScaleFactor;
+        const float halfSize = (hitSize - m_size) * 0.5f;
+        const auto cameraCorrectedVisualOffset = (m_cameraCorrectedOffsetAxis1 + m_cameraCorrectedOffsetAxis2);
+        const auto cameraCorrectedHitOffset =
+            cameraCorrectedVisualOffset - (m_cameraCorrectedAxis1 * halfSize + m_cameraCorrectedAxis2 * halfSize);
+
+        const Picking::BoundShapeQuad quadBoundVisual = CalculateQuadBound(
+            manipulatorState.m_localPosition + (cameraCorrectedVisualOffset * viewScale), manipulatorState, m_cameraCorrectedAxis1,
+            m_cameraCorrectedAxis2, m_size * viewScale);
 
         debugDisplay.SetLineWidth(defaultLineWidth(manipulatorState.m_mouseOver));
 
         debugDisplay.SetColor(ViewColor(manipulatorState.m_mouseOver, m_axis1Color, m_mouseOverColor).GetAsVector4());
-        debugDisplay.DrawLine(quadBound.m_corner4, quadBound.m_corner3);
+        debugDisplay.DrawLine(quadBoundVisual.m_corner4, quadBoundVisual.m_corner3);
+        debugDisplay.DrawLine(quadBoundVisual.m_corner1, quadBoundVisual.m_corner2);
 
         debugDisplay.SetColor(ViewColor(manipulatorState.m_mouseOver, m_axis2Color, m_mouseOverColor).GetAsVector4());
-        debugDisplay.DrawLine(quadBound.m_corner2, quadBound.m_corner3);
+        debugDisplay.DrawLine(quadBoundVisual.m_corner2, quadBoundVisual.m_corner3);
+        debugDisplay.DrawLine(quadBoundVisual.m_corner1, quadBoundVisual.m_corner4);
 
         if (manipulatorState.m_mouseOver)
         {
             debugDisplay.SetColor(Vector3ToVector4(m_mouseOverColor.GetAsVector3(), 0.5f));
 
             debugDisplay.CullOff();
-            debugDisplay.DrawQuad(quadBound.m_corner1, quadBound.m_corner2, quadBound.m_corner3, quadBound.m_corner4);
+            debugDisplay.DrawQuad(
+                quadBoundVisual.m_corner1, quadBoundVisual.m_corner2, quadBoundVisual.m_corner3, quadBoundVisual.m_corner4);
             debugDisplay.CullOn();
         }
 
-        RefreshBoundInternal(managerId, manipulatorId, quadBound);
+        const Picking::BoundShapeQuad quadBoundHit = CalculateQuadBound(
+            manipulatorState.m_localPosition + (cameraCorrectedHitOffset * viewScale), manipulatorState, m_cameraCorrectedAxis1,
+            m_cameraCorrectedAxis2, hitSize * viewScale);
+
+        if (ed_manipulatorDisplayBoundDebug)
+        {
+            debugDisplay.DrawQuad(quadBoundHit.m_corner1, quadBoundHit.m_corner2, quadBoundHit.m_corner3, quadBoundHit.m_corner4);
+        }
+
+        RefreshBoundInternal(managerId, manipulatorId, quadBoundHit);
     }
 
     void ManipulatorViewQuadBillboard::Draw(
@@ -698,12 +731,17 @@ namespace AzToolsFramework
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     AZStd::unique_ptr<ManipulatorViewQuad> CreateManipulatorViewQuad(
-        const PlanarManipulator& planarManipulator, const AZ::Color& axis1Color, const AZ::Color& axis2Color, const float size)
+        const PlanarManipulator& planarManipulator,
+        const AZ::Color& axis1Color,
+        const AZ::Color& axis2Color,
+        const AZ::Vector3& offset,
+        const float size)
     {
         AZStd::unique_ptr<ManipulatorViewQuad> viewQuad = AZStd::make_unique<ManipulatorViewQuad>();
         viewQuad->m_axis1 = planarManipulator.GetAxis1();
         viewQuad->m_axis2 = planarManipulator.GetAxis2();
         viewQuad->m_size = size;
+        viewQuad->m_offset = offset;
         viewQuad->m_axis1Color = axis1Color;
         viewQuad->m_axis2Color = axis2Color;
         return viewQuad;

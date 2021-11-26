@@ -34,22 +34,22 @@ namespace PhysX
         const float XRotationManipulatorWidth = 0.05f;
     } // namespace Internal
 
-    JointsSubComponentModeAngleCone::JointsSubComponentModeAngleCone(
-        const AZStd::string& propertyName, float max, float min)
+    JointsSubComponentModeAngleCone::JointsSubComponentModeAngleCone(const AZStd::string& propertyName, float max, float min)
         : m_propertyName(propertyName)
         , m_max(max)
         , m_min(min)
     {
-
     }
 
     void JointsSubComponentModeAngleCone::Setup(const AZ::EntityComponentIdPair& idPair)
     {
         m_entityComponentIdPair = idPair;
         EditorJointRequestBus::EventResult(
-            m_resetPostion, m_entityComponentIdPair, &PhysX::EditorJointRequests::GetVector3Value, JointsComponentModeCommon::ParamaterNames::Position);
+            m_resetPostion, m_entityComponentIdPair, &PhysX::EditorJointRequests::GetVector3Value,
+            JointsComponentModeCommon::ParamaterNames::Position);
         EditorJointRequestBus::EventResult(
-            m_resetRotation, m_entityComponentIdPair, &PhysX::EditorJointRequests::GetVector3Value, JointsComponentModeCommon::ParamaterNames::Rotation);
+            m_resetRotation, m_entityComponentIdPair, &PhysX::EditorJointRequests::GetVector3Value,
+            JointsComponentModeCommon::ParamaterNames::Rotation);
         EditorJointRequestBus::EventResult(
             m_resetLimits, m_entityComponentIdPair, &EditorJointRequests::GetLinearValuePair, m_propertyName);
 
@@ -57,7 +57,8 @@ namespace PhysX
 
         AZ::Transform localTransform = AZ::Transform::CreateIdentity();
         EditorJointRequestBus::EventResult(
-            localTransform, m_entityComponentIdPair, &EditorJointRequests::GetTransformValue, JointsComponentModeCommon::ParamaterNames::Transform);
+            localTransform, m_entityComponentIdPair, &EditorJointRequests::GetTransformValue,
+            JointsComponentModeCommon::ParamaterNames::Transform);
         const AZ::Quaternion localRotation = localTransform.GetRotation();
 
         // Initialize manipulators used to resize the base of the cone.
@@ -166,7 +167,7 @@ namespace PhysX
             });
 
         m_yzPlanarManipulator->InstallLeftMouseDownCallback(
-            [this, sharedState]([[maybe_unused]]const AzToolsFramework::PlanarManipulator::Action& action) mutable
+            [this, sharedState]([[maybe_unused]] const AzToolsFramework::PlanarManipulator::Action& action) mutable
             {
                 AngleLimitsFloatPair currentValue;
                 EditorJointRequestBus::EventResult(
@@ -241,11 +242,11 @@ namespace PhysX
                 newTransform = sharedStateXRotate->m_startTM * AZ::Transform::CreateFromQuaternion(action.m_current.m_delta);
 
                 PhysX::EditorJointRequestBus::Event(
-                    m_entityComponentIdPair, &PhysX::EditorJointRequests::SetVector3Value, JointsComponentModeCommon::ParamaterNames::Position,
-                    newTransform.GetTranslation());
+                    m_entityComponentIdPair, &PhysX::EditorJointRequests::SetVector3Value,
+                    JointsComponentModeCommon::ParamaterNames::Position, newTransform.GetTranslation());
                 PhysX::EditorJointRequestBus::Event(
-                    m_entityComponentIdPair, &PhysX::EditorJointRequests::SetVector3Value, JointsComponentModeCommon::ParamaterNames::Rotation,
-                    newTransform.GetRotation().GetEulerDegrees());
+                    m_entityComponentIdPair, &PhysX::EditorJointRequests::SetVector3Value,
+                    JointsComponentModeCommon::ParamaterNames::Rotation, newTransform.GetRotation().GetEulerDegrees());
 
                 m_yLinearManipulator->SetLocalOrientation(manipulatorOrientation);
                 m_zLinearManipulator->SetLocalOrientation(manipulatorOrientation);
@@ -332,8 +333,7 @@ namespace PhysX
         {
             AzToolsFramework::ManipulatorViews views;
             views.emplace_back(CreateManipulatorViewLine(
-                *linearManipulator, color, axisLength,
-                AzToolsFramework::ManipulatorLineBoundWidth(AzFramework::InvalidViewportId)));
+                *linearManipulator, color, axisLength, AzToolsFramework::ManipulatorLineBoundWidth(AzFramework::InvalidViewportId)));
             views.emplace_back(CreateManipulatorViewCone(
                 *linearManipulator, color, linearManipulator->GetAxis() * (axisLength - coneLength), coneLength, coneRadius));
             linearManipulator->SetViews(AZStd::move(views));
@@ -347,7 +347,8 @@ namespace PhysX
     {
         const float planeSize = 0.6f;
         AzToolsFramework::ManipulatorViews views;
-        views.emplace_back(CreateManipulatorViewQuad(*m_yzPlanarManipulator, planeColor, plane2Color, planeSize));
+        views.emplace_back(
+            CreateManipulatorViewQuad(*m_yzPlanarManipulator, planeColor, plane2Color, AZ::Vector3::CreateZero(), planeSize));
         m_yzPlanarManipulator->SetViews(AZStd::move(views));
     }
 

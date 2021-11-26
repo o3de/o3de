@@ -54,7 +54,7 @@ namespace AzToolsFramework
         AZ_RTTI(ManipulatorView, "{7529E3E9-39B3-4D15-899A-FA13770113B2}")
 
         ManipulatorView();
-        ManipulatorView(bool screenSizeFixed);
+        explicit ManipulatorView(bool screenSizeFixed);
         virtual ~ManipulatorView();
         ManipulatorView(ManipulatorView&&) = default;
         ManipulatorView& operator=(ManipulatorView&&) = default;
@@ -117,6 +117,7 @@ namespace AzToolsFramework
 
         AZ::Vector3 m_axis1 = AZ::Vector3(1.0f, 0.0f, 0.0f);
         AZ::Vector3 m_axis2 = AZ::Vector3(0.0f, 1.0f, 0.0f);
+        AZ::Vector3 m_offset = AZ::Vector3::CreateZero();
         AZ::Color m_axis1Color = AZ::Color(1.0f, 0.0f, 0.0f, 1.0f);
         AZ::Color m_axis2Color = AZ::Color(1.0f, 0.0f, 0.0f, 1.0f);
         float m_size = 0.06f; //!< size to render and do mouse ray intersection tests against.
@@ -124,6 +125,8 @@ namespace AzToolsFramework
     private:
         AZ::Vector3 m_cameraCorrectedAxis1;
         AZ::Vector3 m_cameraCorrectedAxis2;
+        AZ::Vector3 m_cameraCorrectedOffsetAxis1;
+        AZ::Vector3 m_cameraCorrectedOffsetAxis2;
     };
 
     //! A screen aligned quad, centered at the position of the manipulator, display filled.
@@ -379,7 +382,11 @@ namespace AzToolsFramework
     // Helpers to create various manipulator views.
 
     AZStd::unique_ptr<ManipulatorViewQuad> CreateManipulatorViewQuad(
-        const PlanarManipulator& planarManipulator, const AZ::Color& axis1Color, const AZ::Color& axis2Color, float size);
+        const PlanarManipulator& planarManipulator,
+        const AZ::Color& axis1Color,
+        const AZ::Color& axis2Color,
+        const AZ::Vector3& offset,
+        float size);
 
     AZStd::unique_ptr<ManipulatorViewQuadBillboard> CreateManipulatorViewQuadBillboard(const AZ::Color& color, float size);
 

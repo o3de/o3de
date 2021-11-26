@@ -251,7 +251,7 @@ namespace AzToolsFramework
             const auto lineLength = axisLength - coneLength;
 
             ManipulatorViews views;
-            views.emplace_back(CreateManipulatorViewLine(*linearManipulator, color, lineLength, lineBoundWidth));
+            views.emplace_back(CreateManipulatorViewLine(*linearManipulator, color, axisLength, lineBoundWidth));
             views.emplace_back(
                 CreateManipulatorViewCone(*linearManipulator, color, linearManipulator->GetAxis() * lineLength, coneLength, coneRadius));
             linearManipulator->SetViews(AZStd::move(views));
@@ -273,8 +273,11 @@ namespace AzToolsFramework
 
         for (size_t manipulatorIndex = 0; manipulatorIndex < m_planarManipulators.size(); ++manipulatorIndex)
         {
+            const auto& planarManipulator = *m_planarManipulators[manipulatorIndex];
             const AZStd::shared_ptr<ManipulatorViewQuad> manipulatorView = CreateManipulatorViewQuad(
-                *m_planarManipulators[manipulatorIndex], planesColor[manipulatorIndex], planesColor[(manipulatorIndex + 1) % 3], planeSize);
+                *m_planarManipulators[manipulatorIndex], planesColor[manipulatorIndex], planesColor[(manipulatorIndex + 1) % 3],
+                (planarManipulator.GetAxis1() + planarManipulator.GetAxis2()) * ((LinearManipulatorAxisLength * 0.5f) - (planeSize * 0.5f)),
+                planeSize);
 
             m_planarManipulators[manipulatorIndex]->SetViews(ManipulatorViews{ manipulatorView });
         }
@@ -334,7 +337,7 @@ namespace AzToolsFramework
     void ConfigureTranslationManipulatorAppearance2d(TranslationManipulators* translationManipulators)
     {
         translationManipulators->SetAxes(AZ::Vector3::CreateAxisX(), AZ::Vector3::CreateAxisY());
-        translationManipulators->ConfigurePlanarView(LinearManipulatorXAxisColor);
+        translationManipulators->ConfigurePlanarView(LinearManipulatorXAxisColor, LinearManipulatorYAxisColor);
         translationManipulators->ConfigureLinearView(LinearManipulatorAxisLength, LinearManipulatorXAxisColor, LinearManipulatorYAxisColor);
     }
 } // namespace AzToolsFramework
