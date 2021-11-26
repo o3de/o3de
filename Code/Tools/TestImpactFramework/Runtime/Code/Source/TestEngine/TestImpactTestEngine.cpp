@@ -9,7 +9,7 @@
 #include <TestImpactFramework/TestImpactUtils.h>
 
 #include <Target/Native/TestImpactnativeTestTarget.h>
-#include <TestEngine/TestImpactTestEngineException.h>
+#include <TestEngine/Common/TestImpactTestEngineException.h>
 #include <TestEngine/TestImpactTestEngine.h>
 #include <TestRunner/Common/TestImpactErrorCodeChecker.h>
 #include <TestRunner/Native/TestImpactNativeErrorCodeHandler.h>
@@ -74,7 +74,7 @@ namespace TestImpact
 
         // Map for storing the test engine job data of completed test target runs
         template<typename IdType>
-        using TestEngineJobMap = AZStd::unordered_map<IdType, TestEngineJob>;
+        using TestEngineJobMap = AZStd::unordered_map<IdType, TestEngineJob<NativeBuildTargetTraits>>;
 
         // Helper trait for identifying the test engine job specialization for a given test job runner
         template<typename TestJobRunner>
@@ -89,21 +89,21 @@ namespace TestImpact
         template<>
         struct TestJobRunnerTrait<NativeTestEnumerator>
         {
-            using TestEngineJobType = TestEngineEnumeration;
+            using TestEngineJobType = TestEngineEnumeration<NativeBuildTargetTraits>;
         };
 
         // Type trait for the test runner
         template<>
         struct TestJobRunnerTrait<NativeRegularTestRunner>
         {
-            using TestEngineJobType = TestEngineRegularRun;
+            using TestEngineJobType = TestEngineRegularRun<NativeBuildTargetTraits>;
         };
 
         // Type trait for the instrumented test runner
         template<>
         struct TestJobRunnerTrait<NativeInstrumentedTestRunner>
         {
-            using TestEngineJobType = TestEngineInstrumentedRun;
+            using TestEngineJobType = TestEngineInstrumentedRun<NativeBuildTargetTraits>;
         };
 
         AZStd::optional<Client::TestRunResult> StandAloneHandler(ReturnCode returnCode)
@@ -153,7 +153,10 @@ namespace TestImpact
 
                 // Place the test engine job associated with this test run into the map along with its client test run result so
                 // that it can be retrieved when the sequence has ended (and any associated artifacts processed)
-                const auto& [it, success] = m_engineJobs->emplace(id, TestEngineJob(target, args, meta, result, AZStd::move(std.m_out.value_or("")), AZStd::move(std.m_err.value_or(""))));
+                const auto& [it, success] = m_engineJobs->emplace(
+                    id,
+                    TestEngineJob<NativeBuildTargetTraits>(
+                        target, args, meta, result, AZStd::move(std.m_out.value_or("")), AZStd::move(std.m_err.value_or(""))));
                 
                 if (m_callback->has_value())
                 {
@@ -302,7 +305,8 @@ namespace TestImpact
                     // was terminated whilst this job was still queued up for execution)
                     const auto& args = job.GetJobInfo().GetCommand().m_args;
                     const auto* target = testTargets[id];
-                    TestEngineJobType<TestJobRunner> run(TestEngineJob(target, args, {}, Client::TestRunResult::NotRun, "", ""), {});
+                    TestEngineJobType<TestJobRunner> run(
+                        TestEngineJob<NativeBuildTargetTraits>(target, args, {}, Client::TestRunResult::NotRun, "", ""), {});
                     engineRuns.push_back(AZStd::move(run));
                 }
             }
@@ -357,7 +361,7 @@ namespace TestImpact
     //    return { CalculateSequenceResult(result, engineRuns, executionFailurePolicy), AZStd::move(engineRuns) };
     //}
 
-    AZStd::pair<TestSequenceResult, AZStd::vector<TestEngineRegularRun>> TestEngine::RegularRun(
+    AZStd::pair<TestSequenceResult, AZStd::vector<TestEngineRegularRun<NativeBuildTargetTraits>>> TestEngine::RegularRun(
         const AZStd::vector<const NativeTestTarget*>& testTargets,
         Policy::ExecutionFailure executionFailurePolicy,
         Policy::TestFailure testFailurePolicy,
@@ -389,7 +393,7 @@ namespace TestImpact
         return { CalculateSequenceResult(result, engineRuns, executionFailurePolicy), AZStd::move(engineRuns) };
     }
 
-    AZStd::pair<TestSequenceResult, AZStd::vector<TestEngineInstrumentedRun>> TestEngine::InstrumentedRun(
+    AZStd::pair<TestSequenceResult, AZStd::vector<TestEngineInstrumentedRun<NativeBuildTargetTraits>>> TestEngine::InstrumentedRun(
         const AZStd::vector<const NativeTestTarget*>& testTargets,
         Policy::ExecutionFailure executionFailurePolicy,
         Policy::IntegrityFailure integrityFailurePolicy,

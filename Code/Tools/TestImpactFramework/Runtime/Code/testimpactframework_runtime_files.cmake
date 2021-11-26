@@ -136,17 +136,13 @@ set(FILES
     Source/TestRunner/Python/Job/TestImpactPythonTestJobInfoGenerator.h
     Source/TestRunner/Python/Run/TestImpactPythonTestRunner.cpp
     Source/TestRunner/Python/Run/TestImpactPythonTestRunner.h
+    Source/TestEngine/Common/TestImpactTestEngineException.h
+    Source/TestEngine/Common/TestImpactTestEngineJob.h
+    Source/TestEngine/Common/TestImpactTestEngineEnumeration.h
+    Source/TestEngine/Common/TestImpactTestEngineRegularRun.h
+    Source/TestEngine/Common/TestImpactTestEngineInstrumentedRun.h
     Source/TestEngine/TestImpactTestEngine.cpp
     Source/TestEngine/TestImpactTestEngine.h
-    Source/TestEngine/TestImpactTestEngineJob.cpp
-    Source/TestEngine/TestImpactTestEngineJob.h
-    Source/TestEngine/TestImpactTestEngineEnumeration.cpp
-    Source/TestEngine/TestImpactTestEngineEnumeration.h
-    Source/TestEngine/TestImpactTestEngineRegularRun.cpp
-    Source/TestEngine/TestImpactTestEngineRegularRun.h
-    Source/TestEngine/TestImpactTestEngineInstrumentedRun.cpp
-    Source/TestEngine/TestImpactTestEngineInstrumentedRun.h
-    Source/TestEngine/TestImpactTestEngineException.h
     Source/TestImpactException.cpp
     Source/TestImpactRuntime.cpp
     Source/TestImpactRuntimeUtils.cpp

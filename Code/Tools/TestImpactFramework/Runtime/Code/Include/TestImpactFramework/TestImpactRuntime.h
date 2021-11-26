@@ -30,9 +30,11 @@ namespace TestImpact
     class NativeTestTargetList;
     class NativeProductionTargetList;
     class SourceCoveringTestsList;
-    class TestEngineInstrumentedRun;
     class TestTargetExclusionList;
     struct NativeBuildTargetTraits;
+
+    template<typename BuildTargetTraits>
+    class TestEngineInstrumentedRun;
 
     template<typename BuildTargetTraits>
     class ChangeDependencyList;
@@ -207,13 +209,14 @@ namespace TestImpact
 
         //! Prunes the existing coverage for the specified jobs and creates the consolidated source covering tests list from the
         //! test engine instrumented run jobs.
-        SourceCoveringTestsList CreateSourceCoveringTestFromTestCoverages(const AZStd::vector<TestEngineInstrumentedRun>& jobs);
+        SourceCoveringTestsList CreateSourceCoveringTestFromTestCoverages(
+            const AZStd::vector<TestEngineInstrumentedRun<NativeBuildTargetTraits>>& jobs);
 
         //! Prepares the dynamic dependency map for a seed update by clearing all existing data and deleting the file that will be serialized.
         void ClearDynamicDependencyMapAndRemoveExistingFile();
 
         //! Updates the dynamic dependency map and serializes the entire map to disk.
-        void UpdateAndSerializeDynamicDependencyMap(const AZStd::vector<TestEngineInstrumentedRun>& jobs);
+        void UpdateAndSerializeDynamicDependencyMap(const AZStd::vector<TestEngineInstrumentedRun<NativeBuildTargetTraits>>& jobs);
 
         //! Generates a base policy state for the current runtime policy runtime configuration.
         PolicyStateBase GeneratePolicyStateBase() const;

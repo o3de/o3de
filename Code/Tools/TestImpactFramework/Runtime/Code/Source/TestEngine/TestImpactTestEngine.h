@@ -12,9 +12,10 @@
 #include <TestImpactFramework/TestImpactClientTestRun.h>
 #include <TestImpactFramework/TestImpactRuntime.h>
 
-#include <TestEngine/TestImpactTestEngineEnumeration.h>
-#include <TestEngine/TestImpactTestEngineInstrumentedRun.h>
-#include <TestEngine/TestImpactTestEngineRegularRun.h>
+#include <BuildTarget/Native/TestImpactNativeBuildTargetTraits.h>
+#include <TestEngine/Common/TestImpactTestEngineEnumeration.h>
+#include <TestEngine/Common/TestImpactTestEngineInstrumentedRun.h>
+#include <TestEngine/Common/TestImpactTestEngineRegularRun.h>
 
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
@@ -28,7 +29,7 @@ namespace TestImpact
     class NativeRegularTestRunner;
 
     //! Callback for when a given test engine job completes.
-    using TestEngineJobCompleteCallback = AZStd::function<void(const TestEngineJob& testJob)>;
+    using TestEngineJobCompleteCallback = AZStd::function<void(const TestEngineJob<NativeBuildTargetTraits>& testJob)>;
 
     //! Provides the front end for performing test enumerations and test runs.
     class TestEngine
@@ -81,7 +82,7 @@ namespace TestImpact
         //! @param globalTimeout The maximum duration the enumeration sequence may run before being forcefully terminated (infinite if empty). 
         //! @param callback The client callback function to handle completed test target runs.
         //! @ returns The sequence result and the test run results for the test targets that were run.
-        [[nodiscard]] AZStd::pair<TestSequenceResult, AZStd::vector<TestEngineRegularRun>> RegularRun(
+        [[nodiscard]] AZStd::pair<TestSequenceResult, AZStd::vector<TestEngineRegularRun<NativeBuildTargetTraits>>> RegularRun(
             const AZStd::vector<const NativeTestTarget*>& testTargets,
             Policy::ExecutionFailure executionFailurePolicy,
             Policy::TestFailure testFailurePolicy,
@@ -100,7 +101,7 @@ namespace TestImpact
         //! @param globalTimeout The maximum duration the enumeration sequence may run before being forcefully terminated (infinite if empty). 
         //! @param callback The client callback function to handle completed test target runs.
         //! @ returns The sequence result and the test run results and test coverages for the test targets that were run.
-        [[nodiscard]] AZStd::pair<TestSequenceResult, AZStd::vector<TestEngineInstrumentedRun>> InstrumentedRun(
+        [[nodiscard]] AZStd::pair<TestSequenceResult, AZStd::vector<TestEngineInstrumentedRun<NativeBuildTargetTraits>>> InstrumentedRun(
             const AZStd::vector<const NativeTestTarget*>& testTargets,
             Policy::ExecutionFailure executionFailurePolicy,
             Policy::IntegrityFailure integrityFailurePolicy,

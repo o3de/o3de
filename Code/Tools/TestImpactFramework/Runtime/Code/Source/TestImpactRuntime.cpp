@@ -80,7 +80,7 @@ namespace TestImpact
             {
             }
 
-            void operator()(const TestEngineJob& testJob)
+            void operator()(const TestEngineJob<NativeBuildTargetTraits>& testJob)
             {
                 if (m_testCompleteCallback.has_value())
                 {
@@ -417,7 +417,8 @@ namespace TestImpact
         DeleteFile(m_sparTiaFile);
     }
 
-    SourceCoveringTestsList Runtime::CreateSourceCoveringTestFromTestCoverages(const AZStd::vector<TestEngineInstrumentedRun>& jobs)
+    SourceCoveringTestsList Runtime::CreateSourceCoveringTestFromTestCoverages(
+        const AZStd::vector<TestEngineInstrumentedRun<NativeBuildTargetTraits>>& jobs)
     {
         AZStd::unordered_map<AZStd::string, AZStd::unordered_set<AZStd::string>> coverage;
         for (const auto& job : jobs)
@@ -484,7 +485,7 @@ namespace TestImpact
         return SourceCoveringTestsList(AZStd::move(sourceCoveringTests));
     }
 
-    void Runtime::UpdateAndSerializeDynamicDependencyMap(const AZStd::vector<TestEngineInstrumentedRun>& jobs)
+    void Runtime::UpdateAndSerializeDynamicDependencyMap(const AZStd::vector<TestEngineInstrumentedRun<NativeBuildTargetTraits>>& jobs)
     {
         try
         {
@@ -687,8 +688,8 @@ namespace TestImpact
 
         if (dynamicDependencyMapPolicy == Policy::DynamicDependencyMap::Update)
         {
-            AZStd::optional<AZStd::function<void(const AZStd::vector<TestEngineInstrumentedRun>& jobs)>> updateCoverage =
-                [this](const AZStd::vector<TestEngineInstrumentedRun>& jobs)
+            AZStd::optional<AZStd::function<void(const AZStd::vector<TestEngineInstrumentedRun<NativeBuildTargetTraits>>& jobs)>>
+                updateCoverage = [this](const AZStd::vector<TestEngineInstrumentedRun<NativeBuildTargetTraits>>& jobs)
             {
                 UpdateAndSerializeDynamicDependencyMap(jobs);
             };
@@ -727,7 +728,8 @@ namespace TestImpact
                 testSequenceStartCallback,
                 testSequenceEndCallback,
                 testCompleteCallback,
-                AZStd::optional<AZStd::function<void(const AZStd::vector<TestEngineRegularRun>& jobs)>>{ AZStd::nullopt });
+                AZStd::optional<AZStd::function<void(const AZStd::vector<TestEngineRegularRun<NativeBuildTargetTraits>>& jobs)>>{
+                    AZStd::nullopt });
         }
     }
 
@@ -741,8 +743,8 @@ namespace TestImpact
         AZStd::optional<TestRunCompleteCallback> testCompleteCallback)
     {
         const Timer sequenceTimer;
-        TestRunData<TestEngineInstrumentedRun> selectedTestRunData, draftedTestRunData;
-        TestRunData<TestEngineRegularRun> discardedTestRunData;
+        TestRunData<TestEngineInstrumentedRun<NativeBuildTargetTraits>> selectedTestRunData, draftedTestRunData;
+        TestRunData<TestEngineRegularRun<NativeBuildTargetTraits>> discardedTestRunData;
         AZStd::optional<AZStd::chrono::milliseconds> sequenceTimeout = globalTimeout;
 
         // Draft in the test targets that have no coverage entries in the dynamic dependency map

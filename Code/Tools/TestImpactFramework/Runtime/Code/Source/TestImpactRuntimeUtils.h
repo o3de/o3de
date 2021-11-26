@@ -19,7 +19,7 @@
 #include <BuildTarget/Common/TestImpactBuildTarget.h>
 #include <BuildTarget/Native/TestImpactNativeBuildTargetTraits.h>
 #include <Target/Native/TestImpactNativeTestTarget.h>
-#include <TestEngine/TestImpactTestEngineInstrumentedRun.h>
+#include <TestEngine/Common/TestImpactTestEngineInstrumentedRun.h>
 #include <TestRunner/Common/Enumeration/TestImpactTestEnumeration.h>
 #include <TestImpactTestTargetExclusionList.h>
 
