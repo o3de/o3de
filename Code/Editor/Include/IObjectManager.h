@@ -136,16 +136,6 @@ public:
 
     virtual void ChangeObjectId(REFGUID oldId, REFGUID newId) = 0;
 
-    //! while loading PreFabs we need to force this IDs
-    //! to force always the same IDs, on each load.
-    //! needed for RAM-maps assignments
-    virtual uint32  ForceID() const  =   0;
-    virtual void    ForceID(uint32 FID) =   0;
-
-    //! Convert object of one type to object of another type.
-    //! Original object is deleted.
-    virtual bool ConvertToType(CBaseObject* pObject, const QString& typeName) = 0;
-
     virtual IGizmoManager* GetGizmoManager() = 0;
 
     //////////////////////////////////////////////////////////////////////////
@@ -157,7 +147,4 @@ public:
     virtual void GatherUsedResources(CUsedResources& resources) = 0;
 
     virtual bool IsLightClass(CBaseObject* pObject) = 0;
-
-    // Set bSkipUpdate to true if you want to skip update objects on the idle loop.
-    virtual void SetSkipUpdate(bool bSkipUpdate) = 0;
 };
