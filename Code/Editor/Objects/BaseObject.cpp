@@ -500,7 +500,6 @@ void CBaseObject::SetName(const QString& name)
     if (notify)
     {
         NotifyListeners(ON_RENAME);
-        static_cast<CObjectManager*>(GetIEditor()->GetObjectManager())->NotifyObjectListeners(this, ON_RENAME);
     }
 }
 
@@ -2006,29 +2005,6 @@ bool CBaseObject::IsChildOf(CBaseObject* node)
 
 
 //////////////////////////////////////////////////////////////////////////
-void CBaseObject::CloneChildren(CBaseObject* pFromObject)
-{
-    if (pFromObject == nullptr)
-    {
-        return;
-    }
-
-    for (size_t i = 0, nChildCount(pFromObject->GetChildCount()); i < nChildCount; ++i)
-    {
-        CBaseObject* pFromChildObject = pFromObject->GetChild(i);
-
-        CBaseObject* pChildClone = GetObjectManager()->CloneObject(pFromChildObject);
-        if (pChildClone == nullptr)
-        {
-            continue;
-        }
-
-        pChildClone->CloneChildren(pFromChildObject);
-        AddMember(pChildClone, false);
-    }
-}
-
-//////////////////////////////////////////////////////////////////////////
 void CBaseObject::AttachChild(CBaseObject* child, bool bKeepPos)
 {
     Matrix34 childTM;
@@ -2044,7 +2020,6 @@ void CBaseObject::AttachChild(CBaseObject* child, bool bKeepPos)
             return;
         }
 
-        static_cast<CObjectManager*>(GetObjectManager())->NotifyObjectListeners(child, ON_PREATTACHED);
         child->NotifyListeners(bKeepPos ? ON_PREATTACHEDKEEPXFORM : ON_PREATTACHED);
 
         pTransformDelegate = m_pTransformDelegate;
@@ -2089,7 +2064,6 @@ void CBaseObject::AttachChild(CBaseObject* child, bool bKeepPos)
         m_pTransformDelegate = pTransformDelegate;
         child->m_pTransformDelegate = pChildTransformDelegate;
 
-        static_cast<CObjectManager*>(GetObjectManager())->NotifyObjectListeners(child, ON_ATTACHED);
         child->NotifyListeners(ON_ATTACHED);
 
         NotifyListeners(ON_CHILDATTACHED);
@@ -2127,7 +2101,6 @@ void CBaseObject::DetachThis(bool bKeepPos)
 
         {
             CScopedSuspendUndo suspendUndo;
-            static_cast<CObjectManager*>(GetObjectManager())->NotifyObjectListeners(this, ON_PREDETACHED);
             NotifyListeners(bKeepPos ? ON_PREDETACHEDKEEPXFORM : ON_PREDETACHED);
 
             pTransformDelegate = m_pTransformDelegate;
@@ -2158,7 +2131,6 @@ void CBaseObject::DetachThis(bool bKeepPos)
 
             SetTransformDelegate(pTransformDelegate);
 
-            static_cast<CObjectManager*>(GetObjectManager())->NotifyObjectListeners(this, ON_DETACHED);
             NotifyListeners(ON_DETACHED);
         }
     }
@@ -2561,44 +2533,6 @@ Ang3 CBaseObject::GetWorldAngles() const
         return angles;
     }
 };
-
-//////////////////////////////////////////////////////////////////////////
-void CBaseObject::PostClone(CBaseObject* pFromObject, CObjectCloneContext& ctx)
-{
-    CBaseObject* pFromParent = pFromObject->GetParent();
-    if (pFromParent)
-    {
-        SetFloorNumber(pFromObject->GetFloorNumber());
-
-        CBaseObject* pFromParentInContext = ctx.FindClone(pFromParent);
-        if (pFromParentInContext)
-        {
-            pFromParentInContext->AddMember(this, false);
-        }
-        else
-        {
-            pFromParent->AddMember(this, false);
-        }
-    }
-    if (pFromObject->ShouldCloneChildren())
-    {
-        for (int i = 0; i < pFromObject->GetChildCount(); i++)
-        {
-            CBaseObject* pChildObject = pFromObject->GetChild(i);
-            CBaseObject* pClonedChild = GetObjectManager()->CloneObject(pChildObject);
-            ctx.AddClone(pChildObject, pClonedChild);
-        }
-        for (int i = 0; i < pFromObject->GetChildCount(); i++)
-        {
-            CBaseObject* pChildObject = pFromObject->GetChild(i);
-            CBaseObject* pClonedChild = ctx.FindClone(pChildObject);
-            if (pClonedChild)
-            {
-                pClonedChild->PostClone(pChildObject, ctx);
-            }
-        }
-    }
-}
 
 //////////////////////////////////////////////////////////////////////////
 void CBaseObject::GatherUsedResources(CUsedResources& resources)

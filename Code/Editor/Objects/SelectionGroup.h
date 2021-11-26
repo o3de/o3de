@@ -106,11 +106,6 @@ public:
     //! Very special method to move contents of a voxel.
     void MoveContent(const Vec3& offset);
 
-    //////////////////////////////////////////////////////////////////////////
-    //! Clone objects in this group and add cloned objects to new selection group.
-    //! Only topmost parent  objects will be added to this selection group.
-    void Clone(CSelectionGroup& newGroup);
-
     // Send event to all objects in selection group.
     void SendEvent(ObjectEvent event);
 

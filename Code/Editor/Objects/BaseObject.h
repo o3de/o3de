@@ -399,8 +399,6 @@ public:
     CBaseObject* GetParent() const { return m_parent; };
     //! Scans hierarchy up to determine if we child of specified node.
     virtual bool IsChildOf(CBaseObject* node);
-    //! Clone Children
-    void CloneChildren(CBaseObject* pFromObject);
     //! Attach new child node.
     //! @param bKeepPos if true Child node will keep its world space position.
     virtual void AttachChild(CBaseObject* child, bool bKeepPos = true);
@@ -603,16 +601,8 @@ protected:
     //! Optional file parameter specify initial object or script for this object.
     virtual bool Init(IEditor* ie, CBaseObject* prev, const QString& file);
 
-    //////////////////////////////////////////////////////////////////////////
-    //! Must be called after cloning the object on clone of object.
-    //! This will make sure object references are cloned correctly.
-    virtual void PostClone(CBaseObject* pFromObject, CObjectCloneContext& ctx);
-
     //! Must be implemented by derived class to create game related objects.
     virtual bool CreateGameObject() { return true; };
-
-    //! If true, all attached chilren will be cloned when the parent object is cloned.
-    virtual bool ShouldCloneChildren() const { return true; }
 
     /** Called when object is about to be deleted.
             All Game resources should be freed in this function.

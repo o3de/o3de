@@ -1336,56 +1336,6 @@ QString CEntityObject::GetLightAnimation() const
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CEntityObject::PostClone(CBaseObject* pFromObject, CObjectCloneContext& ctx)
-{
-    CBaseObject::PostClone(pFromObject, ctx);
-
-    CEntityObject* pFromEntity = ( CEntityObject* )pFromObject;
-    // Clone event targets.
-    if (!pFromEntity->m_eventTargets.empty())
-    {
-        size_t numTargets = pFromEntity->m_eventTargets.size();
-        for (size_t i = 0; i < numTargets; i++)
-        {
-            CEntityEventTarget& et = pFromEntity->m_eventTargets[i];
-            CBaseObject* pClonedTarget = ctx.FindClone(et.target);
-            if (!pClonedTarget)
-            {
-                pClonedTarget = et.target;  // If target not cloned, link to original target.
-            }
-
-            // Add cloned event.
-            AddEventTarget(pClonedTarget, et.event, et.sourceEvent, true);
-        }
-    }
-
-    // Clone links.
-    if (!pFromEntity->m_links.empty())
-    {
-        int numTargets = static_cast<int>(pFromEntity->m_links.size());
-        for (int i = 0; i < numTargets; i++)
-        {
-            CEntityLink& et = pFromEntity->m_links[i];
-            CBaseObject* pClonedTarget = ctx.FindClone(et.target);
-            if (!pClonedTarget)
-            {
-                pClonedTarget = et.target;  // If target not cloned, link to original target.
-            }
-
-            // Add cloned event.
-            if (pClonedTarget)
-            {
-                AddEntityLink(et.name, pClonedTarget->GetId());
-            }
-            else
-            {
-                AddEntityLink(et.name, GUID_NULL);
-            }
-        }
-    }
-}
-
-//////////////////////////////////////////////////////////////////////////
 void CEntityObject::ResolveEventTarget(CBaseObject* object, unsigned int index)
 {
     // Find target id.

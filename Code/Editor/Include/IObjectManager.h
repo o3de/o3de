@@ -65,7 +65,6 @@ public:
     virtual void DeleteObject(CBaseObject* obj) = 0;
     virtual void DeleteSelection(CSelectionGroup* pSelection) = 0;
     virtual void DeleteAllObjects() = 0;
-    virtual CBaseObject* CloneObject(CBaseObject* obj) = 0;
 
     //! Get number of objects manager by ObjectManager (not contain sub objects of groups).
     virtual int GetObjectCount() const = 0;
@@ -117,8 +116,6 @@ public:
     //! Return number of selected objects.
     virtual int SelectObjects(const AABB& box, bool bUnselect = false) = 0;
 
-    virtual void SelectEntities(std::set<CEntityObject*>& s) = 0;
-
     //! Clear default selection set.
     //! @Return number of objects removed from selection.
     virtual int ClearSelection() = 0;
@@ -133,9 +130,6 @@ public:
     virtual QString GenerateUniqueObjectName(const QString& typeName) = 0;
     //! Register object name in object manager, needed for generating uniq names.
     virtual void RegisterObjectName(const QString& name) = 0;
-    //! Enable/Disable generating of unique object names (Enabled by default).
-    //! Return previous value.
-    virtual bool EnableUniqObjectNames(bool bEnable) = 0;
 
     //! Find object class by name.
     virtual CObjectClassDesc* FindClass(const QString& className) = 0;

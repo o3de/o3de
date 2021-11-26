@@ -534,45 +534,6 @@ void CSelectionGroup::ResetTransformation()
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CSelectionGroup::Clone(CSelectionGroup& newGroup)
-{
-    IObjectManager* pObjMan = GetIEditor()->GetObjectManager();
-    assert(pObjMan);
-
-    int i;
-    CObjectCloneContext cloneContext;
-
-    FilterParents();
-
-    //////////////////////////////////////////////////////////////////////////
-    // Clone every object.
-    for (i = 0; i < GetFilteredCount(); i++)
-    {
-        CBaseObject* pFromObject = GetFilteredObject(i);
-        CBaseObject* newObj = pObjMan->CloneObject(pFromObject);
-        if (!newObj) // can be null, e.g. sequence can't be cloned
-        {
-            continue;
-        }
-
-        cloneContext.AddClone(pFromObject, newObj);
-        newGroup.AddObject(newObj);
-    }
-
-    //////////////////////////////////////////////////////////////////////////
-    // Only after everything was cloned, call PostClone on all cloned objects.
-    for (i = 0; i < newGroup.GetCount(); ++i)
-    {
-        CBaseObject* pFromObject = GetFilteredObject(i);
-        CBaseObject* pClonedObject = newGroup.GetObject(i);
-        if (pClonedObject)
-        {
-            pClonedObject->PostClone(pFromObject, cloneContext);
-        }
-    }
-}
-
-//////////////////////////////////////////////////////////////////////////
 void CSelectionGroup::SendEvent(ObjectEvent event)
 {
     for (int i = 0; i < m_objects.size(); i++)

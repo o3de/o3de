@@ -687,13 +687,6 @@ void CEditorImpl::DeleteObject(CBaseObject* obj)
     GetObjectManager()->DeleteObject(obj);
 }
 
-CBaseObject* CEditorImpl::CloneObject(CBaseObject* obj)
-{
-    SetModifiedFlag();
-    GetIEditor()->SetModifiedModule(eModifiedBrushes);
-    return GetObjectManager()->CloneObject(obj);
-}
-
 CBaseObject* CEditorImpl::GetSelectedObject()
 {
     if (m_pObjectManager->GetSelection()->GetCount() != 1)

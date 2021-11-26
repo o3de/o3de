@@ -86,7 +86,6 @@ CObjectManager::CObjectManager()
     , m_nLastSelCount(0)
     , m_bSelectionChanged(false)
     , m_createGameObjects(true)
-    , m_bGenUniqObjectNames(true)
     , m_gizmoManager(new CGizmoManager())
     , m_pLoadProgress(nullptr)
     , m_loadedObjects(0)
@@ -359,7 +358,6 @@ void    CObjectManager::DeleteObject(CBaseObject* obj)
         return;
     }
 
-    NotifyObjectListeners(obj, CBaseObject::ON_PREDELETE);
     obj->NotifyListeners(CBaseObject::ON_PREDELETE);
 
     // Must be after object DetachAll to support restoring Parent/Child relations.
@@ -379,8 +377,6 @@ void    CObjectManager::DeleteObject(CBaseObject* obj)
     GetIEditor()->GetGameEngine()->OnAreaModified(objAAB);
 
     obj->Done();
-
-    NotifyObjectListeners(obj, CBaseObject::ON_DELETE);
 
     RemoveObject(obj);
 }
@@ -477,17 +473,6 @@ void CObjectManager::DeleteAllObjects()
     m_nameNumbersMap.clear();
 
     m_animatedAttachedEntities.clear();
-}
-
-CBaseObject* CObjectManager::CloneObject(CBaseObject* obj)
-{
-    AZ_PROFILE_FUNCTION(Editor);
-    assert(obj);
-    //CRuntimeClass *cls = obj->GetRuntimeClass();
-    //CBaseObject *clone = (CBaseObject*)cls->CreateObject();
-    //clone->CloneCopy( obj );
-    CBaseObject* clone = NewObject(obj->GetClassDesc(), obj);
-    return clone;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -600,7 +585,6 @@ bool CObjectManager::AddObject(CBaseObject* obj)
 
     RegisterObjectName(obj->GetName());
     InvalidateVisibleList();
-    NotifyObjectListeners(obj, CBaseObject::ON_ADD);
     return true;
 }
 
@@ -768,14 +752,6 @@ bool CObjectManager::SelectObject(CBaseObject* obj, bool bUseMask)
     }
 
     return true;
-}
-
-void CObjectManager::SelectEntities(std::set<CEntityObject*>& s)
-{
-    for (std::set<CEntityObject*>::iterator it = s.begin(), end = s.end(); it != end; ++it)
-    {
-        SelectObject(*it);
-    }
 }
 
 void CObjectManager::UnselectObject(CBaseObject* obj)
@@ -1079,11 +1055,6 @@ void CObjectManager::UpdateRegisterObjectName(const QString& name)
 //////////////////////////////////////////////////////////////////////////
 QString CObjectManager::GenerateUniqueObjectName(const QString& theTypeName)
 {
-    if (!m_bGenUniqObjectNames)
-    {
-        return theTypeName;
-    }
-
     QString typeName = theTypeName;
     const int subIndex = theTypeName.indexOf("::");
     if (subIndex != -1 && subIndex > typeName.length() - 2)
@@ -1116,14 +1087,6 @@ QString CObjectManager::GenerateUniqueObjectName(const QString& theTypeName)
     QString str = QStringLiteral("%1%2").arg(typeName).arg(lastNumber);
 
     return str;
-}
-
-//////////////////////////////////////////////////////////////////////////
-bool CObjectManager::EnableUniqObjectNames(bool bEnable)
-{
-    bool bPrev = m_bGenUniqObjectNames;
-    m_bGenUniqObjectNames = bEnable;
-    return bPrev;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1376,28 +1339,6 @@ void CObjectManager::SetObjectSelected(CBaseObject* pObject, bool bSelect)
             // Create axis gizmo for this object.
             m_gizmoManager->AddGizmo(new CAxisGizmo(pObject));
         }
-    }
-
-    if (bSelect)
-    {
-        NotifyObjectListeners(pObject, CBaseObject::ON_SELECT);
-    }
-    else
-    {
-        NotifyObjectListeners(pObject, CBaseObject::ON_UNSELECT);
-    }
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CObjectManager::NotifyObjectListeners(CBaseObject* pObject, CBaseObject::EObjectListenerEvent event)
-{
-    std::list<EventListener*>::iterator next;
-    for (std::list<EventListener*>::iterator it = m_objectEventListeners.begin(); it != m_objectEventListeners.end(); it = next)
-    {
-        next = it;
-        ++next;
-        // Call listener callback.
-        (*it)->OnObjectEvent(pObject, event);
     }
 }
 

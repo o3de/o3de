@@ -70,7 +70,6 @@ public:
     void    DeleteObject(CBaseObject* obj) override;
     void    DeleteSelection(CSelectionGroup* pSelection) override;
     void    DeleteAllObjects() override;
-    CBaseObject* CloneObject(CBaseObject* obj) override;
 
     //! Get number of objects manager by ObjectManager (not contain sub objects of groups).
     int     GetObjectCount() const override;
@@ -121,8 +120,6 @@ public:
     //! Return number of selected objects.
     int SelectObjects(const AABB& box, bool bUnselect = false) override;
 
-    void SelectEntities(std::set<CEntityObject*>& s) override;
-
     //! Clear default selection set.
     //! @Return number of objects removed from selection.
     int ClearSelection() override;
@@ -144,9 +141,6 @@ public:
     void RegisterObjectName(const QString& name) override;
     //! Decrease name number and remove if it was last in object manager, needed for generating uniq names.
     void UpdateRegisterObjectName(const QString& name);
-    //! Enable/Disable generating of unique object names (Enabled by default).
-    //! Return previous value.
-    bool EnableUniqObjectNames(bool bEnable) override;
 
     //! Register XML template of runtime class.
     void    RegisterClassTemplate(const XmlNodeRef& templ);
@@ -236,8 +230,6 @@ private:
     void SaveRegistry();
     void LoadRegistry();
 
-    void NotifyObjectListeners(CBaseObject* pObject, CBaseObject::EObjectListenerEvent event);
-
 private:
     typedef std::map<GUID, CBaseObjectPtr, guid_less_predicate> Objects;
     Objects m_objects;
@@ -274,7 +266,6 @@ private:
     CSelectionGroup m_defaultSelection;
 
     bool m_createGameObjects;
-    bool m_bGenUniqObjectNames;
 
     // Object manager also handles Gizmo manager.
     CGizmoManager* m_gizmoManager;
@@ -291,10 +282,6 @@ private:
     //////////////////////////////////////////////////////////////////////////
     typedef std::map<QString, std::set<uint16>, stl::less_stricmp<QString> > NameNumbersMap;
     NameNumbersMap m_nameNumbersMap;
-
-    //////////////////////////////////////////////////////////////////////////
-    // Listeners.
-    std::list<EventListener*> m_objectEventListeners;
 
     bool m_bExiting;
 
