@@ -87,8 +87,6 @@ namespace TestImpact
 
     private:
         ProcessScheduler m_processScheduler;
-        StdOutputRouting m_stdOutRouting; //!< Standard output routing from each job process to job runner.
-        StdErrorRouting m_stdErrRouting; //!< Standard error routing from each job process to job runner
         AZStd::optional<AZStd::chrono::milliseconds> m_jobTimeout; //!< Maximum time a job can run for before being forcefully terminated.
         AZStd::optional<AZStd::chrono::milliseconds> m_runnerTimeout; //!< Maximum time the job runner can run before forcefully terminating all in-flight jobs and shutting down.
     };

@@ -371,20 +371,18 @@ namespace TestImpact
         TestEngineJobMap<NativeRegularTestRunner::JobInfo::IdType> engineJobs;
         const auto jobInfos = m_testJobInfoGenerator->GenerateRegularTestRunJobInfos(testTargets);
 
-        RegularTestJobRunnerCallbackHandler jobCallback(
-            testTargets,
-            &engineJobs,
-            executionFailurePolicy,
-            testFailurePolicy,
-            &callback);
-
         auto [result, runnerJobs] = m_testRunner->RunTests(
             jobInfos,
             StdOutputRouting::None,
             StdErrorRouting::None,
             testTargetTimeout,
             globalTimeout,
-            jobCallback,
+            RegularTestJobRunnerCallbackHandler(
+                testTargets,
+                &engineJobs,
+                executionFailurePolicy,
+                testFailurePolicy,
+                &callback),
             AZStd::nullopt);
 
         auto engineRuns = CompileTestEngineRuns<NativeRegularTestRunner>(testTargets, runnerJobs, AZStd::move(engineJobs));
