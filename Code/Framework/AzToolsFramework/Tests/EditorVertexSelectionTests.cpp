@@ -10,22 +10,23 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzFramework/Viewport/ViewportScreen.h>
+#include <AzManipulatorTestFramework/AzManipulatorTestFramework.h>
+#include <AzManipulatorTestFramework/AzManipulatorTestFrameworkTestHelpers.h>
+#include <AzManipulatorTestFramework/AzManipulatorTestFrameworkUtils.h>
+#include <AzManipulatorTestFramework/ImmediateModeActionDispatcher.h>
+#include <AzManipulatorTestFramework/IndirectManipulatorViewportInteraction.h>
 #include <AzTest/AzTest.h>
 #include <AzToolsFramework/Application/ToolsApplication.h>
+#include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 #include <AzToolsFramework/Manipulators/EditorVertexSelection.h>
 #include <AzToolsFramework/Manipulators/HoverSelection.h>
 #include <AzToolsFramework/Manipulators/ManipulatorManager.h>
 #include <AzToolsFramework/Manipulators/TranslationManipulators.h>
 #include <AzToolsFramework/UnitTest/AzToolsFrameworkTestHelpers.h>
 #include <AzToolsFramework/ViewportSelection/EditorInteractionSystemViewportSelectionRequestBus.h>
-#include <AzManipulatorTestFramework/AzManipulatorTestFramework.h>
-#include <AzManipulatorTestFramework/AzManipulatorTestFrameworkUtils.h>
-#include <AzManipulatorTestFramework/AzManipulatorTestFrameworkTestHelpers.h>
-#include <AzManipulatorTestFramework/IndirectManipulatorViewportInteraction.h>
-#include <AzManipulatorTestFramework/ImmediateModeActionDispatcher.h>
 #include <Tests/Utils/Printers.h>
 
-using namespace AzToolsFramework;
+#include <Tests/BoundsTestComponent.h>
 
 namespace UnitTest
 {
@@ -42,15 +43,50 @@ namespace UnitTest
         void Disconnect();
 
         // FixedVerticesRequestBus/VariableVerticesRequestBus ...
-        bool GetVertex(size_t index, AZ::Vector3& vertex) const override { return m_vertexContainer.GetVertex(index, vertex); }
-        bool UpdateVertex(size_t index, const AZ::Vector3& vertex) override { return m_vertexContainer.UpdateVertex(index, vertex); };
-        void AddVertex(const AZ::Vector3& vertex) override { m_vertexContainer.AddVertex(vertex); }
-        bool InsertVertex(size_t index, const AZ::Vector3& vertex) override { return m_vertexContainer.InsertVertex(index, vertex); }
-        bool RemoveVertex(size_t index) override { return m_vertexContainer.RemoveVertex(index); }
-        void SetVertices(const AZStd::vector<AZ::Vector3>& vertices) override { m_vertexContainer.SetVertices(vertices); };
-        void ClearVertices() override { m_vertexContainer.Clear(); }
-        size_t Size() const override { return m_vertexContainer.Size(); }
-        bool Empty() const override { return m_vertexContainer.Empty(); }
+        bool GetVertex(size_t index, AZ::Vector3& vertex) const override
+        {
+            return m_vertexContainer.GetVertex(index, vertex);
+        }
+        
+        bool UpdateVertex(size_t index, const AZ::Vector3& vertex) override
+        {
+            return m_vertexContainer.UpdateVertex(index, vertex);
+        }
+        
+        void AddVertex(const AZ::Vector3& vertex) override
+        {
+            m_vertexContainer.AddVertex(vertex);
+        }
+        
+        bool InsertVertex(size_t index, const AZ::Vector3& vertex) override
+        {
+            return m_vertexContainer.InsertVertex(index, vertex);
+        }
+        
+        bool RemoveVertex(size_t index) override
+        {
+            return m_vertexContainer.RemoveVertex(index);
+        }
+        
+        void SetVertices(const AZStd::vector<AZ::Vector3>& vertices) override
+        {
+            m_vertexContainer.SetVertices(vertices);
+        }
+        
+        void ClearVertices() override
+        {
+            m_vertexContainer.Clear();
+        }
+        
+        size_t Size() const override
+        {
+            return m_vertexContainer.Size();
+        }
+        
+        bool Empty() const override
+        {
+            return m_vertexContainer.Empty();
+        }
 
     private:
         AZ::VertexContainer<AZ::Vector3> m_vertexContainer;
@@ -68,17 +104,18 @@ namespace UnitTest
         AZ::VariableVerticesRequestBus<AZ::Vector3>::Handler::BusDisconnect();
     }
 
-    class TestEditorVertexSelectionVariable
-        : public EditorVertexSelectionVariable<AZ::Vector3>
+    class TestEditorVertexSelectionVariable : public AzToolsFramework::EditorVertexSelectionVariable<AZ::Vector3>
     {
     public:
         AZ_CLASS_ALLOCATOR(TestEditorVertexSelectionVariable, AZ::SystemAllocator, 0)
 
-        void ShowVertexDeletionWarning() override { /*noop*/ }
+        void ShowVertexDeletionWarning() override
+        {
+            // noop
+        }
     };
 
-    class EditorVertexSelectionFixture
-        : public ToolsApplicationFixture
+    class EditorVertexSelectionFixture : public ToolsApplicationFixture
     {
     public:
         void SetUpEditorFixtureImpl() override
@@ -112,26 +149,25 @@ namespace UnitTest
 
     void EditorVertexSelectionFixture::RecreateVertexSelection()
     {
+        namespace aztf = AzToolsFramework;
         m_vertexSelection.Create(
-            AZ::EntityComponentIdPair(m_entityId, TestComponentId),
-            g_mainManipulatorManagerId, AZStd::make_unique<NullHoverSelection>(),
-            TranslationManipulators::Dimensions::Three, ConfigureTranslationManipulatorAppearance3d);
+            AZ::EntityComponentIdPair(m_entityId, TestComponentId), aztf::g_mainManipulatorManagerId,
+            AZStd::make_unique<aztf::NullHoverSelection>(), aztf::TranslationManipulators::Dimensions::Three,
+            aztf::ConfigureTranslationManipulatorAppearance3d);
     }
 
     void EditorVertexSelectionFixture::PopulateVertices()
     {
         for (size_t vertIndex = 0; vertIndex < EditorVertexSelectionFixture::VertexCount; ++vertIndex)
         {
-            InsertVertexAfter(
-                AZ::EntityComponentIdPair(m_entityId, TestComponentId), 0, AZ::Vector3::CreateZero());
+            AzToolsFramework::InsertVertexAfter(AZ::EntityComponentIdPair(m_entityId, TestComponentId), 0, AZ::Vector3::CreateZero());
         }
     }
     void EditorVertexSelectionFixture::ClearVertices()
     {
         for (size_t vertIndex = 0; vertIndex < EditorVertexSelectionFixture::VertexCount; ++vertIndex)
         {
-            SafeRemoveVertex<AZ::Vector3>(
-                AZ::EntityComponentIdPair(m_entityId, TestComponentId), 0);
+            AzToolsFramework::SafeRemoveVertex<AZ::Vector3>(AZ::EntityComponentIdPair(m_entityId, TestComponentId), 0);
         }
     }
 
@@ -188,7 +224,7 @@ namespace UnitTest
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
         // When
         // just provide a placeholder mouse interaction event in this case
-        m_vertexSelection.SnapVerticesToSurface(ViewportInteraction::MouseInteractionEvent{});
+        m_vertexSelection.SnapVerticesToSurface(AzToolsFramework::ViewportInteraction::MouseInteractionEvent{});
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -197,8 +233,7 @@ namespace UnitTest
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
     }
 
-    using EditorVertexSelectionManipulatorFixture =
-        IndirectCallManipulatorViewportInteractionFixtureMixin<EditorVertexSelectionFixture>;
+    using EditorVertexSelectionManipulatorFixture = IndirectCallManipulatorViewportInteractionFixtureMixin<EditorVertexSelectionFixture>;
 
     TEST_F(EditorVertexSelectionManipulatorFixture, CannotDeleteAllVertices)
     {
@@ -206,11 +241,10 @@ namespace UnitTest
 
         const auto entityComponentIdPair = AZ::EntityComponentIdPair(m_entityId, TestComponentId);
 
-        const float horizontalPositions[] = {-1.5f, -0.5f, 0.5f, 1.5f};
-        for (size_t vertIndex = 0; vertIndex < std::size(horizontalPositions); ++vertIndex)
+        const float horizontalPositions[] = { -1.5f, -0.5f, 0.5f, 1.5f };
+        for (size_t vertIndex = 0; vertIndex < AZStd::size(horizontalPositions); ++vertIndex)
         {
-            InsertVertexAfter(
-                entityComponentIdPair, vertIndex, AZ::Vector3(horizontalPositions[vertIndex], 5.0f, 0.0f));
+            AzToolsFramework::InsertVertexAfter(entityComponentIdPair, vertIndex, AZ::Vector3(horizontalPositions[vertIndex], 5.0f, 0.0f));
         }
 
         // rebuild the vertex selection after adding the new vertices
@@ -218,13 +252,12 @@ namespace UnitTest
 
         // build a vector of the vertex positions in screen space
         AZStd::vector<AzFramework::ScreenPoint> vertexScreenPositions;
-        for (size_t vertIndex = 0; vertIndex < std::size(horizontalPositions); ++vertIndex)
+        for (size_t vertIndex = 0; vertIndex < AZStd::size(horizontalPositions); ++vertIndex)
         {
             AZ::Vector3 localVertex;
             bool found = false;
             AZ::FixedVerticesRequestBus<AZ::Vector3>::EventResult(
-                found, m_entityId, &AZ::FixedVerticesRequestBus<AZ::Vector3>::Handler::GetVertex,
-                vertIndex, localVertex);
+                found, m_entityId, &AZ::FixedVerticesRequestBus<AZ::Vector3>::Handler::GetVertex, vertIndex, localVertex);
 
             if (found)
             {
@@ -267,7 +300,7 @@ namespace UnitTest
         const auto entityComponentIdPair = AZ::EntityComponentIdPair(m_entityId, TestComponentId);
 
         // add a single vertex (in front of the camera)
-        InsertVertexAfter(entityComponentIdPair, 0, AZ::Vector3::CreateAxisY(5.0f));
+        AzToolsFramework::InsertVertexAfter(entityComponentIdPair, 0, AZ::Vector3::CreateAxisY(5.0f));
 
         // rebuild the vertex selection after adding the new vertices
         RecreateVertexSelection();
@@ -299,5 +332,107 @@ namespace UnitTest
 
         // deleting the last vertex through a manipulator is disallowed - size should remain the same
         EXPECT_THAT(vertexCountAfter, Eq(1));
+    }
+
+    TEST_F(EditorVertexSelectionManipulatorFixture, SurfaceManipulatorFollowsMouseWhenUsedToPositionVertexWithCustomSpace)
+    {
+        auto* app = GetApplication();
+        app->RegisterComponentDescriptor(BoundsTestComponent::CreateDescriptor());
+        app->RegisterComponentDescriptor(RenderGeometryIntersectionTestComponent::CreateDescriptor());
+
+        AZ::Entity* entityGround = nullptr;
+        AZ::EntityId m_entityIdGround = CreateDefaultEditorEntity("EntityGround", &entityGround);
+
+        entityGround->Deactivate();
+        auto ground = entityGround->CreateComponent<RenderGeometryIntersectionTestComponent>();
+        entityGround->Activate();
+
+        ground->m_localBounds = AZ::Aabb::CreateFromMinMax(AZ::Vector3(-10.0f, -10.0f, -0.5f), AZ::Vector3(10.0f, 10.0f, 0.5f));
+
+        AzToolsFramework::SetWorldTransform(
+            m_entityIdGround,
+            AZ::Transform::CreateFromMatrix3x3AndTranslation(
+                AZ::Matrix3x3::CreateRotationX(AZ::DegToRad(-20.0f)) * AZ::Matrix3x3::CreateRotationY(AZ::DegToRad(-40.0f)) *
+                    AZ::Matrix3x3::CreateRotationZ(AZ::DegToRad(60.0f)),
+                AZ::Vector3(14.0f, -6.0f, 5.0f)));
+
+        auto t = AzToolsFramework::GetWorldTransform(m_entityIdGround);
+
+        // camera - 12.00, 18.00, 16.00, -38.00, -175.00
+        m_cameraState.m_viewportSize = AZ::Vector2(1280.0f, 720.0f);
+        AzFramework::SetCameraTransform(
+            m_cameraState,
+            AZ::Transform::CreateFromMatrix3x3AndTranslation(
+                AZ::Matrix3x3::CreateRotationZ(AZ::DegToRad(-175.0f)) * AZ::Matrix3x3::CreateRotationX(AZ::DegToRad(-38.0f)),
+                AZ::Vector3(12.0f, 18.0f, 16.0f)));
+
+        auto vertexSelectionTransform = AZ::Transform::CreateFromMatrix3x3AndTranslation(
+            AZ::Matrix3x3::CreateRotationZ(AZ::DegToRad(45.0f)), AZ::Vector3(14.0f, 7.0f, 5.0f));
+        vertexSelectionTransform.MultiplyByUniformScale(3.0f);
+
+        // set the initial starting position of the vertex selection
+        AzToolsFramework::SetWorldTransform(m_entityId, vertexSelectionTransform);
+
+        const auto entityComponentIdPair = AZ::EntityComponentIdPair(m_entityId, TestComponentId);
+
+        const float horizontalPositions[] = { -3.0f, -1.0f, 1.0f, 3.0f };
+        for (size_t vertIndex = 0; vertIndex < AZStd::size(horizontalPositions); ++vertIndex)
+        {
+            AzToolsFramework::InsertVertexAfter(entityComponentIdPair, vertIndex, AZ::Vector3(horizontalPositions[vertIndex], 0.0f, 0.0f));
+        }
+
+        // rebuild the vertex selection after adding the new vertices
+        RecreateVertexSelection();
+
+        // build a vector of the vertex positions in screen space
+        AZStd::vector<AzFramework::ScreenPoint> vertexScreenPositions;
+        for (size_t vertIndex = 0; vertIndex < AZStd::size(horizontalPositions); ++vertIndex)
+        {
+            AZ::Vector3 localVertex;
+            bool found = false;
+            AZ::FixedVerticesRequestBus<AZ::Vector3>::EventResult(
+                found, m_entityId, &AZ::FixedVerticesRequestBus<AZ::Vector3>::Handler::GetVertex, vertIndex, localVertex);
+
+            if (found)
+            {
+                const AZ::Vector3 worldVertex = vertexSelectionTransform.TransformPoint(localVertex);
+                vertexScreenPositions.push_back(AzFramework::WorldToScreen(worldVertex, m_cameraState));
+            }
+        }
+
+        const auto finalPositionWorld = AZ::Vector3(14.3573294f, -8.94695091f, 7.08627319f);
+        // calculate the position in screen space of the final position of the entity
+        const auto finalPositionScreen = AzFramework::WorldToScreen(finalPositionWorld, m_cameraState);
+
+        // press and drag the mouse (starting where the surface manipulator is)
+        // select each vertex (by holding ctrl)
+        m_actionDispatcher->CameraState(m_cameraState)->MousePosition(vertexScreenPositions[0])->MouseLButtonDown()->MouseLButtonUp();
+
+        AzToolsFramework::ViewportInteraction::MousePick mousePick;
+        mousePick.m_screenCoordinates = finalPositionScreen;
+
+        AzToolsFramework::ViewportInteraction::MouseInteraction mouseInteraction;
+        mouseInteraction.m_interactionId.m_cameraId = AZ::EntityId();
+        mouseInteraction.m_interactionId.m_viewportId = m_viewportManipulatorInteraction->GetViewportInteraction().GetViewportId();
+        mouseInteraction.m_mouseButtons =
+            AzToolsFramework::ViewportInteraction::MouseButtonsFromButton(AzToolsFramework::ViewportInteraction::MouseButton::Middle);
+        mouseInteraction.m_mousePick = mousePick;
+        mouseInteraction.m_keyboardModifiers = AzToolsFramework::ViewportInteraction::KeyboardModifiers(
+            static_cast<AZ::u32>(AzToolsFramework::ViewportInteraction::KeyboardModifier::Shift) |
+            static_cast<AZ::u32>(AzToolsFramework::ViewportInteraction::KeyboardModifier::Ctrl));
+
+        m_vertexSelection.HandleMouse(AzToolsFramework::ViewportInteraction::MouseInteractionEvent(
+            mouseInteraction, AzToolsFramework::ViewportInteraction::MouseEvent::Down, false));
+
+        // read back the position of the vertex now
+        AZ::Vector3 localVertex;
+        bool found = false;
+        AZ::FixedVerticesRequestBus<AZ::Vector3>::EventResult(
+            found, m_entityId, &AZ::FixedVerticesRequestBus<AZ::Vector3>::Handler::GetVertex, 0, localVertex);
+
+        const AZ::Vector3 worldVertex = vertexSelectionTransform.TransformPoint(localVertex);
+
+        // ensure final world positions match
+        EXPECT_THAT(worldVertex, IsCloseTolerance(finalPositionWorld, 0.01f));
     }
 } // namespace UnitTest

@@ -78,7 +78,7 @@ namespace UnitTest
         BoundsTestComponent::Activate();
 
         const AZ::EntityId entityId = GetEntityId();
-        AzFramework::EntityContextId contextId;
+        AzFramework::EntityContextId contextId = AzFramework::EntityContextId::CreateNull();
         AzFramework::EntityIdContextQueryBus::EventResult(contextId, entityId, &AzFramework::EntityIdContextQueries::GetOwningContextId);
         AzFramework::RenderGeometry::IntersectionRequestBus::Handler::BusConnect({entityId, contextId});
     }

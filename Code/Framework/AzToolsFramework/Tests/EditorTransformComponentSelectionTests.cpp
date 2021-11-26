@@ -3107,4 +3107,38 @@ namespace UnitTest
         // ensure distance away is what we expect
         EXPECT_NEAR(distanceAway, AzToolsFramework::GetDefaultEntityPlacementDistance(), 0.001f);
     }
+
+    TEST_F(
+        EditorTransformComponentSelectionRenderGeometryIntersectionManipulatorFixture,
+        MiddleMouseButtonWithShiftAndCtrlHeldOnMeshSurfaceWillSnapSelectedEntityToIntersectionPoint)
+    {
+        // camera - 21.00, 8.00, 11.00, -22.00, 150.00
+        m_cameraState.m_viewportSize = AZ::Vector2(1280.0f, 720.0f);
+        AzFramework::SetCameraTransform(
+            m_cameraState,
+            AZ::Transform::CreateFromMatrix3x3AndTranslation(
+                AZ::Matrix3x3::CreateRotationZ(AZ::DegToRad(150.0f)) * AZ::Matrix3x3::CreateRotationX(AZ::DegToRad(-22.0f)),
+                AZ::Vector3(21.0f, 8.0f, 11.0f)));
+
+        AzToolsFramework::SetWorldTransform(
+            m_entityIdGround,
+            AZ::Transform::CreateFromMatrix3x3AndTranslation(
+                AZ::Matrix3x3::CreateRotationY(AZ::DegToRad(40.0f)) * AZ::Matrix3x3::CreateRotationZ(AZ::DegToRad(60.0f)),
+                AZ::Vector3(14.0f, -6.0f, 5.0f)));
+
+        AzToolsFramework::SelectEntity(m_entityIdBox);
+
+        const auto expectedWorldPosition = AZ::Vector3(13.606657f, -2.6753534f, 5.9827675f);
+        const auto screenPosition = AzFramework::WorldToScreen(expectedWorldPosition, m_cameraState);
+
+        m_actionDispatcher->CameraState(m_cameraState)
+            ->MousePosition(screenPosition)
+            ->KeyboardModifierDown(AzToolsFramework::ViewportInteraction::KeyboardModifier::Control)
+            ->KeyboardModifierDown(AzToolsFramework::ViewportInteraction::KeyboardModifier::Shift)
+            ->MouseMButtonDown();
+
+        const AZ::Transform finalEntityTransform = AzToolsFramework::GetWorldTransform(m_entityIdBox);
+
+        EXPECT_THAT(finalEntityTransform.GetTranslation(), IsCloseTolerance(expectedWorldPosition, 0.01f));
+    }
 } // namespace UnitTest
