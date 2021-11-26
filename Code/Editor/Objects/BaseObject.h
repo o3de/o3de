@@ -128,19 +128,6 @@ enum MouseCreateResult
     MOUSECREATE_OK,                     //!< Accept this object.
 };
 
-//////////////////////////////////////////////////////////////////////////
-// Interface to the object create with the mouse callback.
-//////////////////////////////////////////////////////////////////////////
-struct IMouseCreateCallback
-{
-    virtual void Release() = 0;
-    virtual MouseCreateResult OnMouseEvent(CViewport* view, EMouseEvent event, QPoint& point, int flags) = 0;
-    // Some process of creation need to be able to be displayed such as creation for custom solid.
-    virtual void Display([[maybe_unused]] DisplayContext& dc){}
-    // Called after accepting an object to see if new object creation mode should be continued.
-    virtual bool ContinueCreation() = 0;
-};
-
 // Flags used for object interaction
 enum EObjectUpdateFlags
 {
@@ -404,15 +391,11 @@ public:
     // Gets matrix of parent attachment point
     virtual Matrix34 GetParentAttachPointWorldTM() const;
 
-    // Checks if the attachment point is valid
-    virtual bool IsParentAttachmentValid() const;
-
     //! Set position in world space.
     virtual void SetWorldPos(const Vec3& pos, int flags = 0);
 
     //! Get position in world space.
     Vec3 GetWorldPos() const { return GetWorldTM().GetTranslation(); };
-    Ang3 GetWorldAngles() const;
 
     //! Set xform of object given in world space.
     virtual void SetWorldTM(const Matrix34& tm, int flags = 0);
@@ -429,9 +412,6 @@ public:
 
     //! Called when object is being created (use GetMouseCreateCallback for more advanced mouse creation callback).
     virtual int MouseCreateCallback(CViewport* view, EMouseEvent event, QPoint& point, int flags);
-    // Return pointer to the callback object used when creating object by the mouse.
-    // If this function return nullptr MouseCreateCallback method will be used instead.
-    virtual IMouseCreateCallback* GetMouseCreateCallback() { return nullptr; };
 
     //! Draw object to specified viewport.
     virtual void Display([[maybe_unused]] DisplayContext& disp) {}
@@ -467,8 +447,6 @@ public:
     //! @param bUndo true if loading or saving data for Undo/Redo purposes.
     virtual void Serialize(CObjectArchive& ar);
 
-    //// Pre load called before serialize after all objects where completly loaded.
-    //virtual void PreLoad( CObjectArchive &ar ) {};
     // Post load called after all objects where completely loaded.
     virtual void PostLoad([[maybe_unused]] CObjectArchive& ar) {};
 
@@ -490,8 +468,6 @@ public:
     CBaseObject* GetLookAt() const { return m_lookat; };
     //! Returns true if this object is a look-at target.
     bool IsLookAtTarget() const;
-    CBaseObject* GetLookAtSource() const { return m_lookatSource; };
-
 
     IObjectManager* GetObjectManager() const;
 
@@ -520,15 +496,6 @@ public:
     //////////////////////////////////////////////////////////////////////////
     uint32 GetMinSpec() const { return m_nMinSpec; }
     virtual void SetMinSpec(uint32 nSpec, bool bSetChildren = true);
-
-    //////////////////////////////////////////////////////////////////////////
-    // SubObj selection.
-    //////////////////////////////////////////////////////////////////////////
-    // Return true if object support selecting of this sub object element type.
-    virtual bool StartSubObjSelection([[maybe_unused]] int elemType) { return false; };
-    virtual void EndSubObjectSelection() {};
-    virtual void ModifySubObjSelection([[maybe_unused]] SSubObjSelectionModifyContext& modCtx) {};
-    virtual void AcceptSubObjectModify() {};
 
     //! In This function variables of the object must be initialized.
     virtual void InitVariables() {};
