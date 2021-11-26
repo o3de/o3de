@@ -75,12 +75,6 @@ public:
         IRemoteConsole * ());
     MOCK_METHOD0(GetISystemEventDispatcher,
         ISystemEventDispatcher * ());
-    MOCK_METHOD1(SetForceNonDevMode,
-        void(bool bValue));
-    MOCK_CONST_METHOD0(GetForceNonDevMode,
-        bool());
-    MOCK_CONST_METHOD0(WasInDevMode,
-        bool());
     MOCK_CONST_METHOD0(IsDevMode,
         bool());
     MOCK_METHOD3(CreateXmlNode,
@@ -93,10 +87,6 @@ public:
         IXmlUtils * ());
     MOCK_METHOD1(IgnoreUpdates,
         void(bool bIgnore));
-    MOCK_METHOD1(SetIProcess,
-        void(IProcess * process));
-    MOCK_METHOD0(GetIProcess,
-        IProcess * ());
     MOCK_CONST_METHOD0(IsTestMode,
         bool());
     MOCK_METHOD3(SetFrameProfiler,
@@ -115,8 +105,6 @@ public:
     MOCK_METHOD3(LoadConfiguration,
         void(const char*, ILoadConfigurationEntrySink*, bool));
 
-    MOCK_CONST_METHOD0(GetMaxConfigSpec,
-        ESystemConfigSpec());
     MOCK_CONST_METHOD0(GetConfigPlatform,
         ESystemConfigPlatform());
     MOCK_METHOD1(SetConfigPlatform,
@@ -127,8 +115,6 @@ public:
         ILocalizationManager * ());
     MOCK_METHOD0(GetNoiseGen,
         CPNoise3 * ());
-    MOCK_METHOD0(GetUpdateCounter,
-        uint64());
     MOCK_METHOD1(RegisterErrorObserver,
         bool(IErrorObserver * errorObserver));
     MOCK_METHOD1(UnregisterErrorObserver,
@@ -139,10 +125,6 @@ public:
         bool());
     MOCK_METHOD1(SetAssertVisible,
         void(bool bAssertVisble));
-    MOCK_METHOD1(SetConsoleDrawEnabled,
-        void(bool enabled));
-    MOCK_METHOD1(SetUIDrawEnabled,
-        void(bool enabled));
     MOCK_METHOD0(GetApplicationInstance,
         int());
     MOCK_METHOD1(GetApplicationLogInstance,
@@ -167,14 +149,10 @@ public:
         bool());
 #endif
 
-    MOCK_METHOD0(GetRootWindowMessageHandler,
-        void*());
     MOCK_METHOD1(RegisterWindowMessageHandler,
         void(IWindowMessageHandler * pHandler));
     MOCK_METHOD1(UnregisterWindowMessageHandler,
         void(IWindowMessageHandler * pHandler));
-    MOCK_METHOD0(CreateLocalFileIO,
-        std::shared_ptr<AZ::IO::FileIOBase>());
 
     MOCK_METHOD2(ForceMaxFps, void(bool, int));
 };

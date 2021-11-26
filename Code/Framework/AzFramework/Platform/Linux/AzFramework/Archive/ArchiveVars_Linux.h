@@ -7,5 +7,3 @@
  */
 
 #pragma once
-
-#define STREAM_CACHE_DEFAULT 0

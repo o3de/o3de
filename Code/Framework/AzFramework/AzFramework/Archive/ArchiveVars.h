@@ -39,25 +39,10 @@ namespace AZ::IO
 #else
         inline static constexpr bool IsReleaseConfig{};
 #endif
-        int nReadSlice{};
-        int nSaveTotalResourceList{};
-        int nSaveFastloadResourceList{};
-        int nSaveMenuCommonResourceList{};
         int nSaveLevelResourceList{};
-        int nValidateFileHashes{ IsReleaseConfig ? 0 : 1 };
-        int nUncachedStreamReads{ 1 };
-        int nInMemoryPerPakSizeLimit{ 6 }; // Limits in MB
-        int nTotalInMemoryPakSizeLimit{ 30 };
-        int nLoadCache{};
-        int nLoadModePaks{};
-        int nStreamCache{ STREAM_CACHE_DEFAULT };
         FileSearchPriority m_fileSearchPriority{ GetDefaultFileSearchPriority()};
         int nMessageInvalidFileAccess{};
         int nLogInvalidFileAccess{ IsReleaseConfig ? 0 : 1 };
-        int nDisableNonLevelRelatedPaks{ 1 };
-        int nWarnOnPakAccessFails{ 1 }; // Whether to treat failed pak access as a warning or log message
-        int nSetLogLevel{ 3 };
-        int nLogAllFileAccess{};
 
     };
 }
