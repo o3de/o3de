@@ -3120,25 +3120,29 @@ namespace UnitTest
                 AZ::Matrix3x3::CreateRotationZ(AZ::DegToRad(150.0f)) * AZ::Matrix3x3::CreateRotationX(AZ::DegToRad(-22.0f)),
                 AZ::Vector3(21.0f, 8.0f, 11.0f)));
 
+        // position the ground entity
         AzToolsFramework::SetWorldTransform(
             m_entityIdGround,
             AZ::Transform::CreateFromMatrix3x3AndTranslation(
                 AZ::Matrix3x3::CreateRotationY(AZ::DegToRad(40.0f)) * AZ::Matrix3x3::CreateRotationZ(AZ::DegToRad(60.0f)),
                 AZ::Vector3(14.0f, -6.0f, 5.0f)));
 
+        // select the other entity (a 1x1x1 box)
         AzToolsFramework::SelectEntity(m_entityIdBox);
 
+        // expected world position (value taken from editor scenario)
         const auto expectedWorldPosition = AZ::Vector3(13.606657f, -2.6753534f, 5.9827675f);
         const auto screenPosition = AzFramework::WorldToScreen(expectedWorldPosition, m_cameraState);
 
+        // perform snap action
         m_actionDispatcher->CameraState(m_cameraState)
             ->MousePosition(screenPosition)
             ->KeyboardModifierDown(AzToolsFramework::ViewportInteraction::KeyboardModifier::Control)
             ->KeyboardModifierDown(AzToolsFramework::ViewportInteraction::KeyboardModifier::Shift)
             ->MouseMButtonDown();
 
+        // read back the current entity transform after placement
         const AZ::Transform finalEntityTransform = AzToolsFramework::GetWorldTransform(m_entityIdBox);
-
         EXPECT_THAT(finalEntityTransform.GetTranslation(), IsCloseTolerance(expectedWorldPosition, 0.01f));
     }
 } // namespace UnitTest

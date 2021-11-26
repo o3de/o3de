@@ -192,7 +192,7 @@ namespace AzToolsFramework
             return AzToolsFramework::ViewportInteraction::ProjectedViewportRay{ rayOrigin, rayDirection };
         }
 
-        //! Utility function to return a viewport ray.
+        //! Utility function to return a viewport ray using the ViewportInteractionRequestBus.
         inline ProjectedViewportRay ViewportScreenToWorldRay(
             const AzFramework::ViewportId viewportId, const AzFramework::ScreenPoint& screenPoint)
         {

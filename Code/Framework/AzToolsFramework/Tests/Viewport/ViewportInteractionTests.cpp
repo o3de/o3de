@@ -36,8 +36,6 @@ namespace UnitTest
             entityGround->Activate();
 
             ground->m_localBounds = AZ::Aabb::CreateFromMinMax(AZ::Vector3(-10.0f, -10.0f, -0.5f), AZ::Vector3(10.0f, 10.0f, 0.5f));
-
-            AzToolsFramework::SetWorldTransform(m_entityIdGround, AZ::Transform::CreateTranslation(AZ::Vector3(0.0f, 10.0f, 5.0f)));
         }
 
         AZ::EntityId m_entityIdGround;
@@ -64,9 +62,11 @@ namespace UnitTest
                 AZ::Matrix3x3::CreateRotationY(AZ::DegToRad(40.0f)) * AZ::Matrix3x3::CreateRotationZ(AZ::DegToRad(60.0f)),
                 AZ::Vector3(14.0f, -6.0f, 5.0f)));
 
+        // expected world position (value taken from editor scenario)
         const auto expectedWorldPosition = AZ::Vector3(13.606657f, -2.6753534f, 5.9827675f);
         const auto screenPosition = AzFramework::WorldToScreen(expectedWorldPosition, m_cameraState);
 
+        // perform ray intersection against mesh
         const auto worldIntersectionPoint = AzToolsFramework::FindClosestPickIntersection(
             m_viewportManipulatorInteraction->GetViewportInteraction().GetViewportId(), screenPosition,
             AzToolsFramework::EditorPickRayLength, AzToolsFramework::GetDefaultEntityPlacementDistance());

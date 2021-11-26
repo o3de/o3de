@@ -87,14 +87,16 @@ namespace AzToolsFramework
         const AzFramework::ViewportId viewportId = interaction.m_interactionId.m_viewportId;
 
         m_rayRequest.m_entityFilter.m_ignoreEntities.clear();
+        const auto& entityComponentIdPairs = EntityComponentIdPairs();
         AZStd::transform(
-            EntityComponentIdPairs().begin(), EntityComponentIdPairs().end(),
+            entityComponentIdPairs.begin(), entityComponentIdPairs.end(),
             AZStd::inserter(m_rayRequest.m_entityFilter.m_ignoreEntities, m_rayRequest.m_entityFilter.m_ignoreEntities.begin()),
             [](const AZ::EntityComponentIdPair& entityComponentIdPair)
             {
                 return entityComponentIdPair.GetEntityId();
             });
 
+        // calculate the start and end of the ray
         RefreshRayRequest(
             m_rayRequest, ViewportInteraction::ViewportScreenToWorldRay(viewportId, interaction.m_mousePick.m_screenCoordinates),
             EditorPickRayLength);
@@ -135,6 +137,7 @@ namespace AzToolsFramework
         {
             const AzFramework::ViewportId viewportId = interaction.m_interactionId.m_viewportId;
 
+            // update the start and end of the ray
             RefreshRayRequest(
                 m_rayRequest, ViewportInteraction::ViewportScreenToWorldRay(viewportId, interaction.m_mousePick.m_screenCoordinates),
                 EditorPickRayLength);
