@@ -8,6 +8,7 @@
 import azlmbr.bus
 import azlmbr.math
 
+from scene_api.scene_data import PrimitiveShape, DecompositionMode
 from scene_helpers import *
 
 
@@ -41,6 +42,34 @@ def add_material_component(entity_id):
         raise RuntimeError("UpdateComponentForEntity for editor_material_component failed")
 
 
+def add_physx_meshes(scene_manifest: sceneData.SceneManifest, mesh_name_list: List, all_node_paths: List[str]):
+    first_mesh = mesh_name_list[0].get_path()
+
+    # Add a Box Primitive PhysX mesh with a comment
+    physx_box = scene_manifest.add_physx_primitive_mesh_group("box", PrimitiveShape.BOX, 0.0, None)
+    scene_manifest.physx_mesh_group_add_comment(physx_box, "This is a box primitive")
+    # Select the first mesh, unselect every other node
+    scene_manifest.physx_mesh_group_add_selected_node(physx_box, first_mesh)
+
+    for node in all_node_paths:
+        if node != first_mesh:
+            scene_manifest.physx_mesh_group_add_unselected_node(physx_box, node)
+
+    # Add a Convex Mesh PhysX mesh with a comment
+    convex_mesh = scene_manifest.add_physx_convex_mesh_group("convex", 0.08, .0004, True, True, True, True, True, 24, True, "Glass")
+    scene_manifest.physx_mesh_group_add_comment(convex_mesh, "This is a convex mesh")
+    # Select/Unselect nodes using lists
+    all_except_first_mesh = [x for x in all_node_paths if x != first_mesh]
+    scene_manifest.physx_mesh_group_add_selected_unselected_nodes(convex_mesh, [first_mesh], all_except_first_mesh)
+
+    # Configure mesh decomposition for this mesh
+    scene_manifest.physx_mesh_group_decompose_meshes(convex_mesh, 512, 32, .002, 100100, DecompositionMode.TETRAHEDRON,
+                                                     0.06, 0.055, 0.00015, 3, 3, True, False)
+
+    # Add a Triangle mesh
+    triangle = scene_manifest.add_physx_triangle_mesh_group("triangle", False, True, True, True, True, True)
+    scene_manifest.physx_mesh_group_add_selected_unselected_nodes(triangle, [first_mesh], all_except_first_mesh)
+
 def update_manifest(scene):
     import uuid, os
     import azlmbr.scene.graph
@@ -61,6 +90,8 @@ def update_manifest(scene):
     created_entities = []
     previous_entity_id = azlmbr.entity.InvalidEntityId
     first_mesh = True
+
+    add_physx_meshes(scene_manifest, mesh_name_list, all_node_paths)
 
     # Loop every mesh node in the scene
     for activeMeshIndex in range(len(mesh_name_list)):
