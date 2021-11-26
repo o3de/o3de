@@ -899,11 +899,6 @@ void CComponentEntityObject::DrawDefault(DisplayContext& dc, const QColor& label
     DrawAccent(dc);
 }
 
-IStatObj* CComponentEntityObject::GetIStatObj()
-{
-    return nullptr;
-}
-
 bool CComponentEntityObject::IsIsolated() const
 {
     return m_isIsolated;

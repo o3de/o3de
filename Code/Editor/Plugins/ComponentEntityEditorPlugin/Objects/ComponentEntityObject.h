@@ -75,7 +75,7 @@ public:
     XmlNodeRef Export(const QString& levelPath, XmlNodeRef& xmlNode) override;
     void DeleteEntity() override;
     void DrawDefault(DisplayContext& dc, const QColor& labelColor = QColor(255, 255, 255)) override;
-    IStatObj* GetIStatObj() override;
+
     bool IsIsolated() const override;
     bool IsSelected() const override;
     bool IsSelectable() const override;
