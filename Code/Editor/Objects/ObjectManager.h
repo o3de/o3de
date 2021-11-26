@@ -177,9 +177,9 @@ private:
     void SetObjectSelected(CBaseObject* pObject, bool bSelect);
 
 private:
-    typedef std::map<GUID, CBaseObjectPtr, guid_less_predicate> Objects;
+    typedef AZStd::map<GUID, CBaseObjectPtr, guid_less_predicate> Objects;
     Objects m_objects;
-    typedef std::unordered_map<AZ::u32, CBaseObjectPtr> ObjectsByNameCrc;
+    typedef AZStd::unordered_map<AZ::u32, CBaseObjectPtr> ObjectsByNameCrc;
     ObjectsByNameCrc m_objectsByName;
 
     //! Array of currently visible objects.

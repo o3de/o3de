@@ -1154,12 +1154,6 @@ XmlNodeRef CEntityObject::Export([[maybe_unused]] const QString& levelPath, XmlN
         objNode->setAttr("MinSpec", ( uint32 )GetMinSpec());
     }
 
-    uint32 nMtlLayersMask = GetMaterialLayersMask();
-    if (nMtlLayersMask != 0)
-    {
-        objNode->setAttr("MatLayersMask", nMtlLayersMask);
-    }
-
     if (mv_hiddenInGame)
     {
         objNode->setAttr("HiddenInGame", true);
