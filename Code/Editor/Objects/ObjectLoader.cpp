@@ -308,17 +308,6 @@ CBaseObject* CObjectArchive::LoadObject(const XmlNodeRef& objNode, CBaseObject* 
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CObjectArchive::LoadObjects(XmlNodeRef& rootObjectsNode)
-{
-    int numObjects = rootObjectsNode->getChildCount();
-    for (int i = 0; i < numObjects; i++)
-    {
-        XmlNodeRef objNode = rootObjectsNode->getChild(i);
-        LoadObject(objNode, nullptr);
-    }
-}
-
-//////////////////////////////////////////////////////////////////////////
 void CObjectArchive::ReportError(CErrorRecord& err)
 {
     if (m_pCurrentErrorReport)

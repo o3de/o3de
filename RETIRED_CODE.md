@@ -15,5 +15,7 @@ The main goal of this list, is to enable future developers to find old code that
 | 2021-11-26 |  | Unused code - CloneObject,SelectEntities,EnableUniqueObjectNames,NotifyObjectListeners,CloneChildren, PostClone|
 | 2021-11-26 |  | Unused code - GetClassCategories/SetCreateGameObject/FindAndRenameProperty2/IsExporting/IsReloading/StartObjectLoading|
 | 2021-11-26 |  | ObjectManager - unused code - ForceID/ConvertToType/SetSkipUpdate/LoadRegistry/UpdateRegisterObjectName/HitTestObjectAgainstRect/SelectObjectInRect|
+| 2021-11-26 |  | ObjectManager - unused GetObjects/SelectObjects, ObjectLoader - LoadObjects|
+
 
 
