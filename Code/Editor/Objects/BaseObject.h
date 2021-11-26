@@ -500,10 +500,7 @@ public:
     //! In This function variables of the object must be initialized.
     virtual void InitVariables() {};
 
-    virtual void OnPropertyChanged(IVariable*);
-    virtual void OnMultiSelPropertyChanged(IVariable*);
-
-    //! Draw a reddish highlight indicating its budget usage.
+        //! Draw a reddish highlight indicating its budget usage.
     virtual void DrawBudgetUsage(DisplayContext& dc, const QColor& color);
 
     bool IntersectRayMesh(const Vec3& raySrc, const Vec3& rayDir, SRayHitInfo& outHitInfo) const;
@@ -605,8 +602,6 @@ protected:
     //! Only used by ObjectManager.
     bool IsPotentiallyVisible() const;
 
-    void SetNameInternal(const QString& name) { m_name = name; }
-
     void SetDrawTextureIconProperties(DisplayContext& dc, const Vec3& pos, float alpha = 1.0f, int texIconFlags = 0);
     const Vec3& GetTextureIconDrawPos(){ return m_vDrawIconPos; };
     int GetTextureIconFlags(){ return m_nIconFlags; };
@@ -628,17 +623,12 @@ private:
     friend class CObjectArchive;
     friend class CSelectionGroup;
 
-    void OnMenuShowInAssetBrowser();
-
     //! Set class description for this object,
     //! Only called once after creation by ObjectManager.
     void SetClassDesc(CObjectClassDesc* classDesc);
 
     EScaleWarningLevel GetScaleWarningLevel() const;
     ERotationWarningLevel GetRotationWarningLevel() const;
-
-    // auto resolving
-    void OnMtlResolved(uint32 id, bool success, const char* orgName, const char* newName);
 
     bool IsInSelectionBox() const { return m_bInSelectionBox; }
 
@@ -720,8 +710,6 @@ private:
 
     Vec3 m_vDrawIconPos;
     AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
-
-    uint64 m_hideOrder;
 };
 
 Q_DECLARE_METATYPE(CBaseObject*)
