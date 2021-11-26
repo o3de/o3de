@@ -133,9 +133,6 @@ public:
 
     //! Find object class by name.
     virtual CObjectClassDesc* FindClass(const QString& className) = 0;
-    virtual void GetClassCategories(QStringList& categories) = 0;
-    virtual void GetClassCategoryToolClassNamePairs(std::vector< std::pair<QString, QString> >& categoryToolClassNamePairs) = 0;
-    virtual void GetClassTypes(const QString& category, QStringList& types) = 0;
 
     virtual void ChangeObjectId(REFGUID oldId, REFGUID newId) = 0;
 
@@ -149,11 +146,6 @@ public:
     //! Original object is deleted.
     virtual bool ConvertToType(CBaseObject* pObject, const QString& typeName) = 0;
 
-    // Enables/Disables creating of game objects.
-    virtual void SetCreateGameObject(bool enable) = 0;
-    //! Return true if objects loaded from xml should immidiatly create game objects associated with them.
-    virtual bool IsCreateGameObjects() const = 0;
-
     virtual IGizmoManager* GetGizmoManager() = 0;
 
     //////////////////////////////////////////////////////////////////////////
@@ -161,25 +153,11 @@ public:
     virtual void InvalidateVisibleList() = 0;
 
     //////////////////////////////////////////////////////////////////////////
-    // Used to indicate starting and ending of objects loading.
-    //////////////////////////////////////////////////////////////////////////
-    virtual void StartObjectsLoading(int numObjects) = 0;
-    virtual void EndObjectsLoading() = 0;
-
-    //////////////////////////////////////////////////////////////////////////
     // Gathers all resources used by all objects.
     virtual void GatherUsedResources(CUsedResources& resources) = 0;
 
     virtual bool IsLightClass(CBaseObject* pObject) = 0;
 
-    virtual void FindAndRenameProperty2(const char* property2Name, const QString& oldValue, const QString& newValue) = 0;
-    virtual void FindAndRenameProperty2If(const char* property2Name, const QString& oldValue, const QString& newValue, const char* otherProperty2Name, const QString& otherValue) = 0;
-
-    virtual bool IsReloading() const = 0;
-
     // Set bSkipUpdate to true if you want to skip update objects on the idle loop.
     virtual void SetSkipUpdate(bool bSkipUpdate) = 0;
-
-    virtual void SetExportingLevel(bool bExporting) = 0;
-    virtual bool IsExportingLevelInprogress() const = 0;
 };

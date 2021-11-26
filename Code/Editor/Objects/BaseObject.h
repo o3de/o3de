@@ -671,9 +671,6 @@ protected:
 
     CBaseObject* FindObject(REFGUID id) const;
 
-    // Returns true if game objects should be created.
-    bool IsCreateGameObjects() const;
-
     // Helper gizmo functions.
     void AddGizmo(CGizmo* gizmo);
     void RemoveGizmo(CGizmo* gizmo);
