@@ -382,7 +382,6 @@ CBaseObject::CBaseObject()
     , m_rotate(IDENTITY)
     , m_scale(1, 1, 1)
     , m_guid(GUID_NULL)
-    , m_floorNumber(-1)
     , m_flags(0)
     , m_nTextureIcon(0)
     , m_color(QColor(255, 255, 255))
@@ -1358,7 +1357,6 @@ void CBaseObject::Serialize(CObjectArchive& ar)
         xmlNode->getAttr("LookAt", lookatId);
         xmlNode->getAttr("Material", mtlName);
         xmlNode->getAttr("MinSpec", nMinSpec);
-        xmlNode->getAttr("FloorNumber", m_floorNumber);
 
         if (nMinSpec <= CONFIG_VERYHIGH_SPEC) // Ignore invalid values.
         {
@@ -1454,8 +1452,6 @@ void CBaseObject::Serialize(CObjectArchive& ar)
         {
             xmlNode->setAttr("Pos", GetPos());
         }
-
-        xmlNode->setAttr("FloorNumber", m_floorNumber);
 
         xmlNode->setAttr("Rotate", m_rotate);
 

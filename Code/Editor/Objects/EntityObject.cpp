@@ -151,8 +151,6 @@ private:
 // CBase implementation.
 //////////////////////////////////////////////////////////////////////////
 
-float CEntityObject::m_helperScale = 1;
-
 namespace
 {
     CEntityObject* s_pPropertyPanelEntityObject = nullptr;
@@ -1784,18 +1782,6 @@ void CEntityObject::OnLoadFailed()
     err.error = tr("Entity %1 Failed to Spawn (Script: %2)").arg(GetName(), m_entityClass);
     err.pObject = this;
     GetIEditor()->GetErrorReport()->ReportError(err);
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CEntityObject::SetHelperScale(float scale)
-{
-    m_helperScale = scale;
-}
-
-//////////////////////////////////////////////////////////////////////////
-float CEntityObject::GetHelperScale()
-{
-    return m_helperScale;
 }
 
 //////////////////////////////////////////////////////////////////////////

@@ -137,9 +137,6 @@ public:
     EAttachmentType GetAttachType() const { return m_attachmentType; }
     QString GetAttachTarget() const { return m_attachmentTarget; }
 
-    void SetHelperScale(float scale) override;
-    float GetHelperScale() override;
-
     void GatherUsedResources(CUsedResources& resources) override;
     bool IsSimilarObject(CBaseObject* pObject) override;
 
@@ -378,8 +375,6 @@ protected:
     // Physics state, as a string.
     XmlNodeRef m_physicsState;
     AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
-
-    static float m_helperScale;
 
     EAttachmentType m_attachmentType;
 

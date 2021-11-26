@@ -500,12 +500,6 @@ public:
     //! In This function variables of the object must be initialized.
     virtual void InitVariables() {};
 
-    //////////////////////////////////////////////////////////////////////////
-    // Procedural Floor Management.
-    //////////////////////////////////////////////////////////////////////////
-    int GetFloorNumber() const { return m_floorNumber; };
-    void SetFloorNumber(int floorNumber) { m_floorNumber = floorNumber; };
-
     virtual void OnPropertyChanged(IVariable*);
     virtual void OnMultiSelPropertyChanged(IVariable*);
 
@@ -514,13 +508,8 @@ public:
 
     bool IntersectRayMesh(const Vec3& raySrc, const Vec3& rayDir, SRayHitInfo& outHitInfo) const;
 
-    virtual void EditTags([[maybe_unused]] bool alwaysTag) {}
-    virtual bool SupportsEditTags() const { return false; }
-
     bool CanBeHightlighted() const;
     bool IsSkipSelectionHelper() const;
-
-    virtual IStatObj* GetIStatObj() {   return nullptr; }
 
     // Invalidates cached transformation matrix.
     // nWhyFlags - Flags that indicate the reason for matrix invalidation.
@@ -547,10 +536,6 @@ protected:
             All Game resources should be freed in this function.
     */
     virtual void Done();
-
-    /** Change current id of object.
-    */
-    //virtual void SetId( uint32 objectId ) { m_id = objectId; };
 
     //! Call this to delete an object.
     virtual void DeleteThis() = 0;
@@ -620,12 +605,6 @@ protected:
     //! Only used by ObjectManager.
     bool IsPotentiallyVisible() const;
 
-    //////////////////////////////////////////////////////////////////////////
-    // May be overridden in derived classes to handle helpers scaling.
-    //////////////////////////////////////////////////////////////////////////
-    virtual void SetHelperScale([[maybe_unused]] float scale) {};
-    virtual float GetHelperScale() { return 1.0f; };
-
     void SetNameInternal(const QString& name) { m_name = name; }
 
     void SetDrawTextureIconProperties(DisplayContext& dc, const Vec3& pos, float alpha = 1.0f, int texIconFlags = 0);
@@ -682,9 +661,6 @@ private:
 
     //! Unique object Id.
     GUID m_guid;
-
-    // floor number of object if procedural object flag is set
-    int m_floorNumber;
 
     //! Flags of this object.
     int m_flags;
