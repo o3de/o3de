@@ -229,11 +229,6 @@ protected:
     template <typename T>
     T GetEntityProperty(const char* name, T defaultvalue) const;
 
-    //////////////////////////////////////////////////////////////////////////
-    //! Must be called after cloning the object on clone of object.
-    //! This will make sure object references are cloned correctly.
-    void PostClone(CBaseObject* pFromObject, CObjectCloneContext& ctx) override;
-
     //! Draw default object items.
     void DrawProjectorPyramid(DisplayContext& dc, float dist);
     void DrawProjectorFrustum(DisplayContext& dc, Vec2 size, float dist);

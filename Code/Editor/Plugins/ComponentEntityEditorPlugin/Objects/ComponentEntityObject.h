@@ -88,12 +88,6 @@ public:
     // Component entity highlighting (accenting) is taken care of elsewhere
     void DrawHighlight(DisplayContext& /*dc*/) override {};
 
-    // Don't auto-clone children. Cloning happens in groups with reference fixups,
-    // and individually selected objercts should be cloned as individuals.
-    bool ShouldCloneChildren() const override { return false; }
-
-
-
     //////////////////////////////////////////////////////////////////////////
 
     //////////////////////////////////////////////////////////////////////////
