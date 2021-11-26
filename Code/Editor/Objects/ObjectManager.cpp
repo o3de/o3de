@@ -81,29 +81,24 @@ CObjectManager* g_pObjectManager = nullptr;
 
 //////////////////////////////////////////////////////////////////////////
 CObjectManager::CObjectManager()
-    : m_maxObjectViewDistRatio(0.00001f)
-    , m_currSelection(&m_defaultSelection)
-    , m_nLastSelCount(0)
+    : m_currSelection(&m_defaultSelection)
     , m_bSelectionChanged(false)
     , m_gizmoManager(new CGizmoManager())
     , m_bExiting(false)
     , m_isUpdateVisibilityList(false)
     , m_currentHideCount(CBaseObject::s_invalidHiddenID)
-    , m_bSkipObjectUpdate(false)
 {
     g_pObjectManager = this;
 
     RegisterObjectClasses();
 
     m_objectsByName.reserve(1024);
-    LoadRegistry();
 }
 
 //////////////////////////////////////////////////////////////////////////
 CObjectManager::~CObjectManager()
 {
     m_bExiting = true;
-    SaveRegistry();
     DeleteAllObjects();
 
     delete m_gizmoManager;
@@ -112,17 +107,8 @@ CObjectManager::~CObjectManager()
 //////////////////////////////////////////////////////////////////////////
 void CObjectManager::RegisterObjectClasses()
 {
-    LoadRegistry();
 }
 
-//////////////////////////////////////////////////////////////////////////
-void    CObjectManager::SaveRegistry()
-{
-}
-
-void    CObjectManager::LoadRegistry()
-{
-}
 
 //////////////////////////////////////////////////////////////////////////
 CBaseObject* CObjectManager::NewObject(CObjectClassDesc* cls, CBaseObject* prev, const QString& file, const char* newObjectName)
@@ -688,11 +674,6 @@ void CObjectManager::SendEvent(ObjectEvent event, const AABB& bounds)
 //////////////////////////////////////////////////////////////////////////
 void CObjectManager::Update()
 {
-    if (m_bSkipObjectUpdate)
-    {
-        return;
-    }
-
     QWidget* prevActiveWindow = QApplication::activeWindow();
 
     // Restore focus if it changed.
@@ -999,42 +980,6 @@ void CObjectManager::RegisterObjectName(const QString& name)
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CObjectManager::UpdateRegisterObjectName(const QString& name)
-{
-    // Remove all numbers from the end of typename.
-    QString typeName = name;
-    int nameLen = typeName.length();
-    int len = nameLen;
-
-    while (len > 0 && typeName[len - 1].isDigit())
-    {
-        len--;
-    }
-
-    typeName = typeName.left(len);
-
-    uint16 num = 1;
-    if (len < nameLen)
-    {
-        num = (uint16)atoi((const char*)name.toUtf8().data() + len) + 0;
-    }
-
-    NameNumbersMap::iterator it = m_nameNumbersMap.find(typeName);
-
-    if (it != m_nameNumbersMap.end())
-    {
-        if (it->second.end() != it->second.find(num))
-        {
-            it->second.erase(num);
-            if (it->second.empty())
-            {
-                m_nameNumbersMap.erase(it);
-            }
-        }
-    }
-}
-
-//////////////////////////////////////////////////////////////////////////
 QString CObjectManager::GenerateUniqueObjectName(const QString& theTypeName)
 {
     QString typeName = theTypeName;
@@ -1146,34 +1091,6 @@ void CObjectManager::RegisterCVars()
         "Adjust the hit radius used for axis helpers, like the transform gizmo.");
 }
 
-void CObjectManager::DeleteNotSharedObjects()
-{
-    TBaseObjects objects;
-    GetAllObjects(objects);
-    for (int i = 0; i < objects.size(); i++)
-    {
-        CBaseObject* obj = objects[i];
-        if (!obj->CheckFlags(OBJFLAG_SHARED))
-        {
-            DeleteObject(obj);
-        }
-    }
-}
-
-void CObjectManager::DeleteSharedObjects()
-{
-    TBaseObjects objects;
-    GetAllObjects(objects);
-    for (int i = 0; i < objects.size(); i++)
-    {
-        CBaseObject* obj = objects[i];
-        if (obj->CheckFlags(OBJFLAG_SHARED))
-        {
-            DeleteObject(obj);
-        }
-    }
-}
-
 //////////////////////////////////////////////////////////////////////////
 void CObjectManager::InvalidateVisibleList()
 {
@@ -1213,27 +1130,6 @@ void CObjectManager::UpdateVisibilityList()
     }
 
     m_isUpdateVisibilityList = false;
-}
-
-//////////////////////////////////////////////////////////////////////////
-bool CObjectManager::ConvertToType(CBaseObject* pObject, const QString& typeName)
-{
-    QString message = QString("Convert ") + pObject->GetName() + " to " + typeName;
-    CUndo undo(message.toUtf8().data());
-
-    CBaseObjectPtr pNewObject = GetIEditor()->NewObject(typeName.toUtf8().data());
-    if (pNewObject)
-    {
-        if (pNewObject->ConvertFromObject(pObject))
-        {
-            DeleteObject(pObject);
-            return true;
-        }
-        DeleteObject(pNewObject);
-    }
-
-    Log((message + " is failed.").toUtf8().data());
-    return false;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1309,63 +1205,6 @@ bool CObjectManager::IsLightClass(CBaseObject* pObject)
     }
 
     return false;
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CObjectManager::HitTestObjectAgainstRect(CBaseObject* pObj, CViewport* view, HitContext hc, std::vector<GUID>& guids)
-{
-    if (!pObj->IsSelectable())
-    {
-        return;
-    }
-
-    AABB box;
-
-    // Retrieve world space bound box.
-    pObj->GetBoundBox(box);
-
-    // Check if object visible in viewport.
-    if (!view->IsBoundsVisible(box))
-    {
-        return;
-    }
-
-    if (pObj->HitTestRect(hc))
-    {
-        stl::push_back_unique(guids, pObj->GetId());
-    }
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CObjectManager::SelectObjectInRect(CBaseObject* pObj, CViewport* view, HitContext hc, bool bSelect)
-{
-    if (!pObj->IsSelectable())
-    {
-        return;
-    }
-
-    AABB box;
-
-    // Retrieve world space bound box.
-    pObj->GetBoundBox(box);
-
-    // Check if object visible in viewport.
-    if (!view->IsBoundsVisible(box))
-    {
-        return;
-    }
-
-    if (pObj->HitTestRect(hc))
-    {
-        if (bSelect)
-        {
-            SelectObject(pObj);
-        }
-        else
-        {
-            UnselectObject(pObj);
-        }
-    }
 }
 
 //////////////////////////////////////////////////////////////////////////

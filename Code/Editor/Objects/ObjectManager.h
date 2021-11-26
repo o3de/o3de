@@ -130,15 +130,10 @@ public:
     //! Delete all objects in selection group.
     void DeleteSelection() override;
 
-    uint32  ForceID() const override{return m_ForceID; }
-    void    ForceID(uint32 FID) override{m_ForceID = FID; }
-
     //! Generates uniq name base on type name of object.
     QString GenerateUniqueObjectName(const QString& typeName) override;
     //! Register object name in object manager, needed for generating uniq names.
     void RegisterObjectName(const QString& name) override;
-    //! Decrease name number and remove if it was last in object manager, needed for generating uniq names.
-    void UpdateRegisterObjectName(const QString& name);
 
     //! Register XML template of runtime class.
     void    RegisterClassTemplate(const XmlNodeRef& templ);
@@ -151,18 +146,9 @@ public:
     //! Find object class by name.
     CObjectClassDesc* FindClass(const QString& className) override;
 
-    //! Delete from Object manager all objects without SHARED flag.
-    void    DeleteNotSharedObjects();
-    //! Delete from Object manager all objects with SHARED flag.
-    void    DeleteSharedObjects();
-
     bool AddObject(CBaseObject* obj);
     void RemoveObject(CBaseObject* obj);
     void ChangeObjectId(REFGUID oldId, REFGUID newId) override;
-
-    //! Convert object of one type to object of another type.
-    //! Original object is deleted.
-    bool ConvertToType(CBaseObject* pObject, const QString& typeName) override;
 
     //////////////////////////////////////////////////////////////////////////
     //! Get access to gizmo manager.
@@ -177,8 +163,6 @@ public:
     void GatherUsedResources(CUsedResources& resources) override;
 
     bool IsLightClass(CBaseObject* pObject) override;
-
-    void SetSkipUpdate(bool bSkipUpdate) override { m_bSkipObjectUpdate = bSkipUpdate; }
 
     int GetAxisHelperHitRadius() const override { return m_axisHelperHitRadius; }
 
@@ -200,21 +184,11 @@ private:
     void SelectCurrent();
     void SetObjectSelected(CBaseObject* pObject, bool bSelect);
 
-    // Recursive functions potentially taking into child objects into account
-    void SelectObjectInRect(CBaseObject* pObj, CViewport* view, HitContext hc, bool bSelect);
-    void HitTestObjectAgainstRect(CBaseObject* pObj, CViewport* view, HitContext hc, std::vector<GUID>& guids);
-
-    void SaveRegistry();
-    void LoadRegistry();
-
 private:
     typedef std::map<GUID, CBaseObjectPtr, guid_less_predicate> Objects;
     Objects m_objects;
     typedef std::unordered_map<AZ::u32, CBaseObjectPtr> ObjectsByNameCrc;
     ObjectsByNameCrc m_objectsByName;
-
-    //! Used for forcing IDs of "GetEditorObjectID" of PreFabs, as they used to have random IDs on each load
-    uint32  m_ForceID;
 
     //! Array of currently visible objects.
     TBaseObjects m_visibleObjects;
@@ -225,15 +199,11 @@ private:
     unsigned int m_lastComputedVisibility = 0; // when the object manager itself last updated visibility (since it also has a cache)
     int m_lastHideMask = 0;
 
-    float m_maxObjectViewDistRatio;
-
     //////////////////////////////////////////////////////////////////////////
     // Selection.
     //! Current selection group.
     CSelectionGroup* m_currSelection;
-    int m_nLastSelCount;
     bool m_bSelectionChanged;
-    bool m_bLoadingObjects;
 
     // True while performing a select or deselect operation on more than one object.
     // Prevents individual undo/redo commands for every object, allowing bulk undo/redo
@@ -260,8 +230,6 @@ private:
     bool m_isUpdateVisibilityList;
 
     uint64 m_currentHideCount;
-
-    bool m_bSkipObjectUpdate;
 
     int m_axisHelperHitRadius = 20;
 };
