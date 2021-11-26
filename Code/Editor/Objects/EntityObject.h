@@ -79,8 +79,6 @@ public:
     //////////////////////////////////////////////////////////////////////////
     // Overrides from CBaseObject.
     //////////////////////////////////////////////////////////////////////////
-    //! Return type name of Entity.
-    QString GetTypeDescription() const override { return GetEntityClass(); };
 
     //////////////////////////////////////////////////////////////////////////
     bool IsSameClass(CBaseObject* obj) override;
@@ -142,8 +140,6 @@ public:
 
     void GatherUsedResources(CUsedResources& resources) override;
     bool IsSimilarObject(CBaseObject* pObject) override;
-
-    bool HasMeasurementAxis() const override {   return false;   }
 
     bool IsIsolated() const override { return false; }
 

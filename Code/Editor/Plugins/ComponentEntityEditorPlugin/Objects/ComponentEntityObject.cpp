@@ -331,14 +331,6 @@ void CComponentEntityObject::DetachThis(bool /*bKeepPos*/)
     }
 }
 
-CBaseObject* CComponentEntityObject::GetLinkParent() const
-{
-    AZ::EntityId parentId;
-    EBUS_EVENT_ID_RESULT(parentId, m_entityId, AZ::TransformBus, GetParentId);
-
-    return CComponentEntityObject::FindObjectForEntity(parentId);
-}
-
 bool CComponentEntityObject::IsFrozen() const
 {
     return CheckFlags(OBJFLAG_FROZEN);

@@ -72,7 +72,6 @@ public:
     void AttachChild(CBaseObject* child, bool bKeepPos = true) override;
     void DetachAll(bool bKeepPos = true) override;
     void DetachThis(bool bKeepPos = true) override;
-    CBaseObject* GetLinkParent() const override;
     XmlNodeRef Export(const QString& levelPath, XmlNodeRef& xmlNode) override;
     void DeleteEntity() override;
     void DrawDefault(DisplayContext& dc, const QColor& labelColor = QColor(255, 255, 255)) override;

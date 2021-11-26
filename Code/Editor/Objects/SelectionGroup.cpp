@@ -465,17 +465,6 @@ void CSelectionGroup::SetScale(const Vec3& scale, int referenceCoordSys)
     Scale(relScale, referenceCoordSys);
 }
 
-
-void CSelectionGroup::StartScaling()
-{
-    for (int i = 0; i < GetFilteredCount(); i++)
-    {
-        CBaseObject* obj = GetFilteredObject(i);
-        obj->StartScaling();
-    }
-}
-
-
 //////////////////////////////////////////////////////////////////////////
 void CSelectionGroup::Align()
 {
