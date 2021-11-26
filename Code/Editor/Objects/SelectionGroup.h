@@ -98,7 +98,6 @@ public:
     //! Resets rotation and scale to identity and (1.0f, 1.0f, 1.0f)
     void ResetTransformation();
     //! Scale objects in selection by given scale.
-    void StartScaling();
     void Scale(const Vec3& scale, int referenceCoordSys);
     void SetScale(const Vec3& scale, int referenceCoordSys);
     //! Align objects in selection to surface normal

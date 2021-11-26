@@ -17,6 +17,4 @@ The main goal of this list, is to enable future developers to find old code that
 | 2021-11-26 |  | ObjectManager - unused code - ForceID/ConvertToType/SetSkipUpdate/LoadRegistry/UpdateRegisterObjectName/HitTestObjectAgainstRect/SelectObjectInRect|
 | 2021-11-26 |  | ObjectManager - unused GetObjects/SelectObjects, ObjectLoader - LoadObjects|
 | 2021-11-26 |  | CBaseObject - unused material layers mask support|
-
-
-
+| 2021-11-26 |  | CBaseObject - GetWarningsText/HideOrder, unused scaling functions,IsChildOf and GetLinkParent|

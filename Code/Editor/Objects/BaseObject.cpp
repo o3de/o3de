@@ -401,7 +401,6 @@ CBaseObject::CBaseObject()
     , m_nMinSpec(0)
     , m_vDrawIconPos(0, 0, 0)
     , m_nIconFlags(0)
-    , m_hideOrder(CBaseObject::s_invalidHiddenID)
 {
     m_worldBounds.min.Set(0, 0, 0);
     m_worldBounds.max.Set(0, 0, 0);
@@ -524,41 +523,6 @@ void CBaseObject::GenerateUniqueName()
 const QString& CBaseObject::GetName() const
 {
     return m_name;
-}
-
-//////////////////////////////////////////////////////////////////////////
-QString CBaseObject::GetWarningsText() const
-{
-    QString warnings;
-
-    if (gSettings.viewports.bShowScaleWarnings)
-    {
-        const EScaleWarningLevel scaleWarningLevel = GetScaleWarningLevel();
-        if (scaleWarningLevel == eScaleWarningLevel_Rescaled)
-        {
-            warnings += "\\n  Warning: Object Scale is not 100%.";
-        }
-        else if (scaleWarningLevel == eScaleWarningLevel_RescaledNonUniform)
-        {
-            warnings += "\\n  Warning: Object has non-uniform scale.";
-        }
-    }
-
-    if (gSettings.viewports.bShowRotationWarnings)
-    {
-        const ERotationWarningLevel rotationWarningLevel = GetRotationWarningLevel();
-
-        if (rotationWarningLevel == eRotationWarningLevel_Rotated)
-        {
-            warnings += "\\n  Warning: Object is rotated.";
-        }
-        else if (rotationWarningLevel == eRotationWarningLevel_RotatedNonRectangular)
-        {
-            warnings += "\\n  Warning: Object is rotated non-orthogonally.";
-        }
-    }
-
-    return warnings;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1234,12 +1198,7 @@ void CBaseObject::OnEvent(ObjectEvent event)
 
 
 //////////////////////////////////////////////////////////////////////////
-void CBaseObject::SetShared([[maybe_unused]] bool bShared)
-{
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CBaseObject::SetHidden(bool bHidden, uint64 hiddenID, bool bAnimated)
+void CBaseObject::SetHidden(bool bHidden, bool bAnimated)
 {
     if (CheckFlags(OBJFLAG_HIDDEN) != bHidden)
     {
@@ -1257,7 +1216,6 @@ void CBaseObject::SetHidden(bool bHidden, uint64 hiddenID, bool bAnimated)
             ClearFlags(OBJFLAG_HIDDEN);
         }
 
-        m_hideOrder = hiddenID;
         UpdateVisibility(!IsHidden());
     }
 }
@@ -1465,12 +1423,6 @@ void CBaseObject::Serialize(CObjectArchive& ar)
 
         //////////////////////////////////////////////////////////////////////////
 
-        if (ar.bUndo)
-        {
-            // If we are selected update UI Panel.
-            xmlNode->getAttr("HideOrder", m_hideOrder);
-        }
-
         // We reseted the min spec and deserialized it so set it internally
         if (ar.ShouldResetInternalMembers())
         {
@@ -1487,7 +1439,6 @@ void CBaseObject::Serialize(CObjectArchive& ar)
         xmlNode->setAttr("Id", m_guid);
 
         xmlNode->setAttr("Name", GetName().toUtf8().data());
-        xmlNode->setAttr("HideOrder", m_hideOrder);
 
         if (m_parent)
         {
@@ -1977,24 +1928,6 @@ CBaseObject* CBaseObject::GetChild(size_t const i) const
     assert(i < m_childs.size());
     return m_childs[i];
 }
-
-//////////////////////////////////////////////////////////////////////////
-bool CBaseObject::IsChildOf(CBaseObject* node)
-{
-    CBaseObject* p = m_parent;
-    while (p && p != node)
-    {
-        p = p->m_parent;
-    }
-    if (p == node)
-    {
-        return true;
-    }
-    return false;
-}
-
-//////////////////////////////////////////////////////////////////////////
-
 
 //////////////////////////////////////////////////////////////////////////
 void CBaseObject::AttachChild(CBaseObject* child, bool bKeepPos)

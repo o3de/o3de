@@ -265,7 +265,6 @@ public:
         }
     };
     QString GetTypeName() const;
-    virtual QString GetTypeDescription() const { return m_classDesc->ClassName(); };
 
     //////////////////////////////////////////////////////////////////////////
     // Flags.
@@ -278,8 +277,6 @@ public:
     // Hidden ID
     //////////////////////////////////////////////////////////////////////////
     static const uint64 s_invalidHiddenID = 0;
-    uint64 GetHideOrder() const { return m_hideOrder; }
-    void SetHideOrder(uint64 newID) { m_hideOrder = newID; }
 
     //! Returns true if object hidden.
     bool IsHidden() const;
@@ -296,14 +293,11 @@ public:
     virtual bool IsSelectable() const;
 
     // Return texture icon.
-    bool HaveTextureIcon() const { return m_nTextureIcon != 0; };
     int GetTextureIcon() const { return m_nTextureIcon; }
     void SetTextureIcon(int nTexIcon) { m_nTextureIcon = nTexIcon; }
 
-    //! Set shared between missions flag.
-    virtual void SetShared(bool bShared);
     //! Set object hidden status.
-    virtual void SetHidden(bool bHidden, uint64 hiddenId = CBaseObject::s_invalidHiddenID, bool bAnimated = false);
+    virtual void SetHidden(bool bHidden, bool bAnimated = false);
     //! Set object frozen status.
     virtual void SetFrozen(bool bFrozen);
     //! Set object selected status.
@@ -314,8 +308,6 @@ public:
     virtual void SetHighlight(bool bHighlight);
     //! Check if object is highlighted.
     bool IsHighlighted() const { return CheckFlags(OBJFLAG_HIGHLIGHT); }
-    //! Check if object can have measurement axises.
-    virtual bool HasMeasurementAxis() const {   return true;    }
     //! Check if the object is isolated when the editor is in Isolation Mode
     virtual bool IsIsolated() const { return false; }
 
@@ -334,8 +326,6 @@ public:
     //////////////////////////////////////////////////////////////////////////
     //! Get name of object.
     const QString& GetName() const;
-    virtual QString GetComment() const { return QString(); }
-    virtual QString GetWarningsText() const;
 
     //! Change name of object.
     virtual void SetName(const QString& name);
@@ -365,10 +355,6 @@ public:
     //! Get object scale.
     const Vec3 GetScale() const;
 
-    virtual bool StartScaling()                                                         {   return false;   }
-    virtual bool GetUntransformedScale([[maybe_unused]] Vec3& scale) const {   return false;   }
-    virtual bool TransformScale([[maybe_unused]] const Vec3& scale)                {   return false;   }
-
     //! Set flatten area.
     void SetArea(float area);
     float GetArea() const { return m_flattenArea; };
@@ -386,8 +372,6 @@ public:
     // CHILDS
     //////////////////////////////////////////////////////////////////////////
 
-    //! Return true if node have childs.
-    bool HaveChilds() const { return !m_childs.empty(); }
     //! Return true if have attached childs.
     size_t GetChildCount() const { return m_childs.size(); }
 
@@ -395,8 +379,6 @@ public:
     CBaseObject* GetChild(size_t const i) const;
     //! Return parent node if exist.
     CBaseObject* GetParent() const { return m_parent; };
-    //! Scans hierarchy up to determine if we child of specified node.
-    virtual bool IsChildOf(CBaseObject* node);
     //! Attach new child node.
     //! @param bKeepPos if true Child node will keep its world space position.
     virtual void AttachChild(CBaseObject* child, bool bKeepPos = true);
@@ -409,8 +391,6 @@ public:
     virtual void DetachAll(bool bKeepPos = true);
     // Detach this node from parent.
     virtual void DetachThis(bool bKeepPos = true);
-    // Returns the link parent.
-    virtual CBaseObject* GetLinkParent() const { return GetParent(); }
 
     //////////////////////////////////////////////////////////////////////////
     // MATRIX
