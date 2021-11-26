@@ -796,6 +796,37 @@ namespace UnitTest
         EXPECT_GT(greaterVectorDifferentSize, lessVector);
     }
 
+    TEST_F(Arrays, FixedVectorCXX20Erase_Succeeds)
+    {
+        // Erase 'l' from the phrase "Hello" World"
+        auto eraseTest = [](AZStd::initializer_list<char> testInit) constexpr
+        {
+            AZStd::fixed_vector<char, 16> testResult{ testInit };
+            AZStd::erase(testResult, 'l');
+            return testResult;
+        }({ 'H', 'e', 'l', 'l', 'o', 'W', 'o', 'r', 'l', 'd' });
+
+        constexpr AZStd::string_view expectedEraseString = "HeoWord";
+        AZStd::string_view testEraseString{ eraseTest.begin(), eraseTest.end() };
+        EXPECT_EQ(expectedEraseString, testEraseString);
+
+        // Use erase_if to erase both 'H' and 'e' from the remaining eraseTest string
+        auto eraseIfTest = [](const AZStd::fixed_vector<char, 16>& testVector) constexpr
+        {
+            AZStd::fixed_vector<char, 16> testResult{ testVector };
+            auto erasePredicate = [](char ch)
+            {
+                return ch == 'H' || ch == 'e';
+            };
+            AZStd::erase_if(testResult, erasePredicate);
+            return testResult;
+        }(testEraseString);
+
+        constexpr AZStd::string_view expectedEraseIfString = "oWord";
+        AZStd::string_view testEraseIfString{ eraseIfTest.begin(), eraseIfTest.end() };
+        EXPECT_EQ(expectedEraseIfString, testEraseIfString);
+    }
+
     TEST_F(Arrays, VectorSwap)
     {
         vector<void*> vec1(42, nullptr);
