@@ -69,11 +69,13 @@ namespace TestImpact
     template<typename BuildTargetTraits>
     typename BuildTargetTraits::OptionalBuildTarget BuildTargetList<BuildTargetTraits>::GetBuildTarget(const AZStd::string& name) const
     {
-        if (const auto testTarget = m_testTargets.GetTarget(name); testTarget != nullptr)
+        if (const auto testTarget = m_testTargets.GetTarget(name);
+            testTarget != nullptr)
         {
             return testTarget;
         }
-        else if (auto productionTarget = m_productionTargets.GetTarget(name); productionTarget != nullptr)
+        else if (auto productionTarget = m_productionTargets.GetTarget(name);
+            productionTarget != nullptr)
         {
             return productionTarget;
         }

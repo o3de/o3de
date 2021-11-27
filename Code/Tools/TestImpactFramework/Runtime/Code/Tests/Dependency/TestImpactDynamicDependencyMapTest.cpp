@@ -43,25 +43,23 @@ namespace UnitTest
 
         void ValidateBuildTarget(const typename TestImpact::NativeBuildTargetTraits::BuildTarget& buildTarget, const TestImpact::NativeTestTarget& expectedTestTarget)
         {
-            AZStd::visit(
+            buildTarget.Visit(
             [&expectedTestTarget](auto&& target)
             {
                 EXPECT_TRUE(TestImpact::NativeBuildTargetTraits::IsTestTarget<decltype(target)>);
                 ValidateTarget(*target, expectedTestTarget);
-            },
-            buildTarget);
+            });
         }
 
         void ValidateBuildTarget(
             const typename TestImpact::NativeBuildTargetTraits::BuildTarget& buildTarget, const TestImpact::NativeProductionTarget& expectedProductionTarget)
         {
-            AZStd::visit(
+            buildTarget.Visit(
             [&expectedProductionTarget](auto&& target)
             {
                 EXPECT_TRUE(TestImpact::NativeBuildTargetTraits::IsProductionTarget<decltype(target)>);
                 ValidateTarget(*target, expectedProductionTarget);
-            },
-            buildTarget);
+            });
         }
 
         void ValidateProductionTarget(
@@ -329,15 +327,14 @@ namespace UnitTest
             // Expect the parent build data to match the expected parent Lib B production target
             EXPECT_EQ(sourceDependency.GetNumParentTargets(), 1);
 
-            AZStd::visit(
+            m_dynamicDependencyMap->GetBuildTargets()->GetBuildTargetOrThrow("Lib B").Visit(
             [&sourceDependency](auto&& autogenTarget)
             {
                 for (const auto& parentTarget : sourceDependency.GetParentTargets())
                 {
                     ValidateBuildTarget(parentTarget.GetBuildTarget(), *autogenTarget);
                 }
-            },
-            m_dynamicDependencyMap->GetBuildTargets()->GetBuildTargetOrThrow("Lib B"));
+            });
         };
 
         // Expect the input source and two output sources for this autogen coupling to refer to the same build data
@@ -600,7 +597,7 @@ namespace UnitTest
 
         for (const auto& expectedProductionTarget : m_productionTargets->GetTargets())
         {
-            AZStd::visit(
+            m_dynamicDependencyMap->GetBuildTargets()->GetBuildTargetOrThrow(expectedProductionTarget.GetName()).Visit(
                 [&expectedProductionTarget](auto&& buildTarget)
                 {
                     // Expect the build target to be valid
@@ -609,13 +606,12 @@ namespace UnitTest
 
                     // Expect the retrieved build target to match the production target we queried
                     ValidateBuildTarget(buildTarget, expectedProductionTarget);
-                },
-                m_dynamicDependencyMap->GetBuildTargets()->GetBuildTargetOrThrow(expectedProductionTarget.GetName()));
+                });
         }
 
         for (const auto& expectedTestTarget : m_testTargets->GetTargets())
         {
-            AZStd::visit(
+            m_dynamicDependencyMap->GetBuildTargets()->GetBuildTargetOrThrow(expectedTestTarget.GetName()).Visit(
                 [&expectedTestTarget](auto&& buildTarget)
                 {
                     // Expect the build target to be valid
@@ -623,8 +619,7 @@ namespace UnitTest
 
                     // Expect the retrieved build target to match the test target we queried
                     ValidateBuildTarget(buildTarget, expectedTestTarget);
-                },
-                m_dynamicDependencyMap->GetBuildTargets()->GetBuildTargetOrThrow(expectedTestTarget.GetName()));
+                });
         }
     }
 
@@ -656,24 +651,22 @@ namespace UnitTest
 
         for (const auto& expectedProductionTarget : m_productionTargets->GetTargets())
         {
-            AZStd::visit(
+            m_dynamicDependencyMap->GetBuildTargets()->GetBuildTargetOrThrow(expectedProductionTarget.GetName()).Visit(
                 [&expectedProductionTarget](auto&& buildTarget)
                 {
                     // Expect the retrieved build target to match the production target we queried
                     ValidateBuildTarget(buildTarget, expectedProductionTarget);
-                },
-                m_dynamicDependencyMap->GetBuildTargets()->GetBuildTargetOrThrow(expectedProductionTarget.GetName()));
+                });
         }
 
         for (const auto& expectedTestTarget : m_testTargets->GetTargets())
         {
-            AZStd::visit(
+            m_dynamicDependencyMap->GetBuildTargets()->GetBuildTargetOrThrow(expectedTestTarget.GetName()).Visit(
                 [&expectedTestTarget](auto&& buildTarget)
                 {
                     // Expect the retrieved build target to match the test target we queried
                     ValidateBuildTarget(buildTarget, expectedTestTarget);
-                },
-                m_dynamicDependencyMap->GetBuildTargets()->GetBuildTargetOrThrow(expectedTestTarget.GetName()));
+                });
         }
     }
 
@@ -723,7 +716,7 @@ namespace UnitTest
             auto productionTarget = m_dynamicDependencyMap->GetBuildTargets()->GetBuildTargetOrThrow(expectedProductionTarget.GetName());
 
             // Expect the retrieved production target to match the production target we queried
-            AZStd::visit(
+            productionTarget.Visit(
                 [&expectedProductionTarget](auto&& productionTarget)
                 {
                     if constexpr (TestImpact::NativeBuildTargetTraits::IsProductionTarget<decltype(productionTarget)>)
@@ -734,8 +727,7 @@ namespace UnitTest
                     {
                         FAIL();
                     }
-                },
-                productionTarget);
+                });
         }
 
         for (const auto& expectedTestTarget : m_testTargets->GetTargets())
@@ -744,7 +736,7 @@ namespace UnitTest
             auto testTarget = m_dynamicDependencyMap->GetBuildTargets()->GetBuildTargetOrThrow(expectedTestTarget.GetName());
 
             // Expect the retrieved production target to match the production target we queried
-            AZStd::visit(
+            testTarget.Visit(
                 [&expectedTestTarget](auto&& testTarget)
                 {
                     if constexpr (TestImpact::NativeBuildTargetTraits::IsTestTarget<decltype(testTarget)>)
@@ -755,8 +747,7 @@ namespace UnitTest
                     {
                         FAIL();
                     }
-                },
-                testTarget);
+                });
         }
     }
 

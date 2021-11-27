@@ -229,7 +229,7 @@ namespace TestImpact
         {
             for (const auto& parentTarget : sourceDependency.GetParentTargets())
             {
-                AZStd::visit(
+                parentTarget.GetBuildTarget().Visit(
                     [&selectedTestTargetMap, this](auto&& target)
                     {
                         if constexpr (BuildTargetTraits::template IsProductionTarget<decltype(target)>)
@@ -256,8 +256,7 @@ namespace TestImpact
                             // 3. There exists no coverage data for this file in the source covering test list
                             CreateTestSourceAction(target, selectedTestTargetMap);
                         }
-                    },
-                    parentTarget.GetBuildTarget());
+                    });
             }
         }
 
@@ -270,7 +269,7 @@ namespace TestImpact
                 {
                     for (const auto& parentTarget : sourceDependency.GetParentTargets())
                     {
-                        AZStd::visit(
+                        parentTarget.GetBuildTarget().Visit(
                             [&selectedTestTargetMap, &sourceDependency, this](auto&& target)
                             {
                                 if constexpr (BuildTargetTraits::template IsProductionTarget<decltype(target)>)
@@ -297,15 +296,14 @@ namespace TestImpact
                                     // 3. There exists coverage data for this file in the source covering test list
                                     UpdateTestSourceWithCoverageAction(target, selectedTestTargetMap);
                                 }
-                            },
-                            parentTarget.GetBuildTarget());
+                            });
                     }
                 }
                 else
                 {
                     for (const auto& parentTarget : sourceDependency.GetParentTargets())
                     {
-                        AZStd::visit(
+                        parentTarget.GetBuildTarget().Visit(
                             [&selectedTestTargetMap, this](auto&& target)
                             {
                                 if constexpr (BuildTargetTraits::template IsProductionTarget<decltype(target)>)
@@ -332,8 +330,7 @@ namespace TestImpact
                                     // 3. There exists no coverage data for this file in the source covering test list
                                     UpdateTestSourceWithoutCoverageAction(target, selectedTestTargetMap);
                                 }
-                            },
-                            parentTarget.GetBuildTarget());
+                            });
                     }
                 }
             }

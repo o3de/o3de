@@ -26,6 +26,8 @@ namespace TestImpact
     class ParentTarget
     {
     public:
+        ParentTarget();
+
         template<typename TargetType>
         ParentTarget(const TargetType* target)
             : m_target(target)
@@ -53,12 +55,11 @@ namespace TestImpact
     const Target* ParentTarget<BuildTargetTraits>::GetTarget() const
     {
         const Target* buildTarget;
-        AZStd::visit(
+        m_target.Visit(
         [&buildTarget](auto&& target)
         {
             buildTarget = target;
-        },
-        m_target);
+        });
 
         return buildTarget;
     }
