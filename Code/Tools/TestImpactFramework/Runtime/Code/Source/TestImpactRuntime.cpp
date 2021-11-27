@@ -16,8 +16,8 @@
 #include <Dependency/TestImpactDynamicDependencyMap.h>
 #include <Dependency/TestImpactSourceCoveringTestsSerializer.h>
 #include <Dependency/TestImpactTestSelectorAndPrioritizer.h>
-#include <Target/Native/TestImpactNativeTestTargetList.h>
-#include <Target/Native/TestImpactNativeProductionTargetList.h>
+#include <Target/Native/TestImpactNativeTestTarget.h>
+#include <Target/Native/TestImpactNativeProductionTarget.h>
 #include <TestEngine/TestImpactTestEngine.h>
 
 #include <AzCore/IO/SystemFile.h>

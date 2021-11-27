@@ -27,8 +27,6 @@ namespace TestImpact
 {    
     class TestEngine;
     class NativeTestTarget;
-    class NativeTestTargetList;
-    class NativeProductionTargetList;
     class SourceCoveringTestsList;
     class TestTargetExclusionList;
     struct NativeBuildTargetTraits;

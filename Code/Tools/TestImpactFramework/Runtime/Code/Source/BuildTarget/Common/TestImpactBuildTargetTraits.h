@@ -9,25 +9,26 @@
 #pragma once
 
 #include <BuildTarget/Common/TestImpactBuildTarget.h>
+#include <Target/Common/TestImpactTargetList.h>
 
 #include <AzCore/std/typetraits/is_same.h>
 
 namespace TestImpact
 {
-    template<typename TestTargetListType, typename ProductionTargetListType>
+    template<typename TestTargetType, typename ProductionTargetType>
     struct BuildTargetTraits
     {
         //!
-        using TestTargetList = TestTargetListType;
+        using TestTarget = typename TestTargetType;
 
         //!
-        using ProductionTargetList = ProductionTargetListType;
+        using ProductionTarget = ProductionTargetType;
 
         //!
-        using TestTarget = typename TestTargetList::TargetType;
+        using TestTargetList = TargetList<TestTarget>;
 
         //!
-        using ProductionTarget = typename ProductionTargetList::TargetType;
+        using ProductionTargetList = TargetList<ProductionTarget>;
 
         //!
         using BuildTarget = BuildTarget<TestTarget, ProductionTarget>;

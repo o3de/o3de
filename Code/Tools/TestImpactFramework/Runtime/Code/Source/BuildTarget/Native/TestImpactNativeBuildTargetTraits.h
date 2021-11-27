@@ -9,13 +9,13 @@
 #pragma once
 
 #include <BuildTarget/Common/TestImpactBuildTargetTraits.h>
-#include <Target/Native/TestImpactNativeTestTargetList.h>
-#include <Target/Native/TestImpactNativeProductionTargetList.h>
+#include <Target/Native/TestImpactNativeTestTarget.h>
+#include <Target/Native/TestImpactNativeProductionTarget.h>
 
 namespace TestImpact
 {
     struct NativeBuildTargetTraits
-        : public BuildTargetTraits<NativeTestTargetList, NativeProductionTargetList>
+        : public BuildTargetTraits<NativeTestTarget, NativeProductionTarget>
     {
     };
 } // namespace TestImpact

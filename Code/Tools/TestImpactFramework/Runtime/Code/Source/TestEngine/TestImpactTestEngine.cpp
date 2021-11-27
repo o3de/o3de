@@ -369,6 +369,7 @@ namespace TestImpact
     //    return { CalculateSequenceResult(result, engineRuns, executionFailurePolicy), AZStd::move(engineRuns) };
     //}
 
+    //!
     template<typename TestRunner, typename TestTarget>
      AZStd::pair<ProcessSchedulerResult, AZStd::vector<TestEngineJobType<TestRunner>>> RunTests(
         TestRunner* testRunner,

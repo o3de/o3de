@@ -92,13 +92,10 @@ set(FILES
     Source/Target/Native/TestImpactNativeTarget.h
     Source/Target/Native/TestImpactNativeProductionTarget.cpp
     Source/Target/Native/TestImpactNativeProductionTarget.h
-    Source/Target/Native/TestImpactNativeProductionTargetList.h
     Source/Target/Native/TestImpactNativeTestTarget.cpp
     Source/Target/Native/TestImpactNativeTestTarget.h
-    Source/Target/Native/TestImpactNativeTestTargetList.h
     Source/Target/Python/TestImpactPythonTestTarget.cpp
     Source/Target/Python/TestImpactPythonTestTarget.h
-    Source/Target/Python/TestImpactPythonTestTargetList.h
     Source/TestRunner/Common/TestImpactTestRunnerException.h
     Source/TestRunner/Common/TestImpactTestSuiteContainer.h
     Source/TestRunner/Common/TestImpactErrorCodeChecker.cpp

@@ -55,7 +55,7 @@ namespace TestImpact
     }
 
     AZStd::unique_ptr<TestTargetExclusionList> ConstructTestTargetExcludeList(
-        const NativeTestTargetList& testTargets, AZStd::vector<TargetConfig::ExcludedTarget>&& excludedTestTargets)
+        const TargetList<typename NativeBuildTargetTraits::TestTarget>& testTargets, AZStd::vector<TargetConfig::ExcludedTarget>&& excludedTestTargets)
     {
         AZStd::unordered_map<const NativeTestTarget*, AZStd::vector<AZStd::string>> testTargetExcludeList;
         for (const auto& excludedTestTarget : excludedTestTargets)
@@ -70,11 +70,15 @@ namespace TestImpact
         return AZStd::make_unique<TestTargetExclusionList>(AZStd::move(testTargetExcludeList));
     }
 
-    AZStd::pair<AZStd::vector<const NativeTestTarget*>, AZStd::vector<const NativeTestTarget*>> SelectTestTargetsByExcludeList(
-    const TestTargetExclusionList& testTargetExcludeList, const AZStd::vector<const NativeTestTarget*>& testTargets)
+    AZStd::pair<
+        AZStd::vector<const typename NativeBuildTargetTraits::TestTarget*>,
+        AZStd::vector<const typename NativeBuildTargetTraits::TestTarget*>>
+    SelectTestTargetsByExcludeList(
+        const TestTargetExclusionList& testTargetExcludeList,
+        const AZStd::vector<const typename NativeBuildTargetTraits::TestTarget*>& testTargets)
     {
-        AZStd::vector<const NativeTestTarget*> includedTestTargets;
-        AZStd::vector<const NativeTestTarget*> excludedTestTargets;
+        AZStd::vector<const typename NativeBuildTargetTraits::TestTarget*> includedTestTargets;
+        AZStd::vector<const typename NativeBuildTargetTraits::TestTarget*> excludedTestTargets;
 
         if (testTargetExcludeList.IsEmpty())
         {
@@ -98,10 +102,13 @@ namespace TestImpact
         return { includedTestTargets, excludedTestTargets };
     }
 
-    AZStd::vector<AZStd::string> ExtractTestTargetNames(const AZStd::vector<const NativeTestTarget*>& testTargets)
+    AZStd::vector<AZStd::string> ExtractTestTargetNames(
+        const AZStd::vector<const typename NativeBuildTargetTraits::TestTarget*>& testTargets)
     {
         AZStd::vector<AZStd::string> testNames;
-        AZStd::transform(testTargets.begin(), testTargets.end(), AZStd::back_inserter(testNames), [](const NativeTestTarget* testTarget)
+        AZStd::transform(
+            testTargets.begin(), testTargets.end(), AZStd::back_inserter(testNames),
+            [](const typename NativeBuildTargetTraits::TestTarget* testTarget)
         {
             return testTarget->GetName();
         });
