@@ -50,7 +50,7 @@ public:
     GUID guid;
 
 public:
-    virtual ~CXMLObjectClassDesc() = default; 
+    virtual ~CXMLObjectClassDesc() = default;
     REFGUID ClassID() override
     {
         return guid;
@@ -1206,16 +1206,6 @@ namespace
             }
             GetIEditor()->GetObjectManager()->SelectObject(pObject);
         }
-    }
-
-    bool PyIsObjectFrozen(const char* objName)
-    {
-        CBaseObject* pObject = GetIEditor()->GetObjectManager()->FindObject(objName);
-        if (!pObject)
-        {
-            throw std::logic_error((QString("\"") + objName + "\" is an invalid object name.").toUtf8().data());
-        }
-        return pObject->IsFrozen();
     }
 
     void PyDeleteObject(const char* objName)
