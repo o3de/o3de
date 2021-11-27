@@ -60,6 +60,6 @@ namespace TestImpact
 
     //! Optional holder for optional build target types.
     template<typename TestTarget, typename ProductionTarget>
-    using OptionalBuildTarget = AZStd::variant<AZStd::monostate, const TestTarget*, const ProductionTarget*>;
+    using OptionalBuildTarget = AZStd::optional<AZStd::variant<const TestTarget*, const ProductionTarget*>>;
 
 } // namespace TestImpact

@@ -78,26 +78,15 @@ namespace TestImpact
             return productionTarget;
         }
 
-        return AZStd::monostate{};
+        return AZStd::nullopt;
     }
 
     template<typename BuildTargetTraits>
     typename typename BuildTargetTraits::BuildTarget BuildTargetList<BuildTargetTraits>::GetBuildTargetOrThrow(const AZStd::string& name) const
     {
-        typename BuildTargetTraits::BuildTarget buildTarget;
-        AZStd::visit([&buildTarget, &name](auto&& target)
-        {
-            if constexpr (BuildTargetTraits::template IsProductionTarget<decltype(target)> || BuildTargetTraits::template IsTestTarget<decltype(target)>)
-            {
-                buildTarget = target;
-            }
-            else
-            {
-                throw(TargetException(AZStd::string::format("Couldn't find target %s", name.c_str()).c_str()));
-            }
-        }, GetBuildTarget(name));
-
-        return buildTarget;
+        auto buildTarget = GetBuildTarget(name);
+        AZ_TestImpact_Eval(buildTarget.has_value(), TargetException, AZStd::string::format("Couldn't find target %s", name.c_str()).c_str());
+        return buildTarget.value();
     }
 
     template<typename BuildTargetTraits>
