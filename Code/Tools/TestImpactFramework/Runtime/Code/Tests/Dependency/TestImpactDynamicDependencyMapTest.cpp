@@ -653,7 +653,7 @@ namespace UnitTest
                     SUCCEED();
                 }
             },
-            m_dynamicDependencyMap->GetBuildTargets()->GetBuildTarget2("invalid"));
+            m_dynamicDependencyMap->GetBuildTargets()->GetBuildTarget("invalid"));
     }
 
     TEST_F(DynamicDependencyMapFixture, GetBuildTargetOrThrow_ValidBuildTargets_ExpectValidBuildTarget)
@@ -733,7 +733,7 @@ namespace UnitTest
         for (const auto& expectedProductionTarget : m_productionTargets->GetTargets())
         {
             // When retrieving the production target in the dynamic dependency map
-            auto productionTarget = m_dynamicDependencyMap->GetBuildTargets()->GetBuildTarget2(expectedProductionTarget.GetName());
+            auto productionTarget = m_dynamicDependencyMap->GetBuildTargets()->GetBuildTarget(expectedProductionTarget.GetName());
 
             // Expect the retrieved production target to match the production target we queried
             AZStd::visit(
@@ -754,7 +754,7 @@ namespace UnitTest
         for (const auto& expectedTestTarget : m_testTargets->GetTargets())
         {
             // When retrieving the test target in the dynamic dependency map
-            auto testTarget = m_dynamicDependencyMap->GetBuildTargets()->GetBuildTarget2(expectedTestTarget.GetName());
+            auto testTarget = m_dynamicDependencyMap->GetBuildTargets()->GetBuildTarget(expectedTestTarget.GetName());
 
             // Expect the retrieved production target to match the production target we queried
             AZStd::visit(
@@ -785,7 +785,7 @@ namespace UnitTest
         m_dynamicDependencyMap = AZStd::make_unique<NativeDynamicDependencyMap>(m_buildTargets.get());
 
         // When retrieving a target not in the dynamic dependency map
-        auto invalidTarget = m_dynamicDependencyMap->GetBuildTargets()->GetBuildTarget2("invalid");
+        auto invalidTarget = m_dynamicDependencyMap->GetBuildTargets()->GetBuildTarget("invalid");
 
         // Expect the retrieved target to be empty
         EXPECT_EQ(invalidTarget.index(), 0);
