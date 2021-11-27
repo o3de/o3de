@@ -105,6 +105,8 @@ void ScriptContextDebug::ConnectHook()
 void ScriptContextDebug::DisconnectHook()
 {
     lua_sethook(m_context.NativeContext(), nullptr, 0, 0);
+    m_currentStackLevel = -1;
+    m_stepStackLevel = -1;
 }
 
 //=========================================================================
@@ -651,6 +653,11 @@ void AZ::LuaHook(lua_State* l, lua_Debug* ar)
             context->PopCallstack();
         }
         context->m_currentStackLevel--;
+
+        if (context->m_currentStackLevel == -1)
+        {
+            context->m_stepStackLevel = -1;
+        }
     }
     else if (ar->event == LUA_HOOKLINE)
     {
