@@ -13,13 +13,13 @@
 namespace TestImpact
 {
     //! Represents the meta-data describing a test engine run.
-    template<typename BuildTargetTraits>
+    template<typename TestTarget>
     class TestEngineJob
         : public JobMetaWrapper
     {
     public:
         TestEngineJob(
-            const typename BuildTargetTraits::TestTarget* testTarget,
+            const typename TestTarget* testTarget,
             const AZStd::string& commandString,
             const JobMeta& jobMeta,
             Client::TestRunResult testResult,
@@ -27,7 +27,7 @@ namespace TestImpact
             AZStd::string&& stdErr);
 
         //! Returns the test target that was run for this job.
-        const typename BuildTargetTraits::TestTarget* GetTestTarget() const;
+        const typename TestTarget* GetTestTarget() const;
 
         //! Returns the result of the job that was run.
         Client::TestRunResult GetTestResult() const;
@@ -42,16 +42,16 @@ namespace TestImpact
         const AZStd::string& GetStdError() const;
 
     private:
-        const typename BuildTargetTraits::TestTarget* m_testTarget;
+        const typename TestTarget* m_testTarget;
         AZStd::string m_commandString;
         Client::TestRunResult m_testResult;
         AZStd::string m_stdOut;
         AZStd::string m_stdErr;
     };
 
-    template<typename BuildTargetTraits>
-    TestEngineJob<BuildTargetTraits>::TestEngineJob(
-        const typename BuildTargetTraits::TestTarget* testTarget,
+    template<typename TestTarget>
+    TestEngineJob<TestTarget>::TestEngineJob(
+        const typename TestTarget* testTarget,
         const AZStd::string& commandString,
         const JobMeta& jobMeta,
         Client::TestRunResult testResult,
@@ -66,32 +66,32 @@ namespace TestImpact
     {
     }
 
-    template<typename BuildTargetTraits>
-    const typename BuildTargetTraits::TestTarget* TestEngineJob<BuildTargetTraits>::GetTestTarget() const
+    template<typename TestTarget>
+    const typename TestTarget* TestEngineJob<TestTarget>::GetTestTarget() const
     {
         return m_testTarget;
     }
 
-    template<typename BuildTargetTraits>
-    const AZStd::string& TestEngineJob<BuildTargetTraits>::GetCommandString() const
+    template<typename TestTarget>
+    const AZStd::string& TestEngineJob<TestTarget>::GetCommandString() const
     {
         return m_commandString;
     }
 
-    template<typename BuildTargetTraits>
-    Client::TestRunResult TestEngineJob<BuildTargetTraits>::GetTestResult() const
+    template<typename TestTarget>
+    Client::TestRunResult TestEngineJob<TestTarget>::GetTestResult() const
     {
         return m_testResult;
     }
 
-    template<typename BuildTargetTraits>
-    const AZStd::string& TestEngineJob<BuildTargetTraits>::GetStdOutput() const
+    template<typename TestTarget>
+    const AZStd::string& TestEngineJob<TestTarget>::GetStdOutput() const
     {
         return m_stdOut;
     }
 
-    template<typename BuildTargetTraits>
-    const AZStd::string& TestEngineJob<BuildTargetTraits>::GetStdError() const
+    template<typename TestTarget>
+    const AZStd::string& TestEngineJob<TestTarget>::GetStdError() const
     {
         return m_stdErr;
     }

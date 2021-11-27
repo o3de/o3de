@@ -13,6 +13,7 @@
 #include <TestImpactFramework/TestImpactRuntime.h>
 
 #include <BuildTarget/Native/TestImpactNativeBuildTargetTraits.h>
+#include <TestEngine/Common/TestImpactTestEngine.h>
 #include <TestEngine/Common/TestImpactTestEngineEnumeration.h>
 #include <TestEngine/Common/TestImpactTestEngineInstrumentedRun.h>
 #include <TestEngine/Common/TestImpactTestEngineRegularRun.h>
@@ -27,9 +28,6 @@ namespace TestImpact
     class NativeTestEnumerator;
     class NativeInstrumentedTestRunner;
     class NativeRegularTestRunner;
-
-    //! Callback for when a given test engine job completes.
-    using TestEngineJobCompleteCallback = AZStd::function<void(const TestEngineJob<NativeBuildTargetTraits>& testJob)>;
 
     //! Provides the front end for performing test enumerations and test runs.
     class TestEngine
@@ -82,14 +80,15 @@ namespace TestImpact
         //! @param globalTimeout The maximum duration the enumeration sequence may run before being forcefully terminated (infinite if empty). 
         //! @param callback The client callback function to handle completed test target runs.
         //! @ returns The sequence result and the test run results for the test targets that were run.
-        [[nodiscard]] AZStd::pair<TestSequenceResult, AZStd::vector<TestEngineRegularRun<NativeBuildTargetTraits>>> RegularRun(
+        [[nodiscard]] AZStd::pair<TestSequenceResult, AZStd::vector<TestEngineRegularRun<typename NativeBuildTargetTraits::TestTarget>>>
+        RegularRun(
             const AZStd::vector<const NativeTestTarget*>& testTargets,
             Policy::ExecutionFailure executionFailurePolicy,
             Policy::TestFailure testFailurePolicy,
             Policy::TargetOutputCapture targetOutputCapture,
             AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
             AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
-            AZStd::optional<TestEngineJobCompleteCallback> callback) const;
+            AZStd::optional<TestEngineJobCompleteCallback<typename NativeBuildTargetTraits::TestTarget>> callback) const;
 
         //! Performs a test run with instrumentation and, for each test target, returns the test run results, coverage data and metrics about the run.
         //! @param testTargets The test targets to run.
@@ -101,7 +100,7 @@ namespace TestImpact
         //! @param globalTimeout The maximum duration the enumeration sequence may run before being forcefully terminated (infinite if empty). 
         //! @param callback The client callback function to handle completed test target runs.
         //! @ returns The sequence result and the test run results and test coverages for the test targets that were run.
-        [[nodiscard]] AZStd::pair<TestSequenceResult, AZStd::vector<TestEngineInstrumentedRun<NativeBuildTargetTraits>>> InstrumentedRun(
+        [[nodiscard]] AZStd::pair<TestSequenceResult, AZStd::vector<TestEngineInstrumentedRun<typename NativeBuildTargetTraits::TestTarget>>> InstrumentedRun(
             const AZStd::vector<const NativeTestTarget*>& testTargets,
             Policy::ExecutionFailure executionFailurePolicy,
             Policy::IntegrityFailure integrityFailurePolicy,
@@ -109,7 +108,7 @@ namespace TestImpact
             Policy::TargetOutputCapture targetOutputCapture,
             AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
             AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
-            AZStd::optional<TestEngineJobCompleteCallback> callback) const;
+            AZStd::optional<TestEngineJobCompleteCallback<typename NativeBuildTargetTraits::TestTarget>> callback) const;
 
     private:
         //! Cleans up the artifacts directory of any artifacts from previous runs.

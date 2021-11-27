@@ -16,12 +16,12 @@
 namespace TestImpact
 {
     //! Represents the generated test run data for a regular test engine run. 
-    template<typename BuildTargetTraits>
+    template<typename TestTarget>
     class TestEngineRegularRun
-        : public TestEngineJob<BuildTargetTraits>
+        : public TestEngineJob<TestTarget>
     {
     public:
-        TestEngineRegularRun(TestEngineJob<BuildTargetTraits>&& testJob, AZStd::optional<TestRun>&& testRun);
+        TestEngineRegularRun(TestEngineJob<TestTarget>&& testJob, AZStd::optional<TestRun>&& testRun);
 
         //! Returns the test run payload for this job (if any).
         const AZStd::optional<TestRun>& GetTestRun() const;
@@ -29,16 +29,16 @@ namespace TestImpact
         AZStd::optional<TestRun> m_testRun;
     };
 
-    template<typename BuildTargetTraits>
-    TestEngineRegularRun<BuildTargetTraits>::TestEngineRegularRun(
-        TestEngineJob<BuildTargetTraits>&& testJob, AZStd::optional<TestRun>&& testRun)
-        : TestEngineJob<NativeBuildTargetTraits>(AZStd::move(testJob))
+    template<typename TestTarget>
+    TestEngineRegularRun<TestTarget>::TestEngineRegularRun(
+        TestEngineJob<TestTarget>&& testJob, AZStd::optional<TestRun>&& testRun)
+        : TestEngineJob<NativeTestTarget>(AZStd::move(testJob))
         , m_testRun(AZStd::move(testRun))
     {
     }
 
-    template<typename BuildTargetTraits>
-    const AZStd::optional<TestRun>& TestEngineRegularRun<BuildTargetTraits>::GetTestRun() const
+    template<typename TestTarget>
+    const AZStd::optional<TestRun>& TestEngineRegularRun<TestTarget>::GetTestRun() const
     {
         return m_testRun;
     }

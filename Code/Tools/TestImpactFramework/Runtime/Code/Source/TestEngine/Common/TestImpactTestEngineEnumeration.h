@@ -14,12 +14,12 @@
 namespace TestImpact
 {
     //! Represents the generated test enumeration data for a test engine enumeration.
-    template<typename BuildTargetTraits>
+    template<typename TestTarget>
     class TestEngineEnumeration
-        : public TestEngineJob<BuildTargetTraits>
+        : public TestEngineJob<TestTarget>
     {
     public:
-        TestEngineEnumeration(TestEngineJob<BuildTargetTraits>&& job, AZStd::optional<TestEnumeration>&& enumeration);
+        TestEngineEnumeration(TestEngineJob<TestTarget>&& job, AZStd::optional<TestEnumeration>&& enumeration);
 
         //! Returns the test enumeration payload for this job (if any).
         const AZStd::optional<TestEnumeration>& GetTestEnumeration() const;
@@ -27,16 +27,16 @@ namespace TestImpact
         AZStd::optional<TestEnumeration> m_enumeration;
     };
 
-    template<typename BuildTargetTraits>
-    TestEngineEnumeration<BuildTargetTraits>::TestEngineEnumeration(
-        TestEngineJob<BuildTargetTraits>&& job, AZStd::optional<TestEnumeration>&& enumeration)
+    template<typename TestTarget>
+    TestEngineEnumeration<TestTarget>::TestEngineEnumeration(
+        TestEngineJob<TestTarget>&& job, AZStd::optional<TestEnumeration>&& enumeration)
         : TestEngineJob(AZStd::move(job))
         , m_enumeration(AZStd::move(enumeration))
     {
     }
 
-    template<typename BuildTargetTraits>
-    const AZStd::optional<TestEnumeration>& TestEngineEnumeration<BuildTargetTraits>::GetTestEnumeration() const
+    template<typename TestTarget>
+    const AZStd::optional<TestEnumeration>& TestEngineEnumeration<TestTarget>::GetTestEnumeration() const
     {
         return m_enumeration;
     }

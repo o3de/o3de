@@ -14,13 +14,13 @@
 namespace TestImpact
 {
     //! Represents the generated test run and coverage data for an instrumented regular test engine run.
-    template<typename BuildTargetTraits>
+    template<typename TestTarget>
     class TestEngineInstrumentedRun
-        : public TestEngineRegularRun<BuildTargetTraits>
+        : public TestEngineRegularRun<TestTarget>
     {
     public:
         TestEngineInstrumentedRun(
-            TestEngineJob<BuildTargetTraits>&& testJob,
+            TestEngineJob<TestTarget>&& testJob,
             AZStd::optional<AZStd::pair<AZStd::optional<TestRun>, TestCoverage>>&& testRunAndCoverage);
 
         //! Returns the test coverage payload for this job (if any).
@@ -38,23 +38,23 @@ namespace TestImpact
         AZStd::optional<TestCoverage> m_testCoverage;
     };
 
-    template<typename BuildTargetTraits>
-    TestEngineInstrumentedRun<BuildTargetTraits>::TestEngineInstrumentedRun(
-        TestEngineJob<BuildTargetTraits>&& testJob,
+    template<typename TestTarget>
+    TestEngineInstrumentedRun<TestTarget>::TestEngineInstrumentedRun(
+        TestEngineJob<TestTarget>&& testJob,
         AZStd::optional<AZStd::pair<AZStd::optional<TestRun>, TestCoverage>>&& testRunAndCoverage)
-        : TestEngineRegularRun<BuildTargetTraits>(AZStd::move(testJob), ReleaseTestRun(testRunAndCoverage))
+        : TestEngineRegularRun<TestTarget>(AZStd::move(testJob), ReleaseTestRun(testRunAndCoverage))
         , m_testCoverage(ReleaseTestCoverage(testRunAndCoverage))
     {
     }
 
-    template<typename BuildTargetTraits>
-    const AZStd::optional<TestCoverage>& TestEngineInstrumentedRun<BuildTargetTraits>::GetTestCoverge() const
+    template<typename TestTarget>
+    const AZStd::optional<TestCoverage>& TestEngineInstrumentedRun<TestTarget>::GetTestCoverge() const
     {
         return m_testCoverage;
     }
 
-    template<typename BuildTargetTraits>
-    AZStd::optional<TestRun> TestEngineInstrumentedRun<BuildTargetTraits>::ReleaseTestRun(
+    template<typename TestTarget>
+    AZStd::optional<TestRun> TestEngineInstrumentedRun<TestTarget>::ReleaseTestRun(
         AZStd::optional<AZStd::pair<AZStd::optional<TestRun>, TestCoverage>>& testRunAndCoverage)
     {
         if (testRunAndCoverage.has_value() && testRunAndCoverage->first.has_value())
@@ -65,8 +65,8 @@ namespace TestImpact
         return AZStd::nullopt;
     }
 
-    template<typename BuildTargetTraits>
-    AZStd::optional<TestCoverage> TestEngineInstrumentedRun<BuildTargetTraits>::ReleaseTestCoverage(
+    template<typename TestTarget>
+    AZStd::optional<TestCoverage> TestEngineInstrumentedRun<TestTarget>::ReleaseTestCoverage(
         AZStd::optional<AZStd::pair<AZStd::optional<TestRun>, TestCoverage>>& testRunAndCoverage)
     {
         if (testRunAndCoverage.has_value())

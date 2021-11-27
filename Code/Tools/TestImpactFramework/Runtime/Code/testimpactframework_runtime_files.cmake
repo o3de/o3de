@@ -134,12 +134,13 @@ set(FILES
     Source/TestRunner/Python/Run/TestImpactPythonTestRunner.cpp
     Source/TestRunner/Python/Run/TestImpactPythonTestRunner.h
     Source/TestEngine/Common/TestImpactTestEngineException.h
+    Source/TestEngine/Common/TestImpactTestEngine.h
     Source/TestEngine/Common/TestImpactTestEngineJob.h
     Source/TestEngine/Common/TestImpactTestEngineEnumeration.h
     Source/TestEngine/Common/TestImpactTestEngineRegularRun.h
     Source/TestEngine/Common/TestImpactTestEngineInstrumentedRun.h
-    Source/TestEngine/TestImpactTestEngine.cpp
-    Source/TestEngine/TestImpactTestEngine.h
+    Source/TestEngine/Native/TestImpactNativeTestEngine.cpp
+    Source/TestEngine/Native/TestImpactNativeTestEngine.h
     Source/TestImpactException.cpp
     Source/TestImpactRuntime.cpp
     Source/TestImpactRuntimeUtils.cpp
