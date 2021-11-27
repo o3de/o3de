@@ -100,7 +100,8 @@ namespace TestImpact
 
         //! The map of build targets and their covering test targets.
         //! @note As per the note for ReplaceSourceCoverageInternal, this map is currently not pruned when source coverage is replaced.
-        AZStd::unordered_map<const Target*, AZStd::unordered_set<const typename BuildTargetTraits::TestTarget*>> m_buildTargetCoverage;
+        AZStd::unordered_map<typename BuildTargetTraits::BuildTarget, AZStd::unordered_set<const typename BuildTargetTraits::TestTarget*>>
+            m_buildTargetCoverage;
 
         //! Mapping of autogen input sources to their generated output sources.
         AZStd::unordered_map<AZStd::string, AZStd::vector<AZStd::string>> m_autogenInputToOutputMap;
@@ -223,7 +224,7 @@ namespace TestImpact
                     // Build target to covering test target mapping
                     for (const auto& parentTarget : sourceDependency.m_parentTargets)
                     {
-                        m_buildTargetCoverage[parentTarget.GetTarget()].insert(testTarget);
+                        m_buildTargetCoverage[parentTarget].insert(testTarget);
                     }
                 }
                 else
@@ -305,7 +306,7 @@ namespace TestImpact
     template<typename BuildTargetTraits>
     AZStd::optional<SourceDependency<BuildTargetTraits>> DynamicDependencyMap<BuildTargetTraits>::GetSourceDependency(const RepoPath& path) const
     {
-        AZStd::unordered_set<ParentTarget<BuildTargetTraits>> parentTargets;
+        AZStd::unordered_set<typename BuildTargetTraits::BuildTarget> parentTargets;
         AZStd::unordered_set<const typename BuildTargetTraits::TestTarget*> coveringTestTargets;
 
         const auto getSourceDependency = [&parentTargets, &coveringTestTargets, this](const AZStd::string& path)

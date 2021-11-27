@@ -80,11 +80,11 @@ namespace TestImpact
     template<typename TestTarget, typename ProductionTarget>
     const Target* BuildTarget<TestTarget, ProductionTarget>::GetTarget() const
     {
-        Target* returnTarget = nullptr;
+        const Target* returnTarget = nullptr;
         Visit(
             [&returnTarget](auto&& target)
             {
-                returnTarget = &target;
+                returnTarget = &(*target);
             });
 
         return returnTarget;
@@ -93,13 +93,13 @@ namespace TestImpact
     template<typename TestTarget, typename ProductionTarget>
     const TestTarget* BuildTarget<TestTarget, ProductionTarget>::GetTestTarget() const
     {
-        TestTarget* testTarget = nullptr;
+        const TestTarget* testTarget = nullptr;
         Visit(
             [&testTarget](auto&& target)
             {
                 if constexpr (IsTestTarget<decltype(target)>)
                 {
-                    testTarget = &target;
+                    testTarget = target;
                 }
             });
 
@@ -109,13 +109,13 @@ namespace TestImpact
     template<typename TestTarget, typename ProductionTarget>
     const ProductionTarget* BuildTarget<TestTarget, ProductionTarget>::GetProductionTarget() const
     {
-        ProductionTarget* productionTarget = nullptr;
+        const ProductionTarget* productionTarget = nullptr;
         Visit(
             [&productionTarget](auto&& target)
             {
                 if constexpr (IsProductionTarget<decltype(target)>)
                 {
-                    productionTarget = &target;
+                    productionTarget = target;
                 }
             });
 
@@ -164,4 +164,24 @@ namespace TestImpact
     //! Optional holder for optional build target types.
     template<typename TestTarget, typename ProductionTarget>
     using OptionalBuildTarget = AZStd::optional<BuildTarget<TestTarget, ProductionTarget>>;
+
+    //!
+    template<typename TestTarget, typename ProductionTarget>
+    bool operator==(const BuildTarget<TestTarget, ProductionTarget>& lhs, const BuildTarget<TestTarget, ProductionTarget>& rhs)
+    {
+        return lhs.GetTarget() == rhs.GetTarget();
+    }
 } // namespace TestImpact
+
+namespace AZStd
+{
+    //! Hash function for BuildTarget types for use in maps and sets.
+    template<typename TestTarget, typename ProductionTarget>
+    struct hash<TestImpact::BuildTarget<TestTarget, ProductionTarget>>
+    {
+        size_t operator()(const TestImpact::BuildTarget<TestTarget, ProductionTarget>& buildTarget) const noexcept
+        {
+            return reinterpret_cast<size_t>(buildTarget.GetTarget());
+        }
+    };
+} // namespace AZStd

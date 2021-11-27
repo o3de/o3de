@@ -18,78 +18,10 @@
 
 namespace TestImpact
 {
-    //! Representation of a source dependency's parent target.
-
-
-    // TODO: remove this and just have BuildTarget
-    template<typename BuildTargetTraits>
-    class ParentTarget
-    {
-    public:
-        ParentTarget();
-
-        template<typename TargetType>
-        ParentTarget(const TargetType* target)
-            : m_target(target)
-        {
-        }
-
-        //! Returns the generic target pointer for this parent.
-        const Target* GetTarget() const;
-
-        //! Returns the build target pointer for this parent.
-        const typename BuildTargetTraits::BuildTarget& GetBuildTarget() const;
-
-        bool operator==(const ParentTarget& other) const;
-    private:
-        typename BuildTargetTraits::BuildTarget m_target; //! The specialized target pointer for this parent.
-    };
-
-    template<typename BuildTargetTraits>
-    bool ParentTarget<BuildTargetTraits>::operator==(const ParentTarget& other) const
-    {
-        return GetTarget() == other.GetTarget();
-    }
-
-    template<typename BuildTargetTraits>
-    const Target* ParentTarget<BuildTargetTraits>::GetTarget() const
-    {
-        const Target* buildTarget;
-        m_target.Visit(
-        [&buildTarget](auto&& target)
-        {
-            buildTarget = target;
-        });
-
-        return buildTarget;
-    }
-
-    template<typename BuildTargetTraits>
-    const typename BuildTargetTraits::BuildTarget& ParentTarget<BuildTargetTraits>::GetBuildTarget() const
-    {
-        return m_target;
-    }
-}
-
-namespace AZStd
-{
-    //! Hash function for ParentTarget types for use in maps and sets.
-    template<typename BuildTargetTraits>
-    struct hash<TestImpact::ParentTarget<BuildTargetTraits>>
-    {
-        size_t operator()(const TestImpact::ParentTarget<BuildTargetTraits>& parentTarget) const noexcept
-        {
-            return reinterpret_cast<size_t>(parentTarget.GetTarget());
-        }
-    };
-}
-
-namespace TestImpact
-{
     template<typename BuildTargetTraits>
     struct DependencyData
     {
-        AZStd::unordered_set<ParentTarget<BuildTargetTraits>> m_parentTargets;
+        AZStd::unordered_set<typename BuildTargetTraits::BuildTarget> m_parentTargets;
         AZStd::unordered_set<const typename BuildTargetTraits::TestTarget*> m_coveringTestTargets;
     };
 
@@ -110,7 +42,7 @@ namespace TestImpact
         size_t GetNumCoveringTestTargets() const;
 
         //! Returns the parent targets that this source file belongs to.
-        const AZStd::unordered_set<ParentTarget<BuildTargetTraits>>& GetParentTargets() const;
+        const AZStd::unordered_set<typename BuildTargetTraits::BuildTarget>& GetParentTargets() const;
 
         //! Returns the test targets covering this source file.
         const AZStd::unordered_set<const typename BuildTargetTraits::TestTarget*>& GetCoveringTestTargets() const;
@@ -145,7 +77,7 @@ namespace TestImpact
     }
 
     template<typename BuildTargetTraits>
-    const AZStd::unordered_set<ParentTarget<BuildTargetTraits>>& SourceDependency<BuildTargetTraits>::GetParentTargets() const
+    const AZStd::unordered_set<typename BuildTargetTraits::BuildTarget>& SourceDependency<BuildTargetTraits>::GetParentTargets() const
     {
         return m_dependencyData.m_parentTargets;
     }

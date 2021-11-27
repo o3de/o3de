@@ -26,9 +26,9 @@ namespace UnitTest
 {
     namespace
     {
+        using NativeBuildTarget = typename TestImpact::NativeBuildTargetTraits::BuildTarget;
         using NativeTestTargetList = typename TestImpact::NativeBuildTargetTraits::TestTargetList;
         using NativeProductionTargetList = typename TestImpact::NativeBuildTargetTraits::ProductionTargetList;
-        using NativeParentTarget = TestImpact::ParentTarget<TestImpact::NativeBuildTargetTraits>;
         using NativeBuildTargetList = TestImpact::BuildTargetList<TestImpact::NativeBuildTargetTraits>;
         using NativeSourceDependency = TestImpact::SourceDependency<TestImpact::NativeBuildTargetTraits>;
         using NativeDynamicDependencyMap = TestImpact::DynamicDependencyMap<TestImpact::NativeBuildTargetTraits>;
@@ -245,7 +245,7 @@ namespace UnitTest
                 EXPECT_TRUE(sourceDependency.has_value());
                 EXPECT_TRUE(sourceDependency->GetCoveringTestTargets().empty());
                 EXPECT_EQ(sourceDependency->GetNumParentTargets(), 1);
-                ValidateBuildTarget(sourceDependency->GetParentTargets().begin()->GetBuildTarget(), productionTarget);
+                ValidateBuildTarget(*sourceDependency->GetParentTargets().begin(), productionTarget);
             }
         }
 
@@ -260,7 +260,7 @@ namespace UnitTest
                 EXPECT_TRUE(sourceDependency.has_value());
                 EXPECT_TRUE(sourceDependency->GetCoveringTestTargets().empty());
                 EXPECT_EQ(sourceDependency->GetNumParentTargets(), 1);
-                ValidateBuildTarget(sourceDependency->GetParentTargets().begin()->GetBuildTarget(), testTarget);
+                ValidateBuildTarget(*sourceDependency->GetParentTargets().begin(), testTarget);
             }
         }
     }
@@ -289,7 +289,7 @@ namespace UnitTest
                 const auto sourceDependency = m_dynamicDependencyMap->GetSourceDependencyOrThrow(staticSource);
                 EXPECT_TRUE(sourceDependency.GetCoveringTestTargets().empty());
                 EXPECT_EQ(sourceDependency.GetNumParentTargets(), 1);
-                ValidateBuildTarget(sourceDependency.GetParentTargets().begin()->GetBuildTarget(), productionTarget);
+                ValidateBuildTarget(*sourceDependency.GetParentTargets().begin(), productionTarget);
             }
         }
 
@@ -303,7 +303,7 @@ namespace UnitTest
                 const auto sourceDependency = m_dynamicDependencyMap->GetSourceDependencyOrThrow(staticSource);
                 EXPECT_TRUE(sourceDependency.GetCoveringTestTargets().empty());
                 EXPECT_EQ(sourceDependency.GetNumParentTargets(), 1);
-                ValidateBuildTarget(sourceDependency.GetParentTargets().begin()->GetBuildTarget(), testTarget);
+                ValidateBuildTarget(*sourceDependency.GetParentTargets().begin(), testTarget);
             }
         }
     }
@@ -332,7 +332,7 @@ namespace UnitTest
             {
                 for (const auto& parentTarget : sourceDependency.GetParentTargets())
                 {
-                    ValidateBuildTarget(parentTarget.GetBuildTarget(), *autogenTarget);
+                    ValidateBuildTarget(parentTarget, *autogenTarget);
                 }
             });
         };
@@ -369,13 +369,13 @@ namespace UnitTest
         {
             if (AZStd::find_if(
                     autogenOutput2Dependency.GetParentTargets().begin(), autogenOutput2Dependency.GetParentTargets().end(),
-                    [&parentTarget](const NativeParentTarget& p)
+                    [&parentTarget](const NativeBuildTarget& p)
                     {
                         return parentTarget.GetTarget() == p.GetTarget();
                     }) == autogenOutput2Dependency.GetParentTargets().end() &&
                 AZStd::find_if(
                     autogenOutput3Dependency.GetParentTargets().begin(), autogenOutput3Dependency.GetParentTargets().end(),
-                    [&parentTarget](const NativeParentTarget& p)
+                    [&parentTarget](const NativeBuildTarget& p)
                     {
                         return parentTarget.GetTarget() == p.GetTarget();
                     }) == autogenOutput3Dependency.GetParentTargets().end())
@@ -407,7 +407,7 @@ namespace UnitTest
                 const auto sourceDependency = m_dynamicDependencyMap->GetSourceDependencyOrThrow(staticSource);
                 EXPECT_FALSE(sourceDependency.GetCoveringTestTargets().empty());
                 EXPECT_EQ(sourceDependency.GetNumParentTargets(), 1);
-                ValidateBuildTarget(sourceDependency.GetParentTargets().begin()->GetBuildTarget(), productionTarget);
+                ValidateBuildTarget(*sourceDependency.GetParentTargets().begin(), productionTarget);
                 ValidateSourceDependency(sourceDependency, sourceCoveringTests);
             }
         }
@@ -422,7 +422,7 @@ namespace UnitTest
                 const auto sourceDependency = m_dynamicDependencyMap->GetSourceDependencyOrThrow(staticSource);
                 EXPECT_FALSE(sourceDependency.GetCoveringTestTargets().empty());
                 EXPECT_EQ(sourceDependency.GetNumParentTargets(), 1);
-                ValidateBuildTarget(sourceDependency.GetParentTargets().begin()->GetBuildTarget(), testTarget);
+                ValidateBuildTarget(*sourceDependency.GetParentTargets().begin(), testTarget);
                 ValidateSourceDependency(sourceDependency, sourceCoveringTests);
             }
         }
@@ -493,7 +493,7 @@ namespace UnitTest
                 const auto sourceDependency = m_dynamicDependencyMap->GetSourceDependencyOrThrow(staticSource);
                 EXPECT_FALSE(sourceDependency.GetCoveringTestTargets().empty());
                 EXPECT_EQ(sourceDependency.GetNumParentTargets(), 1);
-                ValidateBuildTarget(sourceDependency.GetParentTargets().begin()->GetBuildTarget(), productionTarget);
+                ValidateBuildTarget(*sourceDependency.GetParentTargets().begin(), productionTarget);
                 ValidateSourceDependency(sourceDependency, sourceCoveringTestList);
             }
         }
@@ -508,7 +508,7 @@ namespace UnitTest
                 const auto sourceDependency = m_dynamicDependencyMap->GetSourceDependencyOrThrow(staticSource);
                 EXPECT_FALSE(sourceDependency.GetCoveringTestTargets().empty());
                 EXPECT_EQ(sourceDependency.GetNumParentTargets(), 1);
-                ValidateBuildTarget(sourceDependency.GetParentTargets().begin()->GetBuildTarget(), testTarget);
+                ValidateBuildTarget(*sourceDependency.GetParentTargets().begin(), testTarget);
                 ValidateSourceDependency(sourceDependency, sourceCoveringTestList);
             }
         }
@@ -844,7 +844,7 @@ namespace UnitTest
                     if (staticSource == "ProdAndTest.cpp")
                         continue;
                     EXPECT_EQ(sourceDependency.value().GetNumParentTargets(), 1);
-                    ValidateBuildTarget(sourceDependency.value().GetParentTargets().begin()->GetBuildTarget(), productionTarget);
+                    ValidateBuildTarget(*sourceDependency.value().GetParentTargets().begin(), productionTarget);
                 }
             }
         }
@@ -874,7 +874,7 @@ namespace UnitTest
                     if (staticSource == "ProdAndTest.cpp")
                         continue;
                     EXPECT_EQ(sourceDependency.value().GetNumParentTargets(), 1);
-                    ValidateBuildTarget(sourceDependency.value().GetParentTargets().begin()->GetBuildTarget(), testTarget);
+                    ValidateBuildTarget(*sourceDependency.value().GetParentTargets().begin(), testTarget);
                 }
             }
         }

@@ -229,7 +229,7 @@ namespace TestImpact
         {
             for (const auto& parentTarget : sourceDependency.GetParentTargets())
             {
-                parentTarget.GetBuildTarget().Visit(
+                parentTarget.Visit(
                     [&selectedTestTargetMap, this](auto&& target)
                     {
                         if constexpr (BuildTargetTraits::template IsProductionTarget<decltype(target)>)
@@ -269,7 +269,7 @@ namespace TestImpact
                 {
                     for (const auto& parentTarget : sourceDependency.GetParentTargets())
                     {
-                        parentTarget.GetBuildTarget().Visit(
+                        parentTarget.Visit(
                             [&selectedTestTargetMap, &sourceDependency, this](auto&& target)
                             {
                                 if constexpr (BuildTargetTraits::template IsProductionTarget<decltype(target)>)
@@ -303,7 +303,7 @@ namespace TestImpact
                 {
                     for (const auto& parentTarget : sourceDependency.GetParentTargets())
                     {
-                        parentTarget.GetBuildTarget().Visit(
+                        parentTarget.Visit(
                             [&selectedTestTargetMap, this](auto&& target)
                             {
                                 if constexpr (BuildTargetTraits::template IsProductionTarget<decltype(target)>)
