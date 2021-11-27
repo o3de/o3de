@@ -19,13 +19,6 @@ namespace TestImpact
     template<typename TestTarget, typename ProductionTarget>
     class BuildTarget
     {
-        //static_assert(
-        //    AZStd::is_base_of_v<Target, TestTarget>,
-        //    "TestTarget type must derive from Target class in order to interface with the DynamicDependencyMap");
-        //
-        //static_assert(
-        //    AZStd::is_base_of_v<Target, ProductionTarget>,
-        //    "ProductionTarget type must derive from Target class in order to interface with the DynamicDependencyMap");
     public:
         //!
         BuildTarget(const TestTarget* testTarget);
