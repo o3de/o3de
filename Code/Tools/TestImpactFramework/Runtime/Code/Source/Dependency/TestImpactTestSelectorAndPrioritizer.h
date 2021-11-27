@@ -28,7 +28,7 @@ namespace TestImpact
     //! For test targets, the dependency graph data is that of the build targets which the test target depends on.
     //! For production targets, the dependency graph is that of the build targets that depend on it (dependers).
     //! @note No dependency graph data is not an error, it simple means that the target cannot be prioritized.
-    using DependencyGraphDataMap = AZStd::unordered_map<const Target*, DependencyGraphData>;
+    using DependencyGraphDataMap = AZStd::unordered_map<const AZStd::string, DependencyGraphData>;
 
     //! Selects the test targets that cover a given set of changes based on the CRUD rules and optionally prioritizes the test
     //! selection according to their locality of their covering production targets in the their dependency graphs.

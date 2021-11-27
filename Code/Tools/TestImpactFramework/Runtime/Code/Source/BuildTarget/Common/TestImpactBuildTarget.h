@@ -26,7 +26,7 @@ namespace TestImpact
         //!
         BuildTarget(const ProductionTarget* productionTarget);
     
-        //! Returns the generic target pointer for this parent (if any), otherwise nullptr.
+        //! Returns the generic target pointer for this parent, otherwise nullptr.
         const Target* GetTarget() const;
     
         //! Returns the test target pointer for this parent (if any), otherwise nullptr.
