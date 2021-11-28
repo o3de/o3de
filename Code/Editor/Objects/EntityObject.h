@@ -17,7 +17,6 @@
 
 #include "IMovieSystem.h"
 #include "Gizmo.h"
-#include "StatObjBus.h"
 
 #include <QObject>
 #endif
@@ -299,7 +298,6 @@ protected:
     // Used for light entities
     float m_projectorFOV;
 
-    IStatObj* m_visualObject;
     AABB m_box;
 
     //////////////////////////////////////////////////////////////////////////

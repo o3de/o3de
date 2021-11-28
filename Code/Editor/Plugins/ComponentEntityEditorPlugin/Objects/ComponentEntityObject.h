@@ -56,7 +56,6 @@ public:
     bool SetScale(const Vec3& scale, int flags) override;
     void InvalidateTM(int nWhyFlags) override;
     void Display(DisplayContext& disp) override;
-    void OnContextMenu(QMenu* pMenu) override;
     bool HitTest(HitContext& hc) override;
     void GetLocalBounds(AABB& box) override;
     void GetBoundBox(AABB& box) override;
@@ -65,7 +64,6 @@ public:
     void SetFrozen(bool bFrozen) override;
     void SetSelected(bool bSelect) override;
     void SetHighlight(bool bHighlight) override;
-    IRenderNode* GetEngineNode() const override;
     void AttachChild(CBaseObject* child, bool bKeepPos = true) override;
     void DetachAll(bool bKeepPos = true) override;
     void DetachThis(bool bKeepPos = true) override;

@@ -33,8 +33,6 @@
 #include "ViewManager.h"
 #include "IEditorImpl.h"
 #include "GameEngine.h"
-#include <IEntityRenderState.h>
-#include <IStatObj.h>
 // To use the Andrew's algorithm in order to make convex hull from the points, this header is needed.
 #include "Util/GeometryUtil.h"
 
@@ -2307,43 +2305,6 @@ void CBaseObject::SetMinSpec(uint32 nSpec, bool bSetChildren)
             m_childs[i]->SetMinSpec(nSpec, true);
         }
     }
-}
-
-//////////////////////////////////////////////////////////////////////////
-bool CBaseObject::IntersectRayMesh(const Vec3& raySrc, const Vec3& rayDir, SRayHitInfo& outHitInfo) const
-{
-    const float fRenderMeshTestDistance = 0.2f;
-    IRenderNode* pRenderNode = GetEngineNode();
-    if (!pRenderNode)
-    {
-        return false;
-    }
-
-    Matrix34 worldTM;
-    IStatObj* pStatObj = pRenderNode->GetEntityStatObj(0, 0, &worldTM);
-    if (!pStatObj)
-    {
-        return false;
-    }
-
-    // transform decal into object space
-    Matrix34 worldTM_Inverted = worldTM.GetInverted();
-    Matrix33 worldRot(worldTM_Inverted);
-    worldRot.Transpose();
-    // put hit direction into the object space
-    Vec3 vRayDir = rayDir.GetNormalized() * worldRot;
-    // put hit position into the object space
-    Vec3 vHitPos = worldTM_Inverted.TransformPoint(raySrc);
-    Vec3 vLineP1 = vHitPos - vRayDir * fRenderMeshTestDistance;
-
-    memset(&outHitInfo, 0, sizeof(outHitInfo));
-    outHitInfo.inReferencePoint = vHitPos;
-    outHitInfo.inRay.origin = vLineP1;
-    outHitInfo.inRay.direction = vRayDir;
-    outHitInfo.bInFirstHit = false;
-    outHitInfo.bUseCache = false;
-
-    return pStatObj->RayIntersection(outHitInfo, nullptr);
 }
 
 //////////////////////////////////////////////////////////////////////////

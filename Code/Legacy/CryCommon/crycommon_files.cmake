@@ -11,7 +11,6 @@ set(FILES
     IAudioSystem.h
     ICmdLine.h
     IConsole.h
-    IEntityRenderState.h
     IFont.h
     IGem.h
     IIndexedMesh.h
@@ -29,8 +28,6 @@ set(FILES
     ISerialize.h
     IShader.h
     ISplines.h
-    IStatObj.h
-    StatObjBus.h
     ISystem.h
     ITexture.h
     IValidator.h

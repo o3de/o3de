@@ -51,7 +51,6 @@
 #include "GameExporter.h"
 #include "MainWindow.h"
 #include "LevelFileDialog.h"
-#include "StatObjBus.h"
 #include "Undo/Undo.h"
 
 #include <Atom/RPI.Public/ViewportContext.h>
@@ -245,9 +244,6 @@ void CCryEditDoc::DeleteContents()
     CrySystemEventBus::Broadcast(&CrySystemEventBus::Events::OnCryEditorCloseScene);
 
     EBUS_EVENT(AzToolsFramework::EditorEntityContextRequestBus, ResetEditorContext);
-
-    // [LY-90904] move this to the EditorVegetationManager component
-    InstanceStatObjEventBus::Broadcast(&InstanceStatObjEventBus::Events::ReleaseData);
 
     //////////////////////////////////////////////////////////////////////////
     // Clear all undo info.

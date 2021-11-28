@@ -36,7 +36,6 @@
 #include <AzToolsFramework/ToolsComponents/EditorSelectionAccentSystemComponent.h>
 #include <AzToolsFramework/ToolsComponents/EditorEntityIconComponentBus.h>
 #include <AzToolsFramework/Undo/UndoCacheInterface.h>
-#include <LmbrCentral/Rendering/RenderNodeBus.h>
 
 #include <IDisplayViewport.h>
 #include <CryCommon/Cry_GeoIntersect.h>
@@ -243,7 +242,7 @@ void CComponentEntityObject::SetSelected(bool bSelect)
     }
 
     bool anySelected = false;
-    
+
     AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(anySelected, &AzToolsFramework::ToolsApplicationRequests::AreAnyEntitiesSelected);
 
     if (!anySelected)
@@ -264,18 +263,6 @@ void CComponentEntityObject::SetHighlight(bool bHighlight)
     {
         EBUS_EVENT(AzToolsFramework::ToolsApplicationRequests::Bus, SetEntityHighlighted, m_entityId, bHighlight);
     }
-}
-
-IRenderNode* CComponentEntityObject::GetEngineNode() const
-{
-    // It's possible for AZ::Entities to have multiple IRenderNodes.
-    // However, the editor currently expects a single IRenderNode per "editor object".
-    // Therefore, return the highest priority handler.
-    if (auto* renderNodeHandler = LmbrCentral::RenderNodeRequestBus::FindFirstHandler(m_entityId))
-    {
-        return renderNodeHandler->GetRenderNode();
-    }
-    return nullptr;
 }
 
 void CComponentEntityObject::OnEntityNameChanged(const AZStd::string& name)
@@ -867,11 +854,6 @@ void CComponentEntityObject::SetWorldPos(const Vec3& pos, int flags)
         return;
     }
     CEntityObject::SetWorldPos(pos, flags);
-}
-
-void CComponentEntityObject::OnContextMenu(QMenu* /*pMenu*/)
-{
-    // Deliberately bypass the base class implementation (CEntityObject::OnContextMenu()).
 }
 
 void CComponentEntityObject::SetupEntityIcon()

@@ -35,8 +35,6 @@ struct SSubObjSelectionModifyContext;
 struct SRayHitInfo;
 class CPopupMenuItem;
 class QMenu;
-struct IRenderNode;
-struct IStatObj;
 
 //////////////////////////////////////////////////////////////////////////
 typedef _smart_ptr<CBaseObject> CBaseObjectPtr;
@@ -281,8 +279,6 @@ public:
     virtual void SetFrozen(bool bFrozen);
     //! Set object selected status.
     virtual void SetSelected(bool bSelect);
-    //! Return associated 3DEngine render node
-    virtual IRenderNode* GetEngineNode() const { return nullptr; };
     //! Set object highlighted (Note: not selected)
     virtual void SetHighlight(bool bHighlight);
     //! Check if object is highlighted.
@@ -484,8 +480,6 @@ public:
 
     //! Draw a reddish highlight indicating its budget usage.
     virtual void DrawBudgetUsage(DisplayContext& dc, const QColor& color);
-
-    bool IntersectRayMesh(const Vec3& raySrc, const Vec3& rayDir, SRayHitInfo& outHitInfo) const;
 
     bool CanBeHightlighted() const;
     bool IsSkipSelectionHelper() const;

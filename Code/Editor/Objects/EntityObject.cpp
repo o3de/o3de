@@ -28,8 +28,7 @@
 #include "HitContext.h"
 #include "Objects/SelectionGroup.h"
 
-#include <IEntityRenderState.h>
-#include <IStatObj.h>
+static constexpr int VIEW_DISTANCE_MULTIPLIER_MAX = 100;
 
 //////////////////////////////////////////////////////////////////////////
 //! Undo Entity Link
@@ -58,7 +57,6 @@ public:
 protected:
     void Release() override { delete this; };
     int GetSize() override { return sizeof(*this); }; // Return size of xml state.
-    QString GetDescription() override { return "Entity Link"; };
     QString GetObjectName() override{ return ""; };
 
     void Undo([[maybe_unused]] bool bUndo) override
@@ -139,7 +137,6 @@ private:
     }
 
     int GetSize() override { return sizeof(CUndoAttachEntity); }
-    QString GetDescription() override { return "Attachment Changed"; }
 
     GUID m_attachedEntityGUID;
     CEntityObject::EAttachmentType m_attachmentType;
@@ -163,8 +160,6 @@ namespace
 CEntityObject::CEntityObject()
 {
     m_bLoadFailed = false;
-
-    m_visualObject = nullptr;
 
     m_box.min.Set(0, 0, 0);
     m_box.max.Set(0, 0, 0);
@@ -220,7 +215,7 @@ CEntityObject::CEntityObject()
     mv_ratioLOD = 100;
     mv_viewDistanceMultiplier = 1.0f;
     mv_ratioLOD.SetLimits(0, 255);
-    mv_viewDistanceMultiplier.SetLimits(0.0f, IRenderNode::VIEW_DISTANCE_MULTIPLIER_MAX);
+    mv_viewDistanceMultiplier.SetLimits(0.0f, VIEW_DISTANCE_MULTIPLIER_MAX);
 
     m_physicsState = nullptr;
 
@@ -446,18 +441,7 @@ bool CEntityObject::HitTest(HitContext& hc)
 //////////////////////////////////////////////////////////////////////////
 bool CEntityObject::HitTestRect(HitContext& hc)
 {
-    bool bResult = false;
-
-    if (m_visualObject && !gSettings.viewports.bShowIcons && !gSettings.viewports.bShowSizeBasedIcons)
-    {
-        AABB box;
-        box.SetTransformedAABB(GetWorldTM(), m_visualObject->GetAABB());
-        bResult = HitTestRectBounds(hc, box);
-    }
-    else
-    {
-        bResult = CBaseObject::HitTestRect(hc);
-    }
+    bool bResult = CBaseObject::HitTestRect(hc);
 
     if (bResult)
     {

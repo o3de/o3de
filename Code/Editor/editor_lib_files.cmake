@@ -488,7 +488,6 @@ set(FILES
     UndoViewPosition.h
     UndoViewRotation.h
     Util/GeometryUtil.h
-    Util/KDTree.h
     WipFeaturesDlg.h
     WipFeaturesDlg.ui
     WipFeaturesDlg.qrc
@@ -709,7 +708,6 @@ set(FILES
     Util/GuidUtil.cpp
     Util/GuidUtil.h
     Util/IObservable.h
-    Util/KDTree.cpp
     Util/Mailer.h
     Util/NamedData.cpp
     Util/NamedData.h

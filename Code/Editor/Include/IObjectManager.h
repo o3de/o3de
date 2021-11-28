@@ -25,7 +25,6 @@ class CObjectArchive;
 class CViewport;
 struct HitContext;
 enum class ImageRotationDegrees;
-struct IStatObj;
 class CBaseObject;
 class XmlNodeRef;
 
