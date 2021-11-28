@@ -443,9 +443,6 @@ public:
     //! Override in derived classes, to handle specific events.
     virtual void OnEvent(ObjectEvent event);
 
-    //! Generate dynamic context menu for the object
-    virtual void OnContextMenu(QMenu* menu);
-
     //////////////////////////////////////////////////////////////////////////
     // LookAt Target.
     //////////////////////////////////////////////////////////////////////////
@@ -457,7 +454,7 @@ public:
     IObjectManager* GetObjectManager() const;
 
     //! Store undo information for this object.
-    void StoreUndo(const char* undoDescription, bool minimal = false, int flags = 0);
+    void StoreUndo(bool minimal = false, int flags = 0);
 
     //! Add event listener callback.
     void AddEventListener(EventListener* listener);

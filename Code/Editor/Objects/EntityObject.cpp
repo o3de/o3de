@@ -1410,7 +1410,7 @@ void CEntityObject::OnObjectEvent(CBaseObject* target, int event)
 //////////////////////////////////////////////////////////////////////////
 int CEntityObject::AddEventTarget(CBaseObject* target, const QString& event, const QString& sourceEvent, [[maybe_unused]] bool bUpdateScript)
 {
-    StoreUndo("Add EventTarget");
+    StoreUndo();
     CEntityEventTarget et;
     et.target = target;
     et.event = event;
@@ -1444,7 +1444,7 @@ void CEntityObject::RemoveEventTarget(int index, [[maybe_unused]] bool bUpdateSc
 {
     if (index >= 0 && index < m_eventTargets.size())
     {
-        StoreUndo("Remove EventTarget");
+        StoreUndo();
 
         if (m_eventTargets[index].pLineGizmo)
         {
@@ -1480,7 +1480,7 @@ int CEntityObject::AddEntityLink(const QString& name, GUID targetEntityId)
         }
     }
 
-    StoreUndo("Add EntityLink");
+    StoreUndo();
 
     CLineGizmo* pLineGizmo = nullptr;
 
@@ -1528,7 +1528,7 @@ void CEntityObject::RemoveEntityLink(int index)
     if (index >= 0 && index < m_links.size())
     {
         CEntityLink& link = m_links[index];
-        StoreUndo("Remove EntityLink");
+        StoreUndo();
 
         if (link.pLineGizmo)
         {
@@ -1551,7 +1551,7 @@ void CEntityObject::RenameEntityLink(int index, const QString& newName)
 {
     if (index >= 0 && index < m_links.size())
     {
-        StoreUndo("Rename EntityLink");
+        StoreUndo();
 
         if (m_links[index].pLineGizmo)
         {
@@ -1743,19 +1743,6 @@ bool CEntityObject::IsSimilarObject(CBaseObject* pObject)
         }
     }
     return false;
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CEntityObject::OnContextMenu(QMenu* pMenu)
-{
-    if (!pMenu->isEmpty())
-    {
-        pMenu->addSeparator();
-    }
-
-    // Events
-
-    CBaseObject::OnContextMenu(pMenu);
 }
 
 //////////////////////////////////////////////////////////////////////////

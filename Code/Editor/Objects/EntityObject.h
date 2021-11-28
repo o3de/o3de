@@ -95,8 +95,6 @@ public:
     void SetEntityPropertyFloat(const char* name, float value);
     void SetEntityPropertyString(const char* name, const QString& value);
 
-    void OnContextMenu(QMenu* menu) override;
-
     void SetName(const QString& name) override;
     void SetSelected(bool bSelect) override;
 

@@ -322,7 +322,7 @@ void    CObjectManager::DeleteObject(CBaseObject* obj)
         // Store undo for all child objects.
         for (int i = 0; i < obj->GetChildCount(); i++)
         {
-            obj->GetChild(i)->StoreUndo("DeleteParent");
+            obj->GetChild(i)->StoreUndo();
         }
         CUndo::Record(new CUndoBaseObjectDelete(obj));
     }

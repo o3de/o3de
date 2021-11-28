@@ -53,18 +53,16 @@ class CUndoBaseObject
     : public IUndoObject
 {
 public:
-    CUndoBaseObject(CBaseObject* pObj, const char* undoDescription);
+    CUndoBaseObject(CBaseObject* pObj);
 
 protected:
     int GetSize() override { return sizeof(*this);   }
-    QString GetDescription() override { return m_undoDescription; };
     QString GetObjectName() override;
 
     void Undo(bool bUndo) override;
     void Redo() override;
 
 protected:
-    QString m_undoDescription;
     GUID m_guid;
     XmlNodeRef m_undo;
     XmlNodeRef m_redo;
@@ -77,11 +75,10 @@ class CUndoBaseObjectMinimal
     : public IUndoObject
 {
 public:
-    CUndoBaseObjectMinimal(CBaseObject* obj, const char* undoDescription, int flags);
+    CUndoBaseObjectMinimal(CBaseObject* obj, int flags);
 
 protected:
     int GetSize() override { return sizeof(*this); }
-    QString GetDescription() override { return m_undoDescription; };
     QString GetObjectName() override;
 
     void Undo(bool bUndo) override;
@@ -101,7 +98,6 @@ private:
     void SetTransformsFromState(CBaseObject* pObject, const StateStruct& state, bool bUndo);
 
     GUID m_guid;
-    QString m_undoDescription;
     StateStruct m_undoState;
     StateStruct m_redoState;
 };
@@ -167,7 +163,6 @@ private:
     }
 
     int GetSize() override { return sizeof(CUndoAttachBaseObject); }
-    QString GetDescription() override { return "Attachment Changed"; }
 
     GUID m_attachedObjectGUID;
     GUID m_parentObjectGUID;
@@ -176,11 +171,10 @@ private:
 };
 
 //////////////////////////////////////////////////////////////////////////
-CUndoBaseObject::CUndoBaseObject(CBaseObject* obj, const char* undoDescription)
+CUndoBaseObject::CUndoBaseObject(CBaseObject* obj)
 {
     // Stores the current state of this object.
     assert(obj != 0);
-    m_undoDescription = undoDescription;
     m_guid = obj->GetId();
 
     m_redo = nullptr;
@@ -254,11 +248,10 @@ void CUndoBaseObject::Redo()
 }
 
 //////////////////////////////////////////////////////////////////////////
-CUndoBaseObjectMinimal::CUndoBaseObjectMinimal(CBaseObject* pObj, const char* undoDescription, [[maybe_unused]] int flags)
+CUndoBaseObjectMinimal::CUndoBaseObjectMinimal(CBaseObject* pObj, [[maybe_unused]] int flags)
 {
     // Stores the current state of this object.
     assert(pObj != nullptr);
-    m_undoDescription = undoDescription;
     m_guid = pObj->GetId();
 
     ZeroStruct(m_redoState);
@@ -484,7 +477,7 @@ void CBaseObject::SetName(const QString& name)
         return;
     }
 
-    StoreUndo("Name");
+    StoreUndo();
 
     // Notification is expensive and not required if this is during construction.
     bool notify = (!m_name.isEmpty());
@@ -569,7 +562,7 @@ bool CBaseObject::SetPos(const Vec3& pos, int flags)
     //////////////////////////////////////////////////////////////////////////
     if (!bPositionDelegated && (flags & eObjectUpdateFlags_RestoreUndo) == 0 && (flags & eObjectUpdateFlags_Animated) == 0)
     {
-        StoreUndo("Position", true, flags);
+        StoreUndo(true, flags);
     }
 
     if (!bPositionDelegated)
@@ -613,7 +606,7 @@ bool CBaseObject::SetRotation(const Quat& rotate, int flags)
 
     if (!bRotationDelegated && (flags & eObjectUpdateFlags_RestoreUndo) == 0 && (flags & eObjectUpdateFlags_Animated) == 0)
     {
-        StoreUndo("Rotate", true, flags);
+        StoreUndo(true, flags);
     }
 
     if (!bRotationDelegated)
@@ -658,7 +651,7 @@ bool CBaseObject::SetScale(const Vec3& scale, int flags)
 
     if (!bScaleDelegated && (flags & eObjectUpdateFlags_RestoreUndo) == 0 && (flags & eObjectUpdateFlags_Animated) == 0)
     {
-        StoreUndo("Scale", true, flags);
+        StoreUndo(true, flags);
     }
 
     if (!bScaleDelegated)
@@ -717,7 +710,7 @@ void CBaseObject::ChangeColor(const QColor& color)
         return;
     }
 
-    StoreUndo("Color", true);
+    StoreUndo(true);
 
     SetColor(color);
     SetModified(false);
@@ -737,7 +730,7 @@ void CBaseObject::SetArea(float area)
         return;
     }
 
-    StoreUndo("Area", true);
+    StoreUndo(true);
 
     m_flattenArea = area;
     SetModified(false);
@@ -1156,7 +1149,7 @@ void CBaseObject::SetHidden(bool bHidden, bool bAnimated)
     {
         if (!bAnimated)
         {
-            StoreUndo("Hide Object");
+            StoreUndo();
         }
 
         if (bHidden)
@@ -1177,7 +1170,7 @@ void CBaseObject::SetFrozen(bool bFrozen)
 {
     if (CheckFlags(OBJFLAG_FROZEN) != bFrozen)
     {
-        StoreUndo("Freeze Object");
+        StoreUndo();
         if (bFrozen)
         {
             SetFlags(OBJFLAG_FROZEN);
@@ -1484,7 +1477,7 @@ CBaseObject* CBaseObject::FindObject(REFGUID id) const
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CBaseObject::StoreUndo(const char* UndoDescription, bool minimal, int flags)
+void CBaseObject::StoreUndo(bool minimal, int flags)
 {
     // Don't use Sandbox undo for AZ entities, except for the move & scale tools, which rely on it.
     const bool isGizmoTool = 0 != (flags & (eObjectUpdateFlags_MoveTool | eObjectUpdateFlags_ScaleTool | eObjectUpdateFlags_UserInput));
@@ -1497,11 +1490,11 @@ void CBaseObject::StoreUndo(const char* UndoDescription, bool minimal, int flags
     {
         if (minimal)
         {
-            CUndo::Record(new CUndoBaseObjectMinimal(this, UndoDescription, flags));
+            CUndo::Record(new CUndoBaseObjectMinimal(this, flags));
         }
         else
         {
-            CUndo::Record(new CUndoBaseObject(this, UndoDescription));
+            CUndo::Record(new CUndoBaseObject(this));
         }
     }
 }
@@ -2156,7 +2149,7 @@ void CBaseObject::SetLookAt(CBaseObject* target)
         return;
     }
 
-    StoreUndo("Change LookAt");
+    StoreUndo();
 
     if (m_lookat)
     {
@@ -2314,19 +2307,6 @@ void CBaseObject::SetMinSpec(uint32 nSpec, bool bSetChildren)
             m_childs[i]->SetMinSpec(nSpec, true);
         }
     }
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CBaseObject::OnContextMenu(QMenu* menu)
-{
-    if (!menu->isEmpty())
-    {
-        menu->addSeparator();
-    }
-    CUsedResources resources;
-    GatherUsedResources(resources);
-
-    static_cast<CEditorImpl*>(GetIEditor())->OnObjectContextMenuOpened(menu, this);
 }
 
 //////////////////////////////////////////////////////////////////////////

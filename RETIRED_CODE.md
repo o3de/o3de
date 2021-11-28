@@ -24,3 +24,4 @@ The main goal of this list, is to enable future developers to find old code that
 | 2021-11-26 |  | CObjectArchive - unused sequence remapping, loaded object access |
 | 2021-11-26 |  | IDisplayViewport - unused interface `HitTestLine/GetGridStep/setHitcontext`|
 | 2021-11-27 |  | CBaseObject and children - unused HitHelperTest/MouseCreateCallback|
+| 2021-11-28 |  | CBaseObject - unused OnContextMenu and unused undo description strings. |
