@@ -8,7 +8,6 @@
 
 file(REAL_PATH "${CPACK_SOURCE_DIR}/.." LY_ROOT_FOLDER)
 include(${LY_ROOT_FOLDER}/cmake/Platform/Common/PackagingPostBuild_common.cmake)
-include(${LY_ROOT_FOLDER}/cmake/Platform/Common/PackagingCodeSign.cmake)
 
 file(${CPACK_PACKAGE_CHECKSUM} ${CPACK_TOPLEVEL_DIRECTORY}/${CPACK_PACKAGE_FILE_NAME}.deb file_checksum)
 file(WRITE ${CPACK_TOPLEVEL_DIRECTORY}/${CPACK_PACKAGE_FILE_NAME}.deb.sha256 "${file_checksum}  ${CPACK_PACKAGE_FILE_NAME}.deb")

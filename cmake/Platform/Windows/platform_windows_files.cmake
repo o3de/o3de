@@ -15,7 +15,6 @@ set(FILES
     ../Common/MSVC/VisualStudio_common.cmake
     ../Common/Install_common.cmake
     ../Common/LYWrappers_default.cmake
-    ../Common/PackagingCodeSign.cmake
     ../Common/PackagingPostBuild_common.cmake
     ../Common/PackagingPreBuild_common.cmake
     ../Common/TargetIncludeSystemDirectories_unsupported.cmake
@@ -26,6 +25,7 @@ set(FILES
     PALDetection_windows.cmake
     Install_windows.cmake
     Packaging_windows.cmake
+    PackagingCodeSign_windows.cmake
     PackagingPostBuild_windows.cmake
     PackagingPreBuild_windows.cmake
     Packaging/Bootstrapper.wxs
