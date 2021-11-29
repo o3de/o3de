@@ -37,15 +37,6 @@
 
 namespace
 {
-    inline Export::Vector3D Vec3ToVector3D(const Vec3& vec)
-    {
-        Export::Vector3D ret;
-        ret.x = vec.x;
-        ret.y = vec.y;
-        ret.z = vec.z;
-        return ret;
-    }
-
     const float kTangentDelta = 0.01f;
     const float kAspectRatio = 1.777778f;
     const int kReserveCount = 7; // x,y,z,rot_x,rot_y,rot_z,fov
@@ -103,22 +94,22 @@ void Export::CData::Clear()
 // CExportManager
 CExportManager::CExportManager()
     : m_isPrecaching(false)
-    , m_pBaseObj(nullptr)
-    , m_FBXBakedExportFPS(0.0f)
     , m_fScale(100.0f)
+    , m_bAnimationExport(false)
+    , m_pBaseObj(nullptr)
     ,                 // this scale is used by CryEngine RC
-    m_bAnimationExport(false)
+    m_FBXBakedExportFPS(0.0f)
     , m_bExportLocalCoords(false)
+    , m_bExportOnlyPrimaryCamera(false)
     , m_numberOfExportFrames(0)
     , m_pivotEntityObject(nullptr)
     , m_bBakedKeysSequenceExport(true)
     , m_animTimeExportPrimarySequenceCurrentTime(0.0f)
     , m_animKeyTimeExport(true)
     , m_soundKeyTimeExport(true)
-    , m_bExportOnlyPrimaryCamera(false)
 {
-    RegisterExporter(new COBJExporter());
-    RegisterExporter(new COCMExporter());
+    CExportManager::RegisterExporter(new COBJExporter());
+    CExportManager::RegisterExporter(new COCMExporter());
 }
 
 
