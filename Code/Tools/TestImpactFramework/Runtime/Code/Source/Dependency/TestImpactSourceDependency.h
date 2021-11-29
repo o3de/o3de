@@ -18,19 +18,19 @@
 
 namespace TestImpact
 {
-    template<typename BuildTargetTraits>
+    template<typename TestTarget, typename ProductionTarget>
     struct DependencyData
     {
-        AZStd::unordered_set<typename BuildTargetTraits::BuildTarget> m_parentTargets;
-        AZStd::unordered_set<const typename BuildTargetTraits::TestTarget*> m_coveringTestTargets;
+        AZStd::unordered_set<BuildTarget<TestTarget, ProductionTarget>> m_parentTargets;
+        AZStd::unordered_set<const TestTarget*> m_coveringTestTargets;
     };
 
     //! Test target coverage and build target dependency information for a given source file in the dynamic dependency map.
-    template<typename BuildTargetTraits>
+    template<typename TestTarget, typename ProductionTarget>
     class SourceDependency
     {
     public:
-        SourceDependency(const RepoPath& path, DependencyData<BuildTargetTraits>&& dependencyData);
+        SourceDependency(const RepoPath& path, DependencyData<TestTarget, ProductionTarget>&& dependencyData);
 
         //! Returns the path of this source file.
         const RepoPath& GetPath() const;
@@ -42,48 +42,48 @@ namespace TestImpact
         size_t GetNumCoveringTestTargets() const;
 
         //! Returns the parent targets that this source file belongs to.
-        const AZStd::unordered_set<typename BuildTargetTraits::BuildTarget>& GetParentTargets() const;
+        const AZStd::unordered_set<BuildTarget<TestTarget, ProductionTarget>>& GetParentTargets() const;
 
         //! Returns the test targets covering this source file.
-        const AZStd::unordered_set<const typename BuildTargetTraits::TestTarget*>& GetCoveringTestTargets() const;
+        const AZStd::unordered_set<const TestTarget*>& GetCoveringTestTargets() const;
     private:
         RepoPath m_path; //!< The path of this source file.
-        DependencyData<BuildTargetTraits> m_dependencyData; //!< The dependency data for this source file.
+        DependencyData<TestTarget, ProductionTarget> m_dependencyData; //!< The dependency data for this source file.
     };
 
-    template<typename BuildTargetTraits>
-    SourceDependency<BuildTargetTraits>::SourceDependency(const RepoPath& path, DependencyData<BuildTargetTraits>&& dependencyData)
+    template<typename TestTarget, typename ProductionTarget>
+    SourceDependency<TestTarget, ProductionTarget>::SourceDependency(const RepoPath& path, DependencyData<TestTarget, ProductionTarget>&& dependencyData)
         : m_path(path)
         , m_dependencyData(AZStd::move(dependencyData))
     {
     }
 
-    template<typename BuildTargetTraits>
-    const RepoPath& SourceDependency<BuildTargetTraits>::GetPath() const
+    template<typename TestTarget, typename ProductionTarget>
+    const RepoPath& SourceDependency<TestTarget, ProductionTarget>::GetPath() const
     {
         return m_path;
     }
 
-    template<typename BuildTargetTraits>
-    size_t SourceDependency<BuildTargetTraits>::GetNumParentTargets() const
+    template<typename TestTarget, typename ProductionTarget>
+    size_t SourceDependency<TestTarget, ProductionTarget>::GetNumParentTargets() const
     {
         return m_dependencyData.m_parentTargets.size();
     }
 
-    template<typename BuildTargetTraits>
-    size_t SourceDependency<BuildTargetTraits>::GetNumCoveringTestTargets() const
+    template<typename TestTarget, typename ProductionTarget>
+    size_t SourceDependency<TestTarget, ProductionTarget>::GetNumCoveringTestTargets() const
     {
         return m_dependencyData.m_coveringTestTargets.size();
     }
 
-    template<typename BuildTargetTraits>
-    const AZStd::unordered_set<typename BuildTargetTraits::BuildTarget>& SourceDependency<BuildTargetTraits>::GetParentTargets() const
+    template<typename TestTarget, typename ProductionTarget>
+    const AZStd::unordered_set<BuildTarget<TestTarget, ProductionTarget>>& SourceDependency<TestTarget, ProductionTarget>::GetParentTargets() const
     {
         return m_dependencyData.m_parentTargets;
     }
 
-    template<typename BuildTargetTraits>
-    const AZStd::unordered_set<const typename BuildTargetTraits::TestTarget*>& SourceDependency<BuildTargetTraits>::GetCoveringTestTargets() const
+    template<typename TestTarget, typename ProductionTarget>
+    const AZStd::unordered_set<const TestTarget*>& SourceDependency<TestTarget, ProductionTarget>::GetCoveringTestTargets() const
     {
         return m_dependencyData.m_coveringTestTargets;
     }

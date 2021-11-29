@@ -14,9 +14,10 @@
 #include <Artifact/Static/TestImpactNativeTargetDescriptorCompiler.h>
 #include <Artifact/TestImpactArtifactException.h>
 #include <BuildTarget/Common/TestImpactBuildTargetList.h>
-#include <BuildTarget/Native/TestImpactNativeBuildTargetTraits.h>
 #include <Dependency/TestImpactDependencyException.h>
 #include <Dependency/TestImpactDynamicDependencyMap.h>
+#include <Target/Native/TestImpactNativeTestTarget.h>
+#include <Target/Native/TestImpactNativeProductionTarget.h>
 
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
@@ -26,12 +27,12 @@ namespace UnitTest
 {
     namespace
     {
-        using NativeBuildTarget = typename TestImpact::NativeBuildTargetTraits::BuildTarget;
-        using NativeTestTargetList = typename TestImpact::NativeBuildTargetTraits::TestTargetList;
-        using NativeProductionTargetList = typename TestImpact::NativeBuildTargetTraits::ProductionTargetList;
-        using NativeBuildTargetList = TestImpact::BuildTargetList<TestImpact::NativeBuildTargetTraits>;
-        using NativeSourceDependency = TestImpact::SourceDependency<TestImpact::NativeBuildTargetTraits>;
-        using NativeDynamicDependencyMap = TestImpact::DynamicDependencyMap<TestImpact::NativeBuildTargetTraits>;
+        using NativeBuildTarget = TestImpact::BuildTarget<TestImpact::NativeTestTarget, TestImpact::NativeProductionTarget>;
+        using NativeTestTargetList = TestImpact::TargetList<TestImpact::NativeTestTarget>;
+        using NativeProductionTargetList = TestImpact::TargetList<TestImpact::NativeProductionTarget>;
+        using NativeBuildTargetList = TestImpact::BuildTargetList<TestImpact::NativeTestTarget, TestImpact::NativeProductionTarget>;
+        using NativeSourceDependency = TestImpact::SourceDependency<TestImpact::NativeTestTarget, TestImpact::NativeProductionTarget>;
+        using NativeDynamicDependencyMap = TestImpact::DynamicDependencyMap<TestImpact::NativeTestTarget, TestImpact::NativeProductionTarget>;
 
         void ValidateTarget(const TestImpact::NativeTarget& target, const TestImpact::NativeTarget& expectedTarget)
         {
@@ -41,7 +42,7 @@ namespace UnitTest
             EXPECT_TRUE(target.GetSources() == expectedTarget.GetSources());
         }
 
-        void ValidateBuildTarget(const typename TestImpact::NativeBuildTargetTraits::BuildTarget& buildTarget, const TestImpact::NativeTestTarget& expectedTestTarget)
+        void ValidateBuildTarget(const NativeBuildTarget& buildTarget, const TestImpact::NativeTestTarget& expectedTestTarget)
         {
             EXPECT_EQ(buildTarget.GetTargetType(), TestImpact::BuildTargetType::TestTarget);
 
@@ -53,7 +54,7 @@ namespace UnitTest
         }
 
         void ValidateBuildTarget(
-            const typename TestImpact::NativeBuildTargetTraits::BuildTarget& buildTarget, const TestImpact::NativeProductionTarget& expectedProductionTarget)
+            const NativeBuildTarget& buildTarget, const TestImpact::NativeProductionTarget& expectedProductionTarget)
         {
             EXPECT_EQ(buildTarget.GetTargetType(), TestImpact::BuildTargetType::ProductionTarget);
 
@@ -65,13 +66,12 @@ namespace UnitTest
         }
 
         void ValidateProductionTarget(
-            const typename TestImpact::NativeBuildTargetTraits::ProductionTarget& productionTarget, const TestImpact::NativeProductionTarget& expectedTarget)
+            const TestImpact::NativeProductionTarget& productionTarget, const TestImpact::NativeProductionTarget& expectedTarget)
         {
             ValidateTarget(productionTarget, expectedTarget);
         }
 
-        void ValidateTestTarget(
-            const typename TestImpact::NativeBuildTargetTraits::TestTarget& testTarget, const TestImpact::NativeTestTarget& expectedTarget)
+        void ValidateTestTarget(const TestImpact::NativeTestTarget& testTarget, const TestImpact::NativeTestTarget& expectedTarget)
         {
             ValidateTarget(testTarget, expectedTarget);
             EXPECT_EQ(testTarget.GetSuite(), expectedTarget.GetSuite());

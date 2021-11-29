@@ -34,17 +34,17 @@ namespace TestImpact
     }
 
     class RegularTestJobRunnerCallbackHandler
-        : public TestJobRunnerCallbackHandler<NativeRegularTestRunner, typename NativeBuildTargetTraits::TestTarget>
+        : public TestJobRunnerCallbackHandler<NativeRegularTestRunner, NativeTestTarget>
     {
-        using ParentHandler = TestJobRunnerCallbackHandler<NativeRegularTestRunner, typename NativeBuildTargetTraits::TestTarget>;
+        using ParentHandler = TestJobRunnerCallbackHandler<NativeRegularTestRunner, NativeTestTarget>;
 
     public:
         RegularTestJobRunnerCallbackHandler(
             const AZStd::vector<const NativeTestTarget*>& testTargets,
-            TestEngineJobMap<NativeRegularTestRunner::JobInfo::IdType, typename NativeBuildTargetTraits::TestTarget>* engineJobs,
+            TestEngineJobMap<NativeRegularTestRunner::JobInfo::IdType, NativeTestTarget>* engineJobs,
             Policy::ExecutionFailure executionFailurePolicy,
             Policy::TestFailure testFailurePolicy,
-            AZStd::optional<TestEngineJobCompleteCallback<typename NativeBuildTargetTraits::TestTarget>>* callback)
+            AZStd::optional<TestEngineJobCompleteCallback<NativeTestTarget>>* callback)
             : ParentHandler(
                     testTargets,
                     engineJobs,
@@ -62,17 +62,17 @@ namespace TestImpact
     };
 
     class InstrumentedRegularTestJobRunnerCallbackHandler
-        : public TestJobRunnerCallbackHandler<NativeInstrumentedTestRunner, typename NativeBuildTargetTraits::TestTarget>
+        : public TestJobRunnerCallbackHandler<NativeInstrumentedTestRunner, NativeTestTarget>
     {
-        using ParentHandler = TestJobRunnerCallbackHandler<NativeInstrumentedTestRunner, typename NativeBuildTargetTraits::TestTarget>;
+        using ParentHandler = TestJobRunnerCallbackHandler<NativeInstrumentedTestRunner, NativeTestTarget>;
 
     public:
         InstrumentedRegularTestJobRunnerCallbackHandler(
             const AZStd::vector<const NativeTestTarget*>& testTargets,
-            TestEngineJobMap<NativeInstrumentedTestRunner::JobInfo::IdType, typename NativeBuildTargetTraits::TestTarget>* engineJobs,
+            TestEngineJobMap<NativeInstrumentedTestRunner::JobInfo::IdType, NativeTestTarget>* engineJobs,
             Policy::ExecutionFailure executionFailurePolicy,
             Policy::TestFailure testFailurePolicy,
-            AZStd::optional<TestEngineJobCompleteCallback<typename NativeBuildTargetTraits::TestTarget>>* callback)
+            AZStd::optional<TestEngineJobCompleteCallback<NativeTestTarget>>* callback)
             : ParentHandler(
                     testTargets,
                     engineJobs,
@@ -94,7 +94,7 @@ namespace TestImpact
     template<>
     struct TestJobRunnerTrait<NativeTestEnumerator>
     {
-        using TestEngineJobType = TestEngineEnumeration<typename NativeBuildTargetTraits::TestTarget>;
+        using TestEngineJobType = TestEngineEnumeration<NativeTestTarget>;
         using TestJobRunnerCallbackHandlerType = RegularTestJobRunnerCallbackHandler; // INCORRECT!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     };
 
@@ -102,7 +102,7 @@ namespace TestImpact
     template<>
     struct TestJobRunnerTrait<NativeRegularTestRunner>
     {
-        using TestEngineJobType = TestEngineRegularRun<typename NativeBuildTargetTraits::TestTarget>;
+        using TestEngineJobType = TestEngineRegularRun<NativeTestTarget>;
         using TestJobRunnerCallbackHandlerType = RegularTestJobRunnerCallbackHandler;
     };
 
@@ -110,7 +110,7 @@ namespace TestImpact
     template<>
     struct TestJobRunnerTrait<NativeInstrumentedTestRunner>
     {
-        using TestEngineJobType = TestEngineInstrumentedRun<typename NativeBuildTargetTraits::TestTarget>;
+        using TestEngineJobType = TestEngineInstrumentedRun<NativeTestTarget>;
         using TestJobRunnerCallbackHandlerType = InstrumentedRegularTestJobRunnerCallbackHandler;
     };
                 
@@ -119,7 +119,7 @@ namespace TestImpact
     AZStd::vector<TestEngineJobType<TestJobRunner>> CompileTestEngineRuns(
         const AZStd::vector<const NativeTestTarget*>& testTargets,
         AZStd::vector<typename TestJobRunner::Job>& runnerjobs,
-        TestEngineJobMap<typename TestJobRunner::JobInfo::IdType, typename NativeBuildTargetTraits::TestTarget>&& engineJobs)
+        TestEngineJobMap<typename TestJobRunner::JobInfo::IdType, NativeTestTarget>&& engineJobs)
     {
         AZStd::vector<TestEngineJobType<TestJobRunner>> engineRuns;
         engineRuns.reserve(testTargets.size());
@@ -142,7 +142,7 @@ namespace TestImpact
                 const auto& args = job.GetJobInfo().GetCommand().m_args;
                 const auto* target = testTargets[id];
                 TestEngineJobType<TestJobRunner> run(
-                    TestEngineJob<typename NativeBuildTargetTraits::TestTarget>(target, args, {}, Client::TestRunResult::NotRun, "", ""),
+                    TestEngineJob<NativeTestTarget>(target, args, {}, Client::TestRunResult::NotRun, "", ""),
                     {});
                 engineRuns.push_back(AZStd::move(run));
             }
@@ -197,14 +197,14 @@ namespace TestImpact
     //    return { CalculateSequenceResult(result, engineRuns, executionFailurePolicy), AZStd::move(engineRuns) };
     //}
 
-    AZStd::pair<TestSequenceResult, AZStd::vector<TestEngineRegularRun<typename NativeBuildTargetTraits::TestTarget>>> TestEngine::RegularRun(
+    AZStd::pair<TestSequenceResult, AZStd::vector<TestEngineRegularRun<NativeTestTarget>>> TestEngine::RegularRun(
         const AZStd::vector<const NativeTestTarget*>& testTargets,
         Policy::ExecutionFailure executionFailurePolicy,
         Policy::TestFailure testFailurePolicy,
         Policy::TargetOutputCapture targetOutputCapture,
         AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
         AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
-        AZStd::optional<TestEngineJobCompleteCallback<typename NativeBuildTargetTraits::TestTarget>> callback) const
+        AZStd::optional<TestEngineJobCompleteCallback<NativeTestTarget>> callback) const
     {
         DeleteArtifactXmls();
 
@@ -223,7 +223,7 @@ namespace TestImpact
         return { CalculateSequenceResult(result, engineRuns, executionFailurePolicy), AZStd::move(engineRuns) };
     }
 
-    AZStd::pair<TestSequenceResult, AZStd::vector<TestEngineInstrumentedRun<typename NativeBuildTargetTraits::TestTarget>>> TestEngine::InstrumentedRun(
+    AZStd::pair<TestSequenceResult, AZStd::vector<TestEngineInstrumentedRun<NativeTestTarget>>> TestEngine::InstrumentedRun(
         const AZStd::vector<const NativeTestTarget*>& testTargets,
         Policy::ExecutionFailure executionFailurePolicy,
         Policy::IntegrityFailure integrityFailurePolicy,
@@ -231,7 +231,7 @@ namespace TestImpact
         Policy::TargetOutputCapture targetOutputCapture,
         AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
         AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
-        AZStd::optional<TestEngineJobCompleteCallback<typename NativeBuildTargetTraits::TestTarget>> callback) const
+        AZStd::optional<TestEngineJobCompleteCallback<NativeTestTarget>> callback) const
     {
         DeleteArtifactXmls();
 

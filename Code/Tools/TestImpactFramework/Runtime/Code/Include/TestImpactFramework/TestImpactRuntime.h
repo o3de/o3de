@@ -27,23 +27,23 @@ namespace TestImpact
 {    
     class TestEngine;
     class NativeTestTarget;
+    class NativeProductionTarget;
     class SourceCoveringTestsList;
     class TestTargetExclusionList;
-    struct NativeBuildTargetTraits;
 
-    template<typename BuildTargetTraits>
+    template<typename TestTarget>
     class TestEngineInstrumentedRun;
 
-    template<typename BuildTargetTraits>
+    template<typename TestTarget, typename ProdutionTarget>
     class ChangeDependencyList;
 
-    template<typename BuildTargetTraits>
+    template<typename TestTarget, typename ProdutionTarget>
     class BuildTargetList;
 
-    template<typename BuildTargetTraits>
+    template<typename TestTarget, typename ProdutionTarget>
     class DynamicDependencyMap;
 
-    template<typename BuildTargetTraits>
+    template<typename TestTarget, typename ProdutionTarget>
     class TestSelectorAndPrioritizer;
 
     //! Callback for a test sequence that isn't using test impact analysis to determine selected tests.
@@ -240,9 +240,9 @@ namespace TestImpact
         Policy::TestSharding m_testShardingPolicy;
         Policy::TargetOutputCapture m_targetOutputCapture;
         size_t m_maxConcurrency = 0;
-        AZStd::unique_ptr<BuildTargetList<NativeBuildTargetTraits>> m_buildTargets;
-        AZStd::unique_ptr<DynamicDependencyMap<NativeBuildTargetTraits>> m_dynamicDependencyMap;
-        AZStd::unique_ptr<TestSelectorAndPrioritizer<NativeBuildTargetTraits>> m_testSelectorAndPrioritizer;
+        AZStd::unique_ptr<BuildTargetList<NativeTestTarget, NativeProductionTarget>> m_buildTargets;
+        AZStd::unique_ptr<DynamicDependencyMap<NativeTestTarget, NativeProductionTarget>> m_dynamicDependencyMap;
+        AZStd::unique_ptr<TestSelectorAndPrioritizer<NativeTestTarget, NativeProductionTarget>> m_testSelectorAndPrioritizer;
         AZStd::unique_ptr<TestEngine> m_testEngine;
         AZStd::unique_ptr<TestTargetExclusionList> m_regularTestTargetExcludeList;
         AZStd::unique_ptr<TestTargetExclusionList> m_instrumentedTestTargetExcludeList;

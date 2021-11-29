@@ -12,7 +12,6 @@
 //#include <Dependency/TestImpactDynamicDependencyMap.h>
 //#include <Dependency/TestImpactDependencyException.h>
 //#include <Dependency/TestImpactTestSelectorAndPrioritizer.h>
-//#include <BuildSystem/Native/TestImpactNativeBuildTargetTraitsTraits.h>
 //
 //#include <AzCore/std/algorithm.h>
 //#include <AzCore/std/smart_ptr/unique_ptr.h>
@@ -26,9 +25,9 @@
 //    {
 //    public:
 //    protected:
-//        using NativeBuildTargetList = TestImpact::BuildTargetList<TestImpact::NativeBuildTargetTraits>; 
-//        using NativeDynamicDependencyMap = TestImpact::DynamicDependencyMap<TestImpact::NativeBuildTargetTraits>;
-//        using NativeTestSelectorAndPrioritizer = TestImpact::TestSelectorAndPrioritizer<TestImpact::NativeBuildTargetTraits>;
+//        using NativeBuildTargetList = TestImpact::BuildTargetList<NativeTestTarget, NativeProductionTarget>; 
+//        using NativeDynamicDependencyMap = TestImpact::DynamicDependencyMap<NativeTestTarget, NativeProductionTarget>;
+//        using NativeTestSelectorAndPrioritizer = TestImpact::TestSelectorAndPrioritizer<NativeTestTarget, NativeProductionTarget>;
 //
 //        AZStd::unique_ptr<NativeBuildTargetList> m_buildTargets;
 //        AZStd::unique_ptr<NativeDynamicDependencyMap> m_dynamicDependencyMap;

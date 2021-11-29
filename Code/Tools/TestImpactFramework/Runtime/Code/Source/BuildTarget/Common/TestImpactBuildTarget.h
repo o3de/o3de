@@ -9,7 +9,6 @@
 #pragma once
 
 #include <Target/Common/TestImpactTarget.h>
-#include <Target/Common/TestImpactTargetException.h> //------------------------------------------------------- MAKE BUILT
 
 #include <AzCore/std/containers/variant.h>
 #include <AzCore/std/functional.h>
@@ -63,6 +62,10 @@ namespace TestImpact
             AZStd::is_same_v<TestTarget, AZStd::remove_const_t<AZStd::remove_pointer_t<AZStd::decay_t<Target>>>>;
         AZStd::variant<const TestTarget*, const ProductionTarget*> m_target;
     };
+
+    //! Optional holder for optional build target types.
+    template<typename TestTarget, typename ProductionTarget>
+    using OptionalBuildTarget = AZStd::optional<BuildTarget<TestTarget, ProductionTarget>>;
 
     template<typename TestTarget, typename ProductionTarget>
     BuildTarget<TestTarget, ProductionTarget>::BuildTarget(const TestTarget* testTarget)
@@ -138,10 +141,6 @@ namespace TestImpact
     {
         AZStd::visit(visitor, m_target);
     }
-
-    //! Optional holder for optional build target types.
-    template<typename TestTarget, typename ProductionTarget>
-    using OptionalBuildTarget = AZStd::optional<BuildTarget<TestTarget, ProductionTarget>>;
 
     //!
     template<typename TestTarget, typename ProductionTarget>

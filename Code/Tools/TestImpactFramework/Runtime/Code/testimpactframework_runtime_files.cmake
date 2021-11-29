@@ -57,11 +57,9 @@ set(FILES
     Source/Artifact/Dynamic/TestImpactTestRunSuite.h
     Source/Artifact/Dynamic/TestImpactTestSuite.h
     Source/Artifact/Dynamic/TestImpactCoverage.h
-    Source/BuildTarget/Common/TestImpactBuildTargetTraits.h
+    Source/BuildTarget/Common/TestImpactBuildTargetException.h
     Source/BuildTarget/Common/TestImpactBuildTargetList.h
     Source/BuildTarget/Common/TestImpactBuildTarget.h
-    Source/BuildTarget/Native/TestImpactNativeBuildTargetTraits.h
-    Source/BuildTarget/Python/TestImpactPythonBuildTargetTraits.h
     Source/Process/TestImpactProcess.cpp
     Source/Process/TestImpactProcess.h
     Source/Process/TestImpactProcessException.h

@@ -8,14 +8,14 @@
 
 #pragma once
 
-#include <BuildTarget/Common/TestImpactBuildTargetTraits.h>
-#include <Target/Native/TestImpactNativeTestTarget.h>
-#include <Target/Native/TestImpactNativeProductionTarget.h>
+#include <TestImpactFramework/TestImpactException.h>
 
 namespace TestImpact
 {
-    struct NativeBuildTargetTraits
-        : public BuildTargetTraits<NativeTestTarget, NativeProductionTarget>
+    //! Exception for build target and build target-related operations.
+    class BuildTargetException : public Exception
     {
+    public:
+        using Exception::Exception;
     };
 } // namespace TestImpact
