@@ -6,6 +6,7 @@
  *
  */
 
+#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 #include <AzToolsFramework/ToolsComponents/TransformComponent.h>
 
@@ -39,8 +40,11 @@ namespace UnitTest
         AZ::EntityId createdEntityId = createEntityResult.GetValue();
         ASSERT_TRUE(createdEntityId.IsValid());
 
-        AZ::IO::FixedMaxPath path = "F:\\EngineRoot/";
-        path.MakePreferred();
+        //AZ::IO::FixedMaxPath path = "/F:\\EngineRoot/";
+        //path.MakePreferred();
+        AZ::SettingsRegistryInterface* registry = AZ::SettingsRegistry::Get();
+        AZ::IO::FixedMaxPath path;
+        registry->Get(path.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder);
         CreatePrefabResult createPrefabResult = m_prefabPublicInterface->CreatePrefabInMemory(
             AzToolsFramework::EntityIdList{ createdEntityId }, path);
         PropagateAllTemplateChanges();
