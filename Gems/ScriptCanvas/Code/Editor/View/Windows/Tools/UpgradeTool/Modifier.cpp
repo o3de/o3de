@@ -32,6 +32,14 @@ namespace ScriptCanvasEditor
             AZ::SystemTickBus::Handler::BusConnect();
         }
 
+        size_t Modifier::GetCurrentIndex() const
+        {
+            return m_state == State::GatheringDependencies
+                ? m_assetIndex
+                : m_dependencyOrderedAssetIndicies[m_assetIndex];
+
+        }
+
         AZStd::unordered_set<size_t>& Modifier::GetOrCreateDependencyIndexSet()
         {
             auto iter = m_dependencies.find(m_assetIndex);
@@ -55,10 +63,10 @@ namespace ScriptCanvasEditor
             AZ_Assert(serializeContext, "SerializeContext is required to enumerate dependent assets in the ScriptCanvas file");
 
             bool anyFailures = false;
-            auto asset = LoadAsset();
-            if (asset.Get() && asset.Mod()->GetGraphData())
+
+            if (m_result.asset.Get() && m_result.asset.Mod()->GetGraphData())
             {
-                auto graphData = asset.Mod()->GetGraphData();
+                auto graphData = m_result.asset.Mod()->GetGraphData();
 
                 auto dependencyGrabber = [this]
                     ( void* instancePointer
@@ -94,19 +102,19 @@ namespace ScriptCanvasEditor
                 {
                     anyFailures = true;
                         VE_LOG("Modifier: ERROR - Failed to gather dependencies from graph data: %s"
-                        , ModCurrentAsset().Path().c_str())
+                        , m_result.asset.Path().c_str())
                 }
             }
             else
             {
                 anyFailures = true;
                 VE_LOG("Modifier: ERROR - Failed to load asset %s for modification, even though it scanned properly"
-                    , ModCurrentAsset().Path().c_str());
+                    , m_result.asset.Path().c_str());
             }
             
             ModelNotificationsBus::Broadcast
                 ( &ModelNotificationsTraits::OnUpgradeDependenciesGathered
-                , ModCurrentAsset()
+                , m_result.asset
                 , anyFailures ? Result::Failure : Result::Success);
 
             ReleaseCurrentAsset();
@@ -115,9 +123,9 @@ namespace ScriptCanvasEditor
             AZ::Data::AssetManager::Instance().DispatchEvents();
         }
 
-        SourceHandle Modifier::LoadAsset()
+        void Modifier::LoadAsset()
         {
-            auto& handle = ModCurrentAsset();
+            auto& handle = m_result.asset;
             if (!handle.IsGraphValid())
             {
                 auto outcome = LoadFromFile(handle.Path().c_str());
@@ -126,8 +134,6 @@ namespace ScriptCanvasEditor
                     handle = outcome.TakeValue();
                 }
             }
-
-            return handle;
         }
 
         void Modifier::ModificationComplete(const ModificationResult& result)
@@ -144,25 +150,18 @@ namespace ScriptCanvasEditor
             }
         }
 
-        SourceHandle& Modifier::ModCurrentAsset()
-        {
-            return m_state == State::GatheringDependencies
-                ? m_assets[m_assetIndex]
-                : m_assets[m_dependencyOrderedAssetIndicies[m_assetIndex]];
-        }
-
         void Modifier::ModifyCurrentAsset()
         {
             m_result = {};
-            m_result.asset = ModCurrentAsset();
+            m_result.asset = m_assets[GetCurrentIndex()];
+            ModelNotificationsBus::Broadcast(&ModelNotificationsTraits::OnUpgradeModificationBegin, m_config, m_result.asset);
+            LoadAsset();
 
-            ModelNotificationsBus::Broadcast(&ModelNotificationsTraits::OnUpgradeModificationBegin, m_config, ModCurrentAsset());
-
-            if (auto asset = LoadAsset(); asset.IsGraphValid())
+            if (m_result.asset.IsGraphValid())
             {
                 ModificationNotificationsBus::Handler::BusConnect();
                 m_modifyState = ModifyState::InProgress;
-                m_config.modification(asset);
+                m_config.modification(m_result.asset);
             }
             else
             {
@@ -173,7 +172,7 @@ namespace ScriptCanvasEditor
         void Modifier::ModifyNextAsset()
         {
             ModelNotificationsBus::Broadcast
-                ( &ModelNotificationsTraits::OnUpgradeModificationEnd, m_config, ModCurrentAsset(), m_result);
+                ( &ModelNotificationsTraits::OnUpgradeModificationEnd, m_config, m_result.asset, m_result);
             ModificationNotificationsBus::Handler::BusDisconnect();
             m_modifyState = ModifyState::Idle;
             ReleaseCurrentAsset();
@@ -183,7 +182,7 @@ namespace ScriptCanvasEditor
 
         void Modifier::ReleaseCurrentAsset()
         {
-            ModCurrentAsset() = ModCurrentAsset().Describe();
+            m_result.asset = m_result.asset.Describe();
         }
 
         void Modifier::ReportModificationError(AZStd::string_view report)
@@ -381,7 +380,7 @@ namespace ScriptCanvasEditor
                     (ScriptCanvas::k_VersionExplorerWindow.data()
                     , false
                     , "Modifier: Dependency sort has failed during, circular dependency detected for Asset: %s"
-                    , modifier->ModCurrentAsset().Path().c_str());
+                    , modifier->m_result.asset.Path().c_str());
                 return;
             }
 
