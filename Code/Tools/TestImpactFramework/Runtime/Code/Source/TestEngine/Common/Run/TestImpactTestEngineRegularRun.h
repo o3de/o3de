@@ -10,7 +10,7 @@
 
 #include <TestImpactFramework/TestImpactClientTestRun.h>
 
-#include <TestEngine/Common/TestImpactTestEngineJob.h>
+#include <TestEngine/Common/Job/TestImpactTestEngineJob.h>
 #include <TestRunner/Common/Run/TestImpactTestRun.h>
 
 namespace TestImpact

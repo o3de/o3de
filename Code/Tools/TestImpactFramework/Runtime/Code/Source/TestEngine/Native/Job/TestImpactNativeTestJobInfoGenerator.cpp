@@ -7,8 +7,8 @@
  */
 
 #include <Target/Native/TestImpactNativeTestTarget.h>
-#include <TestRunner/Native/Job/TestImpactNativeTestJobInfoGenerator.h>
-#include <TestRunner/Native/Job/TestImpactNativeTestTargetExtension.h>
+#include <TestEngine/Native/Job/TestImpactNativeTestJobInfoGenerator.h>
+#include <TestEngine/Native/TestImpactNativeTestTargetExtension.h>
 
 namespace TestImpact
 {

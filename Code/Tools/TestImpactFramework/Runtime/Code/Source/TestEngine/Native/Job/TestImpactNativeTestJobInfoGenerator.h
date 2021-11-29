@@ -9,9 +9,9 @@
 #pragma once
 
 #include <Artifact/Dynamic/TestImpactCoverage.h>
-#include <TestRunner/Native/Enumeration/TestImpactNativeTestEnumerator.h>
-#include <TestRunner/Native/Run/TestImpactNativeInstrumentedTestRunner.h>
-#include <TestRunner/Native/Run/TestImpactNativeRegularTestRunner.h>
+#include <TestRunner/Native/TestImpactNativeTestEnumerator.h>
+#include <TestRunner/Native/TestImpactNativeInstrumentedTestRunner.h>
+#include <TestRunner/Native/TestImpactNativeRegularTestRunner.h>
 
 #include <AzCore/std/containers/vector.h>
 

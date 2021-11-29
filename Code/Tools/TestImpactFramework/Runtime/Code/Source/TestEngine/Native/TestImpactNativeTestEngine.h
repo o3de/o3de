@@ -13,9 +13,9 @@
 #include <TestImpactFramework/TestImpactRuntime.h>
 
 #include <TestEngine/Common/TestImpactTestEngine.h>
-#include <TestEngine/Common/TestImpactTestEngineEnumeration.h>
-#include <TestEngine/Common/TestImpactTestEngineInstrumentedRun.h>
-#include <TestEngine/Common/TestImpactTestEngineRegularRun.h>
+#include <TestEngine/Common/Enumeration/TestImpactTestEngineEnumeration.h>
+#include <TestEngine/Common/Run/TestImpactTestEngineInstrumentedRun.h>
+#include <TestEngine/Common/Run/TestImpactTestEngineRegularRun.h>
 
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>

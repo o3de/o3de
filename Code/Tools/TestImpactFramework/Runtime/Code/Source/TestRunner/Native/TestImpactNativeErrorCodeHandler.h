@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <TestRunner/Common/TestImpactErrorCodeChecker.h>
+#include <TestEngine/Common/TestImpactErrorCodeChecker.h>
 
 namespace TestImpact
 {

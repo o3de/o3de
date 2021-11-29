@@ -13,6 +13,6 @@ set(FILES
     Process/TestImpactWin32_Handle.h
     Process/TestImpactWin32_Pipe.cpp
     Process/TestImpactWin32_Pipe.h
-    TestRunner/Native/TestImpactWin32_NativeErrorCodeChecker.cpp
-    TestRunner/Native/Job/TestImpactWin32_NativeTestTargetExtension.cpp
+    TestEngine/Native/TestImpactWin32_NativeErrorCodeChecker.cpp
+    TestEngine/Native/Job/TestImpactWin32_NativeTestTargetExtension.cpp
 )

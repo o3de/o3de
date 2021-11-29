@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <TestRunner/Python/Run/TestImpactPythonTestRunner.h>
+#include <TestRunner/Python/TestImpactPythonTestRunner.h>
 
 namespace TestImpact
 {

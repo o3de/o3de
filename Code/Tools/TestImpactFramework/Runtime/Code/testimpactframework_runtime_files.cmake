@@ -95,23 +95,21 @@ set(FILES
     Source/Target/Python/TestImpactPythonTestTarget.cpp
     Source/Target/Python/TestImpactPythonTestTarget.h
     Source/TestRunner/Common/TestImpactTestRunnerException.h
+    Source/TestRunner/Common/TestImpactTestRunnerBase.h
+    Source/TestRunner/Common/TestImpactTestRunner.h
+    Source/TestRunner/Common/TestImpactTestRunnerWithCoverage.h
+    Source/TestRunner/Common/TestImpactTestEnumerator.h
     Source/TestRunner/Common/TestImpactTestSuiteContainer.h
-    Source/TestRunner/Common/TestImpactErrorCodeChecker.cpp
-    Source/TestRunner/Common/TestImpactErrorCodeChecker.h
-    Source/TestRunner/Common/Job/TestImpactTestJobRunner.h
     Source/TestRunner/Common/Job/TestImpactTestRunWithCoverageJobData.cpp
     Source/TestRunner/Common/Job/TestImpactTestRunWithCoverageJobData.h
     Source/TestRunner/Common/Job/TestImpactTestEnumerationJobData.cpp
     Source/TestRunner/Common/Job/TestImpactTestEnumerationJobData.h
     Source/TestRunner/Common/Job/TestImpactTestRunJobData.cpp
     Source/TestRunner/Common/Job/TestImpactTestRunJobData.h
-    Source/TestRunner/Common/Enumeration/TestImpactTestEnumerator.h
+    Source/TestRunner/Common/Job/TestImpactTestJobRunner.h
     Source/TestRunner/Common/Enumeration/TestImpactTestEnumeration.h
     Source/TestRunner/Common/Enumeration/TestImpactTestEnumerationSerializer.cpp
     Source/TestRunner/Common/Enumeration/TestImpactTestEnumerationSerializer.h
-    Source/TestRunner/Common/Run/TestImpactTestRunnerBase.h
-    Source/TestRunner/Common/Run/TestImpactTestRunner.h
-    Source/TestRunner/Common/Run/TestImpactTestRunnerWithCoverage.h
     Source/TestRunner/Common/Run/TestImpactTestCoverage.cpp
     Source/TestRunner/Common/Run/TestImpactTestCoverage.h
     Source/TestRunner/Common/Run/TestImpactTestRun.cpp
@@ -120,25 +118,29 @@ set(FILES
     Source/TestRunner/Common/Run/TestImpactTestRunSerializer.h
     Source/TestRunner/Native/TestImpactNativeErrorCodeHandler.cpp
     Source/TestRunner/Native/TestImpactNativeErrorCodeHandler.h
-    Source/TestRunner/Native/Enumeration/TestImpactNativeTestEnumerator.h
-    Source/TestRunner/Native/Job/TestImpactNativeTestJobInfoGenerator.cpp
-    Source/TestRunner/Native/Job/TestImpactNativeTestJobInfoGenerator.h
+    Source/TestRunner/Native/TestImpactNativeInstrumentedTestRunner.h
+    Source/TestRunner/Native/TestImpactNativeRegularTestRunner.h
+    Source/TestRunner/Native/TestImpactNativeTestEnumerator.h
     Source/TestRunner/Native/Job/TestImpactNativeTestRunJobData.h
-    Source/TestRunner/Native/Job/TestImpactNativeTestTargetExtension.h
-    Source/TestRunner/Native/Run/TestImpactNativeInstrumentedTestRunner.h
-    Source/TestRunner/Native/Run/TestImpactNativeRegularTestRunner.h
-    Source/TestRunner/Python/Job/TestImpactPythonTestJobInfoGenerator.cpp
-    Source/TestRunner/Python/Job/TestImpactPythonTestJobInfoGenerator.h
-    Source/TestRunner/Python/Run/TestImpactPythonTestRunner.cpp
-    Source/TestRunner/Python/Run/TestImpactPythonTestRunner.h
+    Source/TestRunner/Python/TestImpactPythonTestRunner.cpp
+    Source/TestRunner/Python/TestImpactPythonTestRunner.h
     Source/TestEngine/Common/TestImpactTestEngineException.h
+    Source/TestEngine/Common/TestImpactErrorCodeChecker.cpp
+    Source/TestEngine/Common/TestImpactErrorCodeChecker.h
+    Source/TestEngine/Common/TestImpactTestEngineArtifactDirectory.cpp
+    Source/TestEngine/Common/TestImpactTestEngineArtifactDirectory.h
     Source/TestEngine/Common/TestImpactTestEngine.h
-    Source/TestEngine/Common/TestImpactTestEngineJob.h
-    Source/TestEngine/Common/TestImpactTestEngineEnumeration.h
-    Source/TestEngine/Common/TestImpactTestEngineRegularRun.h
-    Source/TestEngine/Common/TestImpactTestEngineInstrumentedRun.h
+    Source/TestEngine/Common/Job/TestImpactTestEngineJob.h
+    Source/TestEngine/Common/Enumeration/TestImpactTestEngineEnumeration.h
+    Source/TestEngine/Common/Run/TestImpactTestEngineRegularRun.h
+    Source/TestEngine/Common/Run/TestImpactTestEngineInstrumentedRun.h
     Source/TestEngine/Native/TestImpactNativeTestEngine.cpp
     Source/TestEngine/Native/TestImpactNativeTestEngine.h
+    Source/TestEngine/Native/TestImpactNativeTestTargetExtension.h
+    Source/TestEngine/Native/Job/TestImpactNativeTestJobInfoGenerator.cpp
+    Source/TestEngine/Native/Job/TestImpactNativeTestJobInfoGenerator.h
+    Source/TestEngine/Python/Job/TestImpactPythonTestJobInfoGenerator.cpp
+    Source/TestEngine/Python/Job/TestImpactPythonTestJobInfoGenerator.h
     Source/TestImpactException.cpp
     Source/TestImpactRuntime.cpp
     Source/TestImpactRuntimeUtils.cpp

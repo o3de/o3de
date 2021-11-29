@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <TestRunner/Common/Enumeration/TestImpactTestEnumerator.h>
+#include <TestRunner/Common/TestImpactTestEnumerator.h>
 #include <TestRunner/Common/Job/TestImpactTestEnumerationJobData.h>
 
 

@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <TestEngine/Common/TestImpactTestEngineRegularRun.h>
+#include <TestEngine/Common/Run/TestImpactTestEngineRegularRun.h>
 #include <TestRunner/Common/Run/TestImpactTestCoverage.h>
 
 namespace TestImpact

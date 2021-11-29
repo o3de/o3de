@@ -15,7 +15,7 @@
 #include <TestRunner/Common/TestImpactTestRunnerException.h>
 #include <TestRunner/Common/Job/TestImpactTestRunWithCoverageJobData.h>
 #include <TestRunner/Common/Run/TestImpactTestCoverage.h>
-#include <TestRunner/Common/Run/TestImpactTestRunnerWithCoverage.h>
+#include <TestRunner/Common/TestImpactTestRunnerWithCoverage.h>
 
 namespace TestImpact
 {

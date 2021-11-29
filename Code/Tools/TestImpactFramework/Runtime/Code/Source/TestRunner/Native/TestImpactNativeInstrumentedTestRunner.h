@@ -13,7 +13,7 @@
 #include <Artifact/Factory/TestImpactTestRunSuiteFactory.h>
 #include <Artifact/Factory/TestImpactModuleCoverageFactory.h>
 #include <TestRunner/Common/TestImpactTestRunnerException.h>
-#include <TestRunner/Common/Run/TestImpactTestRunnerWithCoverage.h>
+#include <TestRunner/Common/TestImpactTestRunnerWithCoverage.h>
 #include <TestRunner/Common/Run/TestImpactTestCoverage.h>
 #include <TestRunner/Common/Job/TestImpactTestRunWithCoverageJobData.h>
 #include <TestRunner/Native/Job/TestImpactNativeTestRunJobData.h>

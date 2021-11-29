@@ -6,7 +6,7 @@
  *
  */
 
-#include <TestRunner/Python/Run/TestImpactPythonTestRunner.h>
+#include <TestRunner/Python/TestImpactPythonTestRunner.h>
 
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzTest/AzTest.h>

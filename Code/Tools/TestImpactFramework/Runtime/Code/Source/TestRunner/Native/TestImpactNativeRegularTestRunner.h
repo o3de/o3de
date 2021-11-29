@@ -12,7 +12,7 @@
 
 #include <Artifact/Factory/TestImpactTestRunSuiteFactory.h>
 #include <TestRunner/Common/TestImpactTestRunnerException.h>
-#include <TestRunner/Common/Run/TestImpactTestRunner.h>
+#include <TestRunner/Common/TestImpactTestRunner.h>
 #include <TestRunner/Common/Job/TestImpactTestRunJobData.h>
 #include <TestRunner/Native/Job/TestImpactNativeTestRunJobData.h>
 

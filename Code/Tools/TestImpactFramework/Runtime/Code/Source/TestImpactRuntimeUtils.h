@@ -18,7 +18,7 @@
 #include <Dependency/TestImpactSourceCoveringTestsList.h>
 #include <BuildTarget/Common/TestImpactBuildTarget.h>
 #include <Target/Native/TestImpactNativeTestTarget.h>
-#include <TestEngine/Common/TestImpactTestEngineInstrumentedRun.h>
+#include <TestEngine/Common/Run/TestImpactTestEngineInstrumentedRun.h>
 #include <TestRunner/Common/Enumeration/TestImpactTestEnumeration.h>
 #include <TestImpactTestTargetExclusionList.h>
 

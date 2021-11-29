@@ -7,8 +7,8 @@
  */
 
 #include <Process/Scheduler/TestImpactProcessScheduler.h>
-#include <TestEngine/Common/TestImpactTestEngineJob.h>
-#include <TestRunner/Common/TestImpactErrorCodeChecker.h>
+#include <TestEngine/Common/TestImpactErrorCodeChecker.h>
+#include <TestEngine/Common/Job/TestImpactTestEngineJob.h>
 
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/containers/vector.h>

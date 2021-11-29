@@ -11,12 +11,12 @@
 #include <Target/Native/TestImpactnativeTestTarget.h>
 #include <TestEngine/Common/TestImpactTestEngineException.h>
 #include <TestEngine/Native/TestImpactNativeTestEngine.h>
-#include <TestRunner/Common/TestImpactErrorCodeChecker.h>
+#include <TestEngine/Common/TestImpactErrorCodeChecker.h>
 #include <TestRunner/Native/TestImpactNativeErrorCodeHandler.h>
-#include <TestRunner/Native/Enumeration/TestImpactNativeTestEnumerator.h>
-#include <TestRunner/Native/Run/TestImpactNativeInstrumentedTestRunner.h>
-#include <TestRunner/Native/Run/TestImpactNativeRegularTestRunner.h>
-#include <TestRunner/Native/Job/TestImpactNativeTestJobInfoGenerator.h>
+#include <TestRunner/Native/TestImpactNativeTestEnumerator.h>
+#include <TestRunner/Native/TestImpactNativeInstrumentedTestRunner.h>
+#include <TestRunner/Native/TestImpactNativeRegularTestRunner.h>
+#include <TestEngine/Native/Job/TestImpactNativeTestJobInfoGenerator.h>
 
 namespace TestImpact
 {
