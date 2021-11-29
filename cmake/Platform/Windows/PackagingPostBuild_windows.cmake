@@ -8,6 +8,7 @@
 
 file(REAL_PATH "${CPACK_SOURCE_DIR}/.." LY_ROOT_FOLDER)
 include(${LY_ROOT_FOLDER}/cmake/Platform/Common/PackagingPostBuild_common.cmake)
+include(${CPACK_CODESIGN_SCRIPT})
 
 # convert the path to a windows style path using string replace because TO_NATIVE_PATH
 # only works on real paths
