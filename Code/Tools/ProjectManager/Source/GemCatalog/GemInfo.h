@@ -73,7 +73,7 @@ namespace O3DE::ProjectManager
 
         QString m_path;
         QString m_name = "Unknown Gem Name";
-        QString m_displayName = "Unknown Gem Name";
+        QString m_displayName;
         QString m_creator = "Unknown Creator";
         GemOrigin m_gemOrigin = Local;
         bool m_isAdded = false; //! Is the gem currently added and enabled in the project?
