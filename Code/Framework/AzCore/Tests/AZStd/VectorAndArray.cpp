@@ -799,7 +799,7 @@ namespace UnitTest
     TEST_F(Arrays, FixedVectorCXX20Erase_Succeeds)
     {
         // Erase 'l' from the phrase "Hello" World"
-        auto eraseTest = [](AZStd::initializer_list<char> testInit) 
+        auto eraseTest = [](AZStd::initializer_list<char> testInit)
         {
             AZStd::fixed_vector<char, 16> testResult{ testInit };
             AZStd::erase(testResult, 'l');
