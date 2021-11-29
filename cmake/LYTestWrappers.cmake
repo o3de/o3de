@@ -32,6 +32,7 @@ endif()
 # Set and create folders for PyTest and GTest xml output
 ly_set(PYTEST_XML_OUTPUT_DIR ${CMAKE_BINARY_DIR}/Testing/Pytest)
 ly_set(GTEST_XML_OUTPUT_DIR ${CMAKE_BINARY_DIR}/Testing/Gtest)
+ly_set(LYTESTTOOLS_OUTPUT_DIR ${CMAKE_BINARY_DIR}/Testing/LyTestTools)
 file(MAKE_DIRECTORY ${PYTEST_XML_OUTPUT_DIR})
 file(MAKE_DIRECTORY ${GTEST_XML_OUTPUT_DIR})
 
@@ -309,11 +310,10 @@ function(ly_add_pytest)
     endif()
 
     string(REPLACE "::" "_" pytest_report_directory "${PYTEST_XML_OUTPUT_DIR}/${ly_add_pytest_NAME}.xml")
+    string(REPLACE "::" "_" pytest_output_directory "${LYTESTTOOLS_OUTPUT_DIR}/${ly_add_pytest_NAME}")
 
     # Add the script path to the test target params
     set(LY_TEST_PARAMS "${ly_add_pytest_PATH}")
-
-    string(REPLACE "::" "_" pytest_output_directory "${CMAKE_BINARY_DIR}/Testing/LyTestTools/${ly_add_pytest_NAME}")
 
     ly_add_test(
         NAME ${ly_add_pytest_NAME}
