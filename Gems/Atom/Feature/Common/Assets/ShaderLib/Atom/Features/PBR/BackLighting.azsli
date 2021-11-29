@@ -16,24 +16,26 @@
 #include <Atom/Features/PBR/LightingOptions.azsli>
 
 // Analytical integation (approximation) of diffusion profile over radius, could be replaced by other pre integrated kernels
-// such as sum of Gaussian
+// such as sum of Gaussian (see T(s))
 float3 TransmissionKernel(float t, float3 s)
 {
     float3 exponent = s * t;
     return 0.25 * (1.0 / exp(exponent) + 3.0 / exp(exponent / 3.0));
 }
 
-float ThinObjectFalloff(const float3 surfaceNormal, const float3 dirToLight)
+// Analytical integation (approximation) of diffusion profile over radius, could be precomputed in a LUT
+float3 T(float s) 
 {
-    const float ndl = saturate(dot(-surfaceNormal, dirToLight));
-    
-    // ndl works decently well but it can produce a harsh discontinuity in the area just before 
-    // the shadow starts appearing on objects like cylinder and tubes.
-    // Smoothing out ndl does a decent enough job of removing this artifact.
-    return smoothstep(0, 1, ndl * ndl);
+    // dipoles and multipoles are approximated with sums of a small number of Gaussians with variable weights and variances
+    return float3(0.233, 0.455, 0.649) * exp(-s*s/0.0064) +
+    float3(0.1, 0.336, 0.344) * exp(-s*s/0.0484) +
+    float3(0.118, 0.198, 0.0) * exp(-s*s/0.187) +
+    float3(0.113, 0.007, 0.007) * exp(-s*s/0.567) +
+    float3(0.358, 0.004, 0.0) * exp(-s*s/1.99) +
+    float3(0.078, 0.0, 0.0) * exp(-s*s/7.41);
 }
 
-float3 GetBackLighting(Surface surface, LightingData lightingData, float3 lightIntensity, float3 dirToLight, float shadowRatio)
+float3 GetBackLighting(Surface surface, LightingData lightingData, float3 lightIntensity, float3 dirToLight, float transmissionDistance)
 {
     float3 result = float3(0.0, 0.0, 0.0);
     float thickness = 0.0; 
@@ -49,7 +51,7 @@ float3 GetBackLighting(Surface surface, LightingData lightingData, float3 lightI
             // https://colinbarrebrisebois.com/2011/03/07/gdc-2011-approximating-translucency-for-a-fast-cheap-and-convincing-subsurface-scattering-look/
 
             {
-                thickness = max(shadowRatio, surface.transmission.thickness);
+                thickness = max(transmissionDistance, surface.transmission.thickness);
                 float transmittance = pow( saturate( dot( lightingData.dirToCamera, -normalize( dirToLight + surface.normal * transmissionParams.z ) ) ), transmissionParams.y ) * transmissionParams.w;
                 float lamberAttenuation = exp(-thickness * transmissionParams.x) * saturate(1.0 - thickness);
                 result = transmittance * lamberAttenuation * lightIntensity;
@@ -57,18 +59,21 @@ float3 GetBackLighting(Surface surface, LightingData lightingData, float3 lightI
             break;
 
         case TransmissionMode::ThinObject:
-            // Thin object mode, using thin-film assumption proposed by Jimenez J. et al, 2010, "Real-Time Realistic Skin Translucency"
+            // Thin object mode, based on Jimenez J. et al, 2010, "Real-Time Realistic Skin Translucency"
             // http://www.iryoku.com/translucency/downloads/Real-Time-Realistic-Skin-Translucency.pdf
-
-            float litRatio = 1.0 - shadowRatio;
-            if (litRatio)
+            
             {
-                const float thickness = surface.transmission.thickness * transmissionParams.w;
-                const float3 invScattering = rcp(transmissionParams.xyz);
-                const float falloff = ThinObjectFalloff(surface.normal, dirToLight);
-                result = TransmissionKernel(thickness, invScattering) * falloff * lightIntensity * litRatio;
-            }
+                // Irradiance arround surface point. 
+                // Begin the transmittance dot product slightly before it would with the regular dot(N,L)
+                float E = max(0.30 + dot(-surface.normal, dirToLight), 0.0);
 
+                // Transmission distance computed from shadowmaps modulated by editor-exposed parameters
+                float s = transmissionDistance * surface.transmission.thickness * (20 - transmissionParams.w) * 10;
+                
+                // Albedo at front (surface point) is used to approximate irradiance at the back of the object
+                // See observation 4 in [Jimenez J. et al, 2010] 
+                result = T(s) * lightIntensity * surface.albedo * E;
+            }
             break;
     }
     

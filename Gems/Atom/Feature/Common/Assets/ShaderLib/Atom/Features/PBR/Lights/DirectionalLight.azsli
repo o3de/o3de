@@ -18,7 +18,9 @@ void ApplyDirectionalLights(Surface surface, inout LightingData lightingData)
     // Shadowed check
     const uint shadowIndex = ViewSrg::m_shadowIndexDirectionalLight;
     float litRatio = 1.0f;
+    float transmissionDistance = 0.0f;
     float backShadowRatio = 0.0f;
+
     if (o_enableShadows && shadowIndex <  SceneSrg::m_directionalLightCount)
     {
         litRatio = DirectionalLightShadow::GetVisibility(
@@ -30,6 +32,12 @@ void ApplyDirectionalLights(Surface surface, inout LightingData lightingData)
         if (o_transmission_mode == TransmissionMode::ThickObject)
         {
             backShadowRatio = DirectionalLightShadow::GetThickness(shadowIndex, lightingData.shadowCoords);
+        } 
+        else if (o_transmission_mode == TransmissionMode::ThinObject) 
+        {
+            // Use shrinked positions for thin object transmission to ensure they fall onto the object when querying
+            // the depth from the shadow map
+            transmissionDistance = DirectionalLightShadow::GetThickness(shadowIndex, lightingData.shrinkedShadowCoords);
         }
     }
 
@@ -50,21 +58,26 @@ void ApplyDirectionalLights(Surface surface, inout LightingData lightingData)
         // [GFX TODO][ATOM-2012] care of multiple directional light
         // Currently shadow check is done only for index == shadowIndex.
         float currentLitRatio = 1.0f;
-        float currentBackShadowRatio = 1.0f;
+        float currentTransmissionParameter = 1.0f;
         if (o_enableShadows)
         {
-            currentLitRatio = (index == shadowIndex) ? litRatio : 1.;
-            
-            currentBackShadowRatio = 1.0 - currentLitRatio;
+            bool activeLight = index == shadowIndex;
+            currentLitRatio = activeLight ? litRatio : 1.;
             if (o_transmission_mode == TransmissionMode::ThickObject)
             {
-                currentBackShadowRatio = (index == shadowIndex) ?  backShadowRatio : 0.;
+                // Back shadow ratio (add contribution only if current directional light is the active one for shadows)
+                currentTransmissionParameter = activeLight ?  backShadowRatio : 0.;
+            }
+            else if (o_transmission_mode == TransmissionMode::ThinObject)
+            {
+                // Transmission distance (add contribution only if current directional light is the active one for shadows)
+                currentTransmissionParameter = activeLight ? transmissionDistance : 9999.f;
             }
         }
         
         lightingData.diffuseLighting += GetDiffuseLighting(surface, lightingData, light.m_rgbIntensityLux, dirToLight) * currentLitRatio;
         lightingData.specularLighting += GetSpecularLighting(surface, lightingData, light.m_rgbIntensityLux, dirToLight) * currentLitRatio;
-        lightingData.translucentBackLighting += GetBackLighting(surface, lightingData, light.m_rgbIntensityLux, dirToLight, currentBackShadowRatio);
+        lightingData.translucentBackLighting += GetBackLighting(surface, lightingData, light.m_rgbIntensityLux, dirToLight, currentTransmissionParameter);
     }
     
     // Add debug coloring for directional light shadow
