@@ -35,8 +35,6 @@ struct SSubObjSelectionModifyContext;
 struct SRayHitInfo;
 class CPopupMenuItem;
 class QMenu;
-struct IRenderNode;
-struct IStatObj;
 
 //////////////////////////////////////////////////////////////////////////
 typedef _smart_ptr<CBaseObject> CBaseObjectPtr;
@@ -120,34 +118,12 @@ enum ObjectFlags
 #define ERF_GET_WRITABLE(flags) (flags)
 
 //////////////////////////////////////////////////////////////////////////
-//! This flags passed to CBaseObject::BeginEditParams method.
-enum ObjectEditFlags
-{
-    OBJECT_CREATE   = 0x001,
-    OBJECT_EDIT     = 0x002,
-    OBJECT_COLLAPSE_OBJECTPANEL = 0x004
-};
-
-//////////////////////////////////////////////////////////////////////////
 //! Return values from CBaseObject::MouseCreateCallback method.
 enum MouseCreateResult
 {
     MOUSECREATE_CONTINUE = 0,   //!< Continue placing this object.
     MOUSECREATE_ABORT,              //!< Abort creation of this object.
     MOUSECREATE_OK,                     //!< Accept this object.
-};
-
-//////////////////////////////////////////////////////////////////////////
-// Interface to the object create with the mouse callback.
-//////////////////////////////////////////////////////////////////////////
-struct IMouseCreateCallback
-{
-    virtual void Release() = 0;
-    virtual MouseCreateResult OnMouseEvent(CViewport* view, EMouseEvent event, QPoint& point, int flags) = 0;
-    // Some process of creation need to be able to be displayed such as creation for custom solid.
-    virtual void Display([[maybe_unused]] DisplayContext& dc){}
-    // Called after accepting an object to see if new object creation mode should be continued.
-    virtual bool ContinueCreation() = 0;
 };
 
 // Flags used for object interaction
@@ -261,22 +237,11 @@ public:
 
     /** Check if both object are of same class.
     */
-    virtual bool IsSameClass(CBaseObject* obj);
-    virtual void SetDefaultType() { m_objType = OBJTYPE_DUMMY; };
     virtual ObjectType GetType() const
     {
-        if (m_objType == OBJTYPE_DUMMY)
-        {
-            return m_objType;
-        }
-        else
-        {
-            return m_classDesc->GetObjectType();
-        }
+        return m_classDesc->GetObjectType();
     };
-    //  const char* GetTypeName() const { return m_classDesc->ClassName(); };
     QString GetTypeName() const;
-    virtual QString GetTypeDescription() const { return m_classDesc->ClassName(); };
 
     //////////////////////////////////////////////////////////////////////////
     // Flags.
@@ -289,8 +254,6 @@ public:
     // Hidden ID
     //////////////////////////////////////////////////////////////////////////
     static const uint64 s_invalidHiddenID = 0;
-    uint64 GetHideOrder() const { return m_hideOrder; }
-    void SetHideOrder(uint64 newID) { m_hideOrder = newID; }
 
     //! Returns true if object hidden.
     bool IsHidden() const;
@@ -307,26 +270,19 @@ public:
     virtual bool IsSelectable() const;
 
     // Return texture icon.
-    bool HaveTextureIcon() const { return m_nTextureIcon != 0; };
     int GetTextureIcon() const { return m_nTextureIcon; }
     void SetTextureIcon(int nTexIcon) { m_nTextureIcon = nTexIcon; }
 
-    //! Set shared between missions flag.
-    virtual void SetShared(bool bShared);
     //! Set object hidden status.
-    virtual void SetHidden(bool bHidden, uint64 hiddenId = CBaseObject::s_invalidHiddenID, bool bAnimated = false);
+    virtual void SetHidden(bool bHidden, bool bAnimated = false);
     //! Set object frozen status.
     virtual void SetFrozen(bool bFrozen);
     //! Set object selected status.
     virtual void SetSelected(bool bSelect);
-    //! Return associated 3DEngine render node
-    virtual IRenderNode* GetEngineNode() const { return nullptr; };
     //! Set object highlighted (Note: not selected)
     virtual void SetHighlight(bool bHighlight);
     //! Check if object is highlighted.
     bool IsHighlighted() const { return CheckFlags(OBJFLAG_HIGHLIGHT); }
-    //! Check if object can have measurement axises.
-    virtual bool HasMeasurementAxis() const {   return true;    }
     //! Check if the object is isolated when the editor is in Isolation Mode
     virtual bool IsIsolated() const { return false; }
 
@@ -345,8 +301,6 @@ public:
     //////////////////////////////////////////////////////////////////////////
     //! Get name of object.
     const QString& GetName() const;
-    virtual QString GetComment() const { return QString(); }
-    virtual QString GetWarningsText() const;
 
     //! Change name of object.
     virtual void SetName(const QString& name);
@@ -376,10 +330,6 @@ public:
     //! Get object scale.
     const Vec3 GetScale() const;
 
-    virtual bool StartScaling()                                                         {   return false;   }
-    virtual bool GetUntransformedScale([[maybe_unused]] Vec3& scale) const {   return false;   }
-    virtual bool TransformScale([[maybe_unused]] const Vec3& scale)                {   return false;   }
-
     //! Set flatten area.
     void SetArea(float area);
     float GetArea() const { return m_flattenArea; };
@@ -397,8 +347,6 @@ public:
     // CHILDS
     //////////////////////////////////////////////////////////////////////////
 
-    //! Return true if node have childs.
-    bool HaveChilds() const { return !m_childs.empty(); }
     //! Return true if have attached childs.
     size_t GetChildCount() const { return m_childs.size(); }
 
@@ -406,10 +354,6 @@ public:
     CBaseObject* GetChild(size_t const i) const;
     //! Return parent node if exist.
     CBaseObject* GetParent() const { return m_parent; };
-    //! Scans hierarchy up to determine if we child of specified node.
-    virtual bool IsChildOf(CBaseObject* node);
-    //! Clone Children
-    void CloneChildren(CBaseObject* pFromObject);
     //! Attach new child node.
     //! @param bKeepPos if true Child node will keep its world space position.
     virtual void AttachChild(CBaseObject* child, bool bKeepPos = true);
@@ -422,8 +366,6 @@ public:
     virtual void DetachAll(bool bKeepPos = true);
     // Detach this node from parent.
     virtual void DetachThis(bool bKeepPos = true);
-    // Returns the link parent.
-    virtual CBaseObject* GetLinkParent() const { return GetParent(); }
 
     //////////////////////////////////////////////////////////////////////////
     // MATRIX
@@ -437,15 +379,11 @@ public:
     // Gets matrix of parent attachment point
     virtual Matrix34 GetParentAttachPointWorldTM() const;
 
-    // Checks if the attachment point is valid
-    virtual bool IsParentAttachmentValid() const;
-
     //! Set position in world space.
     virtual void SetWorldPos(const Vec3& pos, int flags = 0);
 
     //! Get position in world space.
     Vec3 GetWorldPos() const { return GetWorldTM().GetTranslation(); };
-    Ang3 GetWorldAngles() const;
 
     //! Set xform of object given in world space.
     virtual void SetWorldTM(const Matrix34& tm, int flags = 0);
@@ -460,12 +398,6 @@ public:
     // Interface to be implemented in plugins.
     //////////////////////////////////////////////////////////////////////////
 
-    //! Called when object is being created (use GetMouseCreateCallback for more advanced mouse creation callback).
-    virtual int MouseCreateCallback(CViewport* view, EMouseEvent event, QPoint& point, int flags);
-    // Return pointer to the callback object used when creating object by the mouse.
-    // If this function return nullptr MouseCreateCallback method will be used instead.
-    virtual IMouseCreateCallback* GetMouseCreateCallback() { return nullptr; };
-
     //! Draw object to specified viewport.
     virtual void Display([[maybe_unused]] DisplayContext& disp) {}
 
@@ -476,10 +408,6 @@ public:
     //! Perform intersection testing of this object with rectangle.
     //! Return true if was hit.
     virtual bool HitTestRect(HitContext& hc);
-
-    //! Perform intersection testing of this object based on its icon helper.
-    //! Return true if was hit.
-    virtual bool HitHelperTest(HitContext& hc);
 
     //! Get bounding box of object in world coordinate space.
     virtual void GetBoundBox(AABB& box);
@@ -500,8 +428,6 @@ public:
     //! @param bUndo true if loading or saving data for Undo/Redo purposes.
     virtual void Serialize(CObjectArchive& ar);
 
-    //// Pre load called before serialize after all objects where completly loaded.
-    //virtual void PreLoad( CObjectArchive &ar ) {};
     // Post load called after all objects where completely loaded.
     virtual void PostLoad([[maybe_unused]] CObjectArchive& ar) {};
 
@@ -513,9 +439,6 @@ public:
     //! Override in derived classes, to handle specific events.
     virtual void OnEvent(ObjectEvent event);
 
-    //! Generate dynamic context menu for the object
-    virtual void OnContextMenu(QMenu* menu);
-
     //////////////////////////////////////////////////////////////////////////
     // LookAt Target.
     //////////////////////////////////////////////////////////////////////////
@@ -523,13 +446,11 @@ public:
     CBaseObject* GetLookAt() const { return m_lookat; };
     //! Returns true if this object is a look-at target.
     bool IsLookAtTarget() const;
-    CBaseObject* GetLookAtSource() const { return m_lookatSource; };
-
 
     IObjectManager* GetObjectManager() const;
 
     //! Store undo information for this object.
-    void StoreUndo(const char* undoDescription, bool minimal = false, int flags = 0);
+    void StoreUndo(bool minimal = false, int flags = 0);
 
     //! Add event listener callback.
     void AddEventListener(EventListener* listener);
@@ -549,50 +470,19 @@ public:
     virtual bool IsSimilarObject(CBaseObject* pObject);
 
     //////////////////////////////////////////////////////////////////////////
-    // Material Layers Mask.
-    //////////////////////////////////////////////////////////////////////////
-    virtual void SetMaterialLayersMask(uint32 nLayersMask) { m_nMaterialLayersMask = nLayersMask; }
-    uint32 GetMaterialLayersMask() const { return m_nMaterialLayersMask; };
-
-    //////////////////////////////////////////////////////////////////////////
     // Object minimal usage spec (All/Low/Medium/High)
     //////////////////////////////////////////////////////////////////////////
     uint32 GetMinSpec() const { return m_nMinSpec; }
     virtual void SetMinSpec(uint32 nSpec, bool bSetChildren = true);
 
-    //////////////////////////////////////////////////////////////////////////
-    // SubObj selection.
-    //////////////////////////////////////////////////////////////////////////
-    // Return true if object support selecting of this sub object element type.
-    virtual bool StartSubObjSelection([[maybe_unused]] int elemType) { return false; };
-    virtual void EndSubObjectSelection() {};
-    virtual void ModifySubObjSelection([[maybe_unused]] SSubObjSelectionModifyContext& modCtx) {};
-    virtual void AcceptSubObjectModify() {};
-
     //! In This function variables of the object must be initialized.
     virtual void InitVariables() {};
-
-    //////////////////////////////////////////////////////////////////////////
-    // Procedural Floor Management.
-    //////////////////////////////////////////////////////////////////////////
-    int GetFloorNumber() const { return m_floorNumber; };
-    void SetFloorNumber(int floorNumber) { m_floorNumber = floorNumber; };
-
-    virtual void OnPropertyChanged(IVariable*);
-    virtual void OnMultiSelPropertyChanged(IVariable*);
 
     //! Draw a reddish highlight indicating its budget usage.
     virtual void DrawBudgetUsage(DisplayContext& dc, const QColor& color);
 
-    bool IntersectRayMesh(const Vec3& raySrc, const Vec3& rayDir, SRayHitInfo& outHitInfo) const;
-
-    virtual void EditTags([[maybe_unused]] bool alwaysTag) {}
-    virtual bool SupportsEditTags() const { return false; }
-
     bool CanBeHightlighted() const;
     bool IsSkipSelectionHelper() const;
-
-    virtual IStatObj* GetIStatObj() {   return nullptr; }
 
     // Invalidates cached transformation matrix.
     // nWhyFlags - Flags that indicate the reason for matrix invalidation.
@@ -612,25 +502,13 @@ protected:
     //! Optional file parameter specify initial object or script for this object.
     virtual bool Init(IEditor* ie, CBaseObject* prev, const QString& file);
 
-    //////////////////////////////////////////////////////////////////////////
-    //! Must be called after cloning the object on clone of object.
-    //! This will make sure object references are cloned correctly.
-    virtual void PostClone(CBaseObject* pFromObject, CObjectCloneContext& ctx);
-
     //! Must be implemented by derived class to create game related objects.
     virtual bool CreateGameObject() { return true; };
 
-    //! If true, all attached chilren will be cloned when the parent object is cloned.
-    virtual bool ShouldCloneChildren() const { return true; }
-
     /** Called when object is about to be deleted.
-            All Game resources should be freed in this function.
+        All Game resources should be freed in this function.
     */
     virtual void Done();
-
-    /** Change current id of object.
-    */
-    //virtual void SetId( uint32 objectId ) { m_id = objectId; };
 
     //! Call this to delete an object.
     virtual void DeleteThis() = 0;
@@ -682,16 +560,10 @@ protected:
     // Function can be used by derived classes.
     bool HitTestRectBounds(HitContext& hc, const AABB& box);
 
-    // Do helper hit testing as specific location.
-    bool HitHelperAtTest(HitContext& hc, const Vec3& pos);
-
     // Do helper hit testing taking child objects into account (e.g. opened prefab)
     virtual bool HitHelperTestForChildObjects([[maybe_unused]] HitContext& hc) { return false; }
 
     CBaseObject* FindObject(REFGUID id) const;
-
-    // Returns true if game objects should be created.
-    bool IsCreateGameObjects() const;
 
     // Helper gizmo functions.
     void AddGizmo(CGizmo* gizmo);
@@ -702,14 +574,6 @@ protected:
 
     //! Only used by ObjectManager.
     bool IsPotentiallyVisible() const;
-
-    //////////////////////////////////////////////////////////////////////////
-    // May be overridden in derived classes to handle helpers scaling.
-    //////////////////////////////////////////////////////////////////////////
-    virtual void SetHelperScale([[maybe_unused]] float scale) {};
-    virtual float GetHelperScale() { return 1.0f; };
-
-    void SetNameInternal(const QString& name) { m_name = name; }
 
     void SetDrawTextureIconProperties(DisplayContext& dc, const Vec3& pos, float alpha = 1.0f, int texIconFlags = 0);
     const Vec3& GetTextureIconDrawPos(){ return m_vDrawIconPos; };
@@ -732,17 +596,12 @@ private:
     friend class CObjectArchive;
     friend class CSelectionGroup;
 
-    void OnMenuShowInAssetBrowser();
-
     //! Set class description for this object,
     //! Only called once after creation by ObjectManager.
     void SetClassDesc(CObjectClassDesc* classDesc);
 
     EScaleWarningLevel GetScaleWarningLevel() const;
     ERotationWarningLevel GetRotationWarningLevel() const;
-
-    // auto resolving
-    void OnMtlResolved(uint32 id, bool success, const char* orgName, const char* newName);
 
     bool IsInSelectionBox() const { return m_bInSelectionBox; }
 
@@ -766,13 +625,10 @@ private:
     //! Unique object Id.
     GUID m_guid;
 
-    // floor number of object if procedural object flag is set
-    int m_floorNumber;
-
     //! Flags of this object.
     int m_flags;
 
-    // Id of the texture icon for this object.
+    //! Id of the texture icon for this object.
     int m_nTextureIcon;
 
     //! Display color.
@@ -823,13 +679,10 @@ private:
     mutable uint32 m_bMatrixValid : 1;
     mutable uint32 m_bWorldBoxValid : 1;
     uint32 m_bInSelectionBox : 1;
-    uint32 m_nMaterialLayersMask : 8;
     uint32 m_nMinSpec : 8;
 
     Vec3 m_vDrawIconPos;
     AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
-
-    uint64 m_hideOrder;
 };
 
 Q_DECLARE_METATYPE(CBaseObject*)
