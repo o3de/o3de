@@ -141,7 +141,7 @@ class SceneManifest():
         }
         mesh_group['rules']['rules'].append(commentRule)
 
-    def DefaultOrValue(self, val, default):
+    def __default_or_value(self, val, default):
         return default if val is None else val
 
     def mesh_group_add_cloth_rule(self, mesh_group: dict, cloth_node_name: str,
@@ -164,15 +164,15 @@ class SceneManifest():
         cloth_rule = {
             '$type': 'ClothRule',
             'meshNodeName': cloth_node_name,
-            'inverseMassesStreamName': self.DefaultOrValue(inverse_masses_stream_name, 'Default: 1.0')
+            'inverseMassesStreamName': self.__default_or_value(inverse_masses_stream_name, 'Default: 1.0')
         }
 
         if inverse_masses_channel is not None:
             cloth_rule['inverseMassesChannel'] = inverse_masses_channel
-        cloth_rule['motionConstraintsStreamName'] = self.DefaultOrValue(motion_constraints_stream_name, 'Default: 1.0')
+        cloth_rule['motionConstraintsStreamName'] = self.__default_or_value(motion_constraints_stream_name, 'Default: 1.0')
         if motion_constraints_channel is not None:
             cloth_rule['motionConstraintsChannel'] = motion_constraints_channel
-        cloth_rule['backstopStreamName'] = self.DefaultOrValue(backstop_stream_name, 'None')
+        cloth_rule['backstopStreamName'] = self.__default_or_value(backstop_stream_name, 'None')
         if backstop_offset_channel is not None:
             cloth_rule['backstopOffsetChannel'] = backstop_offset_channel
         if backstop_radius_channel is not None:
@@ -232,9 +232,9 @@ class SceneManifest():
         """
         rule = {
             '$type': 'StaticMeshAdvancedRule',
-            'use32bitVertices': self.DefaultOrValue(use_32bit_vertices, False),
-            'mergeMeshes': self.DefaultOrValue(merge_meshes, True),
-            'useCustomNormals': self.DefaultOrValue(use_custom_normals, True)
+            'use32bitVertices': self.__default_or_value(use_32bit_vertices, False),
+            'mergeMeshes': self.__default_or_value(merge_meshes, True),
+            'useCustomNormals': self.__default_or_value(use_custom_normals, True)
         }
 
         if vertex_color_stream is not None:
@@ -251,8 +251,8 @@ class SceneManifest():
         """
         rule = {
             '$type': 'SkinRule',
-            'maxWeightsPerVertex': self.DefaultOrValue(max_weights_per_vertex, 4),
-            'weightThreshold': self.DefaultOrValue(weight_threshold, 0.001)
+            'maxWeightsPerVertex': self.__default_or_value(max_weights_per_vertex, 4),
+            'weightThreshold': self.__default_or_value(weight_threshold, 0.001)
         }
 
         mesh_group['rules']['rules'].append(rule)
@@ -266,8 +266,8 @@ class SceneManifest():
         """
         rule = {
             '$type': 'TangentsRule',
-            'tangentSpace': self.DefaultOrValue(tangent_space, 1),
-            'tSpaceMethod': self.DefaultOrValue(tspace_method, 0)
+            'tangentSpace': self.__default_or_value(tangent_space, 1),
+            'tSpaceMethod': self.__default_or_value(tspace_method, 0)
         }
 
         mesh_group['rules']['rules'].append(rule)
