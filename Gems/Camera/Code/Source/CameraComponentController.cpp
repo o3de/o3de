@@ -151,12 +151,12 @@ namespace Camera
 
     void CameraComponentController::SetShouldActivateFunction(AZStd::function<bool()> shouldActivateFunction)
     {
-        m_shouldActivateFn = shouldActivateFunction;
+        m_shouldActivateFn = AZStd::move(shouldActivateFunction);
     }
 
     void CameraComponentController::SetIsLockedFunction(AZStd::function<bool()> isLockedFunction)
     {
-        m_isLockedFn = isLockedFunction;
+        m_isLockedFn = AZStd::move(isLockedFunction);
     }
 
     void CameraComponentController::Reflect(AZ::ReflectContext* context)
