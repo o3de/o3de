@@ -13,6 +13,7 @@
 
 // the intention is that you only include the customized version of rapidXML through this header, so that
 // you can override behavior here.
+#include <stdio.h>
 #include <rapidxml/rapidxml.h>
 
 #endif // AZCORE_RAPIDXML_RAPIDXML_H_INCLUDED

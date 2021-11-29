@@ -61,7 +61,7 @@ namespace ScriptCanvasEditor
 
         protected:
 
-            void resizeEvent(QResizeEvent *ev);
+            void resizeEvent(QResizeEvent *ev) override;
 
             void OnClicked();
 

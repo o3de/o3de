@@ -137,13 +137,11 @@ namespace UnitTest
         void CreateEditorRepresentation(AZ::Entity* entity) override;
         void BrowseForAssets(AzToolsFramework::AssetBrowser::AssetSelectionModel& selection) override { AZ_UNUSED(selection); }
         int GetIconTextureIdFromEntityIconPath(const AZStd::string& entityIconPath) override { AZ_UNUSED(entityIconPath);  return 0; }
-        bool DisplayHelpersVisible() { return false; }
+        bool DisplayHelpersVisible() override { return false; }
 
         /*
         * AssetSystemRequestBus
         */
-        const char* GetAbsoluteDevGameFolderPath() override { return ""; }
-        const char* GetAbsoluteDevRootFolderPath() override { return ""; }
         bool GetRelativeProductPathFromFullSourceOrProductPath([[maybe_unused]] const AZStd::string& fullPath, [[maybe_unused]] AZStd::string& relativeProductPath) override { return false; }
         bool GenerateRelativeSourcePath(
             [[maybe_unused]] const AZStd::string& sourcePath, [[maybe_unused]] AZStd::string& relativePath,

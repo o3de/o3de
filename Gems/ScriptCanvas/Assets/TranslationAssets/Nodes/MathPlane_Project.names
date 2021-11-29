@@ -1,0 +1,46 @@
+{
+    "entries": [
+        {
+            "base": "{BE7F52C0-3FEA-5C78-BAB1-41A8BFEB38EC}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "Project",
+                "category": "Math/Plane",
+                "tooltip": "Returns the projection of Point onto Source"
+            },
+            "slots": [
+                {
+                    "base": "Input_In",
+                    "details": {
+                        "name": "In"
+                    }
+                },
+                {
+                    "base": "Output_Out",
+                    "details": {
+                        "name": "Out"
+                    }
+                },
+                {
+                    "base": "DataInput_Source",
+                    "details": {
+                        "name": "Source"
+                    }
+                },
+                {
+                    "base": "DataInput_Point",
+                    "details": {
+                        "name": "Point"
+                    }
+                },
+                {
+                    "base": "DataOutput_Result",
+                    "details": {
+                        "name": "Result"
+                    }
+                }
+            ]
+        }
+    ]
+}

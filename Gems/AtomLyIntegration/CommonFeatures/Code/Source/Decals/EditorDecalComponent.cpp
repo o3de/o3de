@@ -32,7 +32,7 @@ namespace AZ
                 if (AZ::EditContext* editContext = serializeContext->GetEditContext())
                 {
                     editContext->Class<EditorDecalComponent>(
-                        "Decal (Atom)", "The Decal component allows an entity to project a texture or material onto a mesh")
+                        "Decal", "The Decal component allows an entity to project a texture or material onto a mesh")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::Category, "Atom")
                         ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Decal.svg")
@@ -97,11 +97,23 @@ namespace AZ
             BaseClass::Deactivate();
         }
 
-        AZ::Transform EditorDecalComponent::GetTransform() const
+        AZ::Transform EditorDecalComponent::GetWorldTransform() const
         {
             AZ::Transform transform = AZ::Transform::CreateIdentity();
             AZ::TransformBus::EventResult(transform, GetEntityId(), &AZ::TransformBus::Events::GetWorldTM);
             return transform;
+        }
+
+        AZ::Matrix3x4 EditorDecalComponent::GetWorldTransformWithNonUniformScale() const
+        {
+            const AZ::Transform worldTransform = GetWorldTransform();
+            const AZ::Matrix3x3 rotationMat = AZ::Matrix3x3::CreateFromQuaternion(worldTransform.GetRotation());
+
+            const AZ::Vector3 nonUniformScale = m_controller.m_cachedNonUniformScale * worldTransform.GetUniformScale();
+            const AZ::Matrix3x3 nonUniformScaleMat = AZ::Matrix3x3::CreateScale(nonUniformScale);
+            const AZ::Matrix3x3 rotationAndScale = rotationMat * nonUniformScaleMat;
+
+            return AZ::Matrix3x4::CreateFromMatrix3x3AndTranslation(rotationAndScale, worldTransform.GetTranslation());
         }
 
         void EditorDecalComponent::DisplayEntityViewport(
@@ -113,11 +125,9 @@ namespace AZ
                 return;
             }
 
-            AZ::Transform transform = GetTransform();
-
-
             debugDisplay.SetColor(AZ::Colors::Red);
-            debugDisplay.PushMatrix(transform);
+            const AZ::Matrix3x4 transform = GetWorldTransformWithNonUniformScale();
+            debugDisplay.PushPremultipliedMatrix(transform);
             debugDisplay.DrawWireBox(-AZ::Vector3::CreateOne(), AZ::Vector3::CreateOne());
 
             AZ::Vector3 x1 = AZ::Vector3(-1, 0, 1);
@@ -136,7 +146,7 @@ namespace AZ
             // Two diagonal edges
             debugDisplay.DrawLine(p0, p2);
             debugDisplay.DrawLine(p1, p3);
-            debugDisplay.PopMatrix();
+            debugDisplay.PopPremultipliedMatrix();
         }
 
         AZ::Aabb EditorDecalComponent::GetEditorSelectionBoundsViewport([[maybe_unused]] const AzFramework::ViewportInfo& viewportInfo)
@@ -182,7 +192,7 @@ namespace AZ
 
         u32 EditorDecalComponent::OnConfigurationChanged()
         {
-            BaseClass::OnConfigurationChanged();
+            m_controller.ConfigurationChanged();
             return Edit::PropertyRefreshLevels::AttributesAndValues;
         }
 

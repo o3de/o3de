@@ -1,5 +1,5 @@
 { 
-    "Source" : "ReflectionProbeRenderOuter",
+    "Source" : "ReflectionProbeRenderOuter.azsl",
 
     "RasterState" :
     {

@@ -67,7 +67,7 @@ SANDBOX_API void ErrorV(const char* format, va_list argList)
     str += szBuffer;
 
     //CLogFile::WriteLine( str );
-    CryWarning(VALIDATOR_MODULE_EDITOR, VALIDATOR_ERROR, str.toUtf8().data());
+    CryWarning(VALIDATOR_MODULE_EDITOR, VALIDATOR_ERROR, "%s", str.toUtf8().data());
 
     if (!CCryEditApp::instance()->IsInTestMode() && !CCryEditApp::instance()->IsInExportMode() && !CCryEditApp::instance()->IsInLevelLoadTestMode())
     {
@@ -95,7 +95,7 @@ SANDBOX_API void WarningV(const char* format, va_list argList)
     char        szBuffer[MAX_LOGBUFFER_SIZE];
     azvsnprintf(szBuffer, MAX_LOGBUFFER_SIZE, format, argList);
 
-    CryWarning(VALIDATOR_MODULE_EDITOR, VALIDATOR_WARNING, szBuffer);
+    CryWarning(VALIDATOR_MODULE_EDITOR, VALIDATOR_WARNING, "%s", szBuffer);
 
     bool bNoUI = false;
     ICVar* pCVar = gEnv->pConsole->GetCVar("sys_no_crash_dialog");
@@ -478,7 +478,7 @@ void CLogFile::WriteString(const char* pszString)
 {
     if (gEnv && gEnv->pLog)
     {
-        gEnv->pLog->LogPlus(pszString);
+        gEnv->pLog->LogPlus("%s", pszString);
     }
 }
 

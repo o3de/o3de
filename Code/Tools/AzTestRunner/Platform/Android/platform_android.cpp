@@ -278,7 +278,7 @@ static void *thread_logger_func(void*)
                 --readSize;
             }
             logBuffer[readSize] = '\0';
-            ((void) __android_log_print(ANDROID_LOG_INFO, s_logTag, logBuffer));
+            ((void) __android_log_print(ANDROID_LOG_INFO, s_logTag, "%s", logBuffer));
         }
     }
     return 0;

@@ -81,7 +81,7 @@ namespace GraphCanvas
         ////
 
         // AZ::SystemTickBus::Handler
-        void OnSystemTick();
+        void OnSystemTick() override;
         ////
 
     private:

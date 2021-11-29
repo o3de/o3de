@@ -48,12 +48,12 @@ namespace GraphCanvas
         // SlotNotificationBus
         void OnRegisteredToNode(const AZ::EntityId& nodeId) override;
 
-        void OnNameChanged(const TranslationKeyedString& name) override;
-        void OnTooltipChanged(const TranslationKeyedString& tooltip) override;
+        void OnNameChanged(const AZStd::string& name) override;
+        void OnTooltipChanged(const AZStd::string& tooltip) override;
         ////
 
         // StyleNotificationBus
-        void OnStyleChanged();
+        void OnStyleChanged() override;
         ////
 
     private:
@@ -82,9 +82,9 @@ namespace GraphCanvas
         ExtenderSlotLayoutComponent();
         ~ExtenderSlotLayoutComponent() override = default;
 
-        void Init();
-        void Activate();
-        void Deactivate();
+        void Init() override;
+        void Activate() override;
+        void Deactivate() override;
 
     private:
         

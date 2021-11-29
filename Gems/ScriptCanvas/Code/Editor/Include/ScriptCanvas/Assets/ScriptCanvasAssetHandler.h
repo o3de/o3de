@@ -20,6 +20,11 @@ namespace AZ
 
 namespace ScriptCanvasEditor
 {
+    AZ::Outcome<void, AZStd::string> LoadScriptCanvasDataFromJson
+        ( ScriptCanvas::ScriptCanvasData& dataTarget
+        , AZStd::string_view source
+        , AZ::SerializeContext& serializeContext);
+
     /**
     * Manages editor Script Canvas graph assets.
     */
@@ -49,7 +54,7 @@ namespace ScriptCanvasEditor
         // Called by the asset database to perform actual asset save. Returns true if successful otherwise false (default - as we don't require support save).
         bool SaveAssetData(const AZ::Data::Asset<AZ::Data::AssetData>& asset, AZ::IO::GenericStream* stream) override;
         bool SaveAssetData(const ScriptCanvasAsset* assetData, AZ::IO::GenericStream* stream);
-        bool SaveAssetData(const ScriptCanvasAsset* assetData, AZ::IO::GenericStream* stream  , AZ::DataStream::StreamType streamType);
+        bool SaveAssetData(const ScriptCanvasAsset* assetData, AZ::IO::GenericStream* stream, AZ::DataStream::StreamType streamType);
 
         // Called by the asset database when an asset should be deleted.
         void DestroyAsset(AZ::Data::AssetPtr ptr) override;

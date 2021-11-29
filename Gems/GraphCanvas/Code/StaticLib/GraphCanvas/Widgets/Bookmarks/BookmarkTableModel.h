@@ -79,7 +79,7 @@ namespace GraphCanvas
 
         // QAbstractTableModel
         int rowCount(const QModelIndex& parent = QModelIndex()) const override;
-        int columnCount(const QModelIndex& index = QModelIndex()) const;
+        int columnCount(const QModelIndex& index = QModelIndex()) const override;
         QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
         bool setData(const QModelIndex &index, const QVariant &value, int role) override;
         QVariant headerData(int section, Qt::Orientation orientation, int role) const override;
@@ -125,7 +125,7 @@ namespace GraphCanvas
         BookmarkTableSortProxyModel(BookmarkTableSourceModel* sourceModel);
         ~BookmarkTableSortProxyModel() override = default;
 
-        bool filterAcceptsRow(int sourceRow, const QModelIndex& sourceParent) const;
+        bool filterAcceptsRow(int sourceRow, const QModelIndex& sourceParent) const override;
 
         void SetFilter(const QString& filter);
         void ClearFilter();

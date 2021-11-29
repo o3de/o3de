@@ -9,6 +9,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/EditContextConstants.inl>
+#include <Source/AutoGen/AutoComponentTypes.h>
 
 #include <AutomatedTestingSystemComponent.h>
 
@@ -45,7 +46,7 @@ namespace AutomatedTesting
 
     void AutomatedTestingSystemComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
-        AZ_UNUSED(required);
+        required.push_back(AZ_CRC_CE("MultiplayerService"));
     }
 
     void AutomatedTestingSystemComponent::GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
@@ -60,6 +61,7 @@ namespace AutomatedTesting
     void AutomatedTestingSystemComponent::Activate()
     {
         AutomatedTestingRequestBus::Handler::BusConnect();
+        RegisterMultiplayerComponents(); //< Register AutomatedTesting's multiplayer components to assign NetComponentIds
     }
 
     void AutomatedTestingSystemComponent::Deactivate()

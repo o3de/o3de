@@ -104,6 +104,15 @@ class SceneManifest():
         self.manifest['values'].append(meshGroup)
         return meshGroup
 
+    def add_prefab_group(self, name, id, json) -> dict:
+        prefabGroup = {}
+        prefabGroup['$type'] = '{99FE3C6F-5B55-4D8B-8013-2708010EC715} PrefabGroup'
+        prefabGroup['name'] = name
+        prefabGroup['id'] = id
+        prefabGroup['prefabDomData'] = json
+        self.manifest['values'].append(prefabGroup)
+        return prefabGroup
+
     def mesh_group_select_node(self, meshGroup, nodeName):
         meshGroup['nodeSelectionList']['selectedNodes'].append(nodeName)
 

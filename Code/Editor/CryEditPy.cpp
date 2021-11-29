@@ -77,10 +77,6 @@ namespace
             // This closes the current document (level)
             currentLevel->OnNewDocument();
 
-            // Then we freeze the viewport's input
-            AzToolsFramework::ViewportInteraction::ViewportFreezeRequestBus::Broadcast(
-                &AzToolsFramework::ViewportInteraction::ViewportFreezeRequestBus::Events::FreezeViewportInput, true);
-
             // Then we need to tell the game engine there is no level to render anymore
             if (GetIEditor()->GetGameEngine())
             {
@@ -147,20 +143,11 @@ namespace
                 return false;
             }
         }
+        const bool addToMostRecentFileList = false;
+        auto newDocument = CCryEditApp::instance()->OpenDocumentFile(levelPath.toUtf8().data(),
+            addToMostRecentFileList, COpenSameLevelOptions::ReopenLevelIfSame);
 
-        auto previousDocument = GetIEditor()->GetDocument();
-        QString previousPathName = (previousDocument != nullptr) ? previousDocument->GetLevelPathName() : "";
-        auto newDocument = CCryEditApp::instance()->OpenDocumentFile(levelPath.toUtf8().data());
-
-        // the underlying document pointer doesn't change, so we can't check that; use the path name's instead
-
-        bool result = true;
-        if (newDocument == nullptr || newDocument->IsLevelLoadFailed() || (newDocument->GetLevelPathName() == previousPathName))
-        {
-            result = false;
-        }
-
-        return result;
+        return newDocument != nullptr && !newDocument->IsLevelLoadFailed();
     }
 
     bool PyOpenLevelNoPrompt(const char* pLevelName)
@@ -411,6 +398,11 @@ inline namespace Commands
     {
         return AZ::Debug::Trace::WaitForDebugger(timeoutSeconds);
     }
+
+    AZStd::string PyGetFileAlias(AZStd::string alias)
+    {
+        return AZ::IO::FileIOBase::GetInstance()->GetAlias(alias.c_str());
+    }
 }
 
 namespace AzToolsFramework
@@ -460,6 +452,8 @@ namespace AzToolsFramework
 
             addLegacyGeneral(behaviorContext->Method("attach_debugger", PyAttachDebugger, nullptr, "Prompts for attaching the debugger"));
             addLegacyGeneral(behaviorContext->Method("wait_for_debugger", PyWaitForDebugger, behaviorContext->MakeDefaultValues(-1.f), "Pauses this thread execution until the debugger has been attached"));
+
+            addLegacyGeneral(behaviorContext->Method("get_file_alias", PyGetFileAlias, nullptr, "Retrieves path for IO alias"));
 
             // this will put these methods into the 'azlmbr.legacy.checkout_dialog' module
             auto addCheckoutDialog = [](AZ::BehaviorContext::GlobalMethodBuilder methodBuilder)

@@ -20,7 +20,7 @@
 
 namespace AZStd
 {
-    // alias std::pointer_traits into the AZStd::namespace 
+    // alias std::pointer_traits into the AZStd::namespace
     using std::pointer_traits;
 
     //! Bring the names of uninitialized_default_construct and
@@ -229,7 +229,7 @@ namespace AZStd
     //! `new (declval<void*>()) T(declval<Args>()...)` is well-formed
     template <typename T, typename... Args>
     constexpr auto construct_at(T* ptr, Args&&... args)
-        -> enable_if_t<is_void_v<void_t<decltype(new (declval<void*>()) T(AZStd::forward<Args>(args)...))>>, T*>
+        -> enable_if_t<AZStd::is_void_v<AZStd::void_t<decltype(new (AZStd::declval<void*>()) T(AZStd::forward<Args>(args)...))>>, T*>
     {
         return ::new (ptr) T(AZStd::forward<Args>(args)...);
     }
@@ -487,7 +487,7 @@ namespace AZStd
 {
     //! Implements the C++17 uninitialized_move function
     //! The functions accepts two input iterators and an output iterator
-    //! It performs an AZStd::move on each in in the range of the input iterator 
+    //! It performs an AZStd::move on each in in the range of the input iterator
     //! and stores the result in location pointed by the output iterator
     template <typename InputIt, typename ForwardIt>
     ForwardIt uninitialized_move(InputIt first, InputIt last, ForwardIt result)

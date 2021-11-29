@@ -8,8 +8,7 @@
 #pragma once
 
 #include <AzCore/PlatformDef.h>
-#define AZ_VA_HAS_ARGS(...) ""#__VA_ARGS__[0] != 0
-
+#include <AzCore/base.h>
 
 namespace AZ
 {
@@ -73,6 +72,9 @@ namespace AZ
             static void Printf(const char* window, const char* format, ...);
 
             static void Output(const char* window, const char* message);
+
+            /// Called by output to handle the actual output, does not interact with ebus or allow interception
+            static void RawOutput(const char* window, const char* message);
 
             static void PrintCallstack(const char* window, unsigned int suppressCount = 0, void* nativeContext = 0);
 
@@ -262,17 +264,18 @@ namespace AZ
     #define AZ_VerifyWarning(window, expression, ...) AZ_Warning(window, 0 != (expression), __VA_ARGS__)
 
 #else // !AZ_ENABLE_TRACING
-    #define AZ_Assert(expression, ...)
-    #define AZ_Error(window, expression, ...)
-    #define AZ_ErrorOnce(window, expression, ...)
-    #define AZ_Warning(window, expression, ...)
-    #define AZ_WarningOnce(window, expression, ...)
-    #define AZ_TracePrintf(window, ...)
-    #define AZ_TracePrintfOnce(window, ...)
 
-    #define AZ_Verify(expression, ...) (void)(expression)
-    #define AZ_VerifyError(window, expression, ...) (void)(expression)
-    #define AZ_VerifyWarning(window, expression, ...) (void)(expression)
+    #define AZ_Assert(...)
+    #define AZ_Error(...)
+    #define AZ_ErrorOnce(...)
+    #define AZ_Warning(...)
+    #define AZ_WarningOnce(...)
+    #define AZ_TracePrintf(...)
+    #define AZ_TracePrintfOnce(...)
+
+    #define AZ_Verify(expression, ...)                  AZ_UNUSED(expression)
+    #define AZ_VerifyError(window, expression, ...)     AZ_UNUSED(expression)
+    #define AZ_VerifyWarning(window, expression, ...)   AZ_UNUSED(expression)
 
 #endif  // AZ_ENABLE_TRACING
 

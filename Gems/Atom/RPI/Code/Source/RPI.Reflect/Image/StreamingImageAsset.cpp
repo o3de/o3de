@@ -8,6 +8,7 @@
 
 #include <Atom/RPI.Reflect/Image/StreamingImageAsset.h>
 
+#include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Serialization/SerializeContext.h>
 
 namespace AZ

@@ -17,8 +17,7 @@ namespace Benchmark
     class BM_MathQuaternion
         : public benchmark::Fixture
     {
-    public:
-        void SetUp([[maybe_unused]] const ::benchmark::State& state) override
+        void internalSetUp()
         {
             m_quatDataArray.resize(1000);
 
@@ -41,6 +40,15 @@ namespace Benchmark
                 quatData.w = unif(rng);
                 return quatData;
             });
+        }
+    public:
+        void SetUp(const benchmark::State&) override
+        {
+            internalSetUp();
+        }
+        void SetUp(benchmark::State&) override
+        {
+            internalSetUp();
         }
 
         struct QuatData

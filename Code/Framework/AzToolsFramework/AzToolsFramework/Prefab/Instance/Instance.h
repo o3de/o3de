@@ -38,6 +38,7 @@ namespace AzToolsFramework
         using AliasPath = AZ::IO::Path;
         using AliasPathView = AZ::IO::PathView;
         using EntityAlias = AZStd::string;
+        using EntityAliasView = AZStd::string_view;
         using InstanceAlias = AZStd::string;
 
         class Instance;
@@ -65,6 +66,9 @@ namespace AzToolsFramework
 
             Instance();
             explicit Instance(AZStd::unique_ptr<AZ::Entity> containerEntity);
+            explicit Instance(InstanceOptionalReference parent);
+            explicit Instance(AZStd::unique_ptr<AZ::Entity> containerEntity, InstanceOptionalReference parent);
+            explicit Instance(InstanceAlias alias);
             virtual ~Instance();
 
             Instance(const Instance& rhs) = delete;
@@ -72,17 +76,25 @@ namespace AzToolsFramework
 
             static void Reflect(AZ::ReflectContext* context);
 
-            const TemplateId& GetTemplateId() const;
-            void SetTemplateId(const TemplateId& templateId);
+            TemplateId GetTemplateId() const;
+            void SetTemplateId(TemplateId templateId);
 
             const AZ::IO::Path& GetTemplateSourcePath() const;
             void SetTemplateSourcePath(AZ::IO::PathView sourcePath);
             void SetContainerEntityName(AZStd::string_view containerName);
 
             bool AddEntity(AZ::Entity& entity);
+            bool AddEntity(AZStd::unique_ptr<AZ::Entity>&& entity);
             bool AddEntity(AZ::Entity& entity, EntityAlias entityAlias);
+            bool AddEntity(AZStd::unique_ptr<AZ::Entity>&& entity, EntityAlias entityAlias);
             AZStd::unique_ptr<AZ::Entity> DetachEntity(const AZ::EntityId& entityId);
             void DetachEntities(const AZStd::function<void(AZStd::unique_ptr<AZ::Entity>)>& callback);
+            /**
+             * Replaces the entity stored under the provided alias with a new one.
+             *
+             * @return The original entity or a nullptr if not found.
+             */
+            AZStd::unique_ptr<AZ::Entity> ReplaceEntity(AZStd::unique_ptr<AZ::Entity>&& entity, EntityAliasView alias);
 
             /**
             * Detaches all entities in the instance hierarchy.
@@ -97,7 +109,6 @@ namespace AzToolsFramework
             void Reset();
 
             Instance& AddInstance(AZStd::unique_ptr<Instance> instance);
-            Instance& AddInstance(AZStd::unique_ptr<Instance> instance, InstanceAlias instanceAlias);
             AZStd::unique_ptr<Instance> DetachNestedInstance(const InstanceAlias& instanceAlias);
             void DetachNestedInstances(const AZStd::function<void(AZStd::unique_ptr<Instance>)>& callback);
 
@@ -107,13 +118,15 @@ namespace AzToolsFramework
             * @return The list of EntityAliases
             */
             AZStd::vector<EntityAlias> GetEntityAliases();
+            size_t GetEntityAliasCount() const;
 
             /**
             * Gets the ids for the entities in the Instance DOM.  Can recursively trace all nested instances.
             */
-            void GetNestedEntityIds(const AZStd::function<bool(AZ::EntityId)>& callback);
+            void GetNestedEntityIds(const AZStd::function<bool(AZ::EntityId)>& callback) const;
 
-            void GetEntityIds(const AZStd::function<bool(AZ::EntityId)>& callback);
+            void GetEntityIds(const AZStd::function<bool(AZ::EntityId)>& callback) const;
+            void GetEntityIdToAlias(const AZStd::function<bool(AZ::EntityId, EntityAliasView)>& callback) const;
 
             /**
             * Gets the entities in the Instance DOM.  Can recursively trace all nested instances.
@@ -129,14 +142,33 @@ namespace AzToolsFramework
             *
             * @return entityAlias via optional
             */
-            AZStd::optional<AZStd::reference_wrapper<EntityAlias>> GetEntityAlias(const AZ::EntityId& id);
+            EntityAliasOptionalReference GetEntityAlias(AZ::EntityId id);
+            EntityAliasView GetEntityAlias(AZ::EntityId id) const;
+            /**
+             * Searches for the entity in this instance and its nested instances.
+             *
+             * @return The instance that owns the entity and the alias under which the entity is known.
+             *      If the entity isn't found then the instance will be null and the alias empty.
+             */
+            AZStd::pair<Instance*, EntityAliasView> FindInstanceAndAlias(AZ::EntityId entity);
+            AZStd::pair<const Instance*, EntityAliasView> FindInstanceAndAlias(AZ::EntityId entity) const;
+
+            EntityOptionalReference GetEntity(const EntityAlias& alias);
+            EntityOptionalConstReference GetEntity(const EntityAlias& alias) const;
 
             /**
             * Gets the id for a given EnitityAlias in the Instance DOM.
             *
             * @return entityId, invalid ID if not found
             */
-            AZ::EntityId GetEntityId(const EntityAlias& alias);
+            AZ::EntityId GetEntityId(const EntityAlias& alias) const;
+
+            /**
+            * Retrieves the entity id from an alias path that's relative to this instance.
+            * 
+            * @return entityId, invalid ID if not found
+            */
+            AZ::EntityId GetEntityIdFromAliasPath(AliasPathView relativeAliasPath) const;
 
 
             /**
@@ -178,11 +210,14 @@ namespace AzToolsFramework
 
             static EntityAlias GenerateEntityAlias();
             AliasPath GetAbsoluteInstanceAliasPath() const;
+            AliasPath GetAliasPathRelativeToInstance(const AZ::EntityId& entity) const;
 
             static InstanceAlias GenerateInstanceAlias();
 
         private:
             static constexpr const char s_aliasPathSeparator = '/';
+
+            Instance(AZStd::unique_ptr<AZ::Entity> containerEntity, InstanceOptionalReference parent, InstanceAlias alias);
 
             void ClearEntities();
 

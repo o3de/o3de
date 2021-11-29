@@ -7,6 +7,7 @@
  */
 
 #include <AzCore/Asset/AssetManagerBus.h>
+#include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Debug/Trace.h>
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/IO/SystemFile.h>
@@ -31,12 +32,10 @@ namespace AzToolsFramework
     const int NumOfBytesInMB = 1024 * 1024;
     const int ManifestFileSizeBufferInBytes = 10 * 1024; // 10 KB
     const float AssetCatalogFileSizeBufferPercentage = 1.0f;
-    using ArchiveCommandsBus = AzToolsFramework::ArchiveCommands::Bus;
     using AssetCatalogRequestBus = AZ::Data::AssetCatalogRequestBus;
 
     const char AssetBundleComponent::DeltaCatalogName[] = "DeltaCatalog.xml";
 
-    constexpr int SleepTimeMS = 250;
     constexpr int InjectFileRetryCount = 4;
 
 
@@ -135,7 +134,7 @@ namespace AzToolsFramework
         AZ_TracePrintf(logWindowName, "Gathering file entries in source pak file \"%s\".\n", sourcePak.c_str());
         bool result = false;
         AZStd::vector<AZStd::string> fileEntries;
-        ArchiveCommandsBus::BroadcastResult(result, &AzToolsFramework::ArchiveCommands::ListFilesInArchiveBlocking, normalizedSourcePakPath, fileEntries);
+        ArchiveCommandsBus::BroadcastResult(result, &AzToolsFramework::ArchiveCommandsBus::Events::ListFilesInArchive, normalizedSourcePakPath, fileEntries);
         // This ebus currently always returns false as the result, as it is believed that the 7z process is 
         //  being terminated by the user instead of ending gracefully. Check against an empty fileList instead
         //  as a result.
@@ -203,9 +202,9 @@ namespace AzToolsFramework
         AZ_TracePrintf(logWindowName, "Creating new asset bundle manifest file \"%s\" for source pak \"%s\".\n", AzFramework::AssetBundleManifest::s_manifestFileName, sourcePak.c_str());
         bool manifestSaved = false;
         AZStd::string manifestDirectory;
-        AZStd::vector<AZStd::string> levelDirs;
         AzFramework::StringFunc::Path::GetFullPath(sourcePak.c_str(), manifestDirectory);
-        AssetCatalogRequestBus::BroadcastResult(manifestSaved, &AssetCatalogRequestBus::Events::CreateBundleManifest, outCatalogPath, AZStd::vector<AZStd::string>(), manifestDirectory, AzFramework::AssetBundleManifest::CurrentBundleVersion, levelDirs);
+        AssetCatalogRequestBus::BroadcastResult(manifestSaved, &AssetCatalogRequestBus::Events::CreateBundleManifest, outCatalogPath,
+            AZStd::vector<AZStd::string>(), manifestDirectory, AzFramework::AssetBundleManifest::CurrentBundleVersion, AZStd::vector<AZ::IO::Path>{});
 
         AZStd::string manifestPath;
         AzFramework::StringFunc::Path::Join(manifestDirectory.c_str(), AzFramework::AssetBundleManifest::s_manifestFileName, manifestPath);
@@ -264,7 +263,7 @@ namespace AzToolsFramework
         AZStd::string tempBundleFilePath = bundleFilePath.Native() + "_temp";
 
         AZStd::vector<AZStd::string> dependentBundleNames;
-        AZStd::vector<AZStd::string> levelDirs;
+        AZStd::vector<AZ::IO::Path> levelDirs;
         AZStd::vector<AZStd::pair<AZStd::string, AZStd::string>> bundlePathDeltaCatalogPair;
         bundlePathDeltaCatalogPair.emplace_back(AZStd::make_pair(tempBundleFilePath, DeltaCatalogName));
 
@@ -516,7 +515,7 @@ namespace AzToolsFramework
         return true;
     }
 
-    bool AssetBundleComponent::AddManifestFileToBundles(const AZStd::vector<AZStd::pair<AZStd::string, AZStd::string>>& bundlePathDeltaCatalogPair, const AZStd::vector<AZStd::string>& dependentBundleNames, const AZStd::string& bundleFolder, const AzToolsFramework::AssetBundleSettings& assetBundleSettings, const AZStd::vector<AZStd::string>& levelDirs)
+    bool AssetBundleComponent::AddManifestFileToBundles(const AZStd::vector<AZStd::pair<AZStd::string, AZStd::string>>& bundlePathDeltaCatalogPair, const AZStd::vector<AZStd::string>& dependentBundleNames, const AZStd::string& bundleFolder, const AzToolsFramework::AssetBundleSettings& assetBundleSettings, const AZStd::vector<AZ::IO::Path>& levelDirs)
     {
         if (!MakePath(bundleFolder))
         {
@@ -605,15 +604,17 @@ namespace AzToolsFramework
     {
         AZ_TracePrintf(logWindowName, "Injecting file (%s) into bundle (%s).\n", filePath.c_str(), archiveFilePath.c_str());
         bool fileAddedToArchive = false;
+        std::future<bool> fileAdded;
         int retryCount = InjectFileRetryCount;
+
         while (!fileAddedToArchive && retryCount)
         {
-            ArchiveCommandsBus::BroadcastResult(fileAddedToArchive, &AzToolsFramework::ArchiveCommands::AddFileToArchiveBlocking, archiveFilePath, workingDirectory, filePath);
+            ArchiveCommandsBus::BroadcastResult(fileAdded, &AzToolsFramework::ArchiveCommandsBus::Events::AddFileToArchive, archiveFilePath, workingDirectory, filePath);
             --retryCount;
+            fileAddedToArchive = fileAdded.get();
             if (!fileAddedToArchive && retryCount)
             {
                 AZ_Error(logWindowName, false, "Failed to insert file (%s) into bundle (%s). Retrying.", filePath.c_str(), archiveFilePath.c_str());
-                AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(SleepTimeMS));
             }
         }
 
@@ -626,7 +627,11 @@ namespace AzToolsFramework
     
     bool AssetBundleComponent::InjectFile(const AZStd::string& filePath, const AZStd::string& sourcePak)
     {
-        return InjectFile(filePath, sourcePak, "");
+        // When no working directory is specified, assume that the file being injected goes into the root of the archive.
+        // The filePath should be an absolute path, making the workingDirectory be the path leading up to the file.
+        AZ::IO::PathView fullFilePath{ filePath, AZ::IO::PosixPathSeparator };
+        AZ::IO::Path workingDir{ fullFilePath.ParentPath() };
+        return InjectFile(filePath, sourcePak, workingDir.c_str());
     }
 
     bool AssetBundleComponent::InjectFiles(const AZStd::vector<AZStd::string>& fileEntries, const AZStd::string& sourcePak, const char* workingDirectory)
@@ -667,8 +672,9 @@ namespace AzToolsFramework
             }
         }
 
-        bool filesAddedToArchive = false;
-        AzToolsFramework::ArchiveCommandsBus::BroadcastResult(filesAddedToArchive, &AzToolsFramework::ArchiveCommands::AddFilesToArchiveBlocking, sourcePak, workingDirectory, listFilePath);
+        std::future<bool> filesAdded;
+        AzToolsFramework::ArchiveCommandsBus::BroadcastResult(filesAdded, &AzToolsFramework::ArchiveCommands::AddFilesToArchive, sourcePak, workingDirectory, listFilePath);
+        bool filesAddedToArchive = filesAdded.get();
         if (!filesAddedToArchive)
         {
             AZ_Error(logWindowName, false, "Failed to insert files into bundle (%s).\n", sourcePak.c_str());
@@ -687,7 +693,6 @@ namespace AzToolsFramework
     {
         // open the manifest and deserialize it
         bool manifestExtracted = false;
-        const bool overwriteExisting = true;
 
         TemporaryDir tempDir(sourcePak);
         if (!tempDir.m_result)
@@ -697,7 +702,10 @@ namespace AzToolsFramework
 
         AZStd::string manifestFilePath;
         AzFramework::StringFunc::Path::ConstructFull(tempDir.m_tempFolderPath.c_str(), AzFramework::AssetBundleManifest::s_manifestFileName, manifestFilePath, true);
-        ArchiveCommandsBus::BroadcastResult(manifestExtracted, &ArchiveCommandsBus::Events::ExtractFileBlocking, sourcePak, AzFramework::AssetBundleManifest::s_manifestFileName, tempDir.m_tempFolderPath, overwriteExisting);
+
+        std::future<bool> extractResult;
+        ArchiveCommandsBus::BroadcastResult(extractResult, &ArchiveCommandsBus::Events::ExtractFile, sourcePak, AzFramework::AssetBundleManifest::s_manifestFileName, tempDir.m_tempFolderPath);
+        manifestExtracted = extractResult.get();
         if (!manifestExtracted)
         {
             AZ_Error(logWindowName, false, "Failed to extract existing manifest from archive \"%s\".", sourcePak.c_str());

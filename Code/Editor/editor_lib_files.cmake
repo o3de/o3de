@@ -330,8 +330,6 @@ set(FILES
     Commands/CommandManager.h
     Controls/BitmapToolTip.cpp
     Controls/BitmapToolTip.h
-    Controls/ColorGradientCtrl.cpp
-    Controls/ColorGradientCtrl.h
     Controls/ConsoleSCB.cpp
     Controls/ConsoleSCB.h
     Controls/ConsoleSCB.ui
@@ -490,7 +488,6 @@ set(FILES
     UndoViewPosition.h
     UndoViewRotation.h
     Util/GeometryUtil.h
-    Util/KDTree.h
     WipFeaturesDlg.h
     WipFeaturesDlg.ui
     WipFeaturesDlg.qrc
@@ -501,7 +498,6 @@ set(FILES
     Objects/ClassDesc.cpp
     Objects/ClassDesc.h
     Objects/DisplayContextShared.inl
-    Objects/IEntityObjectListener.h
     Objects/SelectionGroup.cpp
     Objects/SelectionGroup.h
     Objects/SubObjSelection.cpp
@@ -712,7 +708,6 @@ set(FILES
     Util/GuidUtil.cpp
     Util/GuidUtil.h
     Util/IObservable.h
-    Util/KDTree.cpp
     Util/Mailer.h
     Util/NamedData.cpp
     Util/NamedData.h

@@ -33,6 +33,7 @@ namespace JsonSerializationTests
             return AZStd::make_shared<SmartPointer>();
         }
 
+        using JsonSerializerConformityTestDescriptor<SmartPointer>::Reflect;
         void Reflect(AZStd::unique_ptr<AZ::SerializeContext>& context) override
         {
             context->RegisterGenericType<SmartPointer>();
@@ -102,6 +103,7 @@ namespace JsonSerializationTests
             return *lhs == *rhs;
         }
 
+        using Base::Reflect;
         void Reflect(AZStd::unique_ptr<AZ::SerializeContext>& context) override
         {
             SimpleClass::Reflect(context, true);
@@ -176,6 +178,7 @@ namespace JsonSerializationTests
             features.m_supportsPartialInitialization = true;
         }
 
+        using SmartPointerBaseTestDescription<T<BaseClass>>::Reflect;
         void Reflect(AZStd::unique_ptr<AZ::SerializeContext>& context) override
         {
             SimpleInheritence::Reflect(context, true);
@@ -340,6 +343,7 @@ namespace JsonSerializationTests
             features.m_supportsPartialInitialization = true;
         }
 
+        using SmartPointerBaseTestDescription<T<BaseClass2>>::Reflect;
         void Reflect(AZStd::unique_ptr<AZ::SerializeContext>& context) override
         {
             MultipleInheritence::Reflect(context, true);
@@ -513,7 +517,8 @@ namespace JsonSerializationTests
     public:
         using SmartPointer = typename SmartPointerSimpleDerivedClassTestDescription<AZStd::shared_ptr>::SmartPointer;
         using InstanceSmartPointer = AZStd::shared_ptr<SimpleInheritence>;
-        
+
+        using BaseJsonSerializerFixture::RegisterAdditional;
         void RegisterAdditional(AZStd::unique_ptr<AZ::SerializeContext>& context) override
         {
             m_description.Reflect(context);

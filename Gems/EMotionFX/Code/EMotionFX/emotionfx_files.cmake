@@ -25,7 +25,6 @@ set(FILES
     Source/AttachmentNode.h
     Source/AttachmentSkin.cpp
     Source/AttachmentSkin.h
-    Source/AutoRegisteredActor.h
     Source/BaseObject.cpp
     Source/BaseObject.h
     Source/CompressedKeyFrames.h
@@ -43,6 +42,7 @@ set(FILES
     Source/EMotionFXManager.h
     Source/EMotionFXAllocatorInitializer.cpp
     Source/EMotionFXAllocatorInitializer.h
+    Source/JointSelectionBus.h
     Source/KeyFrame.h
     Source/KeyFrame.inl
     Source/KeyFrameFinder.h

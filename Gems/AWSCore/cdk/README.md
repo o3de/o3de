@@ -64,6 +64,32 @@ To add additional dependencies, for example other CDK libraries, just add
 them to your `setup.py` file and rerun the `pip install -r requirements.txt`
 command.
 
+## Optional Features
+
+Optional features are activated by passing [runtime context variables](https://docs.aws.amazon.com/cdk/latest/guide/context.html). To use multiple optional features together provide one key-value pair at a time:
+```
+cdk synth --context key1=value1 --context key2=value2 MyStack
+```
+
+### Automatic S3 and DynamoDB Cleanup
+The S3 bucket and Dynamodb created by the sample will be left behind as the CDK defaults to retaining such storage (both have default policies to retain resources on destroy). To delete
+the storage resources created when using CDK destroy, use the following commands to synthesize and destroy the CDK application.
+```
+cdk synth -c remove_all_storage_on_destroy=true --all
+cdk deploy -c remove_all_storage_on_destroy=true --all
+cdk destroy --all
+```
+
+### Server Access Logging
+Server access logging is enabled by default. To disable the feature, use the following commands to synthesize and deploy this CDK application.
+
+```
+$ cdk synth -c disable_access_log=true --all
+$ cdk deploy -c disable_access_log=true --all
+```
+
+See https://docs.aws.amazon.com/AmazonS3/latest/userguide/ServerLogs.html for more information about server access logging.
+
 ## Useful commands
 
  * `cdk ls`          list all stacks in the app

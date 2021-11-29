@@ -6,6 +6,8 @@
  *
  */
 
+#include <AzCore/Interface/Interface.h>
+
 namespace AZ::Debug
 {
     template<typename... T>
@@ -22,9 +24,11 @@ namespace AZ::Debug
         PIXBeginEvent(PIX_COLOR_INDEX(budget->Crc() & 0xff), eventName, args...);
 #endif
         budget->BeginProfileRegion();
-// TODO: injecting instrumentation for other profilers
-// NOTE: external profiler registration won't occur inline in a header necessarily in this manner, but the exact mechanism
-//       will be introduced in a future PR
+
+        if (auto profiler = AZ::Interface<Profiler>::Get(); profiler)
+        {
+            profiler->BeginRegion(budget, eventName);
+        }
 #endif
     }
 
@@ -39,6 +43,10 @@ namespace AZ::Debug
 #if defined(USE_PIX)
         PIXEndEvent();
 #endif
+        if (auto profiler = AZ::Interface<Profiler>::Get(); profiler)
+        {
+            profiler->EndRegion(budget);
+        }
 #endif
     }
 

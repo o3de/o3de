@@ -32,10 +32,10 @@ namespace AtomToolsFramework
         // AtomToolsDocumentRequestBus::Handler implementation
         AZStd::string_view GetAbsolutePath() const override;
         AZStd::string_view GetRelativePath() const override;
-        const AZStd::any& GetPropertyValue(const AZ::Name& propertyFullName) const override;
-        const AtomToolsFramework::DynamicProperty& GetProperty(const AZ::Name& propertyFullName) const override;
+        const AZStd::any& GetPropertyValue(const AZ::Name& propertyId) const override;
+        const AtomToolsFramework::DynamicProperty& GetProperty(const AZ::Name& propertyId) const override;
         bool IsPropertyGroupVisible(const AZ::Name& propertyGroupFullName) const override;
-        void SetPropertyValue(const AZ::Name& propertyFullName, const AZStd::any& value) override;
+        void SetPropertyValue(const AZ::Name& propertyId, const AZStd::any& value) override;
         bool Open(AZStd::string_view loadPath) override;
         bool Reopen() override;
         bool Save() override;

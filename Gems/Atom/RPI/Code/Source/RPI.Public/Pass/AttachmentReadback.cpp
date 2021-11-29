@@ -121,7 +121,7 @@ namespace AZ
             m_fence->Init(*device, RHI::FenceState::Reset);
 
             // Load shader and srg
-            const char* ShaderPath = "shader/decomposemsimage.azshader";
+            const char* ShaderPath = "shaders/decomposemsimage.azshader";
             m_decomposeShader = LoadCriticalShader(ShaderPath);
 
             if (m_decomposeShader == nullptr)
@@ -308,10 +308,10 @@ namespace AZ
             // The fix is to clear the buffer outside of the callback.
             for (int32_t i = 0; i < RHI::Limits::Device::FrameCountMax; i++)
             {
-                if (m_isReadbackComplete[m_readbackBufferCurrentIndex])
+                if (m_isReadbackComplete[i])
                 {
-                    m_isReadbackComplete[m_readbackBufferCurrentIndex] = false;
-                    m_readbackBufferArray[m_readbackBufferCurrentIndex] = nullptr;
+                    m_isReadbackComplete[i] = false;
+                    m_readbackBufferArray[i] = nullptr;
                 }
             }
             // Loop the triple buffer index and cache the current index to the callback.

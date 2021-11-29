@@ -13,23 +13,15 @@
 #include <Atom/RPI.Public/ViewportContextBus.h>
 #include <Atom/RPI.Public/WindowContext.h>
 
-#include <Source/Viewport/MaterialViewportRenderer.h>
-#include <Source/Viewport/MaterialViewportWidget.h>
+#include <Viewport/MaterialViewportRenderer.h>
+#include <Viewport/MaterialViewportWidget.h>
 
 AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnings spawned by QT
-#include <QAbstractEventDispatcher>
 #include <QWindow>
-#include "Source/Viewport/ui_MaterialViewportWidget.h"
+#include "Viewport/ui_MaterialViewportWidget.h"
 AZ_POP_DISABLE_WARNING
 
-#include <AzCore/PlatformIncl.h>
 #include <AzFramework/Viewport/ViewportControllerList.h>
-
-namespace Platform
-{
-    void ProcessInput(void* message);
-}
-
 
 namespace MaterialEditor
 {
@@ -40,11 +32,6 @@ namespace MaterialEditor
     {
         m_ui->setupUi(this);
 
-        if (auto dispatcher = QAbstractEventDispatcher::instance())
-        {
-            dispatcher->installNativeEventFilter(this);
-        }
-
         // The viewport context created by AtomToolsFramework::RenderViewportWidget has no name.
         // Systems like frame capturing and post FX expect there to be a context with DefaultViewportContextName
         auto viewportContextManager = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get();
@@ -53,14 +40,5 @@ namespace MaterialEditor
 
         m_renderer = AZStd::make_unique<MaterialViewportRenderer>(GetViewportContext()->GetWindowContext());
         GetControllerList()->Add(m_renderer->GetController());
-    }
-
-    // This is a temporary fix to get input working in Qt window, otherwise it wont receive input events
-    // This will later be handled on the QApplication subclass level
-    bool MaterialViewportWidget::nativeEventFilter(const QByteArray& /*eventType*/, void* message, long* /*result*/)
-    {
-        Platform::ProcessInput(message);
-
-        return false;
     }
 } // namespace MaterialEditor

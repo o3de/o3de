@@ -55,12 +55,12 @@ namespace AzToolsFramework
         // GUI is a pointer to the GUI used to editor your property (the one you created in CreateGUI)
         // and instance is a the actual value (PropertyType).
         // you may not cache the pointer to anything.
-        virtual void WriteGUIValuesIntoProperty(size_t index, WidgetType* GUI, PropertyType& instance, InstanceDataNode* node) = 0;
+        void WriteGUIValuesIntoProperty(size_t index, WidgetType* GUI, PropertyType& instance, InstanceDataNode* node) override = 0;
 
         // this will get called in order to initialize your gui.  It will be called once for each instance.
         // for example if you have multiple objects selected, index will go from 0 to however many there are.
         // you may not cache the pointer to anything.
-        virtual bool ReadValuesIntoGUI(size_t index, WidgetType* GUI, const PropertyType& instance, InstanceDataNode* node) = 0;
+        bool ReadValuesIntoGUI(size_t index, WidgetType* GUI, const PropertyType& instance, InstanceDataNode* node) override = 0;
 
         // this will be called in order to initialize or refresh your gui.  Your class will be fed one attribute at a time
         // you may override this to interpret the attributes as you wish - use attrValue->Read<int>() for example, to interpret it as an int.
@@ -87,19 +87,19 @@ namespace AzToolsFramework
         // and cause the next row to tab to your last button, when the user hits shift+tab on the next row.
         // if your widget is a single widget or has a single focus proxy there is no need to override.
         // you may not cache the pointer to anything.
-        virtual QWidget* GetFirstInTabOrder(WidgetType* widget) { return widget; }
-        virtual QWidget* GetLastInTabOrder(WidgetType* widget) { return widget; }
+        QWidget* GetFirstInTabOrder(WidgetType* widget) override { return widget; }
+        QWidget* GetLastInTabOrder(WidgetType* widget) override { return widget; }
 
         // implement this function in order to set your internal tab order between child controls.
         // just call a series of QWidget::setTabOrder
         // you may not cache the pointer to anything.
-        virtual void UpdateWidgetInternalTabbing(WidgetType* /*widget*/) { }
+        void UpdateWidgetInternalTabbing(WidgetType* /*widget*/) override {}
 
         // you must implement CreateGUI:
         // create an instance of the GUI that is used to edit this property type.
         // the QWidget pointer you return also serves as a handle for accessing data.  This means that in order to trigger
         // a write, you need to call RequestWrite(...) on that same widget handle you return.
-        virtual QWidget* CreateGUI(QWidget *pParent) override = 0;
+        QWidget* CreateGUI(QWidget *pParent) override = 0;
 
         // you MAY override this if you wish to pool your widgets or reuse them.  The default implementation simply calls delete.
         //virtual QWidget* DestroyGUI(QWidget* object) override;
@@ -129,24 +129,24 @@ namespace AzToolsFramework
             return false;
         }
 
-        virtual QWidget* GetFirstInTabOrder(WidgetType* widget) { return widget; }
-        virtual QWidget* GetLastInTabOrder(WidgetType* widget) { return widget; }
-        virtual void UpdateWidgetInternalTabbing(WidgetType* /*widget*/) { }
+        QWidget* GetFirstInTabOrder(WidgetType* widget) override { return widget; }
+        QWidget* GetLastInTabOrder(WidgetType* widget) override { return widget; }
+        void UpdateWidgetInternalTabbing(WidgetType* /*widget*/) override {}
 
-        virtual QWidget* CreateGUI(QWidget *pParent) override = 0;
+        QWidget* CreateGUI(QWidget *pParent) override = 0;
     protected:
-        virtual bool HandlesType(const AZ::Uuid& id) const override
+        bool HandlesType(const AZ::Uuid& id) const override
         {
             (void)id;
             return true;
         }
 
-        virtual const AZ::Uuid& GetHandledType() const override
+        const AZ::Uuid& GetHandledType() const override
         {
             return nullUuid;
         }
 
-        virtual void WriteGUIValuesIntoProperty_Internal(QWidget* widget, InstanceDataNode* node) override
+        void WriteGUIValuesIntoProperty_Internal(QWidget* widget, InstanceDataNode* node) override
         {
             for (size_t i = 0; i < node->GetNumInstances(); ++i)
             {
@@ -154,13 +154,13 @@ namespace AzToolsFramework
             }
         }
 
-        virtual void WriteGUIValuesIntoTempProperty_Internal(QWidget* widget, void* tempValue, const AZ::Uuid& propertyType, AZ::SerializeContext* serializeContext) override
+        void WriteGUIValuesIntoTempProperty_Internal(QWidget* widget, void* tempValue, const AZ::Uuid& propertyType, AZ::SerializeContext* serializeContext) override
         {
             (void)serializeContext;
             WriteGUIValuesIntoProperty(0, reinterpret_cast<WidgetType*>(widget), tempValue, propertyType);
         }
 
-        virtual void ReadValuesIntoGUI_Internal(QWidget* widget, InstanceDataNode* node) override
+        void ReadValuesIntoGUI_Internal(QWidget* widget, InstanceDataNode* node) override
         {
             AZ_PROFILE_FUNCTION(AzToolsFramework);
 

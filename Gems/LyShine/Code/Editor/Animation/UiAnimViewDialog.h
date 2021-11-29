@@ -70,7 +70,7 @@ public:
 
     // UiEditorAnimationStateInterface
     UiEditorAnimationStateInterface::UiEditorAnimationEditState GetCurrentEditState() override;
-    void RestoreCurrentEditState(const UiEditorAnimationStateInterface::UiEditorAnimationEditState& animEditState);
+    void RestoreCurrentEditState(const UiEditorAnimationStateInterface::UiEditorAnimationEditState& animEditState) override;
     // ~UiEditorAnimationStateInterface
 
     // UiEditorAnimListenerInterface
@@ -167,11 +167,11 @@ private:
     virtual void OnNodeSelectionChanged(CUiAnimViewSequence* pSequence) override;
     virtual void OnNodeRenamed(CUiAnimViewNode* pNode, const char* pOldName) override;
 
-    virtual void OnSequenceAdded(CUiAnimViewSequence* pSequence);
-    virtual void OnSequenceRemoved(CUiAnimViewSequence* pSequence);
+    void OnSequenceAdded(CUiAnimViewSequence* pSequence) override;
+    void OnSequenceRemoved(CUiAnimViewSequence* pSequence) override;
 
-    virtual void BeginUndoTransaction();
-    virtual void EndUndoTransaction();
+    void BeginUndoTransaction() override;
+    void EndUndoTransaction() override;
     void SaveSequenceTimingToXML();
 
     // Instance

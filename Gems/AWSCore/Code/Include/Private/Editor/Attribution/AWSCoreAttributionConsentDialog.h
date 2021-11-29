@@ -15,13 +15,12 @@
 namespace AWSCore
 {
     //! Defines AWSCoreAttributionConsent QT dialog as QT message box.
-    class AWSCoreAttributionConsentDialog :
-        public QMessageBox
+    class AWSCoreAttributionConsentDialog
+        : public QMessageBox
     {
     public:
         AZ_CLASS_ALLOCATOR(AWSCoreAttributionConsentDialog, AZ::SystemAllocator, 0);
         AWSCoreAttributionConsentDialog();
-        virtual ~AWSCoreAttributionConsentDialog() = default;
-       
+        ~AWSCoreAttributionConsentDialog() override = default;
     };
 } // namespace AWSCore

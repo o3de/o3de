@@ -139,9 +139,8 @@ namespace PhysX
             else if (auto* shapeColliderPairList = AZStd::get_if<AZStd::vector<AzPhysics::ShapeColliderPair>>(&shapeData))
             {
                 bool shapeAdded = false;
-                if (!shapeColliderPairList->empty())
+                for (const auto& shapeColliderConfigs : *shapeColliderPairList)
                 {
-                    const auto& shapeColliderConfigs = shapeColliderPairList->front();
                     auto shapePtr = AZStd::make_shared<Shape>(*(shapeColliderConfigs.first), *(shapeColliderConfigs.second));
                     AZStd::visit([shapePtr, &shapeAdded](auto&& body)
                         {
@@ -151,8 +150,8 @@ namespace PhysX
                                 shapeAdded = true;
                             }
                         }, simulatedBody);
-                    return shapeAdded;
                 }
+                return shapeAdded;
             }
             else if (auto* shape = AZStd::get_if<AZStd::shared_ptr<Physics::Shape>>(&shapeData))
             {
@@ -198,8 +197,8 @@ namespace PhysX
                 AZ_Warning("PhysXScene", shapeAdded, "No Collider or Shape information found when creating Rigid body [%s]", configuration->m_debugName.c_str());
             }
             const AzPhysics::MassComputeFlags& flags = configuration->GetMassComputeFlags();
-            newBody->UpdateMassProperties(flags, &configuration->m_centerOfMassOffset,
-                &configuration->m_inertiaTensor, &configuration->m_mass);
+            newBody->UpdateMassProperties(flags, configuration->m_centerOfMassOffset,
+                configuration->m_inertiaTensor, configuration->m_mass);
 
             crc = AZ::Crc32(newBody, sizeof(*newBody));
             return newBody;
@@ -1175,7 +1174,10 @@ namespace PhysX
         using physx::PxGeometryType;
 
         bool isProfilingActive = false;
-        AZ::Debug::ProfilerRequestBus::BroadcastResult(isProfilingActive, &AZ::Debug::ProfilerRequests::IsActive);
+        if (auto profilerSystem = AZ::Debug::ProfilerSystemInterface::Get(); profilerSystem)
+        {
+            isProfilingActive = profilerSystem->IsActive();
+        }
 
         if (!isProfilingActive)
         {
@@ -1223,10 +1225,10 @@ namespace PhysX
         AZ_PROFILE_DATAPOINT(Physics, stats.getNbBroadPhaseRemoves(), RootCategory, BroadphaseSubCategory, "BroadPhaseRemoves");
 
         // Compute pair stats for all geometry types
+#if AZ_PROFILE_DATAPOINT
         AZ::u32 ccdPairs = 0;
         AZ::u32 modifiedPairs = 0;
         AZ::u32 triggerPairs = 0;
-
         for (AZ::u32 i = 0; i < PxGeometryType::eGEOMETRY_COUNT; i++)
         {
             // stat[i][j] = stat[j][i], hence, discarding the symmetric entries
@@ -1239,6 +1241,7 @@ namespace PhysX
                 triggerPairs += stats.getRbPairStats(physx::PxSimulationStatistics::eTRIGGER_PAIRS, firstGeom, secondGeom);
             }
         }
+#endif
 
         [[maybe_unused]] const char* CollisionsSubCategory = "Collisions";
         AZ_PROFILE_DATAPOINT(Physics, ccdPairs, RootCategory, CollisionsSubCategory, "CCDPairs");

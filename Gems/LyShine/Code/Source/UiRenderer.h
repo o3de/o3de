@@ -152,7 +152,6 @@ private: // member functions
 
     //! Create a dynamic draw context for this renderer
     AZ::RHI::Ptr<AZ::RPI::DynamicDrawContext> CreateDynamicDrawContext(
-        AZ::RPI::ScenePtr scene,
         AZ::Data::Instance<AZ::RPI::Shader> uiShader);
 
     //! Bind the global white texture for all the texture units we use
@@ -175,7 +174,8 @@ protected: // attributes
     // Set by user when viewport context is not the main/default viewport
     AZStd::shared_ptr<AZ::RPI::ViewportContext> m_viewportContext;
 
-    AZ::RPI::ScenePtr m_scene;
+    AZ::RPI::ScenePtr m_ownedScene;
+    AZ::RPI::Scene* m_scene = nullptr;
 
 #ifndef _RELEASE
     int m_debugTextureDataRecordLevel = 0;

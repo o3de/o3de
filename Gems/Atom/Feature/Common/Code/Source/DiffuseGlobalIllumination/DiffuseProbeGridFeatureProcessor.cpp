@@ -111,7 +111,7 @@ namespace AZ
 
         void DiffuseProbeGridFeatureProcessor::Simulate([[maybe_unused]] const FeatureProcessor::SimulatePacket& packet)
         {
-            AZ_PROFILE_FUNCTION(AzRender);
+            AZ_PROFILE_SCOPE(AzRender, "DiffuseProbeGridFeatureProcessor: Simulate");
 
             // update pipeline states
             if (m_needUpdatePipelineStates)
@@ -154,10 +154,11 @@ namespace AZ
                 // sort the probes by descending inner volume size, so the smallest volumes are rendered last
                 auto sortFn = [](AZStd::shared_ptr<DiffuseProbeGrid> const& probe1, AZStd::shared_ptr<DiffuseProbeGrid> const& probe2) -> bool
                 {
-                    const Aabb& aabb1 = probe1->GetAabbWs();
-                    const Aabb& aabb2 = probe2->GetAabbWs();
-                    float size1 = aabb1.GetXExtent() * aabb1.GetZExtent() * aabb1.GetYExtent();
-                    float size2 = aabb2.GetXExtent() * aabb2.GetZExtent() * aabb2.GetYExtent();
+                    const Obb& obb1 = probe1->GetObbWs();
+                    const Obb& obb2 = probe2->GetObbWs();
+                    float size1 = obb1.GetHalfLengthX() * obb1.GetHalfLengthZ() * obb1.GetHalfLengthY();
+                    float size2 = obb2.GetHalfLengthX() * obb2.GetHalfLengthZ() * obb2.GetHalfLengthY();
+
                     return (size1 > size2);
                 };
 
@@ -602,12 +603,12 @@ namespace AZ
             RHI::Ptr<RHI::Device> device = RHI::RHISystemInterface::Get()->GetDevice();
             if (device->GetFeatures().m_rayTracing == false)
             {
-                RPI::PassHierarchyFilter updatePassFilter(AZ::Name("DiffuseProbeGridUpdatePass"));
-                const AZStd::vector<RPI::Pass*>& updatePasses = RPI::PassSystemInterface::Get()->FindPasses(updatePassFilter);
-                for (RPI::Pass* pass : updatePasses)
-                {
-                    pass->SetEnabled(false);
-                }
+                RPI::PassFilter passFilter = RPI::PassFilter::CreateWithPassName(AZ::Name("DiffuseProbeGridUpdatePass"), GetParentScene());
+                RPI::PassSystemInterface::Get()->ForEachPass(passFilter, [](RPI::Pass* pass) -> RPI::PassFilterExecutionFlow
+                    {
+                        pass->SetEnabled(false);
+                         return RPI::PassFilterExecutionFlow::ContinueVisitingPasses;
+                    });
             }
         }
 

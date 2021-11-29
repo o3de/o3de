@@ -42,7 +42,7 @@ namespace StandaloneTools
         bool LaunchDiscoveryService();
 
         // AZ::UserSettingsFileLocatorBus::Handler
-        AZStd::string ResolveFilePath(AZ::u32 /*providerId*/);
+        AZStd::string ResolveFilePath(AZ::u32 /*providerId*/) override;
         //////////////////////////////////////////////////////////////////////////
     };
 }

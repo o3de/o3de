@@ -8,6 +8,7 @@
 
 #include <Atom/RPI.Edit/Material/MaterialPropertySerializer.h>
 #include <Atom/RPI.Edit/Material/MaterialPropertyId.h>
+#include <Atom/RPI.Edit/Material/MaterialUtils.h>
 
 #include <AzCore/Serialization/Json/BaseJsonSerializer.h>
 #include <AzCore/Serialization/Json/JsonSerializationResult.h>
@@ -23,11 +24,12 @@ namespace AZ
 {
     namespace RPI
     {
-        namespace // Avoid conflicts in uber builds
+        namespace JsonMaterialPropertySerializerInternal
         {
             namespace Field
             {
-                static constexpr const char id[] = "id";
+                static constexpr const char name[] = "name";
+                static constexpr const char id[] = "id"; // For backward compatibility
                 static constexpr const char displayName[] = "displayName";
                 static constexpr const char description[] = "description";
                 static constexpr const char type[] = "type";
@@ -46,6 +48,7 @@ namespace AZ
 
             static const AZStd::string_view AcceptedFields[] =
             {
+                Field::name,
                 Field::id,
                 Field::displayName,
                 Field::description,
@@ -103,6 +106,7 @@ namespace AZ
             JsonDeserializerContext& context)
         {
             namespace JSR = JsonSerializationResult;
+            using namespace JsonMaterialPropertySerializerInternal;
 
             JSR::ResultCode result(JSR::Tasks::ReadField);
 
@@ -160,6 +164,7 @@ namespace AZ
             JsonDeserializerContext& context)
         {
             namespace JSR = JsonSerializationResult;
+            using namespace JsonMaterialPropertySerializerInternal;
 
             JSR::ResultCode result(JSR::Tasks::ReadField);
 
@@ -181,6 +186,7 @@ namespace AZ
             const rapidjson::Value& inputValue, JsonDeserializerContext& context)
         {
             namespace JSR = JsonSerializationResult;
+            using namespace JsonMaterialPropertySerializerInternal;
 
             AZ_Assert(azrtti_typeid<MaterialTypeSourceData::PropertyDefinition>() == outputValueTypeId,
                 "Unable to deserialize material property to json because the provided type is %s",
@@ -197,28 +203,19 @@ namespace AZ
                 return context.Report(JsonSerializationResult::Tasks::ReadField, JsonSerializationResult::Outcomes::Unsupported, "Property definition must be a JSON object.");
             }
 
-            // First check for unexpected fields
-            for (auto iter = inputValue.MemberBegin(); iter != inputValue.MemberEnd(); ++iter)
+            MaterialUtils::CheckForUnrecognizedJsonFields(AcceptedFields, AZ_ARRAY_SIZE(AcceptedFields), inputValue, context, result);
+
+            JsonSerializationResult::ResultCode nameResult = ContinueLoadingFromJsonObjectField(&property->m_name, azrtti_typeid<AZStd::string>(), inputValue, Field::name, context);
+            if (nameResult.GetOutcome() == JsonSerializationResult::Outcomes::DefaultsUsed)
             {
-                bool matched = false;
-
-                for (int i = 0; i < AZ_ARRAY_SIZE(AcceptedFields); ++i)
-                {
-                    if (iter->name.GetString() == AcceptedFields[i])
-                    {
-                        matched = true;
-                        break;
-                    }
-                }
-
-                if (!matched)
-                {
-                    ScopedContextPath subPath{context, iter->name.GetString()};
-                    result.Combine(context.Report(JSR::Tasks::ReadField, JSR::Outcomes::Skipped, "Skipping unrecognized field"));
-                }
+                // This "id" key is for backward compatibility.
+                result.Combine(ContinueLoadingFromJsonObjectField(&property->m_name, azrtti_typeid<AZStd::string>(), inputValue, Field::id, context));
+            }
+            else
+            {
+                result.Combine(nameResult);
             }
 
-            result.Combine(ContinueLoadingFromJsonObjectField(&property->m_nameId, azrtti_typeid<AZStd::string>(), inputValue, Field::id, context));
             result.Combine(ContinueLoadingFromJsonObjectField(&property->m_displayName, azrtti_typeid<AZStd::string>(), inputValue, Field::displayName, context));
             result.Combine(ContinueLoadingFromJsonObjectField(&property->m_description, azrtti_typeid<AZStd::string>(), inputValue, Field::description, context));
             result.Combine(ContinueLoadingFromJsonObjectField(&property->m_dataType, azrtti_typeid<MaterialPropertyDataType>(), inputValue, Field::type, context));
@@ -302,6 +299,8 @@ namespace AZ
             JsonSerializerContext& context)
         {
             namespace JSR = JsonSerializationResult;
+            using namespace JsonMaterialPropertySerializerInternal;
+
             JSR::ResultCode result(JSR::Tasks::WriteValue);
 
             if (property->m_value.Is<T>())
@@ -345,6 +344,8 @@ namespace AZ
             JsonSerializerContext& context)
         {
             namespace JSR = JsonSerializationResult;
+            using namespace JsonMaterialPropertySerializerInternal;
+
             JsonSerializationResult::ResultCode result(JSR::Tasks::WriteValue);
 
             if (property->m_value.Is<T>())
@@ -360,6 +361,7 @@ namespace AZ
             [[maybe_unused]] const void* defaultValue, const Uuid& valueTypeId, JsonSerializerContext& context)
         {
             namespace JSR = JsonSerializationResult;
+            using namespace JsonMaterialPropertySerializerInternal;
 
             AZ_Assert(azrtti_typeid<MaterialTypeSourceData::PropertyDefinition>() == valueTypeId,
                 "Unable to serialize material property to json because the provided type is %s",
@@ -374,7 +376,7 @@ namespace AZ
             outputValue.SetObject();
 
             const AZStd::string emptyString;
-            result.Combine(ContinueStoringToJsonObjectField(outputValue, Field::id, &property->m_nameId, &emptyString, azrtti_typeid<AZStd::string>(), context));
+            result.Combine(ContinueStoringToJsonObjectField(outputValue, Field::name, &property->m_name, &emptyString, azrtti_typeid<AZStd::string>(), context));
             result.Combine(ContinueStoringToJsonObjectField(outputValue, Field::displayName, &property->m_displayName, &emptyString, azrtti_typeid<AZStd::string>(), context));
             result.Combine(ContinueStoringToJsonObjectField(outputValue, Field::description, &property->m_description, &emptyString, azrtti_typeid<AZStd::string>(), context));
 
@@ -452,6 +454,8 @@ namespace AZ
             const rapidjson::Value& inputValue, JsonDeserializerContext& context)
         {
             namespace JSR = JsonSerializationResult;
+            using namespace JsonMaterialPropertySerializerInternal;
+
             JSR::ResultCode result(JSR::Tasks::ReadField);
 
             if (inputValue.HasMember(Field::vectorLabels))
@@ -467,6 +471,8 @@ namespace AZ
         {
             AZStd::string emptyString;
             namespace JSR = JsonSerializationResult;
+            using namespace JsonMaterialPropertySerializerInternal;
+
             JsonSerializationResult::ResultCode result(JSR::Tasks::WriteValue);
 
             if (!property->m_vectorLabels.empty())

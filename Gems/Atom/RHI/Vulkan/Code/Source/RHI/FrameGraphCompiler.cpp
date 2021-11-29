@@ -9,7 +9,6 @@
 #include <Atom/RHI/BufferFrameAttachment.h>
 #include <Atom/RHI/BufferScopeAttachment.h>
 #include <Atom/RHI/BufferView.h>
-#include <Atom/RHI/CpuProfiler.h>
 #include <Atom/RHI/FrameGraphAttachmentDatabase.h>
 #include <Atom/RHI/FrameGraph.h>
 #include <Atom/RHI/ImageScopeAttachment.h>
@@ -45,7 +44,7 @@ namespace AZ
 
         RHI::MessageOutcome FrameGraphCompiler::CompileInternal(const RHI::FrameGraphCompileRequest& request)
         {
-            AZ_ATOM_PROFILE_FUNCTION("RHI", "FrameGraphCompiler: CompileInternal(Vulkan)");
+            AZ_PROFILE_SCOPE(RHI, "FrameGraphCompiler: CompileInternal(Vulkan)");
 
             AZ_Assert(request.m_frameGraph, "FrameGraph is null.");
             RHI::FrameGraph& frameGraph = *request.m_frameGraph;
@@ -89,7 +88,7 @@ namespace AZ
 
         void FrameGraphCompiler::CompileResourceBarriers(const RHI::FrameGraphAttachmentDatabase& attachmentDatabase)
         {
-            AZ_ATOM_PROFILE_FUNCTION("RHI", "FrameGraphCompiler: CompileResourceBarriers(Vulkan)");
+            AZ_PROFILE_SCOPE(RHI, "FrameGraphCompiler: CompileResourceBarriers(Vulkan)");
 
              for (RHI::BufferFrameAttachment* bufferFrameAttachment : attachmentDatabase.GetBufferAttachments())
              {

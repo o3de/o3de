@@ -30,17 +30,16 @@ namespace AssetMemoryAnalyzer
 
             if (customFilename)
             {
-                azsnprintf(sharedBuffer, sizeof(sharedBuffer), "@log@/%s", customFilename);
+                azsnprintf(sharedBuffer, AZ_ARRAY_SIZE(sharedBuffer), "@log@/%s", customFilename);
             }
             else
             {
-                char timestampBuffer[64];
                 time_t ltime;
                 time(&ltime);
                 struct tm timeInfo;
                 AZ_TRAIT_CTIME_LOCALTIME(&timeInfo, &ltime);
-                strftime(timestampBuffer, sizeof(timestampBuffer), "@log@/assetmem-%Y-%m-%d-%H-%M-%S.%%s", &timeInfo);
-                azsnprintf(sharedBuffer, sizeof(sharedBuffer), timestampBuffer, extension);
+                strftime(sharedBuffer, AZ_ARRAY_SIZE(sharedBuffer), "@log@/assetmem-%Y-%m-%d-%H-%M-%S.", &timeInfo);
+                azstrcat(sharedBuffer, AZ_ARRAY_SIZE(sharedBuffer), extension);
             }
 
             return sharedBuffer;

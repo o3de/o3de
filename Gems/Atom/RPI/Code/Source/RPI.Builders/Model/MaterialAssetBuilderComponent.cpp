@@ -37,14 +37,14 @@ namespace AZ
 {
     namespace RPI
     {
-        static const char* MaterialExporterName = "Scene Material Builder";
+        [[maybe_unused]] static const char* MaterialExporterName = "Scene Material Builder";
 
         void MaterialAssetDependenciesComponent::Reflect(ReflectContext* context)
         {
             if (auto* serialize = azrtti_cast<SerializeContext*>(context))
             {
                 serialize->Class<MaterialAssetDependenciesComponent, Component>()
-                    ->Version(4)
+                    ->Version(5) // Set materialtype dependency to OrderOnce
                     ->Attribute(Edit::Attributes::SystemComponentTags, AZStd::vector<Crc32>({ AssetBuilderSDK::ComponentTags::AssetBuilder }));
             }
         }
@@ -78,10 +78,7 @@ namespace AZ
             AZStd::string materialTypePath;
             RPI::MaterialConverterBus::BroadcastResult(materialTypePath, &RPI::MaterialConverterBus::Events::GetMaterialTypePath);
 
-            bool includeMaterialPropertyNames = true;
-            RPI::MaterialConverterBus::BroadcastResult(includeMaterialPropertyNames, &RPI::MaterialConverterBus::Events::ShouldIncludeMaterialPropertyNames);
-            // TODO: Use includeMaterialPropertyNames to break materialtype dependency on fbx files. Materialasset's dependency on materialtypeasset will need to be decoupled first
-            if (conversionEnabled && !materialTypePath.empty() /*&& !includeMaterialPropertyNames*/)
+            if (conversionEnabled && !materialTypePath.empty())
             {
                 AssetBuilderSDK::SourceFileDependency materialTypeSource;
                 materialTypeSource.m_sourceFileDependencyPath = materialTypePath;
@@ -90,7 +87,15 @@ namespace AZ
                 jobDependency.m_jobKey = "Atom Material Builder";
                 jobDependency.m_sourceFile = materialTypeSource;
                 jobDependency.m_platformIdentifier = platformIdentifier;
-                jobDependency.m_type = AssetBuilderSDK::JobDependencyType::Order;
+
+                // If includeMaterialPropertyNames is false, then a job dependency is needed so the material builder can validate
+                // MaterialAsset properties against the MaterialTypeAsset at asset build time. If includeMaterialPropertyNames is true, the
+                // material properties will be validated at runtime when the material is loaded, so the job dependency is needed only for
+                // first-time processing to set up the initial MaterialAsset. This speeds up AP processing time when a materialtype file is
+                // edited (e.g. 10s when editing StandardPBR.materialtype on AtomTest project from 45s).
+                bool includeMaterialPropertyNames = true;
+                RPI::MaterialConverterBus::BroadcastResult(includeMaterialPropertyNames, &RPI::MaterialConverterBus::Events::ShouldIncludeMaterialPropertyNames);
+                jobDependency.m_type = includeMaterialPropertyNames ? AssetBuilderSDK::JobDependencyType::OrderOnce : AssetBuilderSDK::JobDependencyType::Order;
 
                 jobDependencyList.push_back(jobDependency);
             }

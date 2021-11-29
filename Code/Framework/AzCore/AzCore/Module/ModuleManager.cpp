@@ -10,16 +10,13 @@
 #include <AzCore/Module/Internal/ModuleManagerSearchPathTool.h>
 
 #include <AzCore/Module/Module.h>
-#include <AzCore/RTTI/AttributeReader.h>
-#include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Component/Entity.h>
-#include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Component/ComponentApplication.h>
+#include <AzCore/Component/ComponentApplicationBus.h>
+#include <AzCore/Component/ComponentApplicationLifecycle.h>
 #include <AzCore/NativeUI/NativeUIRequests.h>
-#include <AzCore/Script/ScriptSystemBus.h>
-#include <AzCore/Script/ScriptContext.h>
 
 #include <AzCore/std/algorithm.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
@@ -221,11 +218,16 @@ namespace AZ
             }
         }
 
+        AZStd::string componentNamesArray = R"({ "SystemComponents":[)";
+        const char* comma = "";
         // For all system components, deactivate
         for (auto componentIt = m_systemComponents.rbegin(); componentIt != m_systemComponents.rend(); ++componentIt)
         {
             ModuleEntity::DeactivateComponent(**componentIt);
+            componentNamesArray += AZStd::string::format(R"(%s"%s")", comma, (*componentIt)->RTTI_GetTypeName());
+            comma = ", ";
         }
+        componentNamesArray += R"(]})";
 
         // For all modules that we created an entity for, set them to "Init" (meaning not Activated)
         for (auto& moduleData : m_ownedModules)
@@ -239,6 +241,13 @@ namespace AZ
 
         // Since the system components have been deactivated clear out the vector.
         m_systemComponents.clear();
+
+        // Signal that the System Components have deactivated
+        if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
+        {
+            AZ::ComponentApplicationLifecycle::SignalEvent(*settingsRegistry, "SystemComponentsDeactivated", componentNamesArray);
+        }
+
     }
 
     //=========================================================================
@@ -284,7 +293,11 @@ namespace AZ
     {
         // Split the tag list
         AZStd::vector<AZStd::string_view> tagList;
-        AZStd::tokenize<AZStd::string_view>(tags, ",", tagList);
+        auto TokenizeTags = [&tagList](AZStd::string_view token)
+        {
+            tagList.push_back(token);
+        };
+        AZ::StringFunc::TokenizeVisitor(tags, TokenizeTags, ',');
 
         m_systemComponentTags.resize(tagList.size());
         AZStd::transform(tagList.begin(), tagList.end(), m_systemComponentTags.begin(), [](const AZStd::string_view& tag)
@@ -737,11 +750,17 @@ namespace AZ
             }
         }
 
+        AZStd::string componentNamesArray = R"({ "SystemComponents":[)";
+        const char* comma = "";
         // Activate the entities in the appropriate order
         for (Component* component : componentsToActivate)
         {
             ModuleEntity::ActivateComponent(*component);
+
+            componentNamesArray += AZStd::string::format(R"(%s"%s")", comma, component->RTTI_GetTypeName());
+            comma = ", ";
         }
+        componentNamesArray += R"(]})";
 
         // Done activating; set state to active
         for (auto& moduleData : modulesToInit)
@@ -755,5 +774,12 @@ namespace AZ
 
         // Save the activated components for deactivation later
         m_systemComponents.insert(m_systemComponents.end(), componentsToActivate.begin(), componentsToActivate.end());
+
+        // Signal that the System Components are activated
+        if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
+        {
+            AZ::ComponentApplicationLifecycle::SignalEvent(*settingsRegistry, "SystemComponentsActivated",
+                componentNamesArray);
+        }
     }
 } // namespace AZ

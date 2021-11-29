@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+
+<Component
+    Name="NetworkRigidBodyComponent"
+    Namespace="Multiplayer"
+    OverrideComponent="true"
+    OverrideController="true"
+    OverrideInclude="Multiplayer/Components/NetworkRigidBodyComponent.h"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+
+    <ComponentRelation Constraint="Required" HasController="true" Name="NetworkTransformComponent" Namespace="Multiplayer" Include="Multiplayer/Components/NetworkTransformComponent.h" />
+
+    <NetworkProperty Type="AZ::Vector3" Name="LinearVelocity"  Init="AZ::Vector3::CreateZero()" ReplicateFrom="Authority" ReplicateTo="Server" IsRewindable="false" IsPredictable="false" IsPublic="false" Container="Object" ExposeToEditor="false" ExposeToScript="false" GenerateEventBindings="false" />
+    <NetworkProperty Type="AZ::Vector3" Name="AngularVelocity" Init="AZ::Vector3::CreateZero()" ReplicateFrom="Authority" ReplicateTo="Server" IsRewindable="false" IsPredictable="false" IsPublic="false" Container="Object" ExposeToEditor="false" ExposeToScript="false" GenerateEventBindings="false" />
+
+    <RemoteProcedure Name="SendApplyImpulse" InvokeFrom="Server" HandleOn="Authority" IsPublic="true" IsReliable="true" GenerateEventBindings="false" Description="Applies an impulse">
+        <Param Type="AZ::Vector3" Name="impulse" />
+        <Param Type="AZ::Vector3" Name="worldPoint" />
+    </RemoteProcedure>
+</Component>

@@ -9,14 +9,14 @@
 
     <Packet Name="Connect" HandshakePacket="true" Desc="Client connection packet, on success the server will reply with an Accept">
         <Member Type="uint16_t" Name="networkProtocolVersion" Init="0" />
+        <Member Type="uint64_t" Name="temporaryUserId" Init="0" />
         <Member Type="Multiplayer::LongNetworkString" Name="ticket" />
     </Packet>
 
     <Packet Name="Accept" HandshakePacket="true" Desc="Server accept packet">
-        <Member Type="Multiplayer::HostId" Name="hostId" Init="Multiplayer::InvalidHostId" />
         <Member Type="Multiplayer::LongNetworkString" Name="map" />
     </Packet>
-  
+
     <Packet Name="ReadyForEntityUpdates" Desc="Client confirming it is ready to receive entity updates">
       <Member Type="bool" Name="readyForEntityUpdates" />
     </Packet>
@@ -32,16 +32,16 @@
     <Packet Name="EntityUpdates" Desc="A packet that contains multiple entity updates">
         <Member Type="AZ::TimeMs" Name="hostTimeMs" Init="AZ::TimeMs{ 0 }" />
         <Member Type="Multiplayer::HostFrameId" Name="hostFrameId" Init="Multiplayer::InvalidHostFrameId" />
-        <Member Type="Multiplayer::NetworkEntityUpdateMessage" Name="entityMessages" Container="Vector" Count="Multiplayer::MaxAggregateEntityMessages" SuppressFromInitializerList="true" />
+        <Member Type="Multiplayer::NetworkEntityUpdateVector" Name="entityMessages" />
     </Packet>
 
     <Packet Name="EntityRpcs" Desc="A packet that contains multiple entity rpcs">
-        <Member Type="Multiplayer::NetworkEntityRpcMessage" Name="entityRpcs" Container="Vector" Count="Multiplayer::MaxAggregateRpcMessages" SuppressFromInitializerList="true" />
+        <Member Type="Multiplayer::NetworkEntityRpcVector" Name="entityRpcs" />
     </Packet>
 
     <Packet Name="ClientMigration" Desc="Tell a client to migrate to a new server">
-        <Member Type="uint64_t" Name="temporaryUserIdentifier" Init="0" />
         <Member Type="AzNetworking::IpAddress" Name="remoteServerAddress" Init="AzNetworking::IpAddress()" />
-        <Member Type="AZ::TimeMs" Name="lastInputGameTimeMs" Init="AZ::TimeMs{ 0 }" />
+        <Member Type="uint64_t" Name="temporaryUserIdentifier" Init="0" />
+        <Member Type="Multiplayer::ClientInputId" Name="lastClientInputId" Init="Multiplayer::ClientInputId{ 0 }" />
     </Packet>
 </PacketGroup>

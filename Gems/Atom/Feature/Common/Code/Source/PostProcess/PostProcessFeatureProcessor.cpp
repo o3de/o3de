@@ -8,8 +8,6 @@
 
 #include <PostProcess/PostProcessFeatureProcessor.h>
 
-#include <Atom/RHI/CpuProfiler.h>
-
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Public/View.h>
@@ -39,6 +37,11 @@ namespace AZ
             m_currentTime = AZStd::chrono::system_clock::now();
         }
 
+        void PostProcessFeatureProcessor::Deactivate()
+        {
+            m_viewAliasMap.clear();
+        }
+
         void PostProcessFeatureProcessor::UpdateTime()
         {
             AZStd::chrono::system_clock::time_point now = AZStd::chrono::system_clock::now();
@@ -47,9 +50,19 @@ namespace AZ
             m_deltaTime = deltaTime.count();
         }
 
+        void PostProcessFeatureProcessor::SetViewAlias(const AZ::RPI::ViewPtr sourceView, const AZ::RPI::ViewPtr targetView)
+        {
+            m_viewAliasMap[sourceView.get()] = targetView.get();
+        }
+
+        void PostProcessFeatureProcessor::RemoveViewAlias(const AZ::RPI::ViewPtr sourceView)
+        {
+            m_viewAliasMap.erase(sourceView.get());
+        }
+
         void PostProcessFeatureProcessor::Simulate(const FeatureProcessor::SimulatePacket& packet)
         {
-            AZ_ATOM_PROFILE_FUNCTION("RPI", "PostProcessFeatureProcessor: Simulate");
+            AZ_PROFILE_SCOPE(RPI, "PostProcessFeatureProcessor: Simulate");
             AZ_UNUSED(packet);
 
             UpdateTime();
@@ -202,8 +215,12 @@ namespace AZ
 
         AZ::Render::PostProcessSettings* PostProcessFeatureProcessor::GetLevelSettingsFromView(AZ::RPI::ViewPtr view)
         {
+            // check for view aliases first
+            auto viewAliasiterator = m_viewAliasMap.find(view.get());
+            
+            // Use the view alias if it exists
+            auto settingsIterator = m_blendedPerViewSettings.find(viewAliasiterator != m_viewAliasMap.end() ? viewAliasiterator->second : view.get());
             // If no settings for the view is found, the global settings is returned.
-            auto settingsIterator = m_blendedPerViewSettings.find(view.get());
             return settingsIterator != m_blendedPerViewSettings.end()
                 ? &settingsIterator->second
                 : m_globalAggregateLevelSettings.get();

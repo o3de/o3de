@@ -25,7 +25,7 @@ namespace AzFramework
     public:
         ////////////////////////////////////////////////////////////////////////////////////////////
         //! The id used to identify the primary virtual keyboard input device
-        static const InputDeviceId Id;
+        static constexpr inline InputDeviceId Id{"virtual_keyboard"};
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         //! Check whether an input device id identifies a virtual keyboard (regardless of index)
@@ -39,17 +39,22 @@ namespace AzFramework
         struct Command
         {
             //!< The clear command used to indicate the user wants to clear the active text field
-            static const InputChannelId EditClear;
+            static constexpr inline InputChannelId EditClear{"virtual_keyboard_edit_enter"};
 
             //!< The enter/return/close command used to indicate the user has finished text editing
-            static const InputChannelId EditEnter;
+            static constexpr inline InputChannelId EditEnter{"virtual_keyboard_edit_clear"};
 
             //!< The back command used to indicate the user wants to navigate 'backwards'.
             //!< This is specific to android devices, and does not have an ios equivalent.
-            static const InputChannelId NavigationBack;
+            static constexpr inline InputChannelId NavigationBack{"virtual_keyboard_navigation_back"};
 
             //!< All virtual keyboard command ids
-            static const AZStd::array<InputChannelId, 3> All;
+            static constexpr inline AZStd::array All
+            {
+                EditClear,
+                EditEnter,
+                NavigationBack
+            };
         };
 
         ////////////////////////////////////////////////////////////////////////////////////////////
@@ -65,8 +70,19 @@ namespace AzFramework
         static void Reflect(AZ::ReflectContext* context);
 
         ////////////////////////////////////////////////////////////////////////////////////////////
+        // Foward declare the internal Implementation class so it can be passed into the constructor
+        class Implementation;
+
+        ////////////////////////////////////////////////////////////////////////////////////////////
+        //! Alias for the function type used to create a custom implementation for this input device
+        using ImplementationFactory = Implementation*(InputDeviceVirtualKeyboard&);
+
+        ////////////////////////////////////////////////////////////////////////////////////////////
         //! Constructor
-        InputDeviceVirtualKeyboard();
+        //! \param[in] inputDeviceId Optional override of the default input device id
+        //! \param[in] implementationFactory Optional override of the default Implementation::Create
+        explicit InputDeviceVirtualKeyboard(const InputDeviceId& inputDeviceId = Id,
+                                            ImplementationFactory implementationFactory = &Implementation::Create);
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         // Disable copying

@@ -87,9 +87,9 @@ namespace AZ::SettingsRegistryMergeUtils
     AZ::IO::FixedMaxPath FindEngineRoot(SettingsRegistryInterface& settingsRegistry);
 
     //! The algorithm that is used to find the project root is as follows
-    //! 1. The first time this function is it performs a upward scan for a project.json file from
-    //! the executable directory and if found stores that path to an internal key.
-    //! In the same step it injects the path into the front of list of command line parameters
+    //! 1. The first time this function runs it performs an upward scan for a "project.json" file from
+    //! the executable directory and stores that path into an internal key.
+    //! In the same step it injects the path into the back of the command line parameters
     //! using the --regset="{BootstrapSettingsRootKey}/project_path=<path>" value
     //! 2. Next the "{BootstrapSettingsRootKey}/project_path" is checked to see if it has a project path set
     //!
@@ -155,6 +155,15 @@ namespace AZ::SettingsRegistryMergeUtils
         //! structure which is forwarded to the SettingsRegistryInterface MergeCommandLineArgument function
         //! The structure contains a functor which returns true if a character is a valid delimiter
         SettingsRegistryInterface::CommandLineArgumentSettings m_commandLineSettings;
+
+        //! enumeration to indicate if AZ::IO::FileIOBase should be used to open the config file over AZ::IO::SystemFile
+        enum class FileReaderClass
+        {
+            UseFileIOIfAvailableFallbackToSystemFile,
+            UseSystemFileOnly,
+            UseFileIOOnly
+        };
+        FileReaderClass m_fileReaderClass = FileReaderClass::UseFileIOIfAvailableFallbackToSystemFile;
     };
     //! Loads basic configuration files which have structures similar to Windows INI files
     //! It is inspired by the Python configparser module: https://docs.python.org/3.10/library/configparser.html

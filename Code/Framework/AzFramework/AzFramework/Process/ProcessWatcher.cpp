@@ -22,7 +22,7 @@ namespace AzFramework
         AZStd::scoped_ptr<ProcessWatcher> pWatcher(LaunchProcess(processLaunchInfo, communicationType));
         if (!pWatcher)
         {
-            AZ_TracePrintf("Process Watcher", "ProcessWatcher::LaunchProcessAndRetrieveOutput: Unable to launch process '%s %s'", processLaunchInfo.m_processExecutableString.c_str(), processLaunchInfo.m_commandlineParameters.c_str());
+            AZ_TracePrintf("Process Watcher", "ProcessWatcher::LaunchProcessAndRetrieveOutput: Unable to launch process '%s %s'\n", processLaunchInfo.m_processExecutableString.c_str(), processLaunchInfo.m_commandlineParameters.c_str());
             return false;
         }
         else
@@ -31,7 +31,7 @@ namespace AzFramework
             ProcessCommunicator* pCommunicator = pWatcher->GetCommunicator();
             if (!pCommunicator || !pCommunicator->IsValid())
             {
-                AZ_TracePrintf("Process Watcher", "ProcessWatcher::LaunchProcessAndRetrieveOutput: No communicator for watcher's process (%s %s)!", processLaunchInfo.m_processExecutableString.c_str(), processLaunchInfo.m_commandlineParameters.c_str());
+                AZ_TracePrintf("Process Watcher", "ProcessWatcher::LaunchProcessAndRetrieveOutput: No communicator for watcher's process (%s %s)!\n", processLaunchInfo.m_processExecutableString.c_str(), processLaunchInfo.m_commandlineParameters.c_str());
                 return false;
             }
             else

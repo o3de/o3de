@@ -13,7 +13,7 @@ endif()
 unset(minimum_supported_toolset)
 
 include(cmake/Platform/Common/Configurations_common.cmake)
-include(cmake/Platform/Common/VisualStudio_common.cmake)
+include(cmake/Platform/Common/MSVC/VisualStudio_common.cmake)
 
 # Verify that it wasn't invoked with an unsupported target/host architecture. Currently only supports x64/x64
 if(CMAKE_VS_PLATFORM_NAME AND NOT CMAKE_VS_PLATFORM_NAME STREQUAL "x64")
@@ -35,18 +35,28 @@ ly_append_configurations_options(
         /WX             # Warnings as errors
         /permissive-    # Conformance with standard
         
-        # Disabling some warnings
+        ###################
+        # Disabled warnings (please do not disable any others without first consulting sig-build)
+        ###################
         /wd4201 # nonstandard extension used: nameless struct/union. This actually became part of the C++11 std, MS has an open issue: https://developercommunity.visualstudio.com/t/warning-level-4-generates-a-bogus-warning-c4201-no/103064
 
-        # Enabling warnings that are disabled by default from /W4
+        ###################
+        # Enabled warnings (that are disabled by default from /W4)
+        ###################
         # https://docs.microsoft.com/en-us/cpp/preprocessor/compiler-warnings-that-are-off-by-default?view=vs-2019
+        /we4263 # 'function': member function does not override any base class virtual member function
+        /we4264 # 'virtual_function': no override available for virtual member function from base 'class'; function is hidden
+        /we4265 # 'class': class has virtual functions, but destructor is not virtual
+        /we4266 # 'function': no override available for virtual member function from base 'type'; function is hidden
         /we4296 # 'operator': expression is always false
-        /we5233 # explicit lambda capture 'identifier' is not used
         /we4426 # optimization flags changed after including header, may be due to #pragma optimize()
+        /we4437 # dynamic_cast from virtual base 'class1' to 'class2' could fail in some contexts
         #/we4619 # #pragma warning: there is no warning number 'number'. Unfortunately some versions of MSVC 16.X dont filter this warning coming from external headers and Qt has a bad warning in QtCore/qvector.h(340,12)
+        /we4774 # 'string' : format string expected in argument number is not a string literal
         /we4777 # 'function' : format string 'string' requires an argument of type 'type1', but variadic argument number has type 'type2
         /we5031 # #pragma warning(pop): likely mismatch, popping warning state pushed in different file
         /we5032 # detected #pragma warning(push) with no corresponding #pragma warning(pop)
+        /we5233 # explicit lambda capture 'identifier' is not used
 
         /Zc:forScope    # Force Conformance in for Loop Scope
         /diagnostics:caret # Compiler diagnostic options: includes the column where the issue was found and places a caret (^) under the location in the line of code where the issue was detected.
@@ -129,11 +139,20 @@ endif()
 
 # Configure system includes
 ly_set(LY_CXX_SYSTEM_INCLUDE_CONFIGURATION_FLAG 
-    /experimental:external # Turns on "external" headers feature for MSVC compilers
+    /experimental:external # Turns on "external" headers feature for MSVC compilers, required for MSVC < 16.10
     /external:W0 # Set warning level in external headers to 0. This is used to suppress warnings 3rdParty libraries which uses the "system_includes" option in their json configuration
 )
+
+# CMake 3.22rc added a definition for CMAKE_INCLUDE_SYSTEM_FLAG_CXX. However, its defined as "-external:I ", that space causes 
+# issues when trying to use in TargetIncludeSystemDirectories_unsupported.cmake.
+# CMake 3.22rc has also not added support for external directories in MSVC through target_include_directories(... SYSTEM
+# So we will just fix the flag that was added by 3.22rc so it works with our TargetIncludeSystemDirectories_unsupported.cmake
+# Once target_include_directories(... SYSTEM is supported, we can branch and use TargetIncludeSystemDirectories_supported.cmake
+# Reported this here: https://gitlab.kitware.com/cmake/cmake/-/issues/17904#note_1078281
 if(NOT CMAKE_INCLUDE_SYSTEM_FLAG_CXX)
-    ly_set(CMAKE_INCLUDE_SYSTEM_FLAG_CXX /external:I)
+    ly_set(CMAKE_INCLUDE_SYSTEM_FLAG_CXX "/external:I")
+else()
+    string(STRIP ${CMAKE_INCLUDE_SYSTEM_FLAG_CXX} CMAKE_INCLUDE_SYSTEM_FLAG_CXX)
 endif()
 
 include(cmake/Platform/Common/TargetIncludeSystemDirectories_unsupported.cmake)

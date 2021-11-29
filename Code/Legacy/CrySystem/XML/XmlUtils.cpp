@@ -79,22 +79,16 @@ void GetMD5(const char* pSrcBuffer, int nSrcSize, char signatureMD5[16])
 }
 
 //////////////////////////////////////////////////////////////////////////
-class CXmlSerializer
-    : public IXmlSerializer
+class CXmlSerializer final : public IXmlSerializer
 {
 public:
-    CXmlSerializer()
-        : m_nRefCount(0)
-        , m_pReaderImpl(NULL)
-        , m_pReaderSer(NULL)
-        , m_pWriterSer(NULL)
-        , m_pWriterImpl(NULL)
-    {
-    }
+    CXmlSerializer() = default;
+
     ~CXmlSerializer()
     {
         ClearAll();
     }
+
     void ClearAll()
     {
         SAFE_DELETE(m_pReaderSer);
@@ -104,8 +98,12 @@ public:
     }
 
     //////////////////////////////////////////////////////////////////////////
-    virtual void AddRef() { ++m_nRefCount; }
-    virtual void Release()
+    void AddRef() override
+    {
+        ++m_nRefCount;
+    }
+
+    void Release() override
     {
         if (--m_nRefCount <= 0)
         {
@@ -113,14 +111,15 @@ public:
         }
     }
 
-    virtual ISerialize* GetWriter(XmlNodeRef& node)
+    ISerialize* GetWriter(XmlNodeRef& node) override
     {
         ClearAll();
         m_pWriterImpl = new CSerializeXMLWriterImpl(node);
         m_pWriterSer = new CSimpleSerializeWithDefaults<CSerializeXMLWriterImpl>(*m_pWriterImpl);
         return m_pWriterSer;
     }
-    virtual ISerialize* GetReader(XmlNodeRef& node)
+
+    ISerialize* GetReader(XmlNodeRef& node) override
     {
         ClearAll();
         m_pReaderImpl = new CSerializeXMLReaderImpl(node);
@@ -130,12 +129,12 @@ public:
 
     //////////////////////////////////////////////////////////////////////////
 private:
-    int m_nRefCount;
-    CSerializeXMLReaderImpl* m_pReaderImpl;
-    CSimpleSerializeWithDefaults<CSerializeXMLReaderImpl>* m_pReaderSer;
+    int m_nRefCount = 0;
+    CSerializeXMLReaderImpl* m_pReaderImpl = nullptr;
+    CSimpleSerializeWithDefaults<CSerializeXMLReaderImpl>* m_pReaderSer = nullptr;
 
-    CSerializeXMLWriterImpl* m_pWriterImpl;
-    CSimpleSerializeWithDefaults<CSerializeXMLWriterImpl>* m_pWriterSer;
+    CSerializeXMLWriterImpl* m_pWriterImpl = nullptr;
+    CSimpleSerializeWithDefaults<CSerializeXMLWriterImpl>* m_pWriterSer = nullptr;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -145,8 +144,7 @@ IXmlSerializer* CXmlUtils::CreateXmlSerializer()
 }
 
 //////////////////////////////////////////////////////////////////////////
-class CXmlBinaryDataWriterFile
-    : public XMLBinary::IDataWriter
+class CXmlBinaryDataWriterFile final : public XMLBinary::IDataWriter
 {
 public:
     CXmlBinaryDataWriterFile(const char* file)
@@ -165,11 +163,11 @@ public:
         return m_fileHandle != AZ::IO::InvalidHandle;
     }
     ;
-    virtual void Write(const void* pData, size_t size)
+    void Write(const void* pData, size_t size) override
     {
         if (m_fileHandle != AZ::IO::InvalidHandle)
         {
-            gEnv->pCryPak->FWrite(pData, size, 1, m_fileHandle);
+            gEnv->pCryPak->FWrite(pData, size, m_fileHandle);
         }
     }
 private:
@@ -177,19 +175,18 @@ private:
 };
 
 //////////////////////////////////////////////////////////////////////////
-class CXmlTableReader
-    : public IXmlTableReader
+class CXmlTableReader final : public IXmlTableReader
 {
 public:
     CXmlTableReader();
     ~CXmlTableReader() override;
 
-    virtual void Release();
+    void Release() override;
 
-    virtual bool Begin(XmlNodeRef rootNode);
-    virtual int  GetEstimatedRowCount();
-    virtual bool ReadRow(int& rowIndex);
-    virtual bool ReadCell(int& columnIndex, const char*& pContent, size_t& contentSize);
+    bool Begin(XmlNodeRef rootNode) override;
+    int  GetEstimatedRowCount() override;
+    bool ReadRow(int& rowIndex) override;
+    bool ReadCell(int& columnIndex, const char*& pContent, size_t& contentSize) override;
 
 private:
     bool m_bExcel;
@@ -228,7 +225,7 @@ void CXmlTableReader::Release()
 //////////////////////////////////////////////////////////////////////////
 bool CXmlTableReader::Begin(XmlNodeRef rootNode)
 {
-    m_tableNode = 0;
+    m_tableNode = nullptr;
 
     if (!rootNode)
     {
@@ -247,11 +244,11 @@ bool CXmlTableReader::Begin(XmlNodeRef rootNode)
         m_tableNode = rootNode->findChild("Table");
     }
 
-    m_rowNode = 0;
+    m_rowNode = nullptr;
     m_rowNodeIndex = -1;
     m_row = -1;
 
-    return (m_tableNode != 0);
+    return (m_tableNode != nullptr);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -296,7 +293,7 @@ bool CXmlTableReader::ReadRow(int& rowIndex)
 
             if (!m_rowNode->isTag("Row"))
             {
-                m_rowNode = 0;
+                m_rowNode = nullptr;
                 continue;
             }
 
@@ -309,7 +306,7 @@ bool CXmlTableReader::ReadRow(int& rowIndex)
                 if (index < m_row)
                 {
                     m_rowNodeIndex = rowNodeCount;
-                    m_rowNode = 0;
+                    m_rowNode = nullptr;
                     return false;
                 }
                 m_row = index;
@@ -351,7 +348,7 @@ bool CXmlTableReader::ReadRow(int& rowIndex)
 //////////////////////////////////////////////////////////////////////////
 bool CXmlTableReader::ReadCell(int& columnIndex, const char*& pContent, size_t& contentSize)
 {
-    pContent = 0;
+    pContent = nullptr;
     contentSize = 0;
 
     if (!m_tableNode)

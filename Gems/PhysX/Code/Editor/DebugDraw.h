@@ -104,7 +104,15 @@ namespace PhysX
                 const AZ::Vector3& meshScale,
                 AZ::u32 geomIndex) const;
 
-            void DrawPolygonPrism(AzFramework::DebugDisplayRequests& debugDisplay,
+            void DrawHeightfield(
+                AzFramework::DebugDisplayRequests& debugDisplay,
+                const Physics::ColliderConfiguration& colliderConfig,
+                const Physics::HeightfieldShapeConfiguration& heightfieldShapeConfig,
+                const AZ::Vector3& colliderScale = AZ::Vector3::CreateOne(),
+                const bool forceUniformScaling = false) const;
+
+            void DrawPolygonPrism(
+                AzFramework::DebugDisplayRequests& debugDisplay,
                 const Physics::ColliderConfiguration& colliderConfig, const AZStd::vector<AZ::Vector3>& points) const;
 
             AZ::Transform GetColliderLocalTransform(const Physics::ColliderConfiguration& colliderConfig,

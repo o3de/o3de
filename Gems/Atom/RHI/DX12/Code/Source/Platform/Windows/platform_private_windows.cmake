@@ -10,4 +10,5 @@ set(LY_BUILD_DEPENDENCIES
     PRIVATE
         d3d12
         dxgi
+        dxguid
 )

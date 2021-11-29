@@ -22,9 +22,18 @@ namespace AZ
     namespace Internal
     {
         class CompiledTaskGraph;
+        class TaskWorker;
     }
     class TaskExecutor;
     class TaskGraph;
+
+    class TaskGraphActiveInterface
+    {
+    public:
+        AZ_RTTI(TaskGraphActiveInterface, "{08118074-B139-4EF9-B8FD-29F1D6DC9233}");
+
+        virtual bool IsTaskGraphActive() const = 0;
+    };
 
     // A TaskToken is returned each time a Task is added to the TaskGraph. TaskTokens are used to
     // express dependencies between tasks within the graph, and have no purpose after the graph
@@ -52,14 +61,14 @@ namespace AZ
         uint32_t m_index;
     };
 
-    // A TaskGraphEvent may be used to block until a task graph has finished executing. Usage
+    // A TaskGraphEvent may be used to block until one or more task graphs has finished executing. Usage
     // is NOT recommended for the majority of tasks (prefer to simply containing expanding/contracting
     // the graph without synchronization over the course of the frame). However, the event
     // is useful for the edges of the computation graph.
     //
     // You are responsible for ensuring the event object lifetime exceeds the task graph lifetime.
     //
-    // After the TaskGraphEvent is signaled, you are allowed to reuse the same TaskGraphEvent
+    // After the TaskGraphEvent is signaled, you are NOT allowed to reuse the same TaskGraphEvent
     // for a future submission.
     class TaskGraphEvent
     {
@@ -70,9 +79,14 @@ namespace AZ
     private:
         friend class ::AZ::Internal::CompiledTaskGraph;
         friend class TaskGraph;
+        friend class TaskExecutor;
+
+        void IncWaitCount();
         void Signal();
 
         AZStd::binary_semaphore m_semaphore;
+        AZStd::atomic_int       m_waitCount = 0;
+        TaskExecutor*           m_executor = nullptr;
     };
 
     // The TaskGraph encapsulates a set of tasks and their interdependencies. After adding
@@ -89,6 +103,9 @@ namespace AZ
         // Reset the state of the task graph to begin recording tasks and edges again
         // NOTE: Graph must be in a "settled" state (cannot be in-flight)
         void Reset();
+        
+        // Returns false if 1 or more tasks have been added to the graph
+        bool IsEmpty();
 
         // Add a task to the graph, retrieiving a token that can be used to express dependencies
         // between tasks. The first argument specifies the TaskKind, used for tracking the task.

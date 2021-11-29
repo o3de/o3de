@@ -36,6 +36,7 @@ namespace GraphModel
         
         const char* GetTitle() const override;
 
+        using Node::PostLoadSetup;
         void PostLoadSetup(GraphPtr ownerGraph, NodeId id) override;
 
     protected:

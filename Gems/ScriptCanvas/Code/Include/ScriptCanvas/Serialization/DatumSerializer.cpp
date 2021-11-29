@@ -125,7 +125,7 @@ namespace AZ
         {
             listeners->push_back(outputDatum);
         }
-        
+
         return context.Report(result, result.GetProcessing() != JSR::Processing::Halted
             ? "DatumSerializer Load finished loading Datum"
             : "DatumSerializer Load failed to load Datum");
@@ -145,13 +145,13 @@ namespace AZ
 
         auto inputScriptDataPtr = reinterpret_cast<const Datum*>(inputValue);
         auto defaultScriptDataPtr = reinterpret_cast<const Datum*>(defaultValue);
-       
+
         if (defaultScriptDataPtr)
         {
             if (*inputScriptDataPtr == *defaultScriptDataPtr)
             {
                 return context.Report
-                    ( JSR::Tasks::WriteValue, JSR::Outcomes::DefaultsUsed, "DatumSerializer Store used defaults for Datum");
+                (JSR::Tasks::WriteValue, JSR::Outcomes::DefaultsUsed, "DatumSerializer Store used defaults for Datum");
             }
         }
 

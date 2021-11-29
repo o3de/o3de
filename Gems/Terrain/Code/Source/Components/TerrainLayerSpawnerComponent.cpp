@@ -78,7 +78,7 @@ namespace Terrain
 
     void TerrainLayerSpawnerComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC("BoxShapeService"));
+        services.push_back(AZ_CRC_CE("AxisAlignedBoxShapeService"));
     }
 
     void TerrainLayerSpawnerComponent::Reflect(AZ::ReflectContext* context)
@@ -102,19 +102,16 @@ namespace Terrain
 
     void TerrainLayerSpawnerComponent::Activate()
     {
-        AZ::TransformNotificationBus::Handler::BusConnect(GetEntityId());
         LmbrCentral::ShapeComponentNotificationsBus::Handler::BusConnect(GetEntityId());
-        TerrainAreaRequestBus::Handler::BusConnect(GetEntityId());
+        TerrainSpawnerRequestBus::Handler::BusConnect(GetEntityId());
 
         TerrainSystemServiceRequestBus::Broadcast(&TerrainSystemServiceRequestBus::Events::RegisterArea, GetEntityId());
     }
 
     void TerrainLayerSpawnerComponent::Deactivate()
     {
-        TerrainAreaRequestBus::Handler::BusDisconnect();
         TerrainSystemServiceRequestBus::Broadcast(&TerrainSystemServiceRequestBus::Events::UnregisterArea, GetEntityId());
-
-        AZ::TransformNotificationBus::Handler::BusDisconnect();
+        TerrainSpawnerRequestBus::Handler::BusDisconnect();
         LmbrCentral::ShapeComponentNotificationsBus::Handler::BusDisconnect();
     }
 
@@ -138,23 +135,34 @@ namespace Terrain
         return false;
     }
 
-    void TerrainLayerSpawnerComponent::OnTransformChanged([[maybe_unused]] const AZ::Transform& local, [[maybe_unused]] const AZ::Transform& world)
-    {
-        RefreshArea();
-    }
-
     void TerrainLayerSpawnerComponent::OnShapeChanged([[maybe_unused]] ShapeChangeReasons changeReason)
     {
+        // This will notify us of both shape changes and transform changes.
+        // It's important to use this event for transform changes instead of listening to OnTransformChanged, because we need to guarantee
+        // the shape has received the transform change message and updated its internal state before passing it along to us.
+
         RefreshArea();
     }
-
-    void TerrainLayerSpawnerComponent::RegisterArea()
+    
+    void TerrainLayerSpawnerComponent::GetPriority(AZ::u32& outLayer, AZ::u32& outPriority)
     {
-        TerrainSystemServiceRequestBus::Broadcast(&TerrainSystemServiceRequestBus::Events::RegisterArea, GetEntityId());
+        outLayer = m_configuration.m_layer;
+        outPriority = m_configuration.m_priority;
+    }
+
+    bool TerrainLayerSpawnerComponent::GetUseGroundPlane()
+    {
+        return m_configuration.m_useGroundPlane;
     }
 
     void TerrainLayerSpawnerComponent::RefreshArea()
     {
-        TerrainSystemServiceRequestBus::Broadcast(&TerrainSystemServiceRequestBus::Events::RefreshArea, GetEntityId());
+        using Terrain = AzFramework::Terrain::TerrainDataNotifications;
+
+        // Notify the terrain system that the entire layer has changed, so both height and surface data can be affected.
+        TerrainSystemServiceRequestBus::Broadcast(
+            &TerrainSystemServiceRequestBus::Events::RefreshArea, GetEntityId(),
+            static_cast<Terrain::TerrainDataChangedMask>(Terrain::HeightData | Terrain::SurfaceData)
+        );
     }
 }

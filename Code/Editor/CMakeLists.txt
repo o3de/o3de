@@ -33,7 +33,6 @@ ly_add_target(
     BUILD_DEPENDENCIES
         PRIVATE
             Legacy::CryCommon
-            3rdParty::zlib
         PUBLIC
             3rdParty::Qt::Core
             3rdParty::Qt::Gui
@@ -103,9 +102,8 @@ ly_add_target(
             3rdParty::Qt::Gui
             3rdParty::Qt::Widgets
             3rdParty::Qt::Concurrent
-            3rdParty::tiff
+            3rdParty::TIFF
             3rdParty::squish-ccr
-            3rdParty::zlib
             3rdParty::AWSNativeSDK::STS
             Legacy::CryCommon
             Legacy::EditorCommon
@@ -133,7 +131,7 @@ ly_add_source_properties(
     PROPERTY COMPILE_DEFINITIONS 
     VALUES 
         O3DE_COPYRIGHT_YEAR=${LY_VERSION_COPYRIGHT_YEAR}
-        LY_BUILD=${LY_VERSION_BUILD_NUMBER}
+        LY_VERSION_BUILD_NUMBER=${LY_VERSION_BUILD_NUMBER}
         ${LY_PAL_TOOLS_DEFINES}
 )
 ly_add_source_properties(
@@ -251,7 +249,9 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
         RUNTIME_DEPENDENCIES
             Gem::LmbrCentral
     )
+
     ly_add_googletest(
         NAME Legacy::EditorLib.Tests
     )
+
 endif()

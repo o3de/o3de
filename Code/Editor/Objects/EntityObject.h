@@ -16,10 +16,7 @@
 #include "BaseObject.h"
 
 #include "IMovieSystem.h"
-#include "IEntityObjectListener.h"
 #include "Gizmo.h"
-#include "CryListenerSet.h"
-#include "StatObjBus.h"
 
 #include <QObject>
 #endif
@@ -81,15 +78,10 @@ public:
     //////////////////////////////////////////////////////////////////////////
     // Overrides from CBaseObject.
     //////////////////////////////////////////////////////////////////////////
-    //! Return type name of Entity.
-    QString GetTypeDescription() const { return GetEntityClass(); };
 
-    //////////////////////////////////////////////////////////////////////////
-    bool IsSameClass(CBaseObject* obj);
-
-    virtual bool Init(IEditor* ie, CBaseObject* prev, const QString& file);
-    virtual void InitVariables();
-    virtual void Done();
+    bool Init(IEditor* ie, CBaseObject* prev, const QString& file) override;
+    void InitVariables() override;
+    void Done() override;
 
     void DrawExtraLightInfo (DisplayContext& disp);
 
@@ -102,35 +94,31 @@ public:
     void SetEntityPropertyFloat(const char* name, float value);
     void SetEntityPropertyString(const char* name, const QString& value);
 
-    virtual int MouseCreateCallback(CViewport* view, EMouseEvent event, QPoint& point, int flags);
-    virtual void OnContextMenu(QMenu* menu);
+    void SetName(const QString& name) override;
+    void SetSelected(bool bSelect) override;
 
-    void SetName(const QString& name);
-    void SetSelected(bool bSelect);
+    void GetLocalBounds(AABB& box) override;
 
-    virtual void GetLocalBounds(AABB& box);
+    bool HitTest(HitContext& hc) override;
+    bool HitTestRect(HitContext& hc) override;
+    void UpdateVisibility(bool bVisible) override;
+    bool ConvertFromObject(CBaseObject* object) override;
 
-    virtual bool HitTest(HitContext& hc);
-    virtual bool HitHelperTest(HitContext& hc);
-    virtual bool HitTestRect(HitContext& hc);
-    void UpdateVisibility(bool bVisible);
-    bool ConvertFromObject(CBaseObject* object);
+    using CBaseObject::Serialize;
+    void Serialize(CObjectArchive& ar) override;
+    void PostLoad(CObjectArchive& ar) override;
 
-    virtual void Serialize(CObjectArchive& ar);
-    virtual void PostLoad(CObjectArchive& ar);
-
-    XmlNodeRef Export(const QString& levelPath, XmlNodeRef& xmlNode);
+    XmlNodeRef Export(const QString& levelPath, XmlNodeRef& xmlNode) override;
 
     //////////////////////////////////////////////////////////////////////////
-    void OnEvent(ObjectEvent event);
+    void OnEvent(ObjectEvent event) override;
 
-    virtual void SetTransformDelegate(ITransformDelegate* pTransformDelegate) override;
+    void SetTransformDelegate(ITransformDelegate* pTransformDelegate) override;
 
     // Set attach flags and target
     enum EAttachmentType
     {
         eAT_Pivot,
-        eAT_GeomCacheNode,
         eAT_CharacterBone,
     };
 
@@ -139,15 +127,10 @@ public:
     EAttachmentType GetAttachType() const { return m_attachmentType; }
     QString GetAttachTarget() const { return m_attachmentTarget; }
 
-    virtual void SetHelperScale(float scale);
-    virtual float GetHelperScale();
+    void GatherUsedResources(CUsedResources& resources) override;
+    bool IsSimilarObject(CBaseObject* pObject) override;
 
-    virtual void GatherUsedResources(CUsedResources& resources);
-    virtual bool IsSimilarObject(CBaseObject* pObject);
-
-    virtual bool HasMeasurementAxis() const {   return false;   }
-
-    virtual bool IsIsolated() const { return false; }
+    bool IsIsolated() const override { return false; }
 
     //////////////////////////////////////////////////////////////////////////
     // END CBaseObject
@@ -220,19 +203,11 @@ public:
 
     static void StoreUndoEntityLink(CSelectionGroup* pGroup);
 
-    void RegisterListener(IEntityObjectListener* pListener);
-    void UnregisterListener(IEntityObjectListener* pListener);
-
 protected:
     template <typename T>
     void SetEntityProperty(const char* name, T value);
     template <typename T>
     T GetEntityProperty(const char* name, T defaultvalue) const;
-
-    //////////////////////////////////////////////////////////////////////////
-    //! Must be called after cloning the object on clone of object.
-    //! This will make sure object references are cloned correctly.
-    virtual void PostClone(CBaseObject* pFromObject, CObjectCloneContext& ctx);
 
     //! Draw default object items.
     void DrawProjectorPyramid(DisplayContext& dc, float dist);
@@ -241,10 +216,6 @@ protected:
     void OnLoadFailed();
 
     CVarBlock* CloneProperties(CVarBlock* srcProperties);
-
-    //////////////////////////////////////////////////////////////////////////
-    //! Callback called when one of entity properties have been modified.
-    void OnPropertyChange(IVariable* var);
 
     //////////////////////////////////////////////////////////////////////////
     void OnObjectEvent(CBaseObject* target, int event) override;
@@ -264,7 +235,7 @@ public:
     }
 
 protected:
-    void DeleteThis() { delete this; };
+    void DeleteThis() override { delete this; };
 
     //////////////////////////////////////////////////////////////////////////
     // Radius callbacks.
@@ -327,7 +298,6 @@ protected:
     // Used for light entities
     float m_projectorFOV;
 
-    IStatObj* m_visualObject;
     AABB m_box;
 
     //////////////////////////////////////////////////////////////////////////
@@ -388,8 +358,6 @@ protected:
     XmlNodeRef m_physicsState;
     AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 
-    static float m_helperScale;
-
     EAttachmentType m_attachmentType;
 
     bool m_bEnableReload;
@@ -433,7 +401,6 @@ private:
     void ForceVariableUpdate();
 
     AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
-    CListenerSet<IEntityObjectListener*> m_listeners;
     std::vector< std::pair<IVariable*, IVariable::OnSetCallback*> > m_callbacks;
     AZStd::fixed_vector< IVariable::OnSetCallback, VariableCallbackIndex::Count > m_onSetCallbacksCache;
     AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING

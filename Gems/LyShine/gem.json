@@ -2,12 +2,28 @@
     "gem_name": "LyShine",
     "display_name": "LyShine",
     "license": "Apache-2.0 Or MIT",
+    "license_url": "https://github.com/o3de/o3de/blob/development/LICENSE.txt",
     "origin": "Open 3D Engine - o3de.org",
     "type": "Code",
     "summary": "The LyShine Gem provides the runtime UI system and creation tools for Open 3D Engine projects.",
-    "canonical_tags": ["Gem"],
-    "user_tags": ["UI", "Tools", "Framework"],
+    "canonical_tags": [
+        "Gem"
+    ],
+    "user_tags": [
+        "UI",
+        "Tools",
+        "Framework"
+    ],
     "icon_path": "preview.png",
     "requirements": "",
-    "documentation_url": "https://o3de.org/docs/user-guide/gems/reference/ui/lyshine/"
+    "documentation_url": "https://o3de.org/docs/user-guide/gems/reference/ui/lyshine/",
+    "dependencies": [
+        "LmbrCentral",
+        "Atom_RPI",
+        "Atom",
+        "Atom_Bootstrap",
+        "AtomFont",
+        "TextureAtlas",
+        "AtomToolsFramework"
+    ]
 }

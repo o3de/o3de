@@ -116,6 +116,9 @@ namespace AZ
             //! Contains data for the top level mesh, including the list of sub-meshes
             struct Mesh
             {
+                // assetId of the model
+                AZ::Data::AssetId m_assetId = AZ::Data::AssetId{};
+
                 // sub-mesh list
                 SubMeshVector m_subMeshes;
 
@@ -134,7 +137,7 @@ namespace AZ
 
             //! Sets ray tracing data for a mesh.
             //! This will cause an update to the RayTracing acceleration structure on the next frame
-            void SetMesh(const ObjectId objectId, const SubMeshVector& subMeshes);
+            void SetMesh(const ObjectId objectId, const AZ::Data::AssetId& assetId, const SubMeshVector& subMeshes);
 
             //! Removes ray tracing data for a mesh.
             //! This will cause an update to the RayTracing acceleration structure on the next frame
@@ -220,6 +223,9 @@ namespace AZ
             // cached TransformServiceFeatureProcessor
             TransformServiceFeatureProcessor* m_transformServiceFeatureProcessor = nullptr;
 
+            // mutex for the mesh and BLAS lists
+            AZStd::mutex m_mutex;
+
             // structure for data in the m_meshInfoBuffer, shaders that use the buffer must match this type
             struct MeshInfo
             {
@@ -260,6 +266,25 @@ namespace AZ
 
             // flag indicating we need to update the materialInfo buffer
             bool m_materialInfoBufferNeedsUpdate = false;
+
+            // side list for looking up existing BLAS objects so they can be re-used when the same mesh is added multiple times
+            struct SubMeshBlasInstance
+            {
+                RHI::Ptr<RHI::RayTracingBlas> m_blas;
+            };
+
+            struct MeshBlasInstance
+            {
+                uint32_t m_count = 0;
+                AZStd::vector<SubMeshBlasInstance> m_subMeshes;
+            };
+
+            using BlasInstanceMap = AZStd::unordered_map<AZ::Data::AssetId, MeshBlasInstance>;
+            BlasInstanceMap m_blasInstanceMap;
+
+            // Cache view pointers so we dont need to update them if none changed from frame to frame.
+            AZStd::vector<const RHI::BufferView*> m_meshBuffers;
+            AZStd::vector<const RHI::ImageView*> m_materialTextures;
         };
     }
 }

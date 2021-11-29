@@ -1,0 +1,8 @@
+{
+    "values": [
+        {
+            "$type": "ScriptProcessorRule",
+            "scriptFilename": "Editor/Scripts/scene_mesh_to_prefab.py"
+        }
+    ]
+}

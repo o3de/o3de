@@ -6,7 +6,6 @@
  *
  */
 #include "Tests.h"
-#include "TestProfiler.h"
 
 #include <GridMate/Replica/ReplicaFunctions.h>
 
@@ -1888,12 +1887,12 @@ protected:
 };
 //-----------------------------------------------------------------------------
 
-class Integ_ReplicaGMTest
+class ReplicaGMTest
     : public UnitTest::GridMateMPTestFixture
     , public ::testing::Test
 {};
 
-TEST_F(Integ_ReplicaGMTest, ReplicaTest)
+TEST_F(ReplicaGMTest, DISABLED_ReplicaTest)
     {
         ReplicaChunkDescriptorTable::Get().RegisterChunkType<MigratableReplica, MigratableReplica::Descriptor>();
         ReplicaChunkDescriptorTable::Get().RegisterChunkType<NonMigratableReplica>();
@@ -2157,7 +2156,7 @@ TEST_F(Integ_ReplicaGMTest, ReplicaTest)
         }
     }
 
-class Integ_ForcedReplicaMigrationTest
+class ForcedReplicaMigrationTest
     : public UnitTest::GridMateMPTestFixture
     , public ReplicaMgrCallbackBus::Handler
     , public MigratableReplica::MigratableReplicaDebugMsgs::EBus::Handler
@@ -2186,8 +2185,8 @@ class Integ_ForcedReplicaMigrationTest
     }
 
 public:
-    Integ_ForcedReplicaMigrationTest()    { ReplicaMgrCallbackBus::Handler::BusConnect(m_gridMate); }
-    ~Integ_ForcedReplicaMigrationTest()   { ReplicaMgrCallbackBus::Handler::BusDisconnect(); }
+    ForcedReplicaMigrationTest()    { ReplicaMgrCallbackBus::Handler::BusConnect(m_gridMate); }
+    ~ForcedReplicaMigrationTest()   { ReplicaMgrCallbackBus::Handler::BusDisconnect(); }
 
 
     enum
@@ -2205,11 +2204,11 @@ public:
     AZStd::unordered_map<ReplicaId, ReplicaManager*> m_replicaOwnership;
 };
 
-const int Integ_ForcedReplicaMigrationTest::k_frameTimePerNodeMs;
-const int Integ_ForcedReplicaMigrationTest::k_numFramesToRun;
-const int Integ_ForcedReplicaMigrationTest::k_hostSendRateMs;
+const int ForcedReplicaMigrationTest::k_frameTimePerNodeMs;
+const int ForcedReplicaMigrationTest::k_numFramesToRun;
+const int ForcedReplicaMigrationTest::k_hostSendRateMs;
 
-TEST_F(Integ_ForcedReplicaMigrationTest, ForcedReplicaMigrationTest)
+TEST_F(ForcedReplicaMigrationTest, DISABLED_ForcedReplicaMigrationTest)
     {
         ReplicaChunkDescriptorTable::Get().RegisterChunkType<MigratableReplica, MigratableReplica::Descriptor>();
         ReplicaChunkDescriptorTable::Get().RegisterChunkType<NonMigratableReplica>();
@@ -2360,7 +2359,7 @@ TEST_F(Integ_ForcedReplicaMigrationTest, ForcedReplicaMigrationTest)
         MigratableReplica::MigratableReplicaDebugMsgs::EBus::Handler::BusDisconnect();
     }
 
-class Integ_ReplicaMigrationRequestTest
+class ReplicaMigrationRequestTest
     : public UnitTest::GridMateMPTestFixture
     , public ::testing::Test
 {
@@ -2516,7 +2515,7 @@ public:
     static const int k_hostSendTimeMs = k_frameTimePerNodeMs * TotalNodes * 4; // limiting host send rate to be x4 times slower than tick
 };
 
-TEST_F(Integ_ReplicaMigrationRequestTest, ReplicaMigrationRequestTest)
+TEST_F(ReplicaMigrationRequestTest, DISABLED_ReplicaMigrationRequestTest)
     {
         /*
         Topology:
@@ -2837,11 +2836,11 @@ TEST_F(Integ_ReplicaMigrationRequestTest, ReplicaMigrationRequestTest)
         }
     }
 
-const int Integ_ReplicaMigrationRequestTest::k_frameTimePerNodeMs;
-const int Integ_ReplicaMigrationRequestTest::k_hostSendTimeMs;
+const int ReplicaMigrationRequestTest::k_frameTimePerNodeMs;
+const int ReplicaMigrationRequestTest::k_hostSendTimeMs;
 
 
-class Integ_PeerRejoinTest
+class PeerRejoinTest
     : public UnitTest::GridMateMPTestFixture
     , public ReplicaMgrCallbackBus::Handler
     , public ::testing::Test
@@ -2860,11 +2859,11 @@ class Integ_PeerRejoinTest
     }
 
 public:
-    Integ_PeerRejoinTest()    { ReplicaMgrCallbackBus::Handler::BusConnect(m_gridMate); }
-    ~Integ_PeerRejoinTest()   { ReplicaMgrCallbackBus::Handler::BusDisconnect(); }
+    PeerRejoinTest()    { ReplicaMgrCallbackBus::Handler::BusConnect(m_gridMate); }
+    ~PeerRejoinTest()   { ReplicaMgrCallbackBus::Handler::BusDisconnect(); }
 };
 
-TEST_F(Integ_PeerRejoinTest, PeerRejoinTest)
+TEST_F(PeerRejoinTest, DISABLED_PeerRejoinTest)
     {
         ReplicaChunkDescriptorTable::Get().RegisterChunkType<MigratableReplica, MigratableReplica::Descriptor>();
         ReplicaChunkDescriptorTable::Get().RegisterChunkType<NonMigratableReplica>();
@@ -3011,7 +3010,7 @@ TEST_F(Integ_PeerRejoinTest, PeerRejoinTest)
         }
     }
 
-class Integ_ReplicationSecurityOptionsTest
+class ReplicationSecurityOptionsTest
     : public UnitTest::GridMateMPTestFixture
     , public ::testing::Test
 {
@@ -3156,7 +3155,7 @@ public:
     using TestChunkPtr = AZStd::intrusive_ptr<TestChunk> ;
 };
 
-TEST_F(Integ_ReplicationSecurityOptionsTest, ReplicationSecurityOptionsTest)
+TEST_F(ReplicationSecurityOptionsTest, DISABLED_ReplicationSecurityOptionsTest)
     {
         AZ_TracePrintf("GridMate", "\n");
 
@@ -3356,7 +3355,7 @@ TEST_F(Integ_ReplicationSecurityOptionsTest, ReplicationSecurityOptionsTest)
         Replica update time (msec): avg=4.94, min=1, max=9 (peers=40, replicas=16000, freq=10%, samples=4000)
         Replica update time (msec): avg=8.05, min=6, max=15 (peers=40, replicas=16000, freq=100%, samples=4000)
 */
-class Integ_ReplicaStressTest
+class DISABLED_ReplicaStressTest
     : public UnitTest::GridMateMPTestFixture
 {
 public:
@@ -3388,7 +3387,7 @@ public:
     static const int BASE_PORT = 44270;
 
     // TODO: Reduce the size or disable the test for platforms which can't allocate 2 GiB
-    Integ_ReplicaStressTest()
+    DISABLED_ReplicaStressTest()
         : UnitTest::GridMateMPTestFixture(2000u * 1024u * 1024u)
     {}
 
@@ -3516,33 +3515,33 @@ public:
     virtual void RunStressTests(MPSession* sessions, vector<AZStd::pair<ReplicaPtr, StressTestReplica::Ptr> >& replicas)
     {
         // testing 3 cases & waiting for system to settle in between
-        TestProfiler::StartProfiling();
+        //TestProfiler::StartProfiling();
         Wait(sessions, replicas, 50, FRAME_TIME);
-        TestProfiler::PrintProfilingTotal("GridMate");
+        //TestProfiler::PrintProfilingTotal("GridMate");
 
         Wait(sessions, replicas, 20, FRAME_TIME);
-        TestProfiler::StartProfiling();
+        //TestProfiler::StartProfiling();
         TestReplicas(sessions, replicas, 100, FRAME_TIME, 0.0); // no replicas are dirty
-        TestProfiler::PrintProfilingTotal("GridMate");
+        //TestProfiler::PrintProfilingTotal("GridMate");
 
         Wait(sessions, replicas, 20, FRAME_TIME);
-        TestProfiler::StartProfiling();
+        //TestProfiler::StartProfiling();
         TestReplicas(sessions, replicas, 1, FRAME_TIME, 1.0); // single burst dirty replicas
         Wait(sessions, replicas, 2, FRAME_TIME);
-        TestProfiler::PrintProfilingTotal("GridMate");
+        //TestProfiler::PrintProfilingTotal("GridMate");
 
         Wait(sessions, replicas, 20, FRAME_TIME);
-        TestProfiler::StartProfiling();
+        //TestProfiler::StartProfiling();
         TestReplicas(sessions, replicas, 100, FRAME_TIME, 0.1); // 10% of replicas are marked dirty every frame
-        TestProfiler::PrintProfilingTotal("GridMate");
+        //TestProfiler::PrintProfilingTotal("GridMate");
 
         Wait(sessions, replicas, 20, FRAME_TIME);
-        TestProfiler::StartProfiling();
+        //TestProfiler::StartProfiling();
         TestReplicas(sessions, replicas, 100, FRAME_TIME, 1.0); // every replica is marked dirty every frame
-        TestProfiler::PrintProfilingTotal("GridMate");
-        TestProfiler::PrintProfilingSelf("GridMate");
+        //TestProfiler::PrintProfilingTotal("GridMate");
+        //TestProfiler::PrintProfilingSelf("GridMate");
 
-        TestProfiler::StopProfiling();
+        //TestProfiler::StopProfiling();
     }
 
     virtual void MarkChanging(vector<AZStd::pair<ReplicaPtr, StressTestReplica::Ptr> >& replicas, double freq)
@@ -3623,8 +3622,8 @@ public:
         Replica update time (msec): avg=2.01, min=1, max=5 (peers=40, replicas=16000, freq=10%, samples=4000)
         Replica update time (msec): avg=4.61, min=3, max=10 (peers=40, replicas=16000, freq=50%, samples=4000)
 */
-class Integ_ReplicaStableStressTest
-    : public Integ_ReplicaStressTest
+class DISABLED_ReplicaStableStressTest
+    : public DISABLED_ReplicaStressTest
 {
 public:
 
@@ -3636,21 +3635,21 @@ public:
 
     void RunStressTests(MPSession* sessions, vector<AZStd::pair<ReplicaPtr, StressTestReplica::Ptr> >& replicas) override
     {
-        Integ_ReplicaStressTest::MarkChanging(replicas, 0.1); // picks 10% of replicas
+        DISABLED_ReplicaStressTest::MarkChanging(replicas, 0.1); // picks 10% of replicas
         Wait(sessions, replicas, 20, FRAME_TIME);
-        TestProfiler::StartProfiling();
+        //TestProfiler::StartProfiling();
         TestReplicas(sessions, replicas, 100, FRAME_TIME, 0.1);
-        TestProfiler::PrintProfilingTotal("GridMate");
-        TestProfiler::PrintProfilingSelf("GridMate");
+        /*TestProfiler::PrintProfilingTotal("GridMate");
+        TestProfiler::PrintProfilingSelf("GridMate");*/
 
-        Integ_ReplicaStressTest::MarkChanging(replicas, 0.5); // picks 50% of replicas
+        DISABLED_ReplicaStressTest::MarkChanging(replicas, 0.5); // picks 50% of replicas
         Wait(sessions, replicas, 20, FRAME_TIME);
-        TestProfiler::StartProfiling();
+        //TestProfiler::StartProfiling();
         TestReplicas(sessions, replicas, 100, FRAME_TIME, 0.5);
-        TestProfiler::PrintProfilingTotal("GridMate");
+        /*TestProfiler::PrintProfilingTotal("GridMate");
         TestProfiler::PrintProfilingSelf("GridMate");
 
-        TestProfiler::StopProfiling();
+        TestProfiler::StopProfiling();*/
     }
 };
 
@@ -3666,7 +3665,7 @@ public:
 *   expected |none |brst |  capped  |under cap |brst |  capped  |
 *
 */
-class Integ_ReplicaBandiwdthTest
+class DISABLED_ReplicaBandiwdthTest
     : public UnitTest::GridMateMPTestFixture
 {
 public:
@@ -3944,9 +3943,9 @@ GM_TEST_SUITE(ReplicaSuite)
 GM_TEST(InterpolatorTest)
 
 #if !defined(AZ_DEBUG_BUILD) // these tests are a little slow for debug
-GM_TEST(Integ_ReplicaBandiwdthTest)
-GM_TEST(Integ_ReplicaStressTest)
-GM_TEST(Integ_ReplicaStableStressTest)
+GM_TEST(DISABLED_ReplicaBandiwdthTest)
+GM_TEST(DISABLED_ReplicaStressTest)
+GM_TEST(DISABLED_ReplicaStableStressTest)
 #endif
 
 GM_TEST_SUITE_END()

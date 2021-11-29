@@ -6,7 +6,6 @@
  *
  */
 #include <Atom/RHI/Buffer.h>
-#include <Atom/RHI/CpuProfiler.h>
 #include <Atom/RHI/FrameGraphExecuteGroup.h>
 #include <Atom/RHI/FrameGraphExecuter.h>
 #include <Atom/RHI/FrameGraph.h>
@@ -71,14 +70,13 @@ namespace AZ
 
         void FrameGraphExecuter::Begin(const FrameGraph& frameGraph)
         {
-            AZ_TRACE_METHOD();
-            AZ_ATOM_PROFILE_FUNCTION("RHI", "FrameGraphExecuter: Begin");
+            AZ_PROFILE_SCOPE(RHI, "FrameGraphExecuter: Begin");
             BeginInternal(frameGraph);
         }
 
         void FrameGraphExecuter::End()
         {
-            AZ_ATOM_PROFILE_FUNCTION("RHI", "FrameGraphExecuter: End");
+            AZ_PROFILE_SCOPE(RHI, "FrameGraphExecuter: End");
             AZ_Assert(m_pendingGroups.empty(), "Pending contexts in queue.");
             m_groups.clear();
             EndInternal();

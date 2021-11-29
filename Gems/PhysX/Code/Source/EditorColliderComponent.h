@@ -58,8 +58,8 @@ namespace PhysX
     //! Proxy container for only displaying a specific shape configuration depending on the shapeType selected.
     struct EditorProxyShapeConfig
     {
-        AZ_CLASS_ALLOCATOR(PhysX::EditorProxyShapeConfig, AZ::SystemAllocator, 0);
-        AZ_RTTI(PhysX::EditorProxyShapeConfig, "{531FB42A-42A9-4234-89BA-FD349EF83D0C}");
+        AZ_CLASS_ALLOCATOR(EditorProxyShapeConfig, AZ::SystemAllocator, 0);
+        AZ_RTTI(EditorProxyShapeConfig, "{531FB42A-42A9-4234-89BA-FD349EF83D0C}");
         static void Reflect(AZ::ReflectContext* context);
 
         EditorProxyShapeConfig() = default;
@@ -106,6 +106,7 @@ namespace PhysX
         , private PhysX::ColliderShapeRequestBus::Handler
         , private AZ::Render::MeshComponentNotificationBus::Handler
         , private PhysX::EditorColliderComponentRequestBus::Handler
+        , private PhysX::EditorColliderValidationRequestBus::Handler
         , private AzPhysics::SimulatedBodyComponentRequestsBus::Handler
     {
     public:
@@ -144,7 +145,7 @@ namespace PhysX
         void OnDeselected() override;
 
         // DisplayCallback
-        void Display(AzFramework::DebugDisplayRequests& debugDisplay) const;
+        void Display(AzFramework::DebugDisplayRequests& debugDisplay) const override;
         void DisplayMeshCollider(AzFramework::DebugDisplayRequests& debugDisplay) const;
         void DisplayUnscaledPrimitiveCollider(AzFramework::DebugDisplayRequests& debugDisplay) const;
         void DisplayScaledPrimitiveCollider(AzFramework::DebugDisplayRequests& debugDisplay) const;
@@ -197,6 +198,9 @@ namespace PhysX
         void SetAssetScale(const AZ::Vector3& scale) override;
         AZ::Vector3 GetAssetScale() override;
 
+        // PhysX::EditorColliderValidationRequestBus overrides ...
+        void ValidateRigidBodyMeshGeometryType() override;
+
         AZ::Transform GetColliderLocalTransform() const;
 
         EditorProxyShapeConfig m_shapeConfiguration;
@@ -222,8 +226,6 @@ namespace PhysX
         void ClearStaticEditorCollider();
 
         void BuildDebugDrawMesh() const;
-
-        void ValidateRigidBodyMeshGeometryType();
 
         AZ::ComponentDescriptor::StringWarningArray GetComponentWarnings() const { return m_componentWarnings; };
 

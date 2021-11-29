@@ -52,7 +52,7 @@ bool CImageASC::Save(const QString& fileName, const CFloatImage& image)
     }
 
     // First print the file header
-    fprintf(file, fileHeader.c_str());
+    fprintf(file, "%s", fileHeader.c_str());
 
     // Then print all the pixels.
     for (uint32 y = 0; y < height; y++)

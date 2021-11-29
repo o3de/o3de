@@ -81,9 +81,6 @@
     #include AZ_RESTRICTED_FILE(ProjectDefines_h)
 #else
     #define PROJECTDEFINES_H_TRAIT_DISABLE_MONOLITHIC_PROFILING_MARKERS 1
-    #if !defined(LINUX) && !defined(APPLE)
-        #define PROJECTDEFINES_H_TRAIT_ENABLE_SOFTCODE_SYSTEM 1
-    #endif
     #if defined(WIN32) || defined(WIN64) || defined(LINUX) || defined(APPLE)
         #define PROJECTDEFINES_H_TRAIT_USE_GPU_PARTICLES 1
     #endif

@@ -240,7 +240,7 @@ QJsonObject KeyboardCustomizationSettings::ExportGroup()
 
 void KeyboardCustomizationSettings::ImportFromFile(QWidget* parent)
 {
-    QString fileName = QFileDialog::getOpenFileName(parent, QObject::tr("Export Keyboard Shortcuts"), QStringLiteral(""), QObject::tr("Keyboard Settings (*.keys)"));
+    QString fileName = QFileDialog::getOpenFileName(parent, QObject::tr("Export Keyboard Shortcuts"), QString(), QObject::tr("Keyboard Settings (*.keys)"));
     if (fileName.isEmpty())
     {
         return;

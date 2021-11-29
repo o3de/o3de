@@ -167,6 +167,7 @@ namespace AzToolsFramework
         void StopPlayInEditor() override;
 
         void CreateNewLevelPrefab(AZStd::string_view filename, const AZStd::string& templateFilename) override;
+        bool IsRootPrefabAssigned() const override;
 
     protected:
 
@@ -193,6 +194,7 @@ namespace AzToolsFramework
             AZ::IO::PathView filePath, Prefab::InstanceOptionalReference instanceToParentUnder) override;
 
         Prefab::InstanceOptionalReference GetRootPrefabInstance() override;
+        Prefab::TemplateId GetRootPrefabTemplateId() override;
         
         const AZStd::vector<AZ::Data::Asset<AZ::Data::AssetData>>& GetPlayInEditorAssetData() override;
         //////////////////////////////////////////////////////////////////////////
@@ -214,5 +216,6 @@ namespace AzToolsFramework
         Prefab::PrefabLoaderInterface* m_loaderInterface;
         AzFramework::EntityContextId m_entityContextId;
         AZ::SerializeContext m_serializeContext;
+        bool m_isRootPrefabAssigned = false;
     };
 }

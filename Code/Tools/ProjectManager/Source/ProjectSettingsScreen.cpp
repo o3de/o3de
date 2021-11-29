@@ -19,6 +19,7 @@
 #include <QLabel>
 #include <QLineEdit>
 #include <QStandardPaths>
+#include <QScrollArea>
 
 namespace O3DE::ProjectManager
 {
@@ -33,11 +34,23 @@ namespace O3DE::ProjectManager
         // if we don't set this in a frame (just use a sub-layout) all the content will align incorrectly horizontally
         QFrame* projectSettingsFrame = new QFrame(this);
         projectSettingsFrame->setObjectName("projectSettings");
-        m_verticalLayout = new QVBoxLayout();
 
-        // you cannot remove content margins in qss
-        m_verticalLayout->setContentsMargins(0, 0, 0, 0);
+        QVBoxLayout* vLayout = new QVBoxLayout();
+        vLayout->setMargin(0);
+        vLayout->setAlignment(Qt::AlignTop);
+        projectSettingsFrame->setLayout(vLayout);
+
+        QScrollArea* scrollArea = new QScrollArea(this);
+        scrollArea->setWidgetResizable(true);
+        vLayout->addWidget(scrollArea);
+
+        QWidget* scrollWidget = new QWidget(this);
+        scrollArea->setWidget(scrollWidget);
+
+        m_verticalLayout = new QVBoxLayout();
+        m_verticalLayout->setMargin(0);
         m_verticalLayout->setAlignment(Qt::AlignTop);
+        scrollWidget->setLayout(m_verticalLayout);
 
         m_projectName = new FormLineEditWidget(tr("Project name"), "", this);
         connect(m_projectName->lineEdit(), &QLineEdit::textChanged, this, &ProjectSettingsScreen::OnProjectNameUpdated);

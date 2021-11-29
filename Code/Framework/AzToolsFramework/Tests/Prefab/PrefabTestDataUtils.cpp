@@ -21,8 +21,8 @@ namespace UnitTest
         using namespace AzToolsFramework::Prefab;
         LinkData CreateLinkData(
             const InstanceData& instanceData,
-            const TemplateId& sourceTemplateId,
-            const TemplateId& targetTemplateId)
+            TemplateId sourceTemplateId,
+            TemplateId targetTemplateId)
         {
             LinkData newLinkData;
             newLinkData.m_instanceData = instanceData;

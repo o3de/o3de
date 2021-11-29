@@ -9,7 +9,6 @@
 #include "CameraComponentController.h"
 #include "CameraViewRegistrationBus.h"
 
-#include <MathConversion.h>
 #include <AzCore/Math/MatrixUtils.h>
 #include <Atom/RPI.Public/View.h>
 #include <Atom/RPI.Public/ViewportContextManager.h>
@@ -53,7 +52,7 @@ namespace Camera
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::ValuesOnly)
 
                     ->DataElement(AZ::Edit::UIHandlers::Default, &CameraComponentConfig::m_fov, "Field of view", "Vertical field of view in degrees")
-                        ->Attribute(AZ::Edit::Attributes::Min, MIN_FOV)
+                        ->Attribute(AZ::Edit::Attributes::Min, MinFoV)
                         ->Attribute(AZ::Edit::Attributes::Suffix, " degrees")
                         ->Attribute(AZ::Edit::Attributes::Step, 1.f)
                         ->Attribute(AZ::Edit::Attributes::Max, AZ::RadToDeg(AZ::Constants::Pi) - 0.0001f)       //We assert at fovs >= Pi so set the max for this field to be just under that
@@ -61,7 +60,7 @@ namespace Camera
                         ->Attribute(AZ::Edit::Attributes::Visibility, &CameraComponentConfig::GetPerspectiveParameterVisibility)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &CameraComponentConfig::m_nearClipDistance, "Near clip distance",
                         "Distance to the near clip plane of the view Frustum")
-                        ->Attribute(AZ::Edit::Attributes::Min, CAMERA_MIN_NEAR)
+                        ->Attribute(AZ::Edit::Attributes::Min, MinimumNearPlaneDistance)
                         ->Attribute(AZ::Edit::Attributes::Suffix, " m")
                         ->Attribute(AZ::Edit::Attributes::Step, 0.1f)
                         ->Attribute(AZ::Edit::Attributes::Max, &CameraComponentConfig::GetFarClipDistance)
@@ -150,6 +149,11 @@ namespace Camera
         }
     }
 
+    void CameraComponentController::SetShouldActivateFunction(AZStd::function<bool()> shouldActivateFunction)
+    {
+        m_shouldActivateFn = shouldActivateFunction;
+    }
+
     void CameraComponentController::Reflect(AZ::ReflectContext* context)
     {
         CameraComponentConfig::Reflect(context);
@@ -202,36 +206,6 @@ namespace Camera
     {
         m_entityId = entityId;
 
-        if ((!m_viewSystem)||(!m_system))
-        {
-            // perform first-time init
-            if (gEnv)
-            {
-                m_system = gEnv->pSystem;
-            }
-            if (m_system)
-            {
-                // Initialize local view.
-                m_viewSystem = m_system->GetIViewSystem();
-                if (!m_viewSystem)
-                {
-                    AZ_Error("CameraComponent", m_viewSystem != nullptr, "The CameraComponent shouldn't be used without a local view system");
-                }
-            }
-        }
-
-        if (m_viewSystem)
-        {
-            if (m_view == nullptr)
-            {
-                m_view = m_viewSystem->CreateView();
-
-                AZ::Entity* entity = nullptr;
-                AZ::ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationRequests::FindEntity, m_entityId);
-                m_view->LinkTo(entity);
-            }
-        }
-
         auto atomViewportRequests = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get();
         if (atomViewportRequests)
         {
@@ -270,9 +244,8 @@ namespace Camera
         CameraBus::Handler::BusConnect();
         CameraNotificationBus::Broadcast(&CameraNotificationBus::Events::OnCameraAdded, m_entityId);
 
-        // Activate our camera if we're running from the launcher or Editor game mode
-        // Otherwise, let the Editor keep managing the active camera
-        if (m_config.m_makeActiveViewOnActivation && (!gEnv || !gEnv->IsEditor() || gEnv->IsEditorGameMode()))
+        // Only activate if we're configured to do so, and our activation call back indicates that we should
+        if (m_config.m_makeActiveViewOnActivation && (!m_shouldActivateFn || m_shouldActivateFn()))
         {
             MakeActiveView();
         }
@@ -284,20 +257,6 @@ namespace Camera
         CameraBus::Handler::BusDisconnect();
         AZ::TransformNotificationBus::Handler::BusDisconnect(m_entityId);
         CameraRequestBus::Handler::BusDisconnect(m_entityId);
-        if (m_viewSystem)
-        {
-            if (m_view != nullptr && m_viewSystem->GetViewId(m_view) != 0)
-            {
-                m_view->Unlink();
-            }
-            if (m_viewSystem->GetActiveView() == m_view)
-            {
-                m_viewSystem->SetActiveView(m_prevViewId);
-            }
-            m_viewSystem->RemoveView(m_view);
-            m_prevViewId = 0;
-            m_view = nullptr;
-        }
 
         auto atomViewportRequests = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get();
         if (atomViewportRequests)
@@ -429,13 +388,6 @@ namespace Camera
             return;
         }
 
-        // Set Legacy Cry view, if it exists
-        if (m_viewSystem)
-        {
-            m_prevViewId = AZ::u32(m_viewSystem->GetActiveViewId());
-            m_viewSystem->SetActiveView(m_view);
-        }
-
         // Set Atom camera, if it exists
         if (m_atomCamera)
         {
@@ -459,12 +411,6 @@ namespace Camera
         if (m_updatingTransformFromEntity)
         {
             return;
-        }
-
-        if (m_view)
-        {
-            CCamera& camera = m_view->GetCamera();
-            camera.SetMatrix(AZTransformToLYTransform(world.GetOrthogonalized()));
         }
 
         if (m_atomCamera)
@@ -495,25 +441,15 @@ namespace Camera
 
     void CameraComponentController::UpdateCamera()
     {
-        if (m_view)
-        {
-            auto viewParams = *m_view->GetCurrentParams();
-            viewParams.fov = AZ::DegToRad(m_config.m_fov);
-            viewParams.nearplane = m_config.m_nearClipDistance;
-            viewParams.farplane = m_config.m_farClipDistance;
-            m_view->SetCurrentParams(viewParams);
-        }
-
         if (auto viewportContext = GetViewportContext())
         {
             AZ::Matrix4x4 viewToClipMatrix;
-            float aspectRatio = m_view ? m_view->GetCamera().GetPixelAspectRatio() : 1.f;
             if (!m_atomAuxGeom)
             {
                 SetupAtomAuxGeom(viewportContext);
             }
             auto windowSize = viewportContext->GetViewportSize();
-            aspectRatio = aznumeric_cast<float>(windowSize.m_width) / aznumeric_cast<float>(windowSize.m_height);
+            const float aspectRatio = aznumeric_cast<float>(windowSize.m_width) / aznumeric_cast<float>(windowSize.m_height);
 
             // This assumes a reversed depth buffer, in line with other LY Atom integration
             if (m_config.m_orthographic)

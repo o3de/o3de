@@ -207,12 +207,6 @@ namespace AZ
             ActivateComponent(**it);
         }
 
-        // Cache the transform interface to the transform interface
-        // Generally this pattern is not recommended unless for component event buses
-        // As we have a guarantee (by design) that components can't change during active state)
-        // Even though technically they can connect disconnect from the bus.
-        m_transform = TransformBus::FindFirstHandler(m_id);
-
         SetState(State::Active);
 
         EBUS_EVENT_ID(m_id, EntityBus, OnEntityActivated, m_id);
@@ -653,6 +647,16 @@ namespace AZ
         State oldState = state;
         m_state = state;
         m_stateEvent.Signal(oldState, m_state);
+    }
+
+    void Entity::SetSpawnTicketId(u32 spawnTicketId)
+    {
+        m_spawnTicketId = spawnTicketId;
+    }
+
+    u32 Entity::GetSpawnTicketId() const
+    {
+        return m_spawnTicketId;
     }
 
     void Entity::OnNameChanged() const
@@ -1318,6 +1322,19 @@ namespace AZ
             processSignature = Environment::CreateVariable<AZ::u32>(AZ_CRC("MachineProcessSignature", 0x47681763), signature);
         }
         return *processSignature;
+    }
+
+    AZ::TransformInterface* Entity::GetTransform() const
+    {
+        // Lazy evaluation of the cached entity transform.
+        if(!m_transform)
+        {
+            // Generally this pattern is not recommended unless for component event buses
+            // As we have a guarantee (by design) that components can't change during active state)
+            // Even though technically they can connect disconnect from the bus.
+            m_transform = TransformBus::FindFirstHandler(m_id);
+        }
+        return m_transform;
     }
 
     //=========================================================================

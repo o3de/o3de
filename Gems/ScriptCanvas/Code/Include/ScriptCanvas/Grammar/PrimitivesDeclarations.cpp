@@ -17,5 +17,23 @@ namespace ScriptCanvas
         AZ_CVAR(bool, g_printAbstractCodeModelAtPrefabTime, false, {}, AZ::ConsoleFunctorFlags::Null, "Print out the Abstract Code Model at the end of parsing (at prefab time) for debug purposes.");
         AZ_CVAR(bool, g_saveRawTranslationOuputToFile, true, {}, AZ::ConsoleFunctorFlags::Null, "Save out the raw result of translation for debug purposes.");
         AZ_CVAR(bool, g_saveRawTranslationOuputToFileAtPrefabTime, false, {}, AZ::ConsoleFunctorFlags::Null, "Save out the raw result of translation (at prefab time) for debug purposes.");
+
+        SettingsCache::SettingsCache()
+        {
+            m_disableParseOnGraphValidation = g_disableParseOnGraphValidation;
+            m_printAbstractCodeModel = g_printAbstractCodeModel;
+            m_printAbstractCodeModelAtPrefabTime = g_printAbstractCodeModelAtPrefabTime;
+            m_saveRawTranslationOuputToFile = g_saveRawTranslationOuputToFile;
+            m_saveRawTranslationOuputToFileAtPrefabTime = g_saveRawTranslationOuputToFileAtPrefabTime;
+        }
+
+        SettingsCache::~SettingsCache()
+        {
+            g_disableParseOnGraphValidation = m_disableParseOnGraphValidation;
+            g_printAbstractCodeModel = m_printAbstractCodeModel;
+            g_printAbstractCodeModelAtPrefabTime = m_printAbstractCodeModelAtPrefabTime;
+            g_saveRawTranslationOuputToFile = m_saveRawTranslationOuputToFile;
+            g_saveRawTranslationOuputToFileAtPrefabTime = m_saveRawTranslationOuputToFileAtPrefabTime;
+        }
     }
 }

@@ -256,12 +256,11 @@ namespace AZ::AtomBridge
         viewportContextPtr->ConnectSceneChangedHandler(m_sceneChangeHandler);
     }
 
-    AtomDebugDisplayViewportInterface::AtomDebugDisplayViewportInterface(uint32_t defaultInstanceAddress)
+    AtomDebugDisplayViewportInterface::AtomDebugDisplayViewportInterface(uint32_t defaultInstanceAddress, RPI::Scene* scene)
     {
         ResetRenderState();
         m_viewportId = defaultInstanceAddress;
         m_defaultInstance = true;
-        RPI::Scene* scene = RPI::RPISystemInterface::Get()->GetDefaultScene().get();
         InitInternal(scene, nullptr);
     }
 
@@ -800,7 +799,8 @@ namespace AZ::AtomBridge
             const float startAngle = DegToRad(startAngleDegrees);
             const float stopAngle = DegToRad(sweepAngleDegrees) + startAngle;
             SingleColorDynamicSizeLineHelper lines(1+static_cast<int>(sweepAngleDegrees/angularStepDegrees));
-            AZ::Vector3 radiusV3 = AZ::Vector3(radius);
+            float aspectRadius = radius / GetAspectRatio();
+            AZ::Vector3 radiusV3 = AZ::Vector3(aspectRadius, radius, radius);
             AZ::Vector3 pos = AZ::Vector3(center.GetX(), center.GetY(), z);
             CreateAxisAlignedArc(
                 lines, 
@@ -1016,6 +1016,55 @@ namespace AZ::AtomBridge
         }
     }
 
+    void AtomDebugDisplayViewportInterface::DrawWireCylinderNoEnds(const AZ::Vector3& center, const AZ::Vector3& axis, float radius, float height)
+    {
+        if (m_auxGeomPtr)
+        {
+            const float scale = GetCurrentTransform().RetrieveScale().GetMaxElement();
+            const AZ::Vector3 worldCenter = ToWorldSpacePosition(center);
+            const AZ::Vector3 worldAxis = ToWorldSpaceVector(axis);
+            m_auxGeomPtr->DrawCylinderNoEnds(
+                worldCenter, 
+                worldAxis, 
+                scale * radius, 
+                scale * height, 
+                m_rendState.m_color, 
+                AZ::RPI::AuxGeomDraw::DrawStyle::Line,
+                m_rendState.m_depthTest,
+                m_rendState.m_depthWrite,
+                m_rendState.m_faceCullMode,
+                m_rendState.m_viewProjOverrideIndex
+            );
+        }
+    }
+
+    void AtomDebugDisplayViewportInterface::DrawSolidCylinderNoEnds(
+        const AZ::Vector3& center, 
+        const AZ::Vector3& axis, 
+        float radius, 
+        float height, 
+        bool drawShaded)
+    {
+        if (m_auxGeomPtr)
+        {
+            const float scale = GetCurrentTransform().RetrieveScale().GetMaxElement();
+            const AZ::Vector3 worldCenter = ToWorldSpacePosition(center);
+            const AZ::Vector3 worldAxis = ToWorldSpaceVector(axis);
+            m_auxGeomPtr->DrawCylinderNoEnds(
+                worldCenter, 
+                worldAxis, 
+                scale * radius, 
+                scale * height, 
+                m_rendState.m_color, 
+                drawShaded ? AZ::RPI::AuxGeomDraw::DrawStyle::Shaded : AZ::RPI::AuxGeomDraw::DrawStyle::Solid,
+                m_rendState.m_depthTest,
+                m_rendState.m_depthWrite,
+                m_rendState.m_faceCullMode,
+                m_rendState.m_viewProjOverrideIndex
+            );
+        }
+    }
+
     void AtomDebugDisplayViewportInterface::DrawWireCapsule(
         const AZ::Vector3& center, 
         const AZ::Vector3& axis, 
@@ -1025,83 +1074,24 @@ namespace AZ::AtomBridge
         if (m_auxGeomPtr &&  radius > FLT_EPSILON &&  axis.GetLengthSq() > FLT_EPSILON)
         {
             AZ::Vector3 axisNormalized = axis.GetNormalizedEstimate();
-            SingleColorStaticSizeLineHelper<(16+1) * 5> lines; // 360/22.5 = 16, 5 possible calls to CreateArbitraryAxisArc
-            AZ::Vector3 radiusV3 = AZ::Vector3(radius);
-            float stepAngle = DegToRad(22.5f);
-            float Deg0 = DegToRad(0.0f);
 
+            const float scale = GetCurrentTransform().RetrieveScale().GetMaxElement();
+            const AZ::Vector3 worldCenter = ToWorldSpacePosition(center);
+            const AZ::Vector3 worldAxis = ToWorldSpaceVector(axis);
 
-            // Draw cylinder part (or just a circle around the middle)
+            // Draw cylinder part (if cylinder height is too small, ignore cylinder and just draw both hemispheres)
             if (heightStraightSection > FLT_EPSILON)
             {
-                DrawWireCylinder(center, axis, radius, heightStraightSection);
-            }
-            else
-            {
-                float Deg360 = DegToRad(360.0f);
-                CreateArbitraryAxisArc(
-                    lines,
-                    stepAngle,
-                    Deg0,
-                    Deg360,
-                    center,
-                    radiusV3,
-                    axisNormalized
-                    );
+                DrawWireCylinderNoEnds(worldCenter, worldAxis, scale * radius, scale * heightStraightSection);
             }
 
-            float Deg90 = DegToRad(90.0f);
-            float Deg180 = DegToRad(180.0f);
-
-            AZ::Vector3 ortho1Normalized, ortho2Normalized;
-            CalcBasisVectors(axisNormalized, ortho1Normalized, ortho2Normalized);
             AZ::Vector3 centerToTopCircleCenter = axisNormalized * heightStraightSection * 0.5f;
-            AZ::Vector3 topCenter = center + centerToTopCircleCenter;
-            AZ::Vector3 bottomCenter = center - centerToTopCircleCenter;
 
-            // Draw top cap as two criss-crossing 180deg arcs
-            CreateArbitraryAxisArc(
-                    lines,
-                    stepAngle,
-                    Deg90,
-                    Deg90 + Deg180,
-                    topCenter,
-                    radiusV3,
-                    ortho1Normalized
-                    );
+            // Top hemisphere
+            DrawWireHemisphere(center + centerToTopCircleCenter, worldAxis, scale * radius);
 
-            CreateArbitraryAxisArc(
-                    lines,
-                    stepAngle,
-                    Deg180,
-                    Deg180 + Deg180,
-                    topCenter,
-                    radiusV3,
-                    ortho2Normalized
-                    );
-
-            // Draw bottom cap
-            CreateArbitraryAxisArc(
-                    lines,
-                    stepAngle,
-                    -Deg90,
-                    -Deg90 + Deg180,
-                    bottomCenter,
-                    radiusV3,
-                    ortho1Normalized
-                    );
-
-            CreateArbitraryAxisArc(
-                    lines,
-                    stepAngle,
-                    Deg0,
-                    Deg0 + Deg180,
-                    bottomCenter,
-                    radiusV3,
-                    ortho2Normalized
-                    );
-
-            lines.Draw(m_auxGeomPtr, m_rendState);
+            // Bottom hemisphere
+            DrawWireHemisphere(center - centerToTopCircleCenter, -worldAxis, scale * radius);
         }
     }
 
@@ -1145,6 +1135,25 @@ namespace AZ::AtomBridge
             axisRadius = AZ::Vector3(radius.GetX(), 0.0f, radius.GetZ());
             CreateAxisAlignedArc(lines, step, 0.0f, maxAngle, pos, axisRadius, CircleAxisY);
             lines.Draw(m_auxGeomPtr, m_rendState);
+        }
+    }
+
+    void AtomDebugDisplayViewportInterface::DrawWireHemisphere(const AZ::Vector3& pos, const AZ::Vector3& axis, float radius)
+    {
+        if (m_auxGeomPtr)
+        {
+            const float scale = GetCurrentTransform().RetrieveScale().GetMaxElement();
+            m_auxGeomPtr->DrawHemisphere(
+                ToWorldSpacePosition(pos),
+                axis,
+                scale * radius,
+                m_rendState.m_color,
+                AZ::RPI::AuxGeomDraw::DrawStyle::Line,
+                m_rendState.m_depthTest,
+                m_rendState.m_depthWrite,
+                m_rendState.m_faceCullMode,
+                m_rendState.m_viewProjOverrideIndex
+            );
         }
     }
 
@@ -1550,6 +1559,26 @@ namespace AZ::AtomBridge
         {
             m_rendState.m_currentTransform--;
         }
+    }
+
+    void AtomDebugDisplayViewportInterface::PushPremultipliedMatrix(const AZ::Matrix3x4& matrix)
+    {
+        AZ_Assert(m_rendState.m_currentTransform < RenderState::TransformStackSize, "Exceeded AtomDebugDisplayViewportInterface matrix stack size");
+        if (m_rendState.m_currentTransform < RenderState::TransformStackSize)
+        {
+            m_rendState.m_currentTransform++;
+            m_rendState.m_transformStack[m_rendState.m_currentTransform] = matrix;
+        }
+    }
+
+    AZ::Matrix3x4 AtomDebugDisplayViewportInterface::PopPremultipliedMatrix()
+    {
+        AZ_Assert(m_rendState.m_currentTransform > 0, "Underflowed AtomDebugDisplayViewportInterface matrix stack");
+        if (m_rendState.m_currentTransform > 0)
+        {
+            m_rendState.m_currentTransform--;
+        }
+        return m_rendState.m_transformStack[m_rendState.m_currentTransform + 1];
     }
 
     const AZ::Matrix3x4& AtomDebugDisplayViewportInterface::GetCurrentTransform() const

@@ -31,8 +31,7 @@ namespace AZ
             float GetEffectiveSolidAngle() const override { return PhotometricValue::OmnidirectionalSteradians; }
 
         private:
-            virtual void HandleShapeChanged();
-            
+            void HandleShapeChanged() override;
         };
 
     } // namespace Render

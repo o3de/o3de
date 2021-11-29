@@ -101,7 +101,7 @@ namespace ScriptCanvasDeveloper
         void RunTest(QModelIndex index);
 
         // SystemTickBus
-        void OnSystemTick();
+        void OnSystemTick() override;
         ////
 
         // EditorAutomationTestDialogRequestBus::Handler

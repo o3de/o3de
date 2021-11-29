@@ -204,7 +204,7 @@ namespace PythonCoverage
         return coveringModuleOutputNames;
     }
     
-    void PythonCoverageEditorSystemComponent::OnStartExecuteByFilenameAsTest(AZStd::string_view filename, AZStd::string_view testCase, [[maybe_unused]] const AZStd::vector<AZStd::string_view>& args)
+    void PythonCoverageEditorSystemComponent::OnStartExecuteByFilenameAsTest([[maybe_unused]]AZStd::string_view filename, AZStd::string_view testCase, [[maybe_unused]] const AZStd::vector<AZStd::string_view>& args)
     {
         if (m_coverageState == CoverageState::Disabled)
         {
@@ -226,8 +226,7 @@ namespace PythonCoverage
             return;
         }
 
-        const AZStd::string scriptName = AZ::IO::Path(filename).Stem().Native();
-        const auto coverageFile = m_coverageDir / AZStd::string::format("%s.pycoverage", scriptName.c_str());
+        const auto coverageFile = m_coverageDir / AZStd::string::format("%.*s.pycoverage", AZ_STRING_ARG(testCase));
 
         // If this is a different python script we clear the existing entity components and start afresh
         if (m_coverageFile != coverageFile)

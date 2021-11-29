@@ -8,8 +8,8 @@
 #pragma once
 
 #include <AzCore/EBus/BusImpl.h> //Just to get AZ::NullMutex
-#include <AzCore/std/chrono/types.h>
 #include <AzCore/Statistics/StatisticsManager.h>
+#include <AzCore/std/chrono/chrono.h>
 #include <AzCore/std/parallel/scoped_lock.h>
 
 namespace AZ
@@ -36,8 +36,7 @@ namespace AZ
         //! are some things to consider when working with the StatisticalProfilerProxy:
         //! The StatisticalProfilerProxy OWNS an array of StatisticalProfiler<AZStd::string, AZStd::shared_spin_mutex>.
         //! You can "manage" one of those StatisticalProfiler by getting a reference to it and
-        //! add Running statistics etc. See The TerrainProfilers mentioned above to see concrete use
-        //! cases on how to work with the StatisticalProfilerProxy.
+        //! add Running statistics etc.
         template <class StatIdType = AZStd::string, class MutexType = AZ::NullMutex>
         class StatisticalProfiler
         {
@@ -243,7 +242,7 @@ namespace AZ
 
                 //! This one is needed because running statistics are collected many times across
                 //! several frames. This value is used to calculate a per frame sample for @m_totalTimePerFrameStat,
-                //! by subtracting @m_prevAccumulatedSums from the accumulated sum in @m_statisticsManager. 
+                //! by subtracting @m_prevAccumulatedSums from the accumulated sum in @m_statisticsManager.
                 double m_prevAccumulatedSums;
             };
 

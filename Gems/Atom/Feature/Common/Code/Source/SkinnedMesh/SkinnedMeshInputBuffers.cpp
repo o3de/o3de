@@ -534,7 +534,7 @@ namespace AZ
             //            lod0 Positions[^                         ^]             lod0Normals[^                         ^]   lod1Positions[^     ^]     lod1Normals[^     ^]
             // lod0 subMesh0+1 Positions[^             ^^          ^] lod0 subMesh0+1 Normals[^             ^^          ^]  lod1 sm0+1 pos[^  ^^ ^] lod1 sm0+1 norm[^  ^^ ^]
 
-            AZ_PROFILE_FUNCTION(AzRender);
+            AZ_PROFILE_SCOPE(AzRender, "SkinnedMeshInputBuffers: CreateSkinnedMeshInstance");
             AZStd::intrusive_ptr<SkinnedMeshInstance> instance = aznew SkinnedMeshInstance;
 
             // Each model gets a unique, random ID, so if the same source model is used for multiple instances, multiple target models will be created.

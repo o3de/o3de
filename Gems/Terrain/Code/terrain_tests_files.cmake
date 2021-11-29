@@ -8,4 +8,11 @@
 
 set(FILES
     Tests/TerrainTest.cpp
+    Tests/TerrainSystemTest.cpp
+    Tests/LayerSpawnerTests.cpp
+    Tests/TerrainPhysicsColliderTests.cpp
+    Tests/SurfaceMaterialsListTest.cpp
+    Tests/MockAxisAlignedBoxShapeComponent.h
+    Tests/TerrainHeightGradientListTests.cpp
+    Tests/TerrainSurfaceGradientListTests.cpp
 )

@@ -8,6 +8,17 @@
 
 include_guard(GLOBAL)
 
+# LY_CONFIGURATION_TYPES defines all the configuration types that O3DE supports
+# We dont set CMAKE_CONFIGURATION_TYPES directly because we want to be able to configure which 
+# configuration types are supported in an SDK installation. SDK installations will fill a 
+# CMAKE_CONFIGURATION_TYPES based on the configurations that were generated during the install process.
+# ly_append_configurations_options depends on LY_CONFIGURATION_TYPES being
+# set in order to successfully parse the arguments. Even for non-multi-config
+# generators, it needs to be set.
+set(LY_CONFIGURATION_TYPES "debug;profile;release" CACHE STRING "" FORCE)
+
+include(cmake/ConfigurationTypes.cmake)
+
 #! ly_append_configurations_options: adds options to the different configurations (debug, profile, release, etc)
 #
 # \arg:DEFINES
@@ -43,7 +54,9 @@ function(ly_append_configurations_options)
     )
     foreach(arg IN LISTS multiArgs)
         list(APPEND multiValueArgs ${arg})
-        foreach(conf IN LISTS CMAKE_CONFIGURATION_TYPES)
+        # we parse the parameters based on all configuration types so unknown configurations
+        # are not passed as values to other parameters
+        foreach(conf IN LISTS LY_CONFIGURATION_TYPES)
             string(TOUPPER ${conf} UCONF)
             list(APPEND multiValueArgs ${arg}_${UCONF})
         endforeach()
@@ -96,6 +109,7 @@ function(ly_append_configurations_options)
         set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} ${LINK_STR}" PARENT_SCOPE)
     endif()
 
+    # We only iterate for the actual configuration types
     foreach(conf IN LISTS CMAKE_CONFIGURATION_TYPES)
 
         string(TOUPPER ${conf} UCONF)
@@ -142,11 +156,6 @@ endfunction()
 # Set the C++ standard that is being targeted to C++17
 set(CMAKE_CXX_STANDARD 17 CACHE STRING "C++ Standard to target")
 ly_set(CMAKE_CXX_STANDARD_REQUIRED ON)
-
-# ly_append_configurations_options depends on CMAKE_CONFIGURATION_TYPES being
-# set in order to successfully parse the arguments. Even for non-multi-config
-# generators, it needs to be set.
-set(CMAKE_CONFIGURATION_TYPES "debug;profile;release" CACHE STRING "" FORCE)
 
 get_property(_isMultiConfig GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
 if(NOT _isMultiConfig)

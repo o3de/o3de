@@ -20,9 +20,9 @@ namespace ImageProcessingAtom
     const static AZ::u32 EIF_Greyscale = 0x8;  // hint for the engine (e.g. greyscale light beams can be applied to shadow mask), can be for DXT1 because compression artfacts don't count as color
     const static AZ::u32 EIF_SupressEngineReduce = 0x10;  // info for the engine: don't reduce texture resolution on this texture
     const static AZ::u32 EIF_UNUSED_BIT = 0x40;  // Free to use
-    const static AZ::u32 EIF_AttachedAlpha = 0x400;  // info for the engine: it's a texture with attached alpha channel
+    const static AZ::u32 EIF_AttachedAlpha = 0x400;  // deprecated: info for the engine: it's a texture with attached alpha channel
     const static AZ::u32 EIF_SRGBRead = 0x800;  // info for the engine: if gamma corrected rendering is on, this texture requires SRGBRead (it's not stored in linear)
-    const static AZ::u32 EIF_DontResize = 0x8000; // info for the engine: for dds textures that shouldn't be resized with r_TexResolution
+    const static AZ::u32 EIF_DontResize = 0x8000; // info for the engine: for dds textures that shouldn't be resized
     const static AZ::u32 EIF_RenormalizedTexture = 0x10000;  // info for the engine: for dds textures that have renormalized color range
     const static AZ::u32 EIF_CafeNative = 0x20000;  // info for the engine: native Cafe texture format
     const static AZ::u32 EIF_RestrictedPlatformONative = 0x40000;  // native tiled texture for restrict platform O

@@ -100,16 +100,16 @@ public:
     void Load() override;
 
     // ITrackViewNode
-    virtual ETrackViewNodeType GetNodeType() const override { return eTVNT_Sequence; }
+    ETrackViewNodeType GetNodeType() const override { return eTVNT_Sequence; }
 
-    virtual AZStd::string GetName() const override { return m_pAnimSequence->GetName(); }
-    virtual bool SetName(const char* pName) override;
-    virtual bool CanBeRenamed() const override { return true; }
+    AZStd::string GetName() const override { return m_pAnimSequence->GetName(); }
+    bool SetName(const char* pName) override;
+    bool CanBeRenamed() const override { return true; }
 
     // Binding/Unbinding
-    virtual void BindToEditorObjects() override;
-    virtual void UnBindFromEditorObjects() override;
-    virtual bool IsBoundToEditorObjects() const override;
+    void BindToEditorObjects() override;
+    void UnBindFromEditorObjects() override;
+    bool IsBoundToEditorObjects() const override;
 
     // Time range
     void SetTimeRange(Range timeRange);
@@ -136,10 +136,10 @@ public:
     uint32 GetCryMovieId() const { return m_pAnimSequence->GetId(); }
 
     // Rendering
-    virtual void Render(const SAnimContext& animContext) override;
+    void Render(const SAnimContext& animContext) override;
 
     // Playback control
-    virtual void Animate(const SAnimContext& animContext) override;
+    void Animate(const SAnimContext& animContext) override;
     void Resume() { m_pAnimSequence->Resume(); }
     void Pause() { m_pAnimSequence->Pause(); }
     void StillUpdate() { m_pAnimSequence->StillUpdate(); }
@@ -162,7 +162,7 @@ public:
     void TimeChanged(float newTime) { m_pAnimSequence->TimeChanged(newTime); }
 
     // Check if it's a group node
-    virtual bool IsGroupNode() const override { return true; }
+    bool IsGroupNode() const override { return true; }
 
     // Track Events (TODO: Undo?)
     int GetTrackEventsCount() const      { return m_pAnimSequence->GetTrackEventsCount(); }
@@ -195,7 +195,7 @@ public:
     bool IsActiveSequence() const;
 
     // The root sequence node is always an active director
-    virtual bool IsActiveDirector() const override { return true; }
+    bool IsActiveDirector() const override { return true; }
 
     // Copy keys to clipboard (in XML form)
     void CopyKeysToClipboard(const bool bOnlySelectedKeys, const bool bOnlyFromSelectedTracks);
@@ -306,15 +306,15 @@ private:
     // Called when an animation updates needs to be schedules
     void ForceAnimation();
 
-    virtual void CopyKeysToClipboard(XmlNodeRef& xmlNode, const bool bOnlySelectedKeys, const bool bOnlyFromSelectedTracks) override;
+    void CopyKeysToClipboard(XmlNodeRef& xmlNode, const bool bOnlySelectedKeys, const bool bOnlyFromSelectedTracks) override;
 
     std::deque<CTrackViewTrack*> GetMatchingTracks(CTrackViewAnimNode* pAnimNode, XmlNodeRef trackNode);
     void GetMatchedPasteLocationsRec(std::vector<TMatchedTrackLocation>& locations, CTrackViewNode* pCurrentNode, XmlNodeRef clipboardNode);
 
-    virtual void BeginUndoTransaction();
-    virtual void EndUndoTransaction();
-    virtual void BeginRestoreTransaction();
-    virtual void EndRestoreTransaction();
+    void BeginUndoTransaction() override;
+    void EndUndoTransaction() override;
+    void BeginRestoreTransaction() override;
+    void EndRestoreTransaction() override;
 
     // For record mode on AZ::Entities - connect (or disconnect) to buses for notification of property changes
     void ConnectToBusesForRecording(const AZ::EntityId& entityIdForBus, bool enableConnection);

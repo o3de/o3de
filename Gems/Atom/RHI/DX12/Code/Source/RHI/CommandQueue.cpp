@@ -10,8 +10,8 @@
 #include <RHI/Fence.h>
 #include <RHI/SwapChain.h>
 #include <RHI/Conversions.h>
-#include <AzCore/Debug/EventTraceDrillerBus.h>
-#include <Atom/RHI.Reflect/CpuTimingStatistics.h>
+
+#include <AzCore/Debug/Timer.h>
 
 namespace AZ
 {
@@ -139,7 +139,7 @@ namespace AZ
             QueueCommand([=](void* commandQueue)
             {
                 AZ_PROFILE_SCOPE(RHI, "ExecuteWork");
-                AZ_PROFILE_RHI_VARIABLE(m_lastExecuteDuration);
+                AZ::Debug::ScopedTimer executionTimer(m_lastExecuteDuration);
 
                 static const uint32_t CommandListCountMax = 128;
                 ID3D12CommandQueue* dx12CommandQueue = static_cast<ID3D12CommandQueue*>(commandQueue);
@@ -185,7 +185,7 @@ namespace AZ
                     dx12CommandQueue->Signal(fence->Get(), fence->GetPendingValue());
                 }
 
-                AZ_PROFILE_RHI_VARIABLE(m_lastPresentDuration);
+                AZ::Debug::ScopedTimer presentTimer(m_lastPresentDuration);
                 for (RHI::SwapChain* swapChain : request.m_swapChainsToPresent)
                 {
                     swapChain->Present();
@@ -195,7 +195,7 @@ namespace AZ
 
         void CommandQueue::UpdateTileMappings(CommandList& commandList)
         {
-            AZ_PROFILE_FUNCTION(RHI);
+            AZ_PROFILE_SCOPE(RHI, "CommandQueue: UpdateTileMappings");
             for (const CommandList::TileMapRequest& request : commandList.GetTileMapRequests())
             {
                 const uint32_t tileCount = request.m_sourceRegionSize.NumTiles;
@@ -229,7 +229,7 @@ namespace AZ
         
         void CommandQueue::WaitForIdle()
         {
-            AZ_PROFILE_FUNCTION(RHI);
+            AZ_PROFILE_SCOPE(RHI, "CommandQueue: WaitForIdle");
 
             Fence fence;
             fence.Init(m_device.get(), RHI::FenceState::Reset);

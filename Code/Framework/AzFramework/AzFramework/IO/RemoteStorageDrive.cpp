@@ -281,7 +281,7 @@ namespace AzFramework
         AZ_PROFILE_FUNCTION(AzCore);
             
         auto data = AZStd::get_if<FileRequest::ReadData>(&request->GetCommand());
-        AZ_Assert(data, "Request doing reading in the RemoteStorageDrive didn't contain read data.")
+        AZ_Assert(data, "Request doing reading in the RemoteStorageDrive didn't contain read data.");
 
         HandleType file = InvalidHandle;
 

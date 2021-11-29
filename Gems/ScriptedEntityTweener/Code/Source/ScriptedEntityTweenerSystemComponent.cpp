@@ -47,7 +47,7 @@ namespace ScriptedEntityTweener
             Call(FN_RemoveCallback, callbackId);
         }
 
-        void OnTimelineAnimationStart(int timelineId, const AZ::Uuid& uuid, const AZStd::string& componentName, const AZStd::string& propertyName)
+        void OnTimelineAnimationStart(int timelineId, const AZ::Uuid& uuid, const AZStd::string& componentName, const AZStd::string& propertyName) override
         {
             Call(FN_OnTimelineAnimationStart, timelineId, uuid, componentName, propertyName);
         }

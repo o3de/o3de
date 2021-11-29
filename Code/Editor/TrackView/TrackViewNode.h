@@ -117,13 +117,14 @@ class CTrackViewKeyBundle
 public:
     CTrackViewKeyBundle()
         : m_bAllOfSameType(true) {}
+    virtual ~CTrackViewKeyBundle() = default;
 
-    virtual bool AreAllKeysOfSameType() const override { return m_bAllOfSameType; }
+    bool AreAllKeysOfSameType() const override { return m_bAllOfSameType; }
 
-    virtual unsigned int GetKeyCount() const override { return static_cast<unsigned int>(m_keys.size()); }
-    virtual CTrackViewKeyHandle GetKey(unsigned int index) override { return m_keys[index]; }
+    unsigned int GetKeyCount() const override { return static_cast<unsigned int>(m_keys.size()); }
+    CTrackViewKeyHandle GetKey(unsigned int index) override { return m_keys[index]; }
 
-    virtual void SelectKeys(const bool bSelected) override;
+    void SelectKeys(const bool bSelected) override;
 
     CTrackViewKeyHandle GetSingleSelectedKey();
 

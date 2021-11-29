@@ -13,8 +13,8 @@
 #pragma once
 
 #include <IConsole.h>
-#include "Timer.h"
 #include <CryCommon/StlUtils.h>
+#include <CryCommon/TimeValue.h>
 #include <AzFramework/Components/ConsoleBus.h>
 #include <AzFramework/CommandLine/CommandRegistrationBus.h>
 
@@ -52,7 +52,7 @@ struct CConsoleCommand
 
     //////////////////////////////////////////////////////////////////////////
     CConsoleCommand()
-        : m_func(0)
+        : m_func(nullptr)
         , m_nFlags(0) {}
     size_t sizeofThis () const {return sizeof(*this) + m_sName.capacity() + 1 + m_sCommand.capacity() + 1; }
 };
@@ -66,18 +66,18 @@ struct CConsoleCommandArgs
     CConsoleCommandArgs(AZStd::string& line, std::vector<AZStd::string>& args)
         : m_line(line)
         , m_args(args) {};
-    virtual int GetArgCount() const { return static_cast<int>(m_args.size()); };
+    int GetArgCount() const override { return static_cast<int>(m_args.size()); };
     // Get argument by index, nIndex must be in 0 <= nIndex < GetArgCount()
-    virtual const char* GetArg(int nIndex) const
+    const char* GetArg(int nIndex) const override
     {
         assert(nIndex >= 0 && nIndex < GetArgCount());
         if (!(nIndex >= 0 && nIndex < GetArgCount()))
         {
-            return NULL;
+            return nullptr;
         }
         return m_args[nIndex].c_str();
     }
-    virtual const char* GetCommandLine() const
+    const char* GetCommandLine() const override
     {
         return m_line.c_str();
     }
@@ -114,9 +114,9 @@ class CXConsole
     , public AzFramework::CommandRegistrationBus::Handler
 {
 public:
-    typedef std::deque<AZStd::string> ConsoleBuffer;
-    typedef ConsoleBuffer::iterator ConsoleBufferItor;
-    typedef ConsoleBuffer::reverse_iterator ConsoleBufferRItor;
+    using ConsoleBuffer = std::deque<AZStd::string>;
+    using ConsoleBufferItor = ConsoleBuffer::iterator;
+    using ConsoleBufferRItor = ConsoleBuffer::reverse_iterator;
 
     // constructor
     CXConsole();
@@ -216,12 +216,12 @@ public:
     //////////////////////////////////////////////////////////////////////////
 
     void SetProcessingGroup(bool isGroup) { m_bIsProcessingGroup = isGroup; }
-    bool GetIsProcessingGroup(void) const { return m_bIsProcessingGroup; }
+    bool GetIsProcessingGroup() const { return m_bIsProcessingGroup; }
 
 protected: // ----------------------------------------------------------------------------------------
     void DrawBuffer(int nScrollPos, const char* szEffect);
 
-    void RegisterVar(ICVar* pCVar, ConsoleVarFunc pChangeFunc = 0);
+    void RegisterVar(ICVar* pCVar, ConsoleVarFunc pChangeFunc = nullptr);
 
     bool ProcessInput(const AzFramework::InputChannel& inputChannel);
     void AddLine(const char* inputStr);
@@ -272,7 +272,7 @@ private: // ----------------------------------------------------------
     typedef std::map<const char*, ICVar*, string_nocase_lt> ConsoleVariablesMap;        // key points into string stored in ICVar or in .exe/.dll
     typedef ConsoleVariablesMap::iterator ConsoleVariablesMapItor;
 
-    typedef std::vector<std::pair<const char*, ICVar*> > ConsoleVariablesVector;
+    using ConsoleVariablesVector = std::vector<std::pair<const char*, ICVar*> >;
 
     void LogChangeMessage(const char* name, const bool isConst, const bool isCheat, const bool isReadOnly, const bool isDeprecated,
         const char* oldValue, const char* newValue, const bool isProcessingGroup, const bool allowChange);
@@ -308,9 +308,9 @@ private: // ----------------------------------------------------------
             , silentMode(_silentMode)
         {}
     };
-    typedef std::list<SDeferredCommand> TDeferredCommandList;
+    using TDeferredCommandList = std::list<SDeferredCommand>;
 
-    typedef std::list<IConsoleVarSink*> ConsoleVarSinks;
+    using ConsoleVarSinks = std::list<IConsoleVarSink*>;
 
     // --------------------------------------------------------------------------------
 
@@ -377,7 +377,6 @@ private: // ----------------------------------------------------------
 
     CSystem*                                               m_pSystem;
     IFFont*                                                m_pFont;
-    ITimer*                                                m_pTimer;
 
     ICVar*                                                 m_pSysDeactivateConsole;
 

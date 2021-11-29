@@ -29,9 +29,12 @@ AZ_PUSH_DISABLE_WARNING(4251 4244, "-Wunknown-warning-option") // disable warnin
 AZ_POP_DISABLE_WARNING
 
 AZ_CVAR(
-    bool, ed_hideAssetPickerPathColumn, false, nullptr, AZ::ConsoleFunctorFlags::Null,
+    bool, ed_hideAssetPickerPathColumn, true, nullptr, AZ::ConsoleFunctorFlags::Null,
     "Hide AssetPicker path column for a clearer view.");
-AZ_CVAR_EXTERNED(bool, ed_useNewAssetBrowserTableView);
+
+AZ_CVAR(
+    bool, ed_useNewAssetPickerView, false, nullptr, AZ::ConsoleFunctorFlags::Null,
+    "Uses the new Asset Picker View.");
 
 namespace AzToolsFramework
 {
@@ -106,7 +109,7 @@ namespace AzToolsFramework
             m_persistentState = AZ::UserSettings::CreateFind<AzToolsFramework::QWidgetSavedState>(AZ::Crc32(("AssetBrowserTreeView_Dialog_" + name).toUtf8().data()), AZ::UserSettings::CT_GLOBAL);
 
             m_ui->m_assetBrowserTableViewWidget->setVisible(false);
-            if (ed_useNewAssetBrowserTableView)
+            if (ed_useNewAssetPickerView)
             {
                 m_ui->m_assetBrowserTreeViewWidget->setVisible(false);
                 m_ui->m_assetBrowserTableViewWidget->setVisible(true);
@@ -150,6 +153,10 @@ namespace AzToolsFramework
                 connect(
                     m_ui->m_assetBrowserTableViewWidget, &AssetBrowserTableView::ClearTypeFilter, m_ui->m_searchWidget,
                     &SearchWidget::ClearTypeFilter);
+
+                 connect(
+                    this, &AssetPickerDialog::SizeChangedSignal, m_ui->m_assetBrowserTableViewWidget,
+                    &AssetBrowserTableView::UpdateSizeSlot);
 
                 m_ui->m_assetBrowserTableViewWidget->SetName("AssetBrowserTableView_main");
                 m_tableModel->UpdateTableModelMaps();
@@ -204,6 +211,12 @@ namespace AzToolsFramework
             {
                 m_hasFilter = true;
             }
+        }
+
+        void AssetPickerDialog::resizeEvent(QResizeEvent* resizeEvent)
+        {
+            emit SizeChangedSignal(m_ui->verticalLayout_4->geometry().width());
+            QDialog::resizeEvent(resizeEvent);
         }
 
         void AssetPickerDialog::keyPressEvent(QKeyEvent* e)

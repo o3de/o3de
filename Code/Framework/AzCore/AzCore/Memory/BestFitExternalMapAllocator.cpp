@@ -188,6 +188,11 @@ BestFitExternalMapAllocator::GetMaxAllocationSize() const
     return m_schema->GetMaxAllocationSize();
 }
 
+auto BestFitExternalMapAllocator::GetMaxContiguousAllocationSize() const -> size_type
+{
+    return m_schema->GetMaxContiguousAllocationSize();
+}
+
 //=========================================================================
 // GetSubAllocator
 // [1/28/2011]

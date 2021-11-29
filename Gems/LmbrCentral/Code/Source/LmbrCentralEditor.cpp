@@ -24,6 +24,7 @@
 #include "Scripting/EditorSpawnerComponent.h"
 #include "Scripting/EditorTagComponent.h"
 
+#include "Shape/EditorAxisAlignedBoxShapeComponent.h"
 #include "Shape/EditorBoxShapeComponent.h"
 #include "Shape/EditorQuadShapeComponent.h"
 #include "Shape/EditorSphereShapeComponent.h"
@@ -42,7 +43,6 @@
 #include <Builders/BenchmarkAssetBuilder/BenchmarkAssetBuilderComponent.h>
 #include <Builders/LevelBuilder/LevelBuilderComponent.h>
 #include <Builders/LuaBuilder/LuaBuilderComponent.h>
-#include <Builders/MaterialBuilder/MaterialBuilderComponent.h>
 #include <Builders/SliceBuilder/SliceBuilderComponent.h>
 #include <Builders/TranslationBuilder/TranslationBuilderComponent.h>
 #include "Builders/CopyDependencyBuilder/CopyDependencyBuilderComponent.h"
@@ -67,6 +67,7 @@ namespace LmbrCentral
             EditorDiskShapeComponent::CreateDescriptor(),
             EditorTubeShapeComponent::CreateDescriptor(),
             EditorBoxShapeComponent::CreateDescriptor(),
+            EditorAxisAlignedBoxShapeComponent::CreateDescriptor(),
             EditorQuadShapeComponent::CreateDescriptor(),
             EditorLookAtComponent::CreateDescriptor(),
             EditorCylinderShapeComponent::CreateDescriptor(),
@@ -82,7 +83,6 @@ namespace LmbrCentral
             CopyDependencyBuilder::CopyDependencyBuilderComponent::CreateDescriptor(),
             DependencyBuilder::DependencyBuilderComponent::CreateDescriptor(),
             LevelBuilder::LevelBuilderComponent::CreateDescriptor(),
-            MaterialBuilder::BuilderPluginComponent::CreateDescriptor(),
             SliceBuilder::BuilderPluginComponent::CreateDescriptor(),
             TranslationBuilder::BuilderPluginComponent::CreateDescriptor(),
             LuaBuilder::BuilderPluginComponent::CreateDescriptor(),

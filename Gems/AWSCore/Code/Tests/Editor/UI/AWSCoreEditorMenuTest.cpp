@@ -21,8 +21,8 @@
 
 using namespace AWSCore;
 
-static constexpr const int ExpectedActionNumOnWindowsPlatform = 8;
-static constexpr const int ExpectedActionNumOnOtherPlatform = 6;
+static constexpr const int ExpectedActionNumOnWindowsPlatform = 9;
+static constexpr const int ExpectedActionNumOnOtherPlatform = 7;
 
 class AWSCoreEditorMenuTest
     : public AWSCoreFixture
@@ -32,7 +32,7 @@ class AWSCoreEditorMenuTest
     {
         AWSCoreEditorUIFixture::SetUp();
         AWSCoreFixture::SetUp();
-        m_localFileIO->SetAlias("@devroot@", "dummy engine root");
+        m_localFileIO->SetAlias("@engroot@", "dummy engine root");
     }
 
     void TearDown() override
@@ -60,6 +60,7 @@ TEST_F(AWSCoreEditorMenuTest, AWSCoreEditorMenu_BroadcastFeatureGemsAreEnabled_C
 
     AWSCoreEditorRequestBus::Broadcast(&AWSCoreEditorRequests::SetAWSClientAuthEnabled);
     AWSCoreEditorRequestBus::Broadcast(&AWSCoreEditorRequests::SetAWSMetricsEnabled);
+    AWSCoreEditorRequestBus::Broadcast(&AWSCoreEditorRequests::SetAWSGameLiftEnabled);
 
     QList<QAction*> actualActions = testMenu.actions();
     for (QList<QAction*>::iterator itr = actualActions.begin(); itr != actualActions.end(); itr++)
@@ -70,6 +71,11 @@ TEST_F(AWSCoreEditorMenuTest, AWSCoreEditorMenu_BroadcastFeatureGemsAreEnabled_C
         }
 
         if (QString::compare((*itr)->text(), AWSMetricsActionText) == 0)
+        {
+            EXPECT_TRUE((*itr)->isEnabled());
+        }
+
+        if (QString::compare((*itr)->text(), AWSGameLiftActionText) == 0)
         {
             EXPECT_TRUE((*itr)->isEnabled());
         }

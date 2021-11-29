@@ -40,7 +40,7 @@ namespace AZ
             uint32_t m_swapChainsPerCommandList = 8;
 
             // The maximum cost that can be associated with a single command list.
-            uint32_t m_commandListCostThresholdMin = 1000;
+            uint32_t m_commandListCostThresholdMin = 250;
 
             // The maximum number of command lists per scope.
             uint32_t m_commandListsPerScopeMax = 16;
@@ -63,6 +63,12 @@ namespace AZ
             //! string key: string version of DESCRIPTOR_HEAP_TYPE.
             //! int array: Max count for descriptors 
             AZStd::unordered_map<AZStd::string, AZStd::array<uint32_t, NumHeapFlags>> m_descriptorHeapLimits;
+
+            // Number of max static handles for shader visible srv/uav/cbv views
+            uint32_t m_numShaderVisibleCbvSrvUavStaticHandles = 2000;
+
+            //Bool to indicate allowing compaction of shader visible srv/uav/cbv heap in case of fragmentation
+            bool m_allowDescriptorHeapCompaction = false;
 
             FrameGraphExecuterData m_frameGraphExecuterData;
 

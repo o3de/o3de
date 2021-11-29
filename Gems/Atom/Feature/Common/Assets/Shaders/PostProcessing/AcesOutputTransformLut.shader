@@ -1,5 +1,5 @@
 { 
-    "Source" : "AcesOutputTransformLut",
+    "Source" : "AcesOutputTransformLut.azsl",
 
     "DepthStencilState" : {
         "Depth" : { "Enable" : false }

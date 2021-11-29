@@ -17,6 +17,7 @@
 #include <Atom/RHI.Edit/ShaderPlatformInterface.h>
 #include <Atom/RHI.Edit/Utils.h>
 
+#include <Atom/RPI.Edit/Common/JsonUtils.h>
 #include <Atom/RPI.Reflect/Shader/ShaderOptionGroupLayout.h>
 
 #include <AzCore/Serialization/Json/JsonUtils.h>
@@ -403,18 +404,18 @@ namespace AZ
 
         bool AzslCompiler::ParseSrgPopulateRootConstantData(const rapidjson::Document& input, RootConstantData& rootConstantData) const
         {
-            if (input.HasMember("InlineConstantBuffer"))
+            if (input.HasMember("RootConstantBuffer"))
             {
-                const rapidjson::Value& rootConstantBufferValue = input["InlineConstantBuffer"];
-                AZ_Assert(rootConstantBufferValue.IsObject(), "InlineConstantBuffer is not an object");
+                const rapidjson::Value& rootConstantBufferValue = input["RootConstantBuffer"];
+                AZ_Assert(rootConstantBufferValue.IsObject(), "RootConstantBuffer is not an object");
                 for (rapidjson::Value::ConstMemberIterator itr = rootConstantBufferValue.MemberBegin(); itr != rootConstantBufferValue.MemberEnd(); ++itr)
                 {
                     AZStd::string_view rootConstantBufferMemberName = itr->name.GetString();
                     const rapidjson::Value& rootConstantBufferMemberValue = itr->value;
 
-                    if (rootConstantBufferMemberName == "bufferForInlineConstants")
+                    if (rootConstantBufferMemberName == "bufferForRootConstants")
                     {
-                        AZ_Assert(rootConstantBufferMemberValue.IsObject(), "bufferForInlineConstants is not an object");
+                        AZ_Assert(rootConstantBufferMemberValue.IsObject(), "bufferForRootConstants is not an object");
 
                         for (rapidjson::Value::ConstMemberIterator itr2 = rootConstantBufferMemberValue.MemberBegin(); itr2 != rootConstantBufferMemberValue.MemberEnd(); ++itr2)
                         {
@@ -441,14 +442,14 @@ namespace AZ
                             }
                         }
                     }
-                    else if (rootConstantBufferMemberName == "inputsForInlineConstants")
+                    else if (rootConstantBufferMemberName == "inputsForRootConstants")
                     {
-                        AZ_Assert(rootConstantBufferMemberValue.IsArray(), "inputsForInlineConstants is not an array");
+                        AZ_Assert(rootConstantBufferMemberValue.IsArray(), "inputsForRootConstants is not an array");
 
                         for (rapidjson::Value::ConstValueIterator itr2 = rootConstantBufferMemberValue.Begin(); itr2 != rootConstantBufferMemberValue.End(); ++itr2)
                         {
                             const rapidjson::Value& rootConstantBufferValue2 = *itr2;
-                            AZ_Assert(rootConstantBufferValue2.IsObject(), "Entry in inputsForInlineConstants is not an object");
+                            AZ_Assert(rootConstantBufferValue2.IsObject(), "Entry in inputsForRootConstants is not an object");
 
                             SrgConstantData rootConstantInputs;
 
@@ -1149,7 +1150,7 @@ namespace AZ
                 return BuildResult::CompilationFailed;
             }
 
-            auto readJsonResult = JsonSerializationUtils::ReadJsonFile(outputFile);
+            auto readJsonResult = JsonSerializationUtils::ReadJsonFile(outputFile, AZ::RPI::JsonUtils::DefaultMaxFileSize);
 
             if (readJsonResult.IsSuccess())
             {
@@ -1170,7 +1171,7 @@ namespace AZ
             AZStd::string outputFile = m_inputFilePath;
             AzFramework::StringFunc::Path::ReplaceExtension(outputFile, outputExtension);
 
-            auto readJsonResult = JsonSerializationUtils::ReadJsonFile(outputFile);
+            auto readJsonResult = JsonSerializationUtils::ReadJsonFile(outputFile, AZ::RPI::JsonUtils::DefaultMaxFileSize);
 
             if (readJsonResult.IsSuccess())
             {

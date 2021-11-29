@@ -72,7 +72,7 @@ namespace AZ
             AZ_Assert(resultCode == RHI::ResultCode::Success, "failed to create shader table buffer");
 
             MemoryView& shaderTableMemoryView = static_cast<Buffer*>(shaderTableBuffer.get())->GetMemoryView();
-            shaderTableMemoryView.SetName("RayTracingShaderTable");
+            shaderTableMemoryView.SetName(L"RayTracingShaderTable");
 
             // copy records
             RHI::BufferMapResponse mapResponse;

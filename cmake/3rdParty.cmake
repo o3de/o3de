@@ -6,6 +6,17 @@
 #
 #
 
+define_property(TARGET PROPERTY LY_SYSTEM_LIBRARY
+    BRIEF_DOCS "Defines a 3rdParty library as a system library"
+    FULL_DOCS [[
+        Property which is set on third party targets that should be considered
+        as provided by the system. Such targets are excluded from the runtime
+        dependencies considerations, and are not distributed as part of the
+        O3DE SDK package. Instead, users of the SDK are expected to install
+        such a third party library themselves.
+    ]]
+)
+
 # Do not overcomplicate searching for the 3rdParty path, if it is not easy to find,
 # the user should define it.
 
@@ -14,6 +25,15 @@
 # \arg:output_third_party_path name of variable to set the default project directory into
 # It defaults to the ~/.o3de/3rdParty directory
 function(get_default_third_party_folder output_third_party_path)
+    
+    # 1. Highest priority, cache variable, that will override the value of any of the cases below
+    # 2. if defined in an env variable, take it from there
+    if($ENV{LY_3RDPARTY_PATH})
+        set(${output_third_party_path} $ENV{LY_3RDPARTY_PATH} PARENT_SCOPE)
+        return()
+    endif()
+
+    # 3. If defined in the o3de_manifest.json, take it from there
     cmake_path(SET home_directory "$ENV{USERPROFILE}") # Windows
     if(NOT EXISTS ${home_directory})
         cmake_path(SET home_directory "$ENV{HOME}") # Unix
@@ -22,7 +42,20 @@ function(get_default_third_party_folder output_third_party_path)
         endif()
     endif()
 
+    set(manifest_path ${home_directory}/.o3de/o3de_manifest.json)
+    if(EXISTS ${manifest_path})
+        file(READ ${manifest_path} manifest_json)
+        string(JSON default_third_party_folder ERROR_VARIABLE json_error GET ${manifest_json} default_third_party_folder)
+        if(NOT json_error)
+            set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS ${manifest_path})
+            set(${output_third_party_path} ${default_third_party_folder} PARENT_SCOPE)
+            return()
+        endif()
+    endif()
+
+    # 4. Lowest priority, use the home directory as the location for 3rdparty
     set(${output_third_party_path} ${home_directory}/.o3de/3rdParty PARENT_SCOPE)
+
 endfunction()
 
 get_default_third_party_folder(o3de_default_third_party_path)
@@ -79,9 +112,10 @@ endfunction()
 #                             "fileA\nMy/Output/Subfolder/lib"
 #                             "fileB\nMy/Output/Subfolder/bin"
 #
+# \arg:SYSTEM           If specified, the library is considered a system library, and is not copied to the build output directory
 function(ly_add_external_target)
 
-    set(options)
+    set(options SYSTEM)
     set(oneValueArgs NAME VERSION 3RDPARTY_DIRECTORY PACKAGE 3RDPARTY_ROOT_DIRECTORY OUTPUT_SUBDIRECTORY)
     set(multiValueArgs HEADER_CHECK COMPILE_DEFINITIONS INCLUDE_DIRECTORIES BUILD_DEPENDENCIES RUNTIME_DEPENDENCIES)
 
@@ -123,10 +157,8 @@ function(ly_add_external_target)
 
         else()
             # only install external 3rdParty that are within the source tree
-            cmake_path(RELATIVE_PATH ly_add_external_target_3RDPARTY_ROOT_DIRECTORY 
-                BASE_DIRECTORY ${LY_ROOT_FOLDER}
-                OUTPUT_VARIABLE relative_path)
-            if(relative_path AND NOT relative_path MATCHES "^../")
+            cmake_path(IS_PREFIX LY_ROOT_FOLDER ${ly_add_external_target_3RDPARTY_ROOT_DIRECTORY} NORMALIZE is_in_source_tree)
+            if(is_in_source_tree)
                 ly_install_external_target(${ly_add_external_target_3RDPARTY_ROOT_DIRECTORY})
             endif()
             set(BASE_PATH "${ly_add_external_target_3RDPARTY_ROOT_DIRECTORY}")
@@ -300,6 +332,10 @@ function(ly_add_external_target)
                 INTERFACE
                     ${ly_add_external_target_BUILD_DEPENDENCIES}
             )
+        endif()
+
+        if(ly_add_external_target_SYSTEM)
+            set_target_properties(3rdParty::${NAME_WITH_NAMESPACE} PROPERTIES LY_SYSTEM_LIBRARY TRUE)
         endif()
 
     endif()

@@ -23,6 +23,9 @@ int runDefaultRunner(int argc, char* argv[])
 
 int main(int argc, char* argv[])
 {
+    AZ::Debug::Trace::HandleExceptions(true);
+    AZ::Test::ApplyGlobalParameters(&argc, argv);
+
     // ran with no parameters?
     if (argc == 1)
     {

@@ -451,7 +451,7 @@ namespace AZ
 
         AsyncUploadQueue::FramePacket* AsyncUploadQueue::BeginFramePacket(Queue* queue)
         {
-            AZ_PROFILE_FUNCTION(RHI);
+            AZ_PROFILE_SCOPE(RHI, "AsyncUploadQueue: BeginFramePacket");
             AZ_Assert(!m_recordingFrame, "The previous frame packet isn't ended.");
             auto& device = static_cast<Device&>(GetDevice());
 
@@ -471,7 +471,7 @@ namespace AZ
 
         void AsyncUploadQueue::EndFramePacket(Queue* queue, Semaphore* semaphoreToSignal /*=nullptr*/)
         {
-            AZ_PROFILE_FUNCTION(RHI);
+            AZ_PROFILE_SCOPE(RHI, "AsyncUploadQueue: EndFramePacket");
             AZ_Assert(m_recordingFrame, "The frame packet wasn't started. You need to call StartFramePacket first.");
 
             m_commandList->EndCommandBuffer();
@@ -636,7 +636,7 @@ namespace AZ
 
         void AsyncUploadQueue::ProcessCallback(const RHI::AsyncWorkHandle& handle)
         {
-            AZ_PROFILE_FUNCTION(RHI);
+            AZ_PROFILE_SCOPE(RHI, "AsyncUploadQueue: ProcessCallback");
             AZStd::unique_lock<AZStd::mutex> lock(m_callbackListMutex);
             auto findIter = m_callbackList.find(handle);
             if (findIter != m_callbackList.end())

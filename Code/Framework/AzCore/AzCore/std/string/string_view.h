@@ -502,6 +502,9 @@ namespace AZStd
             swap(other);
         }
 
+        // C++23 overload to prevent initializing a string_view via a nullptr or integer type
+        constexpr basic_string_view(AZStd::nullptr_t) = delete;
+
         constexpr const_reference operator[](size_type index) const { return data()[index]; }
         /// Returns value, not reference. If index is out of bounds, 0 is returned (can't be reference).
         constexpr value_type at(size_type index) const

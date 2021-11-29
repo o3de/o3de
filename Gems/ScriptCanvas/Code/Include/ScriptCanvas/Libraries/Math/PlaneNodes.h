@@ -19,7 +19,7 @@ namespace ScriptCanvas
     {
         using namespace Data;
         using namespace MathNodeUtilities;
-        static const char* k_categoryName = "Math/Plane";
+        static constexpr const char* k_categoryName = "Math/Plane";
                 
         AZ_INLINE NumberType DistanceToPoint(PlaneType source, Vector3Type point)
         {

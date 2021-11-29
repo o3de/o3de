@@ -16,7 +16,7 @@
 
 #include <CryAssert.h>
 
-namespace AZ
+namespace AZ::Debug
 {
     AZ_CVAR_EXTERNED(int, bg_traceLogLevel);
 }
@@ -31,6 +31,11 @@ class AZCoreLogSink
     : public AZ::Debug::TraceMessageBus::Handler
 {
 public:
+    ~AZCoreLogSink()
+    {
+        Disconnect();
+    }
+
     inline static void Connect()
     {
         GetInstance().m_ignoredAsserts = new IgnoredAssertMap();
@@ -41,6 +46,7 @@ public:
     {
         GetInstance().BusDisconnect();
         delete GetInstance().m_ignoredAsserts;
+        GetInstance().m_ignoredAsserts = nullptr;
     }
 
     static AZCoreLogSink& GetInstance()
@@ -58,7 +64,7 @@ public:
         if(!hasSetCVar && ready)
         {
             // AZ logging only has a concept of 3 levels (error, warning, info) but cry logging has 4 levels (..., messaging).  If info level is set, we'll turn on messaging as well
-            int logLevel = AZ::bg_traceLogLevel == AZ::Debug::LogLevel::Info ? 4 : AZ::bg_traceLogLevel;
+            int logLevel = AZ::Debug::bg_traceLogLevel == AZ::Debug::LogLevel::Info ? 4 : AZ::Debug::bg_traceLogLevel;
 
             gEnv->pConsole->GetCVar("log_WriteToFileVerbosity")->Set(logLevel);
             hasSetCVar = true;

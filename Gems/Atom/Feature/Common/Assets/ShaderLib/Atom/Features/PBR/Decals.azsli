@@ -16,6 +16,7 @@
 #include <Atom/Features/MatrixUtility.azsli>
 #include <Atom/Features/Decals/DecalTextureUtil.azsli>
 #include <Atom/Features/LightCulling/LightCullingTileIterator.azsli>
+#include <Atom/RPI/TangentSpace.azsli>
 
 void ApplyDecal(uint currDecalIndex, inout Surface surface);
 
@@ -47,9 +48,10 @@ void ApplyDecal(uint currDecalIndex, inout Surface surface)
     ViewSrg::Decal decal = ViewSrg::m_decals[currDecalIndex];
 
     float3x3 decalRot = MatrixFromQuaternion(decal.m_quaternion);
-
+    decalRot = transpose(decalRot);
+    
     float3 localPos = surface.position - decal.m_position;
-    localPos = mul(localPos, decalRot);
+    localPos = mul(decalRot, localPos);
 
     float3 decalUVW = localPos * rcp(decal.m_halfSize);
     if(decalUVW.x >= -1.0f && decalUVW.x <= 1.0f &&
@@ -63,30 +65,41 @@ void ApplyDecal(uint currDecalIndex, inout Surface surface)
         decalUVW.y *= -1;
 
         float3 decalUV = float3(decalUVW.xy * 0.5f + 0.5f, textureIndex);
-        
+         
         float3 decalSample;
 
         float4 baseMap = 0;
+        float2 normalMap = 0;
+        // Each texture array handles a size permutation. 
+        // e.g. it could be that tex array 0 handles 256x256 and tex array 1 handles 512x64, etc.
         switch(textureArrayIndex)
         {
             case 0:
-                baseMap = ViewSrg::m_decalTextureArray0.Sample(PassSrg::LinearSampler, decalUV);
+                baseMap = ViewSrg::m_decalTextureArrayDiffuse0.Sample(PassSrg::LinearSampler, decalUV);
+                normalMap = ViewSrg::m_decalTextureArrayNormalMaps0.Sample(PassSrg::LinearSampler, decalUV);
             break;
             case 1:
-                baseMap = ViewSrg::m_decalTextureArray1.Sample(PassSrg::LinearSampler, decalUV);
+                baseMap = ViewSrg::m_decalTextureArrayDiffuse1.Sample(PassSrg::LinearSampler, decalUV);
+                normalMap = ViewSrg::m_decalTextureArrayNormalMaps1.Sample(PassSrg::LinearSampler, decalUV);
             break;
             case 2:
-                baseMap = ViewSrg::m_decalTextureArray2.Sample(PassSrg::LinearSampler, decalUV);
+                baseMap = ViewSrg::m_decalTextureArrayDiffuse2.Sample(PassSrg::LinearSampler, decalUV);
+                normalMap = ViewSrg::m_decalTextureArrayNormalMaps2.Sample(PassSrg::LinearSampler, decalUV);
             break;
             case 3:
-                baseMap = ViewSrg::m_decalTextureArray3.Sample(PassSrg::LinearSampler, decalUV);
+                baseMap = ViewSrg::m_decalTextureArrayDiffuse3.Sample(PassSrg::LinearSampler, decalUV);
+                normalMap = ViewSrg::m_decalTextureArrayNormalMaps3.Sample(PassSrg::LinearSampler, decalUV);
             break;
             case 4:
-                baseMap = ViewSrg::m_decalTextureArray4.Sample(PassSrg::LinearSampler, decalUV);
-            break;
+                baseMap = ViewSrg::m_decalTextureArrayDiffuse4.Sample(PassSrg::LinearSampler, decalUV);
+                normalMap = ViewSrg::m_decalTextureArrayNormalMaps4.Sample(PassSrg::LinearSampler, decalUV);
+            break;            
         }
         
         float opacity = baseMap.a * decal.m_opacity * GetDecalAttenuation(surface.normal, decalRot[2], decal.m_angleAttenuation);
-        surface.albedo = lerp(surface.albedo, baseMap.rgb, opacity);
+        surface.albedo = lerp(surface.albedo, baseMap.rgb, opacity);      
+      
+        float3 normalMapWS = GetWorldSpaceNormal(normalMap, decalRot[2], decalRot[0], decalRot[1], 1.0f);      
+        surface.normal = normalize(lerp(surface.normal, normalMapWS, opacity));
     }
 }

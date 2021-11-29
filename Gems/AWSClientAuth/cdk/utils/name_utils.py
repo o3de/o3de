@@ -6,10 +6,11 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 import re
 from aws_cdk import core
+from .resource_name_sanitizer import sanitize_resource_name
 
 
 def format_aws_resource_name(feature_name: str, project_name: str, env: core.Environment, resource_type: str):
-    return f'{project_name}-{feature_name}-{resource_type}-{env.region}'
+    return sanitize_resource_name(f'{project_name}-{feature_name}-{resource_type}-{env.region}', resource_type)
 
 
 def format_aws_resource_id(feature_name: str, project_name: str, env: core.Environment, resource_type: str):
@@ -31,4 +32,5 @@ def format_aws_resource_authenticated_id(feature_name: str, project_name: str, e
 def format_aws_resource_authenticated_name(feature_name: str, project_name: str, env: core.Environment,
                                            resource_type: str, authenticated: bool):
     authenticated_string = 'Authenticated' if authenticated else 'Unauthenticated'
-    return f'{project_name}{feature_name}{resource_type}{authenticated_string}-{env.region}'
+    return sanitize_resource_name(
+        f'{project_name}{feature_name}{resource_type}{authenticated_string}-{env.region}', resource_type)

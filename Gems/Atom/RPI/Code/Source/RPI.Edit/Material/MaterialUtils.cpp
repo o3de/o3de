@@ -15,7 +15,10 @@
 #include <Atom/RPI.Edit/Material/MaterialTypeSourceData.h>
 #include <Atom/RPI.Edit/Common/JsonReportingHelper.h>
 #include <Atom/RPI.Edit/Common/JsonFileLoadContext.h>
+#include <Atom/RPI.Edit/Common/JsonUtils.h>
 #include <AzCore/Serialization/Json/JsonUtils.h>
+#include <AzCore/Serialization/Json/BaseJsonSerializer.h>
+#include <AzCore/Serialization/Json/JsonSerializationResult.h>
 
 #include <AzCore/std/string/string.h>
 
@@ -25,25 +28,36 @@ namespace AZ
     {
         namespace MaterialUtils
         {
-            Outcome<Data::Asset<ImageAsset>> GetImageAssetReference(AZStd::string_view materialSourceFilePath, const AZStd::string imageFilePath)
+            GetImageAssetResult GetImageAssetReference(Data::Asset<ImageAsset>& imageAsset, AZStd::string_view materialSourceFilePath, const AZStd::string imageFilePath)
             {
+                imageAsset = {};
+
                 if (imageFilePath.empty())
                 {
                     // The image value was present but specified an empty string, meaning the texture asset should be explicitly cleared.
-                    return AZ::Success(Data::Asset<ImageAsset>());
+                    return GetImageAssetResult::Empty;
                 }
                 else
                 {
-                    Outcome<Data::AssetId> imageAssetId = AssetUtils::MakeAssetId(materialSourceFilePath, imageFilePath, StreamingImageAsset::GetImageAssetSubId());
+                    // We use TraceLevel::None because fallback textures are available and we'll return GetImageAssetResult::Missing below in that case.
+                    // Callers of GetImageAssetReference will be responsible for logging warnings or errors as needed.
+
+                    Outcome<Data::AssetId> imageAssetId = AssetUtils::MakeAssetId(materialSourceFilePath, imageFilePath, StreamingImageAsset::GetImageAssetSubId(), AssetUtils::TraceLevel::None);
+                    
                     if (!imageAssetId.IsSuccess())
                     {
-                        return AZ::Failure();
+                        // When the AssetId cannot be found, we don't want to outright fail, because the runtime has mechanisms for displaying fallback textures which gives the
+                        // user a better recovery workflow. On the other hand we can't just provide an empty/invalid Asset<ImageAsset> because that would be interpreted as simply
+                        // no value was present and result in using no texture, and this would amount to a silent failure.
+                        // So we use a randomly generated (well except for the "BADA55E7" bit ;) UUID which the runtime and tools will interpret as a missing asset and represent
+                        // it as such.
+                        static const Uuid InvalidAssetPlaceholderId = "{BADA55E7-1A1D-4940-B655-9D08679BD62F}";
+                        imageAsset = Data::Asset<ImageAsset>{InvalidAssetPlaceholderId, azrtti_typeid<StreamingImageAsset>(), imageFilePath};
+                        return GetImageAssetResult::Missing;
                     }
-                    else
-                    {
-                        Data::Asset<ImageAsset> unloadedImageAssetReference(imageAssetId.GetValue(), azrtti_typeid<StreamingImageAsset>(), imageFilePath);
-                        return AZ::Success(unloadedImageAssetReference);
-                    }
+                    
+                    imageAsset = Data::Asset<ImageAsset>{imageAssetId.GetValue(), azrtti_typeid<StreamingImageAsset>(), imageFilePath};
+                    return GetImageAssetResult::Found;
                 }
             }
 
@@ -64,7 +78,7 @@ namespace AZ
                 AZ::Outcome<rapidjson::Document, AZStd::string> loadOutcome;
                 if (document == nullptr)
                 {
-                    loadOutcome = AZ::JsonSerializationUtils::ReadJsonFile(filePath);
+                    loadOutcome = AZ::JsonSerializationUtils::ReadJsonFile(filePath, AZ::RPI::JsonUtils::DefaultMaxFileSize);
                     if (!loadOutcome.IsSuccess())
                     {
                         AZ_Error("AZ::RPI::JsonUtils", false, "%s", loadOutcome.GetError().c_str());
@@ -96,6 +110,29 @@ namespace AZ
                 else
                 {
                     return AZ::Success(AZStd::move(materialType));
+                }
+            }
+
+            void CheckForUnrecognizedJsonFields(const AZStd::string_view* acceptedFieldNames, uint32_t acceptedFieldNameCount, const rapidjson::Value& object, JsonDeserializerContext& context, JsonSerializationResult::ResultCode &result)
+            {
+                for (auto iter = object.MemberBegin(); iter != object.MemberEnd(); ++iter)
+                {
+                    bool matched = false;
+
+                    for (uint32_t i = 0; i < acceptedFieldNameCount; ++i)
+                    {
+                        if (iter->name.GetString() == acceptedFieldNames[i])
+                        {
+                            matched = true;
+                            break;
+                        }
+                    }
+
+                    if (!matched)
+                    {
+                        ScopedContextPath subPath{context, iter->name.GetString()};
+                        result.Combine(context.Report(JsonSerializationResult::Tasks::ReadField, JsonSerializationResult::Outcomes::Skipped, "Skipping unrecognized field"));
+                    }
                 }
             }
         }

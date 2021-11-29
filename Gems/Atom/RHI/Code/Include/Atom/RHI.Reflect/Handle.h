@@ -9,6 +9,7 @@
 
 #include <AzCore/base.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/RTTI/BehaviorContext.h>
 
 namespace AZ
 {

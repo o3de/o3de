@@ -1,0 +1,47 @@
+{
+    "entries": [
+        {
+            "base": "{DE1D987E-8B96-5899-B663-CA4269A284DC}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "Get Column",
+                "category": "Math/Matrix4x4",
+                "tooltip": "Returns vector from matrix corresponding to the Column index",
+                "subtitle": "Matrix4x4"
+            },
+            "slots": [
+                {
+                    "base": "Input_In",
+                    "details": {
+                        "name": "In"
+                    }
+                },
+                {
+                    "base": "Output_Out",
+                    "details": {
+                        "name": "Out"
+                    }
+                },
+                {
+                    "base": "DataInput_Matrix4x4: Source",
+                    "details": {
+                        "name": "Source"
+                    }
+                },
+                {
+                    "base": "DataInput_Number: Column",
+                    "details": {
+                        "name": "Column"
+                    }
+                },
+                {
+                    "base": "DataOutput_Result: Vector4",
+                    "details": {
+                        "name": "Column"
+                    }
+                }
+            ]
+        }
+    ]
+}

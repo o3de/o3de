@@ -35,6 +35,8 @@ namespace AZ
             Device& GetDevice() const;
 
         private:
+            FrameGraphExecuter();
+
             //////////////////////////////////////////////////////////////////////////
             // RHI::FrameGraphExecuter
             RHI::ResultCode InitInternal(const RHI::FrameGraphExecuterDescriptor& descriptor) override;

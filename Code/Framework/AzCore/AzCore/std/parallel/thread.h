@@ -87,12 +87,6 @@ namespace AZStd
 
         // construct/copy/destroy:
         thread();
-        /**
-         * \note thread_desc is AZStd extension.
-         */
-        template <class F>
-        explicit thread(F&& f, const thread_desc* desc = 0);
-
         ~thread();
 
         thread(thread&& rhs)
@@ -107,6 +101,15 @@ namespace AZStd
             rhs.m_thread = AZStd::thread().m_thread; // set default value
             return *this;
         }
+
+        template<class F, class... Args, typename = AZStd::enable_if_t<!AZStd::is_convertible_v<AZStd::decay_t<F>, thread_desc>>>
+        explicit thread(F&& f, Args&&... args);
+
+        /**
+         * \note thread_desc is AZStd extension.
+         */
+        template<class F, class... Args>
+        thread(const thread_desc& desc, F&& f, Args&&... args);
 
         // Till we fully have RVALUES
         template <class F>
@@ -138,8 +141,8 @@ namespace AZStd
         //thread(AZStd::delegate<void ()> d,const thread_desc* desc = 0);
         
     private:
-        thread(thread&);
-        thread& operator=(thread&);
+        thread(const thread&) = delete;
+        thread& operator=(const thread&) = delete;
 
         native_thread_data_type     m_thread;
     };
@@ -187,7 +190,7 @@ namespace AZStd
                 : m_f(AZStd::move(f)) {}
             thread_info_impl(Internal::thread_move_t<F> f)
                 : m_f(f) {}
-            virtual void execute() { m_f(); }
+            void execute() override { m_f(); }
         private:
             F m_f;
 

@@ -44,7 +44,7 @@ public: // member functions
     AZ::Vector2 GetSize() override;
     AZ::Vector2 GetCellSize(int cellIndex) override;
     const SpriteSheetCellContainer& GetSpriteSheetCells() const override;
-    virtual void SetSpriteSheetCells(const SpriteSheetCellContainer& cells);
+    void SetSpriteSheetCells(const SpriteSheetCellContainer& cells) override;
     void ClearSpriteSheetCells() override;
     void AddSpriteSheetCell(const SpriteSheetCell& spriteSheetCell) override;
     AZ::Vector2 GetCellUvSize(int cellIndex) const override;
@@ -96,7 +96,7 @@ protected: // member functions
     bool CellIndexWithinRange(int cellIndex) const;
 
 private: // types
-    typedef AZStd::unordered_map<AZStd::string, CSprite*, stl::hash_string_caseless<AZStd::string>, stl::equality_string_caseless<AZStd::string> > CSpriteHashMap;
+    using CSpriteHashMap = AZStd::unordered_map<AZStd::string, CSprite*, stl::hash_string_caseless<AZStd::string>, stl::equality_string_caseless<AZStd::string> >;
 
 private: // member functions
     bool LoadFromXmlFile();

@@ -143,6 +143,9 @@
  * example. AZ_VA_NUM_ARGS(x,y,z) -> expands to 3
  */
 #ifndef AZ_VA_NUM_ARGS
+
+#   define AZ_VA_HAS_ARGS(...) ""#__VA_ARGS__[0] != 0
+
 // we add the zero to avoid the case when we require at least 1 param at the end...
 #   define AZ_VA_NUM_ARGS(...) AZ_VA_NUM_ARGS_IMPL_((__VA_ARGS__, 125, 124, 123, 122, 121, 120, 119, 118, 117, 116, 115, 114, 113, 112, 111, 110, 109, 108, 107, 106, 105, 104, 103, 102, 101, 100, 99, 98, 97, 96, 95, 94, 93, 92, 91, 90, 89, 88, 87, 86, 85, 84, 83, 82, 81, 80, 79, 78, 77, 76, 75, 74, 73, 72, 71, 70, 69, 68, 67, 66, 65, 64, 63, 62, 61, 60, 59, 58, 57, 56, 55, 54, 53, 52, 51, 50, 49, 48, 47, 46, 45, 44, 43, 42, 41, 40, 39, 38, 37, 36, 35, 34, 33, 32, 31, 30, 29, 28, 27, 26, 25, 24, 23, 22, 21, 20, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0))
 #   define AZ_VA_NUM_ARGS_IMPL_(tuple) AZ_VA_NUM_ARGS_IMPL tuple
@@ -170,15 +173,15 @@
 // This is a pain they we use macros to call functions (with no params).
 
 // we implement functions for up to 10 params
-#define AZ_FUNCTION_CALL_1(_1)                                  _1()
-#define AZ_FUNCTION_CALL_2(_1, _2)                               _1(_2)
-#define AZ_FUNCTION_CALL_3(_1, _2, _3)                           _1(_2, _3)
-#define AZ_FUNCTION_CALL_4(_1, _2, _3, _4)                        _1(_2, _3, _4)
-#define AZ_FUNCTION_CALL_5(_1, _2, _3, _4, _5)                     _1(_2, _3, _4, _5)
-#define AZ_FUNCTION_CALL_6(_1, _2, _3, _4, _5, _6)                  _1(_2, _3, _4, _5, _6)
-#define AZ_FUNCTION_CALL_7(_1, _2, _3, _4, _5, _6, _7)               _1(_2, _3, _4, _5, _6, _7)
-#define AZ_FUNCTION_CALL_8(_1, _2, _3, _4, _5, _6, _7, _8)            _1(_2, _3, _4, _5, _6, _7, _8)
-#define AZ_FUNCTION_CALL_9(_1, _2, _3, _4, _5, _6, _7, _8, _9)         _1(_2, _3, _4, _5, _6, _7, _8, _9)
+#define AZ_FUNCTION_CALL_1(_1)                                          _1()
+#define AZ_FUNCTION_CALL_2(_1, _2)                                      _1(_2)
+#define AZ_FUNCTION_CALL_3(_1, _2, _3)                                  _1(_2, _3)
+#define AZ_FUNCTION_CALL_4(_1, _2, _3, _4)                              _1(_2, _3, _4)
+#define AZ_FUNCTION_CALL_5(_1, _2, _3, _4, _5)                          _1(_2, _3, _4, _5)
+#define AZ_FUNCTION_CALL_6(_1, _2, _3, _4, _5, _6)                      _1(_2, _3, _4, _5, _6)
+#define AZ_FUNCTION_CALL_7(_1, _2, _3, _4, _5, _6, _7)                  _1(_2, _3, _4, _5, _6, _7)
+#define AZ_FUNCTION_CALL_8(_1, _2, _3, _4, _5, _6, _7, _8)              _1(_2, _3, _4, _5, _6, _7, _8)
+#define AZ_FUNCTION_CALL_9(_1, _2, _3, _4, _5, _6, _7, _8, _9)          _1(_2, _3, _4, _5, _6, _7, _8, _9)
 #define AZ_FUNCTION_CALL_10(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10)    _1(_2, _3, _4, _5, _6, _7, _8, _9, _10)
 
 // We require at least 1 param FunctionName
@@ -293,7 +296,20 @@ namespace AZ
 #define AZ_DEFAULT_COPY_MOVE(_Class) AZ_DEFAULT_COPY(_Class) AZ_DEFAULT_MOVE(_Class)
 
 // Macro that can be used to avoid unreferenced variable warnings
-#define AZ_UNUSED(x) (void)x
+#define AZ_UNUSED_1(x)                                          (void)(x);
+#define AZ_UNUSED_2(x1, x2)                                     AZ_UNUSED_1(x1)                     AZ_UNUSED_1(x2)
+#define AZ_UNUSED_3(x1, x2, x3)                                 AZ_UNUSED_1(x1)                     AZ_UNUSED_2(x2, x3)
+#define AZ_UNUSED_4(x1, x2, x3, x4)                             AZ_UNUSED_2(x1, x2)                 AZ_UNUSED_2(x3, x4)
+#define AZ_UNUSED_5(x1, x2, x3, x4, x5)                         AZ_UNUSED_2(x1, x2)                 AZ_UNUSED_3(x3, x4, x5)
+#define AZ_UNUSED_6(x1, x2, x3, x4, x5, x6)                     AZ_UNUSED_3(x1, x2, x3)             AZ_UNUSED_3(x4, x5, x6)
+#define AZ_UNUSED_7(x1, x2, x3, x4, x5, x6, x7)                 AZ_UNUSED_3(x1, x2, x3)             AZ_UNUSED_4(x4, x5, x6, x7)
+#define AZ_UNUSED_8(x1, x2, x3, x4, x5, x6, x7, x8)             AZ_UNUSED_4(x1, x2, x3, x4)         AZ_UNUSED_4(x5, x6, x7, x8)
+#define AZ_UNUSED_9(x1, x2, x3, x4, x5, x6, x7, x8, x9)         AZ_UNUSED_4(x1, x2, x3, x4)         AZ_UNUSED_5(x5, x6, x7, x8, x9)
+#define AZ_UNUSED_10(x1, x2, x3, x4, x5, x6, x7, x8, x9, x10)   AZ_UNUSED_5(x1, x2, x3, x4, x5)     AZ_UNUSED_5(x6, x7, x8, x9, x10)
+#define AZ_UNUSED_11(x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11)   AZ_UNUSED_5(x1, x2, x3, x4, x5)     AZ_UNUSED_6(x6, x7, x8, x9, x10, x11)
+#define AZ_UNUSED_12(x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12)   AZ_UNUSED_6(x1, x2, x3, x4, x5, x6)     AZ_UNUSED_6(x7, x8, x9, x10, x11, x12)
+
+#define AZ_UNUSED(...) AZ_MACRO_SPECIALIZE(AZ_UNUSED_, AZ_VA_NUM_ARGS(__VA_ARGS__), (__VA_ARGS__))
 
 #define AZ_DEFINE_ENUM_BITWISE_OPERATORS(EnumType) \
 inline constexpr EnumType operator | (EnumType a, EnumType b) \

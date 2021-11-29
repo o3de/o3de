@@ -24,7 +24,7 @@ namespace AWSCore
         /**
          * Add required SystemComponents to the SystemEntity.
          */
-        virtual AZ::ComponentTypeList GetRequiredSystemComponents() const override;
+        AZ::ComponentTypeList GetRequiredSystemComponents() const override;
     };
 }
 

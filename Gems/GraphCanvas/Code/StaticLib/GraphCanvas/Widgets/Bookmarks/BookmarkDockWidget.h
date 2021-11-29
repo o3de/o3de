@@ -57,7 +57,7 @@ namespace GraphCanvas
         ////
 
         // GraphCanvas::SceneNotifications
-        void OnSelectionChanged();
+        void OnSelectionChanged() override;
         ////
 
     public Q_SLOTS:

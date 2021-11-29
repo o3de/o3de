@@ -9,6 +9,7 @@
 #include <cmath>
 
 #include <AzCore/Casting/numeric_cast.h>
+#include <AzCore/Debug/Trace.h>
 
 #include <AzQtComponents/Components/DockTabBar.h>
 #include <AzQtComponents/Components/FancyDocking.h>
@@ -52,14 +53,14 @@ static void OptimizedSetParent(QWidget* widget, QWidget* parent)
 
 namespace AzQtComponents
 {
-    static FancyDockingDropZoneConstants g_FancyDockingConstants;
+    static const FancyDockingDropZoneConstants g_FancyDockingConstants;
 
     // Constant for the threshold in pixels for snapping to edges while dragging for docking
     static const int g_snapThresholdInPixels = 15;
 
-    static QString g_minimizeButtonObjectName =     "minimizeButton";
-    static QString g_maximizeButtonObjectName =     "maximizeButton";
-    static QString g_closeButtonObjectName =        "closeButton";
+    static const QString MinimizeButtonObjectName =     QStringLiteral("minimizeButton");
+    static const QString MaximizeButtonObjectName =     QStringLiteral("maximizeButton");
+    static const QString CloseButtonObjectName =        QStringLiteral("closeButton");
 
     static Qt::Orientation orientation(Qt::DockWidgetArea area)
     {
@@ -459,7 +460,7 @@ namespace AzQtComponents
 
         // Minimize Icon
         QAction* minimizeAction = new QAction(tr("Minimize"));
-        minimizeAction->setObjectName(g_minimizeButtonObjectName);
+        minimizeAction->setObjectName(MinimizeButtonObjectName);
 
         connect(minimizeAction, &QAction::triggered, this, [titleBar]() {
             titleBar->handleMinimize();
@@ -469,7 +470,7 @@ namespace AzQtComponents
 
         // Maximize Icon
         QAction* maximizeAction = new QAction(tr("Maximize"));
-        maximizeAction->setObjectName(g_maximizeButtonObjectName);
+        maximizeAction->setObjectName(MaximizeButtonObjectName);
 
         connect(maximizeAction, &QAction::triggered, this, [titleBar]() {
             titleBar->handleMaximize();
@@ -479,7 +480,7 @@ namespace AzQtComponents
 
         // Close Icon
         QAction* closeAction = new QAction(tr("Close"));
-        closeAction->setObjectName(g_closeButtonObjectName);
+        closeAction->setObjectName(CloseButtonObjectName);
 
         connect(closeAction, &QAction::triggered, this, [titleBar]() {
             titleBar->handleClose();
@@ -1614,14 +1615,16 @@ namespace AzQtComponents
             }
 
             // Handle snapping to the screen edges/other floating windows while dragging
-            QScreen* screen = Utilities::ScreenAtPoint(globalPos);
+            QScreen* screen = QApplication::screenAt(globalPos);
 
-            AdjustForSnapping(placeholder, screen);
+            if (screen)
+            {
+                AdjustForSnapping(placeholder, screen);
+                m_state.setPlaceholder(placeholder, screen);
 
-            m_state.setPlaceholder(placeholder, screen);
-
-            m_ghostWidget->Enable();
-            RepaintFloatingIndicators();
+                m_ghostWidget->Enable();
+                RepaintFloatingIndicators();
+            }
         }
 
         return m_dropZoneState.dragging();
@@ -2460,6 +2463,18 @@ namespace AzQtComponents
                 placeholderRect.translate(0, -margins.bottom());
             }
 
+            // Also adjust the placeholderRect by the relative dpi change from the original screen, since setGeometry uses the screen's
+            // virtualGeometry!
+            QScreen* fromScreen = dock->screen();
+            QScreen* toScreen = Utilities::ScreenAtPoint(placeholderRect.topLeft());
+
+            if (fromScreen != toScreen)
+            {
+                qreal factorRatio = QHighDpiScaling::factor(fromScreen) / QHighDpiScaling::factor(toScreen);
+                placeholderRect.setWidth(aznumeric_cast<int>(aznumeric_cast<qreal>(placeholderRect.width()) * factorRatio));
+                placeholderRect.setHeight(aznumeric_cast<int>(aznumeric_cast<qreal>(placeholderRect.height()) * factorRatio));
+            }
+
             // Place the floating dock widget
             makeDockWidgetFloating(dock, placeholderRect);
             clearDraggingState();
@@ -2770,7 +2785,7 @@ namespace AzQtComponents
                     RepaintFloatingIndicators();
                 }
                 break;
-            case QEvent::WindowDeactivate:
+            case QEvent::WindowBlocked:
                 // If our main window is deactivated while we are in the middle of
                 // a docking drag operation (e.g. popup dialog for new level), we
                 // should cancel our drag operation because the mouse release event

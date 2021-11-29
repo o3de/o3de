@@ -7,6 +7,7 @@
  */
 
 #include <algorithm>
+#include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/Json/BasicContainerSerializer.h>
 #include <AzCore/Serialization/Json/JsonSerialization.h>
 #include <AzCore/Serialization/Json/MapSerializer.h>
@@ -293,7 +294,7 @@ namespace AZ
             }
 
             AZ_Assert(!keyValues.Empty(), "Intermediate array for associative container can't be empty "
-                "because an empty array would be stored as an empty default object.")
+                "because an empty array would be stored as an empty default object.");
             
             if (CanBeConvertedToObject(keyValues))
             {

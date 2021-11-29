@@ -178,7 +178,7 @@ void CSystem::LogVersion()
     strftime(s, 128, "%d %b %y (%H %M %S)", today);
 #endif
 
-    const SFileVersion& ver = GetFileVersion();
+    [[maybe_unused]] const SFileVersion& ver = GetFileVersion();
 
     CryLogAlways("BackupNameAttachment=\" Build(%d) %s\"  -- used by backup system\n", ver.v[0], s);          // read by CreateBackupFile()
 
@@ -188,7 +188,7 @@ void CSystem::LogVersion()
 #else
     strftime(s, 128, "Log Started at %c", today);
 #endif
-    CryLogAlways(s);
+    CryLogAlways("%s", s);
 
     CryLogAlways("Built on " __DATE__ " " __TIME__);
 
@@ -249,7 +249,7 @@ void CSystem::LogVersion()
 //////////////////////////////////////////////////////////////////////////
 void CSystem::LogBuildInfo()
 {
-    auto projectName = AZ::Utils::GetProjectName();
+    [[maybe_unused]] auto projectName = AZ::Utils::GetProjectName();
     CryLogAlways("GameName: %s", projectName.c_str());
     CryLogAlways("BuildTime: " __DATE__ " " __TIME__);
 }
@@ -272,14 +272,12 @@ static bool ParseSystemConfig(const AZStd::string& strSysConfigFilePath, ILoadCo
     CCryFile file;
     AZStd::string filenameLog;
     {
-        int flags = AZ::IO::IArchive::FOPEN_HINT_QUIET | AZ::IO::IArchive::FOPEN_ONDISK;
-
         if (filename[0] == '@')
         {
             // this is used when theres a very specific file to read, like @user@/game.cfg which is read
             // IN ADDITION to the one in the game folder, and afterwards to override values in it.
             // if the file is missing and its already prefixed with an alias, there is no need to look any further.
-            if (!(file.Open(filename.c_str(), "rb", flags)))
+            if (!(file.Open(filename.c_str(), "rb")))
             {
                 if (warnIfMissing)
                 {
@@ -293,11 +291,11 @@ static bool ParseSystemConfig(const AZStd::string& strSysConfigFilePath, ILoadCo
             // otherwise, if the file isn't prefixed with an alias, then its likely one of the convenience mappings
             // to either root or assets/config.  this is done so that code can just request a simple file name and get its data
             if (
-                !(file.Open(filename.c_str(), "rb", flags)) &&
-                !(file.Open((AZStd::string("@root@/") + filename).c_str(), "rb", flags)) &&
-                !(file.Open((AZStd::string("@assets@/") + filename).c_str(), "rb", flags)) &&
-                !(file.Open((AZStd::string("@assets@/config/") + filename).c_str(), "rb", flags)) &&
-                !(file.Open((AZStd::string("@assets@/config/spec/") + filename).c_str(), "rb", flags))
+                !(file.Open(filename.c_str(), "rb")) &&
+                !(file.Open((AZStd::string("@products@/") + filename).c_str(), "rb")) &&
+                !(file.Open((AZStd::string("@products@/") + filename).c_str(), "rb")) &&
+                !(file.Open((AZStd::string("@products@/config/") + filename).c_str(), "rb")) &&
+                !(file.Open((AZStd::string("@products@/config/spec/") + filename).c_str(), "rb"))
                 )
             {
                 if (warnIfMissing)
@@ -308,7 +306,9 @@ static bool ParseSystemConfig(const AZStd::string& strSysConfigFilePath, ILoadCo
             }
         }
 
-        filenameLog = file.GetAdjustedFilename();
+        AZ::IO::FixedMaxPath resolvedFilePath;
+        AZ::IO::FileIOBase::GetInstance()->ResolvePath(resolvedFilePath, file.GetFilename());
+        filenameLog = resolvedFilePath.String();
     }
 
     INDENT_LOG_DURING_SCOPE();
@@ -414,7 +414,7 @@ static bool ParseSystemConfig(const AZStd::string& strSysConfigFilePath, ILoadCo
                     // replace '\\\\' with '\\' and '\\\"' with '\"'
                     AZ::StringFunc::Replace(strValue, "\\\\", "\\");
                     AZ::StringFunc::Replace(strValue, "\\\"", "\"");
-                    
+
                     pSink->OnLoadConfigurationEntry(strKey.c_str(), strValue.c_str(), strGroup.c_str());
                 }
             }

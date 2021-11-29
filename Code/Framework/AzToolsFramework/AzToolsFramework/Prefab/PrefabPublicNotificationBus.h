@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzCore/EBus/EBus.h>
+#include <AzToolsFramework/Prefab/PrefabIdTypes.h>
 
 namespace AzToolsFramework
 {
@@ -22,6 +23,9 @@ namespace AzToolsFramework
 
             virtual void OnPrefabInstancePropagationBegin() {}
             virtual void OnPrefabInstancePropagationEnd() {}
+
+            virtual void OnPrefabTemplateDirtyFlagUpdated(
+                [[maybe_unused]] TemplateId templateId, [[maybe_unused]] bool status) {}
         };
 
         using PrefabPublicNotificationBus = AZ::EBus<PrefabPublicNotifications>;

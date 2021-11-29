@@ -46,7 +46,6 @@ namespace ProjectSettingsTool
         , LastPathBus::Handler()
         , m_ui(new Ui::ProjectSettingsToolWidget())
         , m_reconfigureProcess()
-        , m_devRoot(GetDevRoot())
         , m_projectRoot(GetProjectRoot())
         , m_projectName(GetProjectName())
         , m_plistsInitVector(

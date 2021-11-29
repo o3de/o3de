@@ -64,8 +64,8 @@ namespace GridMate
 
             ///////////////////////////////////////////////////////////////////
             // ReplicaMgrCallbackBus
-            virtual void OnDeactivateReplica(ReplicaId replicaId, ReplicaManager* pMgr) override;
-            virtual void OnPeerRemoved(PeerId peerId, ReplicaManager* pMgr) override;
+            void OnDeactivateReplica(ReplicaId replicaId, ReplicaManager* pMgr) override;
+            void OnPeerRemoved(PeerId peerId, ReplicaManager* pMgr) override;
             ///////////////////////////////////////////////////////////////////
 
             void OnReceivedAckUpstreamSuspended(PeerId from, AZ::u32 requestTime);

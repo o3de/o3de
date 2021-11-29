@@ -9,6 +9,7 @@
 
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzToolsFramework/UI/Notifications/ToastBus.h>
 #include <ScriptCanvas/Core/Graph.h>
 #include <ScriptCanvas/Bus/GraphBus.h>
 #include <ScriptCanvas/Bus/NodeIdPair.h>
@@ -27,7 +28,6 @@
 #include <GraphCanvas/Components/Nodes/Wrapper/WrapperNodeBus.h>
 #include <GraphCanvas/Components/SceneBus.h>
 #include <GraphCanvas/Components/Slots/Data/DataSlotBus.h>
-#include <GraphCanvas/Components/ToastBus.h>
 #include <GraphCanvas/Types/GraphCanvasGraphSerialization.h>
 #include <GraphCanvas/Editor/GraphModelBus.h>
 
@@ -52,7 +52,7 @@ namespace ScriptCanvasEditor
         , private GraphCanvas::GraphModelRequestBus::Handler
         , private GraphCanvas::SceneNotificationBus::Handler
         , private GraphItemCommandNotificationBus::Handler
-        , private GraphCanvas::ToastNotificationBus::MultiHandler
+        , private AzToolsFramework::ToastNotificationBus::MultiHandler
         , private GeneralEditorNotificationBus::Handler
         , private AZ::SystemTickBus::Handler
     {
@@ -230,7 +230,12 @@ namespace ScriptCanvasEditor
 
         /////
         EditorGraphUpgradeMachine m_upgradeSM;
-        bool UpgradeGraph(const AZ::Data::Asset<AZ::Data::AssetData>& asset);
+        enum UpgradeRequest
+        {
+            IfOutOfDate,
+            Forced
+        };
+        bool UpgradeGraph(const AZ::Data::Asset<AZ::Data::AssetData>& asset, UpgradeRequest request, bool isVerbose = true);
         void ConnectGraphCanvasBuses();
         void DisconnectGraphCanvasBuses();
         ///////
@@ -243,8 +248,8 @@ namespace ScriptCanvasEditor
 
         GraphCanvas::GraphId GetGraphCanvasGraphId() const override;
 
-        AZStd::unordered_map< AZ::EntityId, GraphCanvas::EntitySaveDataContainer* > GetGraphCanvasSaveData();
-        void UpdateGraphCanvasSaveData(const AZStd::unordered_map< AZ::EntityId, GraphCanvas::EntitySaveDataContainer* >& saveData);
+        AZStd::unordered_map< AZ::EntityId, GraphCanvas::EntitySaveDataContainer* > GetGraphCanvasSaveData() override;
+        void UpdateGraphCanvasSaveData(const AZStd::unordered_map< AZ::EntityId, GraphCanvas::EntitySaveDataContainer* >& saveData) override;
 
         NodeIdPair CreateCustomNode(const AZ::Uuid& typeId, const AZ::Vector2& position) override;
 
@@ -320,9 +325,9 @@ namespace ScriptCanvasEditor
         }
 
     protected:
-        void PostRestore(const UndoData& restoredData);
+        void PostRestore(const UndoData& restoredData) override;
 
-        void UnregisterToast(const GraphCanvas::ToastId& toastId);
+        void UnregisterToast(const AzToolsFramework::ToastId& toastId);
 
         Graph(const Graph&) = delete;
 
@@ -345,7 +350,7 @@ namespace ScriptCanvasEditor
         void HandleQueuedUpdates();
         bool IsNodeVersionConverting(const AZ::EntityId& graphCanvasNodeId) const;
 
-        AZStd::unordered_map< GraphCanvas::ToastId, AZ::EntityId > m_toastNodeIds;
+        AZStd::unordered_map< AzToolsFramework::ToastId, AZ::EntityId > m_toastNodeIds;
 
         // Function Definition Node Extension
         void HandleFunctionDefinitionExtension(ScriptCanvas::Node* node, GraphCanvas::SlotId graphCanvasSlotId, const GraphCanvas::NodeId& nodeId);

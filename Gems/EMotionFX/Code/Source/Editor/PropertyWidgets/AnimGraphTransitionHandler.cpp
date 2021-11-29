@@ -24,7 +24,6 @@
 #include <QMessageBox>
 #include <QMouseEvent>
 
-
 namespace EMotionFX
 {
     AZ_CLASS_ALLOCATOR_IMPL(AnimGraphTransitionIdPicker, AZ::SystemAllocator, 0)
@@ -126,8 +125,13 @@ namespace EMotionFX
         }
     }
 
-    void AnimGraphTransitionIdPicker::OnAboutToBeRemoved(const QModelIndex &parent, int first, int last)
+    void AnimGraphTransitionIdPicker::OnAboutToBeRemoved(const QModelIndex& parent, int first, int last)
     {
+        if (!parent.isValid())
+        {
+            return;
+        }
+
         EMStudio::EMStudioPlugin* plugin = EMStudio::GetPluginManager()->FindActivePlugin(EMStudio::AnimGraphPlugin::CLASS_ID);
         EMStudio::AnimGraphPlugin* animGraphPlugin = static_cast<EMStudio::AnimGraphPlugin*>(plugin);
         if (animGraphPlugin)

@@ -14,6 +14,7 @@
 // Editor
 #include "Include/IViewPane.h"
 
+#include <QMessageBox>
 
 CClassFactory* CClassFactory::s_pInstance = nullptr;
 CAutoRegisterClassHelper* CAutoRegisterClassHelper::s_pFirst = nullptr;
@@ -79,7 +80,7 @@ void CClassFactory::RegisterClass(IClassDesc* pClassDesc)
             existingUUIDString,
             findByGuid->second->ClassName().toUtf8().data());
 
-        CryMessageBox(errorMessageBuffer, "Invalid class registration - Duplicate UUID", MB_OK);
+        QMessageBox::critical(nullptr,"Invalid class registration - Duplicate UUID",QString::fromLatin1(errorMessageBuffer));
         return;
     }
 
@@ -107,7 +108,7 @@ void CClassFactory::RegisterClass(IClassDesc* pClassDesc)
             newUUIDString,
             existingUUIDString);
 
-        CryMessageBox(errorMessageBuffer, "Invalid class registration - Duplicate Class Name", MB_OK);
+        QMessageBox::critical(nullptr, "Invalid class registration - Duplicate Class Name", QString::fromLatin1(errorMessageBuffer));
         return;
     }
 

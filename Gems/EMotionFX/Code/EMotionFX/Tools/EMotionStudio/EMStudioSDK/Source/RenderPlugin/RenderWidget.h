@@ -81,8 +81,8 @@ namespace EMStudio
 
             // overloaded
             const AZStd::vector<EMotionFX::EventTypes> GetHandledEventTypes() const override { return { EMotionFX::EVENT_TYPE_ON_DRAW_LINE, EMotionFX::EVENT_TYPE_ON_DRAW_TRIANGLE, EMotionFX::EVENT_TYPE_ON_DRAW_TRIANGLES }; }
-            MCORE_INLINE void OnDrawTriangle(const AZ::Vector3& posA, const AZ::Vector3& posB, const AZ::Vector3& posC, const AZ::Vector3& normalA, const AZ::Vector3& normalB, const AZ::Vector3& normalC, uint32 color)         { m_widget->AddTriangle(posA, posB, posC, normalA, normalB, normalC, color); }
-            MCORE_INLINE void OnDrawTriangles()                                                                                                                                                                                                     { m_widget->RenderTriangles(); }
+            MCORE_INLINE void OnDrawTriangle(const AZ::Vector3& posA, const AZ::Vector3& posB, const AZ::Vector3& posC, const AZ::Vector3& normalA, const AZ::Vector3& normalB, const AZ::Vector3& normalC, uint32 color) override         { m_widget->AddTriangle(posA, posB, posC, normalA, normalB, normalC, color); }
+            MCORE_INLINE void OnDrawTriangles() override                                                                                                                                                                                                     { m_widget->RenderTriangles(); }
 
         private:
             RenderWidget*   m_widget;

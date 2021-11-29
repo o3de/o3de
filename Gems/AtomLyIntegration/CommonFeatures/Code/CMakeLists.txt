@@ -86,6 +86,8 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
         FILES_CMAKE
             atomlyintegration_commonfeatures_editor_files.cmake
             ${pal_source_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
+        PLATFORM_INCLUDE_FILES
+            ${pal_source_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}.cmake
         INCLUDE_DIRECTORIES
             PRIVATE
                 .
@@ -109,12 +111,15 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
         RUNTIME_DEPENDENCIES
             Gem::Atom_RPI.Editor
             Gem::Atom_Feature_Common.Editor
+            Gem::AtomToolsFramework.Editor
+            Legacy::EditorCommon
     )
 
     # The AtomLyIntegration_CommonFeatures.Editor module is used for Builders and Tools
     ly_create_alias(NAME AtomLyIntegration_CommonFeatures.Builders NAMESPACE Gem
         TARGETS
             Gem::AtomLyIntegration_CommonFeatures.Editor
+            Gem::Atom_Feature_Common.Builders
             Gem::Atom_RPI.Builders
             Gem::GradientSignal.Builders
     )

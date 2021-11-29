@@ -174,8 +174,8 @@ namespace UnitTest
         }
 
         AZ::EntityId GetPreviewEntity() const override { return m_id; }
-        virtual AZ::Aabb GetPreviewBounds() const { return m_previewBounds; }
-        virtual bool GetConstrainToShape() const { return m_constrainToShape; }
+        AZ::Aabb GetPreviewBounds() const override { return m_previewBounds; }
+        bool GetConstrainToShape() const override { return m_constrainToShape; }
 
     protected:
         AZ::EntityId m_id;

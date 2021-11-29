@@ -14,6 +14,7 @@
 #include <AzCore/Component/ComponentApplication.h>
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Component/TickBus.h>
+#include <AzCore/Debug/ProfilerReflection.h>
 #include <AzCore/Debug/TraceReflection.h>
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/Math/MathReflection.h>
@@ -87,6 +88,8 @@ void ScriptSystemComponent::Activate()
 
     AZ::Data::AssetCatalogRequestBus::Broadcast(&AZ::Data::AssetCatalogRequests::AddExtension, "lua");
     AZ::Data::AssetCatalogRequestBus::Broadcast(&AZ::Data::AssetCatalogRequests::AddExtension, "luac");
+    AZ::Data::AssetCatalogRequestBus::Broadcast(
+        &AZ::Data::AssetCatalogRequests::EnableCatalogForAsset, AZ::AzTypeInfo<AZ::ScriptAsset>::Uuid());
 
     if (Data::AssetManager::Instance().IsReady())
     {
@@ -167,61 +170,77 @@ ScriptContext*  ScriptSystemComponent::AddContext(ScriptContext* context, int ga
 ScriptContext* ScriptSystemComponent::AddContextWithId(ScriptContextId id)
 {
     AZ_Assert(m_contexts.empty() || id != ScriptContextIds::DefaultScriptContextId, "Default script context ID is reserved! Please provide a Unique context ID for you ScriptContext!");
-    if (GetContext(id) == nullptr)
+    if (GetContext(id) != nullptr)
     {
-        m_contexts.emplace_back();
-        ContextContainer& cc = m_contexts.back();
-        cc.m_context = aznew ScriptContext(id);
-        cc.m_isOwner = true;
-        cc.m_garbageCollectorSteps = m_defaultGarbageCollectorSteps;
-
-        cc.m_context->SetRequireHook(AZStd::bind(&ScriptSystemComponent::DefaultRequireHook, this, AZStd::placeholders::_1, AZStd::placeholders::_2, AZStd::placeholders::_3));
-
-        if (id != ScriptContextIds::CryScriptContextId)
+        return nullptr;
+    }
+    m_contexts.emplace_back();
+    ContextContainer& cc = m_contexts.back();
+    cc.m_context = aznew ScriptContext(id);
+    cc.m_isOwner = true;
+    cc.m_garbageCollectorSteps = m_defaultGarbageCollectorSteps;
+    cc.m_context->SetRequireHook(
+        [this](lua_State* lua, ScriptContext* context, const char* module) -> int
         {
-            // Reflect script classes
-            ComponentApplication* app = nullptr;
-            EBUS_EVENT_RESULT(app, ComponentApplicationBus, GetApplication);
-            if (app && app->GetDescriptor().m_enableScriptReflection)
+            return DefaultRequireHook(lua, context, module);
+        });
+
+    if (id != ScriptContextIds::CryScriptContextId)
+    {
+        // Reflect script classes
+        ComponentApplication* app = nullptr;
+        EBUS_EVENT_RESULT(app, ComponentApplicationBus, GetApplication);
+        if (app && app->GetDescriptor().m_enableScriptReflection)
+        {
+            if (app->GetBehaviorContext())
             {
-                if (app->GetBehaviorContext())
-                {
-                    cc.m_context->BindTo(app->GetBehaviorContext());
-                }
-                else
-                {
-                    AZ_Error("Script", false, "We are asked to enabled scripting, but the Applicaion has no BehaviorContext! Scripting relies on BehaviorContext!");
-                }
+                cc.m_context->BindTo(app->GetBehaviorContext());
+            }
+            else
+            {
+                AZ_Error("Script", false, "We are asked to enabled scripting, but the Applicaion has no BehaviorContext! Scripting relies on BehaviorContext!");
             }
         }
-
-        return cc.m_context;
     }
 
-    return nullptr;
+    return cc.m_context;
 }
 
 void ScriptSystemComponent::RestoreDefaultRequireHook(ScriptContextId id)
 {
-    if (auto context = GetContext(id))
+    auto context = GetContext(id);
+    if (!context)
     {
-        for (auto& inMemoryModule : m_inMemoryModules)
-        {
-            ClearAssetReferences(inMemoryModule.second->GetId());
-        }
-
-        m_inMemoryModules.clear();
-        context->SetRequireHook(AZStd::bind(&ScriptSystemComponent::DefaultRequireHook, this, AZStd::placeholders::_1, AZStd::placeholders::_2, AZStd::placeholders::_3));
+        return;
     }
+
+    for (auto& inMemoryModule : m_inMemoryModules)
+    {
+        ClearAssetReferences(inMemoryModule.second->GetId());
+    }
+
+    m_inMemoryModules.clear();
+    context->SetRequireHook(
+        [this](lua_State* lua, ScriptContext* context, const char* module) -> int
+        {
+            return DefaultRequireHook(lua, context, module);
+        });
 }
 
 void ScriptSystemComponent::UseInMemoryRequireHook(const InMemoryScriptModules& modules, ScriptContextId id)
 {
-    if (auto context = GetContext(id))
+    auto context = GetContext(id);
+    if (nullptr == context)
     {
-        m_inMemoryModules = modules;
-        context->SetRequireHook(AZStd::bind(&ScriptSystemComponent::InMemoryRequireHook, this, AZStd::placeholders::_1, AZStd::placeholders::_2, AZStd::placeholders::_3));
+        return;
     }
+
+    m_inMemoryModules = modules;
+    context->SetRequireHook(
+        [this](lua_State* lua, ScriptContext* context, const char* module) -> int
+        {
+            return InMemoryRequireHook(lua, context, module);
+        });
 }
 
 //=========================================================================
@@ -925,6 +944,7 @@ void ScriptSystemComponent::Reflect(ReflectContext* reflection)
         // reflect default entity
         MathReflect(behaviorContext);
         ScriptDebug::Reflect(behaviorContext);
+        Debug::ProfilerReflect(behaviorContext);
         Debug::TraceReflect(behaviorContext);
 
         behaviorContext->Class<PlatformID>("Platform")

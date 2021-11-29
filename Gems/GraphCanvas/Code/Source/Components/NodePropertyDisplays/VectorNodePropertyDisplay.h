@@ -95,7 +95,7 @@ namespace GraphCanvas
         ////
 
         // DataSlotNotifications
-        void OnDragDropStateStateChanged(const DragDropState& dragState);
+        void OnDragDropStateStateChanged(const DragDropState& dragState) override;
         ////
     
     private:

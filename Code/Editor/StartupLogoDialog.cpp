@@ -9,10 +9,10 @@
 
 // Description : implementation file
 
-
 #include "EditorDefs.h"
-
 #include "StartupLogoDialog.h"
+
+#include <AzQtComponents/Utilities/PixmapScaleUtilities.h>
 
 // Qt
 #include <QPainter>
@@ -21,8 +21,6 @@
 AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
 #include <ui_StartupLogoDialog.h>
 AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
-
-
 
 /////////////////////////////////////////////////////////////////////////////
 // CStartupLogoDialog dialog
@@ -36,13 +34,17 @@ CStartupLogoDialog::CStartupLogoDialog(QString versionText, QString richTextCopy
     m_ui->setupUi(this);
 
     s_pLogoWindow = this;
-
-    m_backgroundImage = QPixmap(QStringLiteral(":/StartupLogoDialog/splashscreen_background_developer_preview.jpg"));
-    setFixedSize(QSize(600, 300));
+    setFixedSize(QSize(m_enforcedWidth, m_enforcedHeight));
+    setAttribute(Qt::WA_TranslucentBackground, true);
 
     // Prepare background image
-    QImage backgroundImage(QStringLiteral(":/StartupLogoDialog/splashscreen_background_developer_preview.jpg"));
-    m_backgroundImage = QPixmap::fromImage(backgroundImage.scaled(m_enforcedWidth, m_enforcedHeight, Qt::IgnoreAspectRatio, Qt::SmoothTransformation));
+    m_backgroundImage = AzQtComponents::ScalePixmapForScreenDpi(
+        QPixmap(QStringLiteral(":/StartupLogoDialog/splashscreen_background_2021_11.jpg")),
+        screen(),
+        QSize(m_enforcedWidth, m_enforcedHeight),
+        Qt::IgnoreAspectRatio,
+        Qt::SmoothTransformation
+    );
 
     // Draw the Open 3D Engine logo from svg
     m_ui->m_logo->load(QStringLiteral(":/StartupLogoDialog/o3de_logo.svg"));

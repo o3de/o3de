@@ -248,6 +248,22 @@ namespace ScriptCanvas
         AZ_CVAR_EXTERNED(bool, g_saveRawTranslationOuputToFile);
         AZ_CVAR_EXTERNED(bool, g_saveRawTranslationOuputToFileAtPrefabTime);
 
+        class SettingsCache
+        {
+        public:
+            AZ_CLASS_ALLOCATOR(SettingsCache, AZ::SystemAllocator, 0);
+
+            SettingsCache();
+            ~SettingsCache();
+
+        private:
+            bool m_disableParseOnGraphValidation;
+            bool m_printAbstractCodeModel;
+            bool m_printAbstractCodeModelAtPrefabTime;
+            bool m_saveRawTranslationOuputToFile;
+            bool m_saveRawTranslationOuputToFileAtPrefabTime;
+        };
+
         struct DependencyInfo
         {
             AZ::Data::AssetId assetId;

@@ -16,8 +16,6 @@
 #include "PNoise3.h"
 #include "AnimSequence.h"
 
-#include <Cry_Camera.h>
-
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <LyShine/Bus/UiAnimateEntityBus.h>
@@ -256,20 +254,12 @@ const AZ::SerializeContext::ClassElement* CUiAnimAzEntityNode::ComputeOffsetFrom
 
         if (mismatch)
         {
-            AZStd::string warnMsg = "Data mismatch reading animation data for type ";
-            warnMsg += classData->m_typeId.ToString<AZStd::string>();
-            warnMsg += ". The field \"";
-            warnMsg += paramData.GetName();
-            if (!element)
-            {
-                warnMsg += "\" cannot be found.";
-            }
-            else
-            {
-                warnMsg += "\" has a different type to that in the animation data.";
-            }
-            warnMsg += " This part of the animation data will be ignored.";
-            CryWarning(VALIDATOR_MODULE_SHINE, VALIDATOR_WARNING, warnMsg.c_str());
+            CryWarning(VALIDATOR_MODULE_SHINE, VALIDATOR_WARNING,
+                "Data mismatch reading animation data for type %s. The field \"%s\" %s. This part of the animation data will be ignored.",
+                classData->m_typeId.ToString<AZStd::string>().c_str(),
+                paramData.GetName(),
+                (!element ? "cannot be found" : "has a different type to that in the animation data")
+            );
             return nullptr;
         }
     }

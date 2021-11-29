@@ -66,17 +66,41 @@ namespace O3DE::ProjectManager
         ~GemFilterWidget() = default;
 
     public slots:
+        void ResetAllFilters();
         void ResetGemStatusFilter();
 
     private:
-        void AddGemOriginFilter();
-        void AddTypeFilter();
-        void AddPlatformFilter();
-        void AddFeatureFilter();
+        void ResetGemOriginFilter();
+        void ResetTypeFilter();
+        void ResetPlatformFilter();
+        void ResetFeatureFilter();
+
+        void ResetFilterWidget(
+            FilterCategoryWidget*& filterPtr,
+            const QString& filterName,
+            const QVector<QString>& elementNames,
+            const QVector<int>& elementCounts,
+            int defaultShowCount = 4);
+
+        template<typename filterType, typename filterFlagsType>
+        void ResetSimpleOrFilter(
+            FilterCategoryWidget*& filterPtr,
+            const QString& filterName,
+            int numFilterElements,
+            bool (*filterMatcher)(GemModel*, filterType, int),
+            QString (*typeStringGetter)(filterType),
+            filterFlagsType (GemSortFilterProxyModel::*filterFlagsGetter)() const,
+            void (GemSortFilterProxyModel::*filterFlagsSetter)(const filterFlagsType&));
 
         QVBoxLayout* m_filterLayout = nullptr;
         GemModel* m_gemModel = nullptr;
         GemSortFilterProxyModel* m_filterProxyModel = nullptr;
         FilterCategoryWidget* m_statusFilter = nullptr;
+        FilterCategoryWidget* m_originFilter = nullptr;
+        FilterCategoryWidget* m_typeFilter = nullptr;
+        FilterCategoryWidget* m_platformFilter = nullptr;
+        FilterCategoryWidget* m_featureFilter = nullptr;
+
+        QVector<QMetaObject::Connection> m_featureTagConnections;
     };
 } // namespace O3DE::ProjectManager

@@ -27,7 +27,7 @@ struct Vec4
     f32 x, y, z, w;
 
 #if defined(_DEBUG)
-    ILINE Vec4_tpl()
+    ILINE Vec4()
     {
         if constexpr (sizeof(f32) == 4)
         {

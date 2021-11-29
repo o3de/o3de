@@ -8,6 +8,7 @@
 
 set(FILES
     Include/Public/AWSMetricsBus.h
+    Include/Public/MetricsAttribute.h
     Include/Private/AWSMetricsConstant.h
     Include/Private/AWSMetricsServiceApi.h
     Include/Private/AWSMetricsSystemComponent.h
@@ -15,7 +16,6 @@ set(FILES
     Include/Private/DefaultClientIdProvider.h
     Include/Private/GlobalStatistics.h
     Include/Private/IdentityProvider.h
-    Include/Private/MetricsAttribute.h
     Include/Private/MetricsEvent.h
     Include/Private/MetricsEventBuilder.h    
     Include/Private/MetricsManager.h

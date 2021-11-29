@@ -87,7 +87,7 @@ namespace GraphModelIntegrationTest
         const char* GetTitle() const override;
 
     protected:
-        void RegisterSlots();
+        void RegisterSlots() override;
 
         AZStd::shared_ptr<TestGraphContext> m_graphContext = nullptr;
     };
@@ -108,7 +108,7 @@ namespace GraphModelIntegrationTest
         const char* GetTitle() const override;
 
     protected:
-        void RegisterSlots();
+        void RegisterSlots() override;
 
         AZStd::shared_ptr<TestGraphContext> m_graphContext = nullptr;
     };
@@ -129,7 +129,7 @@ namespace GraphModelIntegrationTest
         const char* GetTitle() const override;
 
     protected:
-        void RegisterSlots();
+        void RegisterSlots() override;
 
         AZStd::shared_ptr<TestGraphContext> m_graphContext = nullptr;
     };

@@ -21,6 +21,7 @@ set(FILES
     Archive/ArchiveFindData.cpp
     Archive/ArchiveFindData.h
     Archive/ArchiveVars.h
+    Archive/ArchiveVars.cpp
     Archive/Codec.h
     Archive/IArchive.h
     Archive/INestedArchive.h
@@ -78,6 +79,7 @@ set(FILES
     CommandLine/CommandLine.h
     CommandLine/CommandRegistrationBus.h
     Debug/DebugCameraBus.h
+    feature_options.cmake
     Viewport/ViewportBus.h
     Viewport/ViewportBus.cpp
     Viewport/ViewportColors.h
@@ -167,6 +169,10 @@ set(FILES
     Logging/MissingAssetLogger.cpp
     Logging/MissingAssetLogger.h
     Logging/MissingAssetNotificationBus.h
+    Matchmaking/IMatchmakingRequests.h
+    Matchmaking/MatchmakingRequests.cpp
+    Matchmaking/MatchmakingRequests.h
+    Matchmaking/MatchmakingNotifications.h
     Scene/Scene.h
     Scene/Scene.inl
     Scene/Scene.cpp
@@ -181,8 +187,9 @@ set(FILES
     Script/ScriptRemoteDebugging.cpp
     Script/ScriptRemoteDebugging.h
     Session/ISessionHandlingRequests.h
-    Session/ISessionRequests.cpp
     Session/ISessionRequests.h
+    Session/SessionRequests.cpp
+    Session/SessionRequests.h
     Session/SessionConfig.cpp
     Session/SessionConfig.h
     Session/SessionNotifications.h
@@ -223,6 +230,8 @@ set(FILES
     Physics/Configuration/SimulatedBodyConfiguration.cpp
     Physics/Configuration/SystemConfiguration.h
     Physics/Configuration/SystemConfiguration.cpp
+    Physics/HeightfieldProviderBus.h
+    Physics/HeightfieldProviderBus.cpp
     Physics/SimulatedBodies/RigidBody.h
     Physics/SimulatedBodies/RigidBody.cpp
     Physics/SimulatedBodies/StaticRigidBody.h
@@ -280,6 +289,7 @@ set(FILES
     Spawnable/RootSpawnableInterface.h
     Spawnable/Spawnable.cpp
     Spawnable/Spawnable.h
+    Spawnable/SpawnableAssetBus.h
     Spawnable/SpawnableAssetHandler.h
     Spawnable/SpawnableAssetHandler.cpp
     Spawnable/SpawnableEntitiesContainer.h
@@ -294,6 +304,8 @@ set(FILES
     Spawnable/SpawnableMonitor.cpp
     Spawnable/SpawnableSystemComponent.h
     Spawnable/SpawnableSystemComponent.cpp
+    SurfaceData/SurfaceData.h
+    SurfaceData/SurfaceData.cpp
     Terrain/TerrainDataRequestBus.h
     Terrain/TerrainDataRequestBus.cpp
     Thermal/ThermalInfo.h
@@ -343,6 +355,8 @@ set(FILES
     Input/Channels/InputChannelQuaternion.h
     Input/Contexts/InputContext.cpp
     Input/Contexts/InputContext.h
+    Input/Contexts/InputContextComponent.cpp
+    Input/Contexts/InputContextComponent.h
     Input/Devices/InputDevice.cpp
     Input/Devices/InputDevice.h
     Input/Devices/InputDeviceId.cpp

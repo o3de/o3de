@@ -1,0 +1,34 @@
+{
+    "entries": [
+        {
+            "base": "{8A57777C-AD84-5CF4-B411-03ABF982EF55}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "String To Number",
+                "category": "Math",
+                "tooltip": "Converts the given string to it's numeric representation if possible."
+            },
+            "slots": [
+                {
+                    "base": "Input_In",
+                    "details": {
+                        "name": "In"
+                    }
+                },
+                {
+                    "base": "Output_Out",
+                    "details": {
+                        "name": "Out"
+                    }
+                },
+                {
+                    "base": "DataOutput_Result",
+                    "details": {
+                        "name": "Result"
+                    }
+                }
+            ]
+        }
+    ]
+}

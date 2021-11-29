@@ -35,6 +35,10 @@ int main(int argc, char* argv[])
         {
             AZ::AllocatorInstance<AZ::OSAllocator>::Create();
         }
+        if (!AZ::AllocatorInstance<AZ::SystemAllocator>::IsReady())
+        {
+            AZ::AllocatorInstance<AZ::SystemAllocator>::Create();
+        }
 
         AZStd::unique_ptr<AZ::IO::LocalFileIO> fileIO = AZStd::unique_ptr<AZ::IO::LocalFileIO>(aznew AZ::IO::LocalFileIO());
         AZ::IO::FileIOBase::SetInstance(fileIO.get());
@@ -70,6 +74,10 @@ int main(int argc, char* argv[])
         // if its in GUI mode or not.
     }
 
+    if (AZ::AllocatorInstance<AZ::SystemAllocator>::IsReady())
+    {
+        AZ::AllocatorInstance<AZ::SystemAllocator>::Destroy();
+    }
     if (AZ::AllocatorInstance<AZ::OSAllocator>::IsReady())
     {
         AZ::AllocatorInstance<AZ::OSAllocator>::Destroy();

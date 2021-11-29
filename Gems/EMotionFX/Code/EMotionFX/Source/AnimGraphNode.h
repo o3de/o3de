@@ -213,12 +213,12 @@ namespace EMotionFX
          */
         virtual void SkipOutput([[maybe_unused]] AnimGraphInstance* animGraphInstance) {}
 
-        MCORE_INLINE float GetDuration(AnimGraphInstance* animGraphInstance) const                 { return FindOrCreateUniqueNodeData(animGraphInstance)->GetDuration(); }
+        float GetDuration(AnimGraphInstance* animGraphInstance) const                 { return FindOrCreateUniqueNodeData(animGraphInstance)->GetDuration(); }
         virtual void SetCurrentPlayTime(AnimGraphInstance* animGraphInstance, float timeInSeconds) { FindOrCreateUniqueNodeData(animGraphInstance)->SetCurrentPlayTime(timeInSeconds); }
         virtual float GetCurrentPlayTime(AnimGraphInstance* animGraphInstance) const               { return FindOrCreateUniqueNodeData(animGraphInstance)->GetCurrentPlayTime(); }
 
-        MCORE_INLINE size_t GetSyncIndex(AnimGraphInstance* animGraphInstance) const               { return FindOrCreateUniqueNodeData(animGraphInstance)->GetSyncIndex(); }
-        MCORE_INLINE void SetSyncIndex(AnimGraphInstance* animGraphInstance, size_t syncIndex)     { FindOrCreateUniqueNodeData(animGraphInstance)->SetSyncIndex(syncIndex); }
+        size_t GetSyncIndex(AnimGraphInstance* animGraphInstance) const               { return FindOrCreateUniqueNodeData(animGraphInstance)->GetSyncIndex(); }
+        void SetSyncIndex(AnimGraphInstance* animGraphInstance, size_t syncIndex)     { FindOrCreateUniqueNodeData(animGraphInstance)->SetSyncIndex(syncIndex); }
 
         virtual void SetPlaySpeed(AnimGraphInstance* animGraphInstance, float speedFactor)         { FindOrCreateUniqueNodeData(animGraphInstance)->SetPlaySpeed(speedFactor); }
         virtual float GetPlaySpeed(AnimGraphInstance* animGraphInstance) const                     { return FindOrCreateUniqueNodeData(animGraphInstance)->GetPlaySpeed(); }

@@ -64,9 +64,6 @@ namespace AWSCore
 
         /// Initialize an AwsApiClientJobConfig object.
         ///
-        /// \param DefaultConfigType - the type of the config object from which
-        /// default values will be taken.
-        ///
         /// \param defaultConfig - the config object that provides values when
         /// no override has been set in this object. The default is nullptr, which
         /// will cause a default value to be used.
@@ -83,10 +80,10 @@ namespace AWSCore
             }
         }
 
-        virtual ~AwsApiClientJobConfig() = default;
+        ~AwsApiClientJobConfig() override = default;
 
         /// Gets a client initialized used currently applied settings. If
-        /// any settings change after first use, code must call 
+        /// any settings change after first use, code must call
         /// ApplySettings before those changes will take effect.
         std::shared_ptr<ClientType> GetClient() override
         {
@@ -112,7 +109,7 @@ namespace AWSCore
             }
             else
             {
-                // If no explict credenitals are provided then AWS C++ SDK will perform standard search
+                // If no explicit credentials are provided then AWS C++ SDK will perform standard search
                 return std::make_shared<ClientType>(Aws::Auth::AWSCredentials(), GetClientConfiguration());
             }
         }

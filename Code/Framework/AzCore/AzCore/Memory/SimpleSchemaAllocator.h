@@ -179,6 +179,11 @@ namespace AZ
             return m_schema->GetMaxAllocationSize();
         }
 
+        size_type GetMaxContiguousAllocationSize() const override
+        {
+            return m_schema->GetMaxContiguousAllocationSize();
+        }
+
         size_type GetUnAllocatedMemory(bool isPrint = false) const override
         { 
             return m_schema->GetUnAllocatedMemory(isPrint);

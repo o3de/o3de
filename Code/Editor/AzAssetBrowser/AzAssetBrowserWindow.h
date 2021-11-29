@@ -53,14 +53,21 @@ public:
 
     static QObject* createListenerForShowAssetEditorEvent(QObject* parent);
 
+
+Q_SIGNALS:
+    void SizeChangedSignal(int newWidth);
+
+protected:
+    void resizeEvent(QResizeEvent* resizeEvent) override;
+
 private:
     void OnInitViewToggleButton();
     void UpdateDisplayInfo();
+
 protected slots:
     void CreateSwitchViewMenu();
     void SetExpandedAssetBrowserMode();
     void SetDefaultAssetBrowserMode();
-    void UpdateTableModelAfterFilter();
     void SetTableViewVisibleAfterFilter();
 
 private:

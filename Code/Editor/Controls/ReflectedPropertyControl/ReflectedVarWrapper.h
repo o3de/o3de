@@ -123,7 +123,7 @@ public:
     void SetVariable(IVariable* pVariable) override;
     void SyncReflectedVarToIVar(IVariable* pVariable) override;
     void SyncIVarToReflectedVar(IVariable* pVariable) override;
-    virtual void OnVariableChange(IVariable* var);
+    void OnVariableChange(IVariable* var) override;
     CReflectedVar* GetReflectedVar() override { return m_reflectedVar.data(); }
 
 protected:

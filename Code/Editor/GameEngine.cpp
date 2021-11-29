@@ -48,9 +48,6 @@
 #include "Include/IObjectManager.h"
 #include "ActionManager.h"
 
-// Including this too early will result in a linker error
-#include <CryCommon/CryLibrary.h>
-
 // Implementation of System Callback structure.
 struct SSystemUserCallback
     : public ISystemUserCallback
@@ -159,20 +156,20 @@ struct SSystemUserCallback
         }
     }
 
-    int ShowMessage(const char* text, const char* caption, unsigned int uType) override
+    void ShowMessage(const char* text, const char* caption, unsigned int uType) override
     {
         if (CCryEditApp::instance()->IsInAutotestMode())
         {
-            return IDOK;
+            return;
         }
 
         const UINT kMessageBoxButtonMask = 0x000f;
         if (!GetIEditor()->IsInGameMode() && (uType == 0 || uType == MB_OK || !(uType & kMessageBoxButtonMask)))
         {
             static_cast<CEditorImpl*>(GetIEditor())->AddErrorMessage(text, caption);
-            return IDOK;
+            return;
         }
-        return CryMessageBox(text, caption, uType);
+        CryMessageBox(text, caption, uType);
     }
 
     void OnSplashScreenDone()
@@ -241,8 +238,7 @@ private:
 
 AZ_PUSH_DISABLE_WARNING(4273, "-Wunknown-warning-option")
 CGameEngine::CGameEngine()
-    : m_gameDll(nullptr)
-    , m_bIgnoreUpdates(false)
+    : m_bIgnoreUpdates(false)
     , m_ePendingGameMode(ePGM_NotPending)
     , m_modalWindowDismisser(nullptr)
 AZ_POP_DISABLE_WARNING
@@ -252,7 +248,7 @@ AZ_POP_DISABLE_WARNING
     m_bInGameMode = false;
     m_bSimulationMode = false;
     m_bSyncPlayerPosition = true;
-    m_hSystemHandle = nullptr;
+    m_hSystemHandle.reset(nullptr);
     m_bJustCreated = false;
     m_levelName = "Untitled";
     m_levelExtension = EditorUtils::LevelFile::GetDefaultFileExtension();
@@ -267,18 +263,10 @@ AZ_POP_DISABLE_WARNING
     GetIEditor()->UnregisterNotifyListener(this);
     m_pISystem->GetIMovieSystem()->SetCallback(nullptr);
 
-    if (m_gameDll)
-    {
-        CryFreeLibrary(m_gameDll);
-    }
-
     delete m_pISystem;
     m_pISystem = nullptr;
 
-    if (m_hSystemHandle)
-    {
-        CryFreeLibrary(m_hSystemHandle);
-    }
+    m_hSystemHandle.reset(nullptr);
 
     delete m_pSystemUserCallback;
 }
@@ -346,18 +334,19 @@ AZ::Outcome<void, AZStd::string> CGameEngine::Init(
     HWND hwndForInputSystem)
 {
     m_pSystemUserCallback = new SSystemUserCallback(logo);
-    m_hSystemHandle = CryLoadLibraryDefName("CrySystem");
 
-    if (!m_hSystemHandle)
+    constexpr const char* crySystemLibraryName = AZ_TRAIT_OS_DYNAMIC_LIBRARY_PREFIX  "CrySystem" AZ_TRAIT_OS_DYNAMIC_LIBRARY_EXTENSION;
+
+    m_hSystemHandle = AZ::DynamicModuleHandle::Create(crySystemLibraryName);
+    if (!m_hSystemHandle->Load(true))
     {
-        auto errorMessage = AZStd::string::format("%s Loading Failed", CryLibraryDefName("CrySystem"));
+        auto errorMessage = AZStd::string::format("%s Loading Failed", crySystemLibraryName);
         Error(errorMessage.c_str());
         return AZ::Failure(errorMessage);
     }
 
     PFNCREATESYSTEMINTERFACE pfnCreateSystemInterface =
-        (PFNCREATESYSTEMINTERFACE)CryGetProcAddress(m_hSystemHandle, "CreateSystemInterface");
-
+        m_hSystemHandle->GetFunction<PFNCREATESYSTEMINTERFACE>("CreateSystemInterface");
 
     SSystemInitParams sip;
 
@@ -825,7 +814,7 @@ void CGameEngine::Update()
         if (gEnv->pSystem)
         {
             gEnv->pSystem->UpdatePreTickBus();
-            componentApplication->Tick(gEnv->pTimer->GetFrameTime(ITimer::ETIMER_GAME));
+            componentApplication->Tick();
             gEnv->pSystem->UpdatePostTickBus();
         }
 
@@ -841,7 +830,7 @@ void CGameEngine::Update()
         unsigned int updateFlags = ESYSUPDATE_EDITOR;
         GetIEditor()->GetAnimation()->Update();
         GetIEditor()->GetSystem()->UpdatePreTickBus(updateFlags);
-        componentApplication->Tick(gEnv->pTimer->GetFrameTime(ITimer::ETIMER_GAME));
+        componentApplication->Tick();
         GetIEditor()->GetSystem()->UpdatePostTickBus(updateFlags);
     }
 }

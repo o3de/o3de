@@ -21,6 +21,7 @@
 #include <AzToolsFramework/Commands/EntityStateCommand.h>
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
+#include <AzToolsFramework/Prefab/PrefabFocusPublicInterface.h>
 #include <AzToolsFramework/PropertyTreeEditor/PropertyTreeEditor.h>
 #include <AzToolsFramework/ToolsComponents/EditorDisabledCompositionBus.h>
 #include <AzToolsFramework/ToolsComponents/EditorPendingCompositionBus.h>
@@ -448,6 +449,9 @@ namespace LandscapeCanvasEditor
         AZ::ComponentApplicationBus::BroadcastResult(m_serializeContext, &AZ::ComponentApplicationRequests::GetSerializeContext);
         AZ_Assert(m_serializeContext, "Failed to acquire application serialize context.");
 
+        m_prefabFocusPublicInterface = AZ::Interface<AzToolsFramework::Prefab::PrefabFocusPublicInterface>::Get();
+        AZ_Assert(m_prefabFocusPublicInterface, "LandscapeCanvas - could not get PrefabFocusPublicInterface on construction.");
+
         const GraphCanvas::EditorId& editorId = GetEditorId();
 
         // Register unique color palettes for our connections (data types)
@@ -459,6 +463,7 @@ namespace LandscapeCanvasEditor
         AzToolsFramework::EditorPickModeNotificationBus::Handler::BusConnect(AzToolsFramework::GetEntityContextId());
         AzToolsFramework::EntityCompositionNotificationBus::Handler::BusConnect();
         AzToolsFramework::ToolsApplicationNotificationBus::Handler::BusConnect();
+        AzToolsFramework::Prefab::PrefabFocusNotificationBus::Handler::BusConnect(AzToolsFramework::GetEntityContextId());
         AzToolsFramework::Prefab::PrefabPublicNotificationBus::Handler::BusConnect();
         CrySystemEventBus::Handler::BusConnect();
         AZ::EntitySystemBus::Handler::BusConnect();
@@ -484,6 +489,7 @@ namespace LandscapeCanvasEditor
         AZ::EntitySystemBus::Handler::BusDisconnect();
         CrySystemEventBus::Handler::BusDisconnect();
         AzToolsFramework::Prefab::PrefabPublicNotificationBus::Handler::BusDisconnect();
+        AzToolsFramework::Prefab::PrefabFocusNotificationBus::Handler::BusDisconnect();
         AzToolsFramework::ToolsApplicationNotificationBus::Handler::BusDisconnect();
         AzToolsFramework::EditorPickModeNotificationBus::Handler::BusDisconnect();
         AzToolsFramework::EditorEntityContextNotificationBus::Handler::BusDisconnect();
@@ -2500,6 +2506,24 @@ namespace LandscapeCanvasEditor
         }
     }
 
+    void MainWindow::OnPrefabFocusChanged()
+    {
+        // Make sure to close any open graphs that aren't currently in prefab focus
+        // to prevent the user from making modifications outside of the allowed focus scope
+        AZStd::vector<GraphCanvas::DockWidgetId> dockWidgetsToClose;
+        for (auto [entityId, dockWidgetId] : m_dockWidgetsByEntity)
+        {
+            if (!m_prefabFocusPublicInterface->IsOwningPrefabBeingFocused(entityId))
+            {
+                dockWidgetsToClose.push_back(dockWidgetId);
+            }
+        }
+        for (auto dockWidgetId : dockWidgetsToClose)
+        {
+            CloseEditor(dockWidgetId);
+        }
+    }
+
     void MainWindow::OnPrefabInstancePropagationBegin()
     {
         // Ignore graph updates during prefab propagation because the entities will be
@@ -2512,6 +2536,26 @@ namespace LandscapeCanvasEditor
     {
         // See comment above in OnPrefabInstancePropagationBegin
         m_prefabPropagationInProgress = false;
+
+        // After prefab propagation is complete, the entity tied to one of our open
+        // graphs might have been deleted (e.g. if a prefab was created from that entity).
+        // Any open graphs tied to an entity that no longer exists will need to be closed.
+        // We need to close them in a separate iterator because the CloseEditor API will
+        // end up modifying m_dockWidgetsByEntity.
+        AZStd::vector<GraphCanvas::DockWidgetId> dockWidgetsToDelete;
+        for (auto [entityId, dockWidgetId] : m_dockWidgetsByEntity)
+        {
+            AZ::Entity* entity = nullptr;
+            AZ::ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationRequests::FindEntity, entityId);
+            if (!entity)
+            {
+                dockWidgetsToDelete.push_back(dockWidgetId);
+            }
+        }
+        for (auto dockWidgetId : dockWidgetsToDelete)
+        {
+            CloseEditor(dockWidgetId);
+        }
     }
 
     void MainWindow::OnCryEditorEndCreate()

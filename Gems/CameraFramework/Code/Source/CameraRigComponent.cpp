@@ -126,7 +126,7 @@ namespace Camera
                         ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/Components/CameraRig.svg")
                         ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Editor/Icons/Components/Viewport/CameraRig.png")
                         ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
-                        ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/camera-rig/")
+                        ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/camera/camera-rig/")
                     ->DataElement(0, &CameraRigComponent::m_targetAcquirers, "Target acquirers",
                     "A list of behaviors that define how a camera will select a target.  They are executed in order until one succeeds")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)

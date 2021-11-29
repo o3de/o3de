@@ -41,45 +41,36 @@ namespace EMotionFX
         layout->addWidget(m_labelMotion, row, column);
         column++;
 
-        // Motion position x
-        QHBoxLayout* layoutX = new QHBoxLayout();
-        layoutX->setAlignment(Qt::AlignRight);
+        const auto makeSpinbox = [row, &column, layout, motionId = motionId.c_str()](const QString& text, const QString& color)
+        {
+            auto* axisLayout = new QHBoxLayout();
+            axisLayout->setAlignment(Qt::AlignRight);
 
-        QLabel* labelX = new QLabel("X");
-        labelX->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-        labelX->setStyleSheet("QLabel { font-weight: bold; color : red; }");
-        layoutX->addWidget(labelX);
+            auto* axisLabel = new QLabel(text);
+            axisLabel->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+            axisLabel->setStyleSheet(QString("QLabel { font-weight: bold; color : %1; }").arg(color));
+            axisLayout->addWidget(axisLabel);
 
-        m_spinboxX = new AzQtComponents::DoubleSpinBox();
-        m_spinboxX->setSingleStep(0.1);
-        m_spinboxX->setDecimals(4);
-        m_spinboxX->setRange(-FLT_MAX, FLT_MAX);
-        m_spinboxX->setProperty("motionId", motionId.c_str());
-        layoutX->addWidget(m_spinboxX);
+            auto* spinbox = new AzQtComponents::DoubleSpinBox();
+            spinbox->setSingleStep(0.1);
+            spinbox->setDecimals(4);
+            spinbox->setRange(-FLT_MAX, FLT_MAX);
+            spinbox->setProperty("motionId", motionId);
+            spinbox->setKeyboardTracking(false);
+            axisLayout->addWidget(spinbox);
 
-        layout->addLayout(layoutX, row, column);
-        column++;
+            layout->addLayout(axisLayout, row, column);
+            column++;
 
-        // Motion position y
+            return spinbox;
+        };
+
+        // Motion coordinate spinboxes.
+        m_spinboxX = makeSpinbox("X", "red");
+
         if (showYFields)
         {
-            QHBoxLayout* layoutY = new QHBoxLayout();
-            layoutY->setAlignment(Qt::AlignRight);
-
-            QLabel* labelY = new QLabel("Y");
-            labelY->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-            labelY->setStyleSheet("QLabel { font-weight: bold; color : green; }");
-            layoutY->addWidget(labelY);
-
-            m_spinboxY = new AzQtComponents::DoubleSpinBox();
-            m_spinboxY->setSingleStep(0.1);
-            m_spinboxY->setDecimals(4);
-            m_spinboxY->setRange(-FLT_MAX, FLT_MAX);
-            m_spinboxY->setProperty("motionId", motionId.c_str());
-            layoutY->addWidget(m_spinboxY);
-
-            layout->addLayout(layoutY, row, column);
-            column++;
+            m_spinboxY = makeSpinbox("Y", "green");
         }
         else
         {

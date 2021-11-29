@@ -45,7 +45,7 @@ namespace ExecutionInterpretedAPICpp
         0, 1, 2, 3, 4, 5, 6, 7, 8, 9, k_Bad,k_Bad,k_Bad,k_Bad,k_Bad,k_Bad,k_Bad, 10, 11, 12, 13, 14, 15
     };
 
-    constexpr unsigned char k_FastValuesIndexSentinel = 'G' - '0';
+    [[maybe_unused]] constexpr unsigned char k_FastValuesIndexSentinel = 'G' - '0';
 
     template<typename T>
     T* GetAs(AZ::BehaviorValueParameter& argument)
@@ -503,9 +503,11 @@ namespace ScriptCanvas
 
         void InitializeInterpretedStatics(const RuntimeData& runtimeData)
         {
-#if defined(PROFILE) || defined(AZ_DEBUG_BUILD)
+#if defined(AZ_PROFILE_BUILD) || defined(AZ_DEBUG_BUILD)
             Execution::InitializeFromLuaStackFunctions(const_cast<Grammar::DebugSymbolMap&>(runtimeData.m_debugMap));
 #endif
+            AZ_WarningOnce("ScriptCanvas", !runtimeData.m_areStaticsInitialized, "ScriptCanvas runtime data already initalized");
+
             if (runtimeData.RequiresStaticInitialization())
             {
                 AZ::ScriptLoadResult result{};

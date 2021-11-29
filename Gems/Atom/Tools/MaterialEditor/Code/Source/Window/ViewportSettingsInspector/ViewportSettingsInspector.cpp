@@ -9,6 +9,7 @@
 #include <Atom/Viewport/MaterialViewportRequestBus.h>
 #include <AtomToolsFramework/Inspector/InspectorPropertyGroupWidget.h>
 #include <AtomToolsFramework/Util/Util.h>
+#include <Atom/RPI.Reflect/Model/ModelAsset.h>
 #include <Window/PresetBrowserDialogs/LightingPresetBrowserDialog.h>
 #include <Window/PresetBrowserDialogs/ModelPresetBrowserDialog.h>
 #include <Window/ViewportSettingsInspector/ViewportSettingsInspector.h>
@@ -53,19 +54,19 @@ namespace MaterialEditor
 
     void ViewportSettingsInspector::AddGeneralGroup()
     {
-        const AZStd::string groupNameId = "generalSettings";
+        const AZStd::string groupName = "generalSettings";
         const AZStd::string groupDisplayName = "General Settings";
         const AZStd::string groupDescription = "General Settings";
 
         AddGroup(
-            groupNameId, groupDisplayName, groupDescription,
+            groupName, groupDisplayName, groupDescription,
             new AtomToolsFramework::InspectorPropertyGroupWidget(
-                m_viewportSettings.get(), nullptr, m_viewportSettings->TYPEINFO_Uuid(), this, this, GetGroupSaveStateKey(groupNameId)));
+                m_viewportSettings.get(), nullptr, m_viewportSettings->TYPEINFO_Uuid(), this, this, GetGroupSaveStateKey(groupName)));
     }
 
     void ViewportSettingsInspector::AddModelGroup()
     {
-        const AZStd::string groupNameId = "modelSettings";
+        const AZStd::string groupName = "modelSettings";
         const AZStd::string groupDisplayName = "Model Settings";
         const AZStd::string groupDescription = "Model Settings";
 
@@ -93,12 +94,12 @@ namespace MaterialEditor
         if (m_modelPreset)
         {
             auto inspectorWidget = new AtomToolsFramework::InspectorPropertyGroupWidget(
-                m_modelPreset.get(), nullptr, m_modelPreset.get()->TYPEINFO_Uuid(), this, groupWidget, GetGroupSaveStateKey(groupNameId));
+                m_modelPreset.get(), nullptr, m_modelPreset.get()->TYPEINFO_Uuid(), this, groupWidget, GetGroupSaveStateKey(groupName));
 
             groupWidget->layout()->addWidget(inspectorWidget);
         }
 
-        AddGroup(groupNameId, groupDisplayName, groupDescription, groupWidget);
+        AddGroup(groupName, groupDisplayName, groupDescription, groupWidget);
     }
 
     void ViewportSettingsInspector::AddModelPreset()
@@ -152,7 +153,7 @@ namespace MaterialEditor
 
     void ViewportSettingsInspector::AddLightingGroup()
     {
-        const AZStd::string groupNameId = "lightingSettings";
+        const AZStd::string groupName = "lightingSettings";
         const AZStd::string groupDisplayName = "Lighting Settings";
         const AZStd::string groupDescription = "Lighting Settings";
 
@@ -181,12 +182,12 @@ namespace MaterialEditor
         {
             auto inspectorWidget = new AtomToolsFramework::InspectorPropertyGroupWidget(
                 m_lightingPreset.get(), nullptr, m_lightingPreset.get()->TYPEINFO_Uuid(), this, groupWidget,
-                GetGroupSaveStateKey(groupNameId));
+                GetGroupSaveStateKey(groupName));
 
             groupWidget->layout()->addWidget(inspectorWidget);
         }
 
-        AddGroup(groupNameId, groupDisplayName, groupDescription, groupWidget);
+        AddGroup(groupName, groupDisplayName, groupDescription, groupWidget);
     }
 
     void ViewportSettingsInspector::AddLightingPreset()
@@ -345,7 +346,7 @@ namespace MaterialEditor
 
     AZStd::string ViewportSettingsInspector::GetDefaultUniqueSaveFilePath(const AZStd::string& baseName) const
     {
-        AZStd::string savePath = AZ::IO::FileIOBase::GetInstance()->GetAlias("@devassets@");
+        AZStd::string savePath = AZ::IO::FileIOBase::GetInstance()->GetAlias("@projectroot@");
         savePath += AZ_CORRECT_FILESYSTEM_SEPARATOR;
         savePath += "Materials";
         savePath += AZ_CORRECT_FILESYSTEM_SEPARATOR;
@@ -354,25 +355,25 @@ namespace MaterialEditor
         return savePath;
     }
 
-    AZ::Crc32 ViewportSettingsInspector::GetGroupSaveStateKey(const AZStd::string& groupNameId) const
+    AZ::Crc32 ViewportSettingsInspector::GetGroupSaveStateKey(const AZStd::string& groupName) const
     {
-        return AZ::Crc32(AZStd::string::format("ViewportSettingsInspector::PropertyGroup::%s", groupNameId.c_str()));
+        return AZ::Crc32(AZStd::string::format("ViewportSettingsInspector::PropertyGroup::%s", groupName.c_str()));
     }
 
-    bool ViewportSettingsInspector::ShouldGroupAutoExpanded(const AZStd::string& groupNameId) const
+    bool ViewportSettingsInspector::ShouldGroupAutoExpanded(const AZStd::string& groupName) const
     {
-        auto stateItr = m_windowSettings->m_inspectorCollapsedGroups.find(GetGroupSaveStateKey(groupNameId));
+        auto stateItr = m_windowSettings->m_inspectorCollapsedGroups.find(GetGroupSaveStateKey(groupName));
         return stateItr == m_windowSettings->m_inspectorCollapsedGroups.end();
     }
 
-    void ViewportSettingsInspector::OnGroupExpanded(const AZStd::string& groupNameId)
+    void ViewportSettingsInspector::OnGroupExpanded(const AZStd::string& groupName)
     {
-        m_windowSettings->m_inspectorCollapsedGroups.erase(GetGroupSaveStateKey(groupNameId));
+        m_windowSettings->m_inspectorCollapsedGroups.erase(GetGroupSaveStateKey(groupName));
     }
 
-    void ViewportSettingsInspector::OnGroupCollapsed(const AZStd::string& groupNameId)
+    void ViewportSettingsInspector::OnGroupCollapsed(const AZStd::string& groupName)
     {
-        m_windowSettings->m_inspectorCollapsedGroups.insert(GetGroupSaveStateKey(groupNameId));
+        m_windowSettings->m_inspectorCollapsedGroups.insert(GetGroupSaveStateKey(groupName));
     }
 
 } // namespace MaterialEditor

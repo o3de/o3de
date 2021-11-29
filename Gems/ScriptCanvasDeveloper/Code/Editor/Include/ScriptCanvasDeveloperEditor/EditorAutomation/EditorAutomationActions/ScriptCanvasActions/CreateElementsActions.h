@@ -139,7 +139,7 @@ namespace ScriptCanvasDeveloper
 
     protected:
 
-        void OnActionsComplete();
+        void OnActionsComplete() override;
 
     private:
 
@@ -222,7 +222,7 @@ namespace ScriptCanvasDeveloper
         CreateGroupAction(GraphCanvas::EditorId editorGraph, GraphCanvas::GraphId graphId, CreationType creationType = CreationType::Hotkey);
         ~CreateGroupAction() override = default;
 
-        void SetupAction();
+        void SetupAction() override;
 
         // GraphCanvas::SceneNotificationBus::Handler
         void OnNodeAdded(const AZ::EntityId& groupId, bool isPaste = false) override;
@@ -236,7 +236,7 @@ namespace ScriptCanvasDeveloper
         void SetupToolbarAction();
         void SetupHotkeyAction();
 
-        void OnActionsComplete();
+        void OnActionsComplete() override;
 
     private:
 

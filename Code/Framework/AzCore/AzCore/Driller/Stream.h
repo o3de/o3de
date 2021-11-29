@@ -443,7 +443,7 @@ namespace AZ
             const unsigned char* GetData() const    { return m_data.data(); }
             unsigned int GetDataSize() const        { return static_cast<unsigned int>(m_data.size()); }
             inline void  Reset()                    { m_data.clear(); }
-            virtual void WriteBinary(const void* data, unsigned int dataSize)
+            void WriteBinary(const void* data, unsigned int dataSize) override
             {
                 m_data.insert(m_data.end(), reinterpret_cast<const unsigned char*>(data), reinterpret_cast<const unsigned char*>(data) + dataSize);
             }
@@ -489,7 +489,7 @@ namespace AZ
             }
 
             unsigned int GetDataLeft() const { return static_cast<unsigned int>(m_dataEnd - m_data); }
-            virtual unsigned int ReadBinary(void* data, unsigned int maxDataSize)
+            unsigned int ReadBinary(void* data, unsigned int maxDataSize) override
             {
                 AZ_Assert(m_data != nullptr, "You must call SetData function, before you can read data!");
                 AZ_Assert(data != nullptr && maxDataSize > 0, "We must have a valid pointer and max data size!");
@@ -523,7 +523,7 @@ namespace AZ
             bool Open(const char* fileName, int mode, int platformFlags = 0);
             void Close();
 
-            virtual void WriteBinary(const void* data, unsigned int dataSize);
+            void WriteBinary(const void* data, unsigned int dataSize) override;
         };
 
         /**
@@ -540,7 +540,7 @@ namespace AZ
             DrillerInputFileStream();
             ~DrillerInputFileStream();
             bool Open(const char* fileName, int mode, int platformFlags = 0);
-            virtual unsigned int ReadBinary(void* data, unsigned int maxDataSize);
+            unsigned int ReadBinary(void* data, unsigned int maxDataSize) override;
             void Close();
         };
 

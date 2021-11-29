@@ -10,5 +10,6 @@
 namespace O3DE::ProjectManager
 {
     const QString ProjectBuildPathPostfix = ProjectBuildDirectoryName + "/windows_vs2019";
+    const QString GetPythonScriptPath = "python/get_python.bat";
 
 } // namespace O3DE::ProjectManager

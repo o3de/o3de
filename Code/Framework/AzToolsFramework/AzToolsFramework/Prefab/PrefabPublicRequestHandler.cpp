@@ -10,6 +10,8 @@
 
 #include <AzToolsFramework/Prefab/PrefabPublicInterface.h>
 
+#include <AzCore/RTTI/BehaviorContext.h>
+
 namespace AzToolsFramework
 {
     namespace Prefab
@@ -26,6 +28,9 @@ namespace AzToolsFramework
                     ->Event("CreatePrefabInMemory", &PrefabPublicRequests::CreatePrefabInMemory)
                     ->Event("InstantiatePrefab", &PrefabPublicRequests::InstantiatePrefab)
                     ->Event("DeleteEntitiesAndAllDescendantsInInstance", &PrefabPublicRequests::DeleteEntitiesAndAllDescendantsInInstance)
+                    ->Event("DetachPrefab", &PrefabPublicRequests::DetachPrefab)
+                    ->Event("DuplicateEntitiesInInstance", &PrefabPublicRequests::DuplicateEntitiesInInstance)
+                    ->Event("GetOwningInstancePrefabPath", &PrefabPublicRequests::GetOwningInstancePrefabPath)
                     ;
             }
         }
@@ -60,5 +65,19 @@ namespace AzToolsFramework
             return m_prefabPublicInterface->DeleteEntitiesAndAllDescendantsInInstance(entityIds);
         }
 
+        PrefabOperationResult PrefabPublicRequestHandler::DetachPrefab(const AZ::EntityId& containerEntityId)
+        {
+            return m_prefabPublicInterface->DetachPrefab(containerEntityId);
+        }
+
+        DuplicatePrefabResult PrefabPublicRequestHandler::DuplicateEntitiesInInstance(const EntityIdList& entityIds)
+        {
+            return m_prefabPublicInterface->DuplicateEntitiesInInstance(entityIds);
+        }
+
+        AZStd::string PrefabPublicRequestHandler::GetOwningInstancePrefabPath(AZ::EntityId entityId) const
+        {
+            return m_prefabPublicInterface->GetOwningInstancePrefabPath(entityId).Native();
+        }
     } // namespace Prefab
 } // namespace AzToolsFramework

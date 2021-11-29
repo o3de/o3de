@@ -236,7 +236,7 @@ namespace AZ
                 case TextureMapType::Bump:
                     return m_normalMap;
                 default:
-                    AZ_Assert(false, "Invalid Texture map requested.")
+                    AZ_Assert(false, "Invalid Texture map requested.");
                     return m_empty;
             }
         }
@@ -255,7 +255,7 @@ namespace AZ
                 m_normalMap = texture;
                 break;
             default:
-                AZ_Assert(false, "Invalid Texture map requested.")
+                AZ_Assert(false, "Invalid Texture map requested.");
                 break;
             }
         }
@@ -599,7 +599,7 @@ namespace AZ
 
             if (!materialNode)
             {
-                AZ_Assert(false, "Attempted to add material to invalid xml document.")
+                AZ_Assert(false, "Attempted to add material to invalid xml document.");
                 return false;
             }
 

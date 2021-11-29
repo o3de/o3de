@@ -10,6 +10,14 @@
 
 #include <ScriptEvents/Internal/VersionedProperty.h>
 
+#include <AzCore/Script/ScriptContextAttributes.h>
+
+namespace AZ
+{
+    class BehaviorClass;
+    class BehaviorMethod;
+}
+
 namespace ScriptEvents
 {
     namespace Types

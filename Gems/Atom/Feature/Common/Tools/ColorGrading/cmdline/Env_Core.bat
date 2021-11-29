@@ -93,9 +93,6 @@ popd
 set DCCSIG_PATH=%O3DE_DEV%\Gems\AtomLyIntegration\TechnicalArt\DccScriptingInterface
 echo     DCCSIG_PATH = %DCCSIG_PATH%
 
-:: Change to DCCsi root dir
-CD /D %DCCSIG_PATH%
-
 :: per-dcc sdk path
 set DCCSI_SDK_PATH=%DCCSIG_PATH%\SDK
 echo     DCCSI_SDK_PATH = %DCCSI_SDK_PATH%

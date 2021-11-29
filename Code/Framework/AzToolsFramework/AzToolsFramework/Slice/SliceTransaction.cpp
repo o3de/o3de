@@ -718,7 +718,7 @@ namespace AzToolsFramework
 
             if (!fullPathFound)
             {
-                assetFullPath = AZStd::string::format("@devassets@/%s", sliceAssetPath.c_str());
+                assetFullPath = AZStd::string::format("@projectroot@/%s", sliceAssetPath.c_str());
             }
 
             return Commit(assetFullPath.c_str(), preSaveCallback, postSaveCallback, sliceCommitFlags);
@@ -1020,13 +1020,13 @@ namespace AzToolsFramework
                 AZ::IO::FileIOBase* fileIO = AZ::IO::FileIOBase::GetInstance();
                 AZ_Assert(fileIO, "File IO is not initialized.");
 
-                AZStd::string devAssetPath = fileIO->GetAlias("@devassets@");
+                AZStd::string devAssetPath = fileIO->GetAlias("@projectroot@");
                 AZStd::string userPath = fileIO->GetAlias("@user@");
                 AZStd::string tempPath = fullPath;
                 EBUS_EVENT(AzFramework::ApplicationRequests::Bus, NormalizePath, devAssetPath);
                 EBUS_EVENT(AzFramework::ApplicationRequests::Bus, NormalizePath, userPath);
                 EBUS_EVENT(AzFramework::ApplicationRequests::Bus, NormalizePath, tempPath);
-                AzFramework::StringFunc::Replace(tempPath, "@devassets@", devAssetPath.c_str());
+                AzFramework::StringFunc::Replace(tempPath, "@projectroot@", devAssetPath.c_str());
                 AzFramework::StringFunc::Replace(tempPath, devAssetPath.c_str(), userPath.c_str());
                 tempPath.append(".slicetemp");
 

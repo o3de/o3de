@@ -426,7 +426,7 @@ void android_main(android_app* appState)
 
     if (status != ReturnCode::Success)
     {
-        MAIN_EXIT_FAILURE(appState, GetReturnCodeString(status));
+        MAIN_EXIT_FAILURE(appState, "%s", GetReturnCodeString(status));
     }
 }
 

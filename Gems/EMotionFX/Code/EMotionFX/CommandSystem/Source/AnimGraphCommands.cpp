@@ -715,12 +715,15 @@ namespace CommandSystem
         // restore the workspace dirty flag
         GetCommandManager()->SetWorkspaceDirtyFlag(m_oldWorkspaceDirtyFlag);
 
-        AZStd::string resultString;
-        GetCommandManager()->ExecuteCommandInsideCommand("Unselect -animGraphIndex SELECT_ALL", resultString);
+        MCore::CommandGroup commandGroup;
+        commandGroup.AddCommandString("RecorderClear");
+        commandGroup.AddCommandString("Unselect -animGraphIndex SELECT_ALL");
         if (animGraph)
         {
-            GetCommandManager()->ExecuteCommandInsideCommand(AZStd::string::format("Select -animGraphID %d", animGraph->GetID()), resultString);
+            commandGroup.AddCommandString(AZStd::string::format("Select -animGraphID %d", animGraph->GetID()));
         }
+        AZStd::string resultString;
+        GetCommandManager()->ExecuteCommandGroupInsideCommand(commandGroup, resultString);
 
         return true;
     }

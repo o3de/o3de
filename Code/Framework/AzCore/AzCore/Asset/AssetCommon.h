@@ -556,16 +556,24 @@ namespace AZ
                     Asset<AssetData> assetData(AssetInternal::GetAssetData(actualId, AZ::Data::AssetLoadBehavior::Default));
                     if (assetData)
                     {
-                        auto curStatus = assetData->GetStatus();
+                        auto isReady = assetData->GetStatus() == AssetData::AssetStatus::Ready;
                         bool isError = assetData->IsError();
-                        connectLock.unlock();
-                        if (curStatus == AssetData::AssetStatus::Ready)
+
+                        if (isReady || isError)
                         {
-                            handler->OnAssetReady(assetData);
-                        }
-                        else if (isError)
-                        {
-                            handler->OnAssetError(assetData);
+                            connectLock.unlock();
+
+                            if (isReady)
+                            {
+                                handler->OnAssetReady(assetData);
+                            }
+                            else if (isError)
+                            {
+                                handler->OnAssetError(assetData);
+                            }
+
+                            // Lock the mutex again since some destructors will be modifying the context afterwards
+                            connectLock.lock();
                         }
                     }
                 }
@@ -990,7 +998,7 @@ namespace AZ
         template<class T>
         u8 Asset<T>::GetFlags() const
         {
-            AZ_Warning("Asset", false, "Deprecated - replaced by GetAutoLoadBehavior")
+            AZ_Warning("Asset", false, "Deprecated - replaced by GetAutoLoadBehavior");
             return static_cast<u8>(m_loadBehavior);
         }
 
@@ -1012,7 +1020,7 @@ namespace AZ
         template<class T>
         bool Asset<T>::SetFlags(u8 flags)
         {
-            AZ_Warning("Asset", false, "Deprecated - replaced by SetAutoLoadBehavior")
+            AZ_Warning("Asset", false, "Deprecated - replaced by SetAutoLoadBehavior");
             if (!m_assetData)
             {
                 AZ_Assert(flags < static_cast<u8>(AssetLoadBehavior::Count), "Flags value is out of range");

@@ -28,6 +28,10 @@ namespace ScriptCanvas
 
         AZ::Entity* GetScriptCanvasEntity() const { return m_scriptCanvasEntity.get(); }
 
+        Graph* ModGraph();
+
+        const Graph* GetGraph() const;
+
         AZStd::unique_ptr<AZ::Entity> m_scriptCanvasEntity;
     private:
         ScriptCanvasData(const ScriptCanvasData&) = delete;

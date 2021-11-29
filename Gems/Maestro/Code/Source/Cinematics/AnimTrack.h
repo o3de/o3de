@@ -28,20 +28,20 @@ public:
 
     TAnimTrack();
 
-    virtual EAnimCurveType GetCurveType() { return eAnimCurveType_Unknown; };
-    virtual AnimValueType GetValueType() { return kAnimValueUnknown; }
+    EAnimCurveType GetCurveType() override { return eAnimCurveType_Unknown; };
+    AnimValueType GetValueType() override { return kAnimValueUnknown; }
 
     void SetNode(IAnimNode* node) override { m_node = node; }
     // Return Animation Node that owns this Track.
     IAnimNode* GetNode() override { return m_node; }
 
-    virtual int GetSubTrackCount() const { return 0; };
-    virtual IAnimTrack* GetSubTrack([[maybe_unused]] int nIndex) const { return 0; };
+    int GetSubTrackCount() const override { return 0; };
+    IAnimTrack* GetSubTrack([[maybe_unused]] int nIndex) const override { return 0; };
     AZStd::string GetSubTrackName([[maybe_unused]] int nIndex) const override { return AZStd::string(); };
-    virtual void SetSubTrackName([[maybe_unused]] int nIndex, [[maybe_unused]] const char* name) { assert(0); }
+    void SetSubTrackName([[maybe_unused]] int nIndex, [[maybe_unused]] const char* name) override { assert(0); }
 
-    virtual const CAnimParamType& GetParameterType() const { return m_nParamType; };
-    virtual void SetParameterType(CAnimParamType type) { m_nParamType = type; };
+    const CAnimParamType& GetParameterType() const override { return m_nParamType; };
+    void SetParameterType(CAnimParamType type) override { m_nParamType = type; };
 
     //////////////////////////////////////////////////////////////////////////
     // for intrusive_ptr support 
@@ -49,7 +49,7 @@ public:
     void release() override;
     //////////////////////////////////////////////////////////////////////////
 
-    virtual bool IsKeySelected(int key) const
+    bool IsKeySelected(int key) const override
     {
         AZ_Assert(key >= 0 && key < (int)m_keys.size(), "Key index is out of range");
         if (m_keys[key].flags & AKEY_SELECTED)
@@ -59,7 +59,7 @@ public:
         return false;
     }
 
-    virtual void SelectKey(int key, bool select)
+    void SelectKey(int key, bool select) override
     {
         AZ_Assert(key >= 0 && key < (int)m_keys.size(), "Key index is out of range");
         if (select)
@@ -96,59 +96,59 @@ public:
     }
 
     //! Return number of keys in track.
-    virtual int GetNumKeys() const { return static_cast<int>(m_keys.size()); };
+    int GetNumKeys() const override { return static_cast<int>(m_keys.size()); };
 
     //! Return true if keys exists in this track
-    virtual bool HasKeys() const { return !m_keys.empty(); }
+    bool HasKeys() const override { return !m_keys.empty(); }
 
     //! Set number of keys in track.
     //! If needed adds empty keys at end or remove keys from end.
-    virtual void SetNumKeys(int numKeys) { m_keys.resize(numKeys); };
+    void SetNumKeys(int numKeys) override { m_keys.resize(numKeys); };
 
     //! Remove specified key.
-    virtual void RemoveKey(int num);
+    void RemoveKey(int num) override;
 
-    int CreateKey(float time);
-    int CloneKey(int fromKey);
-    int CopyKey(IAnimTrack* pFromTrack, int nFromKey);
+    int CreateKey(float time) override;
+    int CloneKey(int fromKey) override;
+    int CopyKey(IAnimTrack* pFromTrack, int nFromKey) override;
 
     //! Get key at specified location.
     //! @param key Must be valid pointer to compatible key structure, to be filled with specified key location.
-    virtual void GetKey(int index, IKey* key) const;
+    void GetKey(int index, IKey* key) const override;
 
     //! Get time of specified key.
     //! @return key time.
-    virtual float GetKeyTime(int index) const;
+    float GetKeyTime(int index) const override;
 
     //! Find key at given time.
     //! @return Index of found key, or -1 if key with this time not found.
-    virtual int FindKey(float time);
+    int FindKey(float time) override;
 
     //! Get flags of specified key.
     //! @return key time.
-    virtual int GetKeyFlags(int index);
+    int GetKeyFlags(int index) override;
 
     //! Set key at specified location.
     //! @param key Must be valid pointer to compatible key structure.
-    virtual void SetKey(int index, IKey* key);
+    void SetKey(int index, IKey* key) override;
 
     //! Set time of specified key.
-    virtual void SetKeyTime(int index, float time);
+    void SetKeyTime(int index, float time) override;
 
     //! Set flags of specified key.
-    virtual void SetKeyFlags(int index, int flags);
+    void SetKeyFlags(int index, int flags) override;
 
     //! Sort keys in track (after time of keys was modified).
-    virtual void SortKeys();
+    void SortKeys() override;
 
     //! Get track flags.
-    virtual int GetFlags() { return m_flags; };
+    int GetFlags() override { return m_flags; };
 
     //! Check if track is masked
-    virtual bool IsMasked([[maybe_unused]] const uint32 mask) const { return false; }
+    bool IsMasked([[maybe_unused]] const uint32 mask) const override { return false; }
 
     //! Set track flags.
-    virtual void SetFlags(int flags)
+    void SetFlags(int flags) override
     {
         m_flags = flags;
     }
@@ -157,37 +157,37 @@ public:
     // Get track value at specified time.
     // Interpolates keys if needed.
     //////////////////////////////////////////////////////////////////////////
-    virtual void GetValue([[maybe_unused]] float time, [[maybe_unused]] float& value, [[maybe_unused]] bool applyMultiplier = false) { assert(0); };
-    virtual void GetValue([[maybe_unused]] float time, [[maybe_unused]] Vec3& value, [[maybe_unused]] bool applyMultiplier = false) { assert(0); };
-    virtual void GetValue([[maybe_unused]] float time, [[maybe_unused]] Vec4& value, [[maybe_unused]] bool applyMultiplier = false) { assert(0); };
-    virtual void GetValue([[maybe_unused]] float time, [[maybe_unused]] Quat& value) { assert(0); };
-    virtual void GetValue([[maybe_unused]] float time, [[maybe_unused]] bool& value) { assert(0); };
-    virtual void GetValue([[maybe_unused]] float time, [[maybe_unused]] Maestro::AssetBlends<AZ::Data::AssetData>& value) { assert(0); }
+    void GetValue([[maybe_unused]] float time, [[maybe_unused]] float& value, [[maybe_unused]] bool applyMultiplier = false) override { assert(0); };
+    void GetValue([[maybe_unused]] float time, [[maybe_unused]] Vec3& value, [[maybe_unused]] bool applyMultiplier = false) override { assert(0); };
+    void GetValue([[maybe_unused]] float time, [[maybe_unused]] Vec4& value, [[maybe_unused]] bool applyMultiplier = false) override { assert(0); };
+    void GetValue([[maybe_unused]] float time, [[maybe_unused]] Quat& value) override { assert(0); };
+    void GetValue([[maybe_unused]] float time, [[maybe_unused]] bool& value) override { assert(0); };
+    void GetValue([[maybe_unused]] float time, [[maybe_unused]] Maestro::AssetBlends<AZ::Data::AssetData>& value) override { assert(0); }
 
     //////////////////////////////////////////////////////////////////////////
     // Set track value at specified time.
     // Adds new keys if required.
     //////////////////////////////////////////////////////////////////////////
-    virtual void SetValue([[maybe_unused]] float time, [[maybe_unused]] const float& value, [[maybe_unused]] bool bDefault = false, [[maybe_unused]] bool applyMultiplier = false) { assert(0); };
-    virtual void SetValue([[maybe_unused]] float time, [[maybe_unused]] const Vec3& value, [[maybe_unused]] bool bDefault = false, [[maybe_unused]] bool applyMultiplier = false) { assert(0); };
-    virtual void SetValue([[maybe_unused]] float time, [[maybe_unused]] const Vec4& value, [[maybe_unused]] bool bDefault = false, [[maybe_unused]] bool applyMultiplier = false) { assert(0); };
-    virtual void SetValue([[maybe_unused]] float time, [[maybe_unused]] const Quat& value, [[maybe_unused]] bool bDefault = false) { assert(0); };
-    virtual void SetValue([[maybe_unused]] float time, [[maybe_unused]] const bool& value, [[maybe_unused]] bool bDefault = false) { assert(0); };
-    virtual void SetValue([[maybe_unused]] float time, [[maybe_unused]] const Maestro::AssetBlends<AZ::Data::AssetData>& value, [[maybe_unused]] bool bDefault = false) { assert(0); }
+    void SetValue([[maybe_unused]] float time, [[maybe_unused]] const float& value, [[maybe_unused]] bool bDefault = false, [[maybe_unused]] bool applyMultiplier = false) override { assert(0); };
+    void SetValue([[maybe_unused]] float time, [[maybe_unused]] const Vec3& value, [[maybe_unused]] bool bDefault = false, [[maybe_unused]] bool applyMultiplier = false) override { assert(0); };
+    void SetValue([[maybe_unused]] float time, [[maybe_unused]] const Vec4& value, [[maybe_unused]] bool bDefault = false, [[maybe_unused]] bool applyMultiplier = false) override { assert(0); };
+    void SetValue([[maybe_unused]] float time, [[maybe_unused]] const Quat& value, [[maybe_unused]] bool bDefault = false) override { assert(0); };
+    void SetValue([[maybe_unused]] float time, [[maybe_unused]] const bool& value, [[maybe_unused]] bool bDefault = false) override { assert(0); };
+    void SetValue([[maybe_unused]] float time, [[maybe_unused]] const Maestro::AssetBlends<AZ::Data::AssetData>& value, [[maybe_unused]] bool bDefault = false) override { assert(0); }
 
-    virtual void OffsetKeyPosition([[maybe_unused]] const Vec3& value) { assert(0); };
-    virtual void UpdateKeyDataAfterParentChanged([[maybe_unused]] const AZ::Transform& oldParentWorldTM, [[maybe_unused]] const AZ::Transform& newParentWorldTM) { assert(0); };
+    void OffsetKeyPosition([[maybe_unused]] const Vec3& value) override { assert(0); };
+    void UpdateKeyDataAfterParentChanged([[maybe_unused]] const AZ::Transform& oldParentWorldTM, [[maybe_unused]] const AZ::Transform& newParentWorldTM) override { assert(0); };
 
     /** Assign active time range for this track.
     */
-    virtual void SetTimeRange(const Range& timeRange) { m_timeRange = timeRange; };
+    void SetTimeRange(const Range& timeRange) override { m_timeRange = timeRange; };
 
     /** Serialize this animation track to XML.
             Do not override this method, prefer to override SerializeKey.
     */
-    virtual bool Serialize(XmlNodeRef& xmlNode, bool bLoading, bool bLoadEmptyTracks = true);
+    bool Serialize(XmlNodeRef& xmlNode, bool bLoading, bool bLoadEmptyTracks = true) override;
 
-    virtual bool SerializeSelection(XmlNodeRef& xmlNode, bool bLoading, bool bCopySelected = false, float fTimeOffset = 0);
+    bool SerializeSelection(XmlNodeRef& xmlNode, bool bLoading, bool bCopySelected = false, float fTimeOffset = 0) override;
 
 
     /** Serialize single key of this track.
@@ -204,33 +204,33 @@ public:
     int GetActiveKey(float time, KeyType* key);
 
 #ifdef MOVIESYSTEM_SUPPORT_EDITING
-    virtual ColorB GetCustomColor() const
+    ColorB GetCustomColor() const override
     { return m_customColor; }
-    virtual void SetCustomColor(ColorB color)
+    void SetCustomColor(ColorB color) override
     {
         m_customColor = color;
         m_bCustomColorSet = true;
     }
-    virtual bool HasCustomColor() const
+    bool HasCustomColor() const override
     { return m_bCustomColorSet; }
-    virtual void ClearCustomColor()
+    void ClearCustomColor() override
     { m_bCustomColorSet = false; }
 #endif
 
-    virtual void GetKeyValueRange(float& fMin, float& fMax) const { fMin = m_fMinKeyValue; fMax = m_fMaxKeyValue; };
-    virtual void SetKeyValueRange(float fMin, float fMax){ m_fMinKeyValue = fMin; m_fMaxKeyValue = fMax; };
+    void GetKeyValueRange(float& fMin, float& fMax) const override { fMin = m_fMinKeyValue; fMax = m_fMaxKeyValue; };
+    void SetKeyValueRange(float fMin, float fMax) override{ m_fMinKeyValue = fMin; m_fMaxKeyValue = fMax; };
 
     void SetMultiplier(float trackMultiplier) override
     {
         m_trackMultiplier = trackMultiplier;
     }
  
-    void SetExpanded([[maybe_unused]] bool expanded)
+    void SetExpanded([[maybe_unused]] bool expanded) override
     {
         AZ_Assert(false, "Not expected to be used.");
     }
 
-    bool GetExpanded() const
+    bool GetExpanded() const override
     {
         return false;
     }

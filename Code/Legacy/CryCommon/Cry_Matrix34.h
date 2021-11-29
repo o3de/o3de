@@ -587,6 +587,30 @@ struct Matrix34_tpl
         m22 = m33.m22;
     }
 
+    //check if we have an orthonormal-base (general case, works even with reflection matrices)
+    int IsOrthonormal(F threshold = 0.001) const
+    {
+        f32 d0 = fabs_tpl(GetColumn0() | GetColumn1());
+        if  (d0 > threshold)
+        {
+            return 0;
+        }
+        f32 d1 = fabs_tpl(GetColumn0() | GetColumn2());
+        if  (d1 > threshold)
+        {
+            return 0;
+        }
+        f32 d2 = fabs_tpl(GetColumn1() | GetColumn2());
+        if  (d2 > threshold)
+        {
+            return 0;
+        }
+        int a = (fabs_tpl(1 - (GetColumn0() | GetColumn0()))) < threshold;
+        int b = (fabs_tpl(1 - (GetColumn1() | GetColumn1()))) < threshold;
+        int c = (fabs_tpl(1 - (GetColumn2() | GetColumn2()))) < threshold;
+        return a & b & c;
+    }
+
     //check if we have an orthonormal-base (assuming we are using a right-handed coordinate system)
     int IsOrthonormalRH(F threshold = 0.001) const
     {
@@ -602,6 +626,59 @@ struct Matrix34_tpl
             (fabs_tpl(m0.m10 - m1.m10) <= e) && (fabs_tpl(m0.m11 - m1.m11) <= e) && (fabs_tpl(m0.m12 - m1.m12) <= e) && (fabs_tpl(m0.m13 - m1.m13) <= e) &&
             (fabs_tpl(m0.m20 - m1.m20) <= e) && (fabs_tpl(m0.m21 - m1.m21) <= e) && (fabs_tpl(m0.m22 - m1.m22) <= e) && (fabs_tpl(m0.m23 - m1.m23) <= e)
             );
+    }
+
+    bool IsValid() const
+    {
+        if (!NumberValid(m00))
+        {
+            return false;
+        }
+        if (!NumberValid(m01))
+        {
+            return false;
+        }
+        if (!NumberValid(m02))
+        {
+            return false;
+        }
+        if (!NumberValid(m03))
+        {
+            return false;
+        }
+        if (!NumberValid(m10))
+        {
+            return false;
+        }
+        if (!NumberValid(m11))
+        {
+            return false;
+        }
+        if (!NumberValid(m12))
+        {
+            return false;
+        }
+        if (!NumberValid(m13))
+        {
+            return false;
+        }
+        if (!NumberValid(m20))
+        {
+            return false;
+        }
+        if (!NumberValid(m21))
+        {
+            return false;
+        }
+        if (!NumberValid(m22))
+        {
+            return false;
+        }
+        if (!NumberValid(m23))
+        {
+            return false;
+        }
+        return true;
     }
 
     /*!
@@ -722,11 +799,6 @@ struct Matrix34_tpl
 ///////////////////////////////////////////////////////////////////////////////
 
 typedef Matrix34_tpl<f32>  Matrix34; //always 32 bit
-#if AZ_COMPILER_MSVC
-    typedef __declspec(align(16)) Matrix34_tpl<f32> Matrix34A;
-#elif AZ_COMPILER_CLANG
-    typedef Matrix34_tpl<f32> __attribute__((aligned(16))) Matrix34A;
-#endif
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------

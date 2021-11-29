@@ -192,7 +192,7 @@ namespace AtomToolsFramework
 
     AZStd::string DynamicProperty::GetDisplayName() const
     {
-        return !m_config.m_displayName.empty() ? m_config.m_displayName : m_config.m_nameId;
+        return !m_config.m_displayName.empty() ? m_config.m_displayName : m_config.m_name;
     }
 
     AZStd::string DynamicProperty::GetGroupName() const

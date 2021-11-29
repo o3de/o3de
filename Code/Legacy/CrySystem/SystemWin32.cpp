@@ -14,7 +14,6 @@
 #include <IRenderer.h>
 #include <IMovieSystem.h>
 #include <ILog.h>
-#include <CryLibrary.h>
 #include <AzCore/Debug/StackTracer.h>
 #include <AzCore/IO/SystemFile.h> // for AZ_MAX_PATH_LEN
 #include <AzCore/std/allocator_stack.h>
@@ -69,39 +68,6 @@ const char* g_szModuleGroups[][2] = {
     {"Editor.exe", g_szGroupCore},
     {"CrySystem.dll", g_szGroupCore}
 };
-
-//////////////////////////////////////////////////////////////////////////
-void CSystem::SetAffinity()
-{
-    // the following code is only for Windows
-#ifdef WIN32
-    // set the process affinity
-    ICVar* pcvAffinityMask = GetIConsole()->GetCVar("sys_affinity");
-    if (!pcvAffinityMask)
-    {
-        pcvAffinityMask = REGISTER_INT("sys_affinity", 0, VF_NULL, "");
-    }
-
-    if (pcvAffinityMask)
-    {
-        unsigned nAffinity = pcvAffinityMask->GetIVal();
-        if (nAffinity)
-        {
-            typedef BOOL (WINAPI * FnSetProcessAffinityMask)(IN HANDLE hProcess, IN DWORD_PTR dwProcessAffinityMask);
-            HMODULE hKernel = CryLoadLibrary ("kernel32.dll");
-            if (hKernel)
-            {
-                FnSetProcessAffinityMask SetProcessAffinityMask = (FnSetProcessAffinityMask)GetProcAddress(hKernel, "SetProcessAffinityMask");
-                if (SetProcessAffinityMask && !SetProcessAffinityMask(GetCurrentProcess(), nAffinity))
-                {
-                    GetILog()->LogError("Error: Cannot set affinity mask %d, error code %d", nAffinity, GetLastError());
-                }
-                FreeLibrary (hKernel);
-            }
-        }
-    }
-#endif
-}
 
 #if defined(WIN32)
 #pragma pack(push,1)
@@ -273,11 +239,7 @@ static const char* GetLastSystemErrorMessage()
 
         return szBuffer;
     }
-#else
-    return 0;
-
 #endif //WIN32
-
     return 0;
 }
 
@@ -420,45 +382,6 @@ void CSystem::debug_LogCallStack(int nMaxFuncs, [[maybe_unused]] int nFlags)
         CryLogAlways("    %02d) %s", i, funcs[i]);
     }
 }
-
-//////////////////////////////////////////////////////////////////////////
-// Support relaunching for windows media center edition.
-//////////////////////////////////////////////////////////////////////////
-#if defined(WIN32)
-#if (_WIN32_WINNT < 0x0501)
-#define SM_MEDIACENTER          87
-#endif
-bool CSystem::ReLaunchMediaCenter()
-{
-    // Skip if not running on a Media Center
-    if (GetSystemMetrics(SM_MEDIACENTER) == 0)
-    {
-        return false;
-    }
-
-    // Get the path to Media Center
-    wchar_t szExpandedPath[AZ_MAX_PATH_LEN];
-    if (!ExpandEnvironmentStringsW(L"%SystemRoot%\\ehome\\ehshell.exe", szExpandedPath, AZ_MAX_PATH_LEN))
-    {
-        return false;
-    }
-
-    // Skip if ehshell.exe doesn't exist
-    if (GetFileAttributesW(szExpandedPath) == 0xFFFFFFFF)
-    {
-        return false;
-    }
-
-    // Launch ehshell.exe
-    INT_PTR result = (INT_PTR)ShellExecuteW(NULL, TEXT("open"), szExpandedPath, NULL, NULL, SW_SHOWNORMAL);
-    return (result > 32);
-}
-#else
-bool CSystem::ReLaunchMediaCenter()
-{
-    return false;
-}
-#endif //defined(WIN32)
 
 #if (defined(WIN32) || defined(WIN64))
 //////////////////////////////////////////////////////////////////////////

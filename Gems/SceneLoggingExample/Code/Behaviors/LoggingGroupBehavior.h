@@ -28,8 +28,8 @@ namespace SceneLoggingExample
 
         ~LoggingGroupBehavior() override = default;
 
-        void Activate();
-        void Deactivate();
+        void Activate() override;
+        void Deactivate() override;
         static void Reflect(AZ::ReflectContext* context);
 
         void GetCategoryAssignments(CategoryRegistrationList& categories, const AZ::SceneAPI::Containers::Scene& scene) override;

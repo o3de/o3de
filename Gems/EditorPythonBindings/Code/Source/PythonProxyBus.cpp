@@ -195,7 +195,7 @@ namespace EditorPythonBindings
 
                 if (!m_handler)
                 {
-                    AZ_Error("python", false, "No EBus connection deteced; missing call or failed call to connect()?");
+                    AZ_Error("python", false, "No EBus connection detected; missing call or failed call to connect()?");
                     return false;
                 }
 
@@ -206,10 +206,7 @@ namespace EditorPythonBindings
                     if (eventName == e.m_name)
                     {
                         AZStd::string eventNameValue{ eventName };
-#if defined(AZ_ENABLE_TRACING)
-                        const auto& callbackIt = m_callbackMap.find(eventNameValue);
-#endif
-                        AZ_Warning("python", m_callbackMap.end() == callbackIt, "Replacing callback for eventName:%s", eventNameValue.c_str());
+                        AZ_Warning("python", m_callbackMap.end() == m_callbackMap.find(eventNameValue), "Replacing callback for eventName:%s", eventNameValue.c_str());
                         m_callbackMap[eventNameValue] = callback;
                         return true;
                     }
@@ -293,7 +290,7 @@ namespace EditorPythonBindings
                     handler->m_ebus->m_name.c_str(), eventName);
             }
 
-            void OnEventGenericHook(const char* eventName, pybind11::function callback, [[maybe_unused]] int eventIndex, AZ::BehaviorValueParameter* result, int numParameters, AZ::BehaviorValueParameter* parameters)
+            void OnEventGenericHook([[maybe_unused]] const char* eventName, pybind11::function callback, [[maybe_unused]] int eventIndex, AZ::BehaviorValueParameter* result, int numParameters, AZ::BehaviorValueParameter* parameters)
             {
                 // build the parameters to send to callback
                 Convert::StackVariableAllocator stackVariableAllocator;

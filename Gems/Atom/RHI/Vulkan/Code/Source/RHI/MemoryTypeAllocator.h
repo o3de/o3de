@@ -38,7 +38,7 @@ namespace AZ
 
             void Init(const Descriptor& descriptor);
 
-            void Shutdown();
+            void Shutdown() override;
 
             void GarbageCollect();
 

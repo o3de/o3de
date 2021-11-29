@@ -1,0 +1,63 @@
+/*
+* Modifications Copyright (c) Contributors to the Open 3D Engine Project.
+* For complete copyright and license terms please see the LICENSE at the root of this distribution.
+*
+* SPDX-License-Identifier: (Apache-2.0 OR MIT) AND MIT
+*
+*/
+
+#include <Atom/Features/SrgSemantics.azsli>
+#include <HairUtilities.azsli> 
+
+//!------------------------------ SRG Structure --------------------------------
+//! Per pass SRG that holds the dynamic shared read-write buffer shared 
+//! across all dispatches and draw calls. It is used for all the dynamic buffers
+//! that can change between passes due to the application of skinning, simulation 
+//! and physics affect. 
+//! Once the compute pases are done, it is read by the rendering shaders.  
+ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
+{
+    // oiriginally: [[vk::binding(0, 0)]] Texture2D<float4> HaiColorTexture : register(t0, space0);
+    // oiriginally: [[vk::binding(1, 0)]] Texture2D<float>  AccumInvAlpha : register(t1, space0);
+    Texture2D<float4>   m_hairColorTexture;
+    Texture2D<float>    m_accumInvAlpha;
+}
+//------------------------------------------------------------------------------
+
+#include <HairFullScreenUtils.azsli>    // provides the Vertex Shader
+
+//!=============================================================================
+//!                 HairColorPS - Fourth Pass of ShortCut Render
+//! Full-screen pass that finalizes the weighted average, and blends using the 
+//! accumulated 1-alpha product.
+//!=============================================================================
+[earlydepthstencil]
+float4 HairShortCutResolveColorPS(VSOutput input) : SV_Target
+{
+    int2 vScreenAddress = int2(input.m_position.xy);
+
+    float fInvAlpha = PassSrg::m_accumInvAlpha[vScreenAddress];
+    float fAlpha = 1.0 - fInvAlpha;
+
+    if (fAlpha < SHORTCUT_MIN_ALPHA)
+    {
+        // next we discard of non-hair pixels to avoid manipulating them depending 
+        // on the alpha blend state - this is the safer and faster approach as there 
+        // is no hair in these pixels
+        discard;    
+    }
+    
+    float4 finalColor;
+    float weightSum = PassSrg::m_hairColorTexture[vScreenAddress].w;
+
+    // Normalize the sum of the shaded fragment from the previous pass and 
+    // then multiply it by the alpha blend of the hairs done in the depth-alpha pass.
+    finalColor.xyz = PassSrg::m_hairColorTexture[vScreenAddress] * fAlpha / weightSum;
+
+    // The alpha is set to the inverse alpha of the hair so that the original
+    // background will be blended using this factor emulating single step alpha blend
+    // over the sum of all hair fragment blends. 
+    finalColor.w = fInvAlpha;
+
+    return finalColor;
+}

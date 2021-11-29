@@ -9,7 +9,7 @@ Helper file for assisting in building workspaces and setting up LTT with the cur
 
 import ly_test_tools._internal.pytest_plugin as pytest_plugin
 import ly_test_tools._internal.managers.workspace as internal_workspace
-from ly_test_tools import MAC, WINDOWS
+from ly_test_tools import LINUX, MAC, WINDOWS
 import os, stat
 
 
@@ -47,6 +47,11 @@ def create_builtin_workspace(
     elif MAC:
         from ly_test_tools._internal.managers.platforms.mac import MacWorkspaceManager
         build_class = MacWorkspaceManager
+    elif LINUX:
+        from ly_test_tools._internal.managers.platforms.linux import LinuxWorkspaceManager
+        build_class = LinuxWorkspaceManager
+    else:
+        raise NotImplementedError("No workspace manager found for current Operating System")
 
     instance = build_class(
         build_directory=build_directory,

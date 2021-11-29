@@ -71,7 +71,7 @@ namespace AWSCore
         };
 
         AWSResourceMappingManager();
-        ~AWSResourceMappingManager() = default;
+        ~AWSResourceMappingManager() override = default;
 
         void ActivateManager();
         void DeactivateManager();

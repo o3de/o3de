@@ -35,6 +35,7 @@ namespace Platform
     SystemFile::SizeType Length(FileHandleType handle, const SystemFile* systemFile);
 
     bool Exists(const char* fileName);
+    bool IsDirectory(const char* filePath);
     void FindFiles(const char* filter, SystemFile::FindFileCB cb);
     AZ::u64 ModificationTime(const char* fileName);
     SystemFile::SizeType Length(const char* fileName);
@@ -160,12 +161,12 @@ void SystemFile::Seek(SeekSizeType offset, SeekMode mode)
     Platform::Seek(m_handle, this, offset, mode);
 }
 
-SystemFile::SizeType SystemFile::Tell()
+SystemFile::SizeType SystemFile::Tell() const
 {
     return Platform::Tell(m_handle, this);
 }
 
-bool SystemFile::Eof()
+bool SystemFile::Eof() const
 {
     return Platform::Eof(m_handle, this);
 }
@@ -233,6 +234,11 @@ SystemFile::SizeType SystemFile::DiskOffset() const
 bool SystemFile::Exists(const char* fileName)
 {
     return Platform::Exists(fileName);
+}
+
+bool SystemFile::IsDirectory(const char* filePath)
+{
+    return Platform::IsDirectory(filePath);
 }
 
 void SystemFile::FindFiles(const char* filter, FindFileCB cb)

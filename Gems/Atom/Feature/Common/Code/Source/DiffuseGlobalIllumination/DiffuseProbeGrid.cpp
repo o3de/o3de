@@ -128,8 +128,8 @@ namespace AZ
 
         void DiffuseProbeGrid::SetTransform(const AZ::Transform& transform)
         {
-            m_position = transform.GetTranslation();
-            m_aabbWs = Aabb::CreateCenterHalfExtents(m_position, m_extents / 2.0f);
+            m_transform = transform;
+            m_obbWs = Obb::CreateFromPositionRotationAndHalfLengths(m_transform.GetTranslation(), m_transform.GetRotation(), m_extents / 2.0f);
 
             // probes need to be relocated since the grid position changed
             m_remainingRelocationIterations = DefaultNumRelocationIterations;
@@ -145,7 +145,7 @@ namespace AZ
         void DiffuseProbeGrid::SetExtents(const AZ::Vector3& extents)
         {
             m_extents = extents;
-            m_aabbWs = Aabb::CreateCenterHalfExtents(m_position, m_extents / 2.0f);
+            m_obbWs = Obb::CreateFromPositionRotationAndHalfLengths(m_transform.GetTranslation(), m_transform.GetRotation(), m_extents / 2.0f);
 
             // recompute the number of probes since the extents changed
             UpdateProbeCount();
@@ -467,7 +467,10 @@ namespace AZ
             RHI::ShaderInputConstantIndex constantIndex;
 
             constantIndex = srgLayout->FindShaderInputConstantIndex(AZ::Name("m_probeGrid.origin"));
-            srg->SetConstant(constantIndex, m_position);
+            srg->SetConstant(constantIndex, m_transform.GetTranslation());
+
+            constantIndex = srgLayout->FindShaderInputConstantIndex(AZ::Name("m_probeGrid.rotation"));
+            srg->SetConstant(constantIndex, m_transform.GetRotation());
 
             constantIndex = srgLayout->FindShaderInputConstantIndex(AZ::Name("m_probeGrid.numRaysPerProbe"));
             srg->SetConstant(constantIndex, m_numRaysPerProbe);
@@ -760,14 +763,15 @@ namespace AZ
             RHI::ShaderInputImageIndex imageIndex;
 
             constantIndex = srgLayout->FindShaderInputConstantIndex(Name("m_modelToWorld"));
-            AZ::Matrix3x4 modelToWorld = AZ::Matrix3x4::CreateFromMatrix3x3AndTranslation(Matrix3x3::CreateIdentity(), m_position) * AZ::Matrix3x4::CreateScale(m_extents);
+            AZ::Matrix3x4 modelToWorld = AZ::Matrix3x4::CreateFromTransform(m_transform) * AZ::Matrix3x4::CreateScale(m_extents);
             m_renderObjectSrg->SetConstant(constantIndex, modelToWorld);
 
-            constantIndex = srgLayout->FindShaderInputConstantIndex(Name("m_aabbMin"));
-            m_renderObjectSrg->SetConstant(constantIndex, m_aabbWs.GetMin());
+            constantIndex = srgLayout->FindShaderInputConstantIndex(Name("m_modelToWorldInverse"));
+            AZ::Matrix3x4 modelToWorldInverse = AZ::Matrix3x4::CreateFromTransform(m_transform).GetInverseFull();
+            m_renderObjectSrg->SetConstant(constantIndex, modelToWorldInverse);
 
-            constantIndex = srgLayout->FindShaderInputConstantIndex(Name("m_aabbMax"));
-            m_renderObjectSrg->SetConstant(constantIndex, m_aabbWs.GetMax());
+            constantIndex = srgLayout->FindShaderInputConstantIndex(Name("m_obbHalfLengths"));
+            m_renderObjectSrg->SetConstant(constantIndex, m_obbWs.GetHalfLengths());
 
             constantIndex = srgLayout->FindShaderInputConstantIndex(Name("m_enableDiffuseGI"));
             m_renderObjectSrg->SetConstant(constantIndex, m_enabled);
@@ -821,13 +825,14 @@ namespace AZ
             lod.m_screenCoverageMax = 1.0f;
 
             // update cullable bounds
+            Aabb aabbWs = Aabb::CreateFromObb(m_obbWs);
             Vector3 center;
             float radius;
-            m_aabbWs.GetAsSphere(center, radius);
+            aabbWs.GetAsSphere(center, radius);
 
             m_cullable.m_cullData.m_boundingSphere = Sphere(center, radius);
-            m_cullable.m_cullData.m_boundingObb = m_aabbWs.GetTransformedObb(AZ::Transform::CreateIdentity());
-            m_cullable.m_cullData.m_visibilityEntry.m_boundingVolume = m_aabbWs;
+            m_cullable.m_cullData.m_boundingObb = m_obbWs;
+            m_cullable.m_cullData.m_visibilityEntry.m_boundingVolume = aabbWs;
             m_cullable.m_cullData.m_visibilityEntry.m_userData = &m_cullable;
             m_cullable.m_cullData.m_visibilityEntry.m_typeFlags = AzFramework::VisibilityEntry::TYPE_RPI_Cullable;
 

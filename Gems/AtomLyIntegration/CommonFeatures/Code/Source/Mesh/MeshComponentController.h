@@ -30,9 +30,6 @@ namespace AZ
 {
     namespace Render
     {
-
-
-
         //! A configuration structure for the MeshComponentController
         class MeshComponentConfig final
             : public AZ::ComponentConfig
@@ -107,14 +104,14 @@ namespace AZ
             void SetLodType(RPI::Cullable::LodType lodType) override;
             RPI::Cullable::LodType GetLodType() const override;
 
-            virtual void SetLodOverride(RPI::Cullable::LodOverride lodOverride);
-            virtual RPI::Cullable::LodOverride GetLodOverride() const;
+            void SetLodOverride(RPI::Cullable::LodOverride lodOverride) override;
+            RPI::Cullable::LodOverride GetLodOverride() const override;
 
-            virtual void SetMinimumScreenCoverage(float minimumScreenCoverage);
-            virtual float GetMinimumScreenCoverage() const;
+            void SetMinimumScreenCoverage(float minimumScreenCoverage) override;
+            float GetMinimumScreenCoverage() const override;
 
-            virtual void SetQualityDecayRate(float qualityDecayRate);
-            virtual float GetQualityDecayRate() const;
+            void SetQualityDecayRate(float qualityDecayRate) override;
+            float GetQualityDecayRate() const override;
 
             void SetVisibility(bool visible) override;
             bool GetVisibility() const override;
@@ -130,7 +127,7 @@ namespace AZ
             void OnTransformChanged(const AZ::Transform& local, const AZ::Transform& world) override;
 
             // MaterialReceiverRequestBus::Handler overrides ...
-            virtual MaterialAssignmentId FindMaterialAssignmentId(
+            MaterialAssignmentId FindMaterialAssignmentId(
                 const MaterialAssignmentLodIndex lod, const AZStd::string& label) const override;
             RPI::ModelMaterialSlotMap GetModelMaterialSlots() const override;
             MaterialAssignmentMap GetMaterialAssignments() const override;

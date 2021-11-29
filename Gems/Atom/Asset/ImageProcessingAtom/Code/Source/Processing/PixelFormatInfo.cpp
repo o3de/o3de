@@ -52,19 +52,6 @@ namespace ImageProcessingAtom
         return false;
     }
 
-    bool IsETCFormat(EPixelFormat fmt)
-    {
-        if (fmt == ePixelFormat_ETC2
-            || fmt == ePixelFormat_ETC2a
-            || fmt == ePixelFormat_ETC2a1
-            || fmt == ePixelFormat_EAC_R11
-            || fmt == ePixelFormat_EAC_RG11)
-        {
-            return true;
-        }
-        return false;
-    }
-
     PixelFormatInfo::PixelFormatInfo(
         uint32_t    a_bitsPerPixel,
         uint32_t    a_Channels,
@@ -96,7 +83,6 @@ namespace ImageProcessingAtom
         , fourCC(a_fourCC)
         , eSampleType(a_eSampleType)
         , szName(a_szName)
-        , szLegacyName(a_szName)
         , szDescription(a_szDescription)
         , bCompressed(a_bCompressed)
         , bSelectable(a_bSelectable)
@@ -122,15 +108,6 @@ namespace ImageProcessingAtom
     CPixelFormats::CPixelFormats()
     {
         InitPixelFormats();
-
-        m_removedLegacyFormats["DXT1"] = ePixelFormat_BC1;
-        m_removedLegacyFormats["DXT1a"] = ePixelFormat_BC1a;
-        m_removedLegacyFormats["DXT3"] = ePixelFormat_BC3;
-        m_removedLegacyFormats["DXT3t"] = ePixelFormat_BC3t;
-        m_removedLegacyFormats["DXT5"] = ePixelFormat_BC3;
-        m_removedLegacyFormats["DXT5t"] = ePixelFormat_BC3t;
-        m_removedLegacyFormats["3DCp"] = ePixelFormat_BC4;
-        m_removedLegacyFormats["3DC"] = ePixelFormat_BC5;
     }
 
     void CPixelFormats::InitPixelFormat(EPixelFormat format, const PixelFormatInfo& formatInfo)
@@ -176,13 +153,6 @@ namespace ImageProcessingAtom
         InitPixelFormat(ePixelFormat_ASTC_10x10, PixelFormatInfo(0, 4, true, "?", 16, 16, 10, 10, 128, false, DXGI_FORMAT_UNKNOWN, FOURCC_ASTC_10x10, ESampleType::eSampleType_Compressed, "ASTC_10x10", "ASTC 10x10 compressed texture format", true, false));
         InitPixelFormat(ePixelFormat_ASTC_12x10, PixelFormatInfo(0, 4, true, "?", 16, 16, 12, 10, 128, false, DXGI_FORMAT_UNKNOWN, FOURCC_ASTC_12x10, ESampleType::eSampleType_Compressed, "ASTC_12x10", "ASTC 12x10 compressed texture format", true, false));
         InitPixelFormat(ePixelFormat_ASTC_12x12, PixelFormatInfo(0, 4, true, "?", 16, 16, 12, 12, 128, false, DXGI_FORMAT_UNKNOWN, FOURCC_ASTC_12x12, ESampleType::eSampleType_Compressed, "ASTC_12x12", "ASTC 12x12 compressed texture format", true, false));
-        InitPixelFormat(ePixelFormat_PVRTC2, PixelFormatInfo(2, 4, true, "2", 16, 16, 8, 4, 64, true, DXGI_FORMAT_UNKNOWN, FOURCC_PVRTC2, ESampleType::eSampleType_Compressed, "PVRTC2", "POWERVR 2 bpp compressed texture format", true, false));
-        InitPixelFormat(ePixelFormat_PVRTC4, PixelFormatInfo(4, 4, true, "2", 8, 8, 4, 4, 64, true, DXGI_FORMAT_UNKNOWN, FOURCC_PVRTC4, ESampleType::eSampleType_Compressed, "PVRTC4", "POWERVR 4 bpp compressed texture format", true, false));
-        InitPixelFormat(ePixelFormat_EAC_R11, PixelFormatInfo(4, 1, true, "4", 4, 4, 4, 4, 64, false, DXGI_FORMAT_UNKNOWN, FOURCC_EAC_R11, ESampleType::eSampleType_Compressed, "EAC_R11", "EAC 4 bpp single channel texture format", true, false));
-        InitPixelFormat(ePixelFormat_EAC_RG11, PixelFormatInfo(8, 2, false, "0", 4, 4, 4, 4, 128, false, DXGI_FORMAT_UNKNOWN, FOURCC_EAC_RG11, ESampleType::eSampleType_Compressed, "EAC_RG11", "EAC 8 bpp dual channel texture format", true, false));
-        InitPixelFormat(ePixelFormat_ETC2, PixelFormatInfo(4, 3, false, "0", 4, 4, 4, 4, 64, false, DXGI_FORMAT_UNKNOWN, FOURCC_ETC2, ESampleType::eSampleType_Compressed, "ETC2", "ETC2 RGB 4 bpp compressed texture format", true, false));
-        InitPixelFormat(ePixelFormat_ETC2a, PixelFormatInfo(8, 4, true, "4", 4, 4, 4, 4, 128, false, DXGI_FORMAT_UNKNOWN, FOURCC_ETC2A, ESampleType::eSampleType_Compressed, "ETC2a", "ETC2 RGBA 8 bpp compressed texture format", true, false));
-        InitPixelFormat(ePixelFormat_ETC2a1, PixelFormatInfo(4, 4, true, "1", 4, 4, 4, 4, 64, false, DXGI_FORMAT_UNKNOWN, FOURCC_ETC2A, ESampleType::eSampleType_Compressed, "ETC2a1", "ETC2 RGBA1 8 bpp compressed texture format", true, false));
 
         // Standardized Compressed DXGI Formats (DX10+)
         // Data in these compressed formats is hardware decodable on all DX10 chips, and manageable with the DX10-API.
@@ -216,17 +186,6 @@ namespace ImageProcessingAtom
 
         InitPixelFormat(ePixelFormat_R32, PixelFormatInfo(32, 1, false, "0", 1, 1, 1, 1, 32, false, DXGI_FORMAT_FORCE_UINT, FOURCC_DX10, ESampleType::eSampleType_Uint32, "R32", "32-bit red only", false, false));
 
-        //Set legacy name it can be used for convertion
-        m_pixelFormatInfo[ePixelFormat_R8G8B8A8].szLegacyName = "A8R8G8B8";
-        m_pixelFormatInfo[ePixelFormat_R8G8B8X8].szLegacyName = "X8R8G8B8";
-        m_pixelFormatInfo[ePixelFormat_R8G8].szLegacyName = "G8R8";
-        m_pixelFormatInfo[ePixelFormat_R16G16B16A16].szLegacyName = "A16B16G16R16";
-        m_pixelFormatInfo[ePixelFormat_R16G16].szLegacyName = "G16R16";
-        m_pixelFormatInfo[ePixelFormat_R32G32B32A32F].szLegacyName = "A32B32G32R32F";
-        m_pixelFormatInfo[ePixelFormat_R32G32F].szLegacyName = "G32R32F";
-        m_pixelFormatInfo[ePixelFormat_R16G16B16A16F].szLegacyName = "A16B16G16R16F";
-        m_pixelFormatInfo[ePixelFormat_R16G16F].szLegacyName = "G16R16F";
-
         //validate all pixel formats are proper initialized
         for (int i = 0; i < ePixelFormat_Count; ++i)
         {
@@ -245,23 +204,6 @@ namespace ImageProcessingAtom
         if (m_pixelFormatNameMap.find(name) != m_pixelFormatNameMap.end())
         {
             return m_pixelFormatNameMap[name];
-        }
-        return ePixelFormat_Unknown;
-    }
-
-    EPixelFormat CPixelFormats::FindPixelFormatByLegacyName(const char* name)
-    {
-        if (m_removedLegacyFormats.find(name) != m_removedLegacyFormats.end())
-        {
-            return m_removedLegacyFormats[name];
-        }
-
-        for (int i = 0; i < ePixelFormat_Count; ++i)
-        {
-            if (azstricmp(m_pixelFormatInfo[i].szLegacyName, name) == 0)
-            {
-                return (EPixelFormat)i;
-            }
         }
         return ePixelFormat_Unknown;
     }

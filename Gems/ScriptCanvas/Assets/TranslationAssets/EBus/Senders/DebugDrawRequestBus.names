@@ -1,0 +1,606 @@
+{
+    "entries": [
+        {
+            "base": "DebugDrawRequestBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "Debug Draw"
+            },
+            "methods": [
+                {
+                    "base": "DrawTextOnEntity",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Draw Text On Entity"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Draw Text On Entity is invoked"
+                    },
+                    "details": {
+                        "name": "Draw Text On Entity"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Entity Id",
+                                "tooltip": "Entity Unique Id"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Text"
+                            }
+                        },
+                        {
+                            "typeid": "{7894072A-9050-4F0F-901B-34B1A0D29417}",
+                            "details": {
+                                "name": "Color"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Duration"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "DrawRayEntityToDirection",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Draw Ray Entity To Direction"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Draw Ray Entity To Direction is invoked"
+                    },
+                    "details": {
+                        "name": "Draw Ray Entity To Direction"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Entity Id",
+                                "tooltip": "Entity Unique Id"
+                            }
+                        },
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Direction"
+                            }
+                        },
+                        {
+                            "typeid": "{7894072A-9050-4F0F-901B-34B1A0D29417}",
+                            "details": {
+                                "name": "Color"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Duration"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "DrawObb",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Draw Oriented Bounding Box"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Draw Oriented Bounding Box is invoked"
+                    },
+                    "details": {
+                        "name": "Draw Oriented Bounding Box"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{004ABD25-CF14-4EB3-BD41-022C247C07FA}",
+                            "details": {
+                                "name": "OBB"
+                            }
+                        },
+                        {
+                            "typeid": "{7894072A-9050-4F0F-901B-34B1A0D29417}",
+                            "details": {
+                                "name": "Color"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Duration"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "DrawObbOnEntity",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Draw Oriented Bounding Box on Entity"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Draw Oriented Bounding Box on Entity is invoked"
+                    },
+                    "details": {
+                        "name": "Draw Oriented Bounding Box on Entity"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Entity Id",
+                                "tooltip": "Entity Unique Id"
+                            }
+                        },
+                        {
+                            "typeid": "{004ABD25-CF14-4EB3-BD41-022C247C07FA}",
+                            "details": {
+                                "name": "OBB"
+                            }
+                        },
+                        {
+                            "typeid": "{7894072A-9050-4F0F-901B-34B1A0D29417}",
+                            "details": {
+                                "name": "Color"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Duration"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "DrawRayLocationToDirection",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Draw Ray Location To Direction"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Draw Ray Location To Direction is invoked"
+                    },
+                    "details": {
+                        "name": "Draw Ray Location To Direction"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Position"
+                            }
+                        },
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Direction"
+                            }
+                        },
+                        {
+                            "typeid": "{7894072A-9050-4F0F-901B-34B1A0D29417}",
+                            "details": {
+                                "name": "Color"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Duration"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "DrawSphereOnEntity",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Draw Sphere On Entity"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Draw Sphere On Entity is invoked"
+                    },
+                    "details": {
+                        "name": "Draw Sphere On Entity"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Entity Id",
+                                "tooltip": "Entity Unique Id"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Radius"
+                            }
+                        },
+                        {
+                            "typeid": "{7894072A-9050-4F0F-901B-34B1A0D29417}",
+                            "details": {
+                                "name": "Color"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Duration"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "DrawAabbOnEntity",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Draw Axis Aligned Bounding Box On Entity"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Draw Axis Aligned Bounding Box On Entity is invoked"
+                    },
+                    "details": {
+                        "name": "Draw Axis Aligned Bounding Box On Entity"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Entity Id",
+                                "tooltip": "Entity Unique Id"
+                            }
+                        },
+                        {
+                            "typeid": "{A54C2B36-D5B8-46A1-A529-4EBDBD2450E7}",
+                            "details": {
+                                "name": "AABB"
+                            }
+                        },
+                        {
+                            "typeid": "{7894072A-9050-4F0F-901B-34B1A0D29417}",
+                            "details": {
+                                "name": "Color"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Duration"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "DrawLineEntityToEntity",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Draw Line Entity To Entity"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Draw Line Entity To Entity is invoked"
+                    },
+                    "details": {
+                        "name": "Draw Line Entity To Entity"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "From Entity Id",
+                                "tooltip": "Entity Unique Id"
+                            }
+                        },
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "To Entity Id",
+                                "tooltip": "Entity Unique Id"
+                            }
+                        },
+                        {
+                            "typeid": "{7894072A-9050-4F0F-901B-34B1A0D29417}",
+                            "details": {
+                                "name": "Color"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Duration"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "DrawTextAtLocation",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Draw Text At Location"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Draw Text At Location is invoked"
+                    },
+                    "details": {
+                        "name": "Draw Text At Location"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Position"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Text"
+                            }
+                        },
+                        {
+                            "typeid": "{7894072A-9050-4F0F-901B-34B1A0D29417}",
+                            "details": {
+                                "name": "Color"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Duration"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "DrawTextOnScreen",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Draw Text On Screen"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Draw Text On Screen is invoked"
+                    },
+                    "details": {
+                        "name": "Draw Text On Screen"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Text"
+                            }
+                        },
+                        {
+                            "typeid": "{7894072A-9050-4F0F-901B-34B1A0D29417}",
+                            "details": {
+                                "name": "Color"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Duration"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "DrawAabb",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Draw Axis Aligned Bounding Box"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Draw Axis Aligned Bounding Box is invoked"
+                    },
+                    "details": {
+                        "name": "Draw Axis Aligned Bounding Box"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A54C2B36-D5B8-46A1-A529-4EBDBD2450E7}",
+                            "details": {
+                                "name": "AABB"
+                            }
+                        },
+                        {
+                            "typeid": "{7894072A-9050-4F0F-901B-34B1A0D29417}",
+                            "details": {
+                                "name": "Color"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Duration"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "DrawLineLocationToLocation",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Draw Line Location To Location"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Draw Line Location To Location is invoked"
+                    },
+                    "details": {
+                        "name": "Draw Line Location To Location"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Position"
+                            }
+                        },
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Position"
+                            }
+                        },
+                        {
+                            "typeid": "{7894072A-9050-4F0F-901B-34B1A0D29417}",
+                            "details": {
+                                "name": "Color"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Duration"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "DrawLineEntityToLocation",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Draw Line Entity To Location"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Draw Line Entity To Location is invoked"
+                    },
+                    "details": {
+                        "name": "Draw Line Entity To Location"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Entity Id",
+                                "tooltip": "Entity Unique Id"
+                            }
+                        },
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Position"
+                            }
+                        },
+                        {
+                            "typeid": "{7894072A-9050-4F0F-901B-34B1A0D29417}",
+                            "details": {
+                                "name": "Color"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Duration"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "DrawRayEntityToEntity",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Draw Ray Entity To Entity"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Draw Ray Entity To Entity is invoked"
+                    },
+                    "details": {
+                        "name": "Draw Ray Entity To Entity"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "From Entity Id",
+                                "tooltip": "Entity to draw the ray from"
+                            }
+                        },
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "To Entity Id",
+                                "tooltip": "Entity to draw the ray to"
+                            }
+                        },
+                        {
+                            "typeid": "{7894072A-9050-4F0F-901B-34B1A0D29417}",
+                            "details": {
+                                "name": "Color"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Duration"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "DrawSphereAtLocation",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Draw Sphere At Location"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Draw Sphere At Location is invoked"
+                    },
+                    "details": {
+                        "name": "Draw Sphere At Location"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Position"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Radius"
+                            }
+                        },
+                        {
+                            "typeid": "{7894072A-9050-4F0F-901B-34B1A0D29417}",
+                            "details": {
+                                "name": "Color"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Duration"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

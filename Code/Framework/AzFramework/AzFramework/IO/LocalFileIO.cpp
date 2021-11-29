@@ -12,10 +12,12 @@
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/Casting/numeric_cast.h>
 #include <AzCore/Casting/lossy_cast.h>
+#include <AzCore/std/containers/fixed_unordered_set.h>
 #include <AzCore/std/functional.h>
 #include <AzCore/std/string/conversions.h>
 #include <AzCore/std/string/string_view.h>
 #include <AzCore/StringFunc/StringFunc.h>
+#include <AzCore/Utils/Utils.h>
 #include <cctype>
 
 namespace AZ
@@ -281,17 +283,22 @@ namespace AZ
             return SystemFile::Exists(resolvedPath);
         }
 
+        bool LocalFileIO::IsDirectory(const char* filePath)
+        {
+            char resolvedPath[AZ_MAX_PATH_LEN];
+            ResolvePath(filePath, resolvedPath, AZ_MAX_PATH_LEN);
+
+            return SystemFile::IsDirectory(resolvedPath);
+        }
+
         void LocalFileIO::CheckInvalidWrite([[maybe_unused]] const char* path)
         {
 #if defined(AZ_ENABLE_TRACING)
-            const char* assetAliasPath = GetAlias("@assets@");
+            const char* assetAliasPath = GetAlias("@products@");
             if (path && assetAliasPath)
             {
-                AZStd::string assetsAlias(assetAliasPath);
-                AZStd::string pathString = path;
-                AZStd::to_lower(assetsAlias.begin(), assetsAlias.end());
-                AZStd::to_lower(pathString.begin(), pathString.end());
-                if (AZ::IO::PathView(pathString.c_str()).IsRelativeTo(assetsAlias.c_str()))
+                const AZ::IO::PathView pathView(path);
+                if (pathView.IsRelativeTo(assetAliasPath))
                 {
                     AZ_Error("FileIO", false, "You may not alter data inside the asset cache.  Please check the call stack and consider writing into the source asset folder instead.\n"
                         "Attempted write location: %s", path);
@@ -473,17 +480,15 @@ namespace AZ
                 return false;
             }
 
-            if (IsAbsolutePath(path))
+            if (AZ::IO::PathView(path).HasRootPath())
             {
                 size_t pathLen = strlen(path);
                 if (pathLen + 1 < resolvedPathSize)
                 {
                     azstrncpy(resolvedPath, resolvedPathSize, path, pathLen + 1);
 
-                    //see if the absolute path uses @assets@ or @root@, if it does lowercase the relative part
-                    [[maybe_unused]] bool lowercasePath = LowerIfBeginsWith(resolvedPath, resolvedPathSize, GetAlias("@assets@"))
-                        || LowerIfBeginsWith(resolvedPath, resolvedPathSize, GetAlias("@root@"))
-                        || LowerIfBeginsWith(resolvedPath, resolvedPathSize, GetAlias("@projectplatformcache@"));
+                    //see if the absolute path matches the resolved value of @products@, if it does lowercase the relative part
+                    LowerIfBeginsWith(resolvedPath, resolvedPathSize, GetAlias("@products@"));
 
                     ToUnixSlashes(resolvedPath, resolvedPathSize);
                     return true;
@@ -494,34 +499,39 @@ namespace AZ
                 }
             }
 
-            char rootedPathBuffer[AZ_MAX_PATH_LEN] = {0};
+            constexpr AZStd::string_view productAssetAlias = "@products@";
+            // Add plus one for the path separator: <alias>/<path>
+            constexpr size_t MaxPathSizeWithProductAssetAlias = AZ::IO::MaxPathLength + productAssetAlias.size() + 1;
+            using RootedPathString = AZStd::fixed_string<MaxPathSizeWithProductAssetAlias>;
+            RootedPathString rootedPathBuffer;
             const char* rootedPath = path;
-            // if the path does not begin with an alias, then it is assumed to begin with @assets@
+            // if the path does not begin with an alias, then it is assumed to begin with @products@
             if (path[0] != '@')
             {
-                if (GetAlias("@assets@"))
+                if (GetAlias("@products@"))
                 {
-                    const int rootLength = 9;// strlen("@assets@/")
-                    azstrncpy(rootedPathBuffer, AZ_MAX_PATH_LEN, "@assets@/", rootLength);
-                    size_t pathLen = strlen(path);
-                    size_t rootedPathBufferlength = rootLength + pathLen + 1;// +1 for null terminator
-                    if (rootedPathBufferlength > resolvedPathSize)
+
+                    if (const size_t requiredSize = productAssetAlias.size() + strlen(path) + 1;
+                        requiredSize > rootedPathBuffer.capacity())
                     {
-                        AZ_Assert(rootedPathBufferlength < resolvedPathSize, "Constructed path length is wrong:%s", rootedPathBuffer);//path constructed is wrong
-                        size_t remainingSize = resolvedPathSize - rootLength - 1;// - 1 for null terminator
-                        azstrncpy(rootedPathBuffer + rootLength, AZ_MAX_PATH_LEN, path, remainingSize);
-                        rootedPathBuffer[resolvedPathSize - 1] = '\0';
+                        AZ_Error("FileIO", false, "Prepending the %.*s alias to the input path results in a path longer than the"
+                            " AZ::IO::MaxPathLength + the alias size of %zu. The size of the potential failed path is %zu",
+                            AZ_STRING_ARG(productAssetAlias), rootedPathBuffer.capacity(), requiredSize)
                     }
                     else
                     {
-                        azstrncpy(rootedPathBuffer + rootLength, AZ_MAX_PATH_LEN - rootLength, path, pathLen + 1);
+                        rootedPathBuffer = RootedPathString::format("%.*s/%s", AZ_STRING_ARG(productAssetAlias), path);
                     }
                 }
                 else
                 {
-                    ConvertToAbsolutePath(path, rootedPathBuffer, AZ_MAX_PATH_LEN);
+                    if (ConvertToAbsolutePath(path, rootedPathBuffer.data(), rootedPathBuffer.capacity()))
+                    {
+                        // Recalculate the internal string length
+                        rootedPathBuffer.resize_no_construct(AZStd::char_traits<char>::length(rootedPathBuffer.data()));
+                    }
                 }
-                rootedPath = rootedPathBuffer;
+                rootedPath = rootedPathBuffer.c_str();
             }
 
             if (ResolveAliases(rootedPath, resolvedPath, resolvedPathSize))
@@ -556,10 +566,56 @@ namespace AZ
 
         const char* LocalFileIO::GetAlias(const char* key) const
         {
-            const auto it = m_aliases.find(key);
-            if (it != m_aliases.end())
+            if (const auto it = m_aliases.find(key); it != m_aliases.end())
             {
                 return it->second.c_str();
+            }
+            else if (const auto deprecatedIt = m_deprecatedAliases.find(key);
+                deprecatedIt != m_deprecatedAliases.end())
+            {
+                AZ_Error("FileIO", false, R"(Alias "%s" is deprecated. Please use alias "%s" instead)",
+                    key, deprecatedIt->second.c_str());
+                AZStd::string_view aliasValue = deprecatedIt->second;
+                // Contains the list of aliases resolved so far
+                // If max_size is hit, than an error is logged and nullptr is returned
+                using VisitedAliasSet = AZStd::fixed_unordered_set<AZStd::string_view, 8, 8>;
+                VisitedAliasSet visitedAliasSet;
+                while (aliasValue.starts_with("@"))
+                {
+                    if (visitedAliasSet.contains(aliasValue))
+                    {
+                        AZ_Error("FileIO", false, "Cycle found with for alias %.*s when trying to resolve deprecated alias %s",
+                            AZ_STRING_ARG(aliasValue), key);
+                        return nullptr;
+                    }
+
+                    if(visitedAliasSet.size() == visitedAliasSet.max_size())
+                    {
+                        AZ_Error("FileIO", false, "Unable to resolve path to deprecated alias %s within %zu steps",
+                            key, visitedAliasSet.max_size());
+                        return nullptr;
+                    }
+
+                    // Add the current alias value to the visited set
+                    visitedAliasSet.emplace(aliasValue);
+
+                    // Check if the alias value corresponds to another alias
+                    if (auto resolvedIter = m_aliases.find(aliasValue); resolvedIter != m_aliases.end())
+                    {
+                        aliasValue = resolvedIter->second;
+                    }
+                    else if (resolvedIter = m_deprecatedAliases.find(aliasValue);
+                        resolvedIter != m_deprecatedAliases.end())
+                    {
+                        aliasValue = resolvedIter->second;
+                    }
+                    else
+                    {
+                        return nullptr;
+                    }
+                }
+
+                return aliasValue.data();
             }
             return nullptr;
         }
@@ -569,11 +625,17 @@ namespace AZ
             m_aliases.erase(key);
         }
 
+        void LocalFileIO::SetDeprecatedAlias(AZStd::string_view oldAlias, AZStd::string_view newAlias)
+        {
+            m_deprecatedAliases[oldAlias] = newAlias;
+        }
+
         AZStd::optional<AZ::u64> LocalFileIO::ConvertToAliasBuffer(char* outBuffer, AZ::u64 outBufferLength, AZStd::string_view inBuffer) const
         {
             size_t longestMatch = 0;
             size_t bufStringLength = inBuffer.size();
             AZStd::string_view longestAlias;
+            AZStd::string_view longestResolvedAlias;
 
             for (const auto& [alias, resolvedAlias] : m_aliases)
             {
@@ -587,26 +649,12 @@ namespace AZ
                 // strings that are shorter than the alias's mapped path without checking.
                 if ((longestMatch == 0) || (resolvedAlias.size() > longestMatch) && (resolvedAlias.size() <= bufStringLength))
                 {
-                    // custom strcmp that ignores slash directions
-                    constexpr AZStd::string_view pathSeparators{ "/\\" };
-                    bool allMatch = AZStd::equal(resolvedAlias.begin(), resolvedAlias.end(), inBuffer.begin(),
-                        [&pathSeparators](const char lhs, const char rhs)
+                    // Check if the input path is relative to the alias value
+                    if (AZ::IO::PathView(inBuffer).IsRelativeTo(AZ::IO::PathView(resolvedAlias)))
                     {
-                        const bool lhsIsSeparator = pathSeparators.find_first_of(lhs) != AZStd::string_view::npos;
-                        const bool rhsIsSeparator = pathSeparators.find_first_of(lhs) != AZStd::string_view::npos;
-                        return (lhsIsSeparator && rhsIsSeparator) || tolower(lhs) == tolower(rhs);
-                    });
-
-                    if (allMatch)
-                    {
-                        // Either the resolvedAlias path must match the path exactly or the path must have a path separator character
-                        // right after the resolved alias
-                        if (const size_t matchLen = resolvedAlias.size();
-                            matchLen == bufStringLength || (pathSeparators.find_first_of(inBuffer[matchLen]) != AZStd::string_view::npos))
-                        {
-                            longestMatch = matchLen;
-                            longestAlias = alias;
-                        }
+                        longestMatch = resolvedAlias.size();
+                        longestAlias = alias;
+                        longestResolvedAlias = resolvedAlias;
                     }
                 }
             }
@@ -615,7 +663,10 @@ namespace AZ
                 // rearrange the buffer to have
                 // [alias][old path]
                 size_t aliasSize = longestAlias.size();
-                size_t charsToAbsorb = longestMatch;
+                // If the resolved alias ends in a path separator, do not consume it.
+                const bool resolvedAliasEndsInPathSeparator = (longestResolvedAlias.ends_with(AZ::IO::PosixPathSeparator) ||
+                                                               longestResolvedAlias.ends_with(AZ::IO::WindowsPathSeparator));
+                const size_t charsToAbsorb = resolvedAliasEndsInPathSeparator ? longestMatch - 1 : longestMatch;
                 size_t remainingData = bufStringLength - charsToAbsorb;
                 size_t finalStringSize = aliasSize + remainingData;
                 if (finalStringSize >= outBufferLength)
@@ -685,7 +736,9 @@ namespace AZ
                                                                      : string_view_pair{};
 
             size_t requiredResolvedPathSize = pathView.size() - aliasKey.size() + aliasValue.size() + 1;
-            AZ_Assert(path != resolvedPath && resolvedPathSize >= requiredResolvedPathSize, "Resolved path is incorrect");
+            AZ_Assert(path != resolvedPath, "ResolveAliases does not support inplace update of the path");
+            AZ_Assert(resolvedPathSize >= requiredResolvedPathSize, "Resolved path size %llu not large enough. It needs to be %zu",
+                resolvedPathSize, requiredResolvedPathSize);
             // we assert above, but we also need to properly handle the case when the resolvedPath buffer size
             // is too small to copy the source into.
             if (path == resolvedPath || (resolvedPathSize < requiredResolvedPathSize))
@@ -709,12 +762,9 @@ namespace AZ
                 resolvedPath[resolvedPathLen] = '\0';
 
                 // If the path started with one of the "asset cache" path aliases, lowercase the path
-                const char* assetAliasPath = GetAlias("@assets@");
-                const char* rootAliasPath = GetAlias("@root@");
-                const char* projectPlatformCacheAliasPath = GetAlias("@projectplatformcache@");
-                const bool lowercasePath = (assetAliasPath != nullptr && AZ::StringFunc::StartsWith(resolvedPath, assetAliasPath)) ||
-                    (rootAliasPath != nullptr && AZ::StringFunc::StartsWith(resolvedPath, rootAliasPath)) ||
-                    (projectPlatformCacheAliasPath != nullptr && AZ::StringFunc::StartsWith(resolvedPath, projectPlatformCacheAliasPath));
+                const char* projectPlatformCacheAliasPath = GetAlias("@products@");
+
+                const bool lowercasePath = projectPlatformCacheAliasPath != nullptr && AZ::StringFunc::StartsWith(resolvedPath, projectPlatformCacheAliasPath);
 
                 if (lowercasePath)
                 {
@@ -751,7 +801,7 @@ namespace AZ
             {
                 if (AZ::StringFunc::StartsWith(pathStrView, aliasKey))
                 {
-                    // Reduce of the size result result path by the size of the and add the resolved alias size
+                    // Add to the size of result path by the resolved alias length - the alias key length
                     AZStd::string_view postAliasView = pathStrView.substr(aliasKey.size());
                     size_t requiredFixedMaxPathSize = postAliasView.size();
                     requiredFixedMaxPathSize += aliasValue.size();
@@ -830,6 +880,11 @@ namespace AZ
             }
 
             return pathStr + "/";
+        }
+
+        bool LocalFileIO::ConvertToAbsolutePath(const char* path, char* absolutePath, AZ::u64 maxLength) const
+        {
+            return AZ::Utils::ConvertToAbsolutePath(path, absolutePath, maxLength);
         }
     } // namespace IO
 } // namespace AZ

@@ -1,0 +1,77 @@
+{
+    "entries": [
+        {
+            "base": "{131C7ECE-D083-F7CD-09FC-EE0FCF80AB86}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "BranchMethodSharedDataSlotExample",
+                "category": "Tests",
+                "tooltip": "Branch Test",
+                "subtitle": "Tests"
+            },
+            "slots": [
+                {
+                    "base": "Output_One String",
+                    "details": {
+                        "name": "One String"
+                    }
+                },
+                {
+                    "base": "DataOutput_string",
+                    "details": {
+                        "name": "string"
+                    }
+                },
+                {
+                    "base": "Output_Two Strings",
+                    "details": {
+                        "name": "Two Strings"
+                    }
+                },
+                {
+                    "base": "DataOutput_string1",
+                    "details": {
+                        "name": "string1"
+                    }
+                },
+                {
+                    "base": "DataOutput_string2",
+                    "details": {
+                        "name": "string2"
+                    }
+                },
+                {
+                    "base": "Output_Three Strings",
+                    "details": {
+                        "name": "Three Strings"
+                    }
+                },
+                {
+                    "base": "DataOutput_string3",
+                    "details": {
+                        "name": "string3"
+                    }
+                },
+                {
+                    "base": "Output_Square",
+                    "details": {
+                        "name": "Square"
+                    }
+                },
+                {
+                    "base": "Output_Pants",
+                    "details": {
+                        "name": "Pants"
+                    }
+                },
+                {
+                    "base": "Output_Hello",
+                    "details": {
+                        "name": "Hello"
+                    }
+                }
+            ]
+        }
+    ]
+}

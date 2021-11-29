@@ -31,6 +31,63 @@ void swap(inout float a, inout float b)
     b = c;
 }
 
+// ---------- Power -----------
+
+float Pow2(float x)
+{
+    return x * x;
+}
+float Pow3(float x)
+{
+    return x * x * x;
+}
+float Pow4(float x)
+{
+    x *= x;
+    return x * x;
+}
+float Pow5(float x)
+{
+    return x * Pow4(x);
+}
+
+// ---------- Min & Max -----------
+
+float min3(float a, float b, float c)
+{
+    return min(min(a, b), c);
+}
+float min4(float a, float b, float c, float d)
+{
+    return min(min3(a, b, c), d);
+}
+float max3(float a, float b, float c)
+{
+    return max(max(a, b), c);
+}
+float max4(float a, float b, float c, float d)
+{
+    return max(max3(a, b, c), d);
+}
+
+float min3(float3 abc)
+{
+    return min3(abc.x, abc.y, abc.z);
+}
+float min4(float4 abcd)
+{
+    return min4(abcd.x, abcd.y, abcd.z, abcd.w);
+}
+float max3(float3 abc)
+{
+    return max3(abc.x, abc.y, abc.z);
+}
+float max4(float4 abcd)
+{
+    return max4(abcd.x, abcd.y, abcd.z, abcd.w);
+}
+
+
 // ---------- Intersection -----------
 
 // a simple ray sphere intersection function, didn't take limited precision 
@@ -114,6 +171,22 @@ float ComputeLerpBetweenInnerOuterAABBs(float3 innerAabbMin, float3 innerAabbMax
     float3 outerAabbIntersect = position + (dirToPoint * shortestDistance);
     float totalDistance = length(outerAabbIntersect - closestPointOnInnerAabb);
     return totalDistance > 0.0f ? saturate(shortestDistance / totalDistance) : 1.0f;
+}
+
+// returns true if the Obb contains the specified point
+bool ObbContainsPoint(float4x4 obbTransformInverse, float3 obbHalfExtents, float3 testPoint)
+{
+    // get the position in Obb local space, force to positive quadrant with abs()
+    float4 p = abs(mul(obbTransformInverse, float4(testPoint, 1.0f)));
+    return AabbContainsPoint(-obbHalfExtents, obbHalfExtents, p);
+}
+
+// computes [0..1] percentage of a point that's in between the inner and outer OBBs
+float ComputeLerpBetweenInnerOuterOBBs(float3x4 obbTransformInverse, float3 innerObbHalfExtents, float3 outerObbHalfExtents, float3 position)
+{
+    // get the position in Obb local space, force to positive quadrant with abs()
+    float3 p = abs(mul(obbTransformInverse, float4(position, 1.0f)));
+    return ComputeLerpBetweenInnerOuterAABBs(-innerObbHalfExtents, innerObbHalfExtents, outerObbHalfExtents, float3(0.0f, 0.0f, 0.0f), p);
 }
 
 // ---------- Normal Encoding -----------
@@ -233,4 +306,20 @@ float LerpInverse(float a, float b, float value)
     {
         return (value - a) / (b - a);
     }
+}
+//-------- Gaussinan distribution functions ---------
+// https://en.wikipedia.org/wiki/Gaussian_function
+// Parameter:
+// amplitude - the height of the curve's peak
+// median - the position of the Mean / Median - the center of the "bell"
+// standardDeviation - controls the width of the "bell"
+float Gaussian(float x, float amplitude, float median, float standardDeviation)
+{
+    float exponent = -0.5 * Pow2((x - median) / standardDeviation);
+    return amplitude * exp(exponent);
+}
+float GaussianNormalized(float x, float expectedValue, float standardDeviation)
+{
+    float normalizedAmplitude = 1.0f / (standardDeviation * sqrt(TWO_PI));
+    return Gaussian(x, normalizedAmplitude, expectedValue, standardDeviation);
 }

@@ -50,6 +50,7 @@ def NvCloth_AddClothSimulationToMesh():
     
     # Constants
     FRAMES_IN_GAME_MODE = 200
+    CLOTH_GEM_ERROR_WARNING_LIST = ["Cloth", "NvCloth", "ClothComponentMesh", "ActorClothSkinning", "ActorClothSkinning", "TangentSpaceHelper", "MeshAssetHelper", "ActorAssetHelper", "ClothDebugDisplay"]
 
     helper.init_idle()
     # 1) Load the level
@@ -64,14 +65,16 @@ def NvCloth_AddClothSimulationToMesh():
         general.idle_wait_frames(FRAMES_IN_GAME_MODE)
 
     # 5) Verify there are no errors and warnings in the logs
-    success_condition = not (section_tracer.has_errors or section_tracer.has_warnings)
-    Report.result(Tests.no_errors_and_warnings_found, success_condition)
-    if not success_condition:
-        if section_tracer.has_warnings:
-            Report.info(f"Warnings found: {section_tracer.warnings}")
-        if section_tracer.has_errors:
-            Report.info(f"Errors found: {section_tracer.errors}")
-        Report.failure(Tests.no_errors_and_warnings_found)
+    has_errors_or_warnings = False
+    for error_msg in section_tracer.errors:
+        if error_msg.window in CLOTH_GEM_ERROR_WARNING_LIST:
+            has_errors_or_warnings = True
+            Report.info(f"Cloth error found: {error_msg}")
+    for warning_msg in section_tracer.warnings:
+        if warning_msg.window in CLOTH_GEM_ERROR_WARNING_LIST:
+            has_errors_or_warnings = True
+            Report.info(f"Cloth warning found: {warning_msg}")
+    Report.result(Tests.no_errors_and_warnings_found, not has_errors_or_warnings)
 
     # 6) Exit game mode
     helper.exit_game_mode(Tests.exit_game_mode)

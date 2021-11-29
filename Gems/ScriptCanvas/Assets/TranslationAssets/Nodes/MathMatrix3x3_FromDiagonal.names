@@ -1,0 +1,40 @@
+{
+    "entries": [
+        {
+            "base": "{F99F5D84-CDE6-5130-BAAC-7377F52D34FD}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "From Diagonal",
+                "category": "Math/Matrix3x3",
+                "tooltip": "Returns a diagonal matrix using the supplied vector"
+            },
+            "slots": [
+                {
+                    "base": "Input_In",
+                    "details": {
+                        "name": "In"
+                    }
+                },
+                {
+                    "base": "Output_Out",
+                    "details": {
+                        "name": "Out"
+                    }
+                },
+                {
+                    "base": "DataInput_Source",
+                    "details": {
+                        "name": "Source"
+                    }
+                },
+                {
+                    "base": "DataOutput_Result",
+                    "details": {
+                        "name": "Result"
+                    }
+                }
+            ]
+        }
+    ]
+}

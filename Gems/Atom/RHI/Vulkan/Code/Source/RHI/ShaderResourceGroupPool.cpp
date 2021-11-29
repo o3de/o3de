@@ -105,6 +105,12 @@ namespace AZ
         {
             auto& group = static_cast<ShaderResourceGroup&>(groupBase);
             group.UpdateCompiledDataIndex(m_currentIteration);
+
+            if (!groupData.IsAnyResourceTypeUpdated())
+            {
+                return RHI::ResultCode::Success;
+            }
+
             DescriptorSet& descriptorSet = *group.m_compiledData[group.GetCompileDataIndex()];
 
             const RHI::ShaderResourceGroupLayout* layout = groupData.GetLayout();
@@ -116,15 +122,17 @@ namespace AZ
                 uint32_t layoutIndex = m_descriptorSetLayout->GetLayoutIndexFromGroupIndex(groupIndex, DescriptorSetLayout::ResourceType::BufferView);
                 descriptorSet.UpdateBufferViews(layoutIndex, bufViews);
             }
-
+            
             auto const& shaderImageList = layout->GetShaderInputListForImages();
-            for (uint32_t groupIndex = 0; groupIndex < static_cast<uint32_t>(layout->GetShaderInputListForImages().size()); ++groupIndex)
+            for (uint32_t groupIndex = 0; groupIndex < static_cast<uint32_t>(shaderImageList.size()); ++groupIndex)
             {
                 const RHI::ShaderInputImageIndex index(groupIndex);
                 auto imgViews = groupData.GetImageViewArray(index);
-                uint32_t layoutIndex = m_descriptorSetLayout->GetLayoutIndexFromGroupIndex(groupIndex, DescriptorSetLayout::ResourceType::ImageView);
+                uint32_t layoutIndex =
+                    m_descriptorSetLayout->GetLayoutIndexFromGroupIndex(groupIndex, DescriptorSetLayout::ResourceType::ImageView);
                 descriptorSet.UpdateImageViews(layoutIndex, imgViews, shaderImageList[groupIndex].m_type);
             }
+            
 
             for (uint32_t groupIndex = 0; groupIndex < static_cast<uint32_t>(layout->GetShaderInputListForBufferUnboundedArrays().size()); ++groupIndex)
             {
@@ -139,9 +147,9 @@ namespace AZ
                 uint32_t layoutIndex = m_descriptorSetLayout->GetLayoutIndexFromGroupIndex(groupIndex, DescriptorSetLayout::ResourceType::BufferViewUnboundedArray);
                 descriptorSet.UpdateBufferViews(layoutIndex, bufViews);
             }
-
+            
             auto const& shaderImageUnboundeArrayList = layout->GetShaderInputListForImageUnboundedArrays();
-            for (uint32_t groupIndex = 0; groupIndex < static_cast<uint32_t>(layout->GetShaderInputListForImageUnboundedArrays().size()); ++groupIndex)
+            for (uint32_t groupIndex = 0; groupIndex < static_cast<uint32_t>(shaderImageUnboundeArrayList.size()); ++groupIndex)
             {
                 const RHI::ShaderInputImageUnboundedArrayIndex index(groupIndex);
                 auto imgViews = groupData.GetImageViewUnboundedArray(index);
@@ -154,12 +162,13 @@ namespace AZ
                 uint32_t layoutIndex = m_descriptorSetLayout->GetLayoutIndexFromGroupIndex(groupIndex, DescriptorSetLayout::ResourceType::ImageViewUnboundedArray);
                 descriptorSet.UpdateImageViews(layoutIndex, imgViews, shaderImageUnboundeArrayList[groupIndex].m_type);
             }
-
+            
             for (uint32_t groupIndex = 0; groupIndex < static_cast<uint32_t>(layout->GetShaderInputListForSamplers().size()); ++groupIndex)
             {
                 const RHI::ShaderInputSamplerIndex index(groupIndex);
                 auto samplerArray = groupData.GetSamplerArray(index);
-                uint32_t layoutIndex = m_descriptorSetLayout->GetLayoutIndexFromGroupIndex(groupIndex, DescriptorSetLayout::ResourceType::Sampler);
+                uint32_t layoutIndex =
+                    m_descriptorSetLayout->GetLayoutIndexFromGroupIndex(groupIndex, DescriptorSetLayout::ResourceType::Sampler);
                 descriptorSet.UpdateSamplers(layoutIndex, samplerArray);
             }
 

@@ -38,7 +38,7 @@ namespace AZ
                 void OverrideId(const Uuid& id);
 
                 Containers::RuleContainer& GetRuleContainer() override;
-                const Containers::RuleContainer& GetRuleContainerConst() const;
+                const Containers::RuleContainer& GetRuleContainerConst() const override;
 
                 const AZStd::string& GetSelectedRootBone() const override;
                 uint32_t GetStartFrame() const override;

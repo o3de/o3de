@@ -7,7 +7,6 @@
  */
 
 #include <AzTest/AzTest.h>
-#include <Mocks/StubTimer.h>
 #include <Gestures/GestureRecognizerClickOrTap.h>
 #include "BaseGestureTest.h"
 

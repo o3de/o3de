@@ -63,7 +63,7 @@ namespace CommandSystem
         const char* GetDescription() const override;
         MCore::Command* Create() override
         {
-            return new CommandAdjustNodeGroup(this);
+            return aznew CommandAdjustNodeGroup(this);
         }
 
     private:

@@ -70,6 +70,8 @@ namespace ImGui
     public:
         AZ_RTTI(IImGuiManager, "{F5A0F08B-F2DA-43B7-8CD2-C6FC71E1A712}");
 
+        virtual ~IImGuiManager() = default;
+
         static const char* GetUniqueName() { return "IImGuiManager"; }
 
         virtual DisplayState GetEditorWindowState() const = 0;

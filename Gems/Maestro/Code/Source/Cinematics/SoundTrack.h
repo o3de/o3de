@@ -29,11 +29,11 @@ public:
     AZ_CLASS_ALLOCATOR(CSoundTrack, AZ::SystemAllocator, 0);
     AZ_RTTI(CSoundTrack, "{B87D8805-F583-4154-B554-45518BC487F4}", IAnimTrack);
 
-    void GetKeyInfo(int key, const char*& description, float& duration);
-    void SerializeKey(ISoundKey& key, XmlNodeRef& keyNode, bool bLoading);
+    void GetKeyInfo(int key, const char*& description, float& duration) override;
+    void SerializeKey(ISoundKey& key, XmlNodeRef& keyNode, bool bLoading) override;
 
     //! Check if track is masked
-    virtual bool IsMasked(const uint32 mask) const { return (mask & eTrackMask_MaskSound) != 0; }
+    bool IsMasked(const uint32 mask) const override { return (mask & eTrackMask_MaskSound) != 0; }
 
     bool UsesMute() const override { return true; }
 

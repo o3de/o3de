@@ -22,7 +22,7 @@ namespace MCore
 
         StaticAllocator::size_type resize(pointer_type ptr, size_type newSize);
 
-        StaticAllocator::size_type get_max_size() const;
+        StaticAllocator::size_type max_size() const;
 
         StaticAllocator::size_type get_allocated_size() const;
     };

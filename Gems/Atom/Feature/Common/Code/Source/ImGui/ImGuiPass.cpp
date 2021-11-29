@@ -15,7 +15,6 @@
 
 #include <AtomCore/Instance/InstanceDatabase.h>
 
-#include <Atom/RHI/CpuProfiler.h>
 #include <Atom/RHI/CommandList.h>
 
 #include <Atom/RHI.Reflect/InputStreamLayoutBuilder.h>
@@ -577,8 +576,7 @@ namespace AZ
 
         void ImGuiPass::BuildCommandListInternal(const RHI::FrameGraphExecuteContext& context)
         {
-            AZ_PROFILE_FUNCTION(AzRender);
-            AZ_ATOM_PROFILE_FUNCTION("Pass", "ImGuiPass: Execute");
+            AZ_PROFILE_SCOPE(AzRender, "ImGuiPass: BuildCommandListInternal");
 
             context.GetCommandList()->SetViewport(m_viewportState);
 
@@ -607,8 +605,7 @@ namespace AZ
 
         uint32_t ImGuiPass::UpdateImGuiResources()
         {
-            AZ_PROFILE_FUNCTION(AzRender);
-            AZ_ATOM_PROFILE_FUNCTION("Pass", "ImGuiPass: UpdateImGuiResources");
+            AZ_PROFILE_SCOPE(AzRender, "ImGuiPass: UpdateImGuiResources");
 
             auto imguiContextScope = ImguiContextScope(m_imguiContext);
 

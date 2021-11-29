@@ -26,10 +26,10 @@ namespace AzNetworking
     //! @class UdpFragmentQueue
     //! @brief Class for reconstructing packet chunks into the original unsegmented packet.
     class UdpFragmentQueue
-        : public ITimeoutHandler
     {
 
     public:
+        virtual ~UdpFragmentQueue() = default;
 
         //! Updates the UdpFragmentQueue timeout queue.
         void Update();
@@ -49,11 +49,6 @@ namespace AzNetworking
         PacketDispatchResult ProcessReceivedChunk(UdpConnection* connection, IConnectionListener& connectionListener, UdpPacketHeader& header, ISerializer& serializer);
 
     private:
-
-        //! Handler callback for timed out items.
-        //! @param item containing registered timeout details
-        //! @return ETimeoutResult for whether to re-register or discard the timeout params
-        virtual TimeoutResult HandleTimeout(TimeoutQueue::TimeoutItem& item) override;
 
         TimeoutQueue m_timeoutQueue;
         SequenceGenerator m_sequenceGenerator;

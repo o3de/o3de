@@ -28,6 +28,24 @@ namespace AZ
         class MaterialPropertiesLayout;
 
         using MaterialPropertyFlags = AZStd::bitset<Limits::Material::PropertyCountMax>;
+        
+        //! Indicates how the material system should respond to any material property changes that
+        //! impact Pipeline State Object configuration. This is significant because some platforms
+        //! require that PSOs be pre-compiled and shipped with the game.
+        enum class MaterialPropertyPsoHandling
+        {
+            //! PSO-impacting property changes are not allowed, are ignored, and will report an error.
+            //! This should be used at runtime. It is recommended to do this on all platforms, not just the restricted ones,
+            //! to encourage best-practices. However, if a game project is not shipping on any restricted platforms,
+            //! then the team could decide to allow PSO changes.
+            Error,
+
+            //! PSO-impacting property changes are allowed, but produce a warning message.
+            Warning,
+ 
+            //! PSO-impacting property changes are allowed. This can be used during asset processing, in developer tools, or on platforms that don't restrict PSO changes.
+            Allowed
+        };
 
         //! MaterialFunctor objects provide custom logic and calculations to configure shaders, render states,
         //! editor metadata, and more.
@@ -81,6 +99,8 @@ namespace AZ
                 const MaterialPropertyValue& GetMaterialPropertyValue(const MaterialPropertyIndex& index) const;
 
                 const MaterialPropertiesLayout* GetMaterialPropertiesLayout() const { return m_materialPropertiesLayout.get(); }
+                
+                MaterialPropertyPsoHandling GetMaterialPropertyPsoHandling() const { return m_psoHandling; }
 
                 //! Set the value of a shader option
                 //! @param shaderIndex the index of a shader in the material's ShaderCollection
@@ -126,16 +146,18 @@ namespace AZ
                     RHI::ConstPtr<MaterialPropertiesLayout> materialPropertiesLayout,
                     ShaderCollection* shaderCollection,
                     ShaderResourceGroup* shaderResourceGroup,
-                    const MaterialPropertyFlags* materialPropertyDependencies
+                    const MaterialPropertyFlags* materialPropertyDependencies,
+                    MaterialPropertyPsoHandling psoHandling
                 );
             private:
                 bool SetShaderOptionValue(ShaderCollection::Item& shaderItem, ShaderOptionIndex optionIndex, ShaderOptionValue value);
 
                 const AZStd::vector<MaterialPropertyValue>& m_materialPropertyValues;
                 RHI::ConstPtr<MaterialPropertiesLayout> m_materialPropertiesLayout;
-                ShaderCollection*     m_shaderCollection;
-                ShaderResourceGroup*  m_shaderResourceGroup;
+                ShaderCollection* m_shaderCollection;
+                ShaderResourceGroup* m_shaderResourceGroup;
                 const MaterialPropertyFlags* m_materialPropertyDependencies = nullptr;
+                MaterialPropertyPsoHandling m_psoHandling = MaterialPropertyPsoHandling::Error;
             };
 
             class EditorContext
@@ -144,7 +166,7 @@ namespace AZ
             public:
                 const MaterialPropertyDynamicMetadata* GetMaterialPropertyMetadata(const Name& propertyName) const;
                 const MaterialPropertyDynamicMetadata* GetMaterialPropertyMetadata(const MaterialPropertyIndex& index) const;
-                
+
                 const MaterialPropertyGroupDynamicMetadata* GetMaterialPropertyGroupMetadata(const Name& propertyName) const;
 
                 //! Get the property value. The type must be one of those in MaterialPropertyValue.
@@ -158,6 +180,8 @@ namespace AZ
                 const MaterialPropertyValue& GetMaterialPropertyValue(const MaterialPropertyIndex& index) const;
 
                 const MaterialPropertiesLayout* GetMaterialPropertiesLayout() const { return m_materialPropertiesLayout.get(); }
+                
+                MaterialPropertyPsoHandling GetMaterialPropertyPsoHandling() const { return MaterialPropertyPsoHandling::Allowed; }
 
                 //! Set the visibility dynamic metadata of a material property.
                 bool SetMaterialPropertyVisibility(const Name& propertyName, MaterialPropertyVisibility visibility);
@@ -177,7 +201,7 @@ namespace AZ
 
                 bool SetMaterialPropertySoftMaxValue(const Name& propertyName, const MaterialPropertyValue& max);
                 bool SetMaterialPropertySoftMaxValue(const MaterialPropertyIndex& index, const MaterialPropertyValue& max);
-                
+
                 bool SetMaterialPropertyGroupVisibility(const Name& propertyGroupName, MaterialPropertyGroupVisibility visibility);
 
                 // [GFX TODO][ATOM-4168] Replace the workaround for unlink-able RPI.Public classes in MaterialFunctor

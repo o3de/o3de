@@ -20,6 +20,7 @@ import azlmbr.legacy.general as general
 # Helper file Imports
 from editor_python_test_tools.utils import Report
 
+
 class EditorComponent:
     """
     EditorComponent class used to set and get the component property value using path
@@ -28,7 +29,6 @@ class EditorComponent:
     which also assigns self.id and self.type_id to the EditorComponent object.
     """
 
-    # Methods
     def get_component_name(self) -> str:
         """
         Used to get name of component
@@ -87,6 +87,13 @@ class EditorComponent:
             outcome.IsSuccess()
         ), f"Failure: Could not set value to '{self.get_component_name()}' : '{component_property_path}'"
 
+    def is_enabled(self):
+        """
+        Used to verify if the component is enabled.
+        :return: True if enabled, otherwise False.
+        """
+        return editor.EditorComponentAPIBus(bus.Broadcast, "IsComponentEnabled", self.id)
+
     @staticmethod
     def get_type_ids(component_names: list) -> list:
         """
@@ -100,6 +107,19 @@ class EditorComponent:
         return type_ids
 
 
+
+def convert_to_azvector3(xyz) -> azlmbr.math.Vector3:
+    """
+    Converts a vector3-like element into a azlmbr.math.Vector3
+    """
+    if isinstance(xyz, Tuple) or isinstance(xyz, List):
+        assert len(xyz) == 3, ValueError("vector must be a 3 element list/tuple or azlmbr.math.Vector3")
+        return math.Vector3(float(xyz[0]), float(xyz[1]), float(xyz[2]))
+    elif isinstance(xyz, type(math.Vector3())):
+        return xyz
+    else:
+        raise ValueError("vector must be a 3 element list/tuple or azlmbr.math.Vector3")
+
 class EditorEntity:
     """
     Entity class is used to create and interact with Editor Entities.
@@ -112,19 +132,35 @@ class EditorEntity:
 
     def __init__(self, id: azlmbr.entity.EntityId):
         self.id: azlmbr.entity.EntityId = id
+        self.components: List[EditorComponent] = []
 
     # Creation functions
     @classmethod
-    def find_editor_entity(cls, entity_name: str) -> EditorEntity:
+    def find_editor_entity(cls, entity_name: str, must_be_unique : bool = False) -> EditorEntity:
         """
         Given Entity name, outputs entity object
         :param entity_name: Name of entity to find
         :return: EditorEntity class object
         """
-        entity_id = general.find_editor_entity(entity_name)
-        assert entity_id.IsValid(), f"Failure: Couldn't find entity with name: '{entity_name}'"
-        entity = cls(entity_id)
+        entities = cls.find_editor_entities([entity_name])
+        assert len(entities) != 0, f"Failure: Couldn't find entity with name: '{entity_name}'"
+        if must_be_unique:
+            assert len(entities) == 1, f"Failure: Multiple entities with name: '{entity_name}' when expected only one"
+
+        entity = cls(entities[0])
         return entity
+
+    @classmethod
+    def find_editor_entities(cls, entity_names: List[str]) -> EditorEntity:
+        """
+        Given Entities names, returns a list of EditorEntity 
+        :param entity_name: Name of entity to find
+        :return: List[EditorEntity] class object
+        """
+        searchFilter = azlmbr.entity.SearchFilter()
+        searchFilter.names = entity_names
+        ids = azlmbr.entity.SearchBus(bus.Broadcast, 'SearchEntities', searchFilter)
+        return [cls(id) for id in ids]
 
     @classmethod
     def create_editor_entity(cls, name: str = None, parent_id=None) -> EditorEntity:
@@ -150,8 +186,7 @@ class EditorEntity:
         cls,
         entity_position: Union[List, Tuple, math.Vector3],
         name: str = None,
-        parent_id: azlmbr.entity.EntityId = None,
-    ) -> EditorEntity:
+        parent_id: azlmbr.entity.EntityId = None) -> EditorEntity:
         """
         Used to create entity at position using 'CreateNewEntityAtPosition' Bus.
         :param entity_position: World Position(X, Y, Z) of entity in viewport.
@@ -161,15 +196,6 @@ class EditorEntity:
         :Example: test_entity = EditorEntity.create_editor_entity_at([512.0, 512.0, 32.0], "TestEntity")
         :return: EditorEntity class object
         """
-
-        def convert_to_azvector3(xyz) -> math.Vector3:
-            if isinstance(xyz, Tuple) or isinstance(xyz, List):
-                assert len(xyz) == 3, ValueError("vector must be a 3 element list/tuple or azlmbr.math.Vector3")
-                return math.Vector3(*xyz)
-            elif isinstance(xyz, type(math.Vector3())):
-                return xyz
-            else:
-                raise ValueError("vector must be a 3 element list/tuple or azlmbr.math.Vector3")
 
         if parent_id is None:
             parent_id = azlmbr.entity.EntityId()
@@ -185,7 +211,7 @@ class EditorEntity:
         return entity
 
     # Methods
-    def set_name(self, entity_name: str):
+    def set_name(self, entity_name: str) -> None:
         """
         Given entity_name, sets name to Entity
         :param: entity_name: Name of the entity to set
@@ -220,6 +246,12 @@ class EditorEntity:
         """
         return editor.EditorEntityInfoRequestBus(bus.Event, "GetChildren", self.id)
 
+    def get_children(self) -> List[EditorEntity]:
+        """
+        :return: List of EditorEntity children. Type: [EditorEntity]
+        """
+        return [EditorEntity(child_id) for child_id in self.get_children_ids()] 
+
     def add_component(self, component_name: str) -> EditorComponent:
         """
         Used to add new component to Entity.
@@ -248,13 +280,13 @@ class EditorEntity:
             ), f"Failure: Could not add component: '{new_comp.get_component_name()}' to entity: '{self.get_name()}'"
             new_comp.id = add_component_outcome.GetValue()[0]
             components.append(new_comp)
-
+            self.components.append(new_comp)
         return components
 
     def get_components_of_type(self, component_names: list) -> List[EditorComponent]:
         """
         Used to get components of type component_name that already exists on Entity
-        :param component_name: Name to component to check
+        :param component_names: List of names of components to check
         :return: List of Entity Component objects of given component name
         """
         component_list = []
@@ -297,7 +329,7 @@ class EditorEntity:
         self.start_status = status
         return status
 
-    def set_start_status(self, desired_start_status: str):
+    def set_start_status(self, desired_start_status: str) -> None:
         """
         Set an entity as active/inactive at beginning of runtime or it is editor-only,
         given its entity id and the start status then return set success
@@ -318,3 +350,112 @@ class EditorEntity:
         editor.EditorEntityAPIBus(bus.Event, "SetStartStatus", self.id, status_to_set)
         set_status = self.get_start_status()
         assert set_status == status_to_set, f"Failed to set start status of {desired_start_status} to {self.get_name}"
+
+    def delete(self) -> None:
+        """
+        Used to delete the Entity.
+        :return: None
+        """
+        editor.ToolsApplicationRequestBus(bus.Broadcast, "DeleteEntityById", self.id)
+
+    def set_visibility_state(self, is_visible: bool) -> None:
+        """
+        Sets the visibility state on the object to visible or not visible.
+        :param is_visible: True for making visible, False to make not visible.
+        :return: None
+        """
+        editor.EditorEntityAPIBus(bus.Event, "SetVisibilityState", self.id, is_visible)
+
+    def exists(self) -> bool:
+        """
+        Used to verify if the Entity exists.
+        :return: True if the Entity exists, False otherwise.
+        """
+        return editor.ToolsApplicationRequestBus(bus.Broadcast, "EntityExists", self.id)
+
+    def is_hidden(self) -> bool:
+        """
+        Gets the "isHidden" value from the Entity.
+        :return: True if "isHidden" is enabled, False otherwise.
+        """
+        return editor.EditorEntityInfoRequestBus(bus.Event, "IsHidden", self.id)
+
+    def is_visible(self) -> bool:
+        """
+        Gets the "isVisible" value from the Entity.
+        :return: True if "isVisible" is enabled, False otherwise.
+        """
+        return editor.EditorEntityInfoRequestBus(bus.Event, "IsVisible", self.id)
+
+    # World Transform Functions
+    def get_world_translation(self) -> azlmbr.math.Vector3:
+        """
+        Gets the world translation of the entity
+        """
+        return azlmbr.components.TransformBus(azlmbr.bus.Event, "GetWorldTranslation", self.id)
+
+    def set_world_translation(self, new_translation) -> None:
+        """
+        Sets the new world translation of the current entity
+        """
+        new_translation = convert_to_azvector3(new_translation)
+        azlmbr.components.TransformBus(azlmbr.bus.Event, "SetWorldTranslation", self.id, new_translation)
+
+    def get_world_rotation(self) -> azlmbr.math.Quaternion:
+        """
+        Gets the world rotation of the entity
+        """
+        return azlmbr.components.TransformBus(azlmbr.bus.Event, "GetWorldRotation", self.id)
+
+    def set_world_rotation(self, new_rotation):
+        """
+        Sets the new world rotation of the current entity
+        """
+        new_rotation = convert_to_azvector3(new_rotation)
+        azlmbr.components.TransformBus(azlmbr.bus.Event, "SetWorldRotation", self.id, new_rotation)
+
+    # Local Transform Functions
+    def get_local_uniform_scale(self) -> float:
+        """
+        Gets the local uniform scale of the entity
+        """
+        return azlmbr.components.TransformBus(azlmbr.bus.Event, "GetLocalUniformScale", self.id)
+
+    def set_local_uniform_scale(self, scale_float) -> None:
+        """
+        Sets the local uniform scale value(relative to the parent) on the entity.
+        :param scale_float: value for "SetLocalUniformScale" to set to.
+        :return: None
+        """
+        azlmbr.components.TransformBus(azlmbr.bus.Event, "SetLocalUniformScale", self.id, scale_float)
+
+    def get_local_rotation(self) -> azlmbr.math.Quaternion:
+        """
+        Gets the local rotation of the entity
+        """
+        return azlmbr.components.TransformBus(azlmbr.bus.Event, "GetLocalRotation", self.id)
+
+    def set_local_rotation(self, new_rotation) -> None:
+        """
+        Sets the set the local rotation(relative to the parent) of the current entity.
+        :param vector3_rotation: The math.Vector3 value to use for rotation on the entity (uses radians).
+        :return: None
+        """
+        new_rotation = convert_to_azvector3(new_rotation)
+        azlmbr.components.TransformBus(azlmbr.bus.Event, "SetLocalRotation", self.id, new_rotation)
+
+    def get_local_translation(self) -> azlmbr.math.Vector3:
+        """
+        Gets the local translation of the current entity.
+        :return: The math.Vector3 value of the local translation.
+        """
+        return azlmbr.components.TransformBus(azlmbr.bus.Event, "GetLocalTranslation", self.id)
+
+    def set_local_translation(self, new_translation) -> None:
+        """
+        Sets the local translation(relative to the parent) of the current entity.
+        :param vector3_translation: The math.Vector3 value to use for translation on the entity.
+        :return: None
+        """
+        new_translation = convert_to_azvector3(new_translation)
+        azlmbr.components.TransformBus(azlmbr.bus.Event, "SetLocalTranslation", self.id, new_translation)

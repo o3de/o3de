@@ -82,6 +82,8 @@ namespace AZ::Render
 
     void AtomViewportDisplayIconsSystemComponent::Activate()
     {
+        m_drawContextRegistered = false;
+
         AzToolsFramework::EditorViewportIconDisplay::Register(this);
 
         Bootstrap::NotificationBus::Handler::BusConnect();
@@ -97,9 +99,10 @@ namespace AZ::Render
         {
             return;
         } 
-        if (perViewportDynamicDrawInterface)
+        if (perViewportDynamicDrawInterface && m_drawContextRegistered)
         {
             perViewportDynamicDrawInterface->UnregisterDynamicDrawContext(m_drawContextName);
+            m_drawContextRegistered = false;
         }
 
         AzToolsFramework::EditorViewportIconDisplay::Unregister(this);
@@ -171,9 +174,9 @@ namespace AZ::Render
         {
             // Calculate our screen space position using the viewport size
             // We want this instead of RenderViewportWidget::WorldToScreen which works in QWidget virtual coordinate space
-            AzFramework::ScreenPoint position = AzFramework::WorldToScreen(
-                drawParameters.m_position, viewportContext->GetCameraViewMatrix(), viewportContext->GetCameraProjectionMatrix(),
-                viewportSize);
+            const AzFramework::ScreenPoint position = AzFramework::WorldToScreen(
+                drawParameters.m_position, viewportContext->GetCameraViewMatrixAsMatrix3x4(),
+                viewportContext->GetCameraProjectionMatrix(), viewportSize);
             screenPosition.SetX(aznumeric_cast<float>(position.m_x));
             screenPosition.SetY(aznumeric_cast<float>(position.m_y));
         }
@@ -366,6 +369,8 @@ namespace AZ::Render
                      {"TEXCOORD", RHI::Format::R32G32_FLOAT} });
                 drawContext->EndInit();
             });
+
+        m_drawContextRegistered = true;
 
         Data::AssetBus::Handler::BusDisconnect();
     }

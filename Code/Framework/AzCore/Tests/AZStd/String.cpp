@@ -1210,9 +1210,6 @@ namespace UnitTest
 
         AZStd::string findStr("Hay");
         string_view view3(findStr);
-        string_view nullptrView4(nullptr);
-
-        EXPECT_EQ(emptyView1, nullptrView4);
 
         // copy
         const size_t destBufferSize = 32;
@@ -1263,9 +1260,6 @@ namespace UnitTest
         // rfind
         AZStd::size_t rfindResult = view3.rfind('a', 2);
         EXPECT_EQ(1, rfindResult);
-
-        rfindResult = nullptrView4.rfind("");
-        EXPECT_EQ(string_view::npos, rfindResult);
 
         rfindResult = emptyView1.rfind("");
         EXPECT_EQ(string_view::npos, rfindResult);
@@ -1373,17 +1367,11 @@ namespace UnitTest
     {
         string_view view1("The quick brown fox jumped over the lazy dog");
         string_view view2("Needle in Haystack");
-        string_view nullBeaverView(nullptr);
         string_view emptyBeaverView;
         string_view superEmptyBeaverView("");
         
-        EXPECT_EQ(nullBeaverView, emptyBeaverView);
-        EXPECT_EQ(superEmptyBeaverView, nullBeaverView);
-        EXPECT_EQ(emptyBeaverView, superEmptyBeaverView);
-        EXPECT_EQ(nullBeaverView, "");
-        EXPECT_EQ(nullBeaverView, nullptr);
         EXPECT_EQ("", emptyBeaverView);
-        EXPECT_EQ(nullptr, superEmptyBeaverView);
+        EXPECT_EQ("", superEmptyBeaverView);
 
         EXPECT_EQ("The quick brown fox jumped over the lazy dog", view1);
         EXPECT_NE("The slow brown fox jumped over the lazy dog", view1);
@@ -1421,8 +1409,6 @@ namespace UnitTest
         EXPECT_LE(beaverView, "Busy Beaver");
         EXPECT_LE("Likable Beaver", notBeaverView);
         EXPECT_LE("Busy Beaver", beaverView);
-        EXPECT_LE(nullBeaverView, nullBeaverView);
-        EXPECT_LE(nullBeaverView, lowerBeaverStr);
         EXPECT_LE(microBeaverStr, view1);
         EXPECT_LE(compareStr, beaverView);
         
@@ -2390,17 +2376,52 @@ namespace UnitTest
         static_assert(AZStd::wildcard_match_case(filter1, blahValue));
     }
 
-    TEST_F(String, StringEraseIf_Succeeds)
+    TEST_F(String, StringCXX20Erase_Succeeds)
     {
-
         AZStd::string eraseIfTest = "ABC CBA";
-        auto eraseCount = AZStd::erase_if(eraseIfTest, [](AZStd::string::value_type ch)
-            {
-                return ch == 'C';
-            });
+        auto erasePredicate = [](AZStd::string::value_type ch)
+        {
+            return ch == 'C';
+        };
+        auto eraseCount = AZStd::erase_if(eraseIfTest, erasePredicate);
         EXPECT_EQ(2, eraseCount);
         EXPECT_EQ(5, eraseIfTest.size());
         EXPECT_STREQ("AB BA", eraseIfTest.c_str());
+
+        // Now erase the letter 'A';
+        eraseCount = AZStd::erase(eraseIfTest, 'A');
+        EXPECT_EQ(2, eraseCount);
+        EXPECT_EQ(3, eraseIfTest.size());
+        EXPECT_EQ("B B", eraseIfTest);
+    }
+
+    TEST_F(String, FixedStringCXX20Erase_Succeeds)
+    {
+        // Erase 'l' from the phrase "Hello" World"
+        constexpr auto eraseTest = [](const char* testString) constexpr
+        {
+            AZStd::fixed_string<16> testResult{ testString };
+            AZStd::erase(testResult, 'l');
+            return testResult;
+        }("HelloWorld");
+
+        static_assert(eraseTest == "HeoWord");
+        EXPECT_EQ("HeoWord", eraseTest);
+
+        // Use erase_if to erase both 'H' and 'e' from the remaining eraseTest string
+        constexpr auto eraseIfTest = [](AZStd::string_view testString) constexpr
+        {
+            AZStd::fixed_string<16> testResult{ testString };
+            auto erasePredicate = [](char ch)
+            {
+                return ch == 'H' || ch == 'e';
+            };
+            AZStd::erase_if(testResult, erasePredicate);
+            return testResult;
+        }(eraseTest);
+
+        static_assert(eraseIfTest == "oWord");
+        EXPECT_EQ("oWord", eraseIfTest);
     }
 
     template <typename StringType>

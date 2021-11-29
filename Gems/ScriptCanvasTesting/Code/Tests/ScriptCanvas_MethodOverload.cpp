@@ -99,7 +99,7 @@ public:
         }
     }
 
-    void ConfigureSlots()
+    void ConfigureSlots() override
     {
         ScriptCanvas::SlotExecution::Ins ins;
         {

@@ -11,7 +11,7 @@
 #include <AzNetworking/AutoGen/CorePackets.AutoPackets.h>
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Console/LoggerSystemComponent.h>
-#include <AzCore/Time/TimeSystemComponent.h>
+#include <AzCore/Time/TimeSystem.h>
 #include <AzCore/Name/NameDictionary.h>
 #include <AzCore/UnitTest/TestTypes.h>
 
@@ -33,7 +33,7 @@ namespace UnitTest
             ;
         }
 
-        PacketDispatchResult OnPacketReceived([[maybe_unused]] IConnection* connection, const IPacketHeader& packetHeader, [[maybe_unused]] ISerializer& serializer)
+        PacketDispatchResult OnPacketReceived([[maybe_unused]] IConnection* connection, const IPacketHeader& packetHeader, [[maybe_unused]] ISerializer& serializer) override
         {
             EXPECT_TRUE((packetHeader.GetPacketType() == static_cast<PacketType>(CorePackets::PacketType::InitiateConnectionPacket))
                      || (packetHeader.GetPacketType() == static_cast<PacketType>(CorePackets::PacketType::HeartbeatPacket)));
@@ -102,24 +102,24 @@ namespace UnitTest
             SetupAllocator();
             AZ::NameDictionary::Create();
 
-            m_loggerComponent = new AZ::LoggerSystemComponent;
-            m_timeComponent = new AZ::TimeSystemComponent;
-            m_networkingSystemComponent = new AzNetworking::NetworkingSystemComponent;
+            m_loggerComponent = AZStd::make_unique<AZ::LoggerSystemComponent>();
+            m_timeSystem = AZStd::make_unique<AZ::TimeSystem>();
+            m_networkingSystemComponent = AZStd::make_unique<AzNetworking::NetworkingSystemComponent>();
         }
 
         void TearDown() override
         {
-            delete m_networkingSystemComponent;
-            delete m_timeComponent;
-            delete m_loggerComponent;
+            m_networkingSystemComponent.reset();
+            m_timeSystem.reset();
+            m_loggerComponent.reset();
 
             AZ::NameDictionary::Destroy();
             TeardownAllocator();
         }
 
-        AZ::LoggerSystemComponent* m_loggerComponent;
-        AZ::TimeSystemComponent* m_timeComponent;
-        AzNetworking::NetworkingSystemComponent* m_networkingSystemComponent;
+        AZStd::unique_ptr<AZ::LoggerSystemComponent> m_loggerComponent;
+        AZStd::unique_ptr<AZ::TimeSystem> m_timeSystem;
+        AZStd::unique_ptr<AzNetworking::NetworkingSystemComponent> m_networkingSystemComponent;
     };
 
     #if AZ_TRAIT_DISABLE_FAILED_NETWORKING_TESTS
@@ -148,6 +148,12 @@ namespace UnitTest
 
         EXPECT_EQ(testServer.m_serverNetworkInterface->GetConnectionSet().GetConnectionCount(), 1);
         EXPECT_EQ(testClient.m_clientNetworkInterface->GetConnectionSet().GetConnectionCount(), 1);
+
+        const AZ::TimeMs timeoutMs = AZ::TimeMs{ 100 };
+        testClient.m_clientNetworkInterface->SetTimeoutMs(timeoutMs);
+        EXPECT_EQ(testClient.m_clientNetworkInterface->GetTimeoutMs(), timeoutMs);
+
+        EXPECT_TRUE(testServer.m_serverNetworkInterface->StopListening());
     }
 
     #if AZ_TRAIT_DISABLE_FAILED_NETWORKING_TESTS

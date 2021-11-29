@@ -42,7 +42,7 @@ namespace AWSCore
 
 
         AWSCoreConfiguration();
-        ~AWSCoreConfiguration() = default;
+        ~AWSCoreConfiguration() override = default;
 
         void ActivateConfig();
         void DeactivateConfig();

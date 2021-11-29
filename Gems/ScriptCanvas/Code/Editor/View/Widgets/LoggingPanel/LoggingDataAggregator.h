@@ -88,7 +88,7 @@ namespace ScriptCanvasEditor
         AZ::NamedEntityId FindNamedEntityId(const AZ::EntityId& entityId) override;
         ////
 
-        virtual bool IsCapturingData() const = 0;
+        bool IsCapturingData() const override = 0;
         virtual bool CanCaptureData() const = 0;
         
         // Should be bus methods, but don't want to copy data

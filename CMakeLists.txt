@@ -14,6 +14,7 @@ include(cmake/Version.cmake)
 include(cmake/OutputDirectory.cmake)
 
 if(NOT PROJECT_NAME)
+    include(cmake/CompilerSettings.cmake)
     project(O3DE
         LANGUAGES C CXX
         VERSION ${LY_VERSION_STRING}
@@ -29,11 +30,11 @@ include(cmake/PAL.cmake)
 include(cmake/PALTools.cmake)
 include(cmake/RuntimeDependencies.cmake)
 include(cmake/Configurations.cmake) # Requires to be after PAL so we get platform variable definitions
-include(cmake/Install.cmake)
 include(cmake/Dependencies.cmake)
 include(cmake/Deployment.cmake)
 include(cmake/3rdParty.cmake)
 include(cmake/LYPython.cmake)
+include(cmake/Install.cmake)
 include(cmake/LYWrappers.cmake)
 include(cmake/Gems.cmake)
 include(cmake/UnitTest.cmake)

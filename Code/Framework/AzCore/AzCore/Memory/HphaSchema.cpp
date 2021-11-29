@@ -140,8 +140,8 @@ namespace AZ {
         class const_iterator;
         class iterator
         {
-            typedef T& reference;
-            typedef T* pointer;
+            using reference = T&;
+            using pointer = T*;
             friend class const_iterator;
             T* mPtr;
         public:
@@ -171,8 +171,8 @@ namespace AZ {
 
         class const_iterator
         {
-            typedef const T& reference;
-            typedef const T* pointer;
+            using reference = const T &;
+            using pointer = const T *;
             const T* mPtr;
         public:
             const_iterator()
@@ -327,7 +327,7 @@ namespace AZ {
             uint64_t mSizeAndFlags;
 
         public:
-            typedef block_header* block_ptr;
+            using block_ptr = block_header *;
             size_t size() const { return mSizeAndFlags & ~BL_FLAG_MASK; }
             block_ptr next() const {return (block_ptr)((char*)mem() + size()); }
             block_ptr prev() const {return mPrev; }
@@ -415,7 +415,7 @@ namespace AZ {
             void dec_ref()                          { HPPA_ASSERT(mUseCount > 0); mUseCount--; }
             bool check_marker(size_t marker) const  { return mMarker == (marker ^ ((size_t)this)); }
         };
-        typedef intrusive_list<page> page_list;
+        using page_list = intrusive_list<page>;
         class bucket
         {
             page_list mPageList;
@@ -1069,6 +1069,7 @@ namespace AZ {
         /// returns allocation size for the pointer if it belongs to the allocator. result is undefined if the pointer doesn't belong to the allocator.
         size_t  AllocationSize(void* ptr);
         size_t  GetMaxAllocationSize() const;
+        size_t  GetMaxContiguousAllocationSize() const;
         size_t  GetUnAllocatedMemory(bool isPrint) const;
 
         void*   SystemAlloc(size_t size, size_t align);
@@ -2301,6 +2302,11 @@ namespace AZ {
         return maxSize;
     }
 
+    size_t HpAllocator::GetMaxContiguousAllocationSize() const
+    {
+        return AZ_CORE_MAX_ALLOCATOR_SIZE;
+    }
+
     //=========================================================================
     // GetUnAllocatedMemory
     // [9/30/2013]
@@ -2675,6 +2681,11 @@ namespace AZ {
     HphaSchema::GetMaxAllocationSize() const
     {
         return m_allocator->GetMaxAllocationSize();
+    }
+
+    auto HphaSchema::GetMaxContiguousAllocationSize() const -> size_type
+    {
+        return m_allocator->GetMaxContiguousAllocationSize();
     }
 
     //=========================================================================

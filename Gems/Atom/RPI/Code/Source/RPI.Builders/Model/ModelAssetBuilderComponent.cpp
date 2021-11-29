@@ -2088,7 +2088,7 @@ namespace AZ
                 AZ::Vector3 vpos;    //note: it seems to be fastest to reuse a local Vector3 rather than constructing new ones each loop iteration
                 for (uint32_t i = 0; i < elementCount; ++i)
                 {
-                    vpos.Set(const_cast<float*>(reinterpret_cast<const float*>(&buffer[i])));
+                    vpos.Set(reinterpret_cast<const float*>(&buffer[i]));
                     aabb.AddPoint(vpos);
                 }
             }

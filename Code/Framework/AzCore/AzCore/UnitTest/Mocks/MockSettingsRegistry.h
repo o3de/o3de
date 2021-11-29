@@ -23,12 +23,12 @@ namespace AZ
         MOCK_CONST_METHOD1(GetType, Type(AZStd::string_view));
         MOCK_CONST_METHOD2(Visit, bool(Visitor&, AZStd::string_view));
         MOCK_CONST_METHOD2(Visit, bool(const VisitorCallback&, AZStd::string_view));
-        MOCK_METHOD1(RegisterNotifier, NotifyEventHandler(const NotifyCallback&));
-        MOCK_METHOD1(RegisterNotifier, NotifyEventHandler(NotifyCallback&&));
-        MOCK_METHOD1(RegisterPreMergeEvent, PreMergeEventHandler(const PreMergeEventCallback&));
-        MOCK_METHOD1(RegisterPreMergeEvent, PreMergeEventHandler(PreMergeEventCallback&&));
-        MOCK_METHOD1(RegisterPostMergeEvent, PostMergeEventHandler(const PostMergeEventCallback&));
-        MOCK_METHOD1(RegisterPostMergeEvent, PostMergeEventHandler(PostMergeEventCallback&&));
+        MOCK_METHOD1(RegisterNotifier, NotifyEventHandler(NotifyCallback));
+        MOCK_METHOD1(RegisterNotifier, void(NotifyEventHandler&));
+        MOCK_METHOD1(RegisterPreMergeEvent, PreMergeEventHandler(PreMergeEventCallback));
+        MOCK_METHOD1(RegisterPreMergeEvent, void(PreMergeEventHandler&));
+        MOCK_METHOD1(RegisterPostMergeEvent, PostMergeEventHandler(PostMergeEventCallback));
+        MOCK_METHOD1(RegisterPostMergeEvent, void(PostMergeEventHandler&));
 
         MOCK_CONST_METHOD2(Get, bool(bool&, AZStd::string_view));
         MOCK_CONST_METHOD2(Get, bool(s64&, AZStd::string_view));
@@ -49,7 +49,7 @@ namespace AZ
         MOCK_METHOD1(Remove, bool(AZStd::string_view));
 
         MOCK_METHOD3(MergeCommandLineArgument, bool(AZStd::string_view, AZStd::string_view, const CommandLineArgumentSettings&));
-        MOCK_METHOD2(MergeSettings, bool(AZStd::string_view, Format));
+        MOCK_METHOD3(MergeSettings, bool(AZStd::string_view, Format, AZStd::string_view));
         MOCK_METHOD4(MergeSettingsFile, bool(AZStd::string_view, Format, AZStd::string_view, AZStd::vector<char>*));
         MOCK_METHOD5(
             MergeSettingsFolder,
@@ -57,6 +57,7 @@ namespace AZ
 
         MOCK_METHOD1(SetApplyPatchSettings, void(const JsonApplyPatchSettings&));
         MOCK_METHOD1(GetApplyPatchSettings, void(JsonApplyPatchSettings&));
+        MOCK_METHOD1(SetUseFileIO, void(bool));
     };
 } // namespace AZ
 

@@ -11,6 +11,7 @@
 #include <Editor/EditorJointConfiguration.h>
 #include <Source/EditorColliderComponent.h>
 #include <Source/EditorRigidBodyComponent.h>
+#include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
 
 namespace
 {
@@ -51,23 +52,27 @@ namespace PhysX
             if (auto* editContext = serializeContext->GetEditContext())
             {
                 editContext->Class<PhysX::EditorJointLimitConfig>(
-                    "Editor Joint Limit Config Base", "Base joint limit parameters")
+                    "Editor Joint Limit Config Base", "Base joint limit parameters.")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "PhysX")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
-                    ->DataElement(0, &PhysX::EditorJointLimitConfig::m_isLimited, "Limit", "True if the motion about the unconstrained axes of this joint are limited")
+                    ->DataElement(0, &PhysX::EditorJointLimitConfig::m_isLimited, "Limit",
+                        "When active, the joint's degrees of freedom are limited.")
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
                     ->Attribute(AZ::Edit::Attributes::ReadOnly, &EditorJointLimitConfig::IsInComponentMode)
-                    ->DataElement(0, &PhysX::EditorJointLimitConfig::m_isSoftLimit, "Soft limit", "True if the joint is allowed to rotate beyond limits and spring back")
+                    ->DataElement(0, &PhysX::EditorJointLimitConfig::m_isSoftLimit, "Soft limit",
+                        "When active, motion beyond the joint limit with a spring-like return is allowed.")
                     ->Attribute(AZ::Edit::Attributes::Visibility, &EditorJointLimitConfig::m_isLimited)
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
                     ->Attribute(AZ::Edit::Attributes::ReadOnly, &EditorJointLimitConfig::IsInComponentMode)
-                    ->DataElement(0, &PhysX::EditorJointLimitConfig::m_damping, "Damping", "The damping strength of the drive, the force proportional to the velocity error")
+                    ->DataElement(0, &PhysX::EditorJointLimitConfig::m_damping, "Damping",
+                        "Dissipation of energy and reduction in spring oscillations when outside the joint limit.")
                     ->Attribute(AZ::Edit::Attributes::Visibility, &EditorJointLimitConfig::IsSoftLimited)
                     ->Attribute(AZ::Edit::Attributes::Max, s_springMax)
                     ->Attribute(AZ::Edit::Attributes::Min, s_springMin)
-                    ->DataElement(0, &PhysX::EditorJointLimitConfig::m_stiffness, "Stiffness", "The spring strength of the drive, the force proportional to the position error")
+                    ->DataElement(0, &PhysX::EditorJointLimitConfig::m_stiffness, "Stiffness",
+                        "The spring's drive relative to the position of the follower when outside the joint limit.")
                     ->Attribute(AZ::Edit::Attributes::Visibility, &EditorJointLimitConfig::IsSoftLimited)
                     ->Attribute(AZ::Edit::Attributes::Max, s_springMax)
                     ->Attribute(AZ::Edit::Attributes::Min, s_springMin)
@@ -115,18 +120,20 @@ namespace PhysX
             if (auto* editContext = serializeContext->GetEditContext())
             {
                 editContext->Class<PhysX::EditorJointLimitPairConfig>(
-                    "Angular Limit", "Rotation limitation")
+                    "Angular Limit", "Rotation limitation.")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "PhysX")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->DataElement(0, &PhysX::EditorJointLimitPairConfig::m_standardLimitConfig
                         , "Standard limit configuration"
-                        , "Common limit parameters to all joint types")
-                    ->DataElement(0, &PhysX::EditorJointLimitPairConfig::m_limitPositive, "Positive angular limit", "Positive rotation angle")
+                        , "Common limit parameters to all joint types.")
+                    ->DataElement(0, &PhysX::EditorJointLimitPairConfig::m_limitPositive, "Positive angular limit",
+                        "Positive rotation angle.")
                     ->Attribute(AZ::Edit::Attributes::Visibility, &EditorJointLimitPairConfig::IsLimited)
                     ->Attribute(AZ::Edit::Attributes::Max, s_angleMax)
                     ->Attribute(AZ::Edit::Attributes::Min, s_angleMin)
-                    ->DataElement(0, &PhysX::EditorJointLimitPairConfig::m_limitNegative, "Negative angular limit", "Negative rotation angle")
+                    ->DataElement(0, &PhysX::EditorJointLimitPairConfig::m_limitNegative, "Negative angular limit",
+                        "Negative rotation angle.")
                     ->Attribute(AZ::Edit::Attributes::Visibility, &EditorJointLimitPairConfig::IsLimited)
                     ->Attribute(AZ::Edit::Attributes::Max, s_angleMin)
                     ->Attribute(AZ::Edit::Attributes::Min, -s_angleMax)
@@ -164,18 +171,20 @@ namespace PhysX
             if (auto* editContext = serializeContext->GetEditContext())
             {
                 editContext->Class<PhysX::EditorJointLimitConeConfig>(
-                    "Angular Limit", "Rotation limitation")
+                    "Angular Limit", "Rotation limitation.")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "PhysX")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->DataElement(0, &PhysX::EditorJointLimitConeConfig::m_standardLimitConfig
                         , "Standard limit configuration"
-                        , "Common limit parameters to all joint types")
-                    ->DataElement(0, &PhysX::EditorJointLimitConeConfig::m_limitY, "Y axis angular limit", "Limit for swing angle about Y axis")
+                        , "Common limit parameters to all joint types.")
+                    ->DataElement(0, &PhysX::EditorJointLimitConeConfig::m_limitY, "Y axis angular limit",
+                        "Limit for swing angle about Y axis.")
                     ->Attribute(AZ::Edit::Attributes::Visibility, &EditorJointLimitConeConfig::IsLimited)
                     ->Attribute(AZ::Edit::Attributes::Max, s_angleMax)
                     ->Attribute(AZ::Edit::Attributes::Min, s_angleMin)
-                    ->DataElement(0, &PhysX::EditorJointLimitConeConfig::m_limitZ, "Z axis angular limit", "Limit for swing angle about Z axis")
+                    ->DataElement(0, &PhysX::EditorJointLimitConeConfig::m_limitZ, "Z axis angular limit",
+                        "Limit for swing angle about Z axis.")
                     ->Attribute(AZ::Edit::Attributes::Visibility, &EditorJointLimitConeConfig::IsLimited)
                     ->Attribute(AZ::Edit::Attributes::Max, s_angleMax)
                     ->Attribute(AZ::Edit::Attributes::Min, s_angleMin)
@@ -205,7 +214,7 @@ namespace PhysX
         if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<EditorJointConfig>()
-                ->Version(4, &EditorJointConfig::VersionConverter)
+                ->Version(5, &EditorJointConfig::VersionConverter)
                 ->Field("Local Position", &EditorJointConfig::m_localPosition)
                 ->Field("Local Rotation", &EditorJointConfig::m_localRotation)
                 ->Field("Parent Entity", &EditorJointConfig::m_leadEntity)
@@ -220,39 +229,48 @@ namespace PhysX
 
             if (auto* editContext = serializeContext->GetEditContext())
             {
+                editContext->Enum<EditorJointConfig::DisplaySetupState>("Joint Display Setup State", "Options for displaying joint setup.")
+                    ->Value("Never", EditorJointConfig::DisplaySetupState::Never)
+                    ->Value("Selected", EditorJointConfig::DisplaySetupState::Selected)
+                    ->Value("Always", EditorJointConfig::DisplaySetupState::Always)
+                    ;
+
                 editContext->Class<PhysX::EditorJointConfig>(
                     "PhysX Joint Configuration", "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "PhysX")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->DataElement(0, &PhysX::EditorJointConfig::m_localPosition, "Local Position"
-                        , "Local Position of joint, relative to its entity")
+                        , "Local Position of joint, relative to its entity.")
                     ->DataElement(0, &PhysX::EditorJointConfig::m_localRotation, "Local Rotation"
-                        , "Local Rotation of joint, relative to its entity")
+                        , "Local Rotation of joint, relative to its entity.")
                     ->Attribute(AZ::Edit::Attributes::Min, LocalRotationMin)
                     ->Attribute(AZ::Edit::Attributes::Max, LocalRotationMax)
                     ->DataElement(0, &PhysX::EditorJointConfig::m_leadEntity, "Lead Entity"
-                        , "Parent entity associated with joint")
+                        , "Parent entity associated with joint.")
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorJointConfig::ValidateLeadEntityId)
                     ->DataElement(0, &PhysX::EditorJointConfig::m_selfCollide, "Lead-Follower Collide"
-                        , "Lead and follower pair will collide with each other")
-                    ->DataElement(0, &PhysX::EditorJointConfig::m_displayJointSetup, "Display Setup in Viewport"
-                        , "Display joint setup in the viewport")
+                        , "When active, the lead and follower pair will collide with each other.")
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::ComboBox, &PhysX::EditorJointConfig::m_displayJointSetup, "Display Setup in Viewport"
+                        , "Never = Not shown."
+                        "Select = Show setup display when entity is selected."
+                        "Always = Always show setup display.")
                     ->Attribute(AZ::Edit::Attributes::ReadOnly, &EditorJointConfig::IsInComponentMode)
                     ->DataElement(0, &PhysX::EditorJointConfig::m_selectLeadOnSnap, "Select Lead on Snap"
-                        , "Select lead entity on snap to position in component mode")
+                        , "Select lead entity on snap to position in component mode.")
                     ->DataElement(0, &PhysX::EditorJointConfig::m_breakable
                         , "Breakable"
-                        , "Joint is breakable when force or torque exceeds limit")
+                        , "Joint is breakable when force or torque exceeds limit.")
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
                     ->Attribute(AZ::Edit::Attributes::ReadOnly, &EditorJointConfig::IsInComponentMode)
                     ->DataElement(0, &PhysX::EditorJointConfig::m_forceMax,
-                        "Maximum Force", "Amount of force joint can withstand before breakage")
+                        "Maximum Force", "Amount of force joint can withstand before breakage.")
                     ->Attribute(AZ::Edit::Attributes::Visibility, &EditorJointConfig::m_breakable)
                     ->Attribute(AZ::Edit::Attributes::Max, s_breakageMax)
                     ->Attribute(AZ::Edit::Attributes::Min, s_breakageMin)
                     ->DataElement(0, &PhysX::EditorJointConfig::m_torqueMax,
-                        "Maximum Torque", "Amount of torque joint can withstand before breakage")
+                        "Maximum Torque", "Amount of torque joint can withstand before breakage.")
                     ->Attribute(AZ::Edit::Attributes::Visibility, &EditorJointConfig::m_breakable)
                     ->Attribute(AZ::Edit::Attributes::Max, s_breakageMax)
                     ->Attribute(AZ::Edit::Attributes::Min, s_breakageMin)
@@ -298,6 +316,23 @@ namespace PhysX
             m_followerEntity);
     }
 
+    bool EditorJointConfig::ShowSetupDisplay() const
+    {
+        switch(m_displayJointSetup)
+        {
+        case DisplaySetupState::Always:
+            return true;
+        case DisplaySetupState::Selected:
+            {
+                bool showSetup = false;
+                AzToolsFramework::EditorEntityInfoRequestBus::EventResult(
+                    showSetup, m_followerEntity, &AzToolsFramework::EditorEntityInfoRequests::IsSelected);
+                return showSetup;
+            }
+        }
+        return false;
+    }
+
     bool EditorJointConfig::IsInComponentMode() const
     {
         return m_inComponentMode;
@@ -334,6 +369,31 @@ namespace PhysX
                 classElement.AddElementWithData(context, "Local Rotation", localRotationQuat.GetEulerDegrees());
             }
         }
+
+        // convert m_displayJointSetup from a bool to the enum with the option Never,Selected,Always show joint setup helpers.
+        if (classElement.GetVersion() <= 4)
+        {
+            // get the current bool setting and remove it.
+            bool oldSetting = false;
+            const int displayJointSetupIndex = classElement.FindElement(AZ_CRC_CE("Display Debug"));
+            if (displayJointSetupIndex >= 0)
+            {
+                AZ::SerializeContext::DataElementNode& elementNode = classElement.GetSubElement(displayJointSetupIndex);
+                elementNode.GetData<bool>(oldSetting);
+                classElement.RemoveElement(displayJointSetupIndex);
+            }
+
+            //if the old setting was on set it to 'Selected'. otherwise 'Never'
+            if (oldSetting)
+            {
+                classElement.AddElementWithData(context, "Display Debug", EditorJointConfig::DisplaySetupState::Selected);
+            }
+            else
+            {
+                classElement.AddElementWithData(context, "Display Debug", EditorJointConfig::DisplaySetupState::Never);
+            }
+        }
+
 
         return result;
     }

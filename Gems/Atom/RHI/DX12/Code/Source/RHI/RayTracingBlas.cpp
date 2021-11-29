@@ -83,7 +83,7 @@ namespace AZ
             AZ_Assert(resultCode == RHI::ResultCode::Success, "failed to create BLAS scratch buffer");
 
             MemoryView& scratchMemoryView = static_cast<Buffer*>(buffers.m_scratchBuffer.get())->GetMemoryView();
-            scratchMemoryView.SetName("BLAS Scratch");
+            scratchMemoryView.SetName(L"BLAS Scratch");
 
             // create BLAS buffer
             buffers.m_blasBuffer = RHI::Factory::Get().CreateBuffer();
@@ -98,7 +98,7 @@ namespace AZ
             AZ_Assert(resultCode == RHI::ResultCode::Success, "failed to create BLAS buffer");
 
             MemoryView& blasMemoryView = static_cast<Buffer*>(buffers.m_blasBuffer.get())->GetMemoryView();
-            blasMemoryView.SetName("BLAS");
+            blasMemoryView.SetName(L"BLAS");
 #endif
             return RHI::ResultCode::Success;
         }

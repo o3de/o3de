@@ -24,29 +24,18 @@ namespace AzToolsFramework
             AZ_Assert(
                 m_filterModel,
                 "Error in AssetBrowserTableModel initialization, class expects source model to be an AssetBrowserFilterModel.");
-            connect(sourceModel, &QAbstractItemModel::rowsInserted, this, &AssetBrowserTableModel::UpdateTableModelMaps);
-            connect(sourceModel, &QAbstractItemModel::rowsRemoved, this, &AssetBrowserTableModel::UpdateTableModelMaps);
-            connect(sourceModel, &QAbstractItemModel::modelAboutToBeReset, this, &AssetBrowserTableModel::beginResetModel);
-            connect(
-                sourceModel, &QAbstractItemModel::modelReset, this,
-                [this]()
-                {
-                    {
-                        QSignalBlocker sb(this);
-                        UpdateTableModelMaps();
-                    }
-                    endResetModel();
-                });
-            connect(sourceModel, &QAbstractItemModel::layoutChanged, this, &AssetBrowserTableModel::UpdateTableModelMaps);
-            connect(sourceModel, &QAbstractItemModel::dataChanged, this, &AssetBrowserTableModel::SourceDataChanged);
-
-
             QSortFilterProxyModel::setSourceModel(sourceModel);
+
+            connect(m_filterModel, &QAbstractItemModel::rowsInserted, this, &AssetBrowserTableModel::UpdateTableModelMaps);
+            connect(m_filterModel, &QAbstractItemModel::rowsRemoved, this, &AssetBrowserTableModel::UpdateTableModelMaps);
+            connect(m_filterModel, &QAbstractItemModel::layoutChanged, this, &AssetBrowserTableModel::UpdateTableModelMaps);
+            connect(m_filterModel, &AssetBrowserFilterModel::filterChanged, this, &AssetBrowserTableModel::beginResetModel);
+            connect(m_filterModel, &QAbstractItemModel::dataChanged, this, &AssetBrowserTableModel::SourceDataChanged);
         }
 
         QModelIndex AssetBrowserTableModel::mapToSource(const QModelIndex& proxyIndex) const
         {
-            Q_ASSERT(!proxyIndex.isValid() || proxyIndex.model() != this);
+            Q_ASSERT(!proxyIndex.isValid() || proxyIndex.model() == this);
             if (!proxyIndex.isValid() || !m_indexMap.contains(proxyIndex.row()))
             {
                 return QModelIndex();
@@ -112,7 +101,7 @@ namespace AzToolsFramework
 
         int AssetBrowserTableModel::rowCount(const QModelIndex& parent) const
         {
-            return !parent.isValid() ? m_indexMap.size() : sourceModel()->rowCount(parent);
+            return !parent.isValid() ? m_indexMap.size() : 0;
         }
 
         int AssetBrowserTableModel::BuildTableModelMap(
@@ -138,7 +127,13 @@ namespace AzToolsFramework
                         m_indexMap[row] = index;
                         m_rowMap[index] = row;
                         ++row;
-                        ++m_displayedItemsCounter;
+
+                        // We only want to increase the displayed counter if it is a parent (Source)
+                        // so we don't cut children entries.
+                        if (entry->GetEntryType() == AssetBrowserEntry::AssetEntryType::Source)
+                        {
+                            ++m_displayedItemsCounter;
+                        }
                     }
 
                     if (model->hasChildren(index))
@@ -156,28 +151,29 @@ namespace AzToolsFramework
 
         AssetBrowserEntry* AssetBrowserTableModel::GetAssetEntry(QModelIndex index) const
         {
-            if (index.isValid())
-            {
-                return static_cast<AssetBrowserEntry*>(index.internalPointer());
-            }
-            else
+            if (!index.isValid())
             {
                 AZ_Error("AssetBrowser", false, "Invalid Source Index provided to GetAssetEntry.");
                 return nullptr;
             }
+            return static_cast<AssetBrowserEntry*>(index.internalPointer());
         }
 
         void AssetBrowserTableModel::UpdateTableModelMaps()
         {
+            beginResetModel();
             emit layoutAboutToBeChanged();
-            m_indexMap.clear();
-            m_rowMap.clear();
 
+            if (!m_indexMap.isEmpty() || !m_rowMap.isEmpty())
+            {
+                m_indexMap.clear();
+                m_rowMap.clear();
+            }
             AzToolsFramework::EditorSettingsAPIBus::BroadcastResult(
                 m_numberOfItemsDisplayed, &AzToolsFramework::EditorSettingsAPIBus::Handler::GetMaxNumberOfItemsShownInSearchView);
-
             BuildTableModelMap(sourceModel());
             emit layoutChanged();
+            endResetModel();
         }
     } // namespace AssetBrowser
 } // namespace AzToolsFramework

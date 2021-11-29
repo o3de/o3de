@@ -71,6 +71,7 @@ namespace AzToolsFramework
         }
 
         m_uniformScaleManipulator->SetVisualOrientationOverride(QuaternionFromTransformNoScaling(localTransform));
+        m_uniformScaleManipulator->SetLocalPosition(localTransform.GetTranslation());
         m_uniformScaleManipulator->SetLocalOrientation(AZ::Quaternion::CreateIdentity());
     }
 

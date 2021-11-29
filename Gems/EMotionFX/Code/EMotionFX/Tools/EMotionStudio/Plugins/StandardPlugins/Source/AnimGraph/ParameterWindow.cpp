@@ -1461,9 +1461,14 @@ namespace EMStudio
 
         // show the create window
         auto createWindow = new ParameterCreateRenameWindow("Create Group", "Please enter the group name:", uniqueGroupName.c_str(), "", invalidNames, this);
-        connect(createWindow, &QDialog::finished, this, [this, createWindow]()
+        connect(createWindow, &QDialog::finished, this, [this, createWindow](int resultCode)
         {
             createWindow->deleteLater();
+
+            if (resultCode == QDialog::Rejected)
+            {
+                return;
+            }
 
             AZStd::string command = AZStd::string::format("AnimGraphAddGroupParameter -animGraphID %i -name \"%s\"", m_animGraph->GetID(), createWindow->GetName().c_str());
             const EMotionFX::GroupParameter* parentGroup = nullptr;

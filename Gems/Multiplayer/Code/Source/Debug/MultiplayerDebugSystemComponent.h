@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include "MultiplayerDebugHierarchyReporter.h"
+
 #include <AzCore/Component/Component.h>
 #include <AzCore/Interface/Interface.h>
 #include <Debug/MultiplayerDebugPerEntityReporter.h>
@@ -62,5 +64,8 @@ namespace Multiplayer
 
         bool m_displayPerEntityStats = false;
         AZStd::unique_ptr<MultiplayerDebugPerEntityReporter> m_reporter;
+        
+        bool m_displayHierarchyDebugger = false;
+        AZStd::unique_ptr<MultiplayerDebugHierarchyReporter> m_hierarchyDebugger;
     };
 }

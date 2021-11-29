@@ -84,22 +84,22 @@ namespace LUAEditor
 
         //////////////////////////////////////////////////////////////////////////
         // AZ::Component
-        virtual void Init();
-        virtual void Activate();
-        virtual void Deactivate();
+        void Init() override;
+        void Activate() override;
+        void Deactivate() override;
         //////////////////////////////////////////////////////////////////////////
 
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required);
 
         //////////////////////////////////////////////////////////////////////////
         // EditorFramework::CoreMessageBus::Handler
-        virtual void RunAsAnotherInstance();
+        void RunAsAnotherInstance() override;
         //////////////////////////////////////////////////////////////////////////
 
         //////////////////////////////////////////////////////////////////////////
         // AzToolsFramework::AssetSystemInfoBus::Handler
-        virtual void AssetCompilationSuccess(const AZStd::string& assetPath) override;
-        virtual void AssetCompilationFailed(const AZStd::string& assetPath) override;
+        void AssetCompilationSuccess(const AZStd::string& assetPath) override;
+        void AssetCompilationFailed(const AZStd::string& assetPath) override;
         //////////////////////////////////////////////////////////////////////////
 
 
@@ -111,110 +111,110 @@ namespace LUAEditor
         //////////////////////////////////////////////////////////////////////////
         // ContextInterface Messages
         // it is an error to call GetDocumentData when the data is not yet ready.
-        virtual void ShowLUAEditorView();
+        void ShowLUAEditorView() override;
         // this occurs from time to time, generally triggered when some external event occurs
         // that makes it suspect that its document statuses might be invalid:
         //////////////////////////////////////////////////////////////////////////
 
         //////////////////////////////////////////////////////////////////////////
         //Context_DocumentManagement Messages
-        virtual void OnNewDocument(const AZStd::string& assetId);
-        virtual void OnLoadDocument(const AZStd::string& assetId, bool errorOnNotFound);
-        virtual void OnCloseDocument(const AZStd::string& assetId);
-        virtual void OnSaveDocument(const AZStd::string& assetId, bool bCloseAfterSaved, bool bSaveAs);
-        virtual bool OnSaveDocumentAs(const AZStd::string& assetId, bool bCloseAfterSaved);
-        virtual void NotifyDocumentModified(const AZStd::string& assetId, bool modified);
-        virtual void DocumentCheckOutRequested(const AZStd::string& assetId);
-        virtual void RefreshAllDocumentPerforceStat();
-        virtual void OnReloadDocument(const AZStd::string assetId);
+        void OnNewDocument(const AZStd::string& assetId) override;
+        void OnLoadDocument(const AZStd::string& assetId, bool errorOnNotFound) override;
+        void OnCloseDocument(const AZStd::string& assetId) override;
+        void OnSaveDocument(const AZStd::string& assetId, bool bCloseAfterSaved, bool bSaveAs) override;
+        bool OnSaveDocumentAs(const AZStd::string& assetId, bool bCloseAfterSaved) override;
+        void NotifyDocumentModified(const AZStd::string& assetId, bool modified) override;
+        void DocumentCheckOutRequested(const AZStd::string& assetId) override;
+        void RefreshAllDocumentPerforceStat() override;
+        void OnReloadDocument(const AZStd::string assetId) override;
 
-        virtual void UpdateDocumentData(const AZStd::string& assetId, const char* dataPtr, const AZStd::size_t dataLength);
-        virtual void GetDocumentData(const AZStd::string& assetId, const char** dataPtr, AZStd::size_t& dataLength);
+        void UpdateDocumentData(const AZStd::string& assetId, const char* dataPtr, const AZStd::size_t dataLength) override;
+        void GetDocumentData(const AZStd::string& assetId, const char** dataPtr, AZStd::size_t& dataLength) override;
         //////////////////////////////////////////////////////////////////////////
 
         //////////////////////////////////////////////////////////////////////////
         // Target Manager
         //////////////////////////////////////////////////////////////////////////
-        virtual void DesiredTargetConnected(bool connected);
-        virtual void DesiredTargetChanged(AZ::u32 newTargetID, AZ::u32 oldTargetID);
+        void DesiredTargetConnected(bool connected) override;
+        void DesiredTargetChanged(AZ::u32 newTargetID, AZ::u32 oldTargetID) override;
 
         //////////////////////////////////////////////////////////////////////////
         //Context_DebuggerManagement Messages
         //////////////////////////////////////////////////////////////////////////
-        void ExecuteScriptBlob(const AZStd::string& fromAssetId, bool executeLocal);
-        virtual void SynchronizeBreakpoints();
-        virtual void CreateBreakpoint(const AZStd::string& fromAssetId, int lineNumber);
-        virtual void MoveBreakpoint(const AZ::Uuid& breakpointUID, int lineNumber);
-        virtual void DeleteBreakpoint(const AZ::Uuid& breakpointUID);
-        virtual void CleanUpBreakpoints();
+        void ExecuteScriptBlob(const AZStd::string& fromAssetId, bool executeLocal) override;
+        void SynchronizeBreakpoints() override;
+        void CreateBreakpoint(const AZStd::string& fromAssetId, int lineNumber) override;
+        void MoveBreakpoint(const AZ::Uuid& breakpointUID, int lineNumber) override;
+        void DeleteBreakpoint(const AZ::Uuid& breakpointUID) override;
+        void CleanUpBreakpoints() override;
 
         // These come from the VM
-        virtual void OnDebuggerAttached();
-        virtual void OnDebuggerRefused();
-        virtual void OnDebuggerDetached();
-        virtual void OnBreakpointHit(const AZStd::string& assetIdString, int lineNumber);
-        virtual void OnBreakpointAdded(const AZStd::string& assetIdString, int lineNumber);
-        virtual void OnBreakpointRemoved(const AZStd::string& assetIdString, int lineNumber);
-        virtual void OnReceivedAvailableContexts(const AZStd::vector<AZStd::string>& contexts);
-        virtual void OnReceivedRegisteredClasses(const AzFramework::ScriptUserClassList& classes);
-        virtual void OnReceivedRegisteredEBuses(const AzFramework::ScriptUserEBusList& ebuses);
-        virtual void OnReceivedRegisteredGlobals(const AzFramework::ScriptUserMethodList& methods, const AzFramework::ScriptUserPropertyList& properties);
-        virtual void OnReceivedLocalVariables(const AZStd::vector<AZStd::string>& vars);
-        virtual void OnReceivedCallstack(const AZStd::vector<AZStd::string>& callstack);
-        virtual void OnReceivedValueState(const AZ::ScriptContextDebug::DebugValue& value);
-        virtual void OnSetValueResult(const AZStd::string& name, bool success);
-        virtual void OnExecutionResumed();
-        virtual void OnExecuteScriptResult(bool success);
+        void OnDebuggerAttached() override;
+        void OnDebuggerRefused() override;
+        void OnDebuggerDetached() override;
+        void OnBreakpointHit(const AZStd::string& assetIdString, int lineNumber) override;
+        void OnBreakpointAdded(const AZStd::string& assetIdString, int lineNumber) override;
+        void OnBreakpointRemoved(const AZStd::string& assetIdString, int lineNumber) override;
+        void OnReceivedAvailableContexts(const AZStd::vector<AZStd::string>& contexts) override;
+        void OnReceivedRegisteredClasses(const AzFramework::ScriptUserClassList& classes) override;
+        void OnReceivedRegisteredEBuses(const AzFramework::ScriptUserEBusList& ebuses) override;
+        void OnReceivedRegisteredGlobals(const AzFramework::ScriptUserMethodList& methods, const AzFramework::ScriptUserPropertyList& properties) override;
+        void OnReceivedLocalVariables(const AZStd::vector<AZStd::string>& vars) override;
+        void OnReceivedCallstack(const AZStd::vector<AZStd::string>& callstack) override;
+        void OnReceivedValueState(const AZ::ScriptContextDebug::DebugValue& value) override;
+        void OnSetValueResult(const AZStd::string& name, bool success) override;
+        void OnExecutionResumed() override;
+        void OnExecuteScriptResult(bool success) override;
 
 
         //////////////////////////////////////////////////////////////////////////
         //BreakpointTracker Messages
         //////////////////////////////////////////////////////////////////////////
-        virtual const BreakpointMap* RequestBreakpoints();
-        virtual void RequestEditorFocus(const AZStd::string& assetIdString, int lineNumber);
-        virtual void RequestDeleteBreakpoint(const AZStd::string& assetIdString, int lineNumber);
+        const BreakpointMap* RequestBreakpoints() override;
+        void RequestEditorFocus(const AZStd::string& assetIdString, int lineNumber) override;
+        void RequestDeleteBreakpoint(const AZStd::string& assetIdString, int lineNumber) override;
 
         //////////////////////////////////////////////////////////////////////////
         //StackTracker Messages
         //////////////////////////////////////////////////////////////////////////
-        virtual void RequestStackClicked(const AZStd::string& stackString, int lineNumber);
+        void RequestStackClicked(const AZStd::string& stackString, int lineNumber) override;
 
         //////////////////////////////////////////////////////////////////////////
         //TargetContextTracker Messages
         //////////////////////////////////////////////////////////////////////////
-        virtual const AZStd::vector<AZStd::string> RequestTargetContexts();
-        virtual const AZStd::string RequestCurrentTargetContext();
-        virtual void SetCurrentTargetContext(AZStd::string& contextName);
+        virtual const AZStd::vector<AZStd::string> RequestTargetContexts() override;
+        const AZStd::string RequestCurrentTargetContext() override;
+        void SetCurrentTargetContext(AZStd::string& contextName) override;
 
         //////////////////////////////////////////////////////////////////////////
         //Watch window messages
         //////////////////////////////////////////////////////////////////////////
-        virtual void RequestWatchedVariable(const AZStd::string& varName);
+        void RequestWatchedVariable(const AZStd::string& varName) override;
 
         //////////////////////////////////////////////////////////////////////////
         //Debug Request messages
         //////////////////////////////////////////////////////////////////////////
-        virtual void RequestDetachDebugger();
-        virtual void RequestAttachDebugger();
+        void RequestDetachDebugger() override;
+        void RequestAttachDebugger() override;
 
         //////////////////////////////////////////////////////////////////////////
         // AzToolsFramework CoreMessages
-        virtual void OnRestoreState(); // sent when everything is registered up and ready to go, this is what bootstraps stuff to get going.
-        virtual bool OnGetPermissionToShutDown();
-        virtual bool CheckOkayToShutDown();
-        virtual void OnSaveState(); // sent to everything when the app is about to shut down - do what you need to do.
-        virtual void OnDestroyState();
-        virtual void ApplicationDeactivated();
-        virtual void ApplicationActivated();
-        virtual void ApplicationShow(AZ::Uuid id);
-        virtual void ApplicationHide(AZ::Uuid id);
-        virtual void ApplicationCensus();
+        void OnRestoreState() override; // sent when everything is registered up and ready to go, this is what bootstraps stuff to get going.
+        bool OnGetPermissionToShutDown() override;
+        bool CheckOkayToShutDown() override;
+        void OnSaveState() override; // sent to everything when the app is about to shut down - do what you need to do.
+        void OnDestroyState() override;
+        void ApplicationDeactivated() override;
+        void ApplicationActivated() override;
+        void ApplicationShow(AZ::Uuid id) override;
+        void ApplicationHide(AZ::Uuid id) override;
+        void ApplicationCensus() override;
         //////////////////////////////////////////////////////////////////////////
 
         //////////////////////////////////////////////////////////////////////////
         // HighlightedWords
-        virtual const HighlightedWords::LUAKeywordsType* GetLUAKeywords() { return &m_LUAKeywords; }
-        virtual const HighlightedWords::LUAKeywordsType* GetLUALibraryFunctions() { return &m_LUALibraryFunctions; }
+        const HighlightedWords::LUAKeywordsType* GetLUAKeywords()  override { return &m_LUAKeywords; }
+        const HighlightedWords::LUAKeywordsType* GetLUALibraryFunctions()  override { return &m_LUALibraryFunctions; }
 
         // internal data structure for the LUA debugger class/member/property reference panel
         // this is what we serialize and work with

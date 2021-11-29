@@ -1,0 +1,46 @@
+{
+    "entries": [
+        {
+            "base": "{493F14D7-FC42-5544-9BA1-400762EB6D41}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "Multiply By Uniform Scale",
+                "category": "Math/Transform",
+                "tooltip": "Returns Source multiplied uniformly by Scale"
+            },
+            "slots": [
+                {
+                    "base": "Input_In",
+                    "details": {
+                        "name": "In"
+                    }
+                },
+                {
+                    "base": "Output_Out",
+                    "details": {
+                        "name": "Out"
+                    }
+                },
+                {
+                    "base": "DataInput_Source",
+                    "details": {
+                        "name": "Source"
+                    }
+                },
+                {
+                    "base": "DataInput_Scale",
+                    "details": {
+                        "name": "Scale"
+                    }
+                },
+                {
+                    "base": "DataOutput_Result",
+                    "details": {
+                        "name": "Result"
+                    }
+                }
+            ]
+        }
+    ]
+}

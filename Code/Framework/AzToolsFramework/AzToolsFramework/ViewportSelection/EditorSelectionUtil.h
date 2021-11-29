@@ -26,6 +26,9 @@ namespace AzFramework
 
 namespace AzToolsFramework
 {
+    //! Default ray length for picking in the viewport.
+    inline constexpr float EditorPickRayLength = 1000.0f;
+
     //! Is the pivot at the center of the object (middle of extents) or at the
     //! exported authored object root position.
     inline bool Centered(const EditorTransformComponentSelectionRequests::Pivot pivot)
@@ -39,12 +42,13 @@ namespace AzToolsFramework
     //! Calculate scale factor based on distance from camera
     float CalculateScreenToWorldMultiplier(const AZ::Vector3& worldPosition, const AzFramework::CameraState& cameraState);
 
-    //! Map from world space to screen space.
-    AzFramework::ScreenPoint GetScreenPosition(int viewportId, const AZ::Vector3& worldTranslation);
-
     //! Given a mouse interaction, determine if the pick ray from its position
     //! in screen space intersected an aabb in world space.
     bool AabbIntersectMouseRay(const ViewportInteraction::MouseInteraction& mouseInteraction, const AZ::Aabb& aabb);
+
+    //! Wrapper to perform an intersection between a ray and an aabb.
+    //! Note: direction should be normalized (it is scaled internally by the editor pick distance).
+    bool AabbIntersectRay(const AZ::Vector3& origin, const AZ::Vector3& direction, const AZ::Aabb& aabb, float& distance);
 
     //! Return if a mouse interaction (pick ray) did intersect the tested EntityId.
     bool PickEntity(

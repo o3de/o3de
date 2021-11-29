@@ -5,8 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef AZCORE_SCRIPT_SCRIPTPROPERTY_H
-#define AZCORE_SCRIPT_SCRIPTPROPERTY_H
+#pragma once
 
 #include <AzCore/Component/EntityId.h>
 #include <AzCore/Memory/SystemAllocator.h>
@@ -490,5 +489,4 @@ namespace AZ
     };
 }
 
-#endif
 

@@ -19,4 +19,5 @@ set(FILES
     std/containers/vector_set.h
     std/containers/vector_set_base.h
     std/parallel/concurrency_checker.h
+    Utils/ScopedValue.h
 )

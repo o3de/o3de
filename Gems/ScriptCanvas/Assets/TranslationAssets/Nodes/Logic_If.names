@@ -1,0 +1,43 @@
+{
+    "entries": [
+        {
+            "base": "{F19CC10A-02FD-4E75-ADAA-9CFBD8A4E2F8}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "If",
+                "category": "Logic",
+                "tooltip": "An execution flow gate that continues True if the Condition is True, otherwise continues False"
+            },
+            "slots": [
+                {
+                    "base": "DataInput_Condition",
+                    "details": {
+                        "name": "Condition"
+                    }
+                },
+                {
+                    "base": "Input_In",
+                    "details": {
+                        "name": "In",
+                        "tooltip": "Input signal"
+                    }
+                },
+                {
+                    "base": "Output_True",
+                    "details": {
+                        "name": "True",
+                        "tooltip": "Signaled if the condition provided evaluates to true."
+                    }
+                },
+                {
+                    "base": "Output_False",
+                    "details": {
+                        "name": "False",
+                        "tooltip": "Signaled if the condition provided evaluates to false."
+                    }
+                }
+            ]
+        }
+    ]
+}

@@ -12,6 +12,7 @@
 #include <ScriptCanvas/Assets/ScriptCanvasAsset.h>
 #include <ScriptCanvas/Components/EditorGraphVariableManagerComponent.h>
 #include <ScriptCanvas/Grammar/AbstractCodeModel.h>
+#include <AzCore/Asset/AssetSerializer.h>
 
 namespace ScriptCanvasBuilderCpp
 {
@@ -181,12 +182,15 @@ namespace ScriptCanvasBuilder
                 continue;
             }
 
-            // copy to override unused list for editor display
-            m_overridesUnused.push_back(*graphVariable);
-            auto& overrideValue = m_overridesUnused.back();
-            overrideValue.DeepCopy(*graphVariable);
-            overrideValue.SetScriptInputControlVisibility(AZ::Edit::PropertyVisibility::Hide);
-            overrideValue.SetAllowSignalOnChange(false);
+            if (graphVariable->IsComponentProperty())
+            {
+                // copy to override unused list for editor display
+                m_overridesUnused.push_back(*graphVariable);
+                auto& overrideValue = m_overridesUnused.back();
+                overrideValue.DeepCopy(*graphVariable);
+                overrideValue.SetScriptInputControlVisibility(AZ::Edit::PropertyVisibility::Hide);
+                overrideValue.SetAllowSignalOnChange(false);
+            }
         }
     }
 

@@ -28,7 +28,7 @@ protected:
     {
         m_app.Start(AZ::ComponentApplication::Descriptor());
         // Without this, the user settings component would attempt to save on finalize/shutdown. Since the file is
-        // shared across the whole engine, if multiple tests are run in parallel, the saving could cause a crash 
+        // shared across the whole engine, if multiple tests are run in parallel, the saving could cause a crash
         // in the unit tests.
         AZ::UserSettingsComponentRequestBus::Broadcast(&AZ::UserSettingsComponentRequests::DisableSaveOnFinalize);
 
@@ -39,7 +39,7 @@ protected:
         assetRoot /= "Cache";
 
         AZ::IO::FileIOBase::GetInstance()->SetAlias("@root@", assetRoot.c_str());
-        AZ::IO::FileIOBase::GetInstance()->SetAlias("@assets@", assetRoot.c_str());
+        AZ::IO::FileIOBase::GetInstance()->SetAlias("@products@", assetRoot.c_str());
     }
 
     void TearDown() override
@@ -158,7 +158,7 @@ TEST_F(WwiseBuilderTests, WwiseBuilder_InitBank_NoMetadata_NoDependencies)
 
 TEST_F(WwiseBuilderTests, WwiseBuilder_ContentBank_NoMetadata_NoDependencies)
 {
-    // Should generate a warning after trying to find metadata for the given bank, when the bank is not the init bank. 
+    // Should generate a warning after trying to find metadata for the given bank, when the bank is not the init bank.
     //  Warning should be about not being able to generate full dependency information without the metadata file.
     TestSuccessCaseNoDependencies("test_doesNotExist.bnk", true);
 }
@@ -180,15 +180,15 @@ TEST_F(WwiseBuilderTests, WwiseBuilder_ContentBank_MultipleDependencies)
 
 TEST_F(WwiseBuilderTests, WwiseBuilder_ContentBank_DependencyArrayNonexistent_NoDependencies)
 {
-    // Should generate a warning when trying to get dependency info from metadata file, but the dependency field does 
-    //  not an empty array. Warning should be describing that a dependency on the init bank was added by default, but 
+    // Should generate a warning when trying to get dependency info from metadata file, but the dependency field does
+    //  not an empty array. Warning should be describing that a dependency on the init bank was added by default, but
     //  the full dependency list could not be generated.
     TestSuccessCaseNoDependencies("test_bank7.bnk", true);
 }
 
 TEST_F(WwiseBuilderTests, WwiseBuilder_ContentBank_NoElementsInDependencyArray_NoDependencies)
 {
-    // Should generate a warning when trying to get dependency info from metadata file, but the dependency field is 
+    // Should generate a warning when trying to get dependency info from metadata file, but the dependency field is
     //  an empty array. Warning should be describing that a dependency on the init bank was added by default, but the
     //  full dependency list could not be generated.
     TestSuccessCaseNoDependencies("test_bank8.bnk", true);
@@ -196,8 +196,8 @@ TEST_F(WwiseBuilderTests, WwiseBuilder_ContentBank_NoElementsInDependencyArray_N
 
 TEST_F(WwiseBuilderTests, WwiseBuilder_ContentBank_MissingInitBankDependency_MultipleDependencies)
 {
-    // Should generate a warning when trying to get dependency info from metadata file, but the dependency info in the 
-    //  metadata doesn't include the init bank. Warning should be describing that a dependency on the init bank was 
+    // Should generate a warning when trying to get dependency info from metadata file, but the dependency info in the
+    //  metadata doesn't include the init bank. Warning should be describing that a dependency on the init bank was
     //  added by default.
     AZStd::vector<const char*> expectedPaths = {
         "Sounds/wwise/init.bnk",

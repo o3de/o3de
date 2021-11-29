@@ -17,8 +17,8 @@ set(LY_GOOGLETEST_EXTRA_PARAMS CACHE STRING "Allows injection of additional opti
 
 find_package(Python REQUIRED MODULE)
 
-ly_set(LY_PYTEST_EXECUTABLE ${LY_PYTHON_CMD} -B -m pytest -v --tb=short --show-capture=log -c ${LY_ROOT_FOLDER}/ctest_pytest.ini --build-directory "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<CONFIG>")
-ly_set(LY_TEST_GLOBAL_KNOWN_SUITE_NAMES "smoke" "main" "periodic" "benchmark" "sandbox")
+ly_set(LY_PYTEST_EXECUTABLE ${LY_PYTHON_CMD} -B -m pytest -v --tb=short --show-capture=log -c ${LY_ROOT_FOLDER}/pytest.ini --build-directory "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<CONFIG>")
+ly_set(LY_TEST_GLOBAL_KNOWN_SUITE_NAMES "smoke" "main" "periodic" "benchmark" "sandbox" "awsi")
 ly_set(LY_TEST_GLOBAL_KNOWN_REQUIREMENTS "gpu")
 
 # Set default test aborts to 25 minutes, avoids hitting the CI pipeline inactivity timeout usually set to 30 minutes
@@ -71,11 +71,14 @@ endfunction()
 # \arg:PARENT_NAME(optional) - Name of the parent test run target (if this is a subsequent call to specify a suite)
 # \arg:TEST_REQUIRES(optional) - List of system resources that are required to run this test.
 #      Only available option is "gpu"
-# \arg:TEST_SUITE(optional) - "smoke" or "periodic" or "sandbox" - prevents the test from running normally
+# \arg:TEST_SUITE(optional) - "smoke" or "periodic" or "benchmark" or "sandbox" or "awsi" - prevents the test from running normally
 #      and instead places it a special suite of tests that only run when requested.
 #      Otherwise, do not specify a TEST_SUITE value and the default ("main") will apply.
+#      "smoke" is tiny, quick tests of fundamental operation (tests with no suite marker will also execute here in CI)
+#      "periodic" is low-priority verification, which should not block code submission
 #      "benchmark" is currently reserved for Google Benchmarks
 #      "sandbox" should be only be used for the workflow of flaky tests
+#      "awsi" Time consuming AWS integration end-to-end tests
 # \arg:TIMEOUT (optional) The timeout in seconds for the module. Defaults to LY_TEST_DEFAULT_TIMEOUT.
 # \arg:TEST_COMMAND - Command which runs the tests. It is a required argument
 # \arg:NON_IDE_PARAMS - extra params that will be run in ctest, but will not be used in the IDE.
@@ -228,7 +231,7 @@ function(ly_add_test)
 
         # For test projects that are custom targets, pass a props file that sets the project as "Console" so
         # it leaves the console open when it finishes
-        set_target_properties(${unaliased_test_name} PROPERTIES VS_USER_PROPS "${LY_ROOT_FOLDER}/cmake/Platform/Common/TestProject.props")
+        set_target_properties(${unaliased_test_name} PROPERTIES VS_USER_PROPS "${LY_ROOT_FOLDER}/cmake/Platform/Common/MSVC/TestProject.props")
 
         # Include additional dependencies
         if (ly_add_test_RUNTIME_DEPENDENCIES)
@@ -279,7 +282,7 @@ endfunction()
 # \arg:RUNTIME_DEPENDENCIES (optional) - List of additional runtime dependencies required by this test.
 # \arg:COMPONENT (optional) - Scope of the feature area that the test belongs to (eg. physics, graphics, etc.).
 # \arg:EXCLUDE_TEST_RUN_TARGET_FROM_IDE(bool) - If set the test run target will be not be shown in the IDE
-# \arg:TEST_SUITE(optional) - "smoke" or "periodic" or "sandbox" - prevents the test from running normally
+# \arg:TEST_SUITE(optional) - "smoke" or "periodic" or "sandbox" or "awsi" - prevents the test from running normally
 #      and instead places it a special suite of tests that only run when requested.
 # \arg:TIMEOUT (optional) The timeout in seconds for the module. If not set defaults to LY_TEST_DEFAULT_TIMEOUT
 #
@@ -331,7 +334,7 @@ endfunction()
 # \arg:TARGET Name of the target module that is being run for tests. If not provided, will default to 'NAME'
 # \arg:TEST_REQUIRES(optional) List of system resources that are required to run this test.
 #      Only available option is "gpu"
-# \arg:TEST_SUITE(optional) - "smoke" or "periodic" or "sandbox" - prevents the test from running normally
+# \arg:TEST_SUITE(optional) - "smoke" or "periodic" or "sandbox" or "awsi" - prevents the test from running normally
 #      and instead places it a special suite of tests that only run when requested.
 # \arg:TEST_COMMAND(optional) - Command which runs the tests.
 #      If not supplied, a default of "AzTestRunner $<TARGET_FILE:${NAME}> AzRunUnitTests" will be used
@@ -372,7 +375,7 @@ function(ly_add_googletest)
         # will actually run everything in main OR everything tagged as requiring a GPU
         # instead of only tests tagged with BOTH main and gpu...
         # so we have to do it this way (negating all others)
-        set(non_ide_params "--gtest_filter=-*SUITE_smoke*:*SUITE_periodic*:*SUITE_benchmark*:*SUITE_sandbox*")
+        set(non_ide_params "--gtest_filter=-*SUITE_smoke*:*SUITE_periodic*:*SUITE_benchmark*:*SUITE_sandbox*:*SUITE_awsi*")
     endif()
 
     if(NOT ly_add_googletest_TEST_COMMAND)

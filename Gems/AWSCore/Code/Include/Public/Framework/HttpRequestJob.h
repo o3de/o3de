@@ -178,7 +178,7 @@ namespace AWSCore
         };
 
         /// Override to process the response to the HTTP request before callbacks are fired.
-        /// WARNING: This gets called on the job's thread, so observe thread safety precations.
+        /// WARNING: This gets called on the job's thread, so observe thread safety precautions.
         virtual void ProcessResponse(const std::shared_ptr<Aws::Http::HttpResponse>& response)
         {
             AZ_UNUSED(response);

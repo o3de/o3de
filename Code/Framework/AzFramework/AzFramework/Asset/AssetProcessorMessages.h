@@ -866,7 +866,7 @@ namespace AzFramework
 
             FileIsReadOnlyResponse() = default;
             FileIsReadOnlyResponse(bool isReadOnly);
-            unsigned int GetMessageType() const;
+            unsigned int GetMessageType() const override;
 
             bool m_isReadOnly;
         };
@@ -945,7 +945,7 @@ namespace AzFramework
 
             FileModTimeRequest() = default;
             FileModTimeRequest(const AZ::OSString& filePath);
-            unsigned int GetMessageType() const;
+            unsigned int GetMessageType() const override;
 
             AZ::OSString m_filePath;
         };

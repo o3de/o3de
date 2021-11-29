@@ -262,7 +262,7 @@ namespace UnitTests
 
             auto result = m_data->m_reporter->ComputeDestination(entryContainer, m_data->m_platformConfig.GetScanFolderByPath(scanFolderEntry.m_scanFolder.c_str()), source, destination, destInfo);
 
-            ASSERT_EQ(result.IsSuccess(), expectSuccess) << result.GetError().c_str();
+            ASSERT_EQ(result.IsSuccess(), expectSuccess) << (!result.IsSuccess() ? result.GetError().c_str() : "");
 
             if (expectSuccess)
             {

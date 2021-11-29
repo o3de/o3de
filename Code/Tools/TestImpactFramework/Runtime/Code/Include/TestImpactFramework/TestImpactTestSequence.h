@@ -30,7 +30,8 @@ namespace TestImpact
     {
         Main = 0,
         Periodic,
-        Sandbox
+        Sandbox,
+        AWSI
     };
 
     //! Result of a test sequence that was run.

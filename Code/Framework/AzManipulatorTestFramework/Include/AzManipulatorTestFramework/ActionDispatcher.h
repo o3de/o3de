@@ -8,30 +8,30 @@
 
 #pragma once
 
-#include <AzToolsFramework/Viewport/ViewportMessages.h>
+#include <AzCore/Debug/Trace.h>
 #include <AzCore/Math/ToString.h>
 #include <AzCore/std/string/string.h>
-#include <AzCore/Debug/Trace.h>
+#include <AzToolsFramework/Viewport/ViewportMessages.h>
 
 namespace AzManipulatorTestFramework
 {
-    //! Base class for derived immediate and retained action dispatchers.
-    template <typename DerivedDispatcherT>
+    //! Base class for derived immediate action dispatchers.
+    template<typename DerivedDispatcherT>
     class ActionDispatcher
     {
     public:
         virtual ~ActionDispatcher() = default;
 
-        //! Enable grid snapping.
-        DerivedDispatcherT* EnableSnapToGrid();
-        //! Disable grid snapping.
-        DerivedDispatcherT* DisableSnapToGrid();
+        //! Enable/disable grid snapping.
+        DerivedDispatcherT* SetSnapToGrid(bool enabled);
         //! Set the grid size.
         DerivedDispatcherT* GridSize(float size);
+        //! Enable/disable sticky select.
+        DerivedDispatcherT* SetStickySelect(bool enabled);
         //! Enable/disable action logging.
         DerivedDispatcherT* LogActions(bool logging);
         //! Output a trace debug message.
-        template <typename... Args>
+        template<typename... Args>
         DerivedDispatcherT* Trace(const char* format, const Args&... args);
         //! Set the camera state.
         DerivedDispatcherT* CameraState(const AzFramework::CameraState& cameraState);
@@ -39,6 +39,8 @@ namespace AzManipulatorTestFramework
         DerivedDispatcherT* MouseLButtonDown();
         //! Set the left mouse button up.
         DerivedDispatcherT* MouseLButtonUp();
+        //! Send a double click event.
+        DerivedDispatcherT* MouseLButtonDoubleClick();
         //! Set the keyboard modifier button down.
         DerivedDispatcherT* KeyboardModifierDown(const AzToolsFramework::ViewportInteraction::KeyboardModifier& keyModifier);
         //! Set the keyboard modifier button up.
@@ -60,16 +62,18 @@ namespace AzManipulatorTestFramework
         //! Break out to the debugger mid action sequence (note: do not leave uses in production code).
         DerivedDispatcherT* DebugBreak();
         //!  Enter component mode for the specified component type.
-        template <typename ComponentT>
+        template<typename ComponentT>
         DerivedDispatcherT* EnterComponentMode();
+
     protected:
-        // Actions to be implemented by derived immediate and retained action dispatchers.
-        virtual void EnableSnapToGridImpl() = 0;
-        virtual void DisableSnapToGridImpl() = 0;
+        // Actions to be implemented by derived immediate action dispatcher.
+        virtual void SetSnapToGridImpl(bool enabled) = 0;
+        virtual void SetStickySelectImpl(bool enabled) = 0;
         virtual void GridSizeImpl(float size) = 0;
         virtual void CameraStateImpl(const AzFramework::CameraState& cameraState) = 0;
         virtual void MouseLButtonDownImpl() = 0;
         virtual void MouseLButtonUpImpl() = 0;
+        virtual void MouseLButtonDoubleClickImpl() = 0;
         virtual void MousePositionImpl(const AzFramework::ScreenPoint& position) = 0;
         virtual void KeyboardModifierDownImpl(const AzToolsFramework::ViewportInteraction::KeyboardModifier& keyModifier) = 0;
         virtual void KeyboardModifierUpImpl(const AzToolsFramework::ViewportInteraction::KeyboardModifier& keyModifier) = 0;
@@ -79,57 +83,74 @@ namespace AzManipulatorTestFramework
         virtual void SetSelectedEntityImpl(AZ::EntityId entity) = 0;
         virtual void SetSelectedEntitiesImpl(const AzToolsFramework::EntityIdList& entities) = 0;
         virtual void EnterComponentModeImpl(const AZ::Uuid& uuid) = 0;
-        template <typename... Args>
+        template<typename... Args>
         void Log(const char* format, const Args&... args);
         bool m_logging = false;
+
     private:
         const char* KeyboardModifierString(const AzToolsFramework::ViewportInteraction::KeyboardModifier& keyModifier);
+        static void DebugPrint(const char* format, ...);
     };
 
-    template <typename DerivedDispatcherT>
+    template<typename DerivedDispatcherT>
+    void ActionDispatcher<DerivedDispatcherT>::DebugPrint(const char* format, ...)
+    {
+        va_list args;
+        va_start(args, format);
+
+        vprintf(format, args);
+        printf("\n");
+
+        va_end(args);
+    }
+
+    template<typename DerivedDispatcherT>
     template <typename... Args>
     void ActionDispatcher<DerivedDispatcherT>::Log(const char* format, const Args&... args)
     {
         if (m_logging)
         {
-            AZStd::string message = AZStd::string::format(format, args...);
-            AZ_Printf("[ActionDispatcher] %s", message.c_str());
+            DebugPrint(format, args...);
         }
     }
 
-    template <typename DerivedDispatcherT>
+    template<typename DerivedDispatcherT>
     template <typename... Args>
     DerivedDispatcherT* ActionDispatcher<DerivedDispatcherT>::Trace(const char* format, const Args&... args)
     {
-        Log(format, args...);
+        if (m_logging)
+        {
+            DebugPrint(format, args...);
+        }
+
         return static_cast<DerivedDispatcherT*>(this);
     }
 
-    template <typename DerivedDispatcherT>
-    DerivedDispatcherT* ActionDispatcher<DerivedDispatcherT>::EnableSnapToGrid()
+    template<typename DerivedDispatcherT>
+    DerivedDispatcherT* ActionDispatcher<DerivedDispatcherT>::SetSnapToGrid(const bool enabled)
     {
-        Log("Enabling SnapToGrid");
-        EnableSnapToGridImpl();
+        Log("SnapToGrid %s", enabled ? "on" : "off");
+        SetSnapToGridImpl(enabled);
         return static_cast<DerivedDispatcherT*>(this);
     }
 
-    template <typename DerivedDispatcherT>
-    DerivedDispatcherT* ActionDispatcher<DerivedDispatcherT>::DisableSnapToGrid()
+    template<typename DerivedDispatcherT>
+    DerivedDispatcherT* ActionDispatcher<DerivedDispatcherT>::SetStickySelect(bool enabled)
     {
-        Log("Disabling SnapToGrid");
-        DisableSnapToGridImpl();
+        Log("StickySelect %s", enabled ? "on" : "off");
+        SetStickySelectImpl(enabled);
         return static_cast<DerivedDispatcherT*>(this);
     }
 
-    template <typename DerivedDispatcherT>
+    template<typename DerivedDispatcherT>
     DerivedDispatcherT* ActionDispatcher<DerivedDispatcherT>::GridSize(float size)
     {
-        Log("GridSize: %f", size);
+        Log("GridSize: %.3f", size);
         GridSizeImpl(size);
         return static_cast<DerivedDispatcherT*>(this);
     }
 
-    template <typename DerivedDispatcherT>
+    template<typename DerivedDispatcherT>
     DerivedDispatcherT* ActionDispatcher<DerivedDispatcherT>::LogActions(bool logging)
     {
         m_logging = logging;
@@ -137,17 +158,16 @@ namespace AzManipulatorTestFramework
         return static_cast<DerivedDispatcherT*>(this);
     }
 
-    template <typename DerivedDispatcherT>
+    template<typename DerivedDispatcherT>
     DerivedDispatcherT* ActionDispatcher<DerivedDispatcherT>::CameraState(const AzFramework::CameraState& cameraState)
     {
-        Log("Camera state: p(%f, %f, %f) d(%f, %f, %f)",
-            float(cameraState.m_position.GetX()), float(cameraState.m_position.GetY()), float(cameraState.m_position.GetZ()),
-            float(cameraState.m_forward.GetX()), float(cameraState.m_forward.GetY()), float(cameraState.m_forward.GetZ()));
+        Log("Camera state: p(%.3f, %.3f, %.3f) d(%.3f, %.3f, %.3f)", cameraState.m_position.GetX(), cameraState.m_position.GetY(),
+            cameraState.m_position.GetZ(), cameraState.m_forward.GetX(), cameraState.m_forward.GetY(), cameraState.m_forward.GetZ());
         CameraStateImpl(cameraState);
         return static_cast<DerivedDispatcherT*>(this);
     }
 
-    template <typename DerivedDispatcherT>
+    template<typename DerivedDispatcherT>
     DerivedDispatcherT* ActionDispatcher<DerivedDispatcherT>::MouseLButtonDown()
     {
         Log("Mouse left button down");
@@ -155,14 +175,23 @@ namespace AzManipulatorTestFramework
         return static_cast<DerivedDispatcherT*>(this);
     }
 
-    template <typename DerivedDispatcherT>
+    template<typename DerivedDispatcherT>
     DerivedDispatcherT* ActionDispatcher<DerivedDispatcherT>::MouseLButtonUp()
     {
         Log("Mouse left button up");
         MouseLButtonUpImpl();
         return static_cast<DerivedDispatcherT*>(this);
     }
-    template <typename DerivedDispatcherT>
+
+    template<typename DerivedDispatcherT>
+    DerivedDispatcherT* ActionDispatcher<DerivedDispatcherT>::MouseLButtonDoubleClick()
+    {
+        Log("Mouse left button double click");
+        MouseLButtonDoubleClickImpl();
+        return static_cast<DerivedDispatcherT*>(this);
+    }
+
+    template<typename DerivedDispatcherT>
     const char* ActionDispatcher<DerivedDispatcherT>::KeyboardModifierString(
         const AzToolsFramework::ViewportInteraction::KeyboardModifier& keyModifier)
     {
@@ -177,11 +206,12 @@ namespace AzManipulatorTestFramework
             return "Shift";
         case KeyboardModifier::None:
             return "None";
-        default: return "Unknown modifier";
+        default:
+            return "Unknown modifier";
         }
     }
 
-    template <typename DerivedDispatcherT>
+    template<typename DerivedDispatcherT>
     DerivedDispatcherT* ActionDispatcher<DerivedDispatcherT>::KeyboardModifierDown(
         const AzToolsFramework::ViewportInteraction::KeyboardModifier& keyModifier)
     {
@@ -190,7 +220,7 @@ namespace AzManipulatorTestFramework
         return static_cast<DerivedDispatcherT*>(this);
     }
 
-    template <typename DerivedDispatcherT>
+    template<typename DerivedDispatcherT>
     DerivedDispatcherT* ActionDispatcher<DerivedDispatcherT>::KeyboardModifierUp(
         const AzToolsFramework::ViewportInteraction::KeyboardModifier& keyModifier)
     {
@@ -199,7 +229,7 @@ namespace AzManipulatorTestFramework
         return static_cast<DerivedDispatcherT*>(this);
     }
 
-    template <typename DerivedDispatcherT>
+    template<typename DerivedDispatcherT>
     DerivedDispatcherT* ActionDispatcher<DerivedDispatcherT>::MousePosition(const AzFramework::ScreenPoint& position)
     {
         Log("Mouse position: (%i, %i)", position.m_x, position.m_y);
@@ -207,7 +237,7 @@ namespace AzManipulatorTestFramework
         return static_cast<DerivedDispatcherT*>(this);
     }
 
-    template <typename DerivedDispatcherT>
+    template<typename DerivedDispatcherT>
     DerivedDispatcherT* ActionDispatcher<DerivedDispatcherT>::ExpectManipulatorBeingInteracted()
     {
         Log("Expecting manipulator interacting");
@@ -215,7 +245,7 @@ namespace AzManipulatorTestFramework
         return static_cast<DerivedDispatcherT*>(this);
     }
 
-    template <typename DerivedDispatcherT>
+    template<typename DerivedDispatcherT>
     DerivedDispatcherT* ActionDispatcher<DerivedDispatcherT>::ExpectManipulatorNotBeingInteracted()
     {
         Log("Not expecting manipulator interacting");
@@ -223,27 +253,24 @@ namespace AzManipulatorTestFramework
         return static_cast<DerivedDispatcherT*>(this);
     }
 
-    template <typename DerivedDispatcherT>
-    DerivedDispatcherT* ActionDispatcher<DerivedDispatcherT>::SetEntityWorldTransform(
-        AZ::EntityId entityId, const AZ::Transform& transform)
+    template<typename DerivedDispatcherT>
+    DerivedDispatcherT* ActionDispatcher<DerivedDispatcherT>::SetEntityWorldTransform(AZ::EntityId entityId, const AZ::Transform& transform)
     {
         Log("Setting entity world transform: %s", AZ::ToString(transform).c_str());
         SetEntityWorldTransformImpl(entityId, transform);
         return static_cast<DerivedDispatcherT*>(this);
     }
 
-    template <typename DerivedDispatcherT>
-    DerivedDispatcherT* ActionDispatcher<DerivedDispatcherT>::SetSelectedEntity(
-        AZ::EntityId entity)
+    template<typename DerivedDispatcherT>
+    DerivedDispatcherT* ActionDispatcher<DerivedDispatcherT>::SetSelectedEntity(AZ::EntityId entity)
     {
         Log("Selecting entity: %u", static_cast<AZ::u64>(entity));
         SetSelectedEntityImpl(entity);
         return static_cast<DerivedDispatcherT*>(this);
     }
 
-    template <typename DerivedDispatcherT>
-    DerivedDispatcherT* ActionDispatcher<DerivedDispatcherT>::SetSelectedEntities(
-        const AzToolsFramework::EntityIdList& entities)
+    template<typename DerivedDispatcherT>
+    DerivedDispatcherT* ActionDispatcher<DerivedDispatcherT>::SetSelectedEntities(const AzToolsFramework::EntityIdList& entities)
     {
         for (const auto& entity : entities)
         {
@@ -253,7 +280,7 @@ namespace AzManipulatorTestFramework
         return static_cast<DerivedDispatcherT*>(this);
     }
 
-    template <typename DerivedDispatcherT>
+    template<typename DerivedDispatcherT>
     DerivedDispatcherT* ActionDispatcher<DerivedDispatcherT>::EnterComponentMode(const AZ::Uuid& uuid)
     {
         Log("Entering component mode: %s", uuid.ToString<AZStd::string>().c_str());
@@ -261,7 +288,7 @@ namespace AzManipulatorTestFramework
         return static_cast<DerivedDispatcherT*>(this);
     }
 
-    template <typename DerivedDispatcherT>
+    template<typename DerivedDispatcherT>
     DerivedDispatcherT* ActionDispatcher<DerivedDispatcherT>::DebugBreak()
     {
         Log("Breaking to debugger");
@@ -269,8 +296,8 @@ namespace AzManipulatorTestFramework
         return static_cast<DerivedDispatcherT*>(this);
     }
 
-    template <typename DerivedDispatcherT>
-    template <typename ComponentT>
+    template<typename DerivedDispatcherT>
+    template<typename ComponentT>
     DerivedDispatcherT* ActionDispatcher<DerivedDispatcherT>::EnterComponentMode()
     {
         EnterComponentMode(AZ::AzTypeInfo<ComponentT>::Uuid());
