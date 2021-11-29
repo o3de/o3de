@@ -11,7 +11,7 @@
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <LyShine/Bus/UiCanvasBus.h>
 #include <LyShine/LyShineBus.h>
-#include <CryCommon/LyShine/ILyShine.h>
+#include <LyShine/ILyShine.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //! UiCanvasAssetRefNotificationBus Behavior context handler class

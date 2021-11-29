@@ -12,6 +12,8 @@ set(FILES
     Include/LyShine/IDraw2d.h
     Include/LyShine/IRenderGraph.h
     Include/LyShine/ISprite.h
+    Include/LyShine/ILyShine.h
+    Include/LyShine/UiBase.h
     Include/LyShine/UiLayoutCellBase.h
     Include/LyShine/UiSerializeHelpers.h
     Include/LyShine/UiComponentTypes.h

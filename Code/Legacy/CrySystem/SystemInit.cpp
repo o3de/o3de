@@ -81,7 +81,6 @@
 #include <IAudioSystem.h>
 #include <ICmdLine.h>
 #include <IProcess.h>
-#include <LyShine/ILyShine.h>
 #include <HMDBus.h>
 
 #include <AzFramework/Archive/Archive.h>
@@ -1557,11 +1556,6 @@ AZ_POP_DISABLE_WARNING
         m_pViewSystem = new LegacyViewSystem::CViewSystem(this);
 
         InlineInitializationProcessing("CSystem::Init View System");
-
-        if (m_env.pLyShine)
-        {
-            m_env.pLyShine->PostInit();
-        }
 
         InlineInitializationProcessing("CSystem::Init InitLmbrAWS");
 

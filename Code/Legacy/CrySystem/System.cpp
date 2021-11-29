@@ -116,7 +116,6 @@ LRESULT WINAPI WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 #include <ILog.h>
 #include <IAudioSystem.h>
 #include <IProcess.h>
-#include <LyShine/ILyShine.h>
 
 #include <LoadScreenBus.h>
 
@@ -446,14 +445,7 @@ void CSystem::ShutDown()
     // Shutdown any running VR devices.
     EBUS_EVENT(AZ::VR::HMDInitRequestBus, Shutdown);
 
-    if (gEnv && gEnv->pLyShine)
-    {
-        gEnv->pLyShine->Release();
-        gEnv->pLyShine = nullptr;
-    }
-
     SAFE_RELEASE(m_env.pMovieSystem);
-    SAFE_RELEASE(m_env.pLyShine);
     SAFE_RELEASE(m_env.pCryFont);
     if (m_env.pConsole)
     {
