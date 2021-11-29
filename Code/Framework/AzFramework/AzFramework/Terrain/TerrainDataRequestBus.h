@@ -130,6 +130,27 @@ namespace AzFramework
                 SurfaceData::SurfacePoint& outSurfacePoint,
                 Sampler sampleFilter = Sampler::DEFAULT,
                 bool* terrainExistsPtr = nullptr) const = 0;
+
+        private:
+            // Private variations of the GetSurfacePoint API exposed to BehaviorContext that returns a value instead of
+            // using an "out" parameter.  The "out" parameter is useful for reusing memory allocated in SurfacePoint when
+            // using the public API, but can't easily be used from Script Canvas.
+            SurfaceData::SurfacePoint GetSurfacePoint(
+                const AZ::Vector3& inPosition,
+                Sampler sampleFilter = Sampler::DEFAULT) const
+            {
+                SurfaceData::SurfacePoint result;
+                    GetSurfacePoint(inPosition, result, sampleFilter);
+                return result;
+            }
+            SurfaceData::SurfacePoint GetSurfacePointFromVector2(
+                const AZ::Vector2& inPosition,
+                Sampler sampleFilter = Sampler::DEFAULT) const
+            {
+                SurfaceData::SurfacePoint result;
+                GetSurfacePointFromVector2(inPosition, result, sampleFilter);
+                return result;
+            }
         };
         using TerrainDataRequestBus = AZ::EBus<TerrainDataRequests>;
 

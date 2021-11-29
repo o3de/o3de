@@ -14,6 +14,9 @@ namespace AzFramework::Terrain
 {
     void TerrainDataRequests::Reflect(AZ::ReflectContext* context)
     {
+        using GetSurfacePointFuncPtr = SurfaceData::SurfacePoint (TerrainDataRequests::*)(const AZ::Vector3&, Sampler) const;
+        using GetSurfacePointFromVector2FuncPtr = SurfaceData::SurfacePoint (TerrainDataRequests::*)(const AZ::Vector2&, Sampler) const;
+
         if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
             behaviorContext->EBus<AzFramework::Terrain::TerrainDataRequestBus>("TerrainDataRequestBus")
@@ -26,10 +29,12 @@ namespace AzFramework::Terrain
                 ->Event("GetSurfaceWeights", &AzFramework::Terrain::TerrainDataRequestBus::Events::GetSurfaceWeights)
                 ->Event("GetSurfaceWeightsFromVector2",
                     &AzFramework::Terrain::TerrainDataRequestBus::Events::GetSurfaceWeightsFromVector2)
+                ->Event("GetIsHole", &AzFramework::Terrain::TerrainDataRequestBus::Events::GetIsHole)
                 ->Event("GetIsHoleFromFloats", &AzFramework::Terrain::TerrainDataRequestBus::Events::GetIsHoleFromFloats)
-                ->Event("GetSurfacePoint", &AzFramework::Terrain::TerrainDataRequestBus::Events::GetSurfacePoint)
+                ->Event("GetSurfacePoint",
+                    static_cast<GetSurfacePointFuncPtr>(&AzFramework::Terrain::TerrainDataRequestBus::Events::GetSurfacePoint))
                 ->Event("GetSurfacePointFromVector2",
-                    &AzFramework::Terrain::TerrainDataRequestBus::Events::GetSurfacePointFromVector2)
+                    static_cast<GetSurfacePointFromVector2FuncPtr>(&AzFramework::Terrain::TerrainDataRequestBus::Events::GetSurfacePointFromVector2))
                 ->Event("GetTerrainAabb", &AzFramework::Terrain::TerrainDataRequestBus::Events::GetTerrainAabb)
                 ->Event("GetTerrainHeightQueryResolution",
                     &AzFramework::Terrain::TerrainDataRequestBus::Events::GetTerrainHeightQueryResolution)
