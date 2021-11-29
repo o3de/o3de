@@ -14,6 +14,8 @@ namespace AzFramework::Terrain
 {
     void TerrainDataRequests::Reflect(AZ::ReflectContext* context)
     {
+        // These APIs are overloaded, so we need to define aliases for the version of the APIs that we want to use.
+        // Otherwise the BehaviorContext definition below won't compile.
         using GetSurfacePointFuncPtr = SurfaceData::SurfacePoint (TerrainDataRequests::*)(const AZ::Vector3&, Sampler) const;
         using GetSurfacePointFromVector2FuncPtr = SurfaceData::SurfacePoint (TerrainDataRequests::*)(const AZ::Vector2&, Sampler) const;
 
