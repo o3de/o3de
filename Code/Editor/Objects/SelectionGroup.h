@@ -98,18 +98,12 @@ public:
     //! Resets rotation and scale to identity and (1.0f, 1.0f, 1.0f)
     void ResetTransformation();
     //! Scale objects in selection by given scale.
-    void StartScaling();
     void Scale(const Vec3& scale, int referenceCoordSys);
     void SetScale(const Vec3& scale, int referenceCoordSys);
     //! Align objects in selection to surface normal
     void Align();
     //! Very special method to move contents of a voxel.
     void MoveContent(const Vec3& offset);
-
-    //////////////////////////////////////////////////////////////////////////
-    //! Clone objects in this group and add cloned objects to new selection group.
-    //! Only topmost parent  objects will be added to this selection group.
-    void Clone(CSelectionGroup& newGroup);
 
     // Send event to all objects in selection group.
     void SendEvent(ObjectEvent event);

@@ -306,19 +306,13 @@ class CToolsApplicationUndoLink
 {
 public:
 
-    CToolsApplicationUndoLink(const char* description)
-        : m_description(description)
+    CToolsApplicationUndoLink()
     {
     }
 
     int GetSize() override
     {
         return 0;
-    }
-
-    QString GetDescription() override
-    {
-        return m_description.c_str();
     }
 
     void Undo(bool bUndo = true) override
@@ -354,8 +348,6 @@ public:
             w->setFocus(Qt::OtherFocusReason);
         }
     }
-
-    AZStd::string m_description;
 };
 
 #endif // CRYINCLUDE_COMPONENTENTITYEDITORPLUGIN_SANDBOXINTEGRATION_H
