@@ -5,7 +5,7 @@
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "SurfaceMaskGradientRequestBus"
+                "name": "Surface Mask Gradient"
             },
             "methods": [
                 {

@@ -198,9 +198,7 @@ namespace UnitTest
         AzToolsFramework::ViewportInteraction::ViewportInteractionRequestBus::EventResult(
             cameraState, TestViewportId, &AzToolsFramework::ViewportInteraction::ViewportInteractionRequestBus::Events::GetCameraState);
 
-        const auto cameraMatrix = AzFramework::CameraTransform(cameraState);
-        const auto cameraTransform = AZ::Matrix3x4::CreateFromMatrix3x3AndTranslation(
-            AZ::Matrix3x3::CreateFromMatrix4x4(cameraMatrix), cameraMatrix.GetTranslation());
+        const auto cameraTransform = AzFramework::CameraTransform(cameraState);
 
         // Then
         // camera transform matches that of the secondary view

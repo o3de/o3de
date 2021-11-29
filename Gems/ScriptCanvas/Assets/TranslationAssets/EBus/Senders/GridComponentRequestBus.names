@@ -5,21 +5,22 @@
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "GridComponentRequestBus"
+                "name": "Grid Component",
+                "category": "Rendering"
             },
             "methods": [
                 {
                     "base": "SetSecondaryColor",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetSecondaryColor"
+                        "tooltip": "When signaled, this will invoke Set Secondary Color"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetSecondaryColor is invoked"
+                        "tooltip": "Signaled after Set Secondary Color is invoked"
                     },
                     "details": {
-                        "name": "SetSecondaryColor"
+                        "name": "Set Secondary Color"
                     },
                     "params": [
                         {
@@ -34,14 +35,14 @@
                     "base": "GetPrimarySpacing",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetPrimarySpacing"
+                        "tooltip": "When signaled, this will invoke Get Primary Spacing"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetPrimarySpacing is invoked"
+                        "tooltip": "Signaled after Get Primary Spacing is invoked"
                     },
                     "details": {
-                        "name": "GetPrimarySpacing"
+                        "name": "Get Primary Spacing"
                     },
                     "results": [
                         {
@@ -56,14 +57,14 @@
                     "base": "GetSecondaryColor",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetSecondaryColor"
+                        "tooltip": "When signaled, this will invoke Get Secondary Color"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetSecondaryColor is invoked"
+                        "tooltip": "Signaled after Get Secondary Color is invoked"
                     },
                     "details": {
-                        "name": "GetSecondaryColor"
+                        "name": "Get Secondary Color"
                     },
                     "results": [
                         {
@@ -78,14 +79,14 @@
                     "base": "SetAxisColor",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetAxisColor"
+                        "tooltip": "When signaled, this will invoke Set Axis Color"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetAxisColor is invoked"
+                        "tooltip": "Signaled after Set Axis Color is invoked"
                     },
                     "details": {
-                        "name": "SetAxisColor"
+                        "name": "Set Axis Color"
                     },
                     "params": [
                         {
@@ -100,14 +101,14 @@
                     "base": "SetPrimaryColor",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetPrimaryColor"
+                        "tooltip": "When signaled, this will invoke Set Primary Color"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetPrimaryColor is invoked"
+                        "tooltip": "Signaled after Set Primary Color is invoked"
                     },
                     "details": {
-                        "name": "SetPrimaryColor"
+                        "name": "Set Primary Color"
                     },
                     "params": [
                         {
@@ -122,14 +123,14 @@
                     "base": "GetAxisColor",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetAxisColor"
+                        "tooltip": "When signaled, this will invoke Get Axis Color"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetAxisColor is invoked"
+                        "tooltip": "Signaled after Get Axis Color is invoked"
                     },
                     "details": {
-                        "name": "GetAxisColor"
+                        "name": "Get Axis Color"
                     },
                     "results": [
                         {
@@ -144,14 +145,14 @@
                     "base": "SetPrimarySpacing",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetPrimarySpacing"
+                        "tooltip": "When signaled, this will invoke Set Primary Spacing"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetPrimarySpacing is invoked"
+                        "tooltip": "Signaled after Set Primary Spacing is invoked"
                     },
                     "details": {
-                        "name": "SetPrimarySpacing"
+                        "name": "Set Primary Spacing"
                     },
                     "params": [
                         {
@@ -166,14 +167,14 @@
                     "base": "GetSecondarySpacing",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetSecondarySpacing"
+                        "tooltip": "When signaled, this will invoke Get Secondary Spacing"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetSecondarySpacing is invoked"
+                        "tooltip": "Signaled after Get Secondary Spacing is invoked"
                     },
                     "details": {
-                        "name": "GetSecondarySpacing"
+                        "name": "Get Secondary Spacing"
                     },
                     "results": [
                         {
@@ -188,14 +189,14 @@
                     "base": "SetSecondarySpacing",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetSecondarySpacing"
+                        "tooltip": "When signaled, this will invoke Set Secondary Spacing"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetSecondarySpacing is invoked"
+                        "tooltip": "Signaled after Set Secondary Spacing is invoked"
                     },
                     "details": {
-                        "name": "SetSecondarySpacing"
+                        "name": "Set Secondary Spacing"
                     },
                     "params": [
                         {
@@ -210,14 +211,14 @@
                     "base": "SetSize",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetSize"
+                        "tooltip": "When signaled, this will invoke Set Size"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetSize is invoked"
+                        "tooltip": "Signaled after Set Size is invoked"
                     },
                     "details": {
-                        "name": "SetSize"
+                        "name": "Set Size"
                     },
                     "params": [
                         {
@@ -232,14 +233,14 @@
                     "base": "GetSize",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetSize"
+                        "tooltip": "When signaled, this will invoke Get Size"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetSize is invoked"
+                        "tooltip": "Signaled after Get Size is invoked"
                     },
                     "details": {
-                        "name": "GetSize"
+                        "name": "Get Size"
                     },
                     "results": [
                         {
@@ -254,14 +255,14 @@
                     "base": "GetPrimaryColor",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetPrimaryColor"
+                        "tooltip": "When signaled, this will invoke Get Primary Color"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetPrimaryColor is invoked"
+                        "tooltip": "Signaled after Get Primary Color is invoked"
                     },
                     "details": {
-                        "name": "GetPrimaryColor"
+                        "name": "Get Primary Color"
                     },
                     "results": [
                         {

@@ -31,7 +31,6 @@
 #include <Source/InstanceSystemComponent.h>
 #include <ISerialize.h>
 #include <IIndexedMesh.h>
-#include <IStatObj.h>
 
 //////////////////////////////////////////////////////////////////////////
 // mock event bus classes for testing vegetation

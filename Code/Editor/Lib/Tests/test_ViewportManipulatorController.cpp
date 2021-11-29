@@ -8,7 +8,7 @@
 
 #include <AzFramework/Viewport/CameraInput.h>
 #include <AzFramework/Viewport/ViewportControllerList.h>
-#include <AzToolsFramework/Input/QtEventToAzInputManager.h>
+#include <AzToolsFramework/Input/QtEventToAzInputMapper.h>
 #include <AzToolsFramework/UnitTest/AzToolsFrameworkTestHelpers.h>
 #include <AzToolsFramework/ViewportSelection/EditorInteractionSystemViewportSelectionRequestBus.h>
 #include <Editor/ViewportManipulatorController.h>

@@ -5,7 +5,7 @@
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "UiClickableTextBus",
+                "name": "UI Clickable Text",
                 "category": "UI"
             },
             "methods": [
