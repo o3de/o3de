@@ -203,13 +203,12 @@ namespace LandscapeCanvasEditor
     {
         using namespace AzToolsFramework;
 
-        static const QStringList preferredCategories = {
-            "Vegetation",
-            "Atom"
-        };
+        static const QStringList preferredCategories = { "Vegetation", "Atom" };
+
+        static const AZStd::unordered_map<AZStd::string, QString> preferredComponentByCategory = { { "Shape", "Shape Reference" } };
 
         // There are a couple of cases where we prefer certain categories of Components
-        // to be added over others (e.g. a Vegetation Shape Reference instead of actual LmbrCentral shapes),
+        // to be added over others,
         // so if those there are components in those categories, then choose them first.
         // Otherwise, just pick the first one in the list.
         ComponentPaletteUtil::ComponentDataTable::const_iterator categoryIt;
@@ -227,6 +226,22 @@ namespace LandscapeCanvasEditor
         }
 
         AZ_Assert(categoryIt->second.size(), "No components found that satisfy the missing required service(s).");
+
+        const AZStd::string categoryName(categoryIt->first.toUtf8());
+
+        // Check whether the selected category has a preferred component and return that if it does.
+        for (const auto& preferredComponentPair : preferredComponentByCategory)
+        {
+            if (categoryName == preferredComponentPair.first)
+            {
+                const auto& componentPair = categoryIt->second.find(preferredComponentPair.second);
+
+                if (componentPair != categoryIt->second.end())
+                {
+                    return componentPair->second->m_typeId;
+                }
+            }
+        }
 
         const auto& componentPair = categoryIt->second.begin();
         return componentPair->second->m_typeId;
