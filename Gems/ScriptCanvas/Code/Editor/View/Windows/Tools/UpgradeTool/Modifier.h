@@ -67,6 +67,7 @@ namespace ScriptCanvasEditor
             State m_state = State::GatheringDependencies;
             ModifyState m_modifyState = ModifyState::Idle;
             size_t m_assetIndex = 0;
+
             AZStd::function<void()> m_onComplete;
             // asset infos in scanned order
             AZStd::vector<SourceHandle> m_assets;
@@ -82,10 +83,10 @@ namespace ScriptCanvasEditor
             AZStd::unique_ptr<FileSaver> m_fileSaver;
             FileSaveResult m_fileSaveResult;
 
+            size_t GetCurrentIndex() const;
             void GatherDependencies();
             AZStd::unordered_set<size_t>& GetOrCreateDependencyIndexSet();
-            SourceHandle LoadAsset();
-            SourceHandle& ModCurrentAsset();
+            void LoadAsset();
             void ModifyCurrentAsset();
             void ModifyNextAsset();
             void ModificationComplete(const ModificationResult& result) override;
