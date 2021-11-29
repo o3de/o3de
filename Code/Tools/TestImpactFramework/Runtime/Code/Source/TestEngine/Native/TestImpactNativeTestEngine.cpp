@@ -33,11 +33,10 @@ namespace TestImpact
         }
     }
 
+    //!
     class RegularTestJobRunnerCallbackHandler
         : public TestJobRunnerCallbackHandler<NativeRegularTestRunner, NativeTestTarget>
     {
-        using ParentHandler = TestJobRunnerCallbackHandler<NativeRegularTestRunner, NativeTestTarget>;
-
     public:
         RegularTestJobRunnerCallbackHandler(
             const AZStd::vector<const NativeTestTarget*>& testTargets,
@@ -45,7 +44,7 @@ namespace TestImpact
             Policy::ExecutionFailure executionFailurePolicy,
             Policy::TestFailure testFailurePolicy,
             AZStd::optional<TestEngineJobCompleteCallback<NativeTestTarget>>* callback)
-            : ParentHandler(
+            : TestJobRunnerCallbackHandler(
                     testTargets,
                     engineJobs,
                     executionFailurePolicy,
@@ -61,11 +60,10 @@ namespace TestImpact
         }
     };
 
+    //!
     class InstrumentedRegularTestJobRunnerCallbackHandler
         : public TestJobRunnerCallbackHandler<NativeInstrumentedTestRunner, NativeTestTarget>
     {
-        using ParentHandler = TestJobRunnerCallbackHandler<NativeInstrumentedTestRunner, NativeTestTarget>;
-
     public:
         InstrumentedRegularTestJobRunnerCallbackHandler(
             const AZStd::vector<const NativeTestTarget*>& testTargets,
@@ -73,7 +71,7 @@ namespace TestImpact
             Policy::ExecutionFailure executionFailurePolicy,
             Policy::TestFailure testFailurePolicy,
             AZStd::optional<TestEngineJobCompleteCallback<NativeTestTarget>>* callback)
-            : ParentHandler(
+            : TestJobRunnerCallbackHandler(
                     testTargets,
                     engineJobs,
                     executionFailurePolicy,

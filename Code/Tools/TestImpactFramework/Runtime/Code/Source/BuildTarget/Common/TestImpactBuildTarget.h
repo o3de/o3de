@@ -88,10 +88,7 @@ namespace TestImpact
         Visit(
             [&returnTarget](auto&& target)
             {
-                if (target)
-                {
-                    returnTarget = &(*target);
-                }
+                returnTarget = &(*target);
             });
 
         return returnTarget;
