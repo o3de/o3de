@@ -18,4 +18,5 @@ namespace O3DE::ProjectManager
 
     void SaveProjectManagerSettings();
     QString GetProjectBuiltSuccessfullyKey(const QString& projectName);
+    QString GetExternalLinkWarningKey();
 }
