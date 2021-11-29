@@ -6,7 +6,6 @@
  *
  */
 
-#include "AzFramework/Process/ProcessCommunicator.h"
 
 #include <Multiplayer/IMultiplayer.h>
 #include <Multiplayer/IMultiplayerTools.h>
@@ -16,11 +15,8 @@
 #include <MultiplayerSystemComponent.h>
 #include <PythonEditorEventsBus.h>
 #include <Editor/MultiplayerEditorSystemComponent.h>
-#include <Source/AutoGen/Multiplayer.AutoPackets.h>
 
-#include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Console/IConsole.h>
-#include <AzCore/Console/ILogger.h>
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Utils/Utils.h>
