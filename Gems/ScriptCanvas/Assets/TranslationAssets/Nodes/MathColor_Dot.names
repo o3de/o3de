@@ -1,0 +1,47 @@
+{
+    "entries": [
+        {
+            "base": "{92A67932-241C-5BF4-8D4F-327F3E819F56}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "Dot",
+                "category": "Math/Color",
+                "tooltip": "returns the 4-element dot product of A and B",
+                "subtitle": "Color"
+            },
+            "slots": [
+                {
+                    "base": "Input_In",
+                    "details": {
+                        "name": "In"
+                    }
+                },
+                {
+                    "base": "Output_Out",
+                    "details": {
+                        "name": "Out"
+                    }
+                },
+                {
+                    "base": "DataInput_Color: A",
+                    "details": {
+                        "name": "Color: A"
+                    }
+                },
+                {
+                    "base": "DataInput_Color: B",
+                    "details": {
+                        "name": "Color: B"
+                    }
+                },
+                {
+                    "base": "DataOutput_Result: Number",
+                    "details": {
+                        "name": "Result: Number"
+                    }
+                }
+            ]
+        }
+    ]
+}

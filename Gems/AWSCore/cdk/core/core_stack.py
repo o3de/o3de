@@ -86,13 +86,21 @@ class CoreStack(core.Stack):
         # Create an S3 bucket for Amazon S3 server access logging
         # See https://docs.aws.amazon.com/AmazonS3/latest/dev/security-best-practices.html
         if self.node.try_get_context('disable_access_log') != 'true':
+
+            # Auto cleanup bucket and data if requested
+            _remove_storage = self.node.try_get_context('remove_all_storage_on_destroy') == 'true'
+            _removal_policy = core.RemovalPolicy.DESTROY if _remove_storage else core.RemovalPolicy.RETAIN
+
             self._server_access_logs_bucket = s3.Bucket(
                 self,
                 f'{self._project_name}-{self._feature_name}-Access-Log-Bucket',
+                access_control=s3.BucketAccessControl.LOG_DELIVERY_WRITE,
+                auto_delete_objects = _remove_storage,
                 block_public_access=s3.BlockPublicAccess.BLOCK_ALL,
                 encryption=s3.BucketEncryption.S3_MANAGED,
-                access_control=s3.BucketAccessControl.LOG_DELIVERY_WRITE
+                removal_policy=_removal_policy
             )
+
             self._server_access_logs_bucket.grant_read(self._admin_group)
 
             # Export access log bucket name

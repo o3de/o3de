@@ -30,7 +30,7 @@ namespace AZ
 
         Vector2() = default;
 
-        Vector2(const Vector2& v);
+        Vector2(const Vector2& v) = default;
 
         //! Constructs vector with all components set to the same specified value.
         explicit Vector2(float x);

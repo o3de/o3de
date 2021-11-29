@@ -1,0 +1,46 @@
+{
+    "entries": [
+        {
+            "base": "{6A153DA6-666E-59ED-93B7-5EE7F19EFC02}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "Get Row",
+                "category": "Math/Matrix4x4",
+                "tooltip": "Returns vector from matrix corresponding to the Row index"
+            },
+            "slots": [
+                {
+                    "base": "Input_In",
+                    "details": {
+                        "name": "In"
+                    }
+                },
+                {
+                    "base": "Output_Out",
+                    "details": {
+                        "name": "Out"
+                    }
+                },
+                {
+                    "base": "DataInput_Source",
+                    "details": {
+                        "name": "Source"
+                    }
+                },
+                {
+                    "base": "DataInput_Row",
+                    "details": {
+                        "name": "Row"
+                    }
+                },
+                {
+                    "base": "DataOutput_Result",
+                    "details": {
+                        "name": "Result"
+                    }
+                }
+            ]
+        }
+    ]
+}

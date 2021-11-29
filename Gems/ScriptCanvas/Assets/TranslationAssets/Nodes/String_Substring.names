@@ -1,0 +1,53 @@
+{
+    "entries": [
+        {
+            "base": "{F57D790D-01D5-5241-865C-3348CCB3536B}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "Substring",
+                "category": "String",
+                "tooltip": "Returns a sub string from a given string",
+                "subtitle": "String"
+            },
+            "slots": [
+                {
+                    "base": "Input_In",
+                    "details": {
+                        "name": "In"
+                    }
+                },
+                {
+                    "base": "Output_Out",
+                    "details": {
+                        "name": "Out"
+                    }
+                },
+                {
+                    "base": "DataInput_String: Source",
+                    "details": {
+                        "name": "String: Source"
+                    }
+                },
+                {
+                    "base": "DataInput_Number: From",
+                    "details": {
+                        "name": "Number: From"
+                    }
+                },
+                {
+                    "base": "DataInput_Number: Length",
+                    "details": {
+                        "name": "Number: Length"
+                    }
+                },
+                {
+                    "base": "DataOutput_Result: String",
+                    "details": {
+                        "name": "Result: String"
+                    }
+                }
+            ]
+        }
+    ]
+}

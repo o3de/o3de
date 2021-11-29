@@ -26,6 +26,7 @@ namespace AZ::Render
         float m_faceNormalsScale = 1.0f;
         float m_tangentsScale = 1.0f;
         float m_wireframeScale = 1.0f;
+        float m_nodeOrientationScale = 1.0f;
 
         AZ::Color m_hitDetectionColliderColor{0.44f, 0.44f, 0.44f, 1.0f};
         AZ::Color m_selectedHitDetectionColliderColor{ 0.3f, 0.56f, 0.88f, 1.0f };
@@ -46,5 +47,6 @@ namespace AZ::Render
         AZ::Color m_staticAABBColor{ 0.0f, 0.7f, 0.7f, 1.0f };
         AZ::Color m_lineSkeletonColor{ 0.33333f, 1.0f, 0.0f, 1.0f };
         AZ::Color m_skeletonColor{ 0.19f, 0.58f, 0.19f, 1.0f };
+        AZ::Color m_jointNameColor{ 1.0f, 1.0f, 1.0f, 1.0f };
     };
 } // namespace AZ::Render

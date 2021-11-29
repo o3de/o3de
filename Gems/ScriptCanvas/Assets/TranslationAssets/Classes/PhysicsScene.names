@@ -1,0 +1,83 @@
+{
+    "entries": [
+        {
+            "base": "PhysicsScene",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "Physics Scene"
+            },
+            "methods": [
+                {
+                    "base": "GetOnGravityChangeEvent",
+                    "context": "PhysicsScene",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get On Gravity Change Event"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get On Gravity Change Event is invoked"
+                    },
+                    "details": {
+                        "name": "Get On Gravity Change Event"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Scene Name"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{4985DFB0-7CD9-5B28-980B-BA2C701BE3D6}",
+                            "details": {
+                                "name": "Gravity Change Event"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "QueryScene",
+                    "context": "PhysicsScene",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Query Scene"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Query Scene is invoked"
+                    },
+                    "details": {
+                        "name": "Query Scene"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{52BD8163-BDC4-4B09-ABB2-11DD1F601FFD}",
+                            "details": {
+                                "name": "Scene"
+                            }
+                        },
+                        {
+                            "typeid": "{76ECAB7D-42BA-461F-82E6-DCED8E1BDCB9}",
+                            "details": {
+                                "name": "const SceneQueryRequest*",
+                                "tooltip": "Parameters for scene queries"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{BAFCC4E7-A06B-4909-B2AE-C89D9E84FE4E}",
+                            "details": {
+                                "name": "Scene Query Hits"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

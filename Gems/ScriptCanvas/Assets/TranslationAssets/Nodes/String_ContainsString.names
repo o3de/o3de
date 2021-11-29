@@ -1,0 +1,68 @@
+{
+    "entries": [
+        {
+            "base": "{8481E892-DE37-4CCF-86AA-E4770DE90643}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "Contains String",
+                "category": "String",
+                "tooltip": "Checks if a string contains an instance of a specified string, if true, it returns the index to the first instance matched.",
+                "subtitle": "String"
+            },
+            "slots": [
+                {
+                    "base": "DataInput_Source",
+                    "details": {
+                        "name": "Source"
+                    }
+                },
+                {
+                    "base": "DataInput_Pattern",
+                    "details": {
+                        "name": "Pattern"
+                    }
+                },
+                {
+                    "base": "DataInput_Search From End",
+                    "details": {
+                        "name": "Search From End"
+                    }
+                },
+                {
+                    "base": "DataInput_Case Sensitive",
+                    "details": {
+                        "name": "Case Sensitive"
+                    }
+                },
+                {
+                    "base": "DataOutput_Index",
+                    "details": {
+                        "name": "Index"
+                    }
+                },
+                {
+                    "base": "Input_In",
+                    "details": {
+                        "name": "In",
+                        "tooltip": "Input signal"
+                    }
+                },
+                {
+                    "base": "Output_True",
+                    "details": {
+                        "name": "True",
+                        "tooltip": "The string contains the provided pattern."
+                    }
+                },
+                {
+                    "base": "Output_False",
+                    "details": {
+                        "name": "False",
+                        "tooltip": "The string did not contain the provided pattern."
+                    }
+                }
+            ]
+        }
+    ]
+}

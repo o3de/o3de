@@ -186,17 +186,6 @@ CBaseObject* CObjectManager::NewObject(CObjectClassDesc* cls, CBaseObject* prev,
         if (obj->GetType() != OBJTYPE_AZENTITY)
         {
             GetIEditor()->RecordUndo(new CUndoBaseObjectNew(obj));
-
-            // check for script entities
-            const char* scriptClassName = "";
-            CEntityObject* entityObj = qobject_cast<CEntityObject*>(obj);
-            QByteArray entityClass; // Leave it outside of the if. Otherwise buffer is deleted.
-            if (entityObj)
-            {
-                entityClass = entityObj->GetEntityClass().toUtf8();
-                scriptClassName = entityClass.data();
-            }
-
         }
     }
 
@@ -608,7 +597,7 @@ bool CObjectManager::AddObject(CBaseObject* obj)
         if (CEntityObject* entityObj = qobject_cast<CEntityObject*>(obj))
         {
             CEntityObject::EAttachmentType attachType = entityObj->GetAttachType();
-            if (attachType == CEntityObject::EAttachmentType::eAT_GeomCacheNode || attachType == CEntityObject::EAttachmentType::eAT_CharacterBone)
+            if (attachType == CEntityObject::EAttachmentType::eAT_CharacterBone)
             {
                 m_animatedAttachedEntities.insert(entityObj);
             }
@@ -828,7 +817,7 @@ void CObjectManager::ShowLastHiddenObject()
 {
     uint64 mostRecentID = CBaseObject::s_invalidHiddenID;
     CBaseObject* mostRecentObject = nullptr;
-    for (auto it : m_objects)
+    for (const auto& it : m_objects)
     {
         CBaseObject* obj = it.second;
 
@@ -1488,11 +1477,7 @@ bool CObjectManager::HitTestObject(CBaseObject* obj, HitContext& hc)
     if (!bSelectionHelperHit)
     {
         // Fast checking.
-        if (hc.camera && !obj->IsInCameraView(*hc.camera))
-        {
-            return false;
-        }
-        else if (hc.bounds && !obj->IntersectRectBounds(*hc.bounds))
+        if (hc.bounds && !obj->IntersectRectBounds(*hc.bounds))
         {
             return false;
         }

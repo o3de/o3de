@@ -34,7 +34,7 @@ endif()
 
 function(ly_copy source_file target_directory)
     
-    get_filename_component(target_filename "${source_file}" NAME)
+    cmake_path(GET source_file FILENAME target_filename)
     
     # If target_directory is a bundle
     if("${target_directory}" MATCHES "\\.app/Contents/MacOS")
@@ -113,20 +113,37 @@ function(ly_copy source_file target_directory)
 
     endif()
 
-    cmake_path(COMPARE "${source_file}" EQUAL "${target_directory}/${target_filename}" same_location)
+    cmake_path(APPEND target_file "${target_directory}" "${target_filename}")
+    cmake_path(COMPARE "${source_file}" EQUAL "${target_file}" same_location)
     if(NOT ${same_location})
         if(NOT EXISTS "${target_directory}")
             file(MAKE_DIRECTORY "${target_directory}")
         endif()
-        if(NOT EXISTS "${target_directory}/${target_filename}" OR "${source_file}" IS_NEWER_THAN "${target_directory}/${target_filename}")
-            message(STATUS "Copying \"${source_file}\" to \"${target_directory}\"...")
-            if(NOT target_is_bundle)
-                # if it is a bundle, there is no contention about the files in the destination, each bundle target will copy everything
-                # we dont want these files to invalidate the bundle and cause a new signature
-                file(LOCK ${target_directory}/${target_filename}.lock GUARD FUNCTION TIMEOUT 300)
+
+        set(is_framework FALSE)
+        if("${source_file}" MATCHES "\\.[Ff]ramework")
+            set(is_framework TRUE)
+        endif()
+        if(NOT is_framework)
+            # if it is a bundle, there is no contention about the files in the destination, each bundle target will copy everything
+            # we dont want these files to invalidate the bundle and cause a new signature
+            file(LOCK ${target_file}.lock GUARD FUNCTION TIMEOUT 300)
+            file(SIZE "${source_file}" source_file_size)
+            if(EXISTS "${target_file}")
+                file(SIZE "${target_file}" target_file_size)
+            else()
+                set(target_file_size 0)
             endif()
+        else()
+            set(source_file_size 0)
+            set(target_file_size 0)
+        endif()
+        
+        if((NOT source_file_size EQUAL target_file_size) OR "${source_file}" IS_NEWER_THAN "${target_file}")
+            message(STATUS "Copying \"${source_file}\" to \"${target_directory}\"...")
+            file(MAKE_DIRECTORY "${target_directory}")
             file(COPY "${source_file}" DESTINATION "${target_directory}" FILE_PERMISSIONS @LY_COPY_PERMISSIONS@ FOLLOW_SYMLINK_CHAIN)
-            file(TOUCH_NOCREATE ${target_directory}/${target_filename})
+            file(TOUCH_NOCREATE "${target_file}")
             set(anything_new TRUE PARENT_SCOPE)
         endif()
     endif()

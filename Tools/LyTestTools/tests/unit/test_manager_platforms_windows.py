@@ -80,7 +80,7 @@ class TestWindowsResourceLocator(object):
             mock_build_directory, mock_project)
         expected = os.path.join(
             windows_resource_locator.project_log(),
-            'editor.log')
+            'Editor.log')
 
         assert windows_resource_locator.editor_log() == expected
 

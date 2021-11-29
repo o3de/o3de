@@ -104,6 +104,8 @@ namespace AZ
                 ->HandlesType<AZStd::variant>();
             jsonContext->Serializer<JsonOptionalSerializer>()
                 ->HandlesType<AZStd::optional>();
+            jsonContext->Serializer<JsonBitsetSerializer>()
+                ->HandlesType<AZStd::bitset>();
 
             MathReflect(jsonContext);
         }

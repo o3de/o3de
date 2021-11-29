@@ -11,6 +11,7 @@
 #include <Processing/ImageConvert.h>
 #include <Processing/ImageAssetProducer.h>
 #include <Processing/ImageFlags.h>
+#include <Processing/Utils.h>
 #include <Converters/FIR-Weights.h>
 #include <Converters/Cubemap.h>
 #include <Converters/PixelOperation.h>
@@ -229,12 +230,24 @@ namespace ImageProcessingAtom
                 AZStd::unique_ptr<CubemapSettings>& cubemapSettings = m_input->m_presetSetting.m_cubemapSetting;
                 if (cubemapSettings->m_generateIBLSpecular && !cubemapSettings->m_iblSpecularPreset.IsEmpty())
                 {
-                    CreateIBLCubemap(cubemapSettings->m_iblSpecularPreset, SpecularCubemapSuffix, m_iblSpecularCubemapImage);
+                    bool success = CreateIBLCubemap(cubemapSettings->m_iblSpecularPreset, SpecularCubemapSuffix, m_iblSpecularCubemapImage);
+                    if (!success)
+                    {
+                        m_isSucceed = false;
+                        m_isFinished = true;
+                        break;
+                    }
                 }
 
                 if (cubemapSettings->m_generateIBLDiffuse && !cubemapSettings->m_iblDiffusePreset.IsEmpty())
                 {
-                    CreateIBLCubemap(cubemapSettings->m_iblDiffusePreset, DiffuseCubemapSuffix, m_iblDiffuseCubemapImage);
+                    bool success = CreateIBLCubemap(cubemapSettings->m_iblDiffusePreset, DiffuseCubemapSuffix, m_iblDiffuseCubemapImage);
+                    if (!success)
+                    {
+                        m_isSucceed = false;
+                        m_isFinished = true;
+                        break;
+                    }
                 }
             }
 
@@ -251,7 +264,12 @@ namespace ImageProcessingAtom
             {
                 if (m_input->m_presetSetting.m_cubemapSetting->m_requiresConvolve)
                 {
-                    FillCubemapMipmaps();
+                    bool success = FillCubemapMipmaps();
+                    if (!success)
+                    {
+                        m_isSucceed = false;
+                         m_isFinished = true;
+                    }
                 }
             }
             else
@@ -268,9 +286,7 @@ namespace ImageProcessingAtom
             // get gloss from normal for all mipmaps and save to alpha channel
             if (m_input->m_presetSetting.m_glossFromNormals)
             {
-                bool hasAlpha = (m_alphaContent == EAlphaContent::eAlphaContent_OnlyBlack
-                    || m_alphaContent == EAlphaContent::eAlphaContent_OnlyBlackAndWhite
-                    || m_alphaContent == EAlphaContent::eAlphaContent_Greyscale);
+                bool hasAlpha = Utils::NeedAlphaChannel(m_alphaContent);
 
                 m_image->Get()->GlossFromNormals(hasAlpha);
                 // set alpha content so it won't be ignored later.
@@ -347,7 +363,11 @@ namespace ImageProcessingAtom
             }
             else
             {
-                AZ_TracePrintf("Image Processing", "Image converted with preset [%s] [%s] and saved to [%s] (%d bytes) taking %f seconds\n",
+                
+                [[maybe_unused]] const PixelFormatInfo* formatInfo = CPixelFormats::GetInstance().GetPixelFormatInfo(m_image->Get()->GetPixelFormat());
+                AZ_TracePrintf("Image Processing", "Image [%dx%d] [%s] converted with preset [%s] [%s] and saved to [%s] (%d bytes) taking %f seconds\n",
+                    m_image->Get()->GetWidth(0), m_image->Get()->GetHeight(0),
+                    formatInfo->szName,
                     m_input->m_presetSetting.m_name.GetCStr(),
                     m_input->m_filePath.c_str(),
                     m_input->m_outputFolder.c_str(), sizeTotal, m_processTime);
@@ -420,6 +440,17 @@ namespace ImageProcessingAtom
             outWidth >>= 1;
             outHeight >>= 1;
             outReduce++;
+        }
+
+        // resize to min texture size if it's smaller
+        if (outWidth < presetSettings->m_minTextureSize)
+        {
+            outWidth = presetSettings->m_minTextureSize;
+        }
+
+        if (outHeight < presetSettings->m_minTextureSize)
+        {
+            outHeight = presetSettings->m_minTextureSize;
         }
     }
 
@@ -647,7 +678,7 @@ namespace ImageProcessingAtom
         }
         else if (!CPixelFormats::GetInstance().IsImageSizeValid(dstFmt, dwWidth, dwHeight, false))
         {
-            AZ_Warning("Image Processing", false, "Image size will be scaled for pixel format %s", CPixelFormats::GetInstance().GetPixelFormatInfo(dstFmt)->szName);
+            AZ_TracePrintf("Image processing", "Image size will be scaled for pixel format %s\n", CPixelFormats::GetInstance().GetPixelFormatInfo(dstFmt)->szName);
         }
 
 #if defined(AZ_TOOLS_EXPAND_FOR_RESTRICTED_PLATFORMS)
@@ -758,7 +789,7 @@ namespace ImageProcessingAtom
         // in very rare user case, an old texture setting file may not have a preset. We fix it over here too. 
         if (textureSettings.m_preset.IsEmpty())
         {
-            textureSettings.m_preset = BuilderSettingManager::Instance()->GetSuggestedPreset(imageFilePath, srcImage);
+            textureSettings.m_preset = BuilderSettingManager::Instance()->GetSuggestedPreset(imageFilePath);
         }
 
         // Get preset
@@ -795,7 +826,7 @@ namespace ImageProcessingAtom
         return process;
     }
 
-    void ImageConvertProcess::CreateIBLCubemap(PresetName preset, const char* fileNameSuffix, IImageObjectPtr& cubemapImage)
+    bool ImageConvertProcess::CreateIBLCubemap(PresetName preset, const char* fileNameSuffix, IImageObjectPtr& cubemapImage)
     {
         const AZStd::string& platformId = m_input->m_platform;
         AZStd::string_view filePath;
@@ -803,7 +834,7 @@ namespace ImageProcessingAtom
         if (presetSettings == nullptr)
         {
             AZ_Error("Image Processing", false, "Couldn't find preset for IBL cubemap generation");
-            return;
+            return false;
         }
 
         // generate export file name
@@ -838,14 +869,14 @@ namespace ImageProcessingAtom
         if (!imageConvertProcess)
         {
             AZ_Error("Image Processing", false, "Failed to create image convert process for the IBL cubemap");
-            return;
+            return false;
         }
 
         imageConvertProcess->ProcessAll();
         if (!imageConvertProcess->IsSucceed())
         {
             AZ_Error("Image Processing", false, "Image convert process for the IBL cubemap failed");
-            return;
+            return false;
         }
 
         // append the output products to the job's product list
@@ -853,6 +884,7 @@ namespace ImageProcessingAtom
 
         // store the output cubemap so it can be accessed by unit tests
         cubemapImage = imageConvertProcess->m_image->Get();
+        return true;
     }
 
     bool ConvertImageFile(const AZStd::string& imageFilePath, const AZStd::string& exportDir,
@@ -871,68 +903,6 @@ namespace ImageProcessingAtom
             delete process;
         }
         return result;
-    }
-
-    IImageObjectPtr MergeOutputImageForPreview(IImageObjectPtr image, IImageObjectPtr alphaImage)
-    {
-        if (!image)
-        {
-            return IImageObjectPtr();
-        }
-
-        ImageToProcess imageToProcess(image);
-        imageToProcess.ConvertFormat(ePixelFormat_R8G8B8A8);
-        IImageObjectPtr previewImage = imageToProcess.Get();
-
-        // If there is separate Alpha image, combine it with output
-        if (alphaImage)
-        {
-            // Create pixel operation function for rgb and alpha images
-            IPixelOperationPtr imageOp = CreatePixelOperation(ePixelFormat_R8G8B8A8);
-            IPixelOperationPtr alphaOp = CreatePixelOperation(ePixelFormat_A8);
-
-            // Convert the alpha image to A8 first
-            ImageToProcess imageToProcess2(alphaImage);
-            imageToProcess2.ConvertFormat(ePixelFormat_A8);
-            IImageObjectPtr previewImageAlpha = imageToProcess2.Get();
-
-            const uint32 imageMips = previewImage->GetMipCount();
-            [[maybe_unused]] const uint32 alphaMips = previewImageAlpha->GetMipCount();
-
-            // Get count of bytes per pixel for both rgb and alpha images
-            uint32 imagePixelBytes = CPixelFormats::GetInstance().GetPixelFormatInfo(ePixelFormat_R8G8B8A8)->bitsPerBlock / 8;
-            uint32 alphaPixelBytes = CPixelFormats::GetInstance().GetPixelFormatInfo(ePixelFormat_A8)->bitsPerBlock / 8;
-
-            AZ_Assert(imageMips <= alphaMips, "Mip level of alpha image is less than origin image!");
-
-            // For each mip level, set the alpha value to the image
-            for (uint32 mipLevel = 0; mipLevel < imageMips; ++mipLevel)
-            {
-                const uint32 pixelCount = previewImage->GetPixelCount(mipLevel);
-                [[maybe_unused]] const uint32 alphaPixelCount = previewImageAlpha->GetPixelCount(mipLevel);
-
-                AZ_Assert(pixelCount == alphaPixelCount, "Pixel count for image and alpha image at mip level %d is not equal!", mipLevel);
-
-                uint8* imageBuf;
-                uint32 pitch;
-                previewImage->GetImagePointer(mipLevel, imageBuf, pitch);
-
-                uint8* alphaBuf;
-                uint32 alphaPitch;
-                previewImageAlpha->GetImagePointer(mipLevel, alphaBuf, alphaPitch);
-
-                float rAlpha, gAlpha, bAlpha, aAlpha, rImage, gImage, bImage, aImage;
-
-                for (uint32 i = 0; i < pixelCount; ++i, imageBuf += imagePixelBytes, alphaBuf += alphaPixelBytes)
-                {
-                    alphaOp->GetRGBA(alphaBuf, rAlpha, gAlpha, bAlpha, aAlpha);
-                    imageOp->GetRGBA(imageBuf, rImage, gImage, bImage, aImage);
-                    imageOp->SetRGBA(imageBuf, rImage, gImage, bImage, aAlpha);
-                }
-            }
-        }
-
-        return previewImage;
     }
 
     IImageObjectPtr ConvertImageForPreview(IImageObjectPtr image)

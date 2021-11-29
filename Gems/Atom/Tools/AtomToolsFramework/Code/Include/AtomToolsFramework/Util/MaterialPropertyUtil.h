@@ -49,6 +49,7 @@ namespace AtomToolsFramework
     //! @param propertyValue the value being converted before saving
     bool ConvertToExportFormat(
         const AZStd::string& exportPath,
+        [[maybe_unused]] const AZ::Name& propertyId,
         const AZ::RPI::MaterialTypeSourceData::PropertyDefinition& propertyDefinition,
         AZ::RPI::MaterialPropertyValue& propertyValue);
 

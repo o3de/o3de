@@ -266,7 +266,8 @@ namespace AZ::SettingsRegistryMergeUtils
 
         // Step 3 locate the project root and attempt to find the engine root using the registered engine
         // for the project in the project.json file
-        AZ::IO::FixedMaxPath projectRoot = FindProjectRoot(settingsRegistry);
+        AZ::IO::FixedMaxPath projectRoot;
+        settingsRegistry.Get(projectRoot.Native(), FilePathKey_ProjectPath);
         if (projectRoot.empty())
         {
             return {};
@@ -668,7 +669,7 @@ namespace AZ::SettingsRegistryMergeUtils
         // NOTE: We make the project-path in the BootstrapSettingsRootKey absolute first
 
         AZ::IO::FixedMaxPath projectPath = FindProjectRoot(registry);
-        if (constexpr auto projectPathKey = FixedValueString(BootstrapSettingsRootKey) + "/project_path";
+        if ([[maybe_unused]] constexpr auto projectPathKey = FixedValueString(BootstrapSettingsRootKey) + "/project_path";
             !projectPath.empty())
         {
             if (projectPath.IsRelative())
@@ -693,6 +694,7 @@ namespace AZ::SettingsRegistryMergeUtils
                 R"(Project path isn't set in the Settings Registry at "%.*s".)"
                 " Project-related filepaths will be set relative to the executable directory\n",
                 AZ_STRING_ARG(projectPathKey));
+            projectPath = exePath;
             registry.Set(FilePathKey_ProjectPath, exePath.Native());
         }
 

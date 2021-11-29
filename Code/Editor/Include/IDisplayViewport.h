@@ -14,7 +14,6 @@
 struct DisplayContext;
 class CBaseObjectsCache;
 class QPoint;
-class CCamera;
 struct AABB;
 class CViewport;
 
@@ -23,7 +22,6 @@ struct IDisplayViewport
 {
     virtual void Update() = 0;
     virtual float GetScreenScaleFactor(const Vec3& position) const = 0;
-    virtual float GetScreenScaleFactor(const CCamera& camera, const Vec3& object_position) = 0;
     virtual bool HitTestLine(const Vec3& lineP1, const Vec3& lineP2, const QPoint& hitpoint, int pixelRadius, float* pToCameraDistance = 0) const = 0;
 
     /**
@@ -47,7 +45,6 @@ struct IDisplayViewport
     virtual const Matrix34& GetViewTM() const = 0;
     virtual const Matrix34& GetScreenTM() const = 0;
     virtual QPoint WorldToView(const Vec3& worldPoint) const = 0;
-    virtual QPoint WorldToViewParticleEditor(const Vec3& worldPoint, int width, int height) const = 0;
     virtual Vec3 WorldToView3D(const Vec3& worldPoint, int flags = 0) const = 0;
     virtual Vec3 ViewToWorld(const QPoint& vp, bool* collideWithTerrain = nullptr, bool onlyTerrain = false, bool bSkipVegetation = false, bool bTestRenderMesh = false, bool* collideWithObject = nullptr) const = 0;
     virtual void ViewToWorldRay(const QPoint& vp, Vec3& raySrc, Vec3& rayDir) const = 0;

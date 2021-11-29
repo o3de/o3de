@@ -663,8 +663,8 @@ set(FILES
     Threading/ThreadUtils.h
     Threading/ThreadUtils.cpp
     Time/ITime.h
-    Time/TimeSystemComponent.cpp
-    Time/TimeSystemComponent.h
+    Time/TimeSystem.cpp
+    Time/TimeSystem.h
 )
 
 # Prevent the following files from being grouped in UNITY builds

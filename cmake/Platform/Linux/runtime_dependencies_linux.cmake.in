@@ -9,23 +9,34 @@
 cmake_policy(SET CMP0012 NEW) # new policy for the if that evaluates a boolean out of "if(NOT ${same_location})"
 
 function(ly_copy source_file target_directory)
-    get_filename_component(target_filename "${source_file}" NAME)
-    get_filename_component(target_filename_ext "${source_file}" LAST_EXT)
-    cmake_path(COMPARE "${source_file}" EQUAL "${target_directory}/${target_filename}" same_location)
+    cmake_path(GET source_file FILENAME target_filename)
+    cmake_PATH(GET source_file EXTENSION target_filename_ext)
+    cmake_path(APPEND target_file "${target_directory}" "${target_filename}")
+    cmake_path(COMPARE "${source_file}" EQUAL "${target_file}" same_location)
     if(NOT ${same_location})
-        file(LOCK ${target_directory}/${target_filename}.lock GUARD FUNCTION TIMEOUT 300)
-        if("${source_file}" IS_NEWER_THAN "${target_directory}/${target_filename}")
+        file(LOCK ${target_file}.lock GUARD FUNCTION TIMEOUT 300)
+        file(SIZE "${source_file}" source_file_size)
+        if(EXISTS "${target_file}")
+            file(SIZE "${target_file}" target_file_size)
+        else()
+            set(target_file_size 0)
+        endif()
+        if((NOT source_file_size EQUAL target_file_size) OR "${source_file}" IS_NEWER_THAN "${target_file}")
+            message(STATUS "Copying \"${source_file}\" to \"${target_directory}\"...")
+            file(MAKE_DIRECTORY "${full_target_directory}")
             file(COPY "${source_file}" DESTINATION "${target_directory}" FILE_PERMISSIONS @LY_COPY_PERMISSIONS@ FOLLOW_SYMLINK_CHAIN)
-            
+            file(TOUCH_NOCREATE "${target_file}")
+
             # Special case, shared libraries that are copied from qt/plugins have their RPATH set to \$ORIGIN/../../lib 
             # which is the correct relative path based on the source location. But when we copy it to their subfolder, 
             # the rpath needs to be adjusted to the parent ($ORIGIN/..)
             if("${source_file}" MATCHES "qt/plugins" AND "${target_filename_ext}" STREQUAL ".so")
-                file(RPATH_CHANGE FILE "${target_directory}/${target_filename}" OLD_RPATH "\$ORIGIN/../../lib" NEW_RPATH "\$ORIGIN/..")
+                file(RPATH_CHANGE FILE "${target_file}" OLD_RPATH "\$ORIGIN/../../lib" NEW_RPATH "\$ORIGIN/..")
             endif()
-
         endif()
     endif()    
 endfunction()
 
 @LY_COPY_COMMANDS@
+
+file(TOUCH @STAMP_OUTPUT_FILE@)

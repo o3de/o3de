@@ -1,0 +1,46 @@
+{
+    "entries": [
+        {
+            "base": "{FE0589B0-F835-4CD5-BBD3-86510CBB985B}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "OperatorArithmetic",
+                "category": "Operators",
+                "subtitle": "Operators"
+            },
+            "slots": [
+                {
+                    "base": "Input_In",
+                    "details": {
+                        "name": "In"
+                    }
+                },
+                {
+                    "base": "Output_Out",
+                    "details": {
+                        "name": "Out"
+                    }
+                },
+                {
+                    "base": "DataInput_Value",
+                    "details": {
+                        "name": "Value"
+                    }
+                },
+                {
+                    "base": "DataInput_Value",
+                    "details": {
+                        "name": "Value"
+                    }
+                },
+                {
+                    "base": "DataOutput_Result",
+                    "details": {
+                        "name": "Result"
+                    }
+                }
+            ]
+        }
+    ]
+}

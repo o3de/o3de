@@ -50,6 +50,8 @@ namespace AZ
             virtual bool IsCubeMapReferenced(const AZStd::string& relativePath) = 0;
             virtual bool IsValidProbeHandle(const ReflectionProbeHandle& probe) const = 0;
             virtual void ShowProbeVisualization(const ReflectionProbeHandle& probe, bool showVisualization) = 0;
+            virtual void SetRenderExposure(const ReflectionProbeHandle& probe, float renderExposure) = 0;
+            virtual void SetBakeExposure(const ReflectionProbeHandle& probe, float bakeExposure) = 0;
         };
     } // namespace Render
 } // namespace AZ

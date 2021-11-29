@@ -9,7 +9,6 @@
 import json
 import logging
 import pathlib
-import shutil
 import urllib.parse
 import urllib.request
 import hashlib
@@ -24,6 +23,7 @@ def process_add_o3de_repo(file_name: str or pathlib.Path,
                           repo_set: set) -> int:
     file_name = pathlib.Path(file_name).resolve()
     if not validation.valid_o3de_repo_json(file_name):
+        logger.error(f'Repository JSON {file_name} could not be loaded or is missing required values')
         return 1
     cache_folder = manifest.get_o3de_cache_folder()
 
@@ -74,11 +74,11 @@ def process_add_o3de_repo(file_name: str or pathlib.Path,
             manifest_json_uri = f'{o3de_object_uri}/{manifest_json}'
             manifest_json_sha256 = hashlib.sha256(manifest_json_uri.encode())
             cache_file = cache_folder / str(manifest_json_sha256.hexdigest() + '.json')
-            if not cache_file.is_file():
-                parsed_uri = urllib.parse.urlparse(manifest_json_uri)
-                download_file_result = utils.download_file(parsed_uri, cache_file)
-                if download_file_result != 0:
-                    return download_file_result
+
+            parsed_uri = urllib.parse.urlparse(manifest_json_uri)
+            download_file_result = utils.download_file(parsed_uri, cache_file, True)
+            if download_file_result != 0:
+                return download_file_result
 
     # Having a repo is also optional
     repo_list = []
@@ -96,7 +96,7 @@ def process_add_o3de_repo(file_name: str or pathlib.Path,
                 cache_file = cache_folder / str(manifest_json_sha256.hexdigest() + '.json')
                 if cache_file.is_file():
                     cache_file.unlink()
-                download_file_result = utils.download_file(parsed_uri, cache_file)
+                download_file_result = utils.download_file(parsed_uri, cache_file, True)
                 if download_file_result != 0:
                     return download_file_result
 
@@ -114,7 +114,7 @@ def get_gem_json_paths_from_cached_repo(repo_uri: str) -> set:
 
     file_name = pathlib.Path(cache_filename).resolve()
     if not file_name.is_file():
-        logger.error(f'Could not find cached repo json file for {repo_uri}')
+        logger.error(f'Could not find cached repository json file for {repo_uri}. Try refreshing the repository.')
         return gem_set
 
     with file_name.open('r') as f:
@@ -139,7 +139,7 @@ def get_gem_json_paths_from_cached_repo(repo_uri: str) -> set:
                 if cache_gem_json_filepath.is_file():
                     gem_set.add(cache_gem_json_filepath)
                 else:
-                    logger.warn(f'Could not find cached gem json file {cache_gem_json_filepath} for {o3de_object_uri} in repo {repo_uri}')
+                    logger.warning(f'Could not find cached gem json file {cache_gem_json_filepath} for {o3de_object_uri} in repo {repo_uri}')
 
     return gem_set
 
@@ -165,8 +165,9 @@ def refresh_repo(repo_uri: str,
     repo_sha256 = hashlib.sha256(parsed_uri.geturl().encode())
     cache_file = cache_folder / str(repo_sha256.hexdigest() + '.json')
 
-    download_file_result = utils.download_file(parsed_uri, cache_file)
+    download_file_result = utils.download_file(parsed_uri, cache_file, True)
     if download_file_result != 0:
+        logger.error(f'Repo json {repo_uri} could not download.')
         return download_file_result
 
     if not validation.valid_o3de_repo_json(cache_file):
@@ -178,12 +179,7 @@ def refresh_repo(repo_uri: str,
 
 def refresh_repos() -> int:
     json_data = manifest.load_o3de_manifest()
-
-    # clear the cache
     cache_folder = manifest.get_o3de_cache_folder()
-    shutil.rmtree(cache_folder)
-    cache_folder = manifest.get_o3de_cache_folder()  # will recreate it
-
     result = 0
 
     # set will stop circular references
@@ -222,10 +218,10 @@ def search_repo(manifest_json_data: dict,
         json_key = 'gem_name'
         search_func = lambda manifest_json_data: manifest_json_data if manifest_json_data.get(json_key, '') == gem_name else None
     elif isinstance(template_name, str) or isinstance(template_name, pathlib.PurePath):
-        o3de_object_uris = manifest_json_data['template']
+        o3de_object_uris = manifest_json_data['templates']
         manifest_json = 'template.json'
         json_key = 'template_name'
-        search_func = lambda manifest_json_data: manifest_json_data if manifest_json_data.get(json_key, '') == template_name_name else None
+        search_func = lambda manifest_json_data: manifest_json_data if manifest_json_data.get(json_key, '') == template_name else None
     elif isinstance(restricted_name, str) or isinstance(restricted_name, pathlib.PurePath):
         o3de_object_uris = manifest_json_data['restricted']
         manifest_json = 'restricted.json'
@@ -262,7 +258,7 @@ def search_o3de_object(manifest_json, o3de_object_uris, search_func):
                 try:
                     manifest_json_data = json.load(f)
                 except json.JSONDecodeError as e:
-                    logger.warn(f'{cache_file} failed to load: {str(e)}')
+                    logger.warning(f'{cache_file} failed to load: {str(e)}')
                 else:
                     result_json_data = search_func(manifest_json_data)
                     if result_json_data:

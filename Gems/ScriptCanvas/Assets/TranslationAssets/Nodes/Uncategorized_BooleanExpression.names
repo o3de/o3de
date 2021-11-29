@@ -1,0 +1,42 @@
+{
+    "entries": [
+        {
+            "base": "{36C69825-CFF8-4F70-8F3B-1A9227E8BEEA}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "BooleanExpression",
+                "tooltip": "BooleanExpression"
+            },
+            "slots": [
+                {
+                    "base": "DataOutput_Result",
+                    "details": {
+                        "name": "Result"
+                    }
+                },
+                {
+                    "base": "Input_In",
+                    "details": {
+                        "name": "In",
+                        "tooltip": "Signal to perform the evaluation when desired."
+                    }
+                },
+                {
+                    "base": "Output_True",
+                    "details": {
+                        "name": "True",
+                        "tooltip": "Signaled if the result of the operation is true."
+                    }
+                },
+                {
+                    "base": "Output_False",
+                    "details": {
+                        "name": "False",
+                        "tooltip": "Signaled if the result of the operation is false."
+                    }
+                }
+            ]
+        }
+    ]
+}

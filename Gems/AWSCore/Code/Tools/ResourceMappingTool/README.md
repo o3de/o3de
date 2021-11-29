@@ -17,7 +17,7 @@ Or follow **AWS CLI** configuration which can be reused by boto3 lib:
 1. In order to use engine python environment, it requires to link Qt binaries for this tool.
 Follow cmake instructions to configure your project, for example:
    ```
-   $ cmake -B <BUILD_FOLDER> -S . -G "Visual Studio 16 2019" -DLY_3RDPARTY_PATH=<PATH_TO_3RDPARTY> -DLY_PROJECTS=<PROJECT_NAME>
+   $ cmake -B <BUILD_FOLDER> -S . -G "Visual Studio 16 2019" -DLY_PROJECTS=<PROJECT_NAME>
    ```
 
 2. At this point, double check engine python environment gets setup under *<ENGINE_ROOT_PATH>/python/runtime* directory
@@ -39,6 +39,16 @@ Follow cmake instructions to configure your project, for example:
       ```
       $ python\python.cmd debug Gems\AWSCore\Code\Tools\ResourceMappingTool\resource_mapping_tool.py --binaries_path <PATH_TO_BUILD_FOLDER>\bin\debug\AWSCoreEditorQtBin
       ```
+   * Linux
+      * release mode
+      ```
+      $ python/python.sh Gems/AWSCore/Code/Tools/ResourceMappingTool/resource_mapping_tool.py --binaries_path <PATH_TO_BUILD_FOLDER>/bin/profile/AWSCoreEditorQtBin
+      ```
+      * debug mode
+      ```
+      $ python/python.sh Gems/AWSCore/Code/Tools/ResourceMappingTool/resource_mapping_tool.py --binaries_path <PATH_TO_BUILD_FOLDER>/bin/debug/AWSCoreEditorQtBin
+      ```
+      
 * Note - Editor is integrated with the same engine python environment to launch Resource Mapping Tool. If it is failed to launch the tool
 in Editor, please follow above steps to make sure expected scripts/binaries are present.
 

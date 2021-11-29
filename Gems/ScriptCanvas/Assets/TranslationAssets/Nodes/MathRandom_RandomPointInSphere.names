@@ -1,0 +1,40 @@
+{
+    "entries": [
+        {
+            "base": "{5C87299A-E9AF-591D-8E20-4A1B8F4A92CD}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "Random Point In Sphere",
+                "category": "Math/Random",
+                "tooltip": "Returns a random point in a sphere"
+            },
+            "slots": [
+                {
+                    "base": "Input_In",
+                    "details": {
+                        "name": "In"
+                    }
+                },
+                {
+                    "base": "Output_Out",
+                    "details": {
+                        "name": "Out"
+                    }
+                },
+                {
+                    "base": "DataInput_Radius",
+                    "details": {
+                        "name": "Radius"
+                    }
+                },
+                {
+                    "base": "DataOutput_Result",
+                    "details": {
+                        "name": "Result"
+                    }
+                }
+            ]
+        }
+    ]
+}

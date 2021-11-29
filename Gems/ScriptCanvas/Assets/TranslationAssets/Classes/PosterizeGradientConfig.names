@@ -1,0 +1,12 @@
+{
+    "entries": [
+        {
+            "base": "PosterizeGradientConfig",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "PosterizeGradientConfig"
+            }
+        }
+    ]
+}

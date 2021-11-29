@@ -7,7 +7,6 @@
  */
 #pragma once
 #include <ISystem.h>
-#include <Cry_Camera.h>
 
 #ifdef GetUserName
 #undef GetUserName
@@ -56,8 +55,6 @@ public:
         int(const char* text, const char* caption, unsigned int uType));
     MOCK_METHOD1(CheckLogVerbosity,
         bool(int verbosity));
-    MOCK_METHOD0(GetIViewSystem,
-        IViewSystem * ());
     MOCK_METHOD0(GetILevelSystem,
         ILevelSystem * ());
     MOCK_METHOD0(GetICmdLine,
@@ -78,8 +75,6 @@ public:
         IRemoteConsole * ());
     MOCK_METHOD0(GetISystemEventDispatcher,
         ISystemEventDispatcher * ());
-    MOCK_METHOD0(GetITimer,
-        ITimer * ());
     MOCK_METHOD1(SetForceNonDevMode,
         void(bool bValue));
     MOCK_CONST_METHOD0(GetForceNonDevMode,

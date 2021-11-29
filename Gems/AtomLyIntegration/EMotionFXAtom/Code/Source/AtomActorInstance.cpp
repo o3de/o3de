@@ -776,12 +776,14 @@ namespace AZ
         {
             if (m_meshHandle)
             {
-                Data::Instance<RPI::ShaderResourceGroup> wrinkleMaskObjectSrg = m_meshFeatureProcessor->GetObjectSrg(*m_meshHandle);
-                if (wrinkleMaskObjectSrg)
+                const AZStd::vector<Data::Instance<RPI::ShaderResourceGroup>>& wrinkleMaskObjectSrgs = m_meshFeatureProcessor->GetObjectSrgs(*m_meshHandle);
+
+                for (auto& wrinkleMaskObjectSrg : wrinkleMaskObjectSrgs)
                 {
                     RHI::ShaderInputImageIndex wrinkleMasksIndex = wrinkleMaskObjectSrg->FindShaderInputImageIndex(Name{ "m_wrinkle_masks" });
                     RHI::ShaderInputConstantIndex wrinkleMaskWeightsIndex = wrinkleMaskObjectSrg->FindShaderInputConstantIndex(Name{ "m_wrinkle_mask_weights" });
                     RHI::ShaderInputConstantIndex wrinkleMaskCountIndex = wrinkleMaskObjectSrg->FindShaderInputConstantIndex(Name{ "m_wrinkle_mask_count" });
+
                     if (wrinkleMasksIndex.IsValid() || wrinkleMaskWeightsIndex.IsValid() || wrinkleMaskCountIndex.IsValid())
                     {
                         AZ_Error("AtomActorInstance", wrinkleMasksIndex.IsValid(), "m_wrinkle_masks not found on the ObjectSrg, but m_wrinkle_mask_weights and/or m_wrinkle_mask_count are being used.");

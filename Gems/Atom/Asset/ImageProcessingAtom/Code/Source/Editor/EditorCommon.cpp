@@ -171,7 +171,7 @@ namespace ImageProcessingAtomEditor
         if (!preset)
         {
             AZ_Warning("Texture Editor", false, "Cannot find preset %s! Will assign a suggested one for the texture.", presetName.GetCStr());
-            presetName = BuilderSettingManager::Instance()->GetSuggestedPreset(m_fullPath, m_img);
+            presetName = BuilderSettingManager::Instance()->GetSuggestedPreset(m_fullPath);
 
             for (auto& settingIter : m_settingsMap)
             {
@@ -257,15 +257,22 @@ namespace ImageProcessingAtomEditor
             // Update input width and height if it's a cubemap
             if (presetSetting->m_cubemapSetting != nullptr)
             {
-                CubemapLayout *srcCubemap = CubemapLayout::CreateCubemapLayout(m_img);
-                if (srcCubemap == nullptr)
+                if (IsValidLatLongMap(m_img))
                 {
-                    return false;
+                    inputWidth = inputWidth/4;
                 }
-                inputWidth = srcCubemap->GetFaceSize();
+                else
+                {
+                    CubemapLayout *srcCubemap = CubemapLayout::CreateCubemapLayout(m_img);
+                    if (srcCubemap == nullptr)
+                    {
+                        return false;
+                    }
+                    inputWidth = srcCubemap->GetFaceSize();
+                    delete srcCubemap;
+                }
                 inputHeight = inputWidth;
                 outResolutionInfo.arrayCount = 6;
-                delete srcCubemap;
             }
 
             GetOutputExtent(inputWidth, inputHeight, outResolutionInfo.width, outResolutionInfo.height, outResolutionInfo.reduce, &textureSetting, presetSetting);

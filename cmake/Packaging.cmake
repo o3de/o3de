@@ -24,18 +24,23 @@ number will automatically appended as '<version>/<host>'.  If LY_INSTALLER_AUTO_
 full URL format will be: <base_url>/<build_tag>/<host>"
 )
 
-set(LY_INSTALLER_UPLOAD_URL "" CACHE STRING
-"Base URL used to upload the installer artifacts after generation, the host target and version number \
-will automatically appended as '<version>/<host>'.  If LY_INSTALLER_AUTO_GEN_TAG is set, the full URL \
-format will be: <base_url>/<build_tag>/<host>.  Can also be set via LY_INSTALLER_UPLOAD_URL environment \
-variable.  Currently only accepts S3 URLs e.g. s3://<bucket>/<prefix>"
+set(CPACK_UPLOAD_URL "" CACHE STRING
+"URL used to upload the installer artifacts after generation, the host target and version number \
+will automatically appended as '<version>/<host>'. If LY_INSTALLER_AUTO_GEN_TAG is set, the full URL \
+format will be: <base_url>/<build_tag>/<host>. Currently only accepts S3 URLs e.g. s3://<bucket>/<prefix>"
 )
 
-set(LY_INSTALLER_AWS_PROFILE "" CACHE STRING
-"AWS CLI profile for uploading artifacts.  Can also be set via LY_INSTALLER_AWS_PROFILE environment variable."
+set(CPACK_AWS_PROFILE "" CACHE STRING
+"AWS CLI profile for uploading artifacts."
 )
 
+set(CPACK_THREADS 0)
 set(CPACK_DESIRED_CMAKE_VERSION 3.20.2)
+if(${CPACK_DESIRED_CMAKE_VERSION} VERSION_LESS ${CMAKE_MINIMUM_REQUIRED_VERSION})
+    message(FATAL_ERROR
+        "The desired version of CMake to be included in the package is "
+        "below the minimum required version of CMake to run")
+endif()
 
 # set all common cpack variable overrides first so they can be accessible via configure_file
 # when the platform specific settings are applied below.  additionally, any variable with
@@ -44,15 +49,16 @@ set(CPACK_DESIRED_CMAKE_VERSION 3.20.2)
 set(CPACK_PACKAGE_NAME "${PROJECT_NAME}")
 set(CPACK_PACKAGE_FULL_NAME "Open3D Engine")
 set(CPACK_PACKAGE_VENDOR "O3DE Binary Project a Series of LF Projects, LLC")
+set(CPACK_PACKAGE_CONTACT "info@o3debinaries.org")
 set(CPACK_PACKAGE_VERSION "${LY_VERSION_STRING}")
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Installation Tool")
 
 string(TOLOWER "${CPACK_PACKAGE_NAME}_${CPACK_PACKAGE_VERSION}" CPACK_PACKAGE_FILE_NAME)
 
 set(DEFAULT_LICENSE_NAME "Apache-2.0")
-set(DEFAULT_LICENSE_FILE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE.txt")
 
-set(CPACK_RESOURCE_FILE_LICENSE ${DEFAULT_LICENSE_FILE})
+set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE.txt")
+set(CPACK_RESOURCE_FILE_README "${CMAKE_CURRENT_SOURCE_DIR}/README.md")
 set(CPACK_LICENSE_URL ${LY_INSTALLER_LICENSE_URL})
 
 set(CPACK_PACKAGE_INSTALL_DIRECTORY "${CPACK_PACKAGE_NAME}/${CPACK_PACKAGE_VERSION}")
@@ -60,6 +66,7 @@ set(CPACK_PACKAGE_INSTALL_DIRECTORY "${CPACK_PACKAGE_NAME}/${CPACK_PACKAGE_VERSI
 # neither of the SOURCE_DIR variables equate to anything during execution of pre/post build scripts
 set(CPACK_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 set(CPACK_BINARY_DIR ${CMAKE_BINARY_DIR}/_CPack) # to match other CPack out dirs
+set(CPACK_OUTPUT_FILE_PREFIX CPackUploads)
 
 # this config file allows the dynamic setting of cpack variables at cpack-time instead of cmake configure
 set(CPACK_PROJECT_CONFIG_FILE ${CPACK_SOURCE_DIR}/PackagingConfig.cmake)
@@ -74,132 +81,37 @@ if(NOT CPACK_GENERATOR)
     return()
 endif()
 
-if(${CPACK_DESIRED_CMAKE_VERSION} VERSION_LESS ${CMAKE_MINIMUM_REQUIRED_VERSION})
-    message(FATAL_ERROR
-        "The desired version of CMake to be included in the package is "
-        "below the minimum required version of CMake to run")
-endif()
-
-# pull down the desired copy of CMake so it can be included in the package
+# We will download the desired copy of CMake so it can be included in the package, we defer the downloading
+# to the install process, to do so we generate a script that will perform the download and execute such script
+# during the install process (before packaging)
 if(NOT (CPACK_CMAKE_PACKAGE_FILE AND CPACK_CMAKE_PACKAGE_HASH))
     message(FATAL_ERROR
         "Packaging is missing one or more following properties required to include CMake: "
         " CPACK_CMAKE_PACKAGE_FILE, CPACK_CMAKE_PACKAGE_HASH")
 endif()
 
-set(_cmake_package_dest ${CPACK_BINARY_DIR}/${CPACK_CMAKE_PACKAGE_FILE})
+# We download it to a different location because CPACK_PACKAGING_INSTALL_PREFIX will be removed during
+# cpack generation. CPACK_BINARY_DIR persists across cpack invocations
+set(LY_CMAKE_PACKAGE_DOWNLOAD_PATH ${CPACK_BINARY_DIR}/${CPACK_CMAKE_PACKAGE_FILE})
 
-if(EXISTS ${_cmake_package_dest})
-    file(SHA256 ${_cmake_package_dest} hash_of_downloaded_file)
-    if (NOT "${hash_of_downloaded_file}" STREQUAL "${CPACK_CMAKE_PACKAGE_HASH}")
-        message(STATUS "CMake ${CPACK_DESIRED_CMAKE_VERSION} found at ${_cmake_package_dest} but expected hash missmatches, re-downloading...")
-        file(REMOVE ${_cmake_package_dest})
-    else()
-        message(STATUS "CMake ${CPACK_DESIRED_CMAKE_VERSION} found")
-    endif()
-endif()
-if(NOT EXISTS ${_cmake_package_dest})
-    # download it
-    string(REPLACE "." ";" _version_componets "${CPACK_DESIRED_CMAKE_VERSION}")
-    list(GET _version_componets 0 _major_version)
-    list(GET _version_componets 1 _minor_version)
-
-    set(_url_version_tag "v${_major_version}.${_minor_version}")
-    set(_package_url "https://cmake.org/files/${_url_version_tag}/${CPACK_CMAKE_PACKAGE_FILE}")
-
-    message(STATUS "Downloading CMake ${CPACK_DESIRED_CMAKE_VERSION} for packaging...")
-    download_file(
-        URL ${_package_url}
-        TARGET_FILE ${_cmake_package_dest}
-        EXPECTED_HASH ${CPACK_CMAKE_PACKAGE_HASH}
-        RESULTS _results
-    )
-    list(GET _results 0 _status_code)
-
-    if (${_status_code} EQUAL 0 AND EXISTS ${_cmake_package_dest})
-        message(STATUS "CMake ${CPACK_DESIRED_CMAKE_VERSION} found")
-    else()
-        file(REMOVE ${_cmake_package_dest})
-        list(REMOVE_AT _results 0)
-
-        set(_error_message "An error occurred, code ${_status_code}.  URL ${_package_url} - ${_results}")
-
-        if(${_status_code} EQUAL 1)
-            string(APPEND _error_message
-                "  Please double check the CPACK_CMAKE_PACKAGE_FILE and "
-                "CPACK_CMAKE_PACKAGE_HASH properties before trying again.")
-        endif()
-
-        message(FATAL_ERROR ${_error_message})
-    endif()
-endif()
-
-ly_install(FILES ${_cmake_package_dest}
-    DESTINATION ./Tools/Redistributables/CMake
+configure_file(${LY_ROOT_FOLDER}/cmake/Packaging/CMakeDownload.cmake.in
+    ${CPACK_BINARY_DIR}/CMakeDownload.cmake
+    @ONLY
+)
+ly_install(SCRIPT ${CPACK_BINARY_DIR}/CMakeDownload.cmake
+    COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
+)
+ly_install(FILES ${LY_CMAKE_PACKAGE_DOWNLOAD_PATH}
+    DESTINATION Tools/Redistributables/CMake
     COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
 )
 
-# the version string and git tags are intended to be synchronized so it should be safe to use that instead
-# of directly calling into git which could get messy in certain scenarios
-if(${CPACK_PACKAGE_VERSION} VERSION_GREATER "0.0.0.0")
-    set(_3rd_party_license_filename NOTICES.txt)
-
-    set(_3rd_party_license_url "https://raw.githubusercontent.com/o3de/3p-package-source/${CPACK_PACKAGE_VERSION}/${_3rd_party_license_filename}")
-    set(_3rd_party_license_dest ${CPACK_BINARY_DIR}/${_3rd_party_license_filename})
-
-    # use the plain file downloader as we don't have the file hash available and using a dummy will
-    # delete the file once it fails hash verification
-    file(DOWNLOAD
-        ${_3rd_party_license_url}
-        ${_3rd_party_license_dest}
-        STATUS _status
-        TLS_VERIFY ON
-    )
-    list(POP_FRONT _status _status_code)
-
-    if (${_status_code} EQUAL 0 AND EXISTS ${_3rd_party_license_dest})
-        ly_install(FILES ${_3rd_party_license_dest}
-            DESTINATION .
-            COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
-        )
-    else()
-        file(REMOVE ${_3rd_party_license_dest})
-        message(FATAL_ERROR "Failed to acquire the 3rd Party license manifest file at ${_3rd_party_license_url}.  Error: ${_status}")
-    endif()
-endif()
-
-# checks for and removes trailing slash
-function(strip_trailing_slash in_url out_url)
-    string(LENGTH ${in_url} _url_length)
-    MATH(EXPR _url_length "${_url_length}-1")
-
-    string(SUBSTRING ${in_url} 0 ${_url_length} _clean_url)
-    if("${in_url}" STREQUAL "${_clean_url}/")
-        set(${out_url} ${_clean_url} PARENT_SCOPE)
-    else()
-        set(${out_url} ${in_url} PARENT_SCOPE)
-    endif()
-endfunction()
-
-if(NOT LY_INSTALLER_UPLOAD_URL AND DEFINED ENV{LY_INSTALLER_UPLOAD_URL})
-    set(LY_INSTALLER_UPLOAD_URL $ENV{LY_INSTALLER_UPLOAD_URL})
-endif()
-
-if(LY_INSTALLER_UPLOAD_URL)
-    ly_is_s3_url(${LY_INSTALLER_UPLOAD_URL} _is_s3_bucket)
-    if(NOT _is_s3_bucket)
-        message(FATAL_ERROR "Only S3 installer uploading is supported at this time")
-    endif()
-
-    if (LY_INSTALLER_AWS_PROFILE)
-        set(CPACK_AWS_PROFILE ${LY_INSTALLER_AWS_PROFILE})
-    elseif (DEFINED ENV{LY_INSTALLER_AWS_PROFILE})
-        set(CPACK_AWS_PROFILE $ENV{LY_INSTALLER_AWS_PROFILE})
-    endif()
-
-    strip_trailing_slash(${LY_INSTALLER_UPLOAD_URL} LY_INSTALLER_UPLOAD_URL)
-    set(CPACK_UPLOAD_URL ${LY_INSTALLER_UPLOAD_URL})
-endif()
+# Set common CPACK variables to all platforms/generators
+set(CPACK_STRIP_FILES TRUE) # always strip symbols on packaging
+set(CPACK_PACKAGE_CHECKSUM SHA256) # Generate checksum file
+set(CPACK_PRE_BUILD_SCRIPTS ${pal_dir}/PackagingPreBuild_${PAL_HOST_PLATFORM_NAME_LOWERCASE}.cmake)
+set(CPACK_POST_BUILD_SCRIPTS ${pal_dir}/PackagingPostBuild_${PAL_HOST_PLATFORM_NAME_LOWERCASE}.cmake)
+set(CPACK_LY_PYTHON_CMD ${LY_PYTHON_CMD})
 
 # IMPORTANT: required to be included AFTER setting all property overrides
 include(CPack REQUIRED)
@@ -268,13 +180,26 @@ foreach(external_dir ${LY_INSTALL_EXTERNAL_BUILD_DIRS})
     )
 endforeach()
 
+# checks for and removes trailing slash
+function(strip_trailing_slash in_url out_url)
+    string(LENGTH ${in_url} _url_length)
+    MATH(EXPR _url_length "${_url_length}-1")
+
+    string(SUBSTRING ${in_url} 0 ${_url_length} _clean_url)
+    if("${in_url}" STREQUAL "${_clean_url}/")
+        set(${out_url} ${_clean_url} PARENT_SCOPE)
+    else()
+        set(${out_url} ${in_url} PARENT_SCOPE)
+    endif()
+endfunction()
+
 if(LY_INSTALLER_DOWNLOAD_URL)
     strip_trailing_slash(${LY_INSTALLER_DOWNLOAD_URL} LY_INSTALLER_DOWNLOAD_URL)
 
     # this will set the following variables: CPACK_DOWNLOAD_SITE, CPACK_DOWNLOAD_ALL, and CPACK_UPLOAD_DIRECTORY (local)
     cpack_configure_downloads(
         ${LY_INSTALLER_DOWNLOAD_URL}
-        UPLOAD_DIRECTORY ${CMAKE_BINARY_DIR}/_CPack_Uploads # to match the _CPack_Packages directory
+        UPLOAD_DIRECTORY ${CMAKE_BINARY_DIR}/CPackUploads # to match the _CPack_Packages directory
         ALL
     )
 endif()

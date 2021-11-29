@@ -19,11 +19,11 @@
 
 #include <Atom/Utils/DdsFile.h>
 
-#include <AzFramework/API/ApplicationAPI.h>
 
 #include <AzCore/IO/GenericStreams.h>
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/IO/FileIO.h>
+#include <AzCore/Utils/Utils.h>
 
 #ifndef SCRIPTABLE_IMGUI
 #define Scriptable_ImGui ImGui
@@ -334,11 +334,10 @@ namespace AZ::Render
 
         if (m_engineRoot.empty())
         {
-            const char* engineRoot = nullptr;
-            AzFramework::ApplicationRequests::Bus::BroadcastResult(engineRoot, &AzFramework::ApplicationRequests::GetEngineRoot);
-            if (engineRoot)
+            AZ::IO::FixedMaxPathString engineRoot = AZ::Utils::GetEnginePath();
+            if (!engineRoot.empty())
             {
-                m_engineRoot = AZStd::string(engineRoot);
+                m_engineRoot = AZStd::string_view(engineRoot);
             }
         }
 

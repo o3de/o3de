@@ -50,8 +50,6 @@ public:
     //! Map world space position to viewport position.
     QPoint     WorldToView(const Vec3& wp) const override;
 
-    QPoint WorldToViewParticleEditor(const Vec3& wp, int width, int height) const override; //Eric@conffx
-
     //! Map viewport position to world space position.
     Vec3        ViewToWorld(const QPoint& vp, bool* collideWithTerrain = nullptr, bool onlyTerrain = false, bool bSkipVegetation = false, bool bTestRenderMesh = false, bool* collideWithObject = nullptr) const override;
     //! Map viewport position to world space ray from camera.
@@ -64,7 +62,6 @@ public:
 
     // ovverided from CViewport.
     float GetScreenScaleFactor(const Vec3& worldPoint) const override;
-    float GetScreenScaleFactor([[maybe_unused]] const CCamera& camera, [[maybe_unused]] const Vec3& object_position) override { return 1; } //Eric@conffx
 
     // Overrided from CViewport.
     void OnDragSelectRectangle(const QRect &rect, bool bNormalizeRect = false) override;

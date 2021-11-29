@@ -1,0 +1,131 @@
+{
+    "entries": [
+        {
+            "base": "AWSMetrics_MetricsAttribute",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "Metrics Attribute",
+                "category": "AWS Metrics"
+            },
+            "methods": [
+                {
+                    "base": "SetName",
+                    "context": "AWSMetrics_MetricsAttribute",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetName"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetName is invoked"
+                    },
+                    "details": {
+                        "name": "Set Name"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6483F481-0C18-4171-8B59-A44F2F28EAE5}",
+                            "details": {
+                                "name": "Metrics Attribute"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Name"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetStrValue",
+                    "context": "AWSMetrics_MetricsAttribute",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetStrValue"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetStrValue is invoked"
+                    },
+                    "details": {
+                        "name": "Set String Value"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6483F481-0C18-4171-8B59-A44F2F28EAE5}",
+                            "details": {
+                                "name": "Metrics Attribute"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Name"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetIntValue",
+                    "context": "AWSMetrics_MetricsAttribute",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetIntValue"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetIntValue is invoked"
+                    },
+                    "details": {
+                        "name": "Set Int Value"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6483F481-0C18-4171-8B59-A44F2F28EAE5}",
+                            "details": {
+                                "name": "Metrics Attribute"
+                            }
+                        },
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "Value"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetDoubleValue",
+                    "context": "AWSMetrics_MetricsAttribute",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetDoubleValue"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetDoubleValue is invoked"
+                    },
+                    "details": {
+                        "name": "Set Double Value"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6483F481-0C18-4171-8B59-A44F2F28EAE5}",
+                            "details": {
+                                "name": "Metrics Attribute"
+                            }
+                        },
+                        {
+                            "typeid": "{110C4B14-11A8-4E9D-8638-5051013A56AC}",
+                            "details": {
+                                "name": "Value"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

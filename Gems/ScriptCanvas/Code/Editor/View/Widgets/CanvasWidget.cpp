@@ -84,9 +84,10 @@ namespace ScriptCanvasEditor
         {
             m_assetId = assetId;
 
-            EditorGraphRequests* editorGraphRequests = EditorGraphRequestBus::FindFirstHandler(m_scriptCanvasId);
-
-            editorGraphRequests->SetAssetId(m_assetId);
+            if (EditorGraphRequests* editorGraphRequests = EditorGraphRequestBus::FindFirstHandler(m_scriptCanvasId))
+            {
+                editorGraphRequests->SetAssetId(m_assetId);
+            }
         }
 
         const GraphCanvas::ViewId& CanvasWidget::GetViewId() const

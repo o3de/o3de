@@ -47,7 +47,6 @@ struct IConsole;
 struct IRemoteConsole;
 struct IRenderer;
 struct IProcess;
-struct ITimer;
 struct ICryFont;
 struct IMovieSystem;
 namespace Audio
@@ -57,7 +56,6 @@ namespace Audio
 struct SFileVersion;
 struct INameTable;
 struct ILevelSystem;
-struct IViewSystem;
 class IXMLBinarySerializer;
 struct IAVI_Reader;
 class CPNoise3;
@@ -75,7 +73,6 @@ namespace AZ
 
 typedef void* WIN_HWND;
 
-class CCamera;
 struct CLoadingTimeProfiler;
 
 class ICmdLine;
@@ -612,7 +609,6 @@ struct SSystemGlobalEnvironment
 {
     AZ::IO::IArchive*          pCryPak;
     AZ::IO::FileIOBase*        pFileIO;
-    ITimer*                    pTimer;
     ICryFont*                  pCryFont;
     ::IConsole*                  pConsole;
     ISystem*                   pSystem = nullptr;
@@ -823,8 +819,6 @@ struct ISystem
 
     // return the related subsystem interface
 
-    //
-    virtual IViewSystem* GetIViewSystem() = 0;
     virtual ILevelSystem* GetILevelSystem() = 0;
     virtual ICmdLine* GetICmdLine() = 0;
     virtual ILog* GetILog() = 0;
@@ -834,8 +828,6 @@ struct ISystem
     virtual ::IConsole* GetIConsole() = 0;
     virtual IRemoteConsole* GetIRemoteConsole() = 0;
     virtual ISystemEventDispatcher* GetISystemEventDispatcher() = 0;
-
-    virtual ITimer* GetITimer() = 0;
 
     // Arguments:
     //   bValue - Set to true when running on a cheat protected server or a client that is connected to it (not used in singleplayer).

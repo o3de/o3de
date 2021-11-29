@@ -351,11 +351,12 @@ namespace AZ
             for (const ShaderVariantReferenceData& shaderRef : m_shaderCollection)
             {
                 const auto& shaderFile = shaderRef.m_shaderFilePath;
-                const auto& shaderAsset = AssetUtils::LoadAsset<ShaderAsset>(materialTypeSourceFilePath, shaderFile, 0);
+                auto shaderAssetResult = AssetUtils::LoadAsset<ShaderAsset>(materialTypeSourceFilePath, shaderFile, 0);
 
-                if (shaderAsset)
+                if (shaderAssetResult)
                 {
-                    auto optionsLayout = shaderAsset.GetValue()->GetShaderOptionGroupLayout();
+                    auto shaderAsset = shaderAssetResult.GetValue();
+                    auto optionsLayout = shaderAsset->GetShaderOptionGroupLayout();
                     ShaderOptionGroup options{ optionsLayout };
                     for (auto& iter : shaderRef.m_shaderOptionValues)
                     {
@@ -366,12 +367,11 @@ namespace AZ
                     }
 
                     materialTypeAssetCreator.AddShader(
-                        shaderAsset.GetValue(), options.GetShaderVariantId(),
-                        shaderRef.m_shaderTag.IsEmpty() ? Uuid::CreateRandom().ToString<AZ::Name>() : shaderRef.m_shaderTag
-                    );
+                        shaderAsset, options.GetShaderVariantId(),
+                        shaderRef.m_shaderTag.IsEmpty() ? Uuid::CreateRandom().ToString<AZ::Name>() : shaderRef.m_shaderTag);
 
                     // Gather UV names
-                    const ShaderInputContract& shaderInputContract = shaderAsset.GetValue()->GetInputContract();
+                    const ShaderInputContract& shaderInputContract = shaderAsset->GetInputContract();
                     for (const ShaderInputContract::StreamChannelInfo& channel : shaderInputContract.m_streamChannels)
                     {
                         const RHI::ShaderSemantic& semantic = channel.m_semantic;
@@ -451,15 +451,20 @@ namespace AZ
                         {
                         case MaterialPropertyDataType::Image:
                         {
-                            Outcome<Data::Asset<ImageAsset>> imageAssetResult = MaterialUtils::GetImageAssetReference(materialTypeSourceFilePath, property.m_value.GetValue<AZStd::string>());
+                            Data::Asset<ImageAsset> imageAsset;
 
-                            if (imageAssetResult.IsSuccess())
+                            MaterialUtils::GetImageAssetResult result = MaterialUtils::GetImageAssetReference(
+                                imageAsset, materialTypeSourceFilePath, property.m_value.GetValue<AZStd::string>());
+
+                            if (result == MaterialUtils::GetImageAssetResult::Missing)
                             {
-                                materialTypeAssetCreator.SetPropertyValue(propertyId.GetFullName(), imageAssetResult.GetValue());
+                                materialTypeAssetCreator.ReportError(
+                                    "Material property '%s': Could not find the image '%s'", propertyId.GetFullName().GetCStr(),
+                                    property.m_value.GetValue<AZStd::string>().data());
                             }
                             else
                             {
-                                materialTypeAssetCreator.ReportError("Material property '%s': Could not find the image '%s'", propertyId.GetFullName().GetCStr(), property.m_value.GetValue<AZStd::string>().data());
+                                materialTypeAssetCreator.SetPropertyValue(propertyId.GetFullName(), imageAsset);
                             }
                         }
                         break;
