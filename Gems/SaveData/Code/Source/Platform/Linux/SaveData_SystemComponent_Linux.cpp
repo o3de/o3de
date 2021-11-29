@@ -22,7 +22,7 @@
 namespace SaveData
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    //! Platform specific implementation for the save data system component on Windows
+    //! Platform specific implementation for the save data system component on Linux
     class SaveDataSystemComponentLinux : public SaveDataSystemComponent::Implementation
     {
     public:
@@ -61,7 +61,7 @@ namespace SaveData
         //! \param[in] dataBufferName The name of the save data buffer.
         //! \param[in] localUserId The local user id the save data buffer is associated with.
         AZ::IO::Path GetSaveDataFilePath(const AZStd::string& dataBufferName,
-                                              AzFramework::LocalUserId localUserId);
+                                         AzFramework::LocalUserId localUserId);
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         //! The absolute path to the application's save data dircetory.
@@ -88,7 +88,6 @@ namespace SaveData
             homeDir = "/tmp";
         }
 
-        // AZ::IO::PathView homePath {homeDir};
         AZ::IO::Path homePath {homeDir};
 
         // $HOME/.local/share is the standard directory where user data is stored on Ubuntu
