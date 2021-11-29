@@ -57,6 +57,7 @@ ly_add_target(
     NAME ScriptCanvas.Static STATIC
     NAMESPACE Gem
     FILES_CMAKE
+        scriptcanvasgem_headers.cmake
         scriptcanvasgem_common_files.cmake
         scriptcanvasgem_runtime_asset_files.cmake
     INCLUDE_DIRECTORIES
@@ -90,7 +91,7 @@ ly_add_target(
 )
 
 ly_add_target(
-    NAME ScriptCanvasAPI HEADERONLY
+    NAME ScriptCanvas.API HEADERONLY
     NAMESPACE Gem
     FILES_CMAKE
         scriptcanvasgem_headers.cmake
@@ -102,7 +103,7 @@ ly_add_target(
         INTERFACE
             .
             Include
-            Include/ScriptCanvas
+            ${SCRIPT_CANVAS_AUTOGEN_BUILD_DIR}
 )
 
 ly_add_target(
