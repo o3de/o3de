@@ -57,6 +57,11 @@ namespace UnitTest
         return AZStd::make_unique<PrefabTestToolsApplication>("PrefabTestApplication");
     }
 
+    void PrefabTestFixture::PropagateAllTemplateChanges()
+    {
+        m_prefabSystemComponent->OnSystemTick();
+    }
+
     AZ::Entity* PrefabTestFixture::CreateEntity(const char* entityName, const bool shouldActivate)
     {
         // Circumvent the EntityContext system and generate a new entity with a transformcomponent
