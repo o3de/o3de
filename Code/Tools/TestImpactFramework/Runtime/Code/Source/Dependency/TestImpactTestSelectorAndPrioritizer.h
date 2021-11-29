@@ -229,34 +229,31 @@ namespace TestImpact
         {
             for (const auto& parentTarget : sourceDependency.GetParentTargets())
             {
-                parentTarget.Visit(
-                    [&selectedTestTargetMap, this](auto&& target)
-                    {
-                        if constexpr (BuildTargetTraits::template IsProductionTarget<decltype(target)>)
-                        {
-                            // Parent Targets: Yes
-                            // Coverage Data : No
-                            // Source Type   : Production
-                            //
-                            // Scenario
-                            // 1. The file has been newly created
-                            // 2. This file exists in one or more source to production target mapping artifacts
-                            // 3. There exists no coverage data for this file in the source covering test list
-                            CreateProductionSourceAction(target, selectedTestTargetMap);
-                        }
-                        else
-                        {
-                            // Parent Targets: Yes
-                            // Coverage Data : No
-                            // Source Type   : Test
-                            //
-                            // Scenario
-                            // 1. The file has been newly created
-                            // 2. This file exists in one or more source to test target mapping artifacts
-                            // 3. There exists no coverage data for this file in the source covering test list
-                            CreateTestSourceAction(target, selectedTestTargetMap);
-                        }
-                    });
+
+                if (parentTarget.GetTargetType() == BuildTargetType::ProductionTarget)
+                {
+                    // Parent Targets: Yes
+                    // Coverage Data : No
+                    // Source Type   : Production
+                    //
+                    // Scenario
+                    // 1. The file has been newly created
+                    // 2. This file exists in one or more source to production target mapping artifacts
+                    // 3. There exists no coverage data for this file in the source covering test list
+                    CreateProductionSourceAction(parentTarget.GetProductionTarget().value(), selectedTestTargetMap);
+                }
+                else
+                {
+                    // Parent Targets: Yes
+                    // Coverage Data : No
+                    // Source Type   : Test
+                    //
+                    // Scenario
+                    // 1. The file has been newly created
+                    // 2. This file exists in one or more source to test target mapping artifacts
+                    // 3. There exists no coverage data for this file in the source covering test list
+                    CreateTestSourceAction(parentTarget.GetTestTarget().value(), selectedTestTargetMap);
+                }
             }
         }
 
@@ -269,68 +266,60 @@ namespace TestImpact
                 {
                     for (const auto& parentTarget : sourceDependency.GetParentTargets())
                     {
-                        parentTarget.Visit(
-                            [&selectedTestTargetMap, &sourceDependency, this](auto&& target)
-                            {
-                                if constexpr (BuildTargetTraits::template IsProductionTarget<decltype(target)>)
-                                {
-                                    // Parent Targets: Yes
-                                    // Coverage Data : Yes
-                                    // Source Type   : Production
-                                    //
-                                    // Scenario
-                                    // 1. The existing file has been modified
-                                    // 2. This file exists in one or more source to production target mapping artifacts
-                                    // 3. There exists coverage data for this file in the source covering test list
-                                    UpdateProductionSourceWithCoverageAction(target, selectedTestTargetMap, sourceDependency);
-                                }
-                                else
-                                {
-                                    // Parent Targets: Yes
-                                    // Coverage Data : Yes
-                                    // Source Type   : Test
-                                    //
-                                    // Scenario
-                                    // 1. The existing file has been modified
-                                    // 2. This file exists in one or more source to test target mapping artifacts
-                                    // 3. There exists coverage data for this file in the source covering test list
-                                    UpdateTestSourceWithCoverageAction(target, selectedTestTargetMap);
-                                }
-                            });
+                        if (parentTarget.GetTargetType() == BuildTargetType::ProductionTarget)
+                        {
+                            // Parent Targets: Yes
+                            // Coverage Data : Yes
+                            // Source Type   : Production
+                            //
+                            // Scenario
+                            // 1. The existing file has been modified
+                            // 2. This file exists in one or more source to production target mapping artifacts
+                            // 3. There exists coverage data for this file in the source covering test list
+                            UpdateProductionSourceWithCoverageAction(parentTarget.GetProductionTarget().value(), selectedTestTargetMap, sourceDependency);
+                        }
+                        else
+                        {
+                            // Parent Targets: Yes
+                            // Coverage Data : Yes
+                            // Source Type   : Test
+                            //
+                            // Scenario
+                            // 1. The existing file has been modified
+                            // 2. This file exists in one or more source to test target mapping artifacts
+                            // 3. There exists coverage data for this file in the source covering test list
+                            UpdateTestSourceWithCoverageAction(parentTarget.GetTestTarget().value(), selectedTestTargetMap);
+                        }
                     }
                 }
                 else
                 {
                     for (const auto& parentTarget : sourceDependency.GetParentTargets())
                     {
-                        parentTarget.Visit(
-                            [&selectedTestTargetMap, this](auto&& target)
-                            {
-                                if constexpr (BuildTargetTraits::template IsProductionTarget<decltype(target)>)
-                                {
-                                    // Parent Targets: Yes
-                                    // Coverage Data : No
-                                    // Source Type   : Production
-                                    //
-                                    // Scenario
-                                    // 1. The existing file has been modified
-                                    // 2. This file exists in one or more source to test target mapping artifacts
-                                    // 3. There exists no coverage data for this file in the source covering test list
-                                    UpdateProductionSourceWithoutCoverageAction(target, selectedTestTargetMap);
-                                }
-                                else
-                                {
-                                    // Parent Targets: Yes
-                                    // Coverage Data : No
-                                    // Source Type   : Test
-                                    //
-                                    // Scenario
-                                    // 1. The existing file has been modified
-                                    // 2. This file exists in one or more source to test target mapping artifacts
-                                    // 3. There exists no coverage data for this file in the source covering test list
-                                    UpdateTestSourceWithoutCoverageAction(target, selectedTestTargetMap);
-                                }
-                            });
+                        if (parentTarget.GetTargetType() == BuildTargetType::ProductionTarget)
+                        {
+                            // Parent Targets: Yes
+                            // Coverage Data : No
+                            // Source Type   : Production
+                            //
+                            // Scenario
+                            // 1. The existing file has been modified
+                            // 2. This file exists in one or more source to test target mapping artifacts
+                            // 3. There exists no coverage data for this file in the source covering test list
+                            UpdateProductionSourceWithoutCoverageAction(parentTarget.GetProductionTarget().value(), selectedTestTargetMap);
+                        }
+                        else
+                        {
+                            // Parent Targets: Yes
+                            // Coverage Data : No
+                            // Source Type   : Test
+                            //
+                            // Scenario
+                            // 1. The existing file has been modified
+                            // 2. This file exists in one or more source to test target mapping artifacts
+                            // 3. There exists no coverage data for this file in the source covering test list
+                            UpdateTestSourceWithoutCoverageAction(parentTarget.GetTestTarget().value(), selectedTestTargetMap);
+                        }
                     }
                 }
             }

@@ -43,10 +43,11 @@ namespace UnitTest
 
         void ValidateBuildTarget(const typename TestImpact::NativeBuildTargetTraits::BuildTarget& buildTarget, const TestImpact::NativeTestTarget& expectedTestTarget)
         {
+            EXPECT_EQ(buildTarget.GetTargetType(), TestImpact::BuildTargetType::TestTarget);
+
             buildTarget.Visit(
             [&expectedTestTarget](auto&& target)
             {
-                EXPECT_TRUE(TestImpact::NativeBuildTargetTraits::IsTestTarget<decltype(target)>);
                 ValidateTarget(*target, expectedTestTarget);
             });
         }
@@ -54,10 +55,11 @@ namespace UnitTest
         void ValidateBuildTarget(
             const typename TestImpact::NativeBuildTargetTraits::BuildTarget& buildTarget, const TestImpact::NativeProductionTarget& expectedProductionTarget)
         {
+            EXPECT_EQ(buildTarget.GetTargetType(), TestImpact::BuildTargetType::ProductionTarget);
+
             buildTarget.Visit(
             [&expectedProductionTarget](auto&& target)
-            {
-                EXPECT_TRUE(TestImpact::NativeBuildTargetTraits::IsProductionTarget<decltype(target)>);
+            {                
                 ValidateTarget(*target, expectedProductionTarget);
             });
         }
@@ -713,41 +715,19 @@ namespace UnitTest
         for (const auto& expectedProductionTarget : m_productionTargets->GetTargets())
         {
             // When retrieving the production target in the dynamic dependency map
-            auto productionTarget = m_dynamicDependencyMap->GetBuildTargets()->GetBuildTargetOrThrow(expectedProductionTarget.GetName());
+            auto buildTarget = m_dynamicDependencyMap->GetBuildTargets()->GetBuildTargetOrThrow(expectedProductionTarget.GetName());
 
             // Expect the retrieved production target to match the production target we queried
-            productionTarget.Visit(
-                [&expectedProductionTarget](auto&& productionTarget)
-                {
-                    if constexpr (TestImpact::NativeBuildTargetTraits::IsProductionTarget<decltype(productionTarget)>)
-                    {
-                        ValidateProductionTarget(*productionTarget, expectedProductionTarget);
-                    }
-                    else
-                    {
-                        FAIL();
-                    }
-                });
+            ValidateBuildTarget(*buildTarget.GetProductionTarget(), expectedProductionTarget);
         }
 
         for (const auto& expectedTestTarget : m_testTargets->GetTargets())
         {
             // When retrieving the test target in the dynamic dependency map
-            auto testTarget = m_dynamicDependencyMap->GetBuildTargets()->GetBuildTargetOrThrow(expectedTestTarget.GetName());
+            auto buildTarget = m_dynamicDependencyMap->GetBuildTargets()->GetBuildTargetOrThrow(expectedTestTarget.GetName());
 
             // Expect the retrieved production target to match the production target we queried
-            testTarget.Visit(
-                [&expectedTestTarget](auto&& testTarget)
-                {
-                    if constexpr (TestImpact::NativeBuildTargetTraits::IsTestTarget<decltype(testTarget)>)
-                    {
-                        ValidateTestTarget(*testTarget, expectedTestTarget);
-                    }
-                    else
-                    {
-                        FAIL();
-                    }
-                });
+            ValidateBuildTarget(*buildTarget.GetTestTarget(), expectedTestTarget);
         }
     }
 

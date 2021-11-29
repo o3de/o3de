@@ -16,6 +16,12 @@
 
 namespace TestImpact
 {
+    enum BuildTargetType : AZ::u8
+    {
+        TestTarget,
+        ProductionTarget
+    };
+
     template<typename TestTarget, typename ProductionTarget>
     class BuildTarget
     {
@@ -30,21 +36,22 @@ namespace TestImpact
         const Target* GetTarget() const;
     
         //! Returns the test target pointer for this parent (if any), otherwise nullptr.
-        const TestTarget* GetTestTarget() const;
+        AZStd::optional<const TestTarget*> GetTestTarget() const;
     
         //! Returns the production target pointer for this parent (if any), otherwise nullptr.
-        const ProductionTarget* GetProductionTarget() const;
+        AZStd::optional<const ProductionTarget*> GetProductionTarget() const;
 
         //!
-        bool HasTestTarget() const;
-    
-        //!
-        bool HasProductionTarget() const;
+        BuildTargetType GetTargetType() const;
     
         //!
         template<typename Visitor>
         void Visit(const Visitor& visitor) const;
 
+        //!
+        BuildTargetType m_type;
+
+    private:
         //!
         template<typename Target>
         static constexpr bool IsProductionTarget =
@@ -54,19 +61,20 @@ namespace TestImpact
         template<typename Target>
         static constexpr bool IsTestTarget =
             AZStd::is_same_v<TestTarget, AZStd::remove_const_t<AZStd::remove_pointer_t<AZStd::decay_t<Target>>>>;
-    private:
         AZStd::variant<const TestTarget*, const ProductionTarget*> m_target;
     };
 
     template<typename TestTarget, typename ProductionTarget>
     BuildTarget<TestTarget, ProductionTarget>::BuildTarget(const TestTarget* testTarget)
         : m_target(testTarget)
+        , m_type(BuildTargetType::TestTarget)
     {
     }
 
     template<typename TestTarget, typename ProductionTarget>
     BuildTarget<TestTarget, ProductionTarget>::BuildTarget(const ProductionTarget* productionTarget)
         : m_target(productionTarget)
+        , m_type(BuildTargetType::ProductionTarget)
     {
     }
 
@@ -77,16 +85,19 @@ namespace TestImpact
         Visit(
             [&returnTarget](auto&& target)
             {
-                returnTarget = &(*target);
+                if (target)
+                {
+                    returnTarget = &(*target);
+                }
             });
 
         return returnTarget;
     }
 
     template<typename TestTarget, typename ProductionTarget>
-    const TestTarget* BuildTarget<TestTarget, ProductionTarget>::GetTestTarget() const
+    AZStd::optional<const TestTarget*> BuildTarget<TestTarget, ProductionTarget>::GetTestTarget() const
     {
-        const TestTarget* testTarget = nullptr;
+        AZStd::optional<const TestTarget*> testTarget;
         Visit(
             [&testTarget](auto&& target)
             {
@@ -100,9 +111,9 @@ namespace TestImpact
     }
 
     template<typename TestTarget, typename ProductionTarget>
-    const ProductionTarget* BuildTarget<TestTarget, ProductionTarget>::GetProductionTarget() const
+    AZStd::optional<const ProductionTarget*> BuildTarget<TestTarget, ProductionTarget>::GetProductionTarget() const
     {
-        const ProductionTarget* productionTarget = nullptr;
+        AZStd::optional<const ProductionTarget*> productionTarget;
         Visit(
             [&productionTarget](auto&& target)
             {
@@ -116,35 +127,9 @@ namespace TestImpact
     }
 
     template<typename TestTarget, typename ProductionTarget>
-    bool BuildTarget<TestTarget, ProductionTarget>::HasTestTarget() const
-    {
-        bool hasTestTarget = false;
-        Visit(
-            [&hasTestTarget](auto&& target)
-            {
-                if constexpr (IsTestTarget<decltype(target)>)
-                {
-                    hasTestTarget = true;
-                }
-            });
-
-        return hasTestTarget;
-    }
-
-    template<typename TestTarget, typename ProductionTarget>
-    bool BuildTarget<TestTarget, ProductionTarget>::HasProductionTarget() const
-    {
-        bool hasProductionTarget = false;
-        Visit(
-        [&hasProductionTarget](auto&& target)
-        {
-            if constexpr (IsProductionTarget<decltype(target)>)
-            {
-                hasProductionTarget = true;
-            }
-        });
-
-        return hasProductionTarget;
+    BuildTargetType BuildTarget<TestTarget, ProductionTarget>::GetTargetType() const
+    {       
+        return m_type;
     }
 
     template<typename TestTarget, typename ProductionTarget>
