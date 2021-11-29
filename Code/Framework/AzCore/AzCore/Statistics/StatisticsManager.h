@@ -56,7 +56,7 @@ namespace AZ
 
             void GetAllStatistics(AZStd::vector<NamedRunningStatistic*>& vector)
             {
-                for (auto const& it : m_statistics)
+                for (const auto& it : m_statistics)
                 {
                     NamedRunningStatistic* stat = it.second;
                     vector.push_back(stat);
@@ -65,7 +65,7 @@ namespace AZ
 
             void GetAllStatisticsOfUnits(AZStd::vector<NamedRunningStatistic*>& vector, const char* units)
             {
-                for (auto const& it : m_statistics)
+                for (const auto& it : m_statistics)
                 {
                     NamedRunningStatistic* stat = it.second;
                     if (stat->GetUnits() == units)

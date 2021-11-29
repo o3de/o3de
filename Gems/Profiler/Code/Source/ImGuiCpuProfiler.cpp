@@ -27,6 +27,9 @@
 
 namespace Profiler
 {
+    constexpr AZStd::sys_time_t ProfilerViewEdgePadding = 5000;
+    constexpr size_t InitialCpuTimingStatsAllocation = 8;
+
     namespace CpuProfilerImGuiHelper
     {
         float TicksToMs(double ticks)
@@ -438,12 +441,7 @@ namespace Profiler
 
         // Since we don't serialize the frame boundaries, we will use "Component application simulation tick" from
         // ComponentApplication::Tick as a heuristic.
-        static AZ::Name::Hash frameBoundaryHash = 0;
-        if (frameBoundaryHash == 0)
-        {
-            AZ::Name frameBoundaryName("Component application simulation tick");
-            frameBoundaryHash = frameBoundaryName.GetHash();
-        }
+        static const AZ::Name::Hash frameBoundaryHash = AZ::Name("Component application simulation tick").GetHash();
 
         AZStd::sys_time_t frameTime = 0;
         for (const auto& entry : deserializedData)
@@ -476,9 +474,8 @@ namespace Profiler
         }
 
         // Update viewport bounds to the estimated final frame time with some padding
-        const AZStd::sys_time_t padding = 5000;
-        m_viewportStartTick = m_frameEndTicks.back() - frameTime - padding;
-        m_viewportEndTick = m_frameEndTicks.back() + padding;
+        m_viewportStartTick = m_frameEndTicks.back() - frameTime - ProfilerViewEdgePadding;
+        m_viewportEndTick = m_frameEndTicks.back() + ProfilerViewEdgePadding;
 
         // Invariant: each vector in m_savedData must be sorted so that we can efficiently cull region data.
         for (auto& [threadId, singleThreadData] : m_savedData)
@@ -657,7 +654,7 @@ namespace Profiler
         if (auto statsProfiler = AZ::Interface<StatisticalProfilerProxy>::Get(); statsProfiler)
         {
             AZStd::vector<NamedRunningStatistic*> statistics;
-            statistics.reserve(8);
+            statistics.reserve(InitialCpuTimingStatsAllocation);
 
             statsProfiler->GetAllStatisticsOfUnits(statistics, "clocks");
             for (NamedRunningStatistic* stat : statistics)
