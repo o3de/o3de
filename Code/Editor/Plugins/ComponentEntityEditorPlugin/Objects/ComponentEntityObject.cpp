@@ -47,14 +47,12 @@
 /**
  * Scalars for icon drawing behavior.
  */
-static const int s_kIconSize              = 36;       /// Icon display size (in pixels)
-
 CComponentEntityObject::CComponentEntityObject()
-    : m_hasIcon(false)
+    : m_accentType(AzToolsFramework::EntityAccentType::None)
+    , m_hasIcon(false)
     , m_entityIconVisible(false)
     , m_iconOnlyHitTest(false)
     , m_drawAccents(true)
-    , m_accentType(AzToolsFramework::EntityAccentType::None)
     , m_isIsolated(false)
     , m_iconTexture(nullptr)
 {
