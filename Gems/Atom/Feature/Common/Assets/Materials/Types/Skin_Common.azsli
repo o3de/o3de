@@ -71,6 +71,7 @@ ShaderResourceGroup MaterialSrg : SRG_PerMaterial
     float4 m_transmissionTintThickness;
     Texture2D m_transmissionThicknessMap;
     uint m_transmissionThicknessMapUvIndex;
+    float m_shrinkFactor;
     
     Texture2D m_wrinkle_baseColor_texture1;
     Texture2D m_wrinkle_baseColor_texture2;

@@ -638,6 +638,19 @@
                     "softMax": 20.0
                 },
                 {
+                    "name": "shrinkFactor",
+                    "displayName": "    Shrink Factor",
+                    "description": "Shrink (absolute) offset towards the normal opposite direction to ensure correct shadow map projection",
+                    "type": "float",
+                    "defaultValue": 0.005,
+                    "min": 0.0,
+                    "softMax": 0.05,
+                    "connection": {
+                        "type": "ShaderInput",
+                        "name": "m_shrinkFactor"
+                    }
+                },
+                {
                     "name": "transmissionScale",
                     "displayName": "    Scale",
                     "description": "Strength of transmission",

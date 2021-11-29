@@ -142,7 +142,7 @@ VSOutput SkinVS(VSInput IN)
     const uint shadowIndex = ViewSrg::m_shadowIndexDirectionalLight;
     DirectionalLightShadow::GetShadowCoords(
         shadowIndex,
-        worldPosition - 0.005 * OUT.m_normal,
+        worldPosition - MaterialSrg::m_shrinkFactor * OUT.m_normal,
         OUT.m_normal,
         OUT.m_shrinkedShadowCoords);
         

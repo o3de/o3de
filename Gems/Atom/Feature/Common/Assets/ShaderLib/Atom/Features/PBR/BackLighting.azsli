@@ -68,7 +68,7 @@ float3 GetBackLighting(Surface surface, LightingData lightingData, float3 lightI
                 float E = max(0.30 + dot(-surface.normal, dirToLight), 0.0);
 
                 // Transmission distance computed from shadowmaps modulated by editor-exposed parameters
-                float s = transmissionDistance * surface.transmission.thickness * (20 - transmissionParams.w) * 10;
+                float s = transmissionDistance * surface.transmission.thickness * (50 - transmissionParams.w) * 10;
                 
                 // Albedo at front (surface point) is used to approximate irradiance at the back of the object
                 // See observation 4 in [Jimenez J. et al, 2010] 
