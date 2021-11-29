@@ -71,9 +71,11 @@ namespace ScriptCanvasEditor
 
             const char* className = m_className.toUtf8().data();
             auto behaviorClass = behaviorContext->m_classes.find(className);
-
-            ScriptCanvasEditorTools::TranslationGeneration translation;
-            translation.TranslateBehaviorClass(behaviorClass->second);
+            if (behaviorClass != behaviorContext->m_classes.end())
+            {
+                ScriptCanvasEditorTools::TranslationGeneration translation;
+                translation.TranslateBehaviorClass(behaviorClass->second);
+            }
         }
 
     private:
