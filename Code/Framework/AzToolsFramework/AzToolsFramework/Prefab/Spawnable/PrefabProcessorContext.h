@@ -127,8 +127,11 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
         virtual bool HasCompletedSuccessfully() const;
         virtual void ErrorEncountered();
 
+        const AzToolsFramework::Prefab::InstanceAlias& FindOrCreateCachedInstanceAliasForPrefab(const AZStd::string& prefabName);
+
     protected:
         using NamedPrefabContainer = AZStd::unordered_map<AZStd::string, PrefabDom>;
+        using CachedPrefabInstanceAliases = AZStd::unordered_map<AZStd::string, AzToolsFramework::Prefab::InstanceAlias>;
         using SpawnableEntityAliasStore = AZStd::vector<EntityAliasStore>;
 
         AZ::Data::AssetLoadBehavior ToAssetLoadBehavior(EntityAliasSpawnableLoadBehavior loadBehavior) const;
@@ -137,6 +140,7 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
         SpawnableEntityAliasStore m_entityAliases;
         ProcessedObjectStoreContainer m_products;
         ProductAssetDependencyContainer m_registeredProductAssetDependencies;
+        CachedPrefabInstanceAliases m_cachedPrefabInstanceAliases;
 
         AZ::PlatformTagSet m_platformTags;
         AZ::Uuid m_sourceUuid;

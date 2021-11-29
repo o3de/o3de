@@ -64,11 +64,9 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
             AZStd::move(uniqueName), context.GetSourceUuid(), AZStd::move(serializer));
         AZ_Assert(spawnable, "Failed to create a new spawnable.");
 
-        Instance instance;
-        if (Prefab::PrefabDomUtils::LoadInstanceFromPrefabDom(
-                instance, prefab, object.GetReferencedAssets(),
-                Prefab::PrefabDomUtils::LoadFlags::AssignRandomEntityId)) // Always assign random entity ids because the spawnable is
-                                                                          // going to be used to create clones of the entities.
+        Instance instance(context.FindOrCreateCachedInstanceAliasForPrefab(prefabName));
+        if (Prefab::PrefabDomUtils::LoadInstanceFromPrefabDom(instance, prefab, object.GetReferencedAssets())) 
+                // Do not assign random entity ids here because other prefab processors may rely on consistent cross-spawnable entity IDs 
         {
             // Resolve entity aliases that store PrefabDOM information to use the spawnable instead. This is done before the entities are
             // moved from the instance as they'd otherwise can't be found.

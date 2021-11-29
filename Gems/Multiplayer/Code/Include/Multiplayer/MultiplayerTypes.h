@@ -12,6 +12,7 @@
 #include <AzCore/Name/Name.h>
 #include <AzCore/RTTI/TypeSafeIntegral.h>
 #include <AzCore/std/string/fixed_string.h>
+#include <AzCore/Serialization/SerializeContext.h>
 #include <AzFramework/Physics/Common/PhysicsSimulatedBody.h>
 #include <AzNetworking/Utilities/IpAddress.h>
 #include <AzNetworking/Serialization/ISerializer.h>
@@ -92,6 +93,7 @@ namespace Multiplayer
     struct PrefabEntityId
     {
         AZ_TYPE_INFO(PrefabEntityId, "{EFD37465-CCAC-4E87-A825-41B4010A2C75}");
+        static void Reflect(AZ::ReflectContext* context);
 
         static constexpr uint32_t AllIndices = AZStd::numeric_limits<uint32_t>::max();
 
@@ -154,6 +156,18 @@ namespace Multiplayer
         serializer.Serialize(m_prefabName, "prefabName");
         serializer.Serialize(m_entityOffset, "entityOffset");
         return serializer.IsValid();
+    }
+
+    inline void PrefabEntityId::Reflect(AZ::ReflectContext* context)
+    {
+        if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+        {
+            serializeContext->Class<PrefabEntityId>()
+                ->Version(1)
+                ->Field("prefabName", &PrefabEntityId::m_prefabName)
+                ->Field("entityOffset", &PrefabEntityId::m_entityOffset)
+                ;
+        }
     }
 
     inline bool EntityMigrationMessage::operator!=(const EntityMigrationMessage& rhs) const

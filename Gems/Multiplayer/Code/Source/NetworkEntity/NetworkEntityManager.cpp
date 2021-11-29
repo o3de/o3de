@@ -18,6 +18,7 @@
 #include <AzFramework/Entity/GameEntityContextBus.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
 #include <AzFramework/Visibility/EntityBoundsUnionBus.h>
+#include <AzFramework/Spawnable/Spawnable.h>
 #include <AzFramework/Spawnable/SpawnableEntitiesInterface.h>
 #include <Multiplayer/IMultiplayer.h>
 #include <Multiplayer/Components/NetBindComponent.h>
@@ -35,10 +36,12 @@ namespace Multiplayer
     {
         AZ::Interface<INetworkEntityManager>::Register(this);
         AzFramework::RootSpawnableNotificationBus::Handler::BusConnect();
+        AzFramework::SpawnableAssetEventsBus::Handler::BusConnect();
     }
 
     NetworkEntityManager::~NetworkEntityManager()
     {
+        AzFramework::SpawnableAssetEventsBus::Handler::BusDisconnect();
         AzFramework::RootSpawnableNotificationBus::Handler::BusDisconnect();
         AZ::Interface<INetworkEntityManager>::Unregister(this);
     }
@@ -592,6 +595,27 @@ namespace Multiplayer
         if (agentType == MultiplayerAgentType::Client)
         {
             multiplayer->SendReadyForEntityUpdates(false);
+        }
+    }
+
+    void NetworkEntityManager::OnResolveAliases(
+        AzFramework::Spawnable::EntityAliasVisitor& aliases,
+        [[maybe_unused]] const AzFramework::SpawnableMetaData& metadata,
+        [[maybe_unused]] const AzFramework::Spawnable::EntityList& entities)
+    {
+        auto* multiplayer = GetMultiplayer();
+        if (!multiplayer->GetShouldSpawnNetworkEntities())
+        {
+            aliases.UpdateAliases(NetworkEntityTag, [](
+                AzFramework::Spawnable::EntityAliasType& aliasType,
+                [[maybe_unused]] bool& queueLoad,
+                [[maybe_unused]] const AZ::Data::Asset<AzFramework::Spawnable>& aliasedSpawnable,
+                [[maybe_unused]] const AZ::Crc32 tag,
+                [[maybe_unused]] const uint32_t sourceIndex,
+                [[maybe_unused]] const uint32_t targetIndex)
+            {
+                aliasType = AzFramework::Spawnable::EntityAliasType::Disable;
+            });
         }
     }
 

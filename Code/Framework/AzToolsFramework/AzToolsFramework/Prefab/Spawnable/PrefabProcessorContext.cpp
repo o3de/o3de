@@ -247,4 +247,16 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
         return loadBehavior == EntityAliasSpawnableLoadBehavior::DependentLoad ? AZ::Data::AssetLoadBehavior::PreLoad
                                                                                : AZ::Data::AssetLoadBehavior::NoLoad;
     }
+
+    const AzToolsFramework::Prefab::InstanceAlias& PrefabProcessorContext::FindOrCreateCachedInstanceAliasForPrefab(const AZStd::string& prefabName)
+    {
+        auto it = m_cachedPrefabInstanceAliases.find(prefabName);
+        if (it != m_cachedPrefabInstanceAliases.end())
+        {
+            return it->second;
+        }
+
+        m_cachedPrefabInstanceAliases.insert({{prefabName, AzToolsFramework::Prefab::Instance::GenerateEntityAlias()}});
+        return FindOrCreateCachedInstanceAliasForPrefab(prefabName);
+    }
 } // namespace AzToolsFramework::Prefab::PrefabConversionUtils
