@@ -502,6 +502,8 @@ set(FILES
     Viewport/ViewportMessages.cpp
     Viewport/ViewportTypes.h
     Viewport/ViewportTypes.cpp
+    Viewport/ViewportSettings.h
+    Viewport/ViewportSettings.cpp
     ViewportUi/Button.h
     ViewportUi/Button.cpp
     ViewportUi/ButtonGroup.h

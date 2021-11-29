@@ -21,6 +21,7 @@
 #include <AzToolsFramework/Manipulators/PlanarManipulator.h>
 #include <AzToolsFramework/Manipulators/SplineSelectionManipulator.h>
 #include <AzToolsFramework/Maths/TransformUtils.h>
+#include <AzToolsFramework/Viewport/ViewportSettings.h>
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
 
 AZ_CVAR(
@@ -37,13 +38,13 @@ AZ_CVAR(
     nullptr,
     AZ::ConsoleFunctorFlags::Null,
     "The scale factor to apply to the planar manipulator bounds");
-AZ_CVAR(
-    bool,
-    ed_manipulatorFlipAxesTowardsView,
-    true,
-    nullptr,
-    AZ::ConsoleFunctorFlags::Null,
-    "If enabled, manipulator axes will flip to always face the direction of the camera");
+// AZ_CVAR(
+//    bool,
+//    ed_manipulatorFlipAxesTowardsView,
+//    true,
+//    nullptr,
+//    AZ::ConsoleFunctorFlags::Null,
+//    "If enabled, manipulator axes will flip to always face the direction of the camera");
 
 namespace AzToolsFramework
 {
@@ -93,7 +94,7 @@ namespace AzToolsFramework
             // check if we actually needed to flip the axis, if so, write to shouldCorrect
             // so we know and are able to draw it differently if we wish (e.g. hollow if flipped)
             const bool correcting =
-                ed_manipulatorFlipAxesTowardsView && ShouldFlipCameraAxis(worldFromLocal, localPosition, axis, cameraState);
+                FlipManipulatorAxesTowardsView() && ShouldFlipCameraAxis(worldFromLocal, localPosition, axis, cameraState);
 
             // the corrected axis, if no flip was required, output == input
             correctedAxis = correcting ? -axis : axis;
