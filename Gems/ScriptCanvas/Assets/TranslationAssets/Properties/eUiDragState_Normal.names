@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "eUiDragState_Normal",
+            "base": "eUiDragState_Normal",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "eUiDragState_Normal::Getter",
-                "category": "Constants"
-            }
+                "name": "Normal",
+                "category": "Constants/UI/Drag State"
+            },
+            "methods": [
+                {
+                    "base": "GeteUiDragState_Normal",
+                    "details": {
+                        "name": "Normal"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

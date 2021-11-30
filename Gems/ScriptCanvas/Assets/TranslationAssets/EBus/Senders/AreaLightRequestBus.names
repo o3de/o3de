@@ -1,135 +1,142 @@
 {
     "entries": [
         {
-            "key": "AreaLightRequestBus",
+            "base": "AreaLightRequestBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "AreaLightRequestBus"
+                "name": "Area Light",
+                "category": "Lights"
             },
             "methods": [
                 {
-                    "key": "SetFilteringSampleCount",
+                    "base": "SetFilteringSampleCount",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetFilteringSampleCount"
+                        "tooltip": "When signaled, this will invoke Set Filtering Sample Count"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetFilteringSampleCount is invoked"
+                        "tooltip": "Signaled after Set Filtering Sample Count is invoked"
                     },
                     "details": {
-                        "name": "SetFilteringSampleCount"
+                        "name": "Set Filtering Sample Count",
+                        "tooltip": "Sets the sample count for filtering of the shadow boundary. Maximum 64"
                     },
                     "params": [
                         {
                             "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
                             "details": {
-                                "name": "unsigned int"
+                                "name": "Sample Count"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "SetIntensity",
+                    "base": "SetIntensity",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetIntensity"
+                        "tooltip": "When signaled, this will invoke Set Intensity"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetIntensity is invoked"
+                        "tooltip": "Signaled after Set Intensity is invoked"
                     },
                     "details": {
-                        "name": "SetIntensity"
+                        "name": "Set Intensity",
+                        "tooltip": "Sets an area light's intensity and intensity mode. This value is indepedent from its color"
                     },
                     "params": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "float"
+                                "name": "Intensity"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "SetEsmExponent",
+                    "base": "SetEsmExponent",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetEsmExponent"
+                        "tooltip": "When signaled, this will invoke Set Esm Exponent"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetEsmExponent is invoked"
+                        "tooltip": "Signaled after Set Esm Exponent is invoked"
                     },
                     "details": {
-                        "name": "SetEsmExponent"
+                        "name": "Set Esm Exponent",
+                        "tooltip": "Sets the Esm exponent. Higher values produce a steeper falloff between light and shadow"
                     },
                     "params": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "float"
+                                "name": "Exponent"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "GetOuterShutterAngle",
+                    "base": "GetOuterShutterAngle",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetOuterShutterAngle"
+                        "tooltip": "When signaled, this will invoke Get Outer Shutter Angle"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetOuterShutterAngle is invoked"
+                        "tooltip": "Signaled after Get Outer Shutter Angle is invoked"
                     },
                     "details": {
-                        "name": "GetOuterShutterAngle"
+                        "name": "Get Outer Shutter Angle",
+                        "tooltip": "Returns the outer angle of the shutters in degrees"
                     },
                     "results": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "float"
+                                "name": "Angle (Degrees)"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "GetInnerShutterAngle",
+                    "base": "GetInnerShutterAngle",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetInnerShutterAngle"
+                        "tooltip": "When signaled, this will invoke Get Inner Shutter Angle"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetInnerShutterAngle is invoked"
+                        "tooltip": "Signaled after Get Inner Shutter Angle is invoked"
                     },
                     "details": {
-                        "name": "GetInnerShutterAngle"
+                        "name": "Get Inner Shutter Angle",
+                        "tooltip": "Returns the outer angle of the shutters in degrees"
                     },
                     "results": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "float"
+                                "name": "Angles (Degrees)"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "SetColor",
+                    "base": "SetColor",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetColor"
+                        "tooltip": "When signaled, this will invoke Set Color"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetColor is invoked"
+                        "tooltip": "Signaled after Set Color is invoked"
                     },
                     "details": {
-                        "name": "SetColor"
+                        "name": "Set Color",
+                        "tooltip": "Sets an area light's color. This value is indepedent from its intensity"
                     },
                     "params": [
                         {
@@ -141,479 +148,501 @@
                     ]
                 },
                 {
-                    "key": "SetShadowBias",
+                    "base": "SetShadowBias",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetShadowBias"
+                        "tooltip": "When signaled, this will invoke Set Shadow Bias"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetShadowBias is invoked"
+                        "tooltip": "Signaled after Set Shadow Bias is invoked"
                     },
                     "details": {
-                        "name": "SetShadowBias"
+                        "name": "Set Shadow Bias"
                     },
                     "params": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "float"
+                                "name": "Bias"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "SetShadowFilterMethod",
+                    "base": "SetShadowFilterMethod",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetShadowFilterMethod"
+                        "tooltip": "When signaled, this will invoke Set Shadow Filter Method"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetShadowFilterMethod is invoked"
+                        "tooltip": "Signaled after Set Shadow Filter Method is invoked"
                     },
                     "details": {
-                        "name": "SetShadowFilterMethod"
+                        "name": "Set Shadow Filter Method",
+                        "tooltip": "Sets the filter method of shadows, 0: None, 1: Percentage Closer Filtering (PCF), 2: Exponential Shadow Maps (ESM), 3: ESM with PCF Fallback"
                     },
                     "params": [
                         {
                             "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
                             "details": {
-                                "name": "unsigned int"
+                                "name": "Shadow Filter Method",
+                                "tooltip": "0: None, 1: Percentage Closer Filtering (PCF), 2: Exponential Shadow Maps (ESM), 3: ESM with PCF Fallback"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "GetEsmExponent",
+                    "base": "GetEsmExponent",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetEsmExponent"
+                        "tooltip": "When signaled, this will invoke Get Esm Exponent"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetEsmExponent is invoked"
+                        "tooltip": "Signaled after Get Esm Exponent is invoked"
                     },
                     "details": {
-                        "name": "GetEsmExponent"
+                        "name": "Get Esm Exponent",
+                        "tooltip": "Gets the Esm exponent. Higher values produce a steeper falloff between light and shadow"
                     },
                     "results": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "float"
+                                "name": "Exponent"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "SetInnerShutterAngle",
+                    "base": "SetInnerShutterAngle",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetInnerShutterAngle"
+                        "tooltip": "When signaled, this will invoke Set Inner Shutter Angle"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetInnerShutterAngle is invoked"
+                        "tooltip": "Signaled after Set Inner Shutter Angle is invoked"
                     },
                     "details": {
-                        "name": "SetInnerShutterAngle"
+                        "name": "Set Inner Shutter Angle",
+                        "tooltip": "Sets the inner angle of the shutters in degrees"
                     },
                     "params": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "float"
+                                "name": "Angle (Degrees)"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "SetEnableShadow",
+                    "base": "SetEnableShadow",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetEnableShadow"
+                        "tooltip": "When signaled, this will invoke Set Enable Shadow"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetEnableShadow is invoked"
+                        "tooltip": "Signaled after Set Enable Shadow is invoked"
                     },
                     "details": {
-                        "name": "SetEnableShadow"
+                        "name": "Set Enable Shadow",
+                        "tooltip": "Sets if shadows should be enabled"
                     },
                     "params": [
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": "bool"
+                                "name": "Enable"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "SetUseFastApproximation",
+                    "base": "SetUseFastApproximation",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetUseFastApproximation"
+                        "tooltip": "When signaled, this will invoke Set Use Fast Approximation"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetUseFastApproximation is invoked"
+                        "tooltip": "Signaled after Set Use Fast Approximation is invoked"
                     },
                     "details": {
-                        "name": "SetUseFastApproximation"
+                        "name": "Set Use Fast Approximation",
+                        "tooltip": "Sets whether the light should use the default high quality linearly transformed cosine lights (false) or a faster approximation (true)"
                     },
                     "params": [
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": "bool"
+                                "name": "Use Fast Approximation"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "GetUseFastApproximation",
+                    "base": "GetUseFastApproximation",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetUseFastApproximation"
+                        "tooltip": "When signaled, this will invoke Get Use Fast Approximation"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetUseFastApproximation is invoked"
+                        "tooltip": "Signaled after Get Use Fast Approximation is invoked"
                     },
                     "details": {
-                        "name": "GetUseFastApproximation"
+                        "name": "Get Use Fast Approximation",
+                        "tooltip" : "Gets whether the light is using the default high quality linearly transformed cosine lights (false) or a faster approximation (true)"
                     },
                     "results": [
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": "bool"
+                                "name": "Uses Fast Approximation"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "GetFilteringSampleCount",
+                    "base": "GetFilteringSampleCount",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetFilteringSampleCount"
+                        "tooltip": "When signaled, this will invoke Get Filtering Sample Count"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetFilteringSampleCount is invoked"
+                        "tooltip": "Signaled after Get Filtering Sample Count is invoked"
                     },
                     "details": {
-                        "name": "GetFilteringSampleCount"
+                        "name": "Get Filtering Sample Count",
+                        "tooltip": "Gets the sample count for filtering of the shadow boundary"
                     },
                     "results": [
                         {
                             "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
                             "details": {
-                                "name": "unsigned int"
+                                "name": "Sample Count"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "GetEnableShadow",
+                    "base": "GetEnableShadow",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetEnableShadow"
+                        "tooltip": "When signaled, this will invoke Get Enable Shadow"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetEnableShadow is invoked"
+                        "tooltip": "Signaled after Get Enable Shadow is invoked"
                     },
                     "details": {
-                        "name": "GetEnableShadow"
+                        "name": "Get Enable Shadow",
+                        "tooltip": "Returns true if shadows are enabled"
                     },
                     "results": [
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": "bool"
+                                "name": "Enabled"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "GetShadowFilterMethod",
+                    "base": "GetShadowFilterMethod",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetShadowFilterMethod"
+                        "tooltip": "When signaled, this will invoke Get Shadow Filter Method"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetShadowFilterMethod is invoked"
+                        "tooltip": "Signaled after Get Shadow Filter Method is invoked"
                     },
                     "details": {
-                        "name": "GetShadowFilterMethod"
+                        "name": "Get Shadow Filter Method",
+                        "tooltip": "Gets the filter method of shadows, 0: None, 1: Percentage Closer Filtering (PCF), 2: Exponential Shadow Maps (ESM), 3: ESM with PCF Fallback"
                     },
                     "results": [
                         {
                             "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
                             "details": {
-                                "name": "unsigned int"
+                                "name": "Filter Method",
+                                "tooltip": "0: None, 1: Percentage Closer Filtering (PCF), 2: Exponential Shadow Maps (ESM), 3: ESM with PCF Fallback"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "GetIntensityMode",
+                    "base": "GetIntensityMode",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetIntensityMode"
+                        "tooltip": "When signaled, this will invoke Get Intensity Mode"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetIntensityMode is invoked"
+                        "tooltip": "Signaled after Get Intensity Mode is invoked"
                     },
                     "details": {
-                        "name": "GetIntensityMode"
+                        "name": "Get Intensity Mode",
+                        "tooltip": "Gets an area light's photometric type\n0: Lumen (Total amount of luminous power emitted. Since a unit sphere is 4 pi steradians, 1 candela emitting uniformly in all directions is 4 pi lumens)\n1: Candela (Base unit of luminous intensity; luminous power per unit solid angle)\n2: Lux (One lux is one lumen per square meter. The same lux emitting from larger areas emits more lumens than smaller areas)\n3: Nit (Nits are candela per square meter. It can be calculated as Lux / Pi)\n4: Ev100Luminance (Exposure value for luminance - Similar to nits, A measurement of illuminance that grows exponentially. See https://en.wikipedia.org/wiki/Exposure_value)\n5: Ev100Illuminance (Exposure value for illuminance - Similar to lux, A measurement of illuminance that grows exponentially. See https://en.wikipedia.org/wiki/Exposure_value)"
                     },
                     "results": [
                         {
                             "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
                             "details": {
-                                "name": "char"
+                                "name": "Intensity Mode",
+                                "tooltip": "0: Lumen (Total amount of luminous power emitted. Since a unit sphere is 4 pi steradians, 1 candela emitting uniformly in all directions is 4 pi lumens)\n1: Candela (Base unit of luminous intensity; luminous power per unit solid angle)\n2: Lux (One lux is one lumen per square meter. The same lux emitting from larger areas emits more lumens than smaller areas)\n3: Nit (Nits are candela per square meter. It can be calculated as Lux / Pi)\n4: Ev100Luminance (Exposure value for luminance - Similar to nits, A measurement of illuminance that grows exponentially. See https://en.wikipedia.org/wiki/Exposure_value)\n5: Ev100Illuminance (Exposure value for illuminance - Similar to lux, A measurement of illuminance that grows exponentially. See https://en.wikipedia.org/wiki/Exposure_value)"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "GetShadowBias",
+                    "base": "GetShadowBias",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetShadowBias"
+                        "tooltip": "When signaled, this will invoke Get Shadow Bias"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetShadowBias is invoked"
+                        "tooltip": "Signaled after Get Shadow Bias is invoked"
                     },
                     "details": {
-                        "name": "GetShadowBias"
+                        "name": "Get Shadow Bias",
+                        "tooltip": "Returns the shadow bias"
                     },
                     "results": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "float"
+                                "name": "Bias"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "SetAttenuationRadiusMode",
+                    "base": "SetAttenuationRadiusMode",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetAttenuationRadiusMode"
+                        "tooltip": "When signaled, this will invoke Set Attenuation Radius Mode"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetAttenuationRadiusMode is invoked"
+                        "tooltip": "Signaled after Set Attenuation Radius Mode is invoked"
                     },
                     "details": {
-                        "name": "SetAttenuationRadiusMode"
+                        "name": "Set Attenuation Radius Mode",
+                        "tooltip": "0: Automatic, the radius will immediately be recalculated based on the intensity\n1: Explicit, the radius value will be unchanged from its previous value"
+
                     },
                     "params": [
                         {
                             "typeid": "{72B9409A-7D1A-4831-9CFE-FCB3FADD3426}",
                             "details": {
-                                "name": "unsigned char"
+                                "name": "Mode",
+                                "tooltip": "0: Automatic, the radius will immediately be recalculated based on the intensity\n1: Explicit, the radius value will be unchanged from its previous value"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "SetEmitsLightBothDirections",
+                    "base": "SetEmitsLightBothDirections",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetEmitsLightBothDirections"
+                        "tooltip": "When signaled, this will invoke Set Emits Light Both Directions"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetEmitsLightBothDirections is invoked"
+                        "tooltip": "Signaled after Set Emits Light Both Directions is invoked"
                     },
                     "details": {
-                        "name": "SetEmitsLightBothDirections"
+                        "name": "Set Emits Light Both Directions"
                     },
                     "params": [
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": "bool"
+                                "name": "Enable"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "SetEnableShutters",
+                    "base": "SetEnableShutters",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetEnableShutters"
+                        "tooltip": "When signaled, this will invoke Set Enable Shutters"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetEnableShutters is invoked"
+                        "tooltip": "Signaled after Set Enable Shutters is invoked"
                     },
                     "details": {
-                        "name": "SetEnableShutters"
+                        "name": "Set Enable Shutters"
                     },
                     "params": [
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": "bool"
+                                "name": "Enable"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "GetShadowmapMaxSize",
+                    "base": "GetShadowmapMaxSize",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetShadowmapMaxSize"
+                        "tooltip": "When signaled, this will invoke Get Shadowmap Max Size"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetShadowmapMaxSize is invoked"
+                        "tooltip": "Signaled after Get Shadowmap Max Size is invoked"
                     },
                     "details": {
-                        "name": "GetShadowmapMaxSize"
+                        "name": "Get Shadowmap Max Size",
+                        "tooltip": "Returns the maximum width and height of shadowmap"
                     },
                     "results": [
                         {
                             "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
                             "details": {
-                                "name": "unsigned int"
+                                "name": "Max Size"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "GetEmitsLightBothDirections",
+                    "base": "GetEmitsLightBothDirections",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetEmitsLightBothDirections"
+                        "tooltip": "When signaled, this will invoke Get Emits Light Both Directions"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetEmitsLightBothDirections is invoked"
+                        "tooltip": "Signaled after Get Emits Light Both Directions is invoked"
                     },
                     "details": {
-                        "name": "GetEmitsLightBothDirections"
+                        "name": "Get Emits Light Both Directions"
                     },
                     "results": [
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": "bool"
+                                "name": "Enabled"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "SetOuterShutterAngle",
+                    "base": "SetOuterShutterAngle",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetOuterShutterAngle"
+                        "tooltip": "When signaled, this will invoke Set Outer Shutter Angle"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetOuterShutterAngle is invoked"
+                        "tooltip": "Signaled after Set Outer Shutter Angle is invoked"
                     },
                     "details": {
-                        "name": "SetOuterShutterAngle"
+                        "name": "Set Outer Shutter Angle",
+                        "tooltip": "Sets the outer angle of the shutters in degrees"
                     },
                     "params": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "float"
+                                "name": "Angle (Degrees)"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "SetAttenuationRadius",
+                    "base": "SetAttenuationRadius",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetAttenuationRadius"
+                        "tooltip": "When signaled, this will invoke Set Attenuation Radius"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetAttenuationRadius is invoked"
+                        "tooltip": "Signaled after Set Attenuation Radius is invoked"
                     },
                     "details": {
-                        "name": "SetAttenuationRadius"
+                        "name": "Set Attenuation Radius",
+                        "tooltip": "Set the distance and which an area light will no longer affect lighting. Setting this forces the Radius Calculation to Explicit mode"
                     },
                     "params": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "float"
+                                "name": "Radius"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "GetAttenuationRadius",
+                    "base": "GetAttenuationRadius",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetAttenuationRadius"
+                        "tooltip": "When signaled, this will invoke Get Attenuation Radius"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetAttenuationRadius is invoked"
+                        "tooltip": "Signaled after Get Attenuation Radius is invoked"
                     },
                     "details": {
-                        "name": "GetAttenuationRadius"
+                        "name": "Get Attenuation Radius",
+                        "tooltip" : "Gets the distance at which the area light will no longer affect lighting"
                     },
                     "results": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "float"
+                                "name": "Radius"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "GetEnableShutters",
+                    "base": "GetEnableShutters",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetEnableShutters"
+                        "tooltip": "When signaled, this will invoke Get Enable Shutters"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetEnableShutters is invoked"
+                        "tooltip": "Signaled after Get Enable Shutters is invoked"
                     },
                     "details": {
-                        "name": "GetEnableShutters"
+                        "name": "Get Enable Shutters",
+                        "tooltip": "Returns true if shutters are enabled"
                     },
                     "results": [
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": "bool"
+                                "name": "Enabled"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "GetColor",
+                    "base": "GetColor",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetColor"
+                        "tooltip": "When signaled, this will invoke Get Color"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetColor is invoked"
+                        "tooltip": "Signaled after Get Color is invoked"
                     },
                     "details": {
-                        "name": "GetColor"
+                        "name": "Get Color"
                     },
                     "results": [
                         {
@@ -625,67 +654,70 @@
                     ]
                 },
                 {
-                    "key": "ConvertToIntensityMode",
+                    "base": "ConvertToIntensityMode",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke ConvertToIntensityMode"
+                        "tooltip": "When signaled, this will invoke Convert To Intensity Mode"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after ConvertToIntensityMode is invoked"
+                        "tooltip": "Signaled after Convert To Intensity Mode is invoked"
                     },
                     "details": {
-                        "name": "ConvertToIntensityMode"
+                        "name": "Convert To Intensity Mode",
+                        "tooltip": "Sets the photometric unit to the one provided and converts the intensity to the photometric unit so actual light intensity remains constant"
                     },
                     "params": [
                         {
                             "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
                             "details": {
-                                "name": "char"
+                                "name": "Mode",
+                                "tooltip": "0: Lumen (Total amount of luminous power emitted. Since a unit sphere is 4 pi steradians, 1 candela emitting uniformly in all directions is 4 pi lumens)\n1: Candela (Base unit of luminous intensity; luminous power per unit solid angle)\n2: Lux (One lux is one lumen per square meter. The same lux emitting from larger areas emits more lumens than smaller areas)\n3: Nit (Nits are candela per square meter. It can be calculated as Lux / Pi)\n4: Ev100Luminance (Exposure value for luminance - Similar to nits, A measurement of illuminance that grows exponentially. See https://en.wikipedia.org/wiki/Exposure_value)\n5: Ev100Illuminance (Exposure value for illuminance - Similar to lux, A measurement of illuminance that grows exponentially. See https://en.wikipedia.org/wiki/Exposure_value)"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "SetShadowmapMaxSize",
+                    "base": "SetShadowmapMaxSize",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetShadowmapMaxSize"
+                        "tooltip": "When signaled, this will invoke Set Shadowmap Max Size"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetShadowmapMaxSize is invoked"
+                        "tooltip": "Signaled after Set Shadowmap Max Size is invoked"
                     },
                     "details": {
-                        "name": "SetShadowmapMaxSize"
+                        "name": "Set Shadowmap Max Size"
                     },
                     "params": [
                         {
                             "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
                             "details": {
-                                "name": "unsigned int"
+                                "name": "Max Size"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "GetIntensity",
+                    "base": "GetIntensity",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetIntensity"
+                        "tooltip": "When signaled, this will invoke Get Intensity"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetIntensity is invoked"
+                        "tooltip": "Signaled after Get Intensity is invoked"
                     },
                     "details": {
-                        "name": "GetIntensity"
+                        "name": "Get Intensity",
+                        "tooltip": "Gets an area light's intensity. This value is indepedent from its color"
                     },
                     "results": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "float"
+                                "name": "Intensity"
                             }
                         }
                     ]

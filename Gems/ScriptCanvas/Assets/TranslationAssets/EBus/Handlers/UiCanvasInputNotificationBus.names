@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "UiCanvasInputNotificationBus",
+            "base": "UiCanvasInputNotificationBus",
             "context": "EBusHandler",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "OnCanvasPrimaryPressed",
+                    "base": "OnCanvasPrimaryPressed",
                     "details": {
                         "name": "On Canvas Primary Pressed",
                         "tooltip": "Executes on a positional input press"
@@ -26,7 +26,7 @@
                     ]
                 },
                 {
-                    "key": "OnCanvasPrimaryReleased",
+                    "base": "OnCanvasPrimaryReleased",
                     "details": {
                         "name": "On Canvas Primary Released",
                         "tooltip": "Executes on a positional input release"
@@ -42,7 +42,7 @@
                     ]
                 },
                 {
-                    "key": "OnCanvasMultiTouchPressed",
+                    "base": "OnCanvasMultiTouchPressed",
                     "details": {
                         "name": "On Canvas Multi-touch Pressed",
                         "tooltip": "Executes on a positional input press"
@@ -65,7 +65,7 @@
                     ]
                 },
                 {
-                    "key": "OnCanvasMultiTouchReleased",
+                    "base": "OnCanvasMultiTouchReleased",
                     "details": {
                         "name": "On Canvas Multi-touch Released",
                         "tooltip": "Executes on a positional input release"
@@ -88,7 +88,7 @@
                     ]
                 },
                 {
-                    "key": "OnCanvasHoverStart",
+                    "base": "OnCanvasHoverStart",
                     "details": {
                         "name": "On Canvas Hover Start",
                         "tooltip": "Executes when an element starts being hovered"
@@ -104,7 +104,7 @@
                     ]
                 },
                 {
-                    "key": "OnCanvasHoverEnd",
+                    "base": "OnCanvasHoverEnd",
                     "details": {
                         "name": "On Canvas Hover End",
                         "tooltip": "Executes when an element ends being hovered"
@@ -120,7 +120,7 @@
                     ]
                 },
                 {
-                    "key": "OnCanvasEnterPressed",
+                    "base": "OnCanvasEnterPressed",
                     "details": {
                         "name": "On Canvas Enter Pressed",
                         "tooltip": "Executes when the “enter” key is pressed"
@@ -136,7 +136,7 @@
                     ]
                 },
                 {
-                    "key": "OnCanvasEnterReleased",
+                    "base": "OnCanvasEnterReleased",
                     "details": {
                         "name": "On Canvas Enter Released",
                         "tooltip": "Executes when the enter key is released"

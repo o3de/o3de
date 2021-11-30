@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "{783E6976-E519-5BC0-BD33-049847564F5E}",
+            "base": "{783E6976-E519-5BC0-BD33-049847564F5E}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
@@ -12,19 +12,19 @@
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: AABB",
+                    "base": "DataOutput_Result: AABB",
                     "details": {
                         "name": "Invalid AABB"
                     }

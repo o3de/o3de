@@ -7,20 +7,20 @@
  */
 
 #include <AzCore/Component/Entity.h>
-#include <PhysXCharacters/API/CharacterUtils.h>
 #include <AzCore/Component/TransformBus.h>
-#include <AzCore/Serialization/EditContext.h>
 #include <AzCore/RTTI/BehaviorContext.h>
+#include <AzCore/Serialization/EditContext.h>
+#include <AzCore/std/sort.h>
 #include <AzFramework/Physics/CharacterPhysicsDataBus.h>
+#include <AzFramework/Physics/Common/PhysicsSimulatedBody.h>
 #include <AzFramework/Physics/PhysicsScene.h>
 #include <AzFramework/Physics/SystemBus.h>
-#include <AzFramework/Physics/Common/PhysicsSimulatedBody.h>
+#include <PhysXCharacters/API/CharacterUtils.h>
 #include <PhysXCharacters/Components/RagdollComponent.h>
 
 namespace PhysX
 {
-    bool RagdollComponent::VersionConverter(AZ::SerializeContext& context,
-        AZ::SerializeContext::DataElementNode& classElement)
+    bool RagdollComponent::VersionConverter(AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& classElement)
     {
         // The element "PhysXRagdoll" was changed from a shared pointer to a unique pointer, but a version converter was
         // not added at the time.  This means there may be serialized data with either the shared or unique pointer, but
@@ -76,13 +76,13 @@ namespace PhysX
                 ->Field("EnableJointProjection", &RagdollComponent::m_enableJointProjection)
                 ->Field("ProjectionLinearTol", &RagdollComponent::m_jointProjectionLinearTolerance)
                 ->Field("ProjectionAngularTol", &RagdollComponent::m_jointProjectionAngularToleranceDegrees)
-                ;
+                ->Field("EnableMassRatioClamping", &RagdollComponent::m_enableMassRatioClamping)
+                ->Field("MaxMassRatio", &RagdollComponent::m_maxMassRatio);
 
             AZ::EditContext* editContext = serializeContext->GetEditContext();
             if (editContext)
             {
-                editContext->Class<RagdollComponent>(
-                    "PhysX Ragdoll", "Creates a PhysX ragdoll simulation for an animation actor.")
+                editContext->Class<RagdollComponent>("PhysX Ragdoll", "Creates a PhysX ragdoll simulation for an animation actor.")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "PhysX")
                     ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/PhysXRagdoll.svg")
@@ -90,34 +90,49 @@ namespace PhysX
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
                     ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/physx/ragdoll/")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &RagdollComponent::m_positionIterations, "Position Iteration Count",
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default, &RagdollComponent::m_positionIterations, "Position Iteration Count",
                         "The frequency at which ragdoll collider positions are resolved. Higher values can increase fidelity but decrease "
                         "performance. Very high values might introduce instability.")
                     ->Attribute(AZ::Edit::Attributes::Min, 1)
                     ->Attribute(AZ::Edit::Attributes::Max, 255)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &RagdollComponent::m_velocityIterations, "Velocity Iteration Count",
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default, &RagdollComponent::m_velocityIterations, "Velocity Iteration Count",
                         "The frequency at which ragdoll collider velocities are resolved. Higher values can increase fidelity but decrease "
                         "performance. Very high values might introduce instability.")
                     ->Attribute(AZ::Edit::Attributes::Min, 1)
                     ->Attribute(AZ::Edit::Attributes::Max, 255)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &RagdollComponent::m_enableJointProjection,
-                        "Enable Joint Projection", "When active, preserves joint constraints in volatile simulations. "
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default, &RagdollComponent::m_enableJointProjection, "Enable Joint Projection",
+                        "When active, preserves joint constraints in volatile simulations. "
                         "Might not be physically correct in all simulations.")
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &RagdollComponent::m_jointProjectionLinearTolerance,
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default, &RagdollComponent::m_jointProjectionLinearTolerance,
                         "Joint Projection Linear Tolerance",
                         "Maximum linear joint error. Projection is applied to linear joint errors above this value.")
                     ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                     ->Attribute(AZ::Edit::Attributes::Step, 1e-3f)
                     ->Attribute(AZ::Edit::Attributes::Visibility, &RagdollComponent::IsJointProjectionVisible)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &RagdollComponent::m_jointProjectionAngularToleranceDegrees,
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default, &RagdollComponent::m_jointProjectionAngularToleranceDegrees,
                         "Joint Projection Angular Tolerance",
                         "Maximum angular joint error. Projection is applied to angular joint errors above this value.")
                     ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                     ->Attribute(AZ::Edit::Attributes::Step, 0.1f)
                     ->Attribute(AZ::Edit::Attributes::Suffix, " degrees")
                     ->Attribute(AZ::Edit::Attributes::Visibility, &RagdollComponent::IsJointProjectionVisible)
-                    ;
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default, &RagdollComponent::m_enableMassRatioClamping, "Enable Mass Ratio Clamping",
+                        "When active, ragdoll node mass values may be overridden to avoid unstable mass ratios.")
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default, &RagdollComponent::m_maxMassRatio, "Maximum Mass Ratio",
+                        "The mass of the child body of a joint may be clamped to avoid its ratio with the parent "
+                        "body mass exceeding this threshold.")
+                    ->Attribute(AZ::Edit::Attributes::Min, 1.0f)
+                    ->Attribute(AZ::Edit::Attributes::Step, 0.1f)
+                    ->Attribute(AZ::Edit::Attributes::Visibility, &RagdollComponent::IsMaxMassRatioVisible);
             }
         }
 
@@ -126,9 +141,14 @@ namespace PhysX
         }
     }
 
-    bool RagdollComponent::IsJointProjectionVisible()
+    bool RagdollComponent::IsJointProjectionVisible() const
     {
         return m_enableJointProjection;
+    }
+
+    bool RagdollComponent::IsMaxMassRatioVisible() const
+    {
+        return m_enableMassRatioClamping;
     }
 
     // AZ::Component
@@ -272,7 +292,6 @@ namespace PhysX
             return ragdoll->IsSimulated();
         }
         return false;
-        
     }
 
     AZ::Aabb RagdollComponent::GetAabb() const
@@ -318,20 +337,19 @@ namespace PhysX
 
         if (numNodes == 0)
         {
-            AZ_Error("PhysX Ragdoll Component", false,
-                "Ragdoll configuration has 0 nodes, ragdoll will not be created for entity \"%s\".",
+            AZ_Error(
+                "PhysX Ragdoll Component", false, "Ragdoll configuration has 0 nodes, ragdoll will not be created for entity \"%s\".",
                 GetEntity()->GetName().c_str());
             return;
         }
 
-        
         ragdollConfiguration.m_parentIndices.resize(numNodes);
         for (size_t nodeIndex = 0; nodeIndex < numNodes; nodeIndex++)
         {
             AZStd::string parentName;
             AZStd::string nodeName = ragdollConfiguration.m_nodes[nodeIndex].m_debugName;
-            AzFramework::CharacterPhysicsDataRequestBus::EventResult(parentName, GetEntityId(),
-                &AzFramework::CharacterPhysicsDataRequests::GetParentNodeName, nodeName);
+            AzFramework::CharacterPhysicsDataRequestBus::EventResult(
+                parentName, GetEntityId(), &AzFramework::CharacterPhysicsDataRequests::GetParentNodeName, nodeName);
             AZ::Outcome<size_t> parentIndex = Utils::Characters::GetNodeIndex(ragdollConfiguration, parentName);
             ragdollConfiguration.m_parentIndices[nodeIndex] = parentIndex ? parentIndex.GetValue() : SIZE_MAX;
 
@@ -339,8 +357,8 @@ namespace PhysX
         }
 
         Physics::RagdollState bindPose;
-        AzFramework::CharacterPhysicsDataRequestBus::EventResult(bindPose, GetEntityId(),
-            &AzFramework::CharacterPhysicsDataRequests::GetBindPose, ragdollConfiguration);
+        AzFramework::CharacterPhysicsDataRequestBus::EventResult(
+            bindPose, GetEntityId(), &AzFramework::CharacterPhysicsDataRequests::GetBindPose, ragdollConfiguration);
 
         AZ::Transform entityTransform = AZ::Transform::CreateIdentity();
         AZ::TransformBus::EventResult(entityTransform, GetEntityId(), &AZ::TransformBus::Events::GetWorldTM);
@@ -354,13 +372,12 @@ namespace PhysX
             m_ragdollHandle = sceneInterface->AddSimulatedBody(m_attachedSceneHandle, &ragdollConfiguration);
         }
         auto* ragdoll = GetPhysXRagdoll();
-        if (ragdoll == nullptr ||
-            m_ragdollHandle == AzPhysics::InvalidSimulatedBodyHandle)
+        if (ragdoll == nullptr || m_ragdollHandle == AzPhysics::InvalidSimulatedBodyHandle)
         {
             AZ_Error("PhysX Ragdoll Component", false, "Failed to create ragdoll.");
             return;
         }
-        
+
         for (size_t nodeIndex = 0; nodeIndex < numNodes; nodeIndex++)
         {
             if (physx::PxRigidDynamic* pxRigidBody = ragdoll->GetPxRigidDynamic(nodeIndex))
@@ -389,17 +406,63 @@ namespace PhysX
             }
         }
 
+        // If mass ratio clamping is enabled, iterate out from the root and clamp mass values
+        if (m_enableMassRatioClamping)
+        {
+            const float maxMassRatio = AZStd::GetMax(1.0f + AZ::Constants::FloatEpsilon, m_maxMassRatio);
+
+            // figure out the depth of each node in the tree, so that nodes can be visited from the root outwards
+            AZStd::vector<Utils::Characters::DepthData> nodeDepths =
+                Utils::Characters::ComputeHierarchyDepths(ragdollConfiguration.m_parentIndices);
+
+            AZStd::sort(
+                nodeDepths.begin(), nodeDepths.end(),
+                [](const Utils::Characters::DepthData& d1, const Utils::Characters::DepthData& d2)
+                {
+                    return d1.m_depth < d2.m_depth;
+                });
+
+            bool massesClamped = false;
+            for (const auto& nodeDepth : nodeDepths)
+            {
+                const size_t nodeIndex = nodeDepth.m_index;
+                const size_t parentIndex = ragdollConfiguration.m_parentIndices[nodeIndex];
+                if (parentIndex < numNodes)
+                {
+                    AzPhysics::RigidBody& nodeRigidBody = ragdoll->GetNode(nodeIndex)->GetRigidBody();
+                    const float originalMass = nodeRigidBody.GetMass();
+                    const float parentMass = ragdoll->GetNode(parentIndex)->GetRigidBody().GetMass();
+                    const float minMass = parentMass / maxMassRatio;
+                    const float maxMass = parentMass;
+                    if (originalMass < minMass || originalMass > maxMass)
+                    {
+                        const float clampedMass = AZStd::clamp(originalMass, minMass, maxMass);
+                        nodeRigidBody.SetMass(clampedMass);
+                        massesClamped = true;
+                        if (!AZ::IsClose(originalMass, 0.0f))
+                        {
+                            // scale the inertia proportionally to how the mass was modified
+                            auto pxRigidBody = static_cast<physx::PxRigidDynamic*>(nodeRigidBody.GetNativePointer());
+                            pxRigidBody->setMassSpaceInertiaTensor(clampedMass / originalMass * pxRigidBody->getMassSpaceInertiaTensor());
+                        }
+                    }
+                }
+            }
+
+            AZ_WarningOnce("PhysX Ragdoll", !massesClamped,
+                "Mass values for ragdoll on entity \"%s\" were modified based on max mass ratio setting to avoid instability.",
+                GetEntity()->GetName().c_str());
+        }
+
         AzFramework::RagdollPhysicsRequestBus::Handler::BusConnect(GetEntityId());
         AzPhysics::SimulatedBodyComponentRequestsBus::Handler::BusConnect(GetEntityId());
 
-        AzFramework::RagdollPhysicsNotificationBus::Event(GetEntityId(),
-            &AzFramework::RagdollPhysicsNotifications::OnRagdollActivated);
+        AzFramework::RagdollPhysicsNotificationBus::Event(GetEntityId(), &AzFramework::RagdollPhysicsNotifications::OnRagdollActivated);
     }
 
     void RagdollComponent::DestroyRagdoll()
     {
-        if (m_ragdollHandle != AzPhysics::InvalidSimulatedBodyHandle && 
-            m_attachedSceneHandle != AzPhysics::InvalidSceneHandle)
+        if (m_ragdollHandle != AzPhysics::InvalidSimulatedBodyHandle && m_attachedSceneHandle != AzPhysics::InvalidSceneHandle)
         {
             AzFramework::RagdollPhysicsRequestBus::Handler::BusDisconnect();
             AzFramework::RagdollPhysicsNotificationBus::Event(
@@ -421,8 +484,7 @@ namespace PhysX
 
     const Ragdoll* RagdollComponent::GetPhysXRagdollConst() const
     {
-        if (m_ragdollHandle == AzPhysics::InvalidSimulatedBodyHandle ||
-            m_attachedSceneHandle == AzPhysics::InvalidSceneHandle)
+        if (m_ragdollHandle == AzPhysics::InvalidSimulatedBodyHandle || m_attachedSceneHandle == AzPhysics::InvalidSceneHandle)
         {
             return nullptr;
         }

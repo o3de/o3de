@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "BlendFactor_AlphaSourceSaturate",
+            "base": "BlendFactor_AlphaSourceSaturate",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "BlendFactor_AlphaSourceSaturate::Getter",
-                "category": "Constants"
-            }
+                "name": "Alpha Source Saturate",
+                "category": "Constants/Blend Factor"
+            },
+            "methods": [
+                {
+                    "base": "GetBlendFactor_AlphaSourceSaturate",
+                    "details": {
+                        "name": "Get Alpha Source Saturate"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

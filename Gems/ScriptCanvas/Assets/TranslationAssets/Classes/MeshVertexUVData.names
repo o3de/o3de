@@ -1,36 +1,28 @@
 {
     "entries": [
         {
-            "key": "MeshVertexUVData",
+            "base": "MeshVertexUVData",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
-                "name": "MeshVertexUVData"
+                "name": "Mesh VertexUV Data",
+                "category": "Rendering"
             },
             "methods": [
                 {
-                    "key": "GetCustomName",
+                    "base": "GetCustomName",
                     "context": "MeshVertexUVData",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetCustomName"
+                        "tooltip": "When signaled, this will invoke Get Custom Name"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetCustomName is invoked"
+                        "tooltip": "Signaled after Get Custom Name is invoked"
                     },
                     "details": {
-                        "name": "MeshVertexUVData::GetCustomName",
-                        "category": "Other"
+                        "name": "Get Custom Name"
                     },
-                    "params": [
-                        {
-                            "typeid": "{B435C091-482C-4EB9-B1F4-FA5B480796DA}",
-                            "details": {
-                                "name": "const MeshVertexUVData&"
-                            }
-                        }
-                    ],
                     "results": [
                         {
                             "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
@@ -41,39 +33,30 @@
                     ]
                 },
                 {
-                    "key": "GetCount",
+                    "base": "GetCount",
                     "context": "MeshVertexUVData",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetCount"
+                        "tooltip": "When signaled, this will invoke Get Count"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetCount is invoked"
+                        "tooltip": "Signaled after Get Count is invoked"
                     },
                     "details": {
-                        "name": "MeshVertexUVData::GetCount",
-                        "category": "Other"
+                        "name": "Get Count"
                     },
-                    "params": [
-                        {
-                            "typeid": "{B435C091-482C-4EB9-B1F4-FA5B480796DA}",
-                            "details": {
-                                "name": "MeshVertexUVData*"
-                            }
-                        }
-                    ],
                     "results": [
                         {
                             "typeid": "{D6597933-47CD-4FC8-B911-63F3E2B0993A}",
                             "details": {
-                                "name": "AZ::u64"
+                                "name": "AZ::u 64"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "GetUV",
+                    "base": "GetUV",
                     "context": "MeshVertexUVData",
                     "entry": {
                         "name": "In",
@@ -84,20 +67,13 @@
                         "tooltip": "Signaled after GetUV is invoked"
                     },
                     "details": {
-                        "name": "MeshVertexUVData::GetUV",
-                        "category": "Other"
+                        "name": "GetUV"
                     },
                     "params": [
                         {
-                            "typeid": "{B435C091-482C-4EB9-B1F4-FA5B480796DA}",
-                            "details": {
-                                "name": "MeshVertexUVData*"
-                            }
-                        },
-                        {
                             "typeid": "{D6597933-47CD-4FC8-B911-63F3E2B0993A}",
                             "details": {
-                                "name": "AZ::u64"
+                                "name": "AZ::u 64"
                             }
                         }
                     ],
@@ -105,7 +81,7 @@
                         {
                             "typeid": "{3D80F623-C85C-4741-90D0-E4E66164E6BF}",
                             "details": {
-                                "name": "const Vector2&"
+                                "name": "const Vector 2&"
                             }
                         }
                     ]

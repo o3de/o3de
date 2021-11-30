@@ -144,12 +144,45 @@ namespace UnitTest
     {
         using ::testing::Eq;
 
-        const ClickDetector::ClickOutcome downOutcome =
-            m_clickDetector.DetectClick(ClickDetector::ClickEvent::Down, ScreenVector(0, 0));
-        const ClickDetector::ClickOutcome upOutcome =
-            m_clickDetector.DetectClick(ClickDetector::ClickEvent::Up, ScreenVector(50, 50));
+        const ClickDetector::ClickOutcome downOutcome = m_clickDetector.DetectClick(ClickDetector::ClickEvent::Down, ScreenVector(0, 0));
+        const ClickDetector::ClickOutcome upOutcome = m_clickDetector.DetectClick(ClickDetector::ClickEvent::Up, ScreenVector(50, 50));
 
         EXPECT_THAT(downOutcome, Eq(ClickDetector::ClickOutcome::Nil));
         EXPECT_THAT(upOutcome, Eq(ClickDetector::ClickOutcome::Release));
+    }
+
+    //! note: ClickDetector does not explicitly return double clicks but if one occurs the ClickOutcome will be Nil
+    TEST_F(ClickDetectorFixture, DoubleClickIsRegisteredIfMouseDeltaHasMovedLessThanDeadzoneInClickInterval)
+    {
+        using ::testing::Eq;
+
+        const ClickDetector::ClickOutcome firstDownOutcome =
+            m_clickDetector.DetectClick(ClickDetector::ClickEvent::Down, ScreenVector(0, 0));
+        const ClickDetector::ClickOutcome firstUpOutcome = m_clickDetector.DetectClick(ClickDetector::ClickEvent::Up, ScreenVector(0, 0));
+        const ClickDetector::ClickOutcome secondDownOutcome =
+            m_clickDetector.DetectClick(ClickDetector::ClickEvent::Down, ScreenVector(0, 0));
+        const ClickDetector::ClickOutcome secondUpOutcome = m_clickDetector.DetectClick(ClickDetector::ClickEvent::Up, ScreenVector(0, 0));
+
+        EXPECT_THAT(firstDownOutcome, Eq(ClickDetector::ClickOutcome::Nil));
+        EXPECT_THAT(firstUpOutcome, Eq(ClickDetector::ClickOutcome::Click));
+        EXPECT_THAT(secondDownOutcome, Eq(ClickDetector::ClickOutcome::Nil));
+        EXPECT_THAT(secondUpOutcome, Eq(ClickDetector::ClickOutcome::Nil));
+    }
+
+    TEST_F(ClickDetectorFixture, DoubleClickIsNotRegisteredIfMouseDeltaHasMovedMoreThanDeadzoneInClickInterval)
+    {
+        using ::testing::Eq;
+
+        const ClickDetector::ClickOutcome firstDownOutcome =
+            m_clickDetector.DetectClick(ClickDetector::ClickEvent::Down, ScreenVector(0, 0));
+        const ClickDetector::ClickOutcome firstUpOutcome = m_clickDetector.DetectClick(ClickDetector::ClickEvent::Up, ScreenVector(0, 0));
+        const ClickDetector::ClickOutcome secondDownOutcome =
+            m_clickDetector.DetectClick(ClickDetector::ClickEvent::Down, ScreenVector(10, 10));
+        const ClickDetector::ClickOutcome secondUpOutcome = m_clickDetector.DetectClick(ClickDetector::ClickEvent::Up, ScreenVector(0, 0));
+
+        EXPECT_THAT(firstDownOutcome, Eq(ClickDetector::ClickOutcome::Nil));
+        EXPECT_THAT(firstUpOutcome, Eq(ClickDetector::ClickOutcome::Click));
+        EXPECT_THAT(secondDownOutcome, Eq(ClickDetector::ClickOutcome::Nil));
+        EXPECT_THAT(secondUpOutcome, Eq(ClickDetector::ClickOutcome::Click));
     }
 } // namespace UnitTest

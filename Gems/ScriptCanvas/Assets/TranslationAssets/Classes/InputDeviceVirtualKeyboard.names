@@ -1,12 +1,71 @@
 {
     "entries": [
         {
-            "key": "InputDeviceVirtualKeyboard",
+            "base": "InputDeviceVirtualKeyboard",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
-                "name": "InputDeviceVirtualKeyboard"
-            }
+                "name": "Input Device Virtual Keyboard",
+                "category": "Input"
+            },
+            "methods": [
+                {
+                    "base": "Getname",
+                    "details": {
+                        "name": "Get Name"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "Name"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "virtual_keyboard_edit_enter",
+                    "details": {
+                        "name": "virtual_keyboard_edit_enter"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "virtual_keyboard_edit_clear",
+                    "details": {
+                        "name": "virtual_keyboard_edit_clear"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "virtual_keyboard_navigation_back",
+                    "details": {
+                        "name": "virtual_keyboard_navigation_back"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

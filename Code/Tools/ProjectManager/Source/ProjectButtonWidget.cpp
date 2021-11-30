@@ -203,6 +203,7 @@ namespace O3DE::ProjectManager
 
             QMenu* menu = new QMenu(this);
             menu->addAction(tr("Edit Project Settings..."), this, [this]() { emit EditProject(m_projectInfo.m_path); });
+            menu->addAction(tr("Configure Gems..."), this, [this]() { emit EditProjectGems(m_projectInfo.m_path); });
             menu->addAction(tr("Build"), this, [this]() { emit BuildProject(m_projectInfo); });
             menu->addAction(tr("Open CMake GUI..."), this, [this]() { emit OpenCMakeGUI(m_projectInfo); });
             menu->addSeparator();
@@ -214,9 +215,7 @@ namespace O3DE::ProjectManager
 #if AZ_TRAIT_PROJECT_MANAGER_CREATE_DESKTOP_SHORTCUT
             menu->addAction(tr("Create Editor desktop shortcut..."), this, [this]()
             {
-                AZ::IO::FixedMaxPath executableDirectory = ProjectUtils::GetEditorDirectory();
-                AZStd::string executableFilename = "Editor";
-                AZ::IO::FixedMaxPath editorExecutablePath = executableDirectory / (executableFilename + AZ_TRAIT_OS_EXECUTABLE_EXTENSION);
+                AZ::IO::FixedMaxPath editorExecutablePath = ProjectUtils::GetEditorExecutablePath(m_projectInfo.m_path.toUtf8().constData());
 
                 const QString shortcutName = QString("%1 Editor").arg(m_projectInfo.m_displayName); 
                 const QString arg = QString("--regset=\"/Amazon/AzCore/Bootstrap/project_path=%1\"").arg(m_projectInfo.m_path);

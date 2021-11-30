@@ -224,8 +224,14 @@ function(ly_setup_target OUTPUT_CONFIGURED_TARGET ALIAS_TARGET_NAME absolute_tar
         if("${target_type}" STREQUAL "STATIC_LIBRARY")
             set(build_deps_target "${build_deps_target};${build_deps_PRIVATE}")
         endif()
-        # But we will also pass the private dependencies as runtime dependencies (note the comment above)
-        set(RUNTIME_DEPENDENCIES_PLACEHOLDER ${build_deps_PRIVATE})
+
+        # But we will also pass the private dependencies as runtime dependencies (as long as they are targets, note the comment above)
+        foreach(build_dep_private IN LISTS build_deps_PRIVATE)
+            if(TARGET ${build_dep_private})
+                list(APPEND RUNTIME_DEPENDENCIES_PLACEHOLDER "${build_dep_private}")
+            endif()
+        endforeach()
+        
         foreach(build_dependency IN LISTS build_deps_target)
             # Skip wrapping produced when targets are not created in the same directory
             if(build_dependency)

@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "ActorNotificationBus",
+            "base": "ActorNotificationBus",
             "context": "EBusHandler",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "OnMotionEvent",
+                    "base": "OnMotionEvent",
                     "details": {
                         "name": "On Motion Event"
                     },
@@ -18,13 +18,13 @@
                         {
                             "typeid": "{0C899DAC-6B19-4BDD-AD8C-8A11EF2A6729}",
                             "details": {
-                                "name": "MotionEvent"
+                                "name": "Motion Event"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "OnMotionLoop",
+                    "base": "OnMotionLoop",
                     "details": {
                         "name": "On Motion Loop"
                     },
@@ -38,7 +38,7 @@
                     ]
                 },
                 {
-                    "key": "OnStateEntering",
+                    "base": "OnStateEntering",
                     "details": {
                         "name": "On State Entering"
                     },
@@ -52,7 +52,7 @@
                     ]
                 },
                 {
-                    "key": "OnStateEntered",
+                    "base": "OnStateEntered",
                     "details": {
                         "name": "On State Entered"
                     },
@@ -66,7 +66,7 @@
                     ]
                 },
                 {
-                    "key": "OnStateExiting",
+                    "base": "OnStateExiting",
                     "details": {
                         "name": "On State Exiting"
                     },
@@ -80,7 +80,7 @@
                     ]
                 },
                 {
-                    "key": "OnStateExited",
+                    "base": "OnStateExited",
                     "details": {
                         "name": "On State Exited"
                     },
@@ -94,7 +94,7 @@
                     ]
                 },
                 {
-                    "key": "OnStateTransitionStart",
+                    "base": "OnStateTransitionStart",
                     "details": {
                         "name": "On State Transition Start"
                     },
@@ -114,7 +114,7 @@
                     ]
                 },
                 {
-                    "key": "OnStateTransitionEnd",
+                    "base": "OnStateTransitionEnd",
                     "details": {
                         "name": "On State Transition End"
                     },

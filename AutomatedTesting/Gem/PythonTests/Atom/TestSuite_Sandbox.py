@@ -85,6 +85,7 @@ class TestAtomEditorComponentsMain(object):
             halt_on_unexpected=True,
             null_renderer=True,
             cfg_args=cfg_args,
+            enable_prefab_system=False,
         )
 
 
@@ -155,5 +156,6 @@ class TestMaterialEditorBasicTests(object):
             halt_on_unexpected=True,
             null_renderer=True,
             log_file_name="MaterialEditor.log",
+            enable_prefab_system=False,
         )
 

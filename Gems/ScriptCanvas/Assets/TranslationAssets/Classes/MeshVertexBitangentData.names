@@ -1,71 +1,56 @@
 {
     "entries": [
         {
-            "key": "MeshVertexBitangentData",
+            "base": "MeshVertexBitangentData",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
-                "name": "MeshVertexBitangentData"
+                "name": "Mesh Vertex Bitangent Data",
+                "category": "Rendering"
             },
             "methods": [
                 {
-                    "key": "GetCount",
+                    "base": "GetCount",
                     "context": "MeshVertexBitangentData",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetCount"
+                        "tooltip": "When signaled, this will invoke Get Count"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetCount is invoked"
+                        "tooltip": "Signaled after Get Count is invoked"
                     },
                     "details": {
-                        "name": "MeshVertexBitangentData::GetCount",
-                        "category": "Other"
+                        "name": "Get Count"
                     },
-                    "params": [
-                        {
-                            "typeid": "{F56FB088-4C92-4453-AFE9-4E820F03FA90}",
-                            "details": {
-                                "name": "MeshVertexBitangentData*"
-                            }
-                        }
-                    ],
                     "results": [
                         {
                             "typeid": "{D6597933-47CD-4FC8-B911-63F3E2B0993A}",
                             "details": {
-                                "name": "AZ::u64"
+                                "name": "AZ::u 64"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "GetBitangent",
+                    "base": "GetBitangent",
                     "context": "MeshVertexBitangentData",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetBitangent"
+                        "tooltip": "When signaled, this will invoke Get Bitangent"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetBitangent is invoked"
+                        "tooltip": "Signaled after Get Bitangent is invoked"
                     },
                     "details": {
-                        "name": "MeshVertexBitangentData::GetBitangent",
-                        "category": "Other"
+                        "name": "Get Bitangent"
                     },
                     "params": [
                         {
-                            "typeid": "{F56FB088-4C92-4453-AFE9-4E820F03FA90}",
-                            "details": {
-                                "name": "MeshVertexBitangentData*"
-                            }
-                        },
-                        {
                             "typeid": "{D6597933-47CD-4FC8-B911-63F3E2B0993A}",
                             "details": {
-                                "name": "AZ::u64"
+                                "name": "AZ::u 64"
                             }
                         }
                     ],
@@ -73,66 +58,76 @@
                         {
                             "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
                             "details": {
-                                "name": "const Vector3&"
+                                "name": "const Vector 3&"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "GetBitangentSetIndex",
+                    "base": "GetBitangentSetIndex",
                     "context": "MeshVertexBitangentData",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetBitangentSetIndex"
+                        "tooltip": "When signaled, this will invoke Get Bitangent Set Index"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetBitangentSetIndex is invoked"
+                        "tooltip": "Signaled after Get Bitangent Set Index is invoked"
                     },
                     "details": {
-                        "name": "MeshVertexBitangentData::GetBitangentSetIndex",
-                        "category": "Other"
+                        "name": "Get Bitangent Set Index"
                     },
-                    "params": [
-                        {
-                            "typeid": "{F56FB088-4C92-4453-AFE9-4E820F03FA90}",
-                            "details": {
-                                "name": "MeshVertexBitangentData*"
-                            }
-                        }
-                    ],
                     "results": [
                         {
                             "typeid": "{D6597933-47CD-4FC8-B911-63F3E2B0993A}",
                             "details": {
-                                "name": "AZ::u64"
+                                "name": "AZ::u 64"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "GetGenerationMethod",
+                    "base": "GetGenerationMethod",
                     "context": "MeshVertexBitangentData",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetGenerationMethod"
+                        "tooltip": "When signaled, this will invoke Get Generation Method"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetGenerationMethod is invoked"
+                        "tooltip": "Signaled after Get Generation Method is invoked"
                     },
                     "details": {
-                        "name": "MeshVertexBitangentData::GetGenerationMethod",
-                        "category": "Other"
+                        "name": "Get Generation Method"
                     },
-                    "params": [
+                    "results": [
                         {
-                            "typeid": "{F56FB088-4C92-4453-AFE9-4E820F03FA90}",
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
                             "details": {
-                                "name": "MeshVertexBitangentData*"
+                                "name": "int"
                             }
                         }
-                    ],
+                    ]
+                },
+                {
+                    "base": "GetFromSourceScene",
+                    "details": {
+                        "name": "Get From Source Scene"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetMikkT",
+                    "details": {
+                        "name": "Get MikkT"
+                    },
                     "results": [
                         {
                             "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",

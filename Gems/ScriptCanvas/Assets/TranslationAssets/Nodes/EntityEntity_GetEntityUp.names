@@ -1,44 +1,43 @@
 {
     "entries": [
         {
-            "key": "{B091D01E-170D-5FCC-9525-89CED4CDAB27}",
+            "base": "{B091D01E-170D-5FCC-9525-89CED4CDAB27}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "GetEntityUp",
+                "name": "Get Entity Up",
                 "category": "Entity/Entity",
-                "tooltip": "returns the up direction vector from the specified entity's world transform, scaled by a given value (O3DE uses Z up, right handed)",
-                "subtitle": "Entity"
+                "tooltip": "Returns the up direction vector from the specified entity's world transform, scaled by a given value (O3DE uses Z up, right handed)"
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "key": "DataInput_EntityID: EntityId",
+                    "base": "DataInput_EntityId",
                     "details": {
-                        "name": "EntityID: EntityId"
+                        "name": "EntityId"
                     }
                 },
                 {
-                    "key": "DataInput_Number: Scale",
+                    "base": "DataInput_Scale",
                     "details": {
-                        "name": "Number: Scale"
+                        "name": "Scale"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Vector3",
+                    "base": "DataOutput_Result",
                     "details": {
-                        "name": "Result: Vector3"
+                        "name": "Result"
                     }
                 }
             ]

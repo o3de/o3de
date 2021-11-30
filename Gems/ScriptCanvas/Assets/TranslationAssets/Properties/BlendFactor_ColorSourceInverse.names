@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "BlendFactor_ColorSourceInverse",
+            "base": "BlendFactor_ColorSourceInverse",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "BlendFactor_ColorSourceInverse::Getter",
-                "category": "Constants"
-            }
+                "name": "Color Source Inverse",
+                "category": "Constants/Blend Factor"
+            },
+            "methods": [
+                {
+                    "base": "GetBlendFactor_ColorSourceInverse",
+                    "details": {
+                        "name": "Get Color Source Inverse"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

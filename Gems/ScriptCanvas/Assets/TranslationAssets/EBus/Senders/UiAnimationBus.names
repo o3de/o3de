@@ -1,16 +1,16 @@
 {
     "entries": [
         {
-            "key": "UiAnimationBus",
+            "base": "UiAnimationBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "UiAnimationBus",
+                "name": "UI Animation",
                 "category": "UI"
             },
             "methods": [
                 {
-                    "key": "ResetSequence",
+                    "base": "ResetSequence",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Reset Sequence"
@@ -34,7 +34,7 @@
                     ]
                 },
                 {
-                    "key": "GetSequencePlayingSpeed",
+                    "base": "GetSequencePlayingSpeed",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Sequence Playing Speed"
@@ -67,7 +67,7 @@
                     ]
                 },
                 {
-                    "key": "GetSequencePlayingTime",
+                    "base": "GetSequencePlayingTime",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Sequence Playing Time"
@@ -100,7 +100,7 @@
                     ]
                 },
                 {
-                    "key": "AbortSequence",
+                    "base": "AbortSequence",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Abort Sequence"
@@ -124,7 +124,7 @@
                     ]
                 },
                 {
-                    "key": "IsSequencePlaying",
+                    "base": "IsSequencePlaying",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Is Sequence Playing"
@@ -157,7 +157,7 @@
                     ]
                 },
                 {
-                    "key": "GetSequenceLength",
+                    "base": "GetSequenceLength",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Sequence Length"
@@ -190,7 +190,7 @@
                     ]
                 },
                 {
-                    "key": "StopSequence",
+                    "base": "StopSequence",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Stop Sequence"
@@ -214,7 +214,7 @@
                     ]
                 },
                 {
-                    "key": "PlaySequenceRange",
+                    "base": "PlaySequenceRange",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke PlaySequenceRange"
@@ -248,7 +248,7 @@
                     ]
                 },
                 {
-                    "key": "PauseSequence",
+                    "base": "PauseSequence",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Pause Sequence"
@@ -272,7 +272,7 @@
                     ]
                 },
                 {
-                    "key": "ResumeSequence",
+                    "base": "ResumeSequence",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Resume Sequence"
@@ -296,7 +296,7 @@
                     ]
                 },
                 {
-                    "key": "StartSequence",
+                    "base": "StartSequence",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Start Sequence"
@@ -320,7 +320,7 @@
                     ]
                 },
                 {
-                    "key": "SetSequencePlayingSpeed",
+                    "base": "SetSequencePlayingSpeed",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Sequence Playing Speed"
@@ -351,7 +351,7 @@
                     ]
                 },
                 {
-                    "key": "SetSequenceStopBehavior",
+                    "base": "SetSequenceStopBehavior",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Sequence Stop Behavior"

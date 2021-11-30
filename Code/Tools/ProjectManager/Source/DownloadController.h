@@ -54,7 +54,7 @@ namespace O3DE::ProjectManager
         }
     public slots:
         void UpdateUIProgress(int bytesDownloaded, int totalBytes);
-        void HandleResults(const QString& result);
+        void HandleResults(const QString& result, const QString& detailedError);
 
     signals:
         void StartGemDownload(const QString& gemName);

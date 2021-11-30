@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "MixedGradientLayer",
+            "base": "MixedGradientLayer",
             "context": "BehaviorClass",
             "variant": "",
             "details": {

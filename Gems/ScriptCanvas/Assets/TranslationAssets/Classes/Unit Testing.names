@@ -1,15 +1,16 @@
 {
     "entries": [
         {
-            "key": "Unit Testing",
+            "base": "Unit Testing",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
-                "name": "Unit Testing"
+                "name": "Unit Testing",
+                "category": "Tests"
             },
             "methods": [
                 {
-                    "key": "ExpectLessThanEqual",
+                    "base": "ExpectLessThanEqual",
                     "context": "Unit Testing",
                     "entry": {
                         "name": "In",
@@ -20,39 +21,39 @@
                         "tooltip": "Signaled after ExpectLessThanEqual is invoked"
                     },
                     "details": {
-                        "name": "Unit Testing::Expect Less Than Equal",
+                        "name": "Expect Less Than Equal",
                         "category": "Other"
                     },
                     "params": [
                         {
                             "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
                             "details": {
-                                "name": "const EntityId&",
+                                "name": "Entity Id",
                                 "tooltip": "Entity Unique Id"
                             }
                         },
                         {
                             "typeid": "{110C4B14-11A8-4E9D-8638-5051013A56AC}",
                             "details": {
-                                "name": "double"
+                                "name": "Candidate"
                             }
                         },
                         {
                             "typeid": "{110C4B14-11A8-4E9D-8638-5051013A56AC}",
                             "details": {
-                                "name": "double"
+                                "name": "Reference"
                             }
                         },
                         {
                             "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
                             "details": {
-                                "name": "const AZStd::basic_string<char, AZStd::char_traits<char>, alloc"
+                                "name": "Report"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "ExpectGreaterThanEqual",
+                    "base": "ExpectGreaterThanEqual",
                     "context": "Unit Testing",
                     "entry": {
                         "name": "In",
@@ -70,32 +71,32 @@
                         {
                             "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
                             "details": {
-                                "name": "const EntityId&",
+                                "name": "Entity Id",
                                 "tooltip": "Entity Unique Id"
                             }
                         },
                         {
                             "typeid": "{110C4B14-11A8-4E9D-8638-5051013A56AC}",
                             "details": {
-                                "name": "double"
+                                "name": "Candidate"
                             }
                         },
                         {
                             "typeid": "{110C4B14-11A8-4E9D-8638-5051013A56AC}",
                             "details": {
-                                "name": "double"
+                                "name": "Reference"
                             }
                         },
                         {
                             "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
                             "details": {
-                                "name": "const AZStd::basic_string<char, AZStd::char_traits<char>, alloc"
+                                "name": "Report"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "MarkComplete",
+                    "base": "MarkComplete",
                     "context": "Unit Testing",
                     "entry": {
                         "name": "In",
@@ -106,27 +107,27 @@
                         "tooltip": "Signaled after MarkComplete is invoked"
                     },
                     "details": {
-                        "name": "Unit Testing::Mark Complete",
+                        "name": "Mark Complete",
                         "category": "Other"
                     },
                     "params": [
                         {
                             "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
                             "details": {
-                                "name": "const EntityId&",
+                                "name": "Entity Id",
                                 "tooltip": "Entity Unique Id"
                             }
                         },
                         {
                             "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
                             "details": {
-                                "name": "const AZStd::basic_string<char, AZStd::char_traits<char>, alloc"
+                                "name": "Report"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "ExpectTrue",
+                    "base": "ExpectTrue",
                     "context": "Unit Testing",
                     "entry": {
                         "name": "In",
@@ -137,33 +138,33 @@
                         "tooltip": "Signaled after ExpectTrue is invoked"
                     },
                     "details": {
-                        "name": "Unit Testing::Expect True",
+                        "name": "Expect True",
                         "category": "Other"
                     },
                     "params": [
                         {
                             "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
                             "details": {
-                                "name": "const EntityId&",
+                                "name": "Entity Id",
                                 "tooltip": "Entity Unique Id"
                             }
                         },
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": "bool"
+                                "name": "Candidate"
                             }
                         },
                         {
                             "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
                             "details": {
-                                "name": "const AZStd::basic_string<char, AZStd::char_traits<char>, alloc"
+                                "name": "Report"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "Checkpoint",
+                    "base": "Checkpoint",
                     "context": "Unit Testing",
                     "entry": {
                         "name": "In",
@@ -174,27 +175,27 @@
                         "tooltip": "Signaled after Checkpoint is invoked"
                     },
                     "details": {
-                        "name": "Unit Testing::Checkpoint",
+                        "name": "Checkpoint",
                         "category": "Other"
                     },
                     "params": [
                         {
                             "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
                             "details": {
-                                "name": "const EntityId&",
+                                "name": "Entity Id",
                                 "tooltip": "Entity Unique Id"
                             }
                         },
                         {
                             "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
                             "details": {
-                                "name": "const AZStd::basic_string<char, AZStd::char_traits<char>, alloc"
+                                "name": "Report"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "ExpectFalse",
+                    "base": "ExpectFalse",
                     "context": "Unit Testing",
                     "entry": {
                         "name": "In",
@@ -205,33 +206,33 @@
                         "tooltip": "Signaled after ExpectFalse is invoked"
                     },
                     "details": {
-                        "name": "Unit Testing::Expect False",
+                        "name": "Expect False",
                         "category": "Other"
                     },
                     "params": [
                         {
                             "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
                             "details": {
-                                "name": "const EntityId&",
+                                "name": "Entity Id",
                                 "tooltip": "Entity Unique Id"
                             }
                         },
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": "bool"
+                                "name": "Candidate"
                             }
                         },
                         {
                             "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
                             "details": {
-                                "name": "const AZStd::basic_string<char, AZStd::char_traits<char>, alloc"
+                                "name": "Report"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "ExpectEqual",
+                    "base": "ExpectEqual",
                     "context": "Unit Testing",
                     "entry": {
                         "name": "In",
@@ -242,39 +243,39 @@
                         "tooltip": "Signaled after ExpectEqual is invoked"
                     },
                     "details": {
-                        "name": "Unit Testing::Expect Equal",
+                        "name": "Expect Equal",
                         "category": "Other"
                     },
                     "params": [
                         {
                             "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
                             "details": {
-                                "name": "const EntityId&",
+                                "name": "Entity Id",
                                 "tooltip": "Entity Unique Id"
                             }
                         },
                         {
                             "typeid": "{A54C2B36-D5B8-46A1-A529-4EBDBD2450E7}",
                             "details": {
-                                "name": "Aabb"
+                                "name": "Candidate"
                             }
                         },
                         {
                             "typeid": "{A54C2B36-D5B8-46A1-A529-4EBDBD2450E7}",
                             "details": {
-                                "name": "Aabb"
+                                "name": "Reference"
                             }
                         },
                         {
                             "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
                             "details": {
-                                "name": "const AZStd::basic_string<char, AZStd::char_traits<char>, alloc"
+                                "name": "Report"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "ExpectLessThan",
+                    "base": "ExpectLessThan",
                     "context": "Unit Testing",
                     "entry": {
                         "name": "In",
@@ -285,70 +286,70 @@
                         "tooltip": "Signaled after ExpectLessThan is invoked"
                     },
                     "details": {
-                        "name": "Unit Testing::Expect Less Than",
+                        "name": "Expect Less Than",
                         "category": "Other"
                     },
                     "params": [
                         {
                             "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
                             "details": {
-                                "name": "const EntityId&",
+                                "name": "Entity Id",
                                 "tooltip": "Entity Unique Id"
                             }
                         },
                         {
                             "typeid": "{110C4B14-11A8-4E9D-8638-5051013A56AC}",
                             "details": {
-                                "name": "double"
+                                "name": "Candidate"
                             }
                         },
                         {
                             "typeid": "{110C4B14-11A8-4E9D-8638-5051013A56AC}",
                             "details": {
-                                "name": "double"
+                                "name": "Reference"
                             }
                         },
                         {
                             "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
                             "details": {
-                                "name": "const AZStd::basic_string<char, AZStd::char_traits<char>, alloc"
+                                "name": "Report"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "AddSuccess",
+                    "base": "AddSuccess",
                     "context": "Unit Testing",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke AddSuccess"
+                        "tooltip": "When signaled, this will invoke Add Success"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after AddSuccess is invoked"
+                        "tooltip": "Signaled after Add Success is invoked"
                     },
                     "details": {
-                        "name": "Unit Testing::Add Success",
+                        "name": "Add Success",
                         "category": "Other"
                     },
                     "params": [
                         {
                             "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
                             "details": {
-                                "name": "const EntityId&",
+                                "name": "Entity Id",
                                 "tooltip": "Entity Unique Id"
                             }
                         },
                         {
                             "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
                             "details": {
-                                "name": "const AZStd::basic_string<char, AZStd::char_traits<char>, alloc"
+                                "name": "Report"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "ExpectNotEqual",
+                    "base": "ExpectNotEqual",
                     "context": "Unit Testing",
                     "entry": {
                         "name": "In",
@@ -359,14 +360,14 @@
                         "tooltip": "Signaled after ExpectNotEqual is invoked"
                     },
                     "details": {
-                        "name": "Unit Testing::Expect Not Equal",
+                        "name": "Expect Not Equal",
                         "category": "Other"
                     },
                     "params": [
                         {
                             "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
                             "details": {
-                                "name": "const EntityId&",
+                                "name": "Entity Id",
                                 "tooltip": "Entity Unique Id"
                             }
                         },
@@ -385,13 +386,13 @@
                         {
                             "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
                             "details": {
-                                "name": "const AZStd::basic_string<char, AZStd::char_traits<char>, alloc"
+                                "name": "Report"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "ExpectGreaterThan",
+                    "base": "ExpectGreaterThan",
                     "context": "Unit Testing",
                     "entry": {
                         "name": "In",
@@ -402,14 +403,14 @@
                         "tooltip": "Signaled after ExpectGreaterThan is invoked"
                     },
                     "details": {
-                        "name": "Unit Testing::Expect Greater Than",
+                        "name": "Expect Greater Than",
                         "category": "Other"
                     },
                     "params": [
                         {
                             "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
                             "details": {
-                                "name": "const EntityId&",
+                                "name": "Entity Id",
                                 "tooltip": "Entity Unique Id"
                             }
                         },
@@ -428,13 +429,13 @@
                         {
                             "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
                             "details": {
-                                "name": "const AZStd::basic_string<char, AZStd::char_traits<char>, alloc"
+                                "name": "Report"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "AddFailure",
+                    "base": "AddFailure",
                     "context": "Unit Testing",
                     "entry": {
                         "name": "In",
@@ -445,21 +446,21 @@
                         "tooltip": "Signaled after AddFailure is invoked"
                     },
                     "details": {
-                        "name": "Unit Testing::Add Failure",
+                        "name": "Add Failure",
                         "category": "Other"
                     },
                     "params": [
                         {
                             "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
                             "details": {
-                                "name": "const EntityId&",
+                                "name": "Entity Id",
                                 "tooltip": "Entity Unique Id"
                             }
                         },
                         {
                             "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
                             "details": {
-                                "name": "const AZStd::basic_string<char, AZStd::char_traits<char>, alloc"
+                                "name": "Report"
                             }
                         }
                     ]

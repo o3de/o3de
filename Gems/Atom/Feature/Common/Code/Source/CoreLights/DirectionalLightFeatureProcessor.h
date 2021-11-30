@@ -134,9 +134,6 @@ namespace AZ
                 // Default far depth of each cascade.
                 AZStd::array<float, Shadow::MaxNumberOfCascades> m_defaultFarDepths;
 
-                // Transforms of camera who offers view frustum for each camera view.
-                AZStd::unordered_map<const RPI::View*, Transform> m_cameraTransforms;
-
                 // Configuration offers shape of the camera view frustum for each camera view.
                 AZStd::unordered_map<const RPI::View*, CascadeShadowCameraConfiguration> m_cameraConfigurations;
 
@@ -258,11 +255,6 @@ namespace AZ
             //! If it has not been registered for the given camera view.
             //! it returns one of the fallback render pipeline ID.
             const CascadeShadowCameraConfiguration& GetCameraConfiguration(LightHandle handle, const RPI::View* cameraView) const;
-
-            //! This returns the camera transform.
-            //! If it has not been registered for the given camera view.
-            //! it returns one of the fallback render pipeline ID.
-            const Transform& GetCameraTransform(LightHandle handle, const RPI::View* cameraView) const;
 
             //! This update view frustum of camera.
             void UpdateFrustums(LightHandle handle);

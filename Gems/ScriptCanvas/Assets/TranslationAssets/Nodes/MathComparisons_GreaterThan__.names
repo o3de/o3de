@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "{218F5872-8D89-4FEA-9761-662625E29580}",
+            "base": "{218F5872-8D89-4FEA-9761-662625E29580}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
@@ -11,40 +11,40 @@
             },
             "slots": [
                 {
-                    "key": "DataOutput_Result",
+                    "base": "DataOutput_Result",
                     "details": {
                         "name": "Result"
                     }
                 },
                 {
-                    "key": "Input_In",
+                    "base": "Input_In",
                     "details": {
                         "name": "In",
                         "tooltip": "Signal to perform the evaluation when desired."
                     }
                 },
                 {
-                    "key": "Output_True",
+                    "base": "Output_True",
                     "details": {
                         "name": "True",
                         "tooltip": "Signaled if the result of the operation is true."
                     }
                 },
                 {
-                    "key": "Output_False",
+                    "base": "Output_False",
                     "details": {
                         "name": "False",
                         "tooltip": "Signaled if the result of the operation is false."
                     }
                 },
                 {
-                    "key": "DataInput_Value A",
+                    "base": "DataInput_Value A",
                     "details": {
                         "name": "Value A"
                     }
                 },
                 {
-                    "key": "DataInput_Value B",
+                    "base": "DataInput_Value B",
                     "details": {
                         "name": "Value B"
                     }

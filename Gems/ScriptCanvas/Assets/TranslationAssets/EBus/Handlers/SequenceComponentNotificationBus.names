@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "SequenceComponentNotificationBus",
+            "base": "SequenceComponentNotificationBus",
             "context": "EBusHandler",
             "variant": "",
             "details": {
@@ -10,89 +10,96 @@
             },
             "methods": [
                 {
-                    "key": "OnStart",
+                    "base": "OnStart",
                     "details": {
-                        "name": "On Start"
+                        "name": "On Start",
+                        "tooltip": "Called when Sequence starts"
                     },
                     "params": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "float"
+                                "name": "Start Time"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "OnStop",
+                    "base": "OnStop",
                     "details": {
-                        "name": "On Stop"
+                        "name": "On Stop",
+                        "tooltip": "Called when Sequence stops"
                     },
                     "params": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "float"
+                                "name": "Stop Time"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "OnPause",
+                    "base": "OnPause",
                     "details": {
-                        "name": "On Pause"
+                        "name": "On Pause",
+                        "tooltip": "Called when Sequence pauses"
                     }
                 },
                 {
-                    "key": "OnResume",
+                    "base": "OnResume",
                     "details": {
-                        "name": "On Resume"
+                        "name": "On Resume",
+                        "tooltip": "Called when Sequence resumes"
                     }
                 },
                 {
-                    "key": "OnAbort",
+                    "base": "OnAbort",
                     "details": {
-                        "name": "On Abort"
+                        "name": "On Abort",
+                        "tooltip": "Called when Sequence is aborted"
                     },
                     "params": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "float"
+                                "name": "Abort Time"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "OnUpdate",
+                    "base": "OnUpdate",
                     "details": {
-                        "name": "On Update"
+                        "name": "On Update",
+                        "tooltip": "Called when Sequence is updated. That is, when the current play time changes, or the playback speed changes"
                     },
                     "params": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "float"
+                                "name": "Update Time"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "OnTrackEventTriggered",
+                    "base": "OnTrackEventTriggered",
                     "details": {
-                        "name": "On Track Event Triggered"
+                        "name": "On Track Event Triggered",
+                        "tooltip": "Called when Sequence Event is triggered"
                     },
                     "params": [
                         {
                             "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
                             "details": {
-                                "name": "char"
+                                "name": "Event Name"
                             }
                         },
                         {
                             "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
                             "details": {
-                                "name": "char"
+                                "name": "Event Value"
                             }
                         }
                     ]

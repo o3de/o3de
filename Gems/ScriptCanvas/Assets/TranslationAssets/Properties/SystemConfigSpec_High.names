@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "SystemConfigSpec_High",
+            "base": "SystemConfigSpec_High",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "SystemConfigSpec_High::Getter",
-                "category": "Constants"
-            }
+                "name": "High",
+                "category": "Constants/System Spec"
+            },
+            "methods": [
+                {
+                    "base": "GetSystemConfigSpec_High",
+                    "details": {
+                        "name": "High"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

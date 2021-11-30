@@ -135,21 +135,20 @@ namespace AzManipulatorTestFramework
         m_angularStep = step;
     }
 
-    int ViewportInteraction::GetViewportId() const
+    AzFramework::ViewportId ViewportInteraction::GetViewportId() const
     {
         return m_viewportId;
     }
 
-    AZStd::optional<AZ::Vector3> ViewportInteraction::ViewportScreenToWorld(
-        [[maybe_unused]] const AzFramework::ScreenPoint& screenPosition, [[maybe_unused]] float depth)
+    AZ::Vector3 ViewportInteraction::ViewportScreenToWorld([[maybe_unused]] const AzFramework::ScreenPoint& screenPosition)
     {
-        return {};
+        return AzFramework::ScreenToWorld(screenPosition, m_cameraState);
     }
 
-    AZStd::optional<AzToolsFramework::ViewportInteraction::ProjectedViewportRay> ViewportInteraction::ViewportScreenToWorldRay(
+    AzToolsFramework::ViewportInteraction::ProjectedViewportRay ViewportInteraction::ViewportScreenToWorldRay(
         [[maybe_unused]] const AzFramework::ScreenPoint& screenPosition)
     {
-        return {};
+        return AzToolsFramework::ViewportInteraction::ViewportScreenToWorldRay(m_cameraState, screenPosition);
     }
 
     float ViewportInteraction::DeviceScalingFactor()

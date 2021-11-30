@@ -1,12 +1,350 @@
 {
     "entries": [
         {
-            "key": "LightConfig",
+            "base": "LightConfig",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
-                "name": "LightConfig"
-            }
+                "name": "Light Config"
+            },
+            "methods": [
+                {
+                    "base": "GetshadowmapSize",
+                    "details": {
+                        "name": "Get Shadowmap Size"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{02644F52-9483-47A8-9028-37671695C34E}",
+                            "details": {
+                                "name": "Light Config"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{3EC1CE83-483D-41FD-9909-D22B03E56F4E}",
+                            "details": {
+                                "name": "Shadowmap Size"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetshadowmapSize",
+                    "details": {
+                        "name": "Set Shadowmap Size"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{02644F52-9483-47A8-9028-37671695C34E}",
+                            "details": {
+                                "name": "Light Config"
+                            }
+                        },
+                        {
+                            "typeid": "{3EC1CE83-483D-41FD-9909-D22B03E56F4E}",
+                            "details": {
+                                "name": "Shadowmap Size"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetshadowCascadeCount",
+                    "details": {
+                        "name": "Get Shadow Cascade Count"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{02644F52-9483-47A8-9028-37671695C34E}",
+                            "details": {
+                                "name": "Light Config"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{ECA0B403-C4F8-4B86-95FC-81688D046E40}",
+                            "details": {
+                                "name": "Shadow Cascade Count"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetshadowCascadeCount",
+                    "details": {
+                        "name": "Set Shadow Cascade Count"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{02644F52-9483-47A8-9028-37671695C34E}",
+                            "details": {
+                                "name": "Light Config"
+                            }
+                        },
+                        {
+                            "typeid": "{ECA0B403-C4F8-4B86-95FC-81688D046E40}",
+                            "details": {
+                                "name": "Shadow Cascade Count"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetenableShadowDebugColoring",
+                    "details": {
+                        "name": "Get Enable Shadow Debug Coloring"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{02644F52-9483-47A8-9028-37671695C34E}",
+                            "details": {
+                                "name": "Light Config"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Enable"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetenableShadowDebugColoring",
+                    "details": {
+                        "name": "Set Enable Shadow Debug Coloring"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{02644F52-9483-47A8-9028-37671695C34E}",
+                            "details": {
+                                "name": "Light Config"
+                            }
+                        },
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Enable"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "Getintensity",
+                    "details": {
+                        "name": "Get Intensity"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{02644F52-9483-47A8-9028-37671695C34E}",
+                            "details": {
+                                "name": "Light Config"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Intensity"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "Setintensity",
+                    "details": {
+                        "name": "Set Intensity"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{02644F52-9483-47A8-9028-37671695C34E}",
+                            "details": {
+                                "name": "Light Config"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Intensity"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetshadowRatioLogarithmUniform",
+                    "details": {
+                        "name": "Get Shadow Ratio Logarithm Uniform"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{02644F52-9483-47A8-9028-37671695C34E}",
+                            "details": {
+                                "name": "Light Config"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Shadow Ratio Logarithm Uniform"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetshadowRatioLogarithmUniform",
+                    "details": {
+                        "name": "Set Shadow Ratio Logarithm Uniform"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{02644F52-9483-47A8-9028-37671695C34E}",
+                            "details": {
+                                "name": "Light Config"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Shadow Ratio Logarithm Uniform"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "Getcolor",
+                    "details": {
+                        "name": "Get Color"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{02644F52-9483-47A8-9028-37671695C34E}",
+                            "details": {
+                                "name": "Light Config"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{7894072A-9050-4F0F-901B-34B1A0D29417}",
+                            "details": {
+                                "name": "Color"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "Setcolor",
+                    "details": {
+                        "name": "Set Color"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{02644F52-9483-47A8-9028-37671695C34E}",
+                            "details": {
+                                "name": "Light Config"
+                            }
+                        },
+                        {
+                            "typeid": "{7894072A-9050-4F0F-901B-34B1A0D29417}",
+                            "details": {
+                                "name": "Color"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "Getdirection",
+                    "details": {
+                        "name": "Get Direction"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{02644F52-9483-47A8-9028-37671695C34E}",
+                            "details": {
+                                "name": "Light Config"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Direction"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "Setdirection",
+                    "details": {
+                        "name": "Set Direction"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{02644F52-9483-47A8-9028-37671695C34E}",
+                            "details": {
+                                "name": "Light Config"
+                            }
+                        },
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Direction"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetshadowFarClipDistance",
+                    "details": {
+                        "name": "Get Shadow Far Clip Distance"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{02644F52-9483-47A8-9028-37671695C34E}",
+                            "details": {
+                                "name": "Light Config"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Shadow Far Clip Distance"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetshadowFarClipDistance",
+                    "details": {
+                        "name": "Set Shadow Far Clip Distance"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{02644F52-9483-47A8-9028-37671695C34E}",
+                            "details": {
+                                "name": "Light Config"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Shadow Far Clip Distance"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

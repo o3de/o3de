@@ -1,38 +1,37 @@
 {
     "entries": [
         {
-            "key": "{3AB66179-2097-5C83-BA8F-B8BD1D75D1CA}",
+            "base": "{3AB66179-2097-5C83-BA8F-B8BD1D75D1CA}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "ToUpper",
+                "name": "To Upper",
                 "category": "String",
-                "tooltip": "Makes all the characters in the string upper case",
-                "subtitle": "String"
+                "tooltip": "Makes all the characters in the string upper case"
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "key": "DataInput_String: Source",
+                    "base": "DataInput_Source",
                     "details": {
-                        "name": "String: Source"
+                        "name": "Source"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: String",
+                    "base": "DataOutput_Result",
                     "details": {
-                        "name": "Result: String"
+                        "name": "Result"
                     }
                 }
             ]

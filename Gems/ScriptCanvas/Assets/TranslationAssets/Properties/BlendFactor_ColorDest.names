@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "BlendFactor_ColorDest",
+            "base": "BlendFactor_ColorDest",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "BlendFactor_ColorDest::Getter",
-                "category": "Constants"
-            }
+                "name": "Color Dest",
+                "category": "Constants/Blend Factor"
+            },
+            "methods": [
+                {
+                    "base": "GetBlendFactor_ColorDest",
+                    "details": {
+                        "name": "Get Color Dest"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

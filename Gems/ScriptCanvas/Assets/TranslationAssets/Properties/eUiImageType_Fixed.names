@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "eUiImageType_Fixed",
+            "base": "eUiImageType_Fixed",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "eUiImageType_Fixed::Getter",
-                "category": "Constants"
-            }
+                "name": "Fixed",
+                "category": "Constants/UI/Image Type"
+            },
+            "methods": [
+                {
+                    "base": "GeteUiImageType_Fixed",
+                    "details": {
+                        "name": "Fixed"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }
