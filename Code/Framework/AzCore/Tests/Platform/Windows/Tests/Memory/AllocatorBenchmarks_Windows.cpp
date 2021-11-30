@@ -22,7 +22,7 @@ namespace Benchmark
 
             size_t memoryUsage = 0;
             MEMORY_BASIC_INFORMATION mbi = { 0 };
-            unsigned char* pEndRegion = NULL;
+            unsigned char* pEndRegion = nullptr;
             while (sizeof(mbi) == VirtualQuery(pEndRegion, &mbi, sizeof(mbi))) {
                 pEndRegion += mbi.RegionSize;
                 if ((mbi.AllocationProtect & PAGE_READWRITE) && (mbi.State & MEM_COMMIT)) {
