@@ -203,20 +203,25 @@ namespace LandscapeCanvasEditor
     {
         using namespace AzToolsFramework;
 
-        // Check whether the first category has a preferred component and return that if it does.
-        const AZStd::unordered_map<AZStd::string, QString> preferredComponentByCategory = { { "Shape", "Shape Reference" } };
+        // A map of category names with preferred component names.
+        // There may be multiple component names for a category, as long as they provide different services.
+        const AZStd::map<QString, AZStd::vector<QString>> preferredComponentsByCategory = { { "Shape", { "Shape Reference" } } };
 
-        const AZStd::string firstCategoryName(componentDataTable.begin()->first.toUtf8());
-
-        const auto& preferredComponentPair = preferredComponentByCategory.find(firstCategoryName);
-
-        if (preferredComponentPair != preferredComponentByCategory.end())
+        // Scan through the preferred categories to see whether any exist in the componentDataTable.
+        for (const auto& preferredComponentPair : preferredComponentsByCategory)
         {
-            const auto& componentPair = componentDataTable.begin()->second.find(preferredComponentPair->second);
-
-            if (componentPair != componentDataTable.begin()->second.end())
+            auto candidateDataTablePair = componentDataTable.find(preferredComponentPair.first);
+            if (candidateDataTablePair != componentDataTable.end())
             {
-                return componentPair->second->m_typeId;
+                // Now check all the preferred components for that category, and return the first one that exists in the candidate componentDataTable.
+                for (const auto& preferredComponentName : preferredComponentPair.second)
+                {
+                    const auto& candidateComponent = candidateDataTablePair->second.find(preferredComponentName);
+                    if (candidateComponent != candidateDataTablePair->second.end())
+                    {
+                        return candidateComponent->second->m_typeId;
+                    }
+                }
             }
         }
 
