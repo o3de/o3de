@@ -14,11 +14,6 @@ namespace AzFramework::Terrain
 {
     void TerrainDataRequests::Reflect(AZ::ReflectContext* context)
     {
-        // These APIs are overloaded, so we need to define aliases for the version of the APIs that we want to use.
-        // Otherwise the BehaviorContext definition below won't compile.
-        using GetSurfacePointFuncPtr = SurfaceData::SurfacePoint (TerrainDataRequests::*)(const AZ::Vector3&, Sampler) const;
-        using GetSurfacePointFromVector2FuncPtr = SurfaceData::SurfacePoint (TerrainDataRequests::*)(const AZ::Vector2&, Sampler) const;
-
         if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
             behaviorContext->EBus<AzFramework::Terrain::TerrainDataRequestBus>("TerrainDataRequestBus")
@@ -33,10 +28,9 @@ namespace AzFramework::Terrain
                     &AzFramework::Terrain::TerrainDataRequestBus::Events::GetSurfaceWeightsFromVector2)
                 ->Event("GetIsHole", &AzFramework::Terrain::TerrainDataRequestBus::Events::GetIsHole)
                 ->Event("GetIsHoleFromFloats", &AzFramework::Terrain::TerrainDataRequestBus::Events::GetIsHoleFromFloats)
-                ->Event("GetSurfacePoint",
-                    static_cast<GetSurfacePointFuncPtr>(&AzFramework::Terrain::TerrainDataRequestBus::Events::GetSurfacePoint))
+                ->Event("GetSurfacePoint", &AzFramework::Terrain::TerrainDataRequestBus::Events::BehaviorContextGetSurfacePoint)
                 ->Event("GetSurfacePointFromVector2",
-                    static_cast<GetSurfacePointFromVector2FuncPtr>(&AzFramework::Terrain::TerrainDataRequestBus::Events::GetSurfacePointFromVector2))
+                    &AzFramework::Terrain::TerrainDataRequestBus::Events::BehaviorContextGetSurfacePointFromVector2)
                 ->Event("GetTerrainAabb", &AzFramework::Terrain::TerrainDataRequestBus::Events::GetTerrainAabb)
                 ->Event("GetTerrainHeightQueryResolution",
                     &AzFramework::Terrain::TerrainDataRequestBus::Events::GetTerrainHeightQueryResolution)
