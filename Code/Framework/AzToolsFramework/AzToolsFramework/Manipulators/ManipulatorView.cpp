@@ -367,7 +367,7 @@ namespace AzToolsFramework
         cameraCorrectAxisPartialFn(axis2 * axis2.Dot(m_offset), m_cameraCorrectedOffsetAxis2);
 
         const AZ::Vector3 totalScale =
-            manipulatorState.m_nonUniformScale + AZ::Vector3(manipulatorState.m_worldFromLocal.GetUniformScale());
+            manipulatorState.m_nonUniformScale * AZ::Vector3(manipulatorState.m_worldFromLocal.GetUniformScale());
 
         const auto cameraCorrectedVisualOffset = (m_cameraCorrectedOffsetAxis1 + m_cameraCorrectedOffsetAxis2) * totalScale.GetReciprocal();
         const auto viewScale =
