@@ -299,7 +299,7 @@ namespace EMotionFX
         {
             Physics::CapsuleShapeConfiguration* capsule = static_cast<Physics::CapsuleShapeConfiguration*>(collider.second.get());
             capsule->m_height = boneDirection.GetLength();
-            if (AZ::IsClose(localBoneDirection.GetLength(), 1.0f))
+            if (!localBoneDirection.IsZero())
             {
                 collider.first->m_rotation = AZ::Quaternion::CreateShortestArc(AZ::Vector3::CreateAxisZ(), localBoneDirection.GetNormalized());
             }
@@ -309,7 +309,7 @@ namespace EMotionFX
         }
         else if (colliderType == azrtti_typeid<Physics::BoxShapeConfiguration>())
         {
-            if (AZ::IsClose(localBoneDirection.GetLength(), 1.0f))
+            if (!localBoneDirection.IsZero())
             {
                 collider.first->m_rotation = AZ::Quaternion::CreateShortestArc(AZ::Vector3::CreateAxisZ(), localBoneDirection.GetNormalized());
             }
