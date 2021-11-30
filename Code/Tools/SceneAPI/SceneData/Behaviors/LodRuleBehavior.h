@@ -13,6 +13,7 @@
 #include <SceneAPI/SceneCore/Events/AssetImportRequest.h>
 #include <SceneAPI/SceneCore/Events/GraphMetaInfoBus.h>
 #include <SceneAPI/SceneCore/Events/ManifestMetaInfoBus.h>
+#include <SceneAPI/SceneData/SceneDataConfiguration.h>
 
 namespace AZ
 {
