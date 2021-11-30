@@ -6,7 +6,6 @@
  *
  */
 
-
 #include <Multiplayer/IMultiplayer.h>
 #include <Multiplayer/IMultiplayerTools.h>
 #include <Multiplayer/INetworkSpawnableLibrary.h>
@@ -421,7 +420,17 @@ namespace Multiplayer
 
     void MultiplayerEditorSystemComponent::OnTick(float, AZ::ScriptTimePoint)
     {
-        m_serverProcessTracePrinter->Pump();
+        if (m_serverProcessTracePrinter)
+        {
+            m_serverProcessTracePrinter->Pump();
+        }
+        else
+        {
+            AZ::TickBus::Handler::BusDisconnect();
+            AZ_Warning(
+                "MultiplayerEditorSystemComponent", false,
+                "The server process trace printer is NULL so we won't be able to pipe server logs to the editor. Please update the code to call AZ::TickBus::Handler::BusDisconnect whenever the editor-server is terminated.")
+        }
     }
 
 }
