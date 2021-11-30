@@ -922,6 +922,11 @@ namespace ScriptCanvasEditorTools
 
             TranslateMethod(behaviorProperty->m_getter, method);
 
+            // We know this is a getter, so there will only be one parameter, we will use the method name as a best
+            // guess for the argument name
+            SplitCamelCase(cleanName);
+            method.m_arguments[1].m_details.m_name = cleanName;
+
             entry->m_methods.push_back(method);
 
         }
@@ -943,6 +948,11 @@ namespace ScriptCanvasEditorTools
             SplitCamelCase(method.m_details.m_name);
 
             TranslateMethod(behaviorProperty->m_setter, method);
+
+            // We know this is a setter, so there will only be one parameter, we will use the method name as a best
+            // guess for the argument name
+            SplitCamelCase(cleanName);
+            method.m_arguments[1].m_details.m_name = cleanName;
 
             entry->m_methods.push_back(method);
         }
