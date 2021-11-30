@@ -395,4 +395,11 @@ namespace AtomToolsFramework
     {
         return 1;
     }
+
+    // Editor ignores requests to change the sync interval
+    bool RenderViewportWidget::SetSyncInterval(uint32_t /*ignored*/)
+    {
+        return false;
+    }
+
 } //namespace AtomToolsFramework
