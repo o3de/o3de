@@ -51,7 +51,7 @@
 #include <Editor/View/Widgets/NodePalette/NodePaletteModel.h>
 
 #include <Editor/View/Widgets/AssetGraphSceneDataBus.h>
-
+//#include <AzCore/AzCore/std/base.h>
 #include <Editor/View/Windows/Tools/UpgradeTool/Controller.h>
 
 #if SCRIPTCANVAS_EDITOR
@@ -798,5 +798,13 @@ namespace ScriptCanvasEditor
         Workspace* m_workspace;
 
         void OnSaveCallback(bool saveSuccess, AZ::Data::AssetPtr, AZ::Data::AssetId previousFileAssetId);
+
+        bool m_saveAttemptInProgress = false;
+        bool m_forceCloseInProgress = false;
+        AZStd::chrono::system_clock::time_point m_saveAttemptTime;
+        void ClearSaveAttempt();
+        bool EvaluateSaveAttempt();
+        void MarkSaveAttempt();
+        void WarnOnFailedSaveAttempt();
     };
 }

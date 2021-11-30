@@ -914,6 +914,12 @@ namespace ScriptCanvasEditor
 
     void MainWindow::closeEvent(QCloseEvent* event)
     {
+        if (m_forceCloseInProgress)
+        {
+            event->accept();
+            return;
+        }
+
         // If we are in the middle of saving a graph. We don't want to close ourselves down and potentially retrigger the saving logic.
         if (m_queueCloseRequest)
         {
@@ -1981,6 +1987,7 @@ namespace ScriptCanvasEditor
 
         EnableAssetView(memoryAsset);
 
+        ClearSaveAttempt();
         UnblockCloseRequests();
     }
 
@@ -1992,6 +1999,7 @@ namespace ScriptCanvasEditor
 
     void MainWindow::SaveAsset(AZ::Data::AssetId assetId, const Callbacks::OnSave& onSave)
     {
+        MarkSaveAttempt();
         PrepareAssetForSave(assetId);
 
         auto onSaveCallback = [this, onSave](bool saveSuccess, AZ::Data::AssetPtr asset, AZ::Data::AssetId previousAssetId)
@@ -2020,6 +2028,7 @@ namespace ScriptCanvasEditor
 
     void MainWindow::SaveNewAsset(AZStd::string_view path, AZ::Data::AssetId inMemoryAssetId, const Callbacks::OnSave& onSave)
     {
+        MarkSaveAttempt();
         PrepareAssetForSave(inMemoryAssetId);
 
         auto onSaveCallback = [this, onSave](bool saveSuccess, AZ::Data::AssetPtr asset, AZ::Data::AssetId previousAssetId)
@@ -4213,6 +4222,11 @@ namespace ScriptCanvasEditor
 
     void MainWindow::OnSystemTick()
     {
+        if (m_saveAttemptInProgress)
+        {
+            EvaluateSaveAttempt();
+        }
+
         if (HasSystemTickAction(SystemTickActionFlag::RefreshPropertyGrid))
         {
             RemoveSystemTickAction(SystemTickActionFlag::RefreshPropertyGrid);
@@ -4246,11 +4260,54 @@ namespace ScriptCanvasEditor
             RemoveSystemTickAction(SystemTickActionFlag::CloseNextTabAction);
             CloseNextTab();
         }
+    }
 
-        if (m_systemTickActions == 0)
+    void MainWindow::ClearSaveAttempt()
+    {
+        m_saveAttemptInProgress = false;
+
+        if (!m_systemTickActions)
         {
             AZ::SystemTickBus::Handler::BusDisconnect();
         }
+    }
+
+    bool MainWindow::EvaluateSaveAttempt()
+    {
+        const AZ::s64 k_saveAttemptSeconds = 20;
+
+        if (m_saveAttemptInProgress)
+        {
+            auto saveDuration = AZStd::chrono::seconds(AZStd::chrono::system_clock::now() - m_saveAttemptTime).count();
+
+            if (saveDuration > k_saveAttemptSeconds)
+            {
+                WarnOnFailedSaveAttempt();
+            }
+        }
+
+        return m_forceCloseInProgress;
+    }
+
+    void MainWindow::MarkSaveAttempt()
+    {
+        m_saveAttemptInProgress = true;
+        m_saveAttemptTime = AZStd::chrono::system_clock::now();
+
+        if (!AZ::SystemTickBus::Handler::BusIsConnected())
+        {
+            AZ::SystemTickBus::Handler::BusConnect();
+        }
+    }
+
+    void MainWindow::WarnOnFailedSaveAttempt()
+    {
+        m_forceCloseInProgress = true;
+        QMessageBox::critical(this, QString(), QObject::tr
+        ("The ScriptCanvas Editor has encountered an external bug which prevents it from tracking the file state.<br><br>"
+        "Likely the Asset Processor has crashed. ScriptCanvas files may have saved successfully, but the O3DE Engine and Asset Processor should be restarted before continuing work."));
+        AZ::SystemTickBus::Handler::BusDisconnect();
+        qobject_cast<QWidget*>(parent())->close();
     }
 
     void MainWindow::OnCommandStarted(AZ::Crc32)
@@ -4486,7 +4543,6 @@ namespace ScriptCanvasEditor
         {
             AZ::SystemTickBus::Handler::BusConnect();
         }
-
         m_systemTickActions |= action;
     }
 
