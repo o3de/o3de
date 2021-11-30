@@ -60,6 +60,7 @@ namespace AzToolsFramework
             AzToolsFramework::Prefab::PrefabConversionUtils::PrefabCatchmentProcessor::Reflect(context);
             AzToolsFramework::Prefab::PrefabConversionUtils::EditorInfoRemover::Reflect(context);
             PrefabPublicRequestHandler::Reflect(context);
+            PrefabFocusHandler::Reflect(context);
             PrefabLoader::Reflect(context);
             PrefabSystemScriptingHandler::Reflect(context);
 
