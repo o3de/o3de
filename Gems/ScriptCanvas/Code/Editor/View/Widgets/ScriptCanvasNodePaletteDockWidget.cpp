@@ -27,8 +27,8 @@
 #include <AzCore/UserSettings/UserSettings.h>
 #include <AzCore/std/containers/map.h>
 
-#include <AzFramework/StringFunc/StringFunc.h>
 #include <AzFramework/Gem/GemInfo.h>
+#include <AzFramework/StringFunc/StringFunc.h>
 
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/AssetBrowser/Entries/ProductAssetBrowserEntry.h>
