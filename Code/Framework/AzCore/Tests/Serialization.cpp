@@ -59,6 +59,7 @@
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/IO/ByteContainerStream.h>
 #include <AzCore/IO/Path/Path.h>
+#include <AzCore/IO/Path/PathReflect.h>
 #include <AzCore/IO/Streamer/StreamerComponent.h>
 
 #include <AzCore/RTTI/AttributeReader.h>
@@ -8151,5 +8152,98 @@ namespace UnitTest
         m_serializeContext->Class<TestClassWithEnumFieldThatSpecializesTypeInfo>();
         m_serializeContext->DisableRemoveReflection();
     }
+
+    template <typename ParamType>
+    class PathSerializationParamFixture
+        : public ScopedAllocatorSetupFixture
+        , public ::testing::WithParamInterface<ParamType>
+    {
+    public:
+        PathSerializationParamFixture()
+            : ScopedAllocatorSetupFixture(
+                []() { AZ::SystemAllocator::Descriptor desc; desc.m_stackRecordLevels = 30; return desc; }()
+            )
+        {}
+
+        // We must expose the class for serialization first.
+        void SetUp() override
+        {
+            m_serializeContext = AZStd::make_unique<AZ::SerializeContext>();
+            AZ::IO::PathReflect(m_serializeContext.get());
+
+        }
+
+        void TearDown() override
+        {
+            m_serializeContext->EnableRemoveReflection();
+            AZ::IO::PathReflect(m_serializeContext.get());
+            m_serializeContext->DisableRemoveReflection();
+
+            m_serializeContext.reset();
+        }
+
+    protected:
+        AZStd::unique_ptr<AZ::SerializeContext> m_serializeContext;
+    };
+
+    struct PathSerializationParams
+    {
+        const char m_preferredSeparator{};
+        const char* m_testPath{};
+    };
+    using PathSerializationFixture = PathSerializationParamFixture<PathSerializationParams>;
+
+    TEST_P(PathSerializationFixture, PathSerializer_SerializesStringBackedPath_Succeeds)
+    {
+        const auto& testParams = GetParam();
+        {
+            // Path serialization
+            AZ::IO::Path testPath{ testParams.m_testPath, testParams.m_preferredSeparator };
+
+            AZStd::vector<char> byteBuffer;
+            AZ::IO::ByteContainerStream byteStream(&byteBuffer);
+            auto objStream = AZ::ObjectStream::Create(&byteStream, *m_serializeContext, AZ::ObjectStream::ST_XML);
+            objStream->WriteClass(&testPath);
+            objStream->Finalize();
+
+            byteStream.Seek(0, AZ::IO::GenericStream::ST_SEEK_BEGIN);
+
+            AZ::IO::Path loadPath{ testParams.m_preferredSeparator };
+            EXPECT_TRUE(AZ::Utils::LoadObjectFromStreamInPlace(byteStream, loadPath, m_serializeContext.get()));
+            EXPECT_EQ(testPath.LexicallyNormal(), loadPath);
+        }
+
+        {
+            // FixedMaxPath serialization
+            AZ::IO::FixedMaxPath testFixedMaxPath{ testParams.m_testPath, testParams.m_preferredSeparator };
+
+            AZStd::vector<char> byteBuffer;
+            AZ::IO::ByteContainerStream byteStream(&byteBuffer);
+            auto objStream = AZ::ObjectStream::Create(&byteStream, *m_serializeContext, AZ::ObjectStream::ST_XML);
+            objStream->WriteClass(&testFixedMaxPath);
+            objStream->Finalize();
+
+            byteStream.Seek(0, AZ::IO::GenericStream::ST_SEEK_BEGIN);
+
+            AZ::IO::FixedMaxPath loadPath{ testParams.m_preferredSeparator };
+            EXPECT_TRUE(AZ::Utils::LoadObjectFromStreamInPlace(byteStream, loadPath, m_serializeContext.get()));
+            EXPECT_EQ(testFixedMaxPath.LexicallyNormal(), loadPath);
+        }
+    }
+
+    INSTANTIATE_TEST_CASE_P(
+        PathSerialization,
+        PathSerializationFixture,
+        ::testing::Values(
+            PathSerializationParams{ AZ::IO::PosixPathSeparator, "" },
+            PathSerializationParams{ AZ::IO::PosixPathSeparator, "test" },
+            PathSerializationParams{ AZ::IO::PosixPathSeparator, "/test" },
+            PathSerializationParams{ AZ::IO::WindowsPathSeparator, "test" },
+            PathSerializationParams{ AZ::IO::WindowsPathSeparator, "/test" },
+            PathSerializationParams{ AZ::IO::WindowsPathSeparator, "D:test" },
+            PathSerializationParams{ AZ::IO::WindowsPathSeparator, "D:/test" },
+            PathSerializationParams{ AZ::IO::WindowsPathSeparator, "test/foo/../bar" }
+        )
+    );
 }
 
