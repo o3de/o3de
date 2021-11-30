@@ -283,6 +283,18 @@ namespace AZ
             probe->ShowVisualization(showVisualization);
         }
 
+        void ReflectionProbeFeatureProcessor::SetRenderExposure(const ReflectionProbeHandle& probe, float renderExposure)
+        {
+            AZ_Assert(probe.get(), "SetRenderExposure called with an invalid handle");
+            probe->SetRenderExposure(renderExposure);
+        }
+
+        void ReflectionProbeFeatureProcessor::SetBakeExposure(const ReflectionProbeHandle& probe, float bakeExposure)
+        {
+            AZ_Assert(probe.get(), "SetBakeExposure called with an invalid handle");
+            probe->SetBakeExposure(bakeExposure);
+        }
+
         void ReflectionProbeFeatureProcessor::FindReflectionProbes(const Vector3& position, ReflectionProbeVector& reflectionProbes)
         {
             reflectionProbes.clear();

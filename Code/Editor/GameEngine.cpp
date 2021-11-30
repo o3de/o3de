@@ -157,20 +157,20 @@ struct SSystemUserCallback
         }
     }
 
-    int ShowMessage(const char* text, const char* caption, unsigned int uType) override
+    void ShowMessage(const char* text, const char* caption, unsigned int uType) override
     {
         if (CCryEditApp::instance()->IsInAutotestMode())
         {
-            return IDOK;
+            return;
         }
 
         const UINT kMessageBoxButtonMask = 0x000f;
         if (!GetIEditor()->IsInGameMode() && (uType == 0 || uType == MB_OK || !(uType & kMessageBoxButtonMask)))
         {
             static_cast<CEditorImpl*>(GetIEditor())->AddErrorMessage(text, caption);
-            return IDOK;
+            return;
         }
-        return CryMessageBox(text, caption, uType);
+        CryMessageBox(text, caption, uType);
     }
 
     void OnSplashScreenDone()
@@ -822,7 +822,7 @@ void CGameEngine::Update()
         if (gEnv->pSystem)
         {
             gEnv->pSystem->UpdatePreTickBus();
-            componentApplication->Tick(gEnv->pTimer->GetFrameTime(ITimer::ETIMER_GAME));
+            componentApplication->Tick();
             gEnv->pSystem->UpdatePostTickBus();
         }
 
@@ -838,7 +838,7 @@ void CGameEngine::Update()
         unsigned int updateFlags = ESYSUPDATE_EDITOR;
         GetIEditor()->GetAnimation()->Update();
         GetIEditor()->GetSystem()->UpdatePreTickBus(updateFlags);
-        componentApplication->Tick(gEnv->pTimer->GetFrameTime(ITimer::ETIMER_GAME));
+        componentApplication->Tick();
         GetIEditor()->GetSystem()->UpdatePostTickBus(updateFlags);
     }
 }

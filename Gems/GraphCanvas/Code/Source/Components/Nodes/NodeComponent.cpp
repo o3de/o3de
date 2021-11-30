@@ -315,12 +315,6 @@ namespace GraphCanvas
         NodeNotificationBus::Event(GetEntityId(), &NodeNotifications::OnTooltipChanged, m_configuration.GetTooltip());
     }
 
-    void NodeComponent::SetTranslationKeyedTooltip(const TranslationKeyedString& tooltip)
-    {
-        m_configuration.SetTooltip(tooltip.GetDisplayString());
-        NodeNotificationBus::Event(GetEntityId(), &NodeNotifications::OnTooltipChanged, m_configuration.GetTooltip());
-    }
-
     void NodeComponent::AddSlot(const AZ::EntityId& slotId)
     {
         AZ_Assert(slotId.IsValid(), "Slot entity (ID: %s) is not valid!", slotId.ToString().data());

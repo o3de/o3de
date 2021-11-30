@@ -36,7 +36,6 @@ set(FILES
     include/LmbrCentral/Rendering/MaterialHandle.h
     include/LmbrCentral/Rendering/MeshAsset.h
     include/LmbrCentral/Rendering/MeshModificationBus.h
-    include/LmbrCentral/Rendering/RenderNodeBus.h
     include/LmbrCentral/Rendering/GiRegistrationBus.h
     include/LmbrCentral/Rendering/RenderBoundsBus.h
     include/LmbrCentral/Scripting/EditorTagComponentBus.h
@@ -145,8 +144,6 @@ set(FILES
     Source/Shape/ShapeComponentConverters.inl
     Source/Shape/ShapeGeometryUtil.h
     Source/Shape/ShapeGeometryUtil.cpp
-    Source/Unhandled/Material/MaterialAssetTypeInfo.cpp
-    Source/Unhandled/Material/MaterialAssetTypeInfo.h
     Source/Unhandled/Other/AudioAssetTypeInfo.cpp
     Source/Unhandled/Other/AudioAssetTypeInfo.h
     Source/Unhandled/Other/CharacterPhysicsAssetTypeInfo.cpp

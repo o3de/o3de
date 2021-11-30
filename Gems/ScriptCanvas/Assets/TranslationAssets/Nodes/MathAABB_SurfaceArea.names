@@ -1,0 +1,41 @@
+{
+    "entries": [
+        {
+            "base": "{46EE9F31-DDE1-5482-9A03-A0D4A6BE429C}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "Surface Area",
+                "category": "Math/Axis Aligned Bounding Box",
+                "tooltip": "returns the sum of the surface area of all six faces of Source",
+                "subtitle": "Axis Aligned Bounding Box"
+            },
+            "slots": [
+                {
+                    "base": "Input_In",
+                    "details": {
+                        "name": "In"
+                    }
+                },
+                {
+                    "base": "Output_Out",
+                    "details": {
+                        "name": "Out"
+                    }
+                },
+                {
+                    "base": "DataInput_AABB: Source",
+                    "details": {
+                        "name": "AABB: Source"
+                    }
+                },
+                {
+                    "base": "DataOutput_Result: Number",
+                    "details": {
+                        "name": "Result: Number"
+                    }
+                }
+            ]
+        }
+    ]
+}

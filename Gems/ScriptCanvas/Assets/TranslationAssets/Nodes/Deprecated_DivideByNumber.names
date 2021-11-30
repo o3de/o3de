@@ -1,0 +1,47 @@
+{
+    "entries": [
+        {
+            "base": "{397FA4E6-72E7-51EB-A546-70415FCCE4B0}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "DivideByNumber",
+                "category": "Deprecated",
+                "tooltip": "returns matrix created from multiply the source matrix by 1/Divisor",
+                "subtitle": "Deprecated"
+            },
+            "slots": [
+                {
+                    "base": "Input_In",
+                    "details": {
+                        "name": "In"
+                    }
+                },
+                {
+                    "base": "Output_Out",
+                    "details": {
+                        "name": "Out"
+                    }
+                },
+                {
+                    "base": "DataInput_Matrix3x3: Source",
+                    "details": {
+                        "name": "Matrix3x3: Source"
+                    }
+                },
+                {
+                    "base": "DataInput_Number: Divisor",
+                    "details": {
+                        "name": "Number: Divisor"
+                    }
+                },
+                {
+                    "base": "DataOutput_Result: Matrix3x3",
+                    "details": {
+                        "name": "Result: Matrix3x3"
+                    }
+                }
+            ]
+        }
+    ]
+}

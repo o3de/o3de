@@ -26,6 +26,21 @@ namespace AtomToolsFramework
         //! Get the combined output of all messages
         AZStd::string GetDump() const;
 
+        //! Return the number of OnAssert calls
+        size_t GetAssertCount() const;
+        
+        //! Return the number of OnException calls
+        size_t GetExceptionCount() const;
+        
+        //! Return the number of OnError calls, and includes OnAssert and OnException if @includeHigher is true
+        size_t GetErrorCount(bool includeHigher = false) const;
+        
+        //! Return the number of OnWarning calls, and includes higher categories if @includeHigher is true
+        size_t GetWarningCount(bool includeHigher = false) const;
+        
+        //! Return the number of OnPrintf calls, and includes higher categories if @includeHigher is true
+        size_t GetPrintfCount(bool includeHigher = false) const;
+
     private:
         //////////////////////////////////////////////////////////////////////////
         // AZ::Debug::TraceMessageBus::Handler overrides...
@@ -38,5 +53,11 @@ namespace AtomToolsFramework
 
         size_t m_maxMessageCount = std::numeric_limits<size_t>::max();
         AZStd::list<AZStd::string> m_messages;
+        
+        size_t m_assertCount = 0;
+        size_t m_exceptionCount = 0;
+        size_t m_errorCount = 0;
+        size_t m_warningCount = 0;
+        size_t m_printfCount = 0;
     };
 } // namespace AtomToolsFramework

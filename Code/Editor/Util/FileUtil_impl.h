@@ -36,9 +36,7 @@ public:
 
     void ShowInExplorer(const QString& path) override;
 
-    bool CompileLuaFile(const char* luaFilename) override;
     bool ExtractFile(QString& file, bool bMsgBoxAskForExtraction = true, const char* pDestinationFilename = nullptr) override;
-    void EditTextFile(const char* txtFile, int line = 0, ETextFileType fileType = FILE_TYPE_SCRIPT) override;
     void EditTextureFile(const char* txtureFile, bool bUseGameFolder) override;
 
     //! dcc filename calculation and extraction sub-routines

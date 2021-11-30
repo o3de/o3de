@@ -1,0 +1,41 @@
+{
+    "entries": [
+        {
+            "base": "{981EA18E-F421-4B39-9FF7-27322F3E8B14}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "Get Size",
+                "category": "Containers",
+                "tooltip": "Get the number of elements in the specified container",
+                "subtitle": "Containers"
+            },
+            "slots": [
+                {
+                    "base": "DataOutput_Size",
+                    "details": {
+                        "name": "Size"
+                    }
+                },
+                {
+                    "base": "Input_In",
+                    "details": {
+                        "name": "In"
+                    }
+                },
+                {
+                    "base": "Output_Out",
+                    "details": {
+                        "name": "Out"
+                    }
+                },
+                {
+                    "base": "DataInput_Source",
+                    "details": {
+                        "name": "Source"
+                    }
+                }
+            ]
+        }
+    ]
+}

@@ -49,9 +49,9 @@ class _LinuxResourceManager(AbstractResourceLocator):
 
     def editor_log(self):
         """
-        :return: path to editor.log
+        :return: path to Editor.log
         """
-        return os.path.join(self.project_log(), "editor.log")
+        return os.path.join(self.project_log(), "Editor.log")
 
 
 class LinuxWorkspaceManager(AbstractWorkspaceManager):

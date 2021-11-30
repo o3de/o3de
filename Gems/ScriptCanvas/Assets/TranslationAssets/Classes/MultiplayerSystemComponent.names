@@ -1,0 +1,47 @@
+{
+    "entries": [
+        {
+            "base": "MultiplayerSystemComponent",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "Multiplayer"
+            },
+            "methods": [
+                {
+                    "base": "GetOnClientDisconnectedEvent",
+                    "context": "MultiplayerSystemComponent",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get On Client Disconnected Event"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get On Client Disconnected Event is invoked"
+                    },
+                    "details": {
+                        "name": "Get On Client Disconnected Event",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Entity Id",
+                                "tooltip": "Entity Unique Id"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{F429F985-AF00-529B-8449-16E56694E5F9}",
+                            "details": {
+                                "name": "Event"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

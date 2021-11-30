@@ -145,11 +145,25 @@ namespace SandboxEditor
             }
         };
 
+        const auto trackingTransform = [viewportId = m_viewportId]
+        {
+            bool tracking = false;
+            AtomToolsFramework::ModularViewportCameraControllerRequestBus::EventResult(
+                tracking, viewportId, &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::IsTrackingTransform);
+
+            return tracking;
+        };
+
         m_firstPersonRotateCamera = AZStd::make_shared<AzFramework::RotateCameraInput>(SandboxEditor::CameraFreeLookChannelId());
 
         m_firstPersonRotateCamera->m_rotateSpeedFn = []
         {
             return SandboxEditor::CameraRotateSpeed();
+        };
+
+        m_firstPersonRotateCamera->m_constrainPitch = [trackingTransform]
+        {
+            return !trackingTransform();
         };
 
         // default behavior is to hide the cursor but this can be disabled (useful for remote desktop)
@@ -255,6 +269,11 @@ namespace SandboxEditor
             return SandboxEditor::CameraOrbitYawRotationInverted();
         };
 
+        m_orbitRotateCamera->m_constrainPitch = [trackingTransform]
+        {
+            return !trackingTransform();
+        };
+
         m_orbitTranslateCamera = AZStd::make_shared<AzFramework::TranslateCameraInput>(
             translateCameraInputChannelIds, AzFramework::LookTranslation, AzFramework::TranslateOffsetOrbit);
 
@@ -337,12 +356,12 @@ namespace SandboxEditor
             AZ::TransformBus::EventResult(worldFromLocal, viewEntityId, &AZ::TransformBus::Events::GetWorldTM);
 
             AtomToolsFramework::ModularViewportCameraControllerRequestBus::Event(
-                m_viewportId, &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::SetReferenceFrame, worldFromLocal);
+                m_viewportId, &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::StartTrackingTransform, worldFromLocal);
         }
         else
         {
             AtomToolsFramework::ModularViewportCameraControllerRequestBus::Event(
-                m_viewportId, &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::ClearReferenceFrame);
+                m_viewportId, &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::StopTrackingTransform);
         }
     }
 

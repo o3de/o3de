@@ -1,0 +1,49 @@
+{
+    "entries": [
+        {
+            "base": "{760CE936-7059-42A3-A177-530A662E4ECF}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "Is Null",
+                "category": "Logic",
+                "tooltip": "Evaluates reference types for null."
+            },
+            "slots": [
+                {
+                    "base": "DataInput_Reference",
+                    "details": {
+                        "name": "Reference"
+                    }
+                },
+                {
+                    "base": "DataOutput_Is Null",
+                    "details": {
+                        "name": "Is Null"
+                    }
+                },
+                {
+                    "base": "Input_In",
+                    "details": {
+                        "name": "In",
+                        "tooltip": "Input signal"
+                    }
+                },
+                {
+                    "base": "Output_True",
+                    "details": {
+                        "name": "True",
+                        "tooltip": "Signaled if the reference provided is null."
+                    }
+                },
+                {
+                    "base": "Output_False",
+                    "details": {
+                        "name": "False",
+                        "tooltip": "Signaled if the reference provided is not null."
+                    }
+                }
+            ]
+        }
+    ]
+}

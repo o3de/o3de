@@ -102,12 +102,12 @@ For more details on the steps above, refer to [Setting up O3DE from GitHub](http
 
 1. Configure a solution for your project.
     ```
-    cmake -B <your project build path> -S <your new project source path> -G "Visual Studio 16" -DLY_3RDPARTY_PATH=<3rdParty cache path>
+    cmake -B <your project build path> -S <your new project source path> -G "Visual Studio 16"
     ```
 
     Example:
     ```
-    cmake -B C:\my-project\build\windows_vs2019 -S C:\my-project -G "Visual Studio 16" -DLY_3RDPARTY_PATH=C:\o3de-packages
+    cmake -B C:\my-project\build\windows_vs2019 -S C:\my-project -G "Visual Studio 16"
     ```
     
     > Note:  Do not use trailing slashes for the <3rdParty cache path>.

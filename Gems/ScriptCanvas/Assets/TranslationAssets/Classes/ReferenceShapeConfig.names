@@ -1,0 +1,58 @@
+{
+    "entries": [
+        {
+            "base": "ReferenceShapeConfig",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "ReferenceShapeConfig"
+            },
+            "methods": [
+                {
+                    "base": "shapeEntityId",
+                    "details": {
+                        "name": "ReferenceShapeConfig::shapeEntityId::Getter"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3E49974D-2EE0-4AF9-92B9-229A22B515C3}",
+                            "details": {
+                                "name": "ReferenceShapeConfig*"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "EntityId&",
+                                "tooltip": "Entity Unique Id"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "shapeEntityId",
+                    "details": {
+                        "name": "ReferenceShapeConfig::shapeEntityId::Setter"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3E49974D-2EE0-4AF9-92B9-229A22B515C3}",
+                            "details": {
+                                "name": "ReferenceShapeConfig*"
+                            }
+                        },
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "const EntityId&",
+                                "tooltip": "Entity Unique Id"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

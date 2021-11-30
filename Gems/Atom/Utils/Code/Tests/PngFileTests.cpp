@@ -31,7 +31,8 @@ namespace UnitTest
         {
             AllocatorsFixture::SetUp();
 
-            m_testImageFolder = AZ::IO::Path(AZ::Test::GetEngineRootPath()) / AZ::IO::Path("Gems/Atom/Utils/Code/Tests/PngTestImages", '/');
+            m_testImageFolder =
+                AZ::IO::Path(AZ::Test::GetEngineRootPath(), '/') / AZ::IO::Path("Gems/Atom/Utils/Code/Tests/PngTestImages");
             
             m_tempPngFilePath = m_testImageFolder / "temp.png";
                         

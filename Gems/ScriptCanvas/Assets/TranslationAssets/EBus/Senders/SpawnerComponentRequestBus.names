@@ -1,0 +1,273 @@
+{
+    "entries": [
+        {
+            "base": "SpawnerComponentRequestBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "Spawner",
+                "category": "Gameplay"
+            },
+            "methods": [
+                {
+                    "base": "SetDynamicSlice",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Dynamic Slice"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Dynamic Slice is invoked"
+                    },
+                    "details": {
+                        "name": "Set Dynamic Slice"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{652ED536-3402-439B-AEBE-4A5DBC554085}",
+                            "details": {
+                                "name": "Asset Id"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetCurrentlySpawnedSlices",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Currently Spawned Slices"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Currently Spawned Slices is invoked"
+                    },
+                    "details": {
+                        "name": "Get Currently Spawned Slices"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{DCAD95EA-9447-5B13-AACC-6C7223E1C04D}",
+                            "details": {
+                                "name": "Spawned Slices"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "HasAnyCurrentlySpawnedSlices",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Has Any Currently Spawned Slices"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Has Any Currently Spawned Slices is invoked"
+                    },
+                    "details": {
+                        "name": "Has Any Currently Spawned Slices"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Result"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetAllCurrentlySpawnedEntities",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get All Currently Spawned Entities"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get All Currently Spawned Entities is invoked"
+                    },
+                    "details": {
+                        "name": "Get All Currently Spawned Entities"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{4841CFF0-7A5C-519C-BD16-D3625E99605E}",
+                            "details": {
+                                "name": "Spawned Entities"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "DestroyAllSpawnedSlices",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Destroy All Spawned Slices"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Destroy All Spawned Slices is invoked"
+                    },
+                    "details": {
+                        "name": "Destroy All Spawned Slices"
+                    }
+                },
+                {
+                    "base": "GetCurrentEntitiesFromSpawnedSlice",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Current Entities From Spawned Slice"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Current Entities From Spawned Slice is invoked"
+                    },
+                    "details": {
+                        "name": "Get Current Entities From Spawned Slice"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{E6E7C0C5-07C9-44BB-A38C-930431948667}",
+                            "details": {
+                                "name": "Slice Instantiation Ticket"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{4841CFF0-7A5C-519C-BD16-D3625E99605E}",
+                            "details": {
+                                "name": "Entities"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "DestroySpawnedSlice",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Destroy Spawned Slice"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Destroy Spawned Slice is invoked"
+                    },
+                    "details": {
+                        "name": "Destroy Spawned Slice"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{E6E7C0C5-07C9-44BB-A38C-930431948667}",
+                            "details": {
+                                "name": "Slice Instantiation Ticket"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "IsReadyToSpawn",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Is Ready To Spawn"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Is Ready To Spawn is invoked"
+                    },
+                    "details": {
+                        "name": "Is Ready To Spawn"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Is Ready"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SpawnRelative",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Spawn Relative"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Spawn Relative is invoked"
+                    },
+                    "details": {
+                        "name": "Spawn Relative"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{5D9958E9-9F1E-4985-B532-FFFDE75FEDFD}",
+                            "details": {
+                                "name": "Transform"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{E6E7C0C5-07C9-44BB-A38C-930431948667}",
+                            "details": {
+                                "name": "Slice Instantiation Ticket"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "Spawn",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Spawn"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Spawn is invoked"
+                    },
+                    "details": {
+                        "name": "Spawn"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{E6E7C0C5-07C9-44BB-A38C-930431948667}",
+                            "details": {
+                                "name": "Slice Instantiation Ticket"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SpawnAbsolute",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Spawn Absolute"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Spawn Absolute is invoked"
+                    },
+                    "details": {
+                        "name": "Spawn Absolute"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{5D9958E9-9F1E-4985-B532-FFFDE75FEDFD}",
+                            "details": {
+                                "name": "Transform"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{E6E7C0C5-07C9-44BB-A38C-930431948667}",
+                            "details": {
+                                "name": "Slice Instantiation Ticket"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

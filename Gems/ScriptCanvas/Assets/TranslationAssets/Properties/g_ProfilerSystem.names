@@ -1,0 +1,29 @@
+{
+    "entries": [
+        {
+            "base": "g_ProfilerSystem",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "Profiler System",
+                "category": "Constants/Profiler"
+            },
+            "methods": [
+                {
+                    "base": "Getg_ProfilerSystem",
+                    "details": {
+                        "name": "Profiler System"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{D671FB70-8B09-4C3A-96CD-06A339F3138E}",
+                            "details": {
+                                "name": "Profiler System Script Proxy"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

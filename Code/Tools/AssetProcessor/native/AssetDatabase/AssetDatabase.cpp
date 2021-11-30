@@ -2610,14 +2610,7 @@ namespace AssetProcessor
     {
         ScopedTransaction transaction(m_databaseConnection);
 
-        const char* statementName = INSERT_NEW_LEGACYSUBID;
-
         bool creatingNew = entry.m_subIDsEntryID == InvalidEntryId;
-
-        if (!creatingNew)
-        {
-            statementName = OVERWRITE_EXISTING_LEGACYSUBID;
-        }
 
         if (creatingNew)
         {

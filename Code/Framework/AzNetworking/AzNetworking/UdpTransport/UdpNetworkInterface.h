@@ -171,7 +171,7 @@ namespace AzNetworking
         TrustZone m_trustZone;
         uint16_t m_port = 0;
         bool m_allowIncomingConnections = false;
-        AZ::TimeMs m_timeoutMs = AZ::TimeMs{ 0 };
+        AZ::TimeMs m_timeoutMs = AZ::Time::ZeroTimeMs;
         IConnectionListener& m_connectionListener;
         UdpConnectionSet m_connectionSet;
         TimeoutQueue m_connectionTimeoutQueue;

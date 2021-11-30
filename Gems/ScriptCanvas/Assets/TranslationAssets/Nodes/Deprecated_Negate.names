@@ -1,0 +1,41 @@
+{
+    "entries": [
+        {
+            "base": "{E2BE3BC4-5C86-5425-981D-E6A5EECC2C0C}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "Negate",
+                "category": "Deprecated",
+                "tooltip": "returns Source with every element multiplied by -1",
+                "subtitle": "Deprecated"
+            },
+            "slots": [
+                {
+                    "base": "Input_In",
+                    "details": {
+                        "name": "In"
+                    }
+                },
+                {
+                    "base": "Output_Out",
+                    "details": {
+                        "name": "Out"
+                    }
+                },
+                {
+                    "base": "DataInput_Color: Source",
+                    "details": {
+                        "name": "Color: Source"
+                    }
+                },
+                {
+                    "base": "DataOutput_Result: Color",
+                    "details": {
+                        "name": "Result: Color"
+                    }
+                }
+            ]
+        }
+    ]
+}

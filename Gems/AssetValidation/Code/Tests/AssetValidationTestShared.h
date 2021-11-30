@@ -150,13 +150,13 @@ struct AssetValidationTest
 
             auto projectPathKey = AZ::SettingsRegistryInterface::FixedValueString(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey)
                 + "/project_path";
-            m_registry.Set(projectPathKey, (AZ::IO::FixedMaxPath(GetEngineRoot()) / "AutomatedTesting").Native());
+            m_registry.Set(projectPathKey, (AZ::IO::FixedMaxPath(m_tempDir.GetDirectory()) / "AutomatedTesting").Native());
             AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(m_registry);
 
             // Set the engine root to the temporary directory and re-update the runtime file paths
             auto enginePathKey = AZ::SettingsRegistryInterface::FixedValueString(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey)
                 + "/engine_path";
-            m_registry.Set(enginePathKey, GetEngineRoot());
+            m_registry.Set(enginePathKey, m_tempDir.GetDirectory());
             AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(m_registry);
         }
     }
@@ -174,11 +174,6 @@ struct AssetValidationTest
     void CalculateBranchTokenForEngineRoot([[maybe_unused]] AZStd::string& token) const override
     {
         AZ_Assert(false, "Not implemented");
-    }
-
-    const char* GetEngineRoot() const override
-    {
-        return m_tempDir.GetDirectory();
     }
 
     void SetUp() override

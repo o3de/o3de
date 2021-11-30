@@ -1,0 +1,40 @@
+{
+    "entries": [
+        {
+            "base": "{8F561D51-2991-5493-8CED-B2FBAF168E72}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "Linear To Gamma",
+                "category": "Math/Color",
+                "tooltip": "Returns Source converted from linear to gamma corrected space"
+            },
+            "slots": [
+                {
+                    "base": "Input_In",
+                    "details": {
+                        "name": "In"
+                    }
+                },
+                {
+                    "base": "Output_Out",
+                    "details": {
+                        "name": "Out"
+                    }
+                },
+                {
+                    "base": "DataInput_Source",
+                    "details": {
+                        "name": "Source"
+                    }
+                },
+                {
+                    "base": "DataOutput_Result",
+                    "details": {
+                        "name": "Result"
+                    }
+                }
+            ]
+        }
+    ]
+}

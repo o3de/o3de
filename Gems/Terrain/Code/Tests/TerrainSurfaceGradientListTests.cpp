@@ -11,8 +11,6 @@
 #include <GradientSignal/Ebuses/MockGradientRequestBus.h>
 
 using ::testing::NiceMock;
-using ::testing::AtLeast;
-using ::testing::_;
 using ::testing::Return;
 
 namespace UnitTest
@@ -21,10 +19,6 @@ namespace UnitTest
     {
     protected:
         AZ::ComponentApplication m_app;
-
-        AZStd::unique_ptr<AZ::Entity> m_entity;
-        UnitTest::MockTerrainLayerSpawnerComponent* m_layerSpawnerComponent = nullptr;
-        AZStd::unique_ptr<AZ::Entity> m_gradientEntity1, m_gradientEntity2;
 
         const AZStd::string surfaceTag1 = "testtag1";
         const AZStd::string surfaceTag2 = "testtag2";
@@ -37,81 +31,76 @@ namespace UnitTest
             appDesc.m_stackRecordLevels = 20;
 
             m_app.Create(appDesc);
-
-            CreateEntities();
         }
 
         void TearDown() override
         {
-            m_gradientEntity2.reset();
-            m_gradientEntity1.reset();
-            m_entity.reset();
-
             m_app.Destroy();
         }
 
-        void CreateEntities()
+        AZStd::unique_ptr<AZ::Entity> CreateEntity()
         {
-            m_entity = AZStd::make_unique<AZ::Entity>();
-            ASSERT_TRUE(m_entity);
-
-            m_entity->Init();
-
-            m_gradientEntity1 = AZStd::make_unique<AZ::Entity>();
-            ASSERT_TRUE(m_gradientEntity1);
-
-            m_gradientEntity1->Init();
-
-            m_gradientEntity2 = AZStd::make_unique<AZ::Entity>();
-            ASSERT_TRUE(m_gradientEntity2);
-
-            m_gradientEntity2->Init();
+            auto entity = AZStd::make_unique<AZ::Entity>();
+            entity->Init();
+            return entity;
         }
 
-        void AddSurfaceGradientListToEntities()
+        UnitTest::MockTerrainLayerSpawnerComponent* AddRequiredComponentsToEntity(AZ::Entity* entity)
         {
-            m_layerSpawnerComponent = m_entity->CreateComponent<UnitTest::MockTerrainLayerSpawnerComponent>();
-            m_app.RegisterComponentDescriptor(m_layerSpawnerComponent->CreateDescriptor());
+            auto layerSpawnerComponent = entity->CreateComponent<UnitTest::MockTerrainLayerSpawnerComponent>();
+            m_app.RegisterComponentDescriptor(layerSpawnerComponent->CreateDescriptor());
 
-            Terrain::TerrainSurfaceGradientListConfig config;
-
-            Terrain::TerrainSurfaceGradientMapping mapping1;
-            mapping1.m_gradientEntityId = m_gradientEntity1->GetId();
-            mapping1.m_surfaceTag = SurfaceData::SurfaceTag(surfaceTag1);
-            config.m_gradientSurfaceMappings.emplace_back(mapping1);
-
-            Terrain::TerrainSurfaceGradientMapping mapping2;
-            mapping2.m_gradientEntityId = m_gradientEntity2->GetId();
-            mapping2.m_surfaceTag = SurfaceData::SurfaceTag(surfaceTag2);
-            config.m_gradientSurfaceMappings.emplace_back(mapping2);
-
-            Terrain::TerrainSurfaceGradientListComponent* terrainSurfaceGradientListComponent =
-                m_entity->CreateComponent<Terrain::TerrainSurfaceGradientListComponent>(config);
-            m_app.RegisterComponentDescriptor(terrainSurfaceGradientListComponent->CreateDescriptor());
+            return layerSpawnerComponent;
         }
     };
+
+    TEST_F(TerrainSurfaceGradientListTest, SurfaceGradientMissingRequirementsActivateFails)
+    {
+        auto entity = CreateEntity();
+
+        auto terrainSurfaceGradientListComponent = entity->CreateComponent<Terrain::TerrainSurfaceGradientListComponent>();
+        m_app.RegisterComponentDescriptor(terrainSurfaceGradientListComponent->CreateDescriptor());
+
+        const AZ::Entity::DependencySortOutcome sortOutcome = entity->EvaluateDependenciesGetDetails();
+        EXPECT_FALSE(sortOutcome.IsSuccess());
+    }
+
+    TEST_F(TerrainSurfaceGradientListTest, SurfaceGradientActivateSuccess)
+    {
+        auto entity = CreateEntity();
+
+        AddRequiredComponentsToEntity(entity.get());
+
+        auto terrainSurfaceGradientListComponent = entity->CreateComponent<Terrain::TerrainSurfaceGradientListComponent>();
+        m_app.RegisterComponentDescriptor(terrainSurfaceGradientListComponent->CreateDescriptor());
+
+        entity->Activate();
+
+        EXPECT_EQ(entity->GetState(), AZ::Entity::State::Active);
+    }
 
     TEST_F(TerrainSurfaceGradientListTest, SurfaceGradientReturnsSurfaceWeights)
     {
         // When there is more than one surface/weight defined and added to the component, they should all
         // be returned.  The component isn't required to return them in descending order.
-        AddSurfaceGradientListToEntities();
+        auto entity = CreateEntity();
 
-        m_entity->Activate();
-        m_gradientEntity1->Activate();
-        m_gradientEntity2->Activate();
+        AddRequiredComponentsToEntity(entity.get());
+
+        auto gradientEntity1 = CreateEntity();
+        auto gradientEntity2 = CreateEntity();
 
         const float gradient1Value = 0.3f;
-        NiceMock<UnitTest::MockGradientRequests> mockGradientRequests1(m_gradientEntity1->GetId());
+        NiceMock<UnitTest::MockGradientRequests> mockGradientRequests1(gradientEntity1->GetId());
         ON_CALL(mockGradientRequests1, GetValue).WillByDefault(Return(gradient1Value));
 
         const float gradient2Value = 1.0f;
-        NiceMock<UnitTest::MockGradientRequests> mockGradientRequests2(m_gradientEntity2->GetId());
+        NiceMock<UnitTest::MockGradientRequests> mockGradientRequests2(gradientEntity2->GetId());
         ON_CALL(mockGradientRequests2, GetValue).WillByDefault(Return(gradient2Value));
 
         AzFramework::SurfaceData::SurfaceTagWeightList weightList;
         Terrain::TerrainAreaSurfaceRequestBus::Event(
-            m_entity->GetId(), &Terrain::TerrainAreaSurfaceRequestBus::Events::GetSurfaceWeights, AZ::Vector3::CreateZero(), weightList);
+            entity->GetId(), &Terrain::TerrainAreaSurfaceRequestBus::Events::GetSurfaceWeights, AZ::Vector3::CreateZero(), weightList);
 
         AZ::Crc32 expectedCrcList[] = { AZ::Crc32(surfaceTag1), AZ::Crc32(surfaceTag2) };
         const float expectedWeightList[] = { gradient1Value, gradient2Value };

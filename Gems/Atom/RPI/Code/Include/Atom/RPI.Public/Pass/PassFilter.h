@@ -56,8 +56,8 @@ namespace AZ
                 OwnerRenderPipeline = AZ_BIT(5)
             };
 
-            void SetOwenrScene(const Scene* scene);
-            void SetOwenrRenderPipeline(const RenderPipeline* renderPipeline);
+            void SetOwnerScene(const Scene* scene);
+            void SetOwnerRenderPipeline(const RenderPipeline* renderPipeline);
             void SetPassName(Name passName);
             void SetTemplateName(Name passTemplateName);
             void SetPassClass(TypeId passClassTypeId);

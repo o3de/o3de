@@ -196,8 +196,6 @@ namespace AZ
                 }
                 else
                 {
-                    // If this asset didn't load or isn't a cubemap, release it.
-                    m_configuration.m_cubemapAsset.Release();
                     m_featureProcessorInterface->SetCubemap(nullptr);
                 }
             }
