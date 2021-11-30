@@ -123,10 +123,10 @@ namespace AzToolsFramework
         float m_size = 0.06f; //!< size to render and do mouse ray intersection tests against.
 
     private:
-        AZ::Vector3 m_cameraCorrectedAxis1;
-        AZ::Vector3 m_cameraCorrectedAxis2;
-        AZ::Vector3 m_cameraCorrectedOffsetAxis1;
-        AZ::Vector3 m_cameraCorrectedOffsetAxis2;
+        AZ::Vector3 m_cameraCorrectedAxis1; //!< First axis of quad (should be orthogonal to second axis).
+        AZ::Vector3 m_cameraCorrectedAxis2; //!< Second axis of quad (should be orthogonal to first axis).
+        AZ::Vector3 m_cameraCorrectedOffsetAxis1; //!< Offset along first axis (parallel with first axis).
+        AZ::Vector3 m_cameraCorrectedOffsetAxis2; //!< Offset along second axis (parallel with second axis).
     };
 
     //! A screen aligned quad, centered at the position of the manipulator, display filled.

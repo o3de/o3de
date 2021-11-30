@@ -39,4 +39,28 @@ namespace AzToolsFramework
 
     bool FlipManipulatorAxesTowardsView();
     void SetFlipManipulatorAxesTowardsView(bool enabled);
-}
+
+    float LinearManipulatorAxisLength();
+    void SetLinearManipulatorAxisLength(float length);
+
+    float PlanarManipulatorAxisLength();
+    void SetPlanarManipulatorAxisLength(float length);
+
+    float SurfaceManipulatorRadius();
+    void SetSurfaceManipulatorRadius(float radius);
+
+    float SurfaceManipulatorOpacity();
+    void SetSurfaceManipulatorOpacity(float opacity);
+
+    float LinearManipulatorConeLength();
+    void SetLinearManipulatorConeLength(float length);
+
+    float LinearManipulatorConeRadius();
+    void SetLinearManipulatorConeRadius(float radius);
+
+    float ScaleManipulatorBoxHalfExtent();
+    void SetScaleManipulatorBoxHalfExtent(float halfExtent);
+
+    float RotationManipulatorRadius();
+    void SetRotationManipulatorRadius(float radius);
+} // namespace AzToolsFramework

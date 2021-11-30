@@ -11,6 +11,14 @@
 namespace AzToolsFramework
 {
     constexpr AZStd::string_view FlipManipulatorAxesTowardsViewSetting = "/Amazon/Preferences/Editor/FlipManipulatorAxesTowardsView";
+    constexpr AZStd::string_view LinearManipulatorAxisLengthSetting = "/Amazon/Preferences/Editor/LinearManipulatorAxisLength";
+    constexpr AZStd::string_view PlanarManipulatorAxisLengthSetting = "/Amazon/Preferences/Editor/PlanarManipulatorAxisLength";
+    constexpr AZStd::string_view SurfaceManipulatorRadiusSetting = "/Amazon/Preferences/Editor/SurfaceManipulatorRadius";
+    constexpr AZStd::string_view SurfaceManipulatorOpacitySetting = "/Amazon/Preferences/Editor/SurfaceManipulatorOpacity";
+    constexpr AZStd::string_view LinearManipulatorConeLengthSetting = "/Amazon/Preferences/Editor/LinearManipulatorConeLength";
+    constexpr AZStd::string_view LinearManipulatorConeRadiusSetting = "/Amazon/Preferences/Editor/LinearManipulatorConeRadius";
+    constexpr AZStd::string_view ScaleManipulatorBoxHalfExtentSetting = "/Amazon/Preferences/Editor/ScaleManipulatorBoxHalfExtent";
+    constexpr AZStd::string_view RotationManipulatorRadiusSetting = "/Amazon/Preferences/Editor/RotationManipulatorRadius";
 
     bool FlipManipulatorAxesTowardsView()
     {
@@ -20,5 +28,85 @@ namespace AzToolsFramework
     void SetFlipManipulatorAxesTowardsView(const bool enabled)
     {
         SetRegistry(FlipManipulatorAxesTowardsViewSetting, enabled);
+    }
+
+    float LinearManipulatorAxisLength()
+    {
+        return aznumeric_cast<float>(GetRegistry(LinearManipulatorAxisLengthSetting, 2.0));
+    }
+
+    void SetLinearManipulatorAxisLength(const float length)
+    {
+        SetRegistry(LinearManipulatorAxisLengthSetting, length);
+    }
+
+    float PlanarManipulatorAxisLength()
+    {
+        return aznumeric_cast<float>(GetRegistry(PlanarManipulatorAxisLengthSetting, 0.6));
+    }
+
+    void SetPlanarManipulatorAxisLength(const float length)
+    {
+        SetRegistry(PlanarManipulatorAxisLengthSetting, length);
+    }
+
+    float SurfaceManipulatorRadius()
+    {
+        return aznumeric_cast<float>(GetRegistry(SurfaceManipulatorRadiusSetting, 0.1));
+    }
+
+    void SetSurfaceManipulatorRadius(const float radius)
+    {
+        SetRegistry(SurfaceManipulatorRadiusSetting, radius);
+    }
+
+    float SurfaceManipulatorOpacity()
+    {
+        return aznumeric_cast<float>(GetRegistry(SurfaceManipulatorOpacitySetting, 0.75));
+    }
+
+    void SetSurfaceManipulatorOpacity(const float opacity)
+    {
+        SetRegistry(SurfaceManipulatorOpacitySetting, opacity);
+    }
+
+    float LinearManipulatorConeLength()
+    {
+        return aznumeric_cast<float>(GetRegistry(LinearManipulatorConeLengthSetting, 0.28));
+    }
+
+    void SetLinearManipulatorConeLength(const float length)
+    {
+        SetRegistry(LinearManipulatorConeLengthSetting, length);
+    }
+
+    float LinearManipulatorConeRadius()
+    {
+        return aznumeric_cast<float>(GetRegistry(LinearManipulatorConeRadiusSetting, 0.1));
+    }
+
+    void SetLinearManipulatorConeRadius(const float radius)
+    {
+        SetRegistry(LinearManipulatorConeRadiusSetting, radius);
+    }
+
+    float ScaleManipulatorBoxHalfExtent()
+    {
+        return aznumeric_cast<float>(GetRegistry(ScaleManipulatorBoxHalfExtentSetting, 0.1));
+    }
+
+    void SetScaleManipulatorBoxHalfExtent(const float size)
+    {
+        SetRegistry(ScaleManipulatorBoxHalfExtentSetting, size);
+    }
+
+    float RotationManipulatorRadius()
+    {
+        return aznumeric_cast<float>(GetRegistry(RotationManipulatorRadiusSetting, 2.0));
+    }
+
+    void SetRotationManipulatorRadius(const float radius)
+    {
+        SetRegistry(RotationManipulatorRadiusSetting, radius);
     }
 } // namespace AzToolsFramework

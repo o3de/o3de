@@ -38,13 +38,6 @@ AZ_CVAR(
     nullptr,
     AZ::ConsoleFunctorFlags::Null,
     "The scale factor to apply to the planar manipulator bounds");
-// AZ_CVAR(
-//    bool,
-//    ed_manipulatorFlipAxesTowardsView,
-//    true,
-//    nullptr,
-//    AZ::ConsoleFunctorFlags::Null,
-//    "If enabled, manipulator axes will flip to always face the direction of the camera");
 
 namespace AzToolsFramework
 {
@@ -358,28 +351,23 @@ namespace AzToolsFramework
         const AZ::Vector3 axis1 = m_axis1;
         const AZ::Vector3 axis2 = m_axis2;
 
-        CameraCorrectAxis(
-            axis1, m_cameraCorrectedAxis1, managerState, mouseInteraction, manipulatorState.m_worldFromLocal,
-            manipulatorState.m_localPosition, cameraState);
-        CameraCorrectAxis(
-            axis2, m_cameraCorrectedAxis2, managerState, mouseInteraction, manipulatorState.m_worldFromLocal,
-            manipulatorState.m_localPosition, cameraState);
-        CameraCorrectAxis(
-            axis1 * axis1.Dot(m_offset), m_cameraCorrectedOffsetAxis1, managerState, mouseInteraction, manipulatorState.m_worldFromLocal,
-            manipulatorState.m_localPosition, cameraState);
-        CameraCorrectAxis(
-            axis2 * axis2.Dot(m_offset), m_cameraCorrectedOffsetAxis2, managerState, mouseInteraction, manipulatorState.m_worldFromLocal,
-            manipulatorState.m_localPosition, cameraState);
+        // support partial application of CameraCorrectAxis to reduce redundant call site parameters
+        auto cameraCorrectAxisPartialFn =
+            [&manipulatorState, &managerState, &mouseInteraction, &cameraState](const AZ::Vector3& inAxis, AZ::Vector3& outAxis)
+        {
+            CameraCorrectAxis(
+                inAxis, outAxis, managerState, mouseInteraction, manipulatorState.m_worldFromLocal, manipulatorState.m_localPosition,
+                cameraState);
+        };
 
+        cameraCorrectAxisPartialFn(axis1, m_cameraCorrectedAxis1);
+        cameraCorrectAxisPartialFn(axis2, m_cameraCorrectedAxis2);
+        cameraCorrectAxisPartialFn(axis1 * axis1.Dot(m_offset), m_cameraCorrectedOffsetAxis1);
+        cameraCorrectAxisPartialFn(axis2 * axis2.Dot(m_offset), m_cameraCorrectedOffsetAxis2);
+
+        const auto cameraCorrectedVisualOffset = (m_cameraCorrectedOffsetAxis1 + m_cameraCorrectedOffsetAxis2);
         const auto viewScale =
             ManipulatorViewScaleMultiplier(manipulatorState.m_worldFromLocal.TransformPoint(manipulatorState.m_localPosition), cameraState);
-
-        const float hitSize = m_size * ed_planarManipulatorBoundScaleFactor;
-        const float halfSize = (hitSize - m_size) * 0.5f;
-        const auto cameraCorrectedVisualOffset = (m_cameraCorrectedOffsetAxis1 + m_cameraCorrectedOffsetAxis2);
-        const auto cameraCorrectedHitOffset =
-            cameraCorrectedVisualOffset - (m_cameraCorrectedAxis1 * halfSize + m_cameraCorrectedAxis2 * halfSize);
-
         const Picking::BoundShapeQuad quadBoundVisual = CalculateQuadBound(
             manipulatorState.m_localPosition + (cameraCorrectedVisualOffset * viewScale), manipulatorState, m_cameraCorrectedAxis1,
             m_cameraCorrectedAxis2, m_size * viewScale);
@@ -404,6 +392,12 @@ namespace AzToolsFramework
             debugDisplay.CullOn();
         }
 
+        // total size of bounds to use for mouse intersection
+        const float hitSize = m_size * ed_planarManipulatorBoundScaleFactor;
+        // size of edge bounds (the 'margin/border' outside the visual representation)
+        const float edgeSize = (hitSize - m_size) * 0.5f;
+        const auto cameraCorrectedHitOffset =
+            cameraCorrectedVisualOffset - (m_cameraCorrectedAxis1 * edgeSize + m_cameraCorrectedAxis2 * edgeSize);
         const Picking::BoundShapeQuad quadBoundHit = CalculateQuadBound(
             manipulatorState.m_localPosition + (cameraCorrectedHitOffset * viewScale), manipulatorState, m_cameraCorrectedAxis1,
             m_cameraCorrectedAxis2, hitSize * viewScale);
