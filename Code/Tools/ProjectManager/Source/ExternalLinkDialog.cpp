@@ -19,7 +19,7 @@
 #include <QVBoxLayout>
 #include <QVariant>
 #include <QIcon>
-#include <QCheckbox>
+#include <QCheckBox>
 
 namespace O3DE::ProjectManager
 {
