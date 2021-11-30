@@ -68,7 +68,7 @@ namespace WwiseBuilder
             if (iter == fileNames.end())
             {
                 // Init bank wasn't found, which likely means it was modified by hand. However, every bank is dependent
-                // on init.bnk (other than itself), so just force add it as a dependency here. and emit a warning.
+                // on init.bnk (other than itself), so force-add it as a dependency here and return a warning message.
                 AZStd::string dependencyWarning;
                 if (fileNames.size() == 0)
                 {
@@ -292,13 +292,13 @@ namespace WwiseBuilder
         if (!gatherDependenciesResult.IsSuccess())
         {
             return AZ::Failure(AZStd::string::format(
-                "Failed to gather dependencies for %s from metadata file %s. %s", fullPath.c_str(), bankMetadataPath.c_str(),
+                "Dependency metadata file %s was processed, with errors:\n%s", bankMetadataPath.c_str(),
                 gatherDependenciesResult.GetError().c_str()));
         }
         else if (!gatherDependenciesResult.GetValue().empty())
         {
             success_message = AZStd::string::format(
-                "Dependency metadata file %s was processed, with warnings: %s", bankMetadataPath.c_str(),
+                "Dependency metadata file %s was processed, with warnings:\n%s", bankMetadataPath.c_str(),
                 gatherDependenciesResult.GetValue().c_str());
         }
 
