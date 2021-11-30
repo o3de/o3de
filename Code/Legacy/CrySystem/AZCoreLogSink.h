@@ -127,7 +127,7 @@ public:
             CryLogAlways("%s", message);
         }
 
-        return true; // suppress default AzCore behavior.
+        return m_suppressSystemOutput;
 #else
         AZ_UNUSED(fileName);
         AZ_UNUSED(line);
@@ -147,7 +147,7 @@ public:
             return false; // allow AZCore to do its default behavior.
         }
         gEnv->pLog->LogError("(%s) - %s", window, message);
-        return true; // suppress default AzCore behavior.
+        return m_suppressSystemOutput;
     }
 
     bool OnPreWarning(const char* window, const char* fileName, int line, const char* func, const char* message) override
@@ -162,7 +162,7 @@ public:
         }
 
         CryWarning(VALIDATOR_MODULE_UNKNOWN, VALIDATOR_WARNING, "(%s) - %s", window, message);
-        return true; // suppress default AzCore behavior.
+        return m_suppressSystemOutput;
     }
 
     bool OnOutput(const char* window, const char* message)  override
