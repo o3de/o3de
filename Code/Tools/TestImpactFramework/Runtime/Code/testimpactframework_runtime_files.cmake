@@ -127,8 +127,6 @@ set(FILES
     Source/TestEngine/Common/TestImpactTestEngineException.h
     Source/TestEngine/Common/TestImpactErrorCodeChecker.cpp
     Source/TestEngine/Common/TestImpactErrorCodeChecker.h
-    Source/TestEngine/Common/TestImpactTestEngineArtifactDirectory.cpp
-    Source/TestEngine/Common/TestImpactTestEngineArtifactDirectory.h
     Source/TestEngine/Common/TestImpactTestEngine.h
     Source/TestEngine/Common/Job/TestImpactTestEngineJob.h
     Source/TestEngine/Common/Job/TestImpactTestJobInfoGenerator.h
