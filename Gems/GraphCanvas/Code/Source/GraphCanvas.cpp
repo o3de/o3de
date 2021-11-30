@@ -412,6 +412,8 @@ namespace GraphCanvas
 
     void GraphCanvasSystemComponent::PopulateTranslationDatabase()
     {
+        m_translationAssets.clear();
+
         for (const AZ::Data::AssetId& assetId : m_translationAssets)
         {
             AZ::Data::AssetBus::MultiHandler::BusConnect(assetId);
