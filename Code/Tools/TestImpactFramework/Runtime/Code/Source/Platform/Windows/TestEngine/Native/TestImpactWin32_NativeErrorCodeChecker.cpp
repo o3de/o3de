@@ -6,7 +6,7 @@
  *
  */
 
-#include <TestEngine/Native/TestImpactNativeErrorCodeHandler.h>
+#include <TestEngine/Native/TestImpactNativeErrorCodeChecker.h>
 
 namespace TestImpact
 {
@@ -19,16 +19,13 @@ namespace TestImpact
         }
     }
 
-    ErrorCodeHandler GetNativeInstrumentationErrorCodeHandler()
+    AZStd::optional<Client::TestRunResult> CheckNativeInstrumentationErrorCode(ReturnCode returnCode)
     {
-        return [](ReturnCode returnCode) -> AZStd::optional<Client::TestRunResult>
+        if (returnCode == ErrorCodes::OpenCppCoverage::InvalidArgs)
         {
-            if (returnCode == ErrorCodes::OpenCppCoverage::InvalidArgs)
-            {
-                return Client::TestRunResult::FailedToExecute;
-            }
+            return Client::TestRunResult::FailedToExecute;
+        }
 
-            return AZStd::nullopt;
-        };
+        return AZStd::nullopt;
     }
 } // namespace TestImpact

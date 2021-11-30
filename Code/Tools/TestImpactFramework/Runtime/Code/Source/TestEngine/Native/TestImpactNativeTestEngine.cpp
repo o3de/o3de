@@ -8,29 +8,89 @@
 
 #include <TestImpactFramework/TestImpactUtils.h>
 
-#include <Target/Native/TestImpactnativeTestTarget.h>
+#include <Target/Native/TestImpactNativeTestTarget.h>
 #include <TestEngine/Common/TestImpactTestEngineException.h>
 #include <TestEngine/Native/TestImpactNativeTestEngine.h>
-#include <TestEngine/Common/TestImpactErrorCodeChecker.h>
-#include <TestEngine/Native/TestImpactNativeErrorCodeHandler.h>
+#include <TestEngine/Native/TestImpactNativeErrorCodeChecker.h>
+#include <TestEngine/Native/Job/TestImpactNativeTestJobInfoGenerator.h>
 #include <TestRunner/Native/TestImpactNativeTestEnumerator.h>
 #include <TestRunner/Native/TestImpactNativeInstrumentedTestRunner.h>
 #include <TestRunner/Native/TestImpactNativeRegularTestRunner.h>
-#include <TestEngine/Native/Job/TestImpactNativeTestJobInfoGenerator.h>
 
 namespace TestImpact
 {
     //!
-    AZStd::optional<Client::TestRunResult> StandAloneErrorHandler(ReturnCode returnCode)
+    AZStd::optional<Client::TestRunResult> NativeRegularTestRunnerErrorCodeChecker(
+        const typename NativeRegularTestRunner::JobInfo& jobInfo, const JobMeta& meta)
     {
-        if (returnCode == 0)
+        if (jobInfo.GetLaunchMethod() == LaunchMethod::StandAlone)
         {
-            return AZStd::nullopt;
+            // Check the test first, then assume any other error is an error reported by the stand alone test target binary
+            if(auto result = CheckNativeTestLibraryErrorCode(meta.m_returnCode.value()); result.has_value())
+            {
+                return result;
+            }
+
+            if (auto result = CheckStandAloneError(meta.m_returnCode.value()); result.has_value())
+            {
+                return result;
+            }
         }
         else
         {
-            return Client::TestRunResult::FailedToExecute;
+            // Check the test runner first as this has specific error codes (unlike GTest)
+            if(auto result = CheckNativeTestRunnerErrorCode(meta.m_returnCode.value()); result.has_value())
+            {
+                return result;
+            }
+
+            if(auto result = CheckNativeTestLibraryErrorCode(meta.m_returnCode.value()); result.has_value())
+            {
+                return result;
+            }
         }
+
+        return AZStd::nullopt;
+    }
+
+    //!
+    AZStd::optional<Client::TestRunResult> NativeInstrumentedTestRunnerErrorCodeChecker(
+        const typename NativeInstrumentedTestRunner::JobInfo& jobInfo, const JobMeta& meta)
+    {
+        // Check the test first, then assume any other error is an error reported by the stand alone test target binary
+        if (auto result = CheckNativeInstrumentationErrorCode(meta.m_returnCode.value()); result.has_value())
+        {
+            return result;
+        }
+
+        if (jobInfo.GetLaunchMethod() == LaunchMethod::StandAlone)
+        {
+        
+            if (auto result = CheckNativeTestLibraryErrorCode(meta.m_returnCode.value()); result.has_value())
+            {
+                return result;
+            }
+
+            if (auto result = CheckStandAloneError(meta.m_returnCode.value()); result.has_value())
+            {
+                return result;
+            }
+        }
+        else
+        {
+            // Check the test runner first as this has specific error codes (unlike GTest)
+            if (auto result = CheckNativeTestRunnerErrorCode(meta.m_returnCode.value()); result.has_value())
+            {
+                return result;
+            }
+
+            if (auto result = CheckNativeTestLibraryErrorCode(meta.m_returnCode.value()); result.has_value())
+            {
+                return result;
+            }
+        }
+
+        return AZStd::nullopt;
     }
 
     //!
@@ -49,12 +109,7 @@ namespace TestImpact
                     engineJobs,
                     executionFailurePolicy,
                     testFailurePolicy,
-                    AZStd::vector<ErrorCodeHandler>{ GetNativeTestLibraryErrorCodeHandler(),
-                                                    [](ReturnCode returnCode)
-                                                    {
-                                                       return StandAloneErrorHandler(returnCode);
-                                                    } },
-                    AZStd::vector<ErrorCodeHandler>{ GetNativeTestRunnerErrorCodeHandler(), GetNativeTestLibraryErrorCodeHandler() },
+                    NativeRegularTestRunnerErrorCodeChecker,
                     callback)
         {
         }
@@ -76,13 +131,7 @@ namespace TestImpact
                     engineJobs,
                     executionFailurePolicy,
                     testFailurePolicy,
-                    AZStd::vector<ErrorCodeHandler>{ GetNativeInstrumentationErrorCodeHandler(), GetNativeTestLibraryErrorCodeHandler(),
-                                                    [](ReturnCode returnCode)
-                                                    {
-                                                       return StandAloneErrorHandler(returnCode);
-                                                    } },
-                    AZStd::vector<ErrorCodeHandler>{ GetNativeInstrumentationErrorCodeHandler(), GetNativeTestRunnerErrorCodeHandler(),
-                                                    GetNativeTestLibraryErrorCodeHandler() },
+                    NativeInstrumentedTestRunnerErrorCodeChecker,
                     callback)
         {
         }
@@ -108,7 +157,7 @@ namespace TestImpact
     template<>
     struct TestJobRunnerTrait<NativeInstrumentedTestRunner>
     {
-        using TestEngineJobType = TestEngineInstrumentedRun<NativeTestTarget>;
+        using TestEngineJobType = TestEngineInstrumentedRun<NativeTestTarget, TestCoverage>;
         using TestJobRunnerCallbackHandlerType = InstrumentedRegularTestJobRunnerCallbackHandler;
     };
 
@@ -191,7 +240,7 @@ namespace TestImpact
             );
     }
 
-    AZStd::pair<TestSequenceResult, AZStd::vector<TestEngineInstrumentedRun<NativeTestTarget>>> NativeTestEngine::InstrumentedRun(
+    AZStd::pair<TestSequenceResult, AZStd::vector<TestEngineInstrumentedRun<NativeTestTarget, TestCoverage>>> NativeTestEngine::InstrumentedRun(
         const AZStd::vector<const NativeTestTarget*>& testTargets,
         Policy::ExecutionFailure executionFailurePolicy,
         Policy::IntegrityFailure integrityFailurePolicy,
@@ -224,7 +273,7 @@ namespace TestImpact
                 if (const auto testResult = engineRun.GetTestResult();
                     testResult == Client::TestRunResult::AllTestsPass || testResult == Client::TestRunResult::TestFailures)
                 {
-                    AZ_TestImpact_Eval(engineRun.GetTestCoverge().has_value(), TestEngineException, AZStd::string::format(
+                    AZ_TestImpact_Eval(engineRun.GetCoverge().has_value(), TestEngineException, AZStd::string::format(
                         "Test target %s completed its test run but failed to produce coverage data", engineRun.GetTestTarget()->GetName().c_str()));
                 }
             }

@@ -8,7 +8,6 @@
 
 #include <Process/Scheduler/TestImpactProcessScheduler.h>
 #include <TestEngine/Common/TestImpactTestEngineException.h>
-#include <TestEngine/Common/TestImpactErrorCodeChecker.h>
 #include <TestEngine/Common/Job/TestImpactTestEngineJob.h>
 
 #include <AzCore/std/containers/unordered_map.h>
@@ -18,6 +17,10 @@
 
 namespace TestImpact
 {
+    //!
+    template<typename TestJobRunner> 
+    using ErrorCodeCheckerCallback = AZStd::function<AZStd::optional<Client::TestRunResult>(const typename TestJobRunner::JobInfo& jobInfo, const JobMeta& meta)>;
+
     //! Callback for when a given test engine job completes.
     template<typename TestTarget>
     using TestEngineJobCompleteCallback = AZStd::function<void(const TestEngineJob<TestTarget>& testJob)>;
@@ -85,15 +88,13 @@ namespace TestImpact
             TestEngineJobMap<IdType, TestTarget>* engineJobs,
             Policy::ExecutionFailure executionFailurePolicy,
             Policy::TestFailure testFailurePolicy,
-            AZStd::vector<ErrorCodeHandler>&& standAloneErrorCodeHandlers,
-            AZStd::vector<ErrorCodeHandler>&& testRunnerErrorCodeHandlers,
+            ErrorCodeCheckerCallback<TestJobRunner> errorCodeCheckerCallback,
             AZStd::optional<TestEngineJobCompleteCallback<TestTarget>>* callback)
             : m_testTargets(testTargets)
             , m_engineJobs(engineJobs)
             , m_executionFailurePolicy(executionFailurePolicy)
             , m_testFailurePolicy(testFailurePolicy)
-            , m_standAloneErrorCodeChecker(AZStd::move(standAloneErrorCodeHandlers))
-            , m_testRunnerErrorCodeChecker(AZStd::move(testRunnerErrorCodeHandlers))
+            , m_errorCodeCheckerCallback(errorCodeCheckerCallback)
             , m_callback(callback)
         {
         }
@@ -132,9 +133,7 @@ namespace TestImpact
             // Attempt to determine why a given test target executed successfully but return with an error code
             if (meta.m_returnCode.has_value())
             {
-                const ErrorCodeChecker& checker =
-                    jobInfo.GetLaunchMethod() == LaunchMethod::StandAlone ? m_standAloneErrorCodeChecker : m_testRunnerErrorCodeChecker;
-                if (const auto result = checker.CheckErrorCode(meta.m_returnCode.value()); result.has_value())
+                if (const auto result = m_errorCodeCheckerCallback(jobInfo, meta); result.has_value())
                 {
                     return result.value();
                 }
@@ -168,8 +167,7 @@ namespace TestImpact
         TestEngineJobMap<typename IdType, TestTarget>* m_engineJobs;
         Policy::ExecutionFailure m_executionFailurePolicy;
         Policy::TestFailure m_testFailurePolicy;
-        ErrorCodeChecker m_standAloneErrorCodeChecker;
-        ErrorCodeChecker m_testRunnerErrorCodeChecker;
+        ErrorCodeCheckerCallback<TestJobRunner> m_errorCodeCheckerCallback;
         AZStd::optional<TestEngineJobCompleteCallback<TestTarget>>* m_callback;
     };
 

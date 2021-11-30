@@ -25,14 +25,11 @@
 
 namespace TestImpact
 {    
-    class TestEngine;
+    class NativeTestEngine;
     class NativeTestTarget;
     class NativeProductionTarget;
     class SourceCoveringTestsList;
     class TestTargetExclusionList;
-
-    template<typename TestTarget>
-    class TestEngineInstrumentedRun;
 
     template<typename TestTarget, typename ProdutionTarget>
     class ChangeDependencyList;
@@ -205,16 +202,8 @@ namespace TestImpact
             const ChangeList& changeList,
             Policy::TestPrioritization testPrioritizationPolicy);
 
-        //! Prunes the existing coverage for the specified jobs and creates the consolidated source covering tests list from the
-        //! test engine instrumented run jobs.
-        SourceCoveringTestsList CreateSourceCoveringTestFromTestCoverages(
-            const AZStd::vector<TestEngineInstrumentedRun<NativeTestTarget>>& jobs);
-
         //! Prepares the dynamic dependency map for a seed update by clearing all existing data and deleting the file that will be serialized.
         void ClearDynamicDependencyMapAndRemoveExistingFile();
-
-        //! Updates the dynamic dependency map and serializes the entire map to disk.
-        void UpdateAndSerializeDynamicDependencyMap(const AZStd::vector<TestEngineInstrumentedRun<NativeTestTarget>>& jobs);
 
         //! Generates a base policy state for the current runtime policy runtime configuration.
         PolicyStateBase GeneratePolicyStateBase() const;
@@ -243,7 +232,7 @@ namespace TestImpact
         AZStd::unique_ptr<BuildTargetList<NativeTestTarget, NativeProductionTarget>> m_buildTargets;
         AZStd::unique_ptr<DynamicDependencyMap<NativeTestTarget, NativeProductionTarget>> m_dynamicDependencyMap;
         AZStd::unique_ptr<TestSelectorAndPrioritizer<NativeTestTarget, NativeProductionTarget>> m_testSelectorAndPrioritizer;
-        AZStd::unique_ptr<TestEngine> m_testEngine;
+        AZStd::unique_ptr<NativeTestEngine> m_testEngine;
         AZStd::unique_ptr<TestTargetExclusionList> m_regularTestTargetExcludeList;
         AZStd::unique_ptr<TestTargetExclusionList> m_instrumentedTestTargetExcludeList;
         AZStd::unordered_set<const NativeTestTarget*> m_testTargetShardList;

@@ -32,7 +32,7 @@ namespace TestImpact
     template<typename TestTarget>
     TestEngineRegularRun<TestTarget>::TestEngineRegularRun(
         TestEngineJob<TestTarget>&& testJob, AZStd::optional<TestRun>&& testRun)
-        : TestEngineJob<NativeTestTarget>(AZStd::move(testJob))
+        : TestEngineJob<TestTarget>(AZStd::move(testJob))
         , m_testRun(AZStd::move(testRun))
     {
     }

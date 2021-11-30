@@ -123,8 +123,6 @@ set(FILES
     Source/TestRunner/Python/TestImpactPythonTestRunner.cpp
     Source/TestRunner/Python/TestImpactPythonTestRunner.h
     Source/TestEngine/Common/TestImpactTestEngineException.h
-    Source/TestEngine/Common/TestImpactErrorCodeChecker.cpp
-    Source/TestEngine/Common/TestImpactErrorCodeChecker.h
     Source/TestEngine/Common/TestImpactTestEngine.h
     Source/TestEngine/Common/Job/TestImpactTestEngineJob.h
     Source/TestEngine/Common/Job/TestImpactTestJobInfoGenerator.h
@@ -134,8 +132,8 @@ set(FILES
     Source/TestEngine/Common/Run/TestImpactTestEngineInstrumentedRun.h
     Source/TestEngine/Native/TestImpactNativeTestEngine.cpp
     Source/TestEngine/Native/TestImpactNativeTestEngine.h
-    Source/TestEngine/Native/TestImpactNativeErrorCodeHandler.cpp
-    Source/TestEngine/Native/TestImpactNativeErrorCodeHandler.h
+    Source/TestEngine/Native/TestImpactNativeErrorCodeChecker.cpp
+    Source/TestEngine/Native/TestImpactNativeErrorCodeChecker.h
     Source/TestEngine/Native/TestImpactNativeTestTargetExtension.h
     Source/TestEngine/Native/Job/TestImpactNativeTestJobInfoUtils.cpp
     Source/TestEngine/Native/Job/TestImpactNativeTestJobInfoUtils.h
@@ -147,6 +145,8 @@ set(FILES
     Source/TestEngine/Python/Job/TestImpactPythonTestJobInfoGenerator.h
     Source/TestEngine/Python/TestImpactPythonTestEngine.cpp
     Source/TestEngine/Python/TestImpactPythonTestEngine.h
+    Source/TestEngine/Python/TestImpactPythonErrorCodeChecker.cpp
+    Source/TestEngine/Python/TestImpactPythonErrorCodeChecker.h
     Source/TestImpactException.cpp
     Source/TestImpactRuntime.cpp
     Source/TestImpactRuntimeUtils.cpp

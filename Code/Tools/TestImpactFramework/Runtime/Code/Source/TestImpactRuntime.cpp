@@ -284,7 +284,7 @@ namespace TestImpact
             ConstructTestTargetExcludeList(testTargetList, AZStd::move(m_config.m_target.m_excludedInstrumentedTestTargets));
 
         // Construct the test engine with the workspace path and launcher binaries
-        m_testEngine = AZStd::make_unique<TestEngine>(
+        m_testEngine = AZStd::make_unique<NativeTestEngine>(
             m_config.m_repo.m_root,
             m_config.m_target.m_outputDirectory,
             m_config.m_workspace.m_temp.m_enumerationCacheDirectory,
@@ -417,21 +417,26 @@ namespace TestImpact
         DeleteFile(m_sparTiaFile);
     }
 
-    SourceCoveringTestsList Runtime::CreateSourceCoveringTestFromTestCoverages(
-        const AZStd::vector<TestEngineInstrumentedRun<NativeTestTarget>>& jobs)
+    //! Prunes the existing coverage for the specified jobs and creates the consolidated source covering tests list from the
+    //! test engine instrumented run jobs.
+    SourceCoveringTestsList CreateSourceCoveringTestFromTestCoverages(
+        DynamicDependencyMap<NativeTestTarget, NativeProductionTarget>* dynamicDependencyMap,
+        const AZStd::vector<TestEngineInstrumentedRun<NativeTestTarget, TestCoverage>>& jobs,
+        Policy::FailedTestCoverage failedTestCoveragePolicy,
+        const RepoPath& repoRoot)
     {
         AZStd::unordered_map<AZStd::string, AZStd::unordered_set<AZStd::string>> coverage;
         for (const auto& job : jobs)
         {
             // First we must remove any existing coverage for the test target so as to not end up with source remnants from previous
             // coverage that is no longer covered by this revision of the test target
-            m_dynamicDependencyMap->RemoveTestTargetFromSourceCoverage(job.GetTestTarget());
+            dynamicDependencyMap->RemoveTestTargetFromSourceCoverage(job.GetTestTarget());
 
             // Next we will update the coverage of test targets that completed (with or without failures), unless the failed test coverage
             // policy dictates we should instead discard the coverage of test targets with failing tests
             const auto testResult = job.GetTestResult();
 
-            if (m_failedTestCoveragePolicy == Policy::FailedTestCoverage::Discard && testResult == Client::TestRunResult::TestFailures)
+            if (failedTestCoveragePolicy == Policy::FailedTestCoverage::Discard && testResult == Client::TestRunResult::TestFailures)
             {
                 // Discard the coverage for this job
                 continue;
@@ -443,14 +448,14 @@ namespace TestImpact
                 {
                     // Passing tests should have coverage data, otherwise something is very wrong
                     AZ_TestImpact_Eval(
-                        job.GetTestCoverge().has_value(),
+                        job.GetCoverge().has_value(),
                         RuntimeException,
                         AZStd::string::format(
                             "Test target '%s' completed its test run successfully but produced no coverage data. Command string: '%s'",
                             job.GetTestTarget()->GetName().c_str(), job.GetCommandString().c_str()));
                 }
 
-                if (!job.GetTestCoverge().has_value())
+                if (!job.GetCoverge().has_value())
                 {
                     // When a test run completes with failing tests but produces no coverage artifact that's typically a sign of the
                     // test aborting due to an unhandled exception, in which case ignore it and let it be picked up in the failure report
@@ -458,7 +463,7 @@ namespace TestImpact
                 }
 
                 // Add the sources covered by this test target to the coverage map
-                for (const auto& source : job.GetTestCoverge().value().GetSourcesCovered())
+                for (const auto& source : job.GetCoverge().value().GetSourcesCovered())
                 {
                     coverage[source.String()].insert(job.GetTestTarget()->GetName());
                 }
@@ -471,10 +476,10 @@ namespace TestImpact
         {
             // Check to see whether this source is inside the repo or not (not a perfect check but weeds out the obvious non-repo sources)
             if (const auto sourcePath = RepoPath(source);
-                sourcePath.IsRelativeTo(m_config.m_repo.m_root))
+                sourcePath.IsRelativeTo(repoRoot))
             {
                 sourceCoveringTests.push_back(
-                    SourceCoveringTests(RepoPath(sourcePath.LexicallyRelative(m_config.m_repo.m_root)), AZStd::move(testTargets)));
+                    SourceCoveringTests(RepoPath(sourcePath.LexicallyRelative(repoRoot)), AZStd::move(testTargets)));
             }
             else
             {
@@ -485,25 +490,34 @@ namespace TestImpact
         return SourceCoveringTestsList(AZStd::move(sourceCoveringTests));
     }
 
-    void Runtime::UpdateAndSerializeDynamicDependencyMap(const AZStd::vector<TestEngineInstrumentedRun<NativeTestTarget>>& jobs)
+    //! Updates the dynamic dependency map and serializes the entire map to disk.
+    [[nodiscard]] AZStd::optional<bool> UpdateAndSerializeDynamicDependencyMap(
+        DynamicDependencyMap<NativeTestTarget, NativeProductionTarget>* dynamicDependencyMap,
+        const AZStd::vector<TestEngineInstrumentedRun<NativeTestTarget, TestCoverage>>& jobs,
+        Policy::FailedTestCoverage failedTestCoveragePolicy,
+        Policy::IntegrityFailure integrationFailurePolicy,
+        const RepoPath& repoRoot,
+        const RepoPath& sparTiaFile)
     {
         try
         {
-            const auto sourceCoverageTestsList = CreateSourceCoveringTestFromTestCoverages(jobs);
+            const auto sourceCoverageTestsList =
+                CreateSourceCoveringTestFromTestCoverages(dynamicDependencyMap, jobs, failedTestCoveragePolicy, repoRoot);
+
             if (sourceCoverageTestsList.GetNumSources() == 0)
             {
-                return;
+                return AZStd::nullopt;
             }
 
-            m_dynamicDependencyMap->ReplaceSourceCoverage(sourceCoverageTestsList);
-            const auto sparTia = m_dynamicDependencyMap->ExportSourceCoverage();
+            dynamicDependencyMap->ReplaceSourceCoverage(sourceCoverageTestsList);
+            const auto sparTia = dynamicDependencyMap->ExportSourceCoverage();
             const auto sparTiaData = SerializeSourceCoveringTestsList(sparTia);
-            WriteFileContents<RuntimeException>(sparTiaData, m_sparTiaFile);
-            m_hasImpactAnalysisData = true;
+            WriteFileContents<RuntimeException>(sparTiaData, sparTiaFile);
+            return true;
         }
         catch(const RuntimeException& e)
         {
-            if (m_integrationFailurePolicy == Policy::IntegrityFailure::Abort)
+            if (integrationFailurePolicy == Policy::IntegrityFailure::Abort)
             {
                 throw e;
             }
@@ -512,6 +526,8 @@ namespace TestImpact
                 AZ_Error(LogCallSite, false, e.what());
             }
         }
+
+        return AZStd::nullopt;
     }
 
     PolicyStateBase Runtime::GeneratePolicyStateBase() const
@@ -688,10 +704,16 @@ namespace TestImpact
 
         if (dynamicDependencyMapPolicy == Policy::DynamicDependencyMap::Update)
         {
-            AZStd::optional<AZStd::function<void(const AZStd::vector<TestEngineInstrumentedRun<NativeTestTarget>>& jobs)>>
-                updateCoverage = [this](const AZStd::vector<TestEngineInstrumentedRun<NativeTestTarget>>& jobs)
+            AZStd::optional<AZStd::function<void(const AZStd::vector<TestEngineInstrumentedRun<NativeTestTarget, TestCoverage>>& jobs)>>
+                updateCoverage = [this](const AZStd::vector<TestEngineInstrumentedRun<NativeTestTarget, TestCoverage>>& jobs)
             {
-                UpdateAndSerializeDynamicDependencyMap(jobs);
+                m_hasImpactAnalysisData = UpdateAndSerializeDynamicDependencyMap(
+                    m_dynamicDependencyMap.get(),
+                    jobs,
+                    m_failedTestCoveragePolicy,
+                    m_integrationFailurePolicy,
+                    m_config.m_repo.m_root,
+                    m_sparTiaFile).value_or(m_hasImpactAnalysisData);
             };
 
             return ImpactAnalysisTestSequenceWrapper(
@@ -743,7 +765,7 @@ namespace TestImpact
         AZStd::optional<TestRunCompleteCallback> testCompleteCallback)
     {
         const Timer sequenceTimer;
-        TestRunData<TestEngineInstrumentedRun<NativeTestTarget>> selectedTestRunData, draftedTestRunData;
+        TestRunData<TestEngineInstrumentedRun<NativeTestTarget, TestCoverage>> selectedTestRunData, draftedTestRunData;
         TestRunData<TestEngineRegularRun<NativeTestTarget>> discardedTestRunData;
         AZStd::optional<AZStd::chrono::milliseconds> sequenceTimeout = globalTimeout;
 
@@ -883,7 +905,14 @@ namespace TestImpact
             (*testSequenceEndCallback)(sequenceReport);
         }
 
-        UpdateAndSerializeDynamicDependencyMap(ConcatenateVectors(selectedTestRunData.m_jobs, draftedTestRunData.m_jobs));
+        m_hasImpactAnalysisData = UpdateAndSerializeDynamicDependencyMap(
+                    m_dynamicDependencyMap.get(),
+                    ConcatenateVectors(selectedTestRunData.m_jobs, draftedTestRunData.m_jobs),
+                    m_failedTestCoveragePolicy,
+                    m_integrationFailurePolicy,
+                    m_config.m_repo.m_root,
+                    m_sparTiaFile).value_or(m_hasImpactAnalysisData);
+
         return sequenceReport;
     }
 
@@ -950,7 +979,15 @@ namespace TestImpact
         }
 
         ClearDynamicDependencyMapAndRemoveExistingFile();
-        UpdateAndSerializeDynamicDependencyMap(testJobs);
+
+         m_hasImpactAnalysisData = UpdateAndSerializeDynamicDependencyMap(
+                    m_dynamicDependencyMap.get(),
+                    testJobs,
+                    m_failedTestCoveragePolicy,
+                    m_integrationFailurePolicy,
+                    m_config.m_repo.m_root,
+                    m_sparTiaFile).value_or(m_hasImpactAnalysisData);
+
         return sequenceReport;
     }
 
