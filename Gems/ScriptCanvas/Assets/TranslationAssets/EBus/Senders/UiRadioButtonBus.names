@@ -5,7 +5,7 @@
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "UiRadioButtonBus",
+                "name": "UI Radio Button",
                 "category": "UI"
             },
             "methods": [

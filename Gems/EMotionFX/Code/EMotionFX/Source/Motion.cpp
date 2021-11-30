@@ -6,7 +6,6 @@
  *
  */
 
-// include the required headers
 #include "EMotionFXConfig.h"
 #include "Motion.h"
 #include <MCore/Source/IDGenerator.h>
@@ -19,9 +18,9 @@
 #include "EventHandler.h"
 #include "MotionEventTable.h"
 #include <EMotionFX/Source/Allocators.h>
-#include <EMotionFX/Source/MotionData/MotionData.h>
 #include <EMotionFX/Source/Node.h>
 #include <EMotionFX/Source/TransformData.h>
+#include <EMotionFX/Source/MotionData/MotionData.h>
 
 namespace EMotionFX
 {
@@ -286,7 +285,7 @@ namespace EMotionFX
     {
         AZ_Assert(m_motionData, "Expecting motion data");
 
-        MotionData::SampleSettings sampleSettings;
+        MotionDataSampleSettings sampleSettings;
         sampleSettings.m_actorInstance = instance->GetActorInstance();
         sampleSettings.m_inPlace = instance->GetIsInPlace();
         sampleSettings.m_mirror = instance->GetMirrorMotion();
@@ -301,7 +300,7 @@ namespace EMotionFX
     {
         AZ_Assert(m_motionData, "Expecting motion data");
 
-        MotionData::SampleSettings sampleSettings;
+        MotionDataSampleSettings sampleSettings;
         sampleSettings.m_actorInstance = instance->GetActorInstance();
         sampleSettings.m_inPlace = instance->GetIsInPlace();
         sampleSettings.m_mirror = instance->GetMirrorMotion();
@@ -309,6 +308,12 @@ namespace EMotionFX
         sampleSettings.m_sampleTime = instance->GetCurrentTime();
         sampleSettings.m_inputPose = inputPose ? inputPose : sampleSettings.m_actorInstance->GetTransformData()->GetBindPose();
         
+        m_motionData->SamplePose(sampleSettings, outputPose);
+    }
+
+    void Motion::SamplePose(Pose* outputPose, const MotionDataSampleSettings& sampleSettings)
+    {
+        AZ_Assert(m_motionData, "Expecting motion data");
         m_motionData->SamplePose(sampleSettings, outputPose);
     }
 

@@ -177,11 +177,9 @@ namespace AssetProcessor
         AZ_TracePrintf(AssetProcessor::DebugChannel, "JobTrace AddNewJob(%i  %s,%s,%s)\n", rcJob, rcJob->GetInputFileAbsolutePath().toUtf8().constData(), rcJob->GetPlatformInfo().m_identifier.c_str(), rcJob->GetJobKey().toUtf8().constData());
 #endif
 
-        bool isPending = false;
         if (rcJob->GetState() == RCJob::pending)
         {
             m_jobsInQueueLookup.insert(rcJob->GetElementID(), rcJob);
-            isPending = true;
         }
         endInsertRows();
     }

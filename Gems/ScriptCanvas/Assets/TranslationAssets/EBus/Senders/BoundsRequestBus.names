@@ -5,7 +5,8 @@
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "Bounds Request Bus"
+                "name": "Bounds",
+                "category": "Rendering"
             },
             "methods": [
                 {

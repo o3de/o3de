@@ -5,7 +5,7 @@
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "DitherGradientRequestBus"
+                "name": "Dither Gradient"
             },
             "methods": [
                 {

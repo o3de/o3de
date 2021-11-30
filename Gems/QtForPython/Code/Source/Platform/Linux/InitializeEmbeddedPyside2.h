@@ -15,6 +15,7 @@ namespace QtForPython
     const char* s_libPythonLibraryFile = "libpython3.7m.so.1.0";
     const char* s_libPyside2LibraryFile = "libpyside2.abi3.so.5.14";
     const char* s_libShibokenLibraryFile = "libshiboken2.abi3.so.5.14";
+    const char* s_libQt5TestLibraryFile = "libQt5Test.so.5";
 
     class InitializeEmbeddedPyside2
     {
@@ -24,9 +25,11 @@ namespace QtForPython
             m_libPythonLibraryFile = InitializeEmbeddedPyside2::LoadModule(s_libPythonLibraryFile);
             m_libPyside2LibraryFile = InitializeEmbeddedPyside2::LoadModule(s_libPyside2LibraryFile);
             m_libShibokenLibraryFile = InitializeEmbeddedPyside2::LoadModule(s_libShibokenLibraryFile);
+            m_libQt5TestLibraryFile = InitializeEmbeddedPyside2::LoadModule(s_libQt5TestLibraryFile);
         }
         virtual ~InitializeEmbeddedPyside2()
         {
+            InitializeEmbeddedPyside2::UnloadModule(m_libQt5TestLibraryFile);
             InitializeEmbeddedPyside2::UnloadModule(m_libShibokenLibraryFile);
             InitializeEmbeddedPyside2::UnloadModule(m_libPyside2LibraryFile);
             InitializeEmbeddedPyside2::UnloadModule(m_libPythonLibraryFile);
@@ -56,5 +59,6 @@ namespace QtForPython
         void* m_libPythonLibraryFile;
         void* m_libPyside2LibraryFile;
         void* m_libShibokenLibraryFile;
+        void* m_libQt5TestLibraryFile;
     };
 } // namespace QtForPython

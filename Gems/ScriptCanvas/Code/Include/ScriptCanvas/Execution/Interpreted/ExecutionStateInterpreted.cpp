@@ -49,11 +49,7 @@ namespace ScriptCanvas
             , config.asset.GetId().ToString<AZStd::string>().data());
 #endif
 
-        if (!runtimeAsset->GetData().m_areStaticsInitialized)
-        {
-            runtimeAsset->GetData().m_areStaticsInitialized = true;
-            Execution::InitializeInterpretedStatics(runtimeAsset->GetData());
-        }
+        Execution::InitializeInterpretedStatics(runtimeAsset->GetData());
     }
 
     void ExecutionStateInterpreted::ClearLuaRegistryIndex()

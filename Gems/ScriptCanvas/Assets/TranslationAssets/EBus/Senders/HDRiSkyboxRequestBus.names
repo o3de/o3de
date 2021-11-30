@@ -5,7 +5,8 @@
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "HDRiSkyboxRequestBus"
+                "name": "HDRi Skybox",
+                "category": "Rendering"
             },
             "methods": [
                 {

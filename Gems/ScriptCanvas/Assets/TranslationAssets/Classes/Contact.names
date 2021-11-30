@@ -5,7 +5,8 @@
             "context": "BehaviorClass",
             "variant": "",
             "details": {
-                "name": "Contact"
+                "name": "Contact",
+                "category": "Physics"
             },
             "methods": [
                 {
@@ -25,7 +26,7 @@
                         {
                             "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
                             "details": {
-                                "name": "Position"
+                                "name": "Vector 3"
                             }
                         }
                     ]
@@ -45,7 +46,7 @@
                         {
                             "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
                             "details": {
-                                "name": "Position"
+                                "name": "Vector 3"
                             }
                         }
                     ]
@@ -67,7 +68,7 @@
                         {
                             "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
                             "details": {
-                                "name": "Normal"
+                                "name": "Vector 3"
                             }
                         }
                     ]
@@ -87,7 +88,7 @@
                         {
                             "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
                             "details": {
-                                "name": "Normal"
+                                "name": "Vector 3"
                             }
                         }
                     ]
@@ -109,7 +110,7 @@
                         {
                             "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
                             "details": {
-                                "name": "Impulse"
+                                "name": "Vector 3"
                             }
                         }
                     ]
@@ -129,7 +130,7 @@
                         {
                             "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
                             "details": {
-                                "name": "Impulse"
+                                "name": "Vector 3"
                             }
                         }
                     ]
@@ -151,7 +152,7 @@
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Separation"
+                                "name": "float"
                             }
                         }
                     ]
@@ -171,7 +172,7 @@
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Separation"
+                                "name": "float"
                             }
                         }
                     ]
