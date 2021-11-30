@@ -28,12 +28,10 @@ namespace GraphCanvas
     {
         namespace Field
         {
-            // Moved away from "key" due to some strict filtering on secrets
-            static constexpr char deprecated_key[] = "key";
-            static constexpr char key[] = "base";
-            static constexpr char context[] = "context";
-            static constexpr char variant[] = "variant";
-            static constexpr char entries[] = "entries";
+            inline constexpr char key[] = "base";
+            inline constexpr char context[] = "context";
+            inline constexpr char variant[] = "variant";
+            inline constexpr char entries[] = "entries";
         }
     }
 }

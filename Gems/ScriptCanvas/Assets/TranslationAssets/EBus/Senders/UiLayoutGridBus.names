@@ -5,7 +5,7 @@
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "UiLayoutGridBus",
+                "name": "UI Layout Grid",
                 "category": "UI"
             },
             "methods": [

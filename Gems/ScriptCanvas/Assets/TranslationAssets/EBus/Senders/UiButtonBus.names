@@ -5,7 +5,7 @@
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "UiButtonBus",
+                "name": "UI Button",
                 "category": "UI"
             },
             "methods": [
@@ -27,7 +27,7 @@
                         {
                             "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
                             "details": {
-                                "name": "AZStd::string"
+                                "name": "Name"
                             }
                         }
                     ]

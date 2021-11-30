@@ -5,7 +5,8 @@
             "context": "BehaviorClass",
             "variant": "",
             "details": {
-                "name": "Slice Instantiation Ticket"
+                "name": "Slice Instantiation Ticket",
+                "category": "Slices"
             },
             "methods": [
                 {
@@ -26,13 +27,7 @@
                         {
                             "typeid": "{E6E7C0C5-07C9-44BB-A38C-930431948667}",
                             "details": {
-                                "name": "Slice Instantiation Ticket*"
-                            }
-                        },
-                        {
-                            "typeid": "{E6E7C0C5-07C9-44BB-A38C-930431948667}",
-                            "details": {
-                                "name": "const  Slice Instantiation Ticket&"
+                                "name": "Slice Instantiation Ticket"
                             }
                         }
                     ],
@@ -40,7 +35,7 @@
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": "Equal"
+                                "name": "bool"
                             }
                         }
                     ]
@@ -59,19 +54,11 @@
                     "details": {
                         "name": "To String"
                     },
-                    "params": [
-                        {
-                            "typeid": "{E6E7C0C5-07C9-44BB-A38C-930431948667}",
-                            "details": {
-                                "name": "Slice Instantiation Ticket*"
-                            }
-                        }
-                    ],
                     "results": [
                         {
                             "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
                             "details": {
-                                "name": "String"
+                                "name": "AZ Std::basic_string<char, AZ Std::char_traits<char>, allocator>"
                             }
                         }
                     ]
@@ -90,19 +77,11 @@
                     "details": {
                         "name": "Is Valid"
                     },
-                    "params": [
-                        {
-                            "typeid": "{E6E7C0C5-07C9-44BB-A38C-930431948667}",
-                            "details": {
-                                "name": "Slice Instantiation Ticket*"
-                            }
-                        }
-                    ],
                     "results": [
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": "Is Valid"
+                                "name": "bool"
                             }
                         }
                     ]

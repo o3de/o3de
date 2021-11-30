@@ -22,9 +22,11 @@ namespace EMStudio
     {
     public:
         AnimViewportToolBar(QWidget* parent = nullptr);
-        ~AnimViewportToolBar() = default;
+        ~AnimViewportToolBar();
 
         void SetRenderFlags(EMotionFX::ActorRenderFlagBitset renderFlags);
+        void LoadSettings();
+        void SaveSettings();
 
     private:
         void CreateViewOptionEntry(
