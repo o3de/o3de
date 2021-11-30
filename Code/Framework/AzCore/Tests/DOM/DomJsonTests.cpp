@@ -12,7 +12,7 @@
 #include <AzCore/Serialization/Json/JsonUtils.h>
 #include <AzCore/UnitTest/TestTypes.h>
 
-namespace AZ::DOM::Tests
+namespace AZ::Dom::Tests
 {
     class DomJsonTests : public UnitTest::AllocatorsFixture
     {
@@ -125,7 +125,7 @@ namespace AZ::DOM::Tests
             AZStd::string canonicalSerializedDocument;
             AZ::JsonSerializationUtils::WriteJsonString(*m_document, canonicalSerializedDocument);
 
-            auto visitDocumentFn = [this](AZ::DOM::Visitor* visitor)
+            auto visitDocumentFn = [this](AZ::Dom::Visitor* visitor)
             {
                 return Json::VisitRapidJsonValue(*m_document, visitor, Lifetime::Persistent);
             };
@@ -149,10 +149,10 @@ namespace AZ::DOM::Tests
             // string -> Document
             {
                 auto result = Json::WriteToRapidJsonDocument(
-                    [&canonicalSerializedDocument](AZ::DOM::Visitor* visitor)
+                    [&canonicalSerializedDocument](AZ::Dom::Visitor* visitor)
                     {
                         JsonBackend backend;
-                        return backend.ReadFromString(canonicalSerializedDocument, AZ::DOM::Lifetime::Temporary, visitor);
+                        return backend.ReadFromString(canonicalSerializedDocument, AZ::Dom::Lifetime::Temporary, visitor);
                     });
                 EXPECT_TRUE(result.IsSuccess());
                 EXPECT_TRUE(DeepCompare(*m_document, result.GetValue()));
@@ -164,9 +164,9 @@ namespace AZ::DOM::Tests
                 JsonBackend backend;
                 auto result = backend.WriteToString(
                     serializedDocument,
-                    [&backend, &canonicalSerializedDocument](AZ::DOM::Visitor* visitor)
+                    [&backend, &canonicalSerializedDocument](AZ::Dom::Visitor* visitor)
                     {
-                        return backend.ReadFromString(canonicalSerializedDocument, AZ::DOM::Lifetime::Temporary, visitor);
+                        return backend.ReadFromString(canonicalSerializedDocument, AZ::Dom::Lifetime::Temporary, visitor);
                     });
                 EXPECT_TRUE(result.IsSuccess());
                 EXPECT_EQ(canonicalSerializedDocument, serializedDocument);
@@ -285,4 +285,4 @@ namespace AZ::DOM::Tests
         m_document->AddMember(CreateString("long_string"), CreateString("abcdefghijklmnopqrstuvwxyz0123456789"), m_document->GetAllocator());
         PerformSerializationChecks();
     }
-} // namespace AZ::DOM::Tests
+} // namespace AZ::Dom::Tests

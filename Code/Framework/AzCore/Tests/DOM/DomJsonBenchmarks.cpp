@@ -20,31 +20,31 @@ namespace Benchmark
     class DomJsonBenchmark : public UnitTest::AllocatorsBenchmarkFixture
     {
     public:
-        void SetUp([[maybe_unused]] const ::benchmark::State& st) override
+        void SetUp(const ::benchmark::State& st) override
         {
             UnitTest::AllocatorsBenchmarkFixture::SetUp(st);
             AZ::NameDictionary::Create();
         }
 
-        void SetUp([[maybe_unused]] ::benchmark::State& st) override
+        void SetUp(::benchmark::State& st) override
         {
             UnitTest::AllocatorsBenchmarkFixture::SetUp(st);
             AZ::NameDictionary::Create();
         }
 
-        void TearDown([[maybe_unused]] ::benchmark::State& st) override
+        void TearDown(::benchmark::State& st) override
         {
             AZ::NameDictionary::Destroy();
             UnitTest::AllocatorsBenchmarkFixture::TearDown(st);
         }
 
-        void TearDown([[maybe_unused]] const ::benchmark::State& st) override
+        void TearDown(const ::benchmark::State& st) override
         {
             AZ::NameDictionary::Destroy();
             UnitTest::AllocatorsBenchmarkFixture::TearDown(st);
         }
 
-        AZStd::string GenerateDomJsonBenchmarkPayload(int64_t entryCount = 100, int64_t stringTemplateLength = 5)
+        AZStd::string GenerateDomJsonBenchmarkPayload(int64_t entryCount, int64_t stringTemplateLength)
         {
             rapidjson::Document document;
             document.SetObject();
@@ -120,7 +120,7 @@ namespace Benchmark
 
     BENCHMARK_DEFINE_F(DomJsonBenchmark, DomDeserializeToDocumentInPlace)(benchmark::State& state)
     {
-        AZ::DOM::JsonBackend backend;
+        AZ::Dom::JsonBackend backend;
         AZStd::string serializedPayload = GenerateDomJsonBenchmarkPayload(state.range(0), state.range(1));
 
         for (auto _ : state)
@@ -129,8 +129,8 @@ namespace Benchmark
             AZStd::string payloadCopy = serializedPayload;
             state.ResumeTiming();
 
-            auto result = AZ::DOM::Json::WriteToRapidJsonDocument(
-                [&](AZ::DOM::Visitor* visitor)
+            auto result = AZ::Dom::Json::WriteToRapidJsonDocument(
+                [&](AZ::Dom::Visitor* visitor)
                 {
                     return backend.ReadFromStringInPlace(payloadCopy, visitor);
                 });
@@ -144,15 +144,15 @@ namespace Benchmark
 
     BENCHMARK_DEFINE_F(DomJsonBenchmark, DomDeserializeToDocument)(benchmark::State& state)
     {
-        AZ::DOM::JsonBackend backend;
+        AZ::Dom::JsonBackend backend;
         AZStd::string serializedPayload = GenerateDomJsonBenchmarkPayload(state.range(0), state.range(1));
 
         for (auto _ : state)
         {
-            auto result = AZ::DOM::Json::WriteToRapidJsonDocument(
-                [&](AZ::DOM::Visitor* visitor)
+            auto result = AZ::Dom::Json::WriteToRapidJsonDocument(
+                [&](AZ::Dom::Visitor* visitor)
                 {
-                    return backend.ReadFromString(serializedPayload, AZ::DOM::Lifetime::Temporary, visitor);
+                    return backend.ReadFromString(serializedPayload, AZ::Dom::Lifetime::Temporary, visitor);
                 });
 
             benchmark::DoNotOptimize(result.GetValue());
@@ -164,7 +164,7 @@ namespace Benchmark
 
     BENCHMARK_DEFINE_F(DomJsonBenchmark, JsonUtilsDeserializeToDocument)(benchmark::State& state)
     {
-        AZ::DOM::JsonBackend backend;
+        AZ::Dom::JsonBackend backend;
         AZStd::string serializedPayload = GenerateDomJsonBenchmarkPayload(state.range(0), state.range(1));
 
         for (auto _ : state)

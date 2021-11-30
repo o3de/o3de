@@ -21,7 +21,7 @@
 #include <AzCore/std/containers/variant.h>
 #include <AzCore/std/optional.h>
 
-namespace AZ::DOM::Json
+namespace AZ::Dom::Json
 {
     //
     // class DocumentWriter
@@ -73,7 +73,7 @@ namespace AZ::DOM::Json
             }
             else
             {
-                CurrentValue().SetString(value.data(), static_cast<rapidjson::SizeType>(value.size()));
+                CurrentValue().SetString(value.data(), static_cast<rapidjson::SizeType>(value.length()));
             }
             return FinishWrite();
         }
@@ -210,11 +210,11 @@ namespace AZ::DOM::Json
             {
             }
 
-            bool m_isObject;
-            rapidjson::Value& m_container;
-            rapidjson::Value m_value;
-            AZ::u64 m_entryCount = 0;
             rapidjson::Value m_key;
+            rapidjson::Value m_value;
+            rapidjson::Value& m_container;
+            AZ::u64 m_entryCount = 0;
+            bool m_isObject;
         };
 
         rapidjson::Document m_result;
@@ -225,13 +225,13 @@ namespace AZ::DOM::Json
     // class StreamWriter
     //
     // Visitor that writes to a rapidjson::Writer
-    template<class TWriter>
+    template<class Writer>
     class StreamWriter : public Visitor
     {
     public:
         StreamWriter(AZ::IO::GenericStream* stream)
             : m_streamWriter(stream)
-            , m_writer(TWriter(m_streamWriter))
+            , m_writer(Writer(m_streamWriter))
         {
         }
 
@@ -305,22 +305,25 @@ namespace AZ::DOM::Json
     private:
         Result CheckWrite(bool writeSucceeded)
         {
-            if (!writeSucceeded)
+            if (writeSucceeded)
+            {
+                return VisitorSuccess();
+            }
+            else
             {
                 return VisitorFailure(VisitorErrorCode::InternalError, "Failed to write JSON");
             }
-            return VisitorSuccess();
         }
 
         AZ::IO::RapidJSONStreamWriter m_streamWriter;
-        TWriter m_writer;
+        Writer m_writer;
     };
 
     //
     // struct JsonReadHandler
     //
-    // Handler for a rapidjson::Reader that translates reads into an AZ::DOM::Visitor
-    struct JsonReadHandler : public rapidjson::BaseReaderHandler<rapidjson::UTF8<>, JsonReadHandler>
+    // Handler for a rapidjson::Reader that translates reads into an AZ::Dom::Visitor
+    struct JsonReadHandler
     {
     public:
         JsonReadHandler(Visitor* visitor, Lifetime stringLifetime)
@@ -365,13 +368,13 @@ namespace AZ::DOM::Json
             return CheckResult(m_visitor->Double(d));
         }
 
-        bool RawNumber([[maybe_unused]] const Ch* str, [[maybe_unused]] rapidjson::SizeType length, [[maybe_unused]] bool copy)
+        bool RawNumber([[maybe_unused]] const char* str, [[maybe_unused]] rapidjson::SizeType length, [[maybe_unused]] bool copy)
         {
-            AZ_Assert(false, "Raw numbers are unsupported");
+            AZ_Assert(false, "Raw numbers are unsupported in the rapidjson DOM backend");
             return false;
         }
 
-        bool String(const Ch* str, rapidjson::SizeType length, bool copy)
+        bool String(const char* str, rapidjson::SizeType length, bool copy)
         {
             Lifetime lifetime = m_stringLifetime;
             if (!copy)
@@ -386,7 +389,7 @@ namespace AZ::DOM::Json
             return CheckResult(m_visitor->StartObject());
         }
 
-        bool Key(const Ch* str, rapidjson::SizeType length, [[maybe_unused]] bool copy)
+        bool Key(const char* str, rapidjson::SizeType length, [[maybe_unused]] bool copy)
         {
             AZStd::string_view key = AZStd::string_view(str, length);
             if (!m_visitor->SupportsRawKeys())
@@ -552,17 +555,18 @@ namespace AZ::DOM::Json
 
     Visitor::Result VisitRapidJsonValue(const rapidjson::Value& value, Visitor* visitor, Lifetime lifetime)
     {
-        enum class EndMarker
+        struct EndArrayMarker
         {
-            EndArray,
-            EndObject
+        };
+        struct EndObjectMarker
+        {
         };
 
         // Processing stack consists of values comprised of one of a:
         // - rapidjson::Value to process
-        // - EndMarker denoting the end of an array or object
+        // - EndArrayMarker or EndObjectMarker denoting the end of an array or object
         // - string denoting a key at the beginning of a key/value pair
-        using Entry = AZStd::variant<const rapidjson::Value*, EndMarker, AZStd::string_view>;
+        using Entry = AZStd::variant<const rapidjson::Value*, EndArrayMarker, EndObjectMarker, AZStd::string_view>;
         AZStd::stack<Entry> entryStack;
         AZStd::stack<u64> entryCountStack;
         entryStack.push(&value);
@@ -572,97 +576,99 @@ namespace AZ::DOM::Json
             const auto currentEntry = entryStack.top();
             entryStack.pop();
 
-            if (AZStd::holds_alternative<EndMarker>(currentEntry))
-            {
-                EndMarker marker = AZStd::get<EndMarker>(currentEntry);
-                if (marker == EndMarker::EndArray)
-                {
-                    visitor->EndArray(entryCountStack.top());
-                }
-                else
-                {
-                    visitor->EndObject(entryCountStack.top());
-                }
-                entryCountStack.pop();
-                continue;
-            }
-
-            if (AZStd::holds_alternative<AZStd::string_view>(currentEntry))
-            {
-                AZStd::string_view key = AZStd::get<AZStd::string_view>(currentEntry);
-                if (visitor->SupportsRawKeys())
-                {
-                    visitor->RawKey(key, lifetime);
-                }
-                else
-                {
-                    visitor->Key(AZ::Name(key));
-                }
-                continue;
-            }
-
-            const rapidjson::Value& currentValue = *AZStd::get<const rapidjson::Value*>(currentEntry);
-            if (!entryCountStack.empty())
-            {
-                ++entryCountStack.top();
-            }
-
             Visitor::Result result = AZ::Success();
 
-            switch (currentValue.GetType())
-            {
-            case rapidjson::kNullType:
-                result = visitor->Null();
-                break;
-            case rapidjson::kFalseType:
-                result = visitor->Bool(false);
-                break;
-            case rapidjson::kTrueType:
-                result = visitor->Bool(true);
-                break;
-            case rapidjson::kObjectType:
-                entryStack.push(EndMarker::EndObject);
-                entryCountStack.push(0);
-                result = visitor->StartObject();
-                for (auto it = currentValue.MemberEnd(); it != currentValue.MemberBegin(); --it)
+            AZStd::visit(
+                [visitor, &entryStack, &entryCountStack, &result, lifetime](auto&& arg)
                 {
-                    auto entry = (it - 1);
-                    const AZStd::string_view key(entry->name.GetString(), static_cast<size_t>(entry->name.GetStringLength()));
-                    entryStack.push(&entry->value);
-                    entryStack.push(key);
-                }
-                break;
-            case rapidjson::kArrayType:
-                entryStack.push(EndMarker::EndArray);
-                entryCountStack.push(0);
-                result = visitor->StartArray();
-                for (auto it = currentValue.End(); it != currentValue.Begin(); --it)
-                {
-                    auto entry = (it - 1);
-                    entryStack.push(entry);
-                }
-                break;
-            case rapidjson::kStringType:
-                result = visitor->String(
-                    AZStd::string_view(currentValue.GetString(), static_cast<size_t>(currentValue.GetStringLength())), lifetime);
-                break;
-            case rapidjson::kNumberType:
-                if (currentValue.IsFloat() || currentValue.IsDouble())
-                {
-                    result = visitor->Double(currentValue.GetDouble());
-                }
-                else if (currentValue.IsInt64() || currentValue.IsInt())
-                {
-                    result = visitor->Int64(currentValue.GetInt64());
-                }
-                else
-                {
-                    result = visitor->Uint64(currentValue.GetUint64());
-                }
-                break;
-            default:
-                return AZ::Failure(VisitorError(VisitorErrorCode::InvalidData, "Value with invalid type specified"));
-            }
+                    using Alternative = AZStd::decay_t<decltype(arg)>;
+                    if constexpr (AZStd::is_same_v<Alternative, const rapidjson::Value*>)
+                    {
+                        const rapidjson::Value& currentValue = *arg;
+                        if (!entryCountStack.empty())
+                        {
+                            ++entryCountStack.top();
+                        }
+
+                        switch (currentValue.GetType())
+                        {
+                        case rapidjson::kNullType:
+                            result = visitor->Null();
+                            break;
+                        case rapidjson::kFalseType:
+                            result = visitor->Bool(false);
+                            break;
+                        case rapidjson::kTrueType:
+                            result = visitor->Bool(true);
+                            break;
+                        case rapidjson::kObjectType:
+                            entryStack.push(EndObjectMarker{});
+                            entryCountStack.push(0);
+                            result = visitor->StartObject();
+                            for (auto it = currentValue.MemberEnd(); it != currentValue.MemberBegin(); --it)
+                            {
+                                auto entry = (it - 1);
+                                const AZStd::string_view key(entry->name.GetString(), static_cast<size_t>(entry->name.GetStringLength()));
+                                entryStack.push(&entry->value);
+                                entryStack.push(key);
+                            }
+                            break;
+                        case rapidjson::kArrayType:
+                            entryStack.push(EndArrayMarker{});
+                            entryCountStack.push(0);
+                            result = visitor->StartArray();
+                            for (auto it = currentValue.End(); it != currentValue.Begin(); --it)
+                            {
+                                auto entry = (it - 1);
+                                entryStack.push(entry);
+                            }
+                            break;
+                        case rapidjson::kStringType:
+                            result = visitor->String(
+                                AZStd::string_view(currentValue.GetString(), static_cast<size_t>(currentValue.GetStringLength())),
+                                lifetime);
+                            break;
+                        case rapidjson::kNumberType:
+                            if (currentValue.IsFloat() || currentValue.IsDouble())
+                            {
+                                result = visitor->Double(currentValue.GetDouble());
+                            }
+                            else if (currentValue.IsInt64() || currentValue.IsInt())
+                            {
+                                result = visitor->Int64(currentValue.GetInt64());
+                            }
+                            else
+                            {
+                                result = visitor->Uint64(currentValue.GetUint64());
+                            }
+                            break;
+                        default:
+                            result = AZ::Failure(VisitorError(VisitorErrorCode::InvalidData, "Value with invalid type specified"));
+                        }
+                    }
+                    else if constexpr (AZStd::is_same_v<Alternative, EndArrayMarker>)
+                    {
+                        result = visitor->EndArray(entryCountStack.top());
+                        entryCountStack.pop();
+                    }
+                    else if constexpr (AZStd::is_same_v<Alternative, EndObjectMarker>)
+                    {
+                        result = visitor->EndObject(entryCountStack.top());
+                        entryCountStack.pop();
+                    }
+                    else if constexpr (AZStd::is_same_v<Alternative, AZStd::string_view>)
+                    {
+                        if (visitor->SupportsRawKeys())
+                        {
+                            visitor->RawKey(arg, lifetime);
+                        }
+                        else
+                        {
+                            visitor->Key(AZ::Name(arg));
+                        }
+                    }
+                },
+                currentEntry);
 
             if (!result.IsSuccess())
             {
@@ -672,4 +678,4 @@ namespace AZ::DOM::Json
 
         return AZ::Success();
     }
-} // namespace AZ::DOM::Json
+} // namespace AZ::Dom::Json

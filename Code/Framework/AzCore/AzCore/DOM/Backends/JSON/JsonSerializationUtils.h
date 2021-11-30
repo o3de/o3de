@@ -16,7 +16,7 @@
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 
-namespace AZ::DOM::Json
+namespace AZ::Dom::Json
 {
     //! Specifies how JSON should be formatted when serialized.
     enum class OutputFormatting
@@ -57,4 +57,4 @@ namespace AZ::DOM::Json
     //! before the visitor is finished using these values, Lifetime::Temporary should be specified.
     //! \return The aggregate result specifying whether the visitor operations were successful.
     Visitor::Result VisitRapidJsonValue(const rapidjson::Value& value, Visitor* visitor, Lifetime lifetime);
-} // namespace AZ::DOM::Json
+} // namespace AZ::Dom::Json

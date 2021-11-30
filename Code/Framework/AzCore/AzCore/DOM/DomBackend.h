@@ -14,7 +14,7 @@
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 
-namespace AZ::DOM
+namespace AZ::Dom
 {
     //! Backends are registered centrally and used to transition DOM formats to and from a textual format.
     class Backend
@@ -22,9 +22,6 @@ namespace AZ::DOM
     public:
         virtual ~Backend() = default;
 
-        //! Attempt to read this format from the given file into the target Visitor.
-        Visitor::Result ReadFromPath(
-            AZ::IO::PathView pathName, Visitor* visitor, size_t maxFileSize = AZStd::numeric_limits<size_t>::max());
         //! Attempt to read this format from the given stream into the target Visitor.
         //! The base implementation reads the stream into memory and calls ReadFromString.
         virtual Visitor::Result ReadFromStream(
@@ -46,9 +43,7 @@ namespace AZ::DOM
         using WriteCallback = AZStd::function<Visitor::Result(Visitor*)>;
         //! Attempt to write a value to a stream using a write callback.
         Visitor::Result WriteToStream(AZ::IO::GenericStream* stream, WriteCallback callback);
-        //! Attempt to write a value to a file using a write callback.
-        Visitor::Result WriteToPath(AZ::IO::PathView pathName, WriteCallback callback);
         //! Attempt to write a value to a string using a write callback.
         Visitor::Result WriteToString(AZStd::string& buffer, WriteCallback callback);
     };
-} // namespace AZ::DOM
+} // namespace AZ::Dom

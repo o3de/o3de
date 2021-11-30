@@ -8,9 +8,7 @@
 
 #include <AzCore/DOM/Backends/JSON/JsonBackend.h>
 
-#include <AzCore/DOM/DomBackendRegistry.h>
-
-namespace AZ::DOM
+namespace AZ::Dom
 {
     Visitor::Result JsonBackend::ReadFromStringInPlace(AZStd::string& buffer, Visitor* visitor)
     {
@@ -25,13 +23,5 @@ namespace AZ::DOM
     AZStd::unique_ptr<Visitor> JsonBackend::CreateStreamWriter(AZ::IO::GenericStream* stream)
     {
         return Json::GetJsonStreamWriter(stream, Json::OutputFormatting::PrettyPrintedJson);
-    }
-
-    void JsonBackend::Register()
-    {
-        if (auto backendRegistry = BackendRegistry::Get())
-        {
-            backendRegistry->RegisterBackend<JsonBackend>(kName, {kExtension});
-        }
     }
 }

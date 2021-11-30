@@ -127,9 +127,6 @@ set(FILES
     Debug/TraceReflection.h
     DOM/DomBackend.cpp
     DOM/DomBackend.h
-    DOM/DomBackendRegistry.cpp
-    DOM/DomBackendRegistry.h
-    DOM/DomBackendRegistryInterface.h
     DOM/DomVisitor.cpp
     DOM/DomVisitor.h
     DOM/Backends/JSON/JsonBackend.cpp

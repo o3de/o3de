@@ -13,7 +13,7 @@
 #include <AzCore/std/any.h>
 #include <AzCore/std/string/string.h>
 
-namespace AZ::DOM
+namespace AZ::Dom
 {
     //
     // Lifetime enum
@@ -243,4 +243,4 @@ namespace AZ::DOM
         //! Helper method, constructs a success \ref Result.
         static Result VisitorSuccess();
     };
-} // namespace AZ::DOM
+} // namespace AZ::Dom

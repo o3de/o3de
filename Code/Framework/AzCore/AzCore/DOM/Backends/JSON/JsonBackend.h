@@ -11,7 +11,7 @@
 #include <AzCore/DOM/DomBackend.h>
 #include <AzCore/DOM/Backends/JSON/JsonSerializationUtils.h>
 
-namespace AZ::DOM
+namespace AZ::Dom
 {
     class JsonBackend final : public Backend
     {
@@ -19,9 +19,5 @@ namespace AZ::DOM
         Visitor::Result ReadFromStringInPlace(AZStd::string& buffer, Visitor* visitor) override;
         Visitor::Result ReadFromString(AZStd::string_view buffer, Lifetime lifetime, Visitor* visitor) override;
         AZStd::unique_ptr<Visitor> CreateStreamWriter(AZ::IO::GenericStream* stream) override;
-
-        static constexpr const char* kName = "JSON";
-        static constexpr const char* kExtension = ".json";
-        static void Register();
     };
-} // namespace AZ::DOM
+} // namespace AZ::Dom
