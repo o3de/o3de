@@ -382,6 +382,9 @@ namespace GraphCanvas
                 m_translationAssets.push_back(assetId);
             }
         };
+
+        m_translationAssets.clear();
+
         AZ::Data::AssetCatalogRequestBus::Broadcast(&AZ::Data::AssetCatalogRequestBus::Events::EnumerateAssets, nullptr, collectAssetsCb, postEnumerateCb);
     }
 
@@ -412,8 +415,6 @@ namespace GraphCanvas
 
     void GraphCanvasSystemComponent::PopulateTranslationDatabase()
     {
-        m_translationAssets.clear();
-
         for (const AZ::Data::AssetId& assetId : m_translationAssets)
         {
             AZ::Data::AssetBus::MultiHandler::BusConnect(assetId);
