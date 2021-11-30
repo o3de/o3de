@@ -12,10 +12,10 @@ Using the fixture at test level will stop asset processor after the test complet
 # Import Builtins
 import pytest
 import logging
-import psutil
 
 # Import LyTestTools
 import ly_test_tools.o3de.asset_processor as asset_processor_commands
+import ly_test_tools.o3de.asset_processor_utils
 
 logger = logging.getLogger(__name__)
 
@@ -37,18 +37,8 @@ def asset_processor(request: pytest.fixture, workspace: pytest.fixture) -> asset
         ap.stop()
 
     request.addfinalizer(teardown)
-    assert not (check_ap_running("AssetProcessor") and check_ap_running("AssetProcessorBatch") and
-                check_ap_running("AssetBuilder")), "Process did not shutdown correctly."
+    for n in ly_test_tools.processList:
+        assert not ly_test_tools.check_ap_running(n), f"{n} process did not shutdown correctly."
 
 
     return ap
-
-# Uses psutil to check if a specified process is running. In this case, we use it to check AP and APB during Teardown
-def check_ap_running(processName):
-    for proc in psutil.process_iter():
-        try:
-            if processName.lower() in proc.name().lower():
-                return True
-        except (psutil.AccessDenied, psutil.NoSuchProcess, psutil.ZombieProcess):
-            pass
-        return False
