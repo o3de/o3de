@@ -51,7 +51,6 @@
 #include <Editor/View/Widgets/NodePalette/NodePaletteModel.h>
 
 #include <Editor/View/Widgets/AssetGraphSceneDataBus.h>
-//#include <AzCore/AzCore/std/base.h>
 #include <Editor/View/Windows/Tools/UpgradeTool/Controller.h>
 
 #if SCRIPTCANVAS_EDITOR
