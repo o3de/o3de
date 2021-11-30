@@ -116,8 +116,6 @@ set(FILES
     Source/TestRunner/Common/Run/TestImpactTestRun.h
     Source/TestRunner/Common/Run/TestImpactTestRunSerializer.cpp
     Source/TestRunner/Common/Run/TestImpactTestRunSerializer.h
-    Source/TestRunner/Native/TestImpactNativeErrorCodeHandler.cpp
-    Source/TestRunner/Native/TestImpactNativeErrorCodeHandler.h
     Source/TestRunner/Native/TestImpactNativeInstrumentedTestRunner.h
     Source/TestRunner/Native/TestImpactNativeRegularTestRunner.h
     Source/TestRunner/Native/TestImpactNativeTestEnumerator.h
@@ -136,11 +134,15 @@ set(FILES
     Source/TestEngine/Common/Run/TestImpactTestEngineInstrumentedRun.h
     Source/TestEngine/Native/TestImpactNativeTestEngine.cpp
     Source/TestEngine/Native/TestImpactNativeTestEngine.h
+    Source/TestEngine/Native/TestImpactNativeErrorCodeHandler.cpp
+    Source/TestEngine/Native/TestImpactNativeErrorCodeHandler.h
     Source/TestEngine/Native/TestImpactNativeTestTargetExtension.h
     Source/TestEngine/Native/Job/TestImpactNativeTestJobInfoUtils.cpp
     Source/TestEngine/Native/Job/TestImpactNativeTestJobInfoUtils.h
     Source/TestEngine/Native/Job/TestImpactNativeTestJobInfoGenerator.cpp
     Source/TestEngine/Native/Job/TestImpactNativeTestJobInfoGenerator.h
+    Source/TestEngine/Python/Job/TestImpactPythonTestJobInfoUtils.cpp
+    Source/TestEngine/Python/Job/TestImpactPythonTestJobInfoUtils.h
     Source/TestEngine/Python/Job/TestImpactPythonTestJobInfoGenerator.cpp
     Source/TestEngine/Python/Job/TestImpactPythonTestJobInfoGenerator.h
     Source/TestEngine/Python/TestImpactPythonTestEngine.cpp

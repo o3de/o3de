@@ -24,7 +24,7 @@ namespace TestImpact
         //! @param buildDir Path to where the target binaries are found.
         //! @param artifactDir Path to the transient directory where test artifacts are produced.
         PythonTestRunJobInfoGenerator(
-            RepoPath pythonBinary, RepoPath buildDir, RepoPath artifactDir);
+            RepoPath repoDir, RepoPath pythonBinary, RepoPath buildDir, RepoPath artifactDir);
 
         //! Generates the information for a test run job.
         //! @param testTarget The test target to generate the job information for.
@@ -32,6 +32,7 @@ namespace TestImpact
         PythonTestRunner::JobInfo GenerateJobInfo(const PythonTestTarget* testTarget, PythonTestRunner::JobInfo::Id jobId) const;
 
     private:
+        RepoPath m_repoDir;
         RepoPath m_pythonBinary;
         RepoPath m_buildDir;
         RepoPath m_artifactDir;

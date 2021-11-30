@@ -12,7 +12,7 @@
 #include <TestEngine/Common/TestImpactTestEngineException.h>
 #include <TestEngine/Native/TestImpactNativeTestEngine.h>
 #include <TestEngine/Common/TestImpactErrorCodeChecker.h>
-#include <TestRunner/Native/TestImpactNativeErrorCodeHandler.h>
+#include <TestEngine/Native/TestImpactNativeErrorCodeHandler.h>
 #include <TestRunner/Native/TestImpactNativeTestEnumerator.h>
 #include <TestRunner/Native/TestImpactNativeInstrumentedTestRunner.h>
 #include <TestRunner/Native/TestImpactNativeRegularTestRunner.h>

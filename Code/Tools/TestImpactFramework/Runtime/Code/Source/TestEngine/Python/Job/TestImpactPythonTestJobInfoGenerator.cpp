@@ -8,11 +8,14 @@
 
 #include <TestEngine/Common/Job/TestImpactTestJobInfoUtils.h>
 #include <TestEngine/Python/Job/TestImpactPythonTestJobInfoGenerator.h>
+#include <TestEngine/Python/Job/TestImpactPythonTestJobInfoUtils.h>
 
 namespace TestImpact
 {
-    PythonTestRunJobInfoGenerator::PythonTestRunJobInfoGenerator(RepoPath pythonBinary, RepoPath buildDir, RepoPath artifactDir)
-        : m_pythonBinary(AZStd::move(pythonBinary))
+    PythonTestRunJobInfoGenerator::PythonTestRunJobInfoGenerator(
+        RepoPath repoDir, RepoPath pythonBinary, RepoPath buildDir, RepoPath artifactDir)
+        : m_repoDir(AZStd::move(repoDir))
+        , m_pythonBinary(AZStd::move(pythonBinary))
         , m_buildDir(AZStd::move(buildDir))
         , m_artifactDir(AZStd::move(artifactDir))
     {
@@ -31,7 +34,7 @@ namespace TestImpact
                 "--junitxml=\"%s\"", // 4. JUnit output file
 
                 m_pythonBinary.c_str(), // // 1. Python binary
-                testTarget->GetScriptPath().c_str(), // 2. Python test script
+                GenerateTestScriptPath(testTarget, m_repoDir).c_str(), // 2. Python test script
                 m_buildDir.c_str(), // 3. Build directory path
                 runArtifact.c_str()) // 4. JUnit output 
         };
