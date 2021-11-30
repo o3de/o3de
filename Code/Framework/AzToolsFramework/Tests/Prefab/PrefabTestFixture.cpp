@@ -130,4 +130,13 @@ namespace UnitTest
             EXPECT_EQ(entityInInstance->GetState(), AZ::Entity::State::Active);
         }
     }
+
+    void PrefabTestFixture::AddRequiredEditorComponents(AZ::Entity* entity)
+    {
+        ASSERT_TRUE(entity != nullptr);
+        entity->Deactivate();
+        AzToolsFramework::EditorEntityContextRequestBus::Broadcast(
+            &AzToolsFramework::EditorEntityContextRequests::AddRequiredComponents, *entity);
+        entity->Activate();
+    }
 }
