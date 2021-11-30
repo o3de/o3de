@@ -114,7 +114,7 @@ void ApplyQuadLight(ViewSrg::QuadLight light, Surface surface, inout LightingDat
             
             float diffuse = 0.0;
             float3 specular = float3(0.0, 0.0, 0.0); // specularF0 used in LtcQuadEvaluate which is a float3
-            LtcQuadEvaluate(surface, lightingData, SceneSrg::m_ltcMatrix, /*SceneSrg::m_ltcAmplification,*/ p, doubleSided, diffuse, specular);
+            LtcQuadEvaluate(surface, lightingData, SceneSrg::m_ltcMatrix, SceneSrg::m_ltcAmplification, p, doubleSided, diffuse, specular);
 
             // Scale by inverse surface area of hemisphere (1/2pi), attenuation, and light intensity
             float3 intensity = 0.5 * INV_PI * radiusAttenuation * light.m_rgbIntensityNits;

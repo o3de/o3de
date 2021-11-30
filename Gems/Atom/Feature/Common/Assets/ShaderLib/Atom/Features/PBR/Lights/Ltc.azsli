@@ -256,7 +256,7 @@ void NormalizeQuadPoints(inout float3 p[5], in int vertexCount)
 }
 
 // Transforms the 4 points of a quad into the hemisphere of the normal
-void TransformQuadToOrthonormalBasis(in float3 normal, in float3 dirToView, inout float3 p[4], out float3 tp[5])
+void TransformQuadToOrthonormalBasis(in float3 normal, in float3 dirToView, in float3 p[4], out float3 tp[5])
 {
     float3x3 orthoNormalBasis = BuildViewAlignedOrthonormalBasis(normal, dirToView);
 
@@ -338,7 +338,7 @@ void LtcQuadEvaluate(
     in Surface surface,
     in LightingData lightingData,
     in Texture2D ltcMatrix,
-    //in Texture2D<float2> ltcAmpMatrix,
+    in Texture2D<float2> ltcAmpMatrix,
     in float3 p[4],
     in bool doubleSided,
     out float diffuseOut,
@@ -349,10 +349,10 @@ void LtcQuadEvaluate(
     float3x3 ltcMat = LtcMatrix(ltcMatrix, ltcCoords);
     
     // Initialize quad with dummy point at end in case one corner is clipped (resulting in 5 sided polygon)
-    float3 v[5];
+    float3 polygon[5];
 
     // Transform the points of the light into the space of the normal's hemisphere.
-    TransformQuadToOrthonormalBasis(surface.normal, lightingData.dirToCamera, p, v);
+    TransformQuadToOrthonormalBasis(surface.normal, lightingData.dirToCamera, p, polygon);
 
     // Clip the light polygon to the normal hemisphere. This is done before the LTC matrix is applied to prevent
     // parts of the light below the horizon from impacting the surface. The number of points remaining after
@@ -363,7 +363,7 @@ void LtcQuadEvaluate(
     // 5 - 1 point clipped leaving a pentagon.
 
     int vertexCount = 0;
-    ClipQuadToHorizon(v, vertexCount);
+    ClipQuadToHorizon(polygon, vertexCount);
 
     if (vertexCount == 0)
     {
@@ -372,34 +372,34 @@ void LtcQuadEvaluate(
     }
 
     // IntegrateQuadDiffuse is a cheap approximation compared to specular.
-    float diffuse = IntegrateQuadDiffuse(v, vertexCount, doubleSided);
+    float diffuse = IntegrateQuadDiffuse(polygon, vertexCount, doubleSided);
     float specular = 0.0;
 
-    ApplyLtcMatrixToQuad(ltcMat, v, vertexCount);
+    ApplyLtcMatrixToQuad(ltcMat, polygon, vertexCount);
 
     // IntegrateQuadSpecular uses more accurate integration to handle smooth surfaces correctly.
-    specular = IntegrateQuadSpecular(v, vertexCount, doubleSided);
+    specular = IntegrateQuadSpecular(polygon, vertexCount, doubleSided);
     
     // Apply BRDF scale terms (BRDF magnitude and Schlick Fresnel)
-    float2 schlick = SceneSrg::m_ltcAmplification.Sample(PassSrg::LinearSampler, ltcCoords).xy;
+    float2 schlick = ltcAmpMatrix.Sample(PassSrg::LinearSampler, ltcCoords).xy;
     float3 specularRgb = specular * (schlick.x * surface.specularF0 + (1.0 - surface.specularF0) * schlick.y);
     
     if(o_clearCoat_feature_enabled)
     {
-        float2 ccLtcCoords = LtcCoords(dot(surface.clearCoat.normal, lightingData.dirToCamera), surface.clearCoat.roughness);
-        float3x3 ccLtcMat = LtcMatrix(ltcMatrix, ccLtcCoords);
+        float2 ltcCoordsCc = LtcCoords(dot(surface.clearCoat.normal, lightingData.dirToCamera), surface.clearCoat.roughness);
+        float3x3 ltcMatCc = LtcMatrix(ltcMatrix, ltcCoordsCc);
         
-        float3 vc[5];
+        float3 polygonCc[5];
 
         // Transform the points of the light into the space of the clearcoat normal's hemisphere.
-        TransformQuadToOrthonormalBasis(surface.clearCoat.normal, lightingData.dirToCamera, p, vc);
+        TransformQuadToOrthonormalBasis(surface.clearCoat.normal, lightingData.dirToCamera, p, polygonCc);
 
-        ApplyLtcMatrixToQuad(ccLtcMat, vc, vertexCount);
-        float clearCoatSpecular = IntegrateQuadSpecular(vc, vertexCount, doubleSided);
+        ApplyLtcMatrixToQuad(ltcMatCc, polygonCc, vertexCount);
+        float clearCoatSpecular = IntegrateQuadSpecular(polygonCc, vertexCount, doubleSided);
 
         // Apply BRDF scale terms (BRDF magnitude and Schlick Fresnel)
         const float clearCoatSpecularF0 = 0.04;
-        float2 schlickCc = SceneSrg::m_ltcAmplification.Sample(PassSrg::LinearSampler, ltcCoords).xy;
+        float2 schlickCc = ltcAmpMatrix.Sample(PassSrg::LinearSampler, ltcCoords).xy;
         float F = schlickCc.x * clearCoatSpecularF0 + (1.0 - clearCoatSpecularF0) * schlickCc.y;
         F *= surface.clearCoat.factor;
         diffuse = diffuse * (1.0 - F);
@@ -433,7 +433,7 @@ void LtcQuadEvaluate(
 // 4. Both points are below the horizon
 //    - Do nothing.
 
-void EvaluatePolyEdge(in float3 p0, in float3 p1, inout float3 prevClipPoint, in float3x3 ltcMat, inout float diffuse, inout float specular)
+void EvaluatePolyEdge(in float3 p0, in float3 p1, in float3x3 ltcMat, inout float3 prevClipPoint, inout float diffuse, inout float specular)
 {
     if (p0.z > 0.0)
     {
@@ -464,7 +464,7 @@ void EvaluatePolyEdge(in float3 p0, in float3 p1, inout float3 prevClipPoint, in
     }
 }
 
-void EvaluatePolyEdgeSpecularOnly(in float3 p0, in float3 p1, inout float3 prevClipPoint, in float3x3 ltcMat, inout float specular)
+void EvaluatePolyEdgeSpecularOnly(in float3 p0, in float3 p1, in float3x3 ltcMat, inout float3 prevClipPoint, inout float specular)
 {
     if (p0.z > 0.0)
     {
@@ -509,7 +509,7 @@ void LtcPolygonEvaluate(
     in Surface surface,
     in LightingData lightingData,
     in Texture2D ltcMatrix,
-    //in Texture2D<float2> ltcAmpMatrix,
+    in Texture2D<float2> ltcAmpMatrix,
     in StructuredBuffer<float4> positions,
     in uint startIdx,
     in uint endIdx,
@@ -570,18 +570,18 @@ void LtcPolygonEvaluate(
     for (uint curIdx = startIdx + 1; curIdx < endIdx; ++curIdx)
     {
         float3 p1 = mul(orthonormalMat, positions[curIdx].xyz - surface.position); // Current point in polygon
-        EvaluatePolyEdge(p0, p1, prevClipPoint, ltcMat, diffuse, specular);
+        EvaluatePolyEdge(p0, p1, ltcMat, prevClipPoint, diffuse, specular);
         p0 = p1;
     }
     
-    EvaluatePolyEdge(p0, closePoint, prevClipPoint, ltcMat, diffuse, specular);
+    EvaluatePolyEdge(p0, closePoint, ltcMat, prevClipPoint, diffuse, specular);
 
     // Note: negated due to winding order
     diffuse = -diffuse;
     specular = -specular;
 
     // Apply BRDF scale terms (BRDF magnitude and Schlick Fresnel)
-    float2 schlick = SceneSrg::m_ltcAmplification.Sample(PassSrg::LinearSampler, ltcCoords).xy;
+    float2 schlick = ltcAmpMatrix.Sample(PassSrg::LinearSampler, ltcCoords).xy;
     float3 specularRgb = specular * ((schlick.x * surface.specularF0) + (1.0 - surface.specularF0) * schlick.y);
 
     if(o_clearCoat_feature_enabled)
@@ -631,18 +631,18 @@ void LtcPolygonEvaluate(
         for (uint curIdx = startIdx + 1; curIdx < endIdx; ++curIdx)
         {
             float3 p1 = mul(orthonormalMatCc, positions[curIdx].xyz - surface.position); // Current point in polygon
-            EvaluatePolyEdgeSpecularOnly(p0, p1, prevClipPoint, ltcMatCc, specularCc);
+            EvaluatePolyEdgeSpecularOnly(p0, p1, ltcMatCc, prevClipPoint, specularCc);
             p0 = p1;
         }
         
-        EvaluatePolyEdgeSpecularOnly(p0, closePoint, prevClipPoint, ltcMatCc, specularCc);
+        EvaluatePolyEdgeSpecularOnly(p0, closePoint, ltcMatCc, prevClipPoint, specularCc);
 
         // Note: negated due to winding order
         specularCc = -specularCc;
 
         // Apply BRDF scale terms (BRDF magnitude and Schlick Fresnel)
         const float clearCoatSpecularF0 = 0.04;
-        float2 schlickCc = SceneSrg::m_ltcAmplification.Sample(PassSrg::LinearSampler, ltcCoordsCc).xy;
+        float2 schlickCc = ltcAmpMatrix.Sample(PassSrg::LinearSampler, ltcCoordsCc).xy;
         float F = clearCoatSpecularF0 * schlickCc.x + (1.0 - clearCoatSpecularF0) * schlickCc.y;
         F *= surface.clearCoat.factor;
 

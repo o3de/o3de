@@ -54,7 +54,7 @@ void ApplyPoylgonLight(ViewSrg::PolygonLight light, Surface surface, inout Light
     float diffuse = 0.0;
     float3 specularRgb = 0.0;
 
-    LtcPolygonEvaluate(surface, lightingData, SceneSrg::m_ltcMatrix, /*SceneSrg::m_ltcAmplification,*/ ViewSrg::m_polygonLightPoints, startIndex, endIndex, diffuse, specularRgb);
+    LtcPolygonEvaluate(surface, lightingData, SceneSrg::m_ltcMatrix, SceneSrg::m_ltcAmplification, ViewSrg::m_polygonLightPoints, startIndex, endIndex, diffuse, specularRgb);
 
     diffuse = doubleSided ? abs(diffuse) : max(0.0, diffuse);
     specularRgb = doubleSided ? abs(specularRgb) : max(0.0, specularRgb);
