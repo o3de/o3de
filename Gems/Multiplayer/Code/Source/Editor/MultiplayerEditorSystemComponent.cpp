@@ -6,7 +6,6 @@
  *
  */
 
-#include "AzFramework/Process/ProcessCommunicator.h"
 
 #include <Multiplayer/IMultiplayer.h>
 #include <Multiplayer/IMultiplayerTools.h>
@@ -16,11 +15,8 @@
 #include <MultiplayerSystemComponent.h>
 #include <PythonEditorEventsBus.h>
 #include <Editor/MultiplayerEditorSystemComponent.h>
-#include <Source/AutoGen/Multiplayer.AutoPackets.h>
 
-#include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Console/IConsole.h>
-#include <AzCore/Console/ILogger.h>
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Utils/Utils.h>
@@ -425,7 +421,17 @@ namespace Multiplayer
 
     void MultiplayerEditorSystemComponent::OnTick(float, AZ::ScriptTimePoint)
     {
-        m_serverProcessTracePrinter->Pump();
+        if (m_serverProcessTracePrinter)
+        {
+            m_serverProcessTracePrinter->Pump();
+        }
+        else
+        {
+            AZ::TickBus::Handler::BusDisconnect();
+            AZ_Warning(
+                "MultiplayerEditorSystemComponent", false,
+                "The server process trace printer is NULL so we won't be able to pipe server logs to the editor. Please update the code to call AZ::TickBus::Handler::BusDisconnect whenever the editor-server is terminated.")
+        }
     }
 
 }

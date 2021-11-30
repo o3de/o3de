@@ -741,9 +741,8 @@ bool CSystem::Init(const SSystemInitParams& startupParams)
     bool suppressSystemOutput = true;
     if (const ICmdLineArg* isEditorServerArg = m_pCmdLine->FindArg(eCLAT_Pre, "editorsv_isDedicated"))
     {
-        AZ::CVarFixedString lowercaseValue(isEditorServerArg->GetValue());
-        AZStd::to_lower(lowercaseValue.begin(), lowercaseValue.end());
-        if (lowercaseValue == "true")
+        bool editorsv_isDedicated = false;
+        if (isEditorServerArg->GetBoolValue(editorsv_isDedicated) && editorsv_isDedicated)
         {
             suppressSystemOutput = false;
         }
