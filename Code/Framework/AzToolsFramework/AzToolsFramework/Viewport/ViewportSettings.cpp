@@ -10,16 +10,16 @@
 
 namespace AzToolsFramework
 {
-    constexpr AZStd::string_view FlipManipulatorAxesTowardsViewSetting = "/Amazon/Preferences/Editor/FlipManipulatorAxesTowardsView";
-    constexpr AZStd::string_view LinearManipulatorAxisLengthSetting = "/Amazon/Preferences/Editor/LinearManipulatorAxisLength";
-    constexpr AZStd::string_view PlanarManipulatorAxisLengthSetting = "/Amazon/Preferences/Editor/PlanarManipulatorAxisLength";
-    constexpr AZStd::string_view SurfaceManipulatorRadiusSetting = "/Amazon/Preferences/Editor/SurfaceManipulatorRadius";
-    constexpr AZStd::string_view SurfaceManipulatorOpacitySetting = "/Amazon/Preferences/Editor/SurfaceManipulatorOpacity";
-    constexpr AZStd::string_view LinearManipulatorConeLengthSetting = "/Amazon/Preferences/Editor/LinearManipulatorConeLength";
-    constexpr AZStd::string_view LinearManipulatorConeRadiusSetting = "/Amazon/Preferences/Editor/LinearManipulatorConeRadius";
-    constexpr AZStd::string_view ScaleManipulatorBoxHalfExtentSetting = "/Amazon/Preferences/Editor/ScaleManipulatorBoxHalfExtent";
-    constexpr AZStd::string_view RotationManipulatorRadiusSetting = "/Amazon/Preferences/Editor/RotationManipulatorRadius";
-    constexpr AZStd::string_view ManipulatorViewBaseScaleSetting = "/Amazon/Preferences/Editor/ManipulatorViewBaseScale";
+    constexpr AZStd::string_view FlipManipulatorAxesTowardsViewSetting = "/Amazon/Preferences/Editor/Manipulator/FlipManipulatorAxesTowardsView";
+    constexpr AZStd::string_view LinearManipulatorAxisLengthSetting = "/Amazon/Preferences/Editor/Manipulator/LinearManipulatorAxisLength";
+    constexpr AZStd::string_view PlanarManipulatorAxisLengthSetting = "/Amazon/Preferences/Editor/Manipulator/PlanarManipulatorAxisLength";
+    constexpr AZStd::string_view SurfaceManipulatorRadiusSetting = "/Amazon/Preferences/Editor/Manipulator/SurfaceManipulatorRadius";
+    constexpr AZStd::string_view SurfaceManipulatorOpacitySetting = "/Amazon/Preferences/Editor/Manipulator/SurfaceManipulatorOpacity";
+    constexpr AZStd::string_view LinearManipulatorConeLengthSetting = "/Amazon/Preferences/Editor/Manipulator/LinearManipulatorConeLength";
+    constexpr AZStd::string_view LinearManipulatorConeRadiusSetting = "/Amazon/Preferences/Editor/Manipulator/LinearManipulatorConeRadius";
+    constexpr AZStd::string_view ScaleManipulatorBoxHalfExtentSetting = "/Amazon/Preferences/Editor/Manipulator/ScaleManipulatorBoxHalfExtent";
+    constexpr AZStd::string_view RotationManipulatorRadiusSetting = "/Amazon/Preferences/Editor/Manipulator/RotationManipulatorRadius";
+    constexpr AZStd::string_view ManipulatorViewBaseScaleSetting = "/Amazon/Preferences/Editor/Manipulator/ViewBaseScale";
 
     bool FlipManipulatorAxesTowardsView()
     {
