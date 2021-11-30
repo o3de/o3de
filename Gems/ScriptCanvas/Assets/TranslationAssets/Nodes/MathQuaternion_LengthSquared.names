@@ -1,0 +1,40 @@
+{
+    "entries": [
+        {
+            "base": "{FC266E04-338B-57CE-A529-28056AB3AB43}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "Length Squared",
+                "category": "Math/Quaternion",
+                "tooltip": "Returns the square of the length of Source"
+            },
+            "slots": [
+                {
+                    "base": "Input_In",
+                    "details": {
+                        "name": "In"
+                    }
+                },
+                {
+                    "base": "Output_Out",
+                    "details": {
+                        "name": "Out"
+                    }
+                },
+                {
+                    "base": "DataInput_Source",
+                    "details": {
+                        "name": "Source"
+                    }
+                },
+                {
+                    "base": "DataOutput_Result",
+                    "details": {
+                        "name": "Result"
+                    }
+                }
+            ]
+        }
+    ]
+}

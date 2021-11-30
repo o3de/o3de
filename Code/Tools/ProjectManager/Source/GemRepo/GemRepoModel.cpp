@@ -41,7 +41,7 @@ namespace O3DE::ProjectManager
         item->setData(gemRepoInfo.m_lastUpdated, RoleLastUpdated);
         item->setData(gemRepoInfo.m_path, RolePath);
         item->setData(gemRepoInfo.m_additionalInfo, RoleAdditionalInfo);
-        item->setData(gemRepoInfo.m_includedGemPaths, RoleIncludedGems);
+        item->setData(gemRepoInfo.m_includedGemUris, RoleIncludedGems);
 
         appendRow(item);
 
@@ -98,43 +98,39 @@ namespace O3DE::ProjectManager
         return modelIndex.data(RolePath).toString();
     }
 
-    QStringList GemRepoModel::GetIncludedGemPaths(const QModelIndex& modelIndex)
+    QStringList GemRepoModel::GetIncludedGemUris(const QModelIndex& modelIndex)
     {
         return modelIndex.data(RoleIncludedGems).toStringList();
     }
 
-    QStringList GemRepoModel::GetIncludedGemNames(const QModelIndex& modelIndex)
+    QVector<Tag> GemRepoModel::GetIncludedGemTags(const QModelIndex& modelIndex)
     {
-        QStringList gemNames;
-        QVector<GemInfo> gemInfos = GetIncludedGemInfos(modelIndex);
-
+        QVector<Tag> tags;
+        const QVector<GemInfo>& gemInfos = GetIncludedGemInfos(modelIndex);
+        tags.reserve(gemInfos.size());
         for (const GemInfo& gemInfo : gemInfos)
         {
-            gemNames.append(gemInfo.m_displayName);
+            tags.append({ gemInfo.m_displayName, gemInfo.m_name });
         }
 
-        return gemNames;
+        return tags;
     }
 
     QVector<GemInfo> GemRepoModel::GetIncludedGemInfos(const QModelIndex& modelIndex)
     {
-        QVector<GemInfo> allGemInfos;
-        QStringList repoGemPaths = GetIncludedGemPaths(modelIndex);
+        QString repoUri = GetRepoUri(modelIndex);
 
-        for (const QString& gemPath : repoGemPaths)
+        const AZ::Outcome<QVector<GemInfo>, AZStd::string>& gemInfosResult = PythonBindingsInterface::Get()->GetGemInfosForRepo(repoUri);
+        if (gemInfosResult.IsSuccess())
         {
-            AZ::Outcome<GemInfo> gemInfoResult = PythonBindingsInterface::Get()->GetGemInfo(gemPath);
-            if (gemInfoResult.IsSuccess())
-            {
-                allGemInfos.append(gemInfoResult.GetValue());
-            }
-            else
-            {
-                QMessageBox::critical(nullptr, tr("Gem Not Found"), tr("Cannot find info for gem %1.").arg(gemPath));
-            }
+            return gemInfosResult.GetValue();
+        }
+        else
+        {
+            QMessageBox::critical(nullptr, tr("Gems not found"), tr("Cannot find info for gems from repo %1").arg(GetName(modelIndex)));
         }
 
-        return allGemInfos;
+        return QVector<GemInfo>();
     }
 
     bool GemRepoModel::IsEnabled(const QModelIndex& modelIndex)

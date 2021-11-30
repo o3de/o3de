@@ -1,0 +1,136 @@
+{
+    "entries": [
+        {
+            "base": "NetworkTestPlayerComponentNetworkInput",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "Network Test Player Component Network Input",
+                "category": "Automated Testing"
+            },
+            "methods": [
+                {
+                    "base": "CreateFromValues",
+                    "context": "NetworkTestPlayerComponentNetworkInput",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Create From Values"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Create From Values is invoked"
+                    },
+                    "details": {
+                        "name": "Create From Values"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Forward Back"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Left Right"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{12A1776B-61F6-4E5F-356A-AD718A62051F}",
+                            "details": {
+                                "name": "Network Test Player Component Network Input"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "FwdBack",
+                    "details": {
+                        "name": "Get Forward Back"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{12A1776B-61F6-4E5F-356A-AD718A62051F}",
+                            "details": {
+                                "name": "Network Test Player Component Network Input"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Forward Back"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "FwdBack",
+                    "details": {
+                        "name": "Set Forward Back"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{12A1776B-61F6-4E5F-356A-AD718A62051F}",
+                            "details": {
+                                "name": "Network Test Player Component Network Input"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Forward Back"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "LeftRight",
+                    "details": {
+                        "name": "Get Left Right"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{12A1776B-61F6-4E5F-356A-AD718A62051F}",
+                            "details": {
+                                "name": "Network Test Player Component Network Input"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Left Right"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "LeftRight",
+                    "details": {
+                        "name": "Set Left Right"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{12A1776B-61F6-4E5F-356A-AD718A62051F}",
+                            "details": {
+                                "name": "Network Test Player Component Network Input"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Left Right"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

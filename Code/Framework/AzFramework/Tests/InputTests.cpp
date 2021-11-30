@@ -49,6 +49,24 @@ namespace InputUnitTests
     };
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
+    TEST_F(InputTest, InputChannelId_ConstExpression_CopyConstructorSuccessfull)
+    {
+        constexpr InputChannelId testInputChannelId1("TestInputChannelId");
+        constexpr InputChannelId testInputChannelId2(testInputChannelId1);
+        static_assert(testInputChannelId1 == testInputChannelId2);
+        EXPECT_EQ(testInputChannelId1, testInputChannelId2);
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    TEST_F(InputTest, InputDeviceId_ConstExpression_CopyConstructorSuccessfull)
+    {
+        constexpr InputDeviceId testInputDeviceId1("TestInputDeviceId");
+        constexpr InputDeviceId testInputDeviceId2(testInputDeviceId1);
+        static_assert(testInputDeviceId1 == testInputDeviceId2);
+        EXPECT_EQ(testInputDeviceId1, testInputDeviceId2);
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
     TEST_F(InputTest, InputContext_InitWithDataStruct_InitializationSuccessfull)
     {
         // Create an input context using an init data struct.

@@ -25,8 +25,8 @@ class TestAutomation(TestAutomationBase):
 
     def test_NvCloth_AddClothSimulationToMesh(self, request, workspace, editor, launcher_platform):
         from .tests import NvCloth_AddClothSimulationToMesh as test_module
-        self._run_test(request, workspace, editor, test_module, use_null_renderer = self.use_null_renderer)
+        self._run_test(request, workspace, editor, test_module, use_null_renderer = self.use_null_renderer, enable_prefab_system=False)
 
     def test_NvCloth_AddClothSimulationToActor(self, request, workspace, editor, launcher_platform):
         from .tests import NvCloth_AddClothSimulationToActor as test_module
-        self._run_test(request, workspace, editor, test_module, use_null_renderer = self.use_null_renderer)
+        self._run_test(request, workspace, editor, test_module, use_null_renderer = self.use_null_renderer, enable_prefab_system=False)

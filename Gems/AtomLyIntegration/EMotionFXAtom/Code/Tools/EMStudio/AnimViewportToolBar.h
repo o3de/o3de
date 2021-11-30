@@ -31,5 +31,6 @@ namespace EMStudio
             QMenu* menu, const char* menuEntryName, uint32_t actionIndex, bool visible = true, char* iconFileName = nullptr);
 
         QAction* m_actions[EMotionFX::ActorRenderFlag::NUM_RENDERFLAGS] = { nullptr };
+        QAction* m_followCharacterAction = nullptr;
     };
 }

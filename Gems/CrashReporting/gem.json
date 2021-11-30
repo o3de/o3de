@@ -2,6 +2,7 @@
     "gem_name": "CrashReporting",
     "display_name": "Crash Reporting",
     "license": "Apache-2.0 Or MIT",
+    "license_url": "https://github.com/o3de/o3de/blob/development/LICENSE.txt",
     "origin": "Open 3D Engine - o3de.org",
     "type": "Code",
     "summary": "The Crash Reporting Gem provides support for external crash reporting for Open 3D Engine projects.",

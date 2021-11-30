@@ -2,6 +2,7 @@
     "gem_name": "AtomContent",
     "display_name": "Atom Content",
     "license": "Apache-2.0 Or MIT",
+    "license_url": "https://github.com/o3de/o3de/blob/development/LICENSE.txt",
     "origin": "Open 3D Engine - o3de.org",
     "type": "Asset",
     "summary": "The Atom Content Gem provides assets for Atom Renderer and a modified version of the <a href='https://renderman.pixar.com/look-development-studio'>Pixar Look Development Studio</a>.",

@@ -1,0 +1,212 @@
+{
+    "entries": [
+        {
+            "base": "PhysXCharacterControllerRequestBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "Character Controller"
+            },
+            "methods": [
+                {
+                    "base": "GetHalfForwardExtent",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Half Forward Extent"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Half Forward Extent is invoked"
+                    },
+                    "details": {
+                        "name": "Get Half Forward Extent"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Half Forward Extent"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetRadius",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Radius"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Radius is invoked"
+                    },
+                    "details": {
+                        "name": "Get Radius"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Radius"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetRadius",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Radius"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Radius is invoked"
+                    },
+                    "details": {
+                        "name": "Set Radius"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Radius"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetHalfForwardExtent",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Half Forward Extent"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Half Forward Extent is invoked"
+                    },
+                    "details": {
+                        "name": "Set Half Forward Extent"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Half Forward Extent"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetHeight",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Height"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Height is invoked"
+                    },
+                    "details": {
+                        "name": "Set Height"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Height"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetHalfSideExtent",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Half Side Extent"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Half Side Extent is invoked"
+                    },
+                    "details": {
+                        "name": "Get Half Side Extent"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Half Side Extent"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetHeight",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Height"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Height is invoked"
+                    },
+                    "details": {
+                        "name": "Get Height"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Height"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "Resize",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Resize"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Resize is invoked"
+                    },
+                    "details": {
+                        "name": "Resize"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Size"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetHalfSideExtent",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Half Side Extent"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Half Side Extent is invoked"
+                    },
+                    "details": {
+                        "name": "Set Half Side Extent"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Half Side Extent"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

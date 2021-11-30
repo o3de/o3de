@@ -135,10 +135,6 @@ namespace UnitTest
         void NormalizePath(AZStd::string& ) override {}
         void NormalizePathKeepCase(AZStd::string& ) override {}
         void CalculateBranchTokenForEngineRoot(AZStd::string& ) const override {}
-        // Gets the engine root path for testing
-        const char* GetEngineRoot() const override { return m_engineRoot.c_str(); }
-        // Retrieves the app root path for testing
-        const char* GetAppRoot() const override { return m_engineRoot.c_str(); }
 
         AZ::ComponentApplication m_app;
         AZStd::unique_ptr<FileIOHelper> m_fileIOHelper;

@@ -32,6 +32,8 @@
 
 #include <ScriptCanvas/Data/Traits.h>
 
+AZ_DEFINE_BUDGET(NodePaletteModel);
+
 namespace
 {
     // Various Helper Methods
@@ -82,11 +84,6 @@ namespace
         return false;
     }
 
-    bool MethodHasAttribute(const AZ::BehaviorMethod* method, AZ::Crc32 attribute)
-    {
-        return AZ::FindAttribute(attribute, method->m_attributes) != nullptr; // warning C4800: 'AZ::Attribute *': forcing value to bool 'true' or 'false' (performance warning)
-    }
-
     // Checks for and returns the Category attribute from an AZ::AttributeArray
     AZStd::string GetCategoryPath(const AZ::AttributeArray& attributes, const AZ::BehaviorContext& behaviorContext)
     {
@@ -116,6 +113,9 @@ namespace
         , ScriptCanvas::PropertyStatus propertyStatus
         , bool isOverloaded)
     {
+
+        AZ_PROFILE_SCOPE(NodePaletteModel, "RegisterMethod");
+
         if (IsDeprecated(method.m_attributes))
         {
             return;
@@ -150,6 +150,9 @@ namespace
     void RegisterGlobalMethod(ScriptCanvasEditor::NodePaletteModel& nodePaletteModel, const AZ::BehaviorContext& behaviorContext,
         const AZ::BehaviorMethod& behaviorMethod)
     {
+
+        AZ_PROFILE_SCOPE(NodePaletteModel, "RegisterGlobalMethod");
+
         const auto isExposableOutcome = ScriptCanvas::IsExposable(behaviorMethod);
         if (!isExposableOutcome.IsSuccess())
         {
@@ -176,6 +179,8 @@ namespace
     //! Retrieve the list of EBuses t hat should not be exposed in the ScriptCanvasEditor Node Palette
     AZStd::unordered_set<AZ::Crc32> GetEBusExcludeSet(const AZ::BehaviorContext& behaviorContext)
     {
+        AZ_PROFILE_SCOPE(NodePaletteModel, "GetEBusExcludeSet");
+
         // We will skip buses that are ONLY registered on classes that derive from EditorComponentBase,
         // because they don't have a runtime implementation. Buses such as the TransformComponent which
         // is implemented by both an EditorComponentBase derived class and a Component derived class
@@ -252,6 +257,8 @@ namespace
     void PopulateScriptCanvasDerivedNodes(ScriptCanvasEditor::NodePaletteModel& nodePaletteModel,
         const AZ::SerializeContext& serializeContext)
     {
+        AZ_PROFILE_SCOPE(NodePaletteModel, "PopulateScriptCanvasDerivedNodes");
+
         // Get all the types.
         auto EnumerateLibraryDefintionNodes = [&nodePaletteModel, &serializeContext](
             const AZ::SerializeContext::ClassData* classData, const AZ::Uuid&) -> bool
@@ -333,6 +340,8 @@ namespace
 
     void PopulateVariablePalette()
     {
+        AZ_PROFILE_SCOPE(NodePaletteModel, "PopulateVariablePalette");
+
         auto dataRegistry = ScriptCanvas::GetDataRegistry();
 
         for (auto& type : dataRegistry->m_creatableTypes)
@@ -347,6 +356,8 @@ namespace
     void PopulateBehaviorContextGlobalMethods(ScriptCanvasEditor::NodePaletteModel& nodePaletteModel,
         const AZ::BehaviorContext& behaviorContext)
     {
+        AZ_PROFILE_SCOPE(NodePaletteModel, "PopulateBehaviorContextGlobalMethods");
+
         // BehaviorMethods are not associated with a class
         // therefore the Uuid is set to Null
         const AZ::Uuid behaviorMethodUuid = AZ::Uuid::CreateNull();
@@ -377,6 +388,8 @@ namespace
     void PopulateBehaviorContextGlobalProperties(ScriptCanvasEditor::NodePaletteModel& nodePaletteModel,
         const AZ::BehaviorContext& behaviorContext)
     {
+        AZ_PROFILE_SCOPE(NodePaletteModel, "PopulateBehaviorContextGlobalProperties");
+
         const AZ::Uuid behaviorMethodUuid = AZ::Uuid::CreateNull();
         for (const auto& [propertyName, behaviorProperty] : behaviorContext.m_properties)
         {
@@ -398,7 +411,7 @@ namespace
 
             if (behaviorProperty->m_getter && !behaviorProperty->m_setter)
             {
-                nodePaletteModel.RegisterGlobalConstant(behaviorContext, *behaviorProperty->m_getter);
+                nodePaletteModel.RegisterGlobalConstant(behaviorContext, behaviorProperty , *behaviorProperty->m_getter);
             }
             else
             {
@@ -419,6 +432,8 @@ namespace
     void PopulateBehaviorContextClassMethods(ScriptCanvasEditor::NodePaletteModel& nodePaletteModel,
         const AZ::BehaviorContext& behaviorContext)
     {
+        AZ_PROFILE_SCOPE(NodePaletteModel, "PopulateBehaviorContextClassMethods");
+
         AZ::SerializeContext* serializeContext{};
         AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationRequests::GetSerializeContext);
 
@@ -456,21 +471,17 @@ namespace
             {
                 AZStd::string categoryPath;
 
-                AZStd::string translationContext = ScriptCanvasEditor::TranslationHelper::GetContextName(ScriptCanvasEditor::TranslationContextGroup::ClassMethod, behaviorClass->m_name);
-                AZStd::string translationKey = ScriptCanvasEditor::TranslationHelper::GetClassKey(ScriptCanvasEditor::TranslationContextGroup::ClassMethod, behaviorClass->m_name, ScriptCanvasEditor::TranslationKeyId::Category);
-                AZStd::string translatedCategory = QCoreApplication::translate(translationContext.c_str(), translationKey.c_str()).toUtf8().data();
+                GraphCanvas::TranslationKey key;
+                key << "BehaviorClass" << behaviorClass->m_name.c_str() << "details";
 
-                if (translatedCategory != translationKey)
+                GraphCanvas::TranslationRequests::Details details;
+                GraphCanvas::TranslationRequestBus::BroadcastResult(details, &GraphCanvas::TranslationRequests::GetDetails, key, details);
+
+                categoryPath = details.m_category;
+
+                if (categoryPath.empty())
                 {
-                    categoryPath = translatedCategory;
-                }
-                else
-                {
-                    AZStd::string behaviorContextCategory = GetCategoryPath(behaviorClass->m_attributes, behaviorContext);
-                    if (!behaviorContextCategory.empty())
-                    {
-                        categoryPath = behaviorContextCategory;
-                    }
+                    categoryPath = GetCategoryPath(behaviorClass->m_attributes, behaviorContext);
                 }
 
                 auto dataRegistry = ScriptCanvas::GetDataRegistry();
@@ -507,15 +518,13 @@ namespace
 
                 categoryPath.append("/");
 
-                AZStd::string displayName = ScriptCanvasEditor::TranslationHelper::GetClassKeyTranslation(ScriptCanvasEditor::TranslationContextGroup::ClassMethod, classIter.first, ScriptCanvasEditor::TranslationKeyId::Name);
-
-                if (displayName.empty())
+                if (details.m_name.empty())
                 {
                     categoryPath.append(classNamePretty.c_str());
                 }
                 else
                 {
-                    categoryPath.append(displayName.c_str());
+                    categoryPath.append(details.m_name.c_str());
                 }
 
                 for (auto property : behaviorClass->m_properties)
@@ -552,6 +561,9 @@ namespace
     void PopulateBehaviorContextOverloadedMethods(ScriptCanvasEditor::NodePaletteModel& nodePaletteModel,
         const AZ::BehaviorContext& behaviorContext)
     {
+        AZ_PROFILE_SCOPE(NodePaletteModel, "PopulateBehaviorContextOverloadedMethods");
+
+
         for (const AZ::ExplicitOverloadInfo& explicitOverload : behaviorContext.m_explicitOverloads)
         {
             RegisterMethod(nodePaletteModel, behaviorContext, explicitOverload.m_categoryPath, nullptr, explicitOverload.m_name, *explicitOverload.m_overloads.begin()->first, ScriptCanvas::PropertyStatus::None, true);
@@ -561,6 +573,8 @@ namespace
     void PopulateBehaviorContextEBusHandler(ScriptCanvasEditor::NodePaletteModel& nodePaletteModel,
         const AZ::BehaviorContext& behaviorContext, const AZ::BehaviorEBus& behaviorEbus)
     {
+        AZ_PROFILE_SCOPE(NodePaletteModel, "PopulateBehaviorContextEBusHandler");
+
         if (AZ::ScopedBehaviorEBusHandler handler{ behaviorEbus }; handler)
         {
             auto excludeEbusAttributeData = azdynamic_cast<const AZ::Edit::AttributeData<AZ::Script::Attributes::ExcludeFlags>*>(
@@ -573,32 +587,17 @@ namespace
             const AZ::BehaviorEBusHandler::EventArray& events(handler->GetEvents());
             if (!events.empty())
             {
-                AZStd::string translationContext = ScriptCanvasEditor::TranslationHelper::GetContextName(ScriptCanvasEditor::TranslationContextGroup::EbusHandler, behaviorEbus.m_name);
-                AZStd::string categoryPath;
 
+                GraphCanvas::TranslationKey key;
+                key << "EBusHandler" << behaviorEbus.m_name.c_str() << "details";
+
+                GraphCanvas::TranslationRequests::Details details;
+                GraphCanvas::TranslationRequestBus::BroadcastResult(details, &GraphCanvas::TranslationRequests::GetDetails, key, details);
+
+                AZStd::string categoryPath = details.m_category.empty() ? GetCategoryPath(behaviorEbus.m_attributes, behaviorContext) : details.m_category;
+
+                // Treat the EBusHandler name as a Category key in order to allow multiple buses to be merged into a single Category.
                 {
-                    AZStd::string translationKey = ScriptCanvasEditor::TranslationHelper::GetClassKey(ScriptCanvasEditor::TranslationContextGroup::EbusHandler, behaviorEbus.m_name, ScriptCanvasEditor::TranslationKeyId::Category);
-                    AZStd::string translatedCategory = QCoreApplication::translate(translationContext.c_str(), translationKey.c_str()).toUtf8().data();
-
-                    if (translatedCategory != translationKey)
-                    {
-                        categoryPath = translatedCategory;
-                    }
-                    else
-                    {
-                        AZStd::string behaviourContextCategory = GetCategoryPath(behaviorEbus.m_attributes, behaviorContext);
-                        if (!behaviourContextCategory.empty())
-                        {
-                            categoryPath = behaviourContextCategory;
-                        }
-                    }
-                }
-
-                // Treat the EBusHandler name as a Category key in order to allow multiple busses to be merged into a single Category.
-                {
-                    AZStd::string translationKey = ScriptCanvasEditor::TranslationHelper::GetClassKey(ScriptCanvasEditor::TranslationContextGroup::EbusHandler, behaviorEbus.m_name, ScriptCanvasEditor::TranslationKeyId::Name);
-                    AZStd::string translatedName = QCoreApplication::translate(translationContext.c_str(), translationKey.c_str()).toUtf8().data();
-
                     if (!categoryPath.empty())
                     {
                         categoryPath.append("/");
@@ -608,12 +607,13 @@ namespace
                         categoryPath = "Other/";
                     }
 
-                    if (translatedName != translationKey)
+                    if (!details.m_name.empty())
                     {
-                        categoryPath.append(translatedName.c_str());
+                        categoryPath.append(details.m_name.c_str());
                     }
-                    else
+                    else if (categoryPath.contains("Other"))
                     {
+                        // Use the BehaviorEBus name to categorize within the 'Other' category
                         categoryPath.append(behaviorEbus.m_name.c_str());
                     }
                 }
@@ -629,31 +629,22 @@ namespace
     void PopulateBehaviorContextEBusEventMethods(ScriptCanvasEditor::NodePaletteModel& nodePaletteModel,
         const AZ::BehaviorContext& behaviorContext, const AZ::BehaviorEBus& behaviorEbus)
     {
+        AZ_PROFILE_SCOPE(NodePaletteModel, "PopulateBehaviorContextEBusEventMethods");
+
         if (!behaviorEbus.m_events.empty())
         {
-            AZStd::string categoryPath;
+            GraphCanvas::TranslationKey key;
+            key << "EBusSender" << behaviorEbus.m_name.c_str() << "details";
 
-            AZStd::string translationContext = ScriptCanvasEditor::TranslationHelper::GetContextName(ScriptCanvasEditor::TranslationContextGroup::EbusSender, behaviorEbus.m_name);
-            AZStd::string translationKey = ScriptCanvasEditor::TranslationHelper::GetClassKey(ScriptCanvasEditor::TranslationContextGroup::EbusSender, behaviorEbus.m_name, ScriptCanvasEditor::TranslationKeyId::Category);
-            AZStd::string translatedCategory = QCoreApplication::translate(translationContext.c_str(), translationKey.c_str()).toUtf8().data();
+            GraphCanvas::TranslationRequests::Details details;
+            GraphCanvas::TranslationRequestBus::BroadcastResult(details, &GraphCanvas::TranslationRequests::GetDetails, key, details);
 
-            if (translatedCategory != translationKey)
-            {
-                categoryPath = translatedCategory;
-            }
-            else
-            {
-                AZStd::string behaviourContextCategory = GetCategoryPath(behaviorEbus.m_attributes, behaviorContext);
-                if (!behaviourContextCategory.empty())
-                {
-                    categoryPath = behaviourContextCategory;
-                }
-            }
+            AZStd::string categoryPath = details.m_category.empty() ? GetCategoryPath(behaviorEbus.m_attributes, behaviorContext) : details.m_category;
 
             // Parent
-            AZStd::string displayName = ScriptCanvasEditor::TranslationHelper::GetClassKeyTranslation(ScriptCanvasEditor::TranslationContextGroup::EbusSender, behaviorEbus.m_name, ScriptCanvasEditor::TranslationKeyId::Name);
+            AZStd::string displayName = details.m_name;
 
-            // Treat the EBus name as a Category key in order to allow multiple busses to be merged into a single Category.
+            // Treat the EBus name as a Category key in order to allow multiple buses to be merged into a single Category.
             if (!categoryPath.empty())
             {
                 categoryPath.append("/");
@@ -663,18 +654,19 @@ namespace
                 categoryPath = "Other/";
             }
 
-            if (displayName.empty())
+            if (!details.m_name.empty())
             {
-                categoryPath.append(behaviorEbus.m_name.c_str());
+                categoryPath.append(details.m_name.c_str());
             }
-            else
+            else if (categoryPath.contains("Other"))
             {
-                categoryPath.append(displayName.c_str());
+                // Use the behavior EBus name to categorize within the 'Other' category
+                categoryPath.append(behaviorEbus.m_name.c_str());
             }
 
             ScriptCanvasEditor::CategoryInformation ebusCategoryInformation;
 
-            ebusCategoryInformation.m_tooltip = ScriptCanvasEditor::TranslationHelper::GetClassKeyTranslation(ScriptCanvasEditor::TranslationContextGroup::EbusSender, behaviorEbus.m_name, ScriptCanvasEditor::TranslationKeyId::Tooltip);
+            ebusCategoryInformation.m_tooltip = details.m_tooltip;
 
             nodePaletteModel.RegisterCategoryInformation(categoryPath, ebusCategoryInformation);
 
@@ -700,6 +692,7 @@ namespace
     void PopulateBehaviorContextEBuses(ScriptCanvasEditor::NodePaletteModel& nodePaletteModel,
         const AZ::BehaviorContext& behaviorContext)
     {
+        AZ_PROFILE_SCOPE(NodePaletteModel, "PopulateBehaviorContextEBuses");
         AZStd::unordered_set<AZ::Crc32> skipBuses = GetEBusExcludeSet(behaviorContext);
 
         for (const auto& [ebusName, behaviorEbus] : behaviorContext.m_ebuses)
@@ -758,10 +751,13 @@ namespace
         }
     }
 
+
     // Helper function for populating the node palette model.
     // Pulled out just to make the tabbing a bit nicer, since it's a huge method.
     void PopulateNodePaletteModel(ScriptCanvasEditor::NodePaletteModel& nodePaletteModel)
     {
+        AZ_PROFILE_SCOPE(NodePaletteModel, "PopulateNodePaletteModel");
+
         AZ::SerializeContext* serializeContext = nullptr;
         AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationRequests::GetSerializeContext);
 
@@ -791,8 +787,10 @@ namespace
 
         // Populates the NodePalette with EBus Event method nodes and EBus Event handler nodes
         PopulateBehaviorContextEBuses(nodePaletteModel, *behaviorContext);
+
         // Populates the NodePalette with Methods reflected directly on the BehaviorContext
         PopulateBehaviorContextGlobalMethods(nodePaletteModel, *behaviorContext);
+
         // Populates the NodePalette with Properties reflected directly on the BehaviorContext
         PopulateBehaviorContextGlobalProperties(nodePaletteModel, *behaviorContext);
     }
@@ -881,6 +879,7 @@ namespace ScriptCanvasEditor
 
     void NodePaletteModel::RepopulateModel()
     {
+        AZ_PROFILE_FUNCTION(ScriptCanvas);
         ClearRegistry();
 
         PopulateNodePaletteModel((*this));
@@ -895,6 +894,8 @@ namespace ScriptCanvasEditor
 
     void NodePaletteModel::RegisterCustomNode(AZStd::string_view categoryPath, const AZ::Uuid& uuid, AZStd::string_view name, const AZ::SerializeContext::ClassData* classData)
     {
+
+        AZ_PROFILE_SCOPE(NodePaletteModel, "NodePaletteModel::RegisterCustomNode");
         ScriptCanvas::NodeTypeIdentifier nodeIdentifier = ScriptCanvas::NodeUtils::ConstructCustomNodeIdentifier(uuid);
 
         auto mapIter = m_registeredNodes.find(nodeIdentifier);
@@ -905,45 +906,36 @@ namespace ScriptCanvasEditor
 
             customNodeInformation->m_nodeIdentifier = nodeIdentifier;
             customNodeInformation->m_typeId = uuid;
-
             customNodeInformation->m_displayName = name;
+            customNodeInformation->m_categoryPath = categoryPath;
 
             bool isDeprecated(false);
 
             if (classData && classData->m_editData && classData->m_editData->m_name)
             {
-                auto nodeContextName = ScriptCanvasEditor::Nodes::GetContextName(*classData);
-                auto contextName = ScriptCanvasEditor::TranslationHelper::GetContextName(ScriptCanvasEditor::TranslationContextGroup::ClassMethod, nodeContextName);
+                GraphCanvas::TranslationKey key;
+                key << "ScriptCanvas::Node" << classData->m_typeId.ToString<AZStd::string>().c_str() << "details";
 
-                GraphCanvas::TranslationKeyedString nodeKeyedString({}, contextName);
-                nodeKeyedString.m_key = ScriptCanvasEditor::TranslationHelper::GetKey(ScriptCanvasEditor::TranslationContextGroup::ClassMethod, nodeContextName, classData->m_editData->m_name, ScriptCanvasEditor::TranslationItemType::Node, ScriptCanvasEditor::TranslationKeyId::Name);
-                customNodeInformation->m_displayName = nodeKeyedString.GetDisplayString();
+                GraphCanvas::TranslationRequests::Details details;
+                GraphCanvas::TranslationRequestBus::BroadcastResult(details, &GraphCanvas::TranslationRequests::GetDetails, key, details);
 
-                GraphCanvas::TranslationKeyedString tooltipKeyedString(AZStd::string(), nodeKeyedString.m_context);
-                tooltipKeyedString.m_key = ScriptCanvasEditor::TranslationHelper::GetKey(ScriptCanvasEditor::TranslationContextGroup::ClassMethod, nodeContextName, classData->m_editData->m_name, ScriptCanvasEditor::TranslationItemType::Node, ScriptCanvasEditor::TranslationKeyId::Tooltip);
+                if (details.m_name.empty())
+                {
+                    details.m_name = classData->m_editData->m_name;
+                    details.m_tooltip = classData->m_editData->m_description;
+                }
 
-                customNodeInformation->m_toolTip = tooltipKeyedString.GetDisplayString();
+                customNodeInformation->m_displayName = details.m_name;
+                customNodeInformation->m_toolTip = details.m_tooltip;
+
+                if (!details.m_category.empty())
+                {
+                    customNodeInformation->m_categoryPath = details.m_category;
+                }
 
                 if (customNodeInformation->m_displayName.empty())
                 {
                     customNodeInformation->m_displayName = classData->m_editData->m_name;
-                }
-
-                GraphCanvas::TranslationKeyedString categoryKeyedString(ScriptCanvasEditor::Nodes::GetCategoryName(*classData), nodeKeyedString.m_context);
-                categoryKeyedString.m_key = ScriptCanvasEditor::TranslationHelper::GetKey(ScriptCanvasEditor::TranslationContextGroup::ClassMethod, nodeContextName, classData->m_editData->m_name, ScriptCanvasEditor::TranslationItemType::Node, ScriptCanvasEditor::TranslationKeyId::Category);
-
-                customNodeInformation->m_categoryPath = categoryKeyedString.GetDisplayString();
-
-                if (customNodeInformation->m_categoryPath.empty())
-                {
-                    if (contextName.empty())
-                    {
-                        customNodeInformation->m_categoryPath = categoryPath;
-                    }
-                    else
-                    {
-                        customNodeInformation->m_categoryPath = contextName;
-                    }
                 }
 
                 auto editorDataElement = classData->m_editData->FindElementData(AZ::Edit::ClassElements::EditorData);
@@ -1003,11 +995,13 @@ namespace ScriptCanvasEditor
         ( const AZStd::string& categoryPath
         , const AZStd::string& methodClass
         , const AZStd::string& methodName
-        , const AZ::BehaviorMethod* behaviorMethod
-        , const AZ::BehaviorContext* behaviorContext
+        , const AZ::BehaviorMethod*
+        , const AZ::BehaviorContext*
         , ScriptCanvas::PropertyStatus propertyStatus
         , bool isOverload)
     {
+        AZ_PROFILE_SCOPE(NodePaletteModel, "NodePaletteModel::RegisterClassNode");
+
         ScriptCanvas::NodeTypeIdentifier nodeIdentifier = isOverload ? ScriptCanvas::NodeUtils::ConstructMethodOverloadedNodeIdentifier(methodName) : ScriptCanvas::NodeUtils::ConstructMethodNodeIdentifier(methodClass, methodName, propertyStatus);
 
         auto registerIter = m_registeredNodes.find(nodeIdentifier);
@@ -1022,44 +1016,41 @@ namespace ScriptCanvasEditor
             methodModelInformation->m_propertyStatus = propertyStatus;
             methodModelInformation->m_titlePaletteOverride = "MethodNodeTitlePalette";
 
-            methodModelInformation->m_displayName = TranslationHelper::GetKeyTranslation(TranslationContextGroup::ClassMethod, methodClass.c_str(), methodName.c_str(), TranslationItemType::Node, TranslationKeyId::Name);
+            GraphCanvas::TranslationKey catkey;
+            catkey << "BehaviorClass" << methodClass.c_str() << "details";
+            GraphCanvas::TranslationRequests::Details catdetails;
+            GraphCanvas::TranslationRequestBus::BroadcastResult(catdetails, &GraphCanvas::TranslationRequests::GetDetails, catkey, catdetails);
 
-            if (methodModelInformation->m_displayName.empty())
+            GraphCanvas::TranslationKey key;
+
+            AZStd::string updatedMethodName;
+            if (propertyStatus != ScriptCanvas::PropertyStatus::None)
             {
-                methodModelInformation->m_displayName = methodName;
+                updatedMethodName = (propertyStatus == ScriptCanvas::PropertyStatus::Getter) ? "Get" : "Set";
             }
+            updatedMethodName += methodName;
+            key << "BehaviorClass" << methodClass.c_str() << "methods" << updatedMethodName << "details";
 
-            methodModelInformation->m_toolTip = TranslationHelper::GetKeyTranslation(TranslationContextGroup::ClassMethod, methodClass.c_str(), methodName.c_str(), TranslationItemType::Node, TranslationKeyId::Tooltip);            
+            GraphCanvas::TranslationRequests::Details details;
+            GraphCanvas::TranslationRequestBus::BroadcastResult(details, &GraphCanvas::TranslationRequests::GetDetails, key, details);
 
-            GraphCanvas::TranslationKeyedString methodCategoryString;
-            methodCategoryString.m_context = ScriptCanvasEditor::TranslationHelper::GetContextName(ScriptCanvasEditor::TranslationContextGroup::ClassMethod, methodClass.c_str());
-            methodCategoryString.m_key = ScriptCanvasEditor::TranslationHelper::GetKey(ScriptCanvasEditor::TranslationContextGroup::ClassMethod, methodClass.c_str(), methodName.c_str(), ScriptCanvasEditor::TranslationItemType::Node, ScriptCanvasEditor::TranslationKeyId::Category);
-
-            methodModelInformation->m_categoryPath = methodCategoryString.GetDisplayString();
+            methodModelInformation->m_displayName = details.m_name.empty() ? updatedMethodName : details.m_name;
+            methodModelInformation->m_toolTip = details.m_tooltip;
+            methodModelInformation->m_categoryPath = categoryPath;
 
             if (methodModelInformation->m_categoryPath.empty())
             {
-                if (!MethodHasAttribute(behaviorMethod, AZ::ScriptCanvasAttributes::FloatingFunction))
-                {    
-                    methodModelInformation->m_categoryPath = categoryPath;
-                }   
-                else if (MethodHasAttribute(behaviorMethod, AZ::Script::Attributes::Category))
-                {
-                    methodModelInformation->m_categoryPath = GetCategoryPath(behaviorMethod->m_attributes, (*behaviorContext));                    
-                }                
-
-                if (methodModelInformation->m_categoryPath.empty())
-                {
-                    methodModelInformation->m_categoryPath = "Other";
-                }
+                methodModelInformation->m_categoryPath = "Other";
             }
 
             m_registeredNodes.emplace(AZStd::make_pair(nodeIdentifier, methodModelInformation));
         }        
     }
 
-    void NodePaletteModel::RegisterGlobalConstant(const AZ::BehaviorContext& behaviorContext, const AZ::BehaviorMethod& behaviorMethod)
+    void NodePaletteModel::RegisterGlobalConstant(const AZ::BehaviorContext&, const AZ::BehaviorProperty* behaviorProperty, const AZ::BehaviorMethod& behaviorMethod)
     {
+        AZ_PROFILE_SCOPE(NodePaletteModel, "NodePaletteModel::RegisterGlobalConstant");
+
         // Construct Node Identifier using the BehaviorMethod name and the ScriptCanvas Method typeid
         ScriptCanvas::NodeTypeIdentifier nodeIdentifier =
             ScriptCanvas::NodeUtils::ConstructGlobalMethodNodeIdentifier(behaviorMethod.m_name);
@@ -1068,40 +1059,39 @@ namespace ScriptCanvasEditor
         if (auto registerIter = m_registeredNodes.find(nodeIdentifier); registerIter == m_registeredNodes.end())
         {
             auto  methodModelInformation = AZStd::make_unique<GlobalMethodNodeModelInformation>();
-            methodModelInformation->m_methodName = behaviorMethod.m_name;
             methodModelInformation->m_nodeIdentifier = nodeIdentifier;
+            methodModelInformation->m_methodName = behaviorMethod.m_name;
 
             methodModelInformation->m_titlePaletteOverride = "MethodNodeTitlePalette";
 
-            methodModelInformation->m_displayName = TranslationHelper::GetGlobalMethodKeyTranslation(methodModelInformation->m_methodName,
-                TranslationItemType::Node, TranslationKeyId::Name);
-            methodModelInformation->m_toolTip = TranslationHelper::GetGlobalMethodKeyTranslation(methodModelInformation->m_methodName,
-                TranslationItemType::Node, TranslationKeyId::Tooltip);
-            methodModelInformation->m_categoryPath = TranslationHelper::GetGlobalMethodKeyTranslation(methodModelInformation->m_methodName,
-                TranslationItemType::Node, TranslationKeyId::Category);
+            AZStd::string name = behaviorProperty->m_name;
+            AZ::StringFunc::Replace(name, "::Getter", "");
+            AZ::StringFunc::Replace(name, "::Setter", "");
 
-            if (methodModelInformation->m_displayName.empty())
-            {
-                methodModelInformation->m_displayName = methodModelInformation->m_methodName;
-            }
+            GraphCanvas::TranslationKey key;
+            key << "Constant" << name << "details";
+
+            GraphCanvas::TranslationRequests::Details details;
+            GraphCanvas::TranslationRequestBus::BroadcastResult(details, &GraphCanvas::TranslationRequests::GetDetails, key, details);
+
+
+            methodModelInformation->m_displayName = details.m_name;
+            methodModelInformation->m_toolTip = details.m_tooltip;
+            methodModelInformation->m_categoryPath = details.m_category;
 
             if (methodModelInformation->m_categoryPath.empty())
             {
-                methodModelInformation->m_categoryPath = GetCategoryPath(behaviorMethod.m_attributes, behaviorContext);
-                // Default to making the Category for Global Methods to be informative that the method
-                // is registered with the Behavior Context
-                if (methodModelInformation->m_categoryPath.empty())
-                {
-                    methodModelInformation->m_categoryPath = "Constants";
-                }
+                methodModelInformation->m_categoryPath = "Constants";
             }
 
             m_registeredNodes.emplace(nodeIdentifier, methodModelInformation.release());
         }
     }
 
-    void NodePaletteModel::RegisterMethodNode(const AZ::BehaviorContext& behaviorContext, const AZ::BehaviorMethod& behaviorMethod)
+    void NodePaletteModel::RegisterMethodNode(const AZ::BehaviorContext&, const AZ::BehaviorMethod& behaviorMethod)
     {
+        AZ_PROFILE_SCOPE(NodePaletteModel, "NodePaletteModel::RegisterMethodNode");
+
         // Construct Node Identifier using the BehaviorMethod name and the ScriptCanvas Method typeid
         ScriptCanvas::NodeTypeIdentifier nodeIdentifier =
             ScriptCanvas::NodeUtils::ConstructGlobalMethodNodeIdentifier(behaviorMethod.m_name);
@@ -1112,31 +1102,17 @@ namespace ScriptCanvasEditor
             auto  methodModelInformation = AZStd::make_unique<GlobalMethodNodeModelInformation>();
             methodModelInformation->m_methodName = behaviorMethod.m_name;
             methodModelInformation->m_nodeIdentifier = nodeIdentifier;
-
             methodModelInformation->m_titlePaletteOverride = "MethodNodeTitlePalette";
 
-            methodModelInformation->m_displayName = TranslationHelper::GetGlobalMethodKeyTranslation(methodModelInformation->m_methodName,
-                TranslationItemType::Node, TranslationKeyId::Name);
-            methodModelInformation->m_toolTip = TranslationHelper::GetGlobalMethodKeyTranslation(methodModelInformation->m_methodName,
-                TranslationItemType::Node, TranslationKeyId::Tooltip);
-            methodModelInformation->m_categoryPath = TranslationHelper::GetGlobalMethodKeyTranslation(methodModelInformation->m_methodName,
-                TranslationItemType::Node, TranslationKeyId::Category);
+            GraphCanvas::TranslationKey key;
+            key << "BehaviorMethod" << behaviorMethod.m_name.c_str() << "details";
 
-            if (methodModelInformation->m_displayName.empty())
-            {
-                methodModelInformation->m_displayName = methodModelInformation->m_methodName;
-            }
+            GraphCanvas::TranslationRequests::Details details;
+            GraphCanvas::TranslationRequestBus::BroadcastResult(details, &GraphCanvas::TranslationRequests::GetDetails, key, details);
 
-            if (methodModelInformation->m_categoryPath.empty())
-            {
-                methodModelInformation->m_categoryPath = GetCategoryPath(behaviorMethod.m_attributes, behaviorContext);
-                // Default to making the Category for Global Methods to be informative that the method
-                // is registered with the Behavior Context
-                if (methodModelInformation->m_categoryPath.empty())
-                {
-                    methodModelInformation->m_categoryPath = "Behavior Context: Global Methods";
-                }
-            }
+            methodModelInformation->m_displayName = details.m_name.empty() ? behaviorMethod.m_name : details.m_name;
+            methodModelInformation->m_toolTip = details.m_tooltip.empty() ? "" : details.m_tooltip;
+            methodModelInformation->m_categoryPath = details.m_category.empty() ? "Behavior Context: Global Methods" : details.m_category;
 
             m_registeredNodes.emplace(nodeIdentifier, methodModelInformation.release());
         }
@@ -1144,6 +1120,8 @@ namespace ScriptCanvasEditor
 
     void NodePaletteModel::RegisterEBusHandlerNodeModelInformation(AZStd::string_view categoryPath, AZStd::string_view busName, AZStd::string_view eventName, const ScriptCanvas::EBusBusId& busId, const AZ::BehaviorEBusHandler::BusForwarderEvent& forwardEvent)
     {
+
+        AZ_PROFILE_SCOPE(NodePaletteModel, "NodePaletteModel::RegisterEBusHandlerNodeModelInformation");
         ScriptCanvas::NodeTypeIdentifier nodeIdentifier = ScriptCanvas::NodeUtils::ConstructEBusEventReceiverIdentifier(busId, forwardEvent.m_eventId);
 
         auto nodeIter = m_registeredNodes.find(nodeIdentifier);
@@ -1161,18 +1139,14 @@ namespace ScriptCanvasEditor
             handlerInformation->m_busId = busId;
             handlerInformation->m_eventId = forwardEvent.m_eventId;
 
-            AZStd::string displayEventName = TranslationHelper::GetKeyTranslation(TranslationContextGroup::EbusHandler, busName.data(), eventName.data(), TranslationItemType::Node, TranslationKeyId::Name);
+            GraphCanvas::TranslationKey key;
+            key << "EBusHandler" << busName << "methods" << eventName << "details";
 
-            if (displayEventName.empty())
-            {
-                handlerInformation->m_displayName = eventName;
-            }
-            else
-            {
-                handlerInformation->m_displayName = displayEventName;
-            }
+            GraphCanvas::TranslationRequests::Details details;
+            GraphCanvas::TranslationRequestBus::BroadcastResult(details, &GraphCanvas::TranslationRequests::GetDetails, key, details);
 
-            handlerInformation->m_toolTip = TranslationHelper::GetKeyTranslation(TranslationContextGroup::EbusHandler, busName.data(), eventName.data(), TranslationItemType::Node, TranslationKeyId::Tooltip);            
+            handlerInformation->m_displayName = details.m_name.empty() ? eventName : details.m_name.c_str();
+            handlerInformation->m_toolTip = details.m_tooltip.empty() ? "" : details.m_tooltip;
 
             m_registeredNodes.emplace(AZStd::make_pair(nodeIdentifier, handlerInformation));
         }
@@ -1188,6 +1162,8 @@ namespace ScriptCanvasEditor
         , ScriptCanvas::PropertyStatus propertyStatus
         , bool isOverload)
     {
+        AZ_PROFILE_SCOPE(NodePaletteModel, "NodePaletteModel::RegisterEBusSenderNodeModelInformation");
+
         ScriptCanvas::NodeTypeIdentifier nodeIdentifier = isOverload ? ScriptCanvas::NodeUtils::ConstructEBusEventSenderOverloadedIdentifier(busId, eventId) : ScriptCanvas::NodeUtils::ConstructEBusEventSenderIdentifier(busId, eventId);
 
         auto nodeIter = m_registeredNodes.find(nodeIdentifier);
@@ -1207,18 +1183,14 @@ namespace ScriptCanvasEditor
             senderInformation->m_busId = busId;
             senderInformation->m_eventId = eventId;
 
-            AZStd::string displayEventName = TranslationHelper::GetKeyTranslation(TranslationContextGroup::EbusSender, busName.data(), eventName.data(), TranslationItemType::Node, TranslationKeyId::Name);
+            GraphCanvas::TranslationKey key;
+            key << "EBusSender" << busName << "methods" << eventName << "details";
 
-            if (displayEventName.empty())
-            {
-                senderInformation->m_displayName = eventName;
-            }
-            else
-            {
-                senderInformation->m_displayName = displayEventName;
-            }
+            GraphCanvas::TranslationRequests::Details details;
+            GraphCanvas::TranslationRequestBus::BroadcastResult(details, &GraphCanvas::TranslationRequests::GetDetails, key, details);
 
-            senderInformation->m_toolTip = TranslationHelper::GetKeyTranslation(TranslationContextGroup::EbusSender, busName.data(), eventName.data(), TranslationItemType::Node, TranslationKeyId::Tooltip);
+            senderInformation->m_displayName = details.m_name.empty() ? eventName : details.m_name.c_str();
+            senderInformation->m_toolTip = details.m_tooltip.empty() ? "" : details.m_tooltip;
 
             m_registeredNodes.emplace(AZStd::make_pair(nodeIdentifier, senderInformation));
         }
@@ -1226,6 +1198,8 @@ namespace ScriptCanvasEditor
 
     AZStd::vector<ScriptCanvas::NodeTypeIdentifier> NodePaletteModel::RegisterScriptEvent(ScriptEvents::ScriptEventsAsset* scriptEventAsset)
     {
+
+        AZ_PROFILE_SCOPE(NodePaletteModel, "NodePaletteModel::RegisterScriptEvent");
         const ScriptEvents::ScriptEvent& scriptEvent = scriptEventAsset->m_definition;
 
         ScriptCanvas::EBusBusId busId = scriptEventAsset->GetBusId();
@@ -1236,7 +1210,7 @@ namespace ScriptCanvasEditor
 
         AZStd::vector<ScriptCanvas::NodeTypeIdentifier> identifiers;
 
-        // Each event has a handler and a reciever
+        // Each event has a handler and a receiver
         identifiers.reserve(methods.size() * 2);
 
         for (const auto& method : methods)
@@ -1444,6 +1418,8 @@ namespace ScriptCanvasEditor
 
     AZStd::vector<ScriptCanvas::NodeTypeIdentifier> NodePaletteModel::ProcessAsset(AzToolsFramework::AssetBrowser::AssetBrowserEntry* entry)
     {
+        AZ_PROFILE_SCOPE(NodePaletteModel, "NodePaletteModel::RegisterScriptEvent");
+
         AZStd::lock_guard<AZStd::recursive_mutex> myLocker(m_mutex);
 
         if (entry)

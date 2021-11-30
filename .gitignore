@@ -3,7 +3,7 @@
 .vscode/
 __pycache__
 AssetProcessorTemp/**
-[Bb]uild/**
+[Bb]uild/
 [Oo]ut/**
 CMakeUserPresets.json
 [Cc]ache/
@@ -12,6 +12,7 @@ Editor/EditorEventLog.xml
 Editor/EditorLayout.xml
 **/*egg-info/**
 **/*egg-link
+**/[Rr]estricted
 UserSettings.xml
 [Uu]ser/
 FrameCapture/**

@@ -25,18 +25,14 @@ IF ERRORLEVEL 1 (
     exit /b 1
 )
 
-REM Jenkins reports MSB8029 when TMP/TEMP is not defined, define a dummy folder
-SET TMP=%cd%/temp
-SET TEMP=%cd%/temp
-IF NOT EXIST %TMP% (
-    MKDIR temp
-)
-
 REM Compute half the amount of processors so some jobs can run
 SET /a HALF_PROCESSORS = NUMBER_OF_PROCESSORS / 2
 
 SET LAST_CONFIGURE_CMD_FILE=ci_last_configure_cmd.txt
-SET CONFIGURE_CMD=cmake %SOURCE_DIRECTORY% %CMAKE_OPTIONS% %EXTRA_CMAKE_OPTIONS% -DLY_3RDPARTY_PATH="%LY_3RDPARTY_PATH%" -DLY_PROJECTS=%CMAKE_LY_PROJECTS%
+SET CONFIGURE_CMD=cmake %SOURCE_DIRECTORY% %CMAKE_OPTIONS% %EXTRA_CMAKE_OPTIONS%
+IF NOT "%CMAKE_LY_PROJECTS%"=="" (
+    SET CONFIGURE_CMD=!CONFIGURE_CMD! -DLY_PROJECTS="%CMAKE_LY_PROJECTS%"
+)
 IF NOT EXIST CMakeCache.txt (
     ECHO [ci_build] First run, generating
     SET RUN_CONFIGURE=1

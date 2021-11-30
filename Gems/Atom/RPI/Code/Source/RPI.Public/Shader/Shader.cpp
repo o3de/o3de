@@ -15,6 +15,8 @@
 #include <Atom/RPI.Public/Shader/ShaderSystemInterface.h>
 #include <AzCore/Interface/Interface.h>
 
+#include <AzCore/Component/TickBus.h>
+
 
 namespace AZ
 {
@@ -96,8 +98,7 @@ namespace AZ
 
         RHI::ResultCode Shader::Init(ShaderAsset& shaderAsset)
         {
-            Data::AssetBus::Handler::BusDisconnect();
-            ShaderReloadNotificationBus::Handler::BusDisconnect();
+            Data::AssetBus::MultiHandler::BusDisconnect();
             ShaderVariantFinderNotificationBus::Handler::BusDisconnect();
 
             RHI::RHISystemInterface* rhiSystem = RHI::RHISystemInterface::Get();
@@ -112,7 +113,8 @@ namespace AZ
                 AZStd::unique_lock<decltype(m_variantCacheMutex)> lock(m_variantCacheMutex);
                 m_shaderVariants.clear();
             }
-            m_rootVariant.Init(Data::Asset<ShaderAsset>{&shaderAsset, AZ::Data::AssetLoadBehavior::PreLoad}, shaderAsset.GetRootVariant(m_supervariantIndex), m_supervariantIndex);
+            auto rootShaderVariantAsset = shaderAsset.GetRootVariant(m_supervariantIndex);
+            m_rootVariant.Init(m_asset, rootShaderVariantAsset, m_supervariantIndex);
 
             if (m_pipelineLibraryHandle.IsNull())
             {
@@ -146,8 +148,8 @@ namespace AZ
             }
 
             ShaderVariantFinderNotificationBus::Handler::BusConnect(m_asset.GetId());
-            Data::AssetBus::Handler::BusConnect(m_asset.GetId());
-            ShaderReloadNotificationBus::Handler::BusConnect(m_asset.GetId());
+            Data::AssetBus::MultiHandler::BusConnect(rootShaderVariantAsset.GetId());
+            Data::AssetBus::MultiHandler::BusConnect(m_asset.GetId());
 
             return RHI::ResultCode::Success;
         }
@@ -155,8 +157,7 @@ namespace AZ
         void Shader::Shutdown()
         {
             ShaderVariantFinderNotificationBus::Handler::BusDisconnect();
-            Data::AssetBus::Handler::BusDisconnect();
-            ShaderReloadNotificationBus::Handler::BusDisconnect();
+            Data::AssetBus::MultiHandler::BusDisconnect();
 
             if (m_pipelineLibraryHandle.IsValid())
             {
@@ -181,14 +182,52 @@ namespace AZ
         {
             ShaderReloadDebugTracker::ScopedSection reloadSection("{%p}->Shader::OnAssetReloaded %s", this, asset.GetHint().c_str());
 
-            if (asset->GetId() == m_asset->GetId())
+            if (asset.GetAs<ShaderVariantAsset>())
             {
-                Data::Asset<ShaderAsset> newAsset = { asset.GetAs<ShaderAsset>(), AZ::Data::AssetLoadBehavior::PreLoad };
-                AZ_Assert(newAsset, "Reloaded ShaderAsset is null");
+                m_reloadedRootShaderVariantAsset = Data::static_pointer_cast<ShaderVariantAsset>(asset);
+                if (m_asset->m_buildTimestamp == m_reloadedRootShaderVariantAsset->GetBuildTimestamp())
+                {
+                    Init(*m_asset.Get());
+                    ShaderReloadNotificationBus::Event(asset.GetId(), &ShaderReloadNotificationBus::Events::OnShaderReinitialized, *this);
+                }
+                return;
+            }
 
-                Init(*newAsset.Get());
+            if (asset.GetAs<ShaderAsset>())
+            {
+                m_asset = Data::static_pointer_cast<ShaderAsset>(asset);
+                if (!m_reloadedRootShaderVariantAsset.IsReady())
+                {
+                    // Do nothing, as We should not re-initilize until the root shader variant asset has been reloaded.
+                    return;
+                }
+                AZ_Assert(m_asset->m_buildTimestamp == m_reloadedRootShaderVariantAsset->GetBuildTimestamp(),
+                    "shaderAsset '%s' timeStamp=%lld, but Root ShaderVariantAsset timeStamp=%lld", m_asset.GetHint().c_str(),
+                    m_asset->m_buildTimestamp, m_reloadedRootShaderVariantAsset->GetBuildTimestamp());
+                m_asset->UpdateRootShaderVariantAsset(m_supervariantIndex, m_reloadedRootShaderVariantAsset);
+                m_reloadedRootShaderVariantAsset = {}; // Clear the temporary reference.
+
+                if (ShaderReloadDebugTracker::IsEnabled())
+                {
+                    auto makeTimeString = [](AZ::u64 timestamp, AZ::u64 now)
+                    {
+                        AZ::u64 elapsedMillis = now - timestamp;
+                        double elapsedSeconds = aznumeric_cast<double>(elapsedMillis / 1'000);
+                        AZStd::string timeString = AZStd::string::format("%lld (%f seconds ago)", timestamp, elapsedSeconds);
+                        return timeString;
+                    };
+
+                    AZStd::sys_time_t now = AZStd::GetTimeNowMicroSecond();
+
+                    const auto shaderVariantAsset = m_asset->GetRootVariant();
+                    ShaderReloadDebugTracker::Printf("{%p}->Shader::OnAssetReloaded for shader '%s' [build time %s] found variant '%s' [build time %s]", this,
+                        m_asset.GetHint().c_str(), makeTimeString(m_asset->m_buildTimestamp, now).c_str(),
+                        shaderVariantAsset.GetHint().c_str(), makeTimeString(shaderVariantAsset->GetBuildTimestamp(), now).c_str());
+                }
+                Init(*m_asset.Get());
                 ShaderReloadNotificationBus::Event(asset.GetId(), &ShaderReloadNotificationBus::Events::OnShaderReinitialized, *this);
             }
+
         }
         ///////////////////////////////////////////////////////////////////////
 
@@ -251,23 +290,6 @@ namespace AZ
 
             // [GFX TODO] It might make more sense to call OnShaderReinitialized here
             ShaderReloadNotificationBus::Event(m_asset.GetId(), &ShaderReloadNotificationBus::Events::OnShaderVariantReinitialized, updatedVariant);
-        }
-        ///////////////////////////////////////////////////////////////////
-
-
-        ///////////////////////////////////////////////////////////////////
-        // ShaderReloadNotificationBus overrides...
-        void Shader::OnShaderAssetReinitialized(const Data::Asset<ShaderAsset>& shaderAsset)
-        {
-            // When reloads occur, it's possible for old Asset objects to hang around and report reinitialization,
-            // so we can reduce unnecessary reinitialization in that case.
-            if (shaderAsset.Get() == m_asset.Get())
-            {
-                ShaderReloadDebugTracker::ScopedSection reloadSection("{%p}->Shader::OnShaderAssetReinitialized %s", this, shaderAsset.GetHint().c_str());
-            
-                Init(*m_asset.Get());
-                ShaderReloadNotificationBus::Event(shaderAsset.GetId(), &ShaderReloadNotificationBus::Events::OnShaderReinitialized, *this);
-            }
         }
         ///////////////////////////////////////////////////////////////////
         

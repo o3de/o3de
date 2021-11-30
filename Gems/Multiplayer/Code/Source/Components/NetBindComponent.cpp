@@ -317,7 +317,7 @@ namespace Multiplayer
         return false;
     }
 
-    bool NetBindComponent::HandlePropertyChangeMessage([[maybe_unused]] AzNetworking::ISerializer& serializer, [[maybe_unused]] bool notifyChanges)
+    bool NetBindComponent::HandlePropertyChangeMessage(AzNetworking::ISerializer& serializer, bool notifyChanges)
     {
         const NetEntityRole netEntityRole = m_netEntityRole;
         ReplicationRecord replicationRecord(netEntityRole);
@@ -492,7 +492,7 @@ namespace Multiplayer
     void NetBindComponent::FillTotalReplicationRecord(ReplicationRecord& replicationRecord) const
     {
         replicationRecord.Append(m_totalRecord);
-        // if we have any outstanding changes yet to be logged, grab those as well
+        // If we have any outstanding changes yet to be logged, grab those as well
         if (m_currentRecord.HasChanges())
         {
             replicationRecord.Append(m_currentRecord);

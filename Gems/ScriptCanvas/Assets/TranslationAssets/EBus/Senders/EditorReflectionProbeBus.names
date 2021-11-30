@@ -1,0 +1,37 @@
+{
+    "entries": [
+        {
+            "base": "EditorReflectionProbeBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "Editor Reflection Probe",
+                "category": "Rendering"
+            },
+            "methods": [
+                {
+                    "base": "BakeReflectionProbe",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Bake Reflection Probe"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Bake Reflection Probe is invoked"
+                    },
+                    "details": {
+                        "name": "Bake Reflection Probe"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
+                            "details": {
+                                "name": "unsigned int"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

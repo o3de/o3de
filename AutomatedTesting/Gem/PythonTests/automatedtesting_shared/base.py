@@ -52,7 +52,7 @@ class TestAutomationBase:
         cls._kill_ly_processes()
 
     def _run_test(self, request, workspace, editor, testcase_module, extra_cmdline_args=[], batch_mode=True,
-                  autotest_mode=True, use_null_renderer=True):
+                  autotest_mode=True, use_null_renderer=True, enable_prefab_system=True):
         test_starttime = time.time()
         self.logger = logging.getLogger(__name__)
         errors = []
@@ -97,6 +97,11 @@ class TestAutomationBase:
             pycmd += ["-BatchMode"]
         if autotest_mode:
             pycmd += ["-autotest_mode"]
+        if enable_prefab_system:
+            pycmd += ["--regset=/Amazon/Preferences/EnablePrefabSystem=true"]
+        else:
+            pycmd += ["--regset=/Amazon/Preferences/EnablePrefabSystem=false"]
+
         pycmd += extra_cmdline_args
         editor.args.extend(pycmd) # args are added to the WinLauncher start command
         editor.start(backupFiles = False, launch_ap = False)
@@ -165,7 +170,7 @@ class TestAutomationBase:
                     for line in f.readlines():
                         error_str += f"|{log_basename}| {line}"                        
             except Exception as ex:
-                error_str += "-- No log available --"
+                error_str += f"-- No log available ({ex})--"
 
             pytest.fail(error_str)     
         

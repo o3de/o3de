@@ -15,7 +15,7 @@ namespace UnitTest
     {
         AzNetworking::PacketId m_packetId = AzNetworking::InvalidPacketId;
         uint32_t m_id = 0;
-        AZ::TimeMs m_timeMs = AZ::TimeMs{ 0 };
+        AZ::TimeMs m_timeMs = AZ::Time::ZeroTimeMs;
         float m_blendFactor = 0.f;
         AZStd::vector<int> m_growVector, m_shrinkVector;
 

@@ -1,0 +1,54 @@
+{
+    "entries": [
+        {
+            "base": "UiCanvasAssetRefBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "UI Canvas Asset Ref",
+                "category": "UI"
+            },
+            "methods": [
+                {
+                    "base": "LoadCanvas",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Load Canvas"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Load Canvas is invoked"
+                    },
+                    "details": {
+                        "name": "Load Canvas",
+                        "tooltip": "Loads a canvas"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "EntityId",
+                                "tooltip": "Entity Unique Id"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "UnloadCanvas",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Unload Canvas"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Unload Canvas is invoked"
+                    },
+                    "details": {
+                        "name": "Unload Canvas",
+                        "tooltip": "Unloads the loaded canvas"
+                    }
+                }
+            ]
+        }
+    ]
+}

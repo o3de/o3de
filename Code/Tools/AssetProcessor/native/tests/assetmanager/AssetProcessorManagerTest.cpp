@@ -193,7 +193,9 @@ void AssetProcessorManagerTest::SetUp()
     registry->Set(cacheRootKey, tempPath.absoluteFilePath("Cache").toUtf8().constData());
     auto projectPathKey =
         AZ::SettingsRegistryInterface::FixedValueString(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey) + "/project_path";
-    registry->Set(projectPathKey, "AutomatedTesting");
+    AZ::IO::FixedMaxPath enginePath;
+    registry->Get(enginePath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder);
+    registry->Set(projectPathKey, (enginePath / "AutomatedTesting").Native());
     AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(*registry);
 
     m_data->m_databaseLocationListener.BusConnect();
@@ -241,9 +243,7 @@ void AssetProcessorManagerTest::SetUp()
     ASSERT_TRUE(m_mockApplicationManager->RegisterAssetRecognizerAsBuilder(rec));
     m_mockApplicationManager->BusConnect();
 
-    AZ_Printf("UnitTest", "Allocating APM\n")
     m_assetProcessorManager.reset(new AssetProcessorManager_Test(m_config.get()));
-    AZ_Printf("UnitTest", "APM ready\n");
     m_errorAbsorber->Clear();
 
     m_isIdling = false;
@@ -4466,9 +4466,7 @@ AssetBuilderSDK::AssetBuilderDesc MockBuilderInfoHandler::CreateBuilderDesc(cons
 
 void FingerprintTest::SetUp()
 {
-    AZ_Printf("FingerprintTest", "SetUp start\n");
     AssetProcessorManagerTest::SetUp();
-    AZ_Printf("FingerprintTest", "SetUp self\n");
 
     // We don't want the mock application manager to provide builder descriptors, mockBuilderInfoHandler will provide our own
     m_mockApplicationManager->BusDisconnect();
@@ -4487,23 +4485,18 @@ void FingerprintTest::SetUp()
     });
 
     ASSERT_TRUE(UnitTestUtils::CreateDummyFile(m_absolutePath, ""));
-    AZ_Printf("FingerprintTest", "SetUp end\n");
 }
 
 void FingerprintTest::TearDown()
 {
-    AZ_Printf("FingerprintTest", "TearDown start\n");
     m_jobResults = AZStd::vector<AssetProcessor::JobDetails>{};
     m_mockBuilderInfoHandler = {};
 
-    AZ_Printf("FingerprintTest", "TearDown parent\n");
     AssetProcessorManagerTest::TearDown();
-    AZ_Printf("FingerprintTest", "TearDown end\n");
 }
 
 void FingerprintTest::RunFingerprintTest(QString builderFingerprint, QString jobFingerprint, bool expectedResult)
 {
-    AZ_Printf("FingerprintTest", "Fingerprint Test Start\n");
     m_mockBuilderInfoHandler.m_builderDesc.m_analysisFingerprint = builderFingerprint.toUtf8().data();
     m_mockBuilderInfoHandler.m_jobFingerprint = jobFingerprint;
     QMetaObject::invokeMethod(m_assetProcessorManager.get(), "AssessModifiedFile", Qt::QueuedConnection, Q_ARG(QString, m_absolutePath));
@@ -4512,7 +4505,6 @@ void FingerprintTest::RunFingerprintTest(QString builderFingerprint, QString job
     ASSERT_EQ(m_mockBuilderInfoHandler.m_createJobsCount, 1);
     ASSERT_EQ(m_jobResults.size(), 1);
     ASSERT_EQ(m_jobResults[0].m_autoFail, expectedResult);
-    AZ_Printf("FingerprintTest", "Fingerprint Test End\n");
 }
 
 TEST_F(FingerprintTest, FingerprintChecking_JobFingerprint_NoBuilderFingerprint)
@@ -5372,12 +5364,28 @@ AZStd::vector<AZStd::string> WildcardSourceDependencyTest::FileAddedTest(const Q
 void WildcardSourceDependencyTest::SetUp()
 {
     AssetProcessorManagerTest::SetUp();
-
+    
     QDir tempPath(m_tempDir.path());
 
     // Add a non-recursive scan folder.  Only files directly inside of this folder should be picked up, subfolders are ignored
     m_config->AddScanFolder(ScanFolderInfo(tempPath.filePath("no_recurse"), "no_recurse",
         "no_recurse", false, false, m_config->GetEnabledPlatforms(), 1));
+
+    {
+        ExcludeAssetRecognizer excludeFolder;
+        excludeFolder.m_name = "Exclude ignored Folder";
+        excludeFolder.m_patternMatcher =
+            AssetBuilderSDK::FilePatternMatcher(R"REGEX(^(.*\/)?ignored(\/.*)?$)REGEX", AssetBuilderSDK::AssetBuilderPattern::Regex);
+        m_config->AddExcludeRecognizer(excludeFolder);
+    }
+
+    {
+        ExcludeAssetRecognizer excludeFile;
+        excludeFile.m_name = "Exclude z.foo Files";
+        excludeFile.m_patternMatcher =
+            AssetBuilderSDK::FilePatternMatcher(R"REGEX(^(.*\/)?z\.foo$)REGEX", AssetBuilderSDK::AssetBuilderPattern::Regex);
+        m_config->AddExcludeRecognizer(excludeFile);
+    }
 
     UnitTestUtils::CreateDummyFile(tempPath.absoluteFilePath("subfolder1/1a.foo"));
     UnitTestUtils::CreateDummyFile(tempPath.absoluteFilePath("subfolder1/1b.foo"));
@@ -5391,6 +5399,19 @@ void WildcardSourceDependencyTest::SetUp()
 
     // Add a file in the non-recursive scanfolder.  Since its not directly in the scan folder, it should always be ignored
     UnitTestUtils::CreateDummyFile(tempPath.absoluteFilePath("no_recurse/one/two/three/f.foo"));
+
+    // Add a file to an ignored folder
+    UnitTestUtils::CreateDummyFile(tempPath.absoluteFilePath("subfolder2/redirected/folder/ignored/g.foo"));
+
+    // Add an ignored file
+    UnitTestUtils::CreateDummyFile(tempPath.absoluteFilePath("subfolder2/redirected/folder/one/z.foo"));
+
+    // Add a file in the cache
+    AZStd::string projectCacheRootValue;
+    AZ::SettingsRegistry::Get()->Get(projectCacheRootValue, AZ::SettingsRegistryMergeUtils::FilePathKey_CacheProjectRootFolder);
+    projectCacheRootValue = AssetUtilities::NormalizeFilePath(projectCacheRootValue.c_str()).toUtf8().constData();
+    auto path = AZ::IO::Path(projectCacheRootValue) / "cache.foo";
+    UnitTestUtils::CreateDummyFile(path.c_str());
 
     AzToolsFramework::AssetDatabase::SourceFileDependencyEntryContainer dependencies;
 
@@ -5524,6 +5545,102 @@ TEST_F(WildcardSourceDependencyTest, Absolute_NoWildcard)
 
     ASSERT_FALSE(Test(tempPath.absoluteFilePath("subfolder1/1a.foo").toUtf8().constData(), resolvedPaths));
     ASSERT_THAT(resolvedPaths, ::testing::UnorderedElementsAre());
+}
+
+TEST_F(WildcardSourceDependencyTest, Relative_IgnoredFolder)
+{
+    AZStd::vector<AZStd::string> resolvedPaths;
+
+    ASSERT_TRUE(Test("*g.foo", resolvedPaths));
+    ASSERT_THAT(resolvedPaths, ::testing::UnorderedElementsAre());
+}
+
+TEST_F(WildcardSourceDependencyTest, Absolute_IgnoredFolder)
+{
+    AZStd::vector<AZStd::string> resolvedPaths;
+    QDir tempPath(m_tempDir.path());
+
+    ASSERT_TRUE(Test(tempPath.absoluteFilePath("*g.foo").toUtf8().constData(), resolvedPaths));
+    ASSERT_THAT(resolvedPaths, ::testing::UnorderedElementsAre());
+}
+
+TEST_F(WildcardSourceDependencyTest, Relative_IgnoredFile)
+{
+    AZStd::vector<AZStd::string> resolvedPaths;
+
+    ASSERT_TRUE(Test("*z.foo", resolvedPaths));
+    ASSERT_THAT(resolvedPaths, ::testing::UnorderedElementsAre());
+}
+
+TEST_F(WildcardSourceDependencyTest, Absolute_IgnoredFile)
+{
+    AZStd::vector<AZStd::string> resolvedPaths;
+    QDir tempPath(m_tempDir.path());
+
+    ASSERT_TRUE(Test(tempPath.absoluteFilePath("*z.foo").toUtf8().constData(), resolvedPaths));
+    ASSERT_THAT(resolvedPaths, ::testing::UnorderedElementsAre());
+}
+
+TEST_F(WildcardSourceDependencyTest, Relative_CacheFolder)
+{
+    AZStd::vector<AZStd::string> resolvedPaths;
+    QDir tempPath(m_tempDir.path());
+    
+    ASSERT_TRUE(Test("*cache.foo", resolvedPaths));
+    ASSERT_THAT(resolvedPaths, ::testing::UnorderedElementsAre());
+}
+
+TEST_F(WildcardSourceDependencyTest, FilesAddedAfterInitialCache)
+{
+    AZStd::vector<AZStd::string> resolvedPaths;
+    QDir tempPath(m_tempDir.path());
+
+    auto excludedFolderCacheInterface = AZ::Interface<ExcludedFolderCacheInterface>::Get();
+
+    ASSERT_TRUE(excludedFolderCacheInterface);
+
+    {
+        const auto& excludedFolders = excludedFolderCacheInterface->GetExcludedFolders();
+
+        ASSERT_EQ(excludedFolders.size(), 2);
+    }
+
+    // Add a file to a new ignored folder
+    QString newFilePath = tempPath.absoluteFilePath("subfolder2/redirected/folder/two/ignored/three/new.foo");
+    UnitTestUtils::CreateDummyFile(newFilePath);
+
+    excludedFolderCacheInterface->FileAdded(newFilePath);
+
+    const auto& excludedFolders = excludedFolderCacheInterface->GetExcludedFolders();
+
+    ASSERT_EQ(excludedFolders.size(), 3);
+    ASSERT_THAT(excludedFolders, ::testing::Contains(AZStd::string(tempPath.absoluteFilePath("subfolder2/redirected/folder/two/ignored").toUtf8().constData())));
+}
+
+TEST_F(WildcardSourceDependencyTest, FilesRemovedAfterInitialCache)
+{
+    AZStd::vector<AZStd::string> resolvedPaths;
+    QDir tempPath(m_tempDir.path());
+
+    // Add a file to a new ignored folder
+    QString newFilePath = tempPath.absoluteFilePath("subfolder2/redirected/folder/two/ignored/three/new.foo");
+    UnitTestUtils::CreateDummyFile(newFilePath);
+
+    auto excludedFolderCacheInterface = AZ::Interface<ExcludedFolderCacheInterface>::Get();
+
+    ASSERT_TRUE(excludedFolderCacheInterface);
+
+    {
+        const auto& excludedFolders = excludedFolderCacheInterface->GetExcludedFolders();
+
+        ASSERT_EQ(excludedFolders.size(), 3);
+    }
+    
+    m_fileStateCache->SignalDeleteEvent(tempPath.absoluteFilePath("subfolder2/redirected/folder/two/ignored"));
+
+    const auto& excludedFolders = excludedFolderCacheInterface->GetExcludedFolders();
+
+    ASSERT_EQ(excludedFolders.size(), 2);
 }
 
 TEST_F(WildcardSourceDependencyTest, NewFile_MatchesSavedRelativeDependency)

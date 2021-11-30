@@ -21,6 +21,8 @@
 
 namespace AzToolsFramework
 {
+    AzFramework::EntityContextId PrefabUiHandler::s_editorEntityContextId = AzFramework::EntityContextId::CreateNull();
+
     const QColor PrefabUiHandler::m_backgroundColor = QColor("#444444");
     const QColor PrefabUiHandler::m_backgroundHoverColor = QColor("#5A5A5A");
     const QColor PrefabUiHandler::m_backgroundSelectedColor = QColor("#656565");
@@ -47,6 +49,9 @@ namespace AzToolsFramework
             AZ_Assert(false, "PrefabUiHandler - could not get PrefabFocusPublicInterface on PrefabUiHandler construction.");
             return;
         }
+
+        // Get EditorEntityContextId
+        EditorEntityContextRequestBus::BroadcastResult(s_editorEntityContextId, &EditorEntityContextRequests::GetEditorEntityContextId);
     }
 
     QString PrefabUiHandler::GenerateItemInfoString(AZ::EntityId entityId) const
@@ -180,7 +185,7 @@ namespace AzToolsFramework
         painter->restore();
     }
 
-    void PrefabUiHandler::PaintDescendantBackground(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index,
+    void PrefabUiHandler::PaintDescendantForeground(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index,
         const QModelIndex& descendantIndex) const
     {
         if (!painter)
@@ -425,19 +430,23 @@ namespace AzToolsFramework
 
         if (m_prefabFocusPublicInterface->IsOwningPrefabBeingFocused(entityId))
         {
-            auto editorEntityContextId = AzFramework::EntityContextId::CreateNull();
-            EditorEntityContextRequestBus::BroadcastResult(editorEntityContextId, &EditorEntityContextRequests::GetEditorEntityContextId);
-
-            // Go one level up.
-            int length = m_prefabFocusPublicInterface->GetPrefabFocusPathLength(editorEntityContextId);
-            m_prefabFocusPublicInterface->FocusOnPathIndex(editorEntityContextId, length - 2);
+            // Close this prefab and focus on the parent
+            m_prefabFocusPublicInterface->FocusOnParentOfFocusedPrefab(s_editorEntityContextId);
         }
     }
 
     bool PrefabUiHandler::OnEntityDoubleClick(AZ::EntityId entityId) const
     {
-        // Focus on this prefab
-        m_prefabFocusPublicInterface->FocusOnOwningPrefab(entityId);
+        if (!m_prefabFocusPublicInterface->IsOwningPrefabBeingFocused(entityId))
+        {
+            // Focus on this prefab
+            m_prefabFocusPublicInterface->FocusOnOwningPrefab(entityId);
+        }
+        else
+        {
+            // Close this prefab and focus on the parent
+            m_prefabFocusPublicInterface->FocusOnParentOfFocusedPrefab(s_editorEntityContextId);
+        }
 
         // Don't propagate event.
         return true;

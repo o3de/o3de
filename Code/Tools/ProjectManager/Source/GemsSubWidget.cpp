@@ -33,13 +33,14 @@ namespace O3DE::ProjectManager
         m_layout->addWidget(m_textLabel);
 
         m_tagWidget = new TagContainerWidget();
+        connect(m_tagWidget, &TagContainerWidget::TagClicked, this, [=](const Tag& tag){ emit TagClicked(tag); });
         m_layout->addWidget(m_tagWidget);
     }
 
-    void GemsSubWidget::Update(const QString& title, const QString& text, const QStringList& gemNames)
+    void GemsSubWidget::Update(const QString& title, const QString& text, const QVector<Tag>& tags)
     {
         m_titleLabel->setText(title);
         m_textLabel->setText(text);
-        m_tagWidget->Update(gemNames);
+        m_tagWidget->Update(tags);
     }
 } // namespace O3DE::ProjectManager

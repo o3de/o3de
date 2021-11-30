@@ -92,7 +92,7 @@ namespace LmbrCentral
                 ;
 
             behaviorContext->EBus<TagGlobalRequestBus>("TagGlobalRequestBus")
-                ->Event("RequestTaggedEntities", &TagGlobalRequestBus::Events::RequestTaggedEntities)
+                ->Event("Get Entity By Tag", &TagGlobalRequestBus::Events::RequestTaggedEntities, "RequestTaggedEntities")
                 ;
             
             behaviorContext->EBus<TagComponentNotificationsBus>("TagComponentNotificationsBus")

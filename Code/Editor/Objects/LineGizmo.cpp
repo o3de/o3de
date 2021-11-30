@@ -98,16 +98,8 @@ void CLineGizmo::Display(DisplayContext& dc)
             Vec3 pos = 0.5f * (m_point[0] + m_point[1]);
             //dc.renderer->DrawLabelEx( p3+Vec3(0,0,0.3f),1.2f,col,true,true,m_name );
 
-            float camDist = dc.camera->GetPosition().GetDistance(pos);
-            float maxDist = dc.settings->GetLabelsDistance();
-            if (camDist < dc.settings->GetLabelsDistance())
             {
-                float range = maxDist / 2.0f;
                 float col[4] = { m_color[0].r, m_color[0].g, m_color[0].b, m_color[0].a };
-                if (camDist > range)
-                {
-                    col[3] = col[3] * (1.0f - (camDist - range) / range);
-                }
                 dc.SetColor(col[0], col[1], col[2], col[3]);
                 dc.DrawTextLabel(pos + Vec3(0, 0, 0.2f), 1.2f, m_name.toUtf8().data());
             }

@@ -6,10 +6,10 @@
  *
  */
 
-#include <AzFramework/StringFunc/StringFunc.h>
+#include <AzCore/StringFunc/StringFunc.h>
+#include <AzCore/Utils/Utils.h>
 #include <AzToolsFramework/Thumbnails/SourceControlThumbnail.h>
 #include <AzToolsFramework/SourceControl/SourceControlAPI.h>
-#include <AzFramework/API/ApplicationAPI.h>
 
 namespace AzToolsFramework
 {
@@ -68,12 +68,12 @@ namespace AzToolsFramework
         SourceControlThumbnail::SourceControlThumbnail(SharedThumbnailKey key)
             : Thumbnail(key)
         {
-            const char* engineRoot = nullptr;
-            AzFramework::ApplicationRequests::Bus::BroadcastResult(engineRoot, &AzFramework::ApplicationRequests::GetEngineRoot);
-            AZ_Assert(engineRoot, "Engine Root not initialized");
+            AZ::IO::FixedMaxPath engineRoot = AZ::Utils::GetEnginePath();
+            AZ_Assert(!engineRoot.empty(), "Engine Root not initialized");
 
-            AzFramework::StringFunc::Path::Join(engineRoot, WRITABLE_ICON_PATH, m_writableIconPath);
-            AzFramework::StringFunc::Path::Join(engineRoot, NONWRITABLE_ICON_PATH, m_nonWritableIconPath);
+            m_writableIconPath = (engineRoot / WRITABLE_ICON_PATH).String();
+            m_nonWritableIconPath = (engineRoot / NONWRITABLE_ICON_PATH).String();
+
 
             BusConnect();
         }
@@ -90,8 +90,8 @@ namespace AzToolsFramework
             AZ_Assert(sourceControlKey, "Incorrect key type, excpected SourceControlThumbnailKey");
 
             AZStd::string myFileName(sourceControlKey->GetFileName());
-            AzFramework::StringFunc::Path::Normalize(myFileName);
-            if (AzFramework::StringFunc::Equal(myFileName.c_str(), filename))
+            AZ::StringFunc::Path::Normalize(myFileName);
+            if (AZ::StringFunc::Equal(myFileName.c_str(), filename))
             {
                 Update();
             }

@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzCore/std/containers/vector.h>
+#include <AzCore/Task/TaskGraph.h>
 #include <AzCore/Outcome/Outcome.h>
 #include "EMotionFXConfig.h"
 #include <MCore/Source/DualQuaternion.h>
@@ -138,6 +139,8 @@ namespace EMotionFX
 
         //! Number of vertices per batch/job used for multi-threaded software skinning.
         static constexpr AZ::u32 s_numVerticesPerBatch = 10000;
+        AZ::TaskGraph m_taskGraph;
+        bool m_useTaskGraph = true;
 
         /**
          * Default constructor.

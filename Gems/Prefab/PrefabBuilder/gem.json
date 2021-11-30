@@ -2,6 +2,7 @@
     "gem_name": "PrefabBuilder",
     "display_name": "Prefab Builder",
     "license": "Apache-2.0 Or MIT",
+    "license_url": "https://github.com/o3de/o3de/blob/development/LICENSE.txt",
     "origin": "Open 3D Engine - o3de.org",
     "type": "Code",
     "summary": "The Prefab Builder Gem provides an Asset Processor module for prefabs, which are complex assets built by combining smaller entities.",

@@ -1,0 +1,47 @@
+{
+    "entries": [
+        {
+            "base": "{B779B815-EC1B-5075-A167-0F213445BB53}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "Multiply By Number",
+                "category": "Math/Color",
+                "tooltip": "Returns Source with every elemented multiplied by Multiplier",
+                "subtitle": "Color"
+            },
+            "slots": [
+                {
+                    "base": "Input_In",
+                    "details": {
+                        "name": "In"
+                    }
+                },
+                {
+                    "base": "Output_Out",
+                    "details": {
+                        "name": "Out"
+                    }
+                },
+                {
+                    "base": "DataInput_Color: Source",
+                    "details": {
+                        "name": "Color: Source"
+                    }
+                },
+                {
+                    "base": "DataInput_Number: Multiplier",
+                    "details": {
+                        "name": "Number: Multiplier"
+                    }
+                },
+                {
+                    "base": "DataOutput_Result: Color",
+                    "details": {
+                        "name": "Result: Color"
+                    }
+                }
+            ]
+        }
+    ]
+}

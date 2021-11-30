@@ -56,6 +56,8 @@ namespace EMStudio
 
         void UpdateActorRenderFlag(EMotionFX::ActorRenderFlagBitset renderFlags);
 
+        AZStd::shared_ptr<AzFramework::Scene> GetFrameworkScene() const;
+
     private:
 
         // This function resets the light, camera and other environment settings.
@@ -83,7 +85,7 @@ namespace EMStudio
 
         AZ::Entity* m_postProcessEntity = nullptr;
         AZ::Entity* m_iblEntity = nullptr;
-        AZ::Entity* m_gridEntity = nullptr;
+        AZ::Entity* m_groundEntity = nullptr;
         AZStd::vector<AZ::Entity*> m_actorEntities;
         const RenderOptions* m_renderOptions;
 

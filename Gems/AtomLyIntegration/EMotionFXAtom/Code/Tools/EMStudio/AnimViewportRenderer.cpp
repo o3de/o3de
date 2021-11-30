@@ -24,8 +24,6 @@
 
 #include <AtomLyIntegration/CommonFeatures/Material/MaterialComponentConstants.h>
 #include <AtomLyIntegration/CommonFeatures/Material/MaterialComponentBus.h>
-#include <AtomLyIntegration/CommonFeatures/Grid/GridComponentConstants.h>
-#include <AtomLyIntegration/CommonFeatures/Grid/GridComponentConfig.h>
 #include <AtomLyIntegration/CommonFeatures/Mesh/MeshComponentConstants.h>
 #include <AtomLyIntegration/CommonFeatures/Mesh/MeshComponentBus.h>
 #include <AtomLyIntegration/CommonFeatures/PostProcess/PostFxLayerComponentConstants.h>
@@ -122,22 +120,15 @@ namespace EMStudio
         const AZ::Render::LightingPreset* preset = lightingPresetAsset->GetDataAs<AZ::Render::LightingPreset>();
         SetLightingPreset(preset);
 
-        // Create grid
+        // Create the ground plane
         AzFramework::EntityContextRequestBus::EventResult(
-            m_gridEntity, entityContextId, &AzFramework::EntityContextRequestBus::Events::CreateEntity, "ViewportGrid");
-        AZ_Assert(m_gridEntity != nullptr, "Failed to create grid entity.");
+            m_groundEntity, entityContextId, &AzFramework::EntityContextRequestBus::Events::CreateEntity, "ViewportModel");
+        AZ_Assert(m_groundEntity != nullptr, "Failed to create model entity.");
 
-        AZ::Render::GridComponentConfig gridConfig;
-        gridConfig.m_secondarySpacing = m_renderOptions->GetGridUnitSize();
-        gridConfig.m_axisColor = m_renderOptions->GetMainAxisColor();
-        gridConfig.m_primaryColor = m_renderOptions->GetGridColor();
-        gridConfig.m_secondaryColor = m_renderOptions->GetSubStepColor();
-        auto gridComponent = m_gridEntity->CreateComponent(AZ::Render::GridComponentTypeId);
-        gridComponent->SetConfiguration(gridConfig);
-
-        m_gridEntity->CreateComponent(azrtti_typeid<AzFramework::TransformComponent>());
-        m_gridEntity->Init();
-        m_gridEntity->Activate();
+        m_groundEntity->CreateComponent(AZ::Render::MeshComponentTypeId);
+        m_groundEntity->CreateComponent(AZ::Render::MaterialComponentTypeId);
+        m_groundEntity->CreateComponent(azrtti_typeid<AzFramework::TransformComponent>());
+        m_groundEntity->Activate();
 
         Reinit();
     }
@@ -147,7 +138,7 @@ namespace EMStudio
         // Destroy all the entity we created.
         m_entityContext->DestroyEntity(m_iblEntity);
         m_entityContext->DestroyEntity(m_postProcessEntity);
-        m_entityContext->DestroyEntity(m_gridEntity);
+        m_entityContext->DestroyEntity(m_groundEntity);
         for (AZ::Entity* entity : m_actorEntities)
         {
             m_entityContext->DestroyEntity(entity);
@@ -187,20 +178,13 @@ namespace EMStudio
         if (!m_actorEntities.empty())
         {
             // Find the actor instance and calculate the center from aabb.
-            AZ::Vector3 actorCenter = AZ::Vector3::CreateZero();
             EMotionFX::Integration::ActorComponent* actorComponent =
                 m_actorEntities[0]->FindComponent<EMotionFX::Integration::ActorComponent>();
             EMotionFX::ActorInstance* actorInstance = actorComponent->GetActorInstance();
             if (actorInstance)
             {
-                actorCenter += actorInstance->GetAabb().GetCenter();
+                result = actorInstance->GetAabb().GetCenter();
             }
-            
-            // Just return the position of the first entity.
-            AZ::Transform worldTransform;
-            AZ::TransformBus::EventResult(worldTransform, m_actorEntities[0]->GetId(), &AZ::TransformBus::Events::GetWorldTM);
-            result = worldTransform.GetTranslation();
-            result += actorCenter;
         }
 
         return result;
@@ -220,6 +204,11 @@ namespace EMStudio
         }
     }
 
+    AZStd::shared_ptr<AzFramework::Scene> AnimViewportRenderer::GetFrameworkScene() const
+    {
+        return m_frameworkScene;
+    }
+
     void AnimViewportRenderer::ResetEnvironment()
     {
         // Reset environment
@@ -229,6 +218,15 @@ namespace EMStudio
         const AZ::Matrix4x4 rotationMatrix = AZ::Matrix4x4::CreateIdentity();
         auto skyBoxFeatureProcessorInterface = m_scene->GetFeatureProcessor<AZ::Render::SkyBoxFeatureProcessorInterface>();
         skyBoxFeatureProcessorInterface->SetCubemapRotationMatrix(rotationMatrix);
+
+        // Reset ground entity
+        AZ::Transform groundTransform = AZ::Transform::CreateIdentity();
+        AZ::TransformBus::Event(m_groundEntity->GetId(), &AZ::TransformBus::Events::SetLocalTM, groundTransform);
+
+        auto modelAsset = AZ::RPI::AssetUtils::GetAssetByProductPath<AZ::RPI::ModelAsset>(
+            "objects/groudplane/groundplane_512x512m.azmodel", AZ::RPI::AssetUtils::TraceLevel::Assert);
+        AZ::Render::MeshComponentRequestBus::Event(
+            m_groundEntity->GetId(), &AZ::Render::MeshComponentRequestBus::Events::SetModelAsset, modelAsset);
     }
 
     void AnimViewportRenderer::ReinitActorEntities()

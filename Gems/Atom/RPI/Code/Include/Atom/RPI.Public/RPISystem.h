@@ -97,8 +97,7 @@ namespace AZ
             // SystemTickBus::OnTick
             void OnSystemTick() override;
 
-            // Fill system time and game time information for simulation or rendering
-            void FillTickTimeInfo();
+            float GetCurrentTime() const;
 
             // The set of core asset handlers registered by the system.
             AZStd::vector<AZStd::unique_ptr<Data::AssetHandler>> m_assetHandlers;
@@ -124,7 +123,7 @@ namespace AZ
             // The job policy used for feature processor's rendering prepare
             RHI::JobPolicy m_prepareRenderJobPolicy = RHI::JobPolicy::Parallel;
 
-            TickTimeInfo m_tickTime;
+            float m_currentSimulationTime = 0.0f;
 
             RPISystemDescriptor m_descriptor;
 

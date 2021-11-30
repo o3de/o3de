@@ -64,10 +64,10 @@ namespace AWSNativeSDKInit
     {
 #if defined(PLATFORM_SUPPORTS_AWS_NATIVE_SDK)
         Aws::Utils::Logging::LogLevel logLevel;
-#ifdef _DEBUG
+#if defined(AZ_DEBUG_BUILD) || defined(AZ_PROFILE_BUILD)
         logLevel = Aws::Utils::Logging::LogLevel::Warn;
 #else
-        logLevel = Aws::Utils::Logging::LogLevel::Warn;
+        logLevel = Aws::Utils::Logging::LogLevel::Error;
 #endif
         m_awsSDKOptions.loggingOptions.logLevel = logLevel;
         m_awsSDKOptions.loggingOptions.logger_create_fn = [logLevel]()

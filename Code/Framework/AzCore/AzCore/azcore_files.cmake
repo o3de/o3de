@@ -187,6 +187,8 @@ set(FILES
     IO/Path/Path.inl
     IO/Path/PathIterable.inl
     IO/Path/PathParser.inl
+    IO/Path/PathReflect.cpp
+    IO/Path/PathReflect.h
     IO/Path/Path_fwd.h
     IO/SystemFile.cpp
     IO/SystemFile.h
@@ -654,8 +656,8 @@ set(FILES
     Threading/ThreadUtils.h
     Threading/ThreadUtils.cpp
     Time/ITime.h
-    Time/TimeSystemComponent.cpp
-    Time/TimeSystemComponent.h
+    Time/TimeSystem.cpp
+    Time/TimeSystem.h
 )
 
 # Prevent the following files from being grouped in UNITY builds

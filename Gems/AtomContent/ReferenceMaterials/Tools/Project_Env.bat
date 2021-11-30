@@ -29,23 +29,23 @@ PUSHD %~dp0
 set ABS_PATH=%~dp0
 
 :: project name as a str tag
-IF "%LY_PROJECT_NAME%"=="" (
-    for %%I in ("%~dp0.") do for %%J in ("%%~dpI.") do set LY_PROJECT_NAME=%%~nxJ
+IF "%O3DE_PROJECT%"=="" (
+    for %%I in ("%~dp0.") do for %%J in ("%%~dpI.") do set O3DE_PROJECT=%%~nxJ
     )
 
 echo.
 echo _____________________________________________________________________
 echo.
-echo ~    Setting up O3DE %LY_PROJECT_NAME% Environment ...
+echo ~    Setting up O3DE %O3DE_PROJECT% Environment ...
 echo _____________________________________________________________________
 echo.
-echo     LY_PROJECT_NAME = %LY_PROJECT_NAME%
+echo     O3DE_PROJECT = %O3DE_PROJECT%
 
 :: if the user has set up a custom env call it
 :: this should allow the user to locally
-:: set env hooks like LY_DEV or LY_PROJECT
+:: set env hooks like O3DE_DEV or O3DE_PROJECT_PATH
 IF EXIST "%~dp0User_Env.bat" CALL %~dp0User_Env.bat
-echo     LY_DEV = %LY_DEV%
+echo     O3DE_DEV = %O3DE_DEV%
 
 :: Constant Vars (Global)
 :: global debug flag (propogates)
@@ -74,23 +74,20 @@ echo     DCCSI_LOGLEVEL = %DCCSI_LOGLEVEL%
 IF "%DCCSI_MAYA_VERSION%"=="" (set DCCSI_MAYA_VERSION=2020)
 echo     DCCSI_MAYA_VERSION = %DCCSI_MAYA_VERSION%
 
-:: LY_PROJECT is ideally treated as a full path in the env launchers
+:: O3DE_PROJECT_PATH is ideally treated as a full path in the env launchers
 :: do to changes in o3de, external engine/project/gem folder structures, etc.
-IF "%LY_PROJECT%"=="" (
-    for %%i in ("%~dp0..") do set "LY_PROJECT=%%~fi"
+IF "%O3DE_PROJECT_PATH%"=="" (
+    for %%i in ("%~dp0..") do set "O3DE_PROJECT_PATH=%%~fi"
     )
-echo     LY_PROJECT = %LY_PROJECT%
+echo     O3DE_PROJECT_PATH = %O3DE_PROJECT_PATH%
 
-:: this is here for archaic reasons, WILL DEPRECATE
-IF "%LY_PROJECT_PATH%"=="" (set LY_PROJECT_PATH=%LY_PROJECT%)
-echo     LY_PROJECT_PATH = %LY_PROJECT_PATH%
+:: Change to root O3DE dev dir
+IF "%O3DE_DEV%"=="" echo     ~ You must set O3DE_DEV in a User_Env.bat to match your local engine repo!
+IF "%O3DE_DEV%"=="" echo     ~ Using default O3DE_DEV=C:\Depot\o3de-engine
+IF "%O3DE_DEV%"=="" (set O3DE_DEV=C:\Depot\o3de-engine)
+echo     O3DE_DEV = %O3DE_DEV%
 
-:: Change to root Lumberyard dev dir
-:: You must set this in a User_Env.bat to match youe engine repo location!
-IF "%LY_DEV%"=="" (set LY_DEV=C:\Depot\o3de-engine)
-echo     LY_DEV = %LY_DEV%
-
-CALL %LY_DEV%\Gems\AtomLyIntegration\TechnicalArt\DccScriptingInterface\Launchers\Windows\Env_Maya.bat
+CALL %O3DE_DEV%\Gems\AtomLyIntegration\TechnicalArt\DccScriptingInterface\Tools\Dev\Windows\Env_Maya.bat
 
 :: Restore original directory
 popd

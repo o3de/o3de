@@ -22,6 +22,12 @@ namespace AzFramework
     public:
         void SetUp() override;
 
+        template<typename T>
+        static xcb_generic_event_t MakeEvent(T event)
+        {
+            return *reinterpret_cast<xcb_generic_event_t*>(&event);
+        }
+
     protected:
         testing::NiceMock<MockXcbInterface> m_interface;
         xcb_connection_t m_connection{};

@@ -152,7 +152,7 @@ namespace AzFramework
     // SpawnableIndexEntityPair
     //
 
-    SpawnableIndexEntityPair::SpawnableIndexEntityPair(AZ::Entity** entityIterator, size_t* indexIterator)
+    SpawnableIndexEntityPair::SpawnableIndexEntityPair(AZ::Entity** entityIterator, uint32_t* indexIterator)
         : m_entity(entityIterator)
         , m_index(indexIterator)
     {
@@ -168,7 +168,7 @@ namespace AzFramework
         return *m_entity;
     }
 
-    size_t SpawnableIndexEntityPair::GetIndex() const
+    uint32_t SpawnableIndexEntityPair::GetIndex() const
     {
         return *m_index;
     }
@@ -177,7 +177,7 @@ namespace AzFramework
     // SpawnableIndexEntityIterator
     //
 
-    SpawnableIndexEntityIterator::SpawnableIndexEntityIterator(AZ::Entity** entityIterator, size_t* indexIterator)
+    SpawnableIndexEntityIterator::SpawnableIndexEntityIterator(AZ::Entity** entityIterator, uint32_t* indexIterator)
         : m_value(entityIterator, indexIterator)
     {
     }
@@ -248,7 +248,7 @@ namespace AzFramework
     //
 
     SpawnableConstIndexEntityContainerView::SpawnableConstIndexEntityContainerView(
-        AZ::Entity** beginEntity, size_t* beginIndices, size_t length)
+        AZ::Entity** beginEntity, uint32_t* beginIndices, size_t length)
         : m_begin(beginEntity, beginIndices)
         , m_end(beginEntity + length, beginIndices + length)
     {

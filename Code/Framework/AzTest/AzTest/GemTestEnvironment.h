@@ -18,7 +18,7 @@ namespace AZ
 
         /// A test environment which is intended to facilitate writing unit tests which require components from a gem.
         class GemTestEnvironment
-            : public UnitTest::TraceBusHook
+            : public ::UnitTest::TraceBusHook
         {
         public:
             GemTestEnvironment();

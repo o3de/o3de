@@ -1,0 +1,49 @@
+{
+    "entries": [
+        {
+            "base": "{D93538FF-3553-4C65-AB81-9089C5270214}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "Duration",
+                "category": "Timing",
+                "tooltip": "Triggers a signal every frame during the specified duration."
+            },
+            "slots": [
+                {
+                    "base": "DataInput_Duration",
+                    "details": {
+                        "name": "Duration"
+                    }
+                },
+                {
+                    "base": "DataOutput_Elapsed",
+                    "details": {
+                        "name": "Elapsed"
+                    }
+                },
+                {
+                    "base": "Input_Start",
+                    "details": {
+                        "name": "Start",
+                        "tooltip": "Starts the countdown"
+                    }
+                },
+                {
+                    "base": "Output_Out",
+                    "details": {
+                        "name": "Out",
+                        "tooltip": "Signaled every frame while the duration is active."
+                    }
+                },
+                {
+                    "base": "Output_Done",
+                    "details": {
+                        "name": "Done",
+                        "tooltip": "Signaled once the duration is complete."
+                    }
+                }
+            ]
+        }
+    ]
+}

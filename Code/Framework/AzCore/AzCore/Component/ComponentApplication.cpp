@@ -45,6 +45,7 @@
 #include <AzCore/Module/Module.h>
 #include <AzCore/Module/ModuleManager.h>
 
+#include <AzCore/IO/Path/PathReflect.h>
 #include <AzCore/IO/SystemFile.h>
 
 #include <AzCore/Driller/Driller.h>
@@ -72,6 +73,7 @@
 
 #include <AzCore/Module/Environment.h>
 #include <AzCore/std/string/conversions.h>
+#include <AzCore/Time/TimeSystem.h>
 
 static void PrintEntityName(const AZ::ConsoleCommandContainer& arguments)
 {
@@ -214,7 +216,6 @@ namespace AZ
                 // Update old Project path before attempting to merge in new Settings Registry values in order to prevent recursive calls
                 m_oldProjectPath = newProjectPath;
 
-                // Merge the project.json file into settings registry under ProjectSettingsRootKey path.
                 // Update all the runtime file paths based on the new "project_path" value.
                 AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(m_registry);
             }
@@ -417,6 +418,7 @@ namespace AZ
 
     ComponentApplication::ComponentApplication(int argC, char** argV)
         : m_eventLogger{}
+        , m_timeSystem(AZStd::make_unique<TimeSystem>())
     {
         if (Interface<ComponentApplicationRequests>::Get() == nullptr)
         {
@@ -485,16 +487,6 @@ namespace AZ
         // Merge Command Line arguments
         constexpr bool executeRegDumpCommands = false;
         SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(*m_settingsRegistry, m_commandLine, executeRegDumpCommands);
-
-        // Query for the Executable Path using OS specific functions
-        CalculateExecutablePath();
-
-        // Determine the path to the engine
-        CalculateEngineRoot();
-
-        // If the current platform returns an engaged optional from Utils::GetDefaultAppRootPath(), that is used
-        // for the application root.
-        CalculateAppRoot();
 
         SettingsRegistryMergeUtils::MergeSettingsToRegistry_O3deUserRegistry(*m_settingsRegistry, AZ_TRAIT_OS_PLATFORM_CODENAME, {});
         SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(*m_settingsRegistry, m_commandLine, executeRegDumpCommands);
@@ -585,7 +577,6 @@ namespace AZ
         DestroyAllocator();
     }
 
-
     void ReportBadEngineRoot()
     {
         AZStd::string errorMessage = {"Unable to determine a valid path to the engine.\n"
@@ -615,7 +606,8 @@ namespace AZ
     {
         AZ_Assert(!m_isStarted, "Component application already started!");
 
-        if (m_engineRoot.empty())
+        using Type = AZ::SettingsRegistryInterface::Type;
+        if (m_settingsRegistry->GetType(SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder) == Type::NoType)
         {
             ReportBadEngineRoot();
             return nullptr;
@@ -687,7 +679,6 @@ namespace AZ
 
         ComponentApplicationBus::Handler::BusConnect();
 
-        m_currentTime = AZStd::chrono::system_clock::now();
         TickRequestBus::Handler::BusConnect();
 
 #if defined(AZ_ENABLE_DEBUG_TOOLS)
@@ -1181,6 +1172,24 @@ namespace AZ
         return ReflectionEnvironment::GetReflectionManager() ? ReflectionEnvironment::GetReflectionManager()->GetReflectContext<JsonRegistrationContext>() : nullptr;
     }
 
+    /// Returns the path to the engine.
+
+    const char* ComponentApplication::GetEngineRoot() const
+    {
+        static IO::FixedMaxPathString engineRoot;
+        engineRoot.clear();
+        m_settingsRegistry->Get(engineRoot, SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder);
+        return engineRoot.c_str();
+    }
+
+    const char* ComponentApplication::GetExecutableFolder() const
+    {
+        static IO::FixedMaxPathString exeFolder;
+        exeFolder.clear();
+        m_settingsRegistry->Get(exeFolder, SettingsRegistryMergeUtils::FilePathKey_BinaryFolder);
+        return exeFolder.c_str();
+    }
+
     //=========================================================================
     // CreateReflectionManager
     //=========================================================================
@@ -1405,31 +1414,23 @@ namespace AZ
 #endif
     }
 
-    void ComponentApplication::Tick(float deltaOverride /*= -1.f*/)
+    void ComponentApplication::Tick()
     {
+        AZ_PROFILE_SCOPE(System, "Component application simulation tick");
+
         {
-            AZ_PROFILE_SCOPE(System, "Component application simulation tick");
-
-            AZStd::chrono::system_clock::time_point now = AZStd::chrono::system_clock::now();
-
-            m_deltaTime = 0.0f;
-
-            if (now >= m_currentTime)
-            {
-                AZStd::chrono::duration<float> delta = now - m_currentTime;
-                m_deltaTime = deltaOverride >= 0.f ? deltaOverride : delta.count();
-            }
-
-            {
-                AZ_PROFILE_SCOPE(AzCore, "ComponentApplication::Tick:ExecuteQueuedEvents");
-                TickBus::ExecuteQueuedEvents();
-            }
-            m_currentTime = now;
-            {
-                AZ_PROFILE_SCOPE(AzCore, "ComponentApplication::Tick:OnTick");
-                EBUS_EVENT(TickBus, OnTick, m_deltaTime, ScriptTimePoint(now));
-            }
+            AZ_PROFILE_SCOPE(AzCore, "ComponentApplication::Tick:ExecuteQueuedEvents");
+            TickBus::ExecuteQueuedEvents();
         }
+
+        {
+            AZ_PROFILE_SCOPE(AzCore, "ComponentApplication::Tick:OnTick");
+            const AZ::TimeUs deltaTimeUs = m_timeSystem->AdvanceTickDeltaTimes();
+            const float deltaTimeSeconds = AZ::TimeUsToSeconds(deltaTimeUs);
+            AZ::TickBus::Broadcast(&TickEvents::OnTick, deltaTimeSeconds, GetTimeAtCurrentTick());
+        }
+
+        m_timeSystem->ApplyTickRateLimiterIfNeeded();
     }
 
     void ComponentApplication::TickSystem()
@@ -1486,27 +1487,6 @@ namespace AZ
         }
     }
 
-    //=========================================================================
-    // CalculateExecutablePath
-    //=========================================================================
-    void ComponentApplication::CalculateExecutablePath()
-    {
-        m_exeDirectory = Utils::GetExecutableDirectory();
-    }
-
-    void ComponentApplication::CalculateAppRoot()
-    {
-        if (AZStd::optional<AZ::StringFunc::Path::FixedString> appRootPath = Utils::GetDefaultAppRootPath(); appRootPath)
-        {
-            m_appRoot = AZStd::move(*appRootPath);
-        }
-    }
-
-    void ComponentApplication::CalculateEngineRoot()
-    {
-        m_engineRoot = AZ::SettingsRegistryMergeUtils::FindEngineRoot(*m_settingsRegistry).Native();
-    }
-
     void ComponentApplication::ResolveModulePath([[maybe_unused]] AZ::OSString& modulePath)
     {
         // No special parsing of the Module Path is done by the Component Application anymore
@@ -1532,13 +1512,10 @@ namespace AZ
         appType.m_maskValue = AZ::ApplicationTypeQuery::Masks::Invalid;
     }
 
-    //=========================================================================
-    // GetFrameTime
-    // [1/22/2016]
-    //=========================================================================
     float ComponentApplication::GetTickDeltaTime()
     {
-        return m_deltaTime;
+        const AZ::TimeUs gameTickTime = m_timeSystem->GetSimulationTickDeltaTimeUs();
+        return AZ::TimeUsToSeconds(gameTickTime);
     }
 
     //=========================================================================
@@ -1547,7 +1524,8 @@ namespace AZ
     //=========================================================================
     ScriptTimePoint ComponentApplication::GetTimeAtCurrentTick()
     {
-        return ScriptTimePoint(m_currentTime);
+        const AZ::TimeUs lastGameTickTime = m_timeSystem->GetLastSimulationTickTime();
+        return ScriptTimePoint(AZ::TimeUsToChrono(lastGameTickTime));
     }
 
     //=========================================================================
@@ -1570,7 +1548,7 @@ namespace AZ
         // reflect name dictionary.
         Name::Reflect(context);
         // reflect path
-        IO::PathReflection::Reflect(context);
+        IO::PathReflect(context);
 
         // reflect the SettingsRegistryInterface, SettignsRegistryImpl and the global Settings Registry
         // instance (AZ::SettingsRegistry::Get()) into the Behavior Context

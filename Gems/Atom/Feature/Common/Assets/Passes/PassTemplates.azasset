@@ -253,6 +253,10 @@
                 "Path": "Passes/EnvironmentCubeMapForwardMSAA.pass"
             },
             {
+                "Name": "EnvironmentCubeMapForwardSubsurfaceMSAAPassTemplate",
+                "Path": "Passes/EnvironmentCubeMapForwardSubsurfaceMSAA.pass"
+            },
+            {
                 "Name": "EnvironmentCubeMapDepthMSAAPassTemplate",
                 "Path": "Passes/EnvironmentCubeMapDepthMSAA.pass"
             },

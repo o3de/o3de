@@ -38,9 +38,6 @@
 #include "Geometry/GeometrySystemComponent.h"
 #include <Asset/AssetSystemDebugComponent.h>
 
-// Unhandled asset types
-// Material
-#include "Unhandled/Material/MaterialAssetTypeInfo.h"
 // Other
 #include "Unhandled/Other/AudioAssetTypeInfo.h"
 #include "Unhandled/Other/CharacterPhysicsAssetTypeInfo.h"
@@ -353,8 +350,6 @@ namespace LmbrCentral
         // Add asset types and extensions to AssetCatalog. Uses "AssetCatalogService".
         if (auto assetCatalog = AZ::Data::AssetCatalogRequestBus::FindFirstHandler(); assetCatalog)
         {
-            assetCatalog->EnableCatalogForAsset(AZ::AzTypeInfo<MaterialAsset>::Uuid());
-            assetCatalog->EnableCatalogForAsset(AZ::AzTypeInfo<DccMaterialAsset>::Uuid());
             assetCatalog->EnableCatalogForAsset(AZ::AzTypeInfo<MeshAsset>::Uuid());
             assetCatalog->EnableCatalogForAsset(AZ::AzTypeInfo<CharacterDefinitionAsset>::Uuid());
 
@@ -364,24 +359,12 @@ namespace LmbrCentral
             assetCatalog->AddExtension("dds");
             assetCatalog->AddExtension("caf");
             assetCatalog->AddExtension("xml");
-            assetCatalog->AddExtension("mtl");
-            assetCatalog->AddExtension("dccmtl");
             assetCatalog->AddExtension("sprite");
             assetCatalog->AddExtension("cax");
         }
 
         AZ::Data::AssetManagerNotificationBus::Handler::BusConnect();
 
-
-        // Register unhandled asset type info
-        // Material
-        auto materialAssetTypeInfo = aznew MaterialAssetTypeInfo();
-        materialAssetTypeInfo->Register();
-        m_unhandledAssetInfo.emplace_back(materialAssetTypeInfo);
-        // DCC Material
-        auto dccMaterialAssetTypeInfo = aznew DccMaterialAssetTypeInfo();
-        dccMaterialAssetTypeInfo->Register();
-        m_unhandledAssetInfo.emplace_back(dccMaterialAssetTypeInfo);
         // Other
         auto audioAssetTypeInfo = aznew AudioAssetTypeInfo();
         audioAssetTypeInfo->Register();

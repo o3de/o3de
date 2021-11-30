@@ -52,6 +52,11 @@ namespace O3DE::ProjectManager
         Reinit();
     }
 
+    void GemRepoScreen::NotifyCurrentScreen()
+    {
+        Reinit();
+    }
+
     void GemRepoScreen::Reinit()
     {
         m_gemRepoModel->clear();
@@ -70,7 +75,7 @@ namespace O3DE::ProjectManager
         // Select the first entry after everything got correctly sized
         QTimer::singleShot(200, [=]{
             QModelIndex firstModelIndex = m_gemRepoListView->model()->index(0,0);
-            m_gemRepoListView->selectionModel()->select(firstModelIndex, QItemSelectionModel::ClearAndSelect);
+            m_gemRepoListView->selectionModel()->setCurrentIndex(firstModelIndex, QItemSelectionModel::ClearAndSelect);
         });
     }
 
@@ -87,16 +92,31 @@ namespace O3DE::ProjectManager
                 return;
             }
 
-            bool addGemRepoResult = PythonBindingsInterface::Get()->AddGemRepo(repoUri);
-            if (addGemRepoResult)
+            AZ::Outcome < void,
+                AZStd::pair<AZStd::string, AZStd::string>> addGemRepoResult = PythonBindingsInterface::Get()->AddGemRepo(repoUri);
+            if (addGemRepoResult.IsSuccess())
             {
                 Reinit();
+                emit OnRefresh();
             }
             else
             {
                 QString failureMessage = tr("Failed to add gem repo: %1.").arg(repoUri);
-                QMessageBox::critical(this, tr("Operation failed"), failureMessage);
-                AZ_Error("Project Manger", false, failureMessage.toUtf8());
+                if (!addGemRepoResult.GetError().second.empty())
+                {
+                    QMessageBox addRepoError;
+                    addRepoError.setIcon(QMessageBox::Critical);
+                    addRepoError.setWindowTitle(failureMessage);
+                    addRepoError.setText(addGemRepoResult.GetError().first.c_str());
+                    addRepoError.setDetailedText(addGemRepoResult.GetError().second.c_str());
+                    addRepoError.exec();
+                }
+                else
+                {
+                    QMessageBox::critical(this, failureMessage, addGemRepoResult.GetError().first.c_str());
+                }
+
+                AZ_Error("Project Manager", false, failureMessage.toUtf8());
             }
         }
     }
@@ -116,6 +136,7 @@ namespace O3DE::ProjectManager
             if (removeGemRepoResult)
             {
                 Reinit();
+                emit OnRefresh();
             }
             else
             {
@@ -130,6 +151,7 @@ namespace O3DE::ProjectManager
     {
         bool refreshResult = PythonBindingsInterface::Get()->RefreshAllGemRepos();
         Reinit();
+        emit OnRefresh();
 
         if (!refreshResult)
         {
@@ -146,6 +168,7 @@ namespace O3DE::ProjectManager
         if (refreshResult.IsSuccess())
         {
             Reinit();
+            emit OnRefresh();
         }
         else
         {

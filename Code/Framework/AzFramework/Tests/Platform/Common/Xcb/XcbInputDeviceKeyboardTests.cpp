@@ -21,12 +21,6 @@
 #include "XcbBaseTestFixture.h"
 #include "XcbTestApplication.h"
 
-template<typename T>
-xcb_generic_event_t MakeEvent(T event)
-{
-    return *reinterpret_cast<xcb_generic_event_t*>(&event);
-}
-
 namespace AzFramework
 {
     // Sets up default behavior for mock keyboard responses to xcb methods

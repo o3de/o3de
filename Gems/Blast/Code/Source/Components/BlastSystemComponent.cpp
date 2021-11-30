@@ -151,6 +151,8 @@ namespace Blast
         SaveConfiguration();
         DeactivatePhysics();
 
+        m_configuration.m_materialLibrary.Release();
+
         m_assetHandlers.clear();
     };
 

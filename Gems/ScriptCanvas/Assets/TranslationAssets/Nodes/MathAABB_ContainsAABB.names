@@ -1,0 +1,47 @@
+{
+    "entries": [
+        {
+            "base": "{A0A7B5F1-F191-52A8-838A-DB39AADBA457}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "Contains Axis Aligned Bounding Box",
+                "category": "Math/Axis Aligned Bounding Box",
+                "tooltip": "returns true if Source contains all of the bounds of Candidate, else false",
+                "subtitle": "Axis Aligned Bounding Box"
+            },
+            "slots": [
+                {
+                    "base": "Input_In",
+                    "details": {
+                        "name": "In"
+                    }
+                },
+                {
+                    "base": "Output_Out",
+                    "details": {
+                        "name": "Out"
+                    }
+                },
+                {
+                    "base": "DataInput_AABB: Source",
+                    "details": {
+                        "name": "Source"
+                    }
+                },
+                {
+                    "base": "DataInput_AABB: Candidate",
+                    "details": {
+                        "name": "Candidate"
+                    }
+                },
+                {
+                    "base": "DataOutput_Result: Boolean",
+                    "details": {
+                        "name": "Contains"
+                    }
+                }
+            ]
+        }
+    ]
+}
