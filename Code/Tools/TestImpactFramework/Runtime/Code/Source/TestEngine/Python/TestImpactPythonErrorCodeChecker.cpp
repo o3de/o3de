@@ -29,7 +29,7 @@ namespace TestImpact
         } // namespace PyTest
     } // namespace ErrorCodes
 
-    AZStd::optional<Client::TestRunResult> GetPythonErrorCodeHandler(ReturnCode returnCode)
+    AZStd::optional<Client::TestRunResult> CheckPythonErrorCode(ReturnCode returnCode)
     {
         switch (returnCode)
         {
@@ -41,7 +41,7 @@ namespace TestImpact
         }
     }
 
-    AZStd::optional<Client::TestRunResult> GetPyTestErrorCodeHandler(ReturnCode returnCode)
+    AZStd::optional<Client::TestRunResult> CheckPyTestErrorCode(ReturnCode returnCode)
     {
         switch (returnCode)
         {
