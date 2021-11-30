@@ -1,76 +1,54 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
 
+#include <AudioResourceSelectors.h>
 #include <ATLControlsResourceDialog.h>
 #include <AudioControlsEditorPlugin.h>
-#include <IEditor.h>
-#include <Include/IResourceSelectorHost.h>
-#include <QAudioControlEditorIcons.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 
-using namespace AudioControls;
+#include <UI/PropertyEditor/PropertyAudioCtrlTypes.h>
 
 namespace AudioControls
 {
     //-------------------------------------------------------------------------------------------//
-    QString ShowSelectDialog(const SResourceSelectorContext& context, const QString& pPreviousValue, const EACEControlType controlType)
+    AudioControlSelectorHandler::AudioControlSelectorHandler()
     {
-        AZ_Assert(CAudioControlsEditorPlugin::GetATLModel() != nullptr, "AudioResourceSelectors - ATL Model is null!");
-
-        AZStd::string levelName;
-        AzToolsFramework::EditorRequestBus::BroadcastResult(levelName, &AzToolsFramework::EditorRequests::GetLevelName);
-
-        ATLControlsDialog dialog(context.parentWidget, controlType);
-        dialog.SetScope(levelName);
-        return dialog.ChooseItem(pPreviousValue.toUtf8().constData());
+        for (AZ::u32 type = 0; type < static_cast<AZ::u32>(AzToolsFramework::AudioPropertyType::NumTypes); ++type)
+        {
+            AzToolsFramework::AudioControlSelectorRequestBus::MultiHandler::BusConnect(
+                static_cast<AzToolsFramework::AudioPropertyType>(type));
+        }
     }
 
-    //-------------------------------------------------------------------------------------------//
-    QString AudioTriggerSelector(const SResourceSelectorContext& context, const QString& pPreviousValue)
+    AudioControlSelectorHandler::~AudioControlSelectorHandler()
     {
-        return ShowSelectDialog(context, pPreviousValue, eACET_TRIGGER);
+        AzToolsFramework::AudioControlSelectorRequestBus::MultiHandler::BusDisconnect();
     }
 
-    //-------------------------------------------------------------------------------------------//
-    QString AudioSwitchSelector(const SResourceSelectorContext& context, const QString& pPreviousValue)
+    AZStd::string AudioControlSelectorHandler::SelectResource(AZStd::string_view previousValue)
     {
-        return ShowSelectDialog(context, pPreviousValue, eACET_SWITCH);
+        using namespace AzToolsFramework;
+        if (auto busId = AudioControlSelectorRequestBus::GetCurrentBusId();
+            busId != nullptr)
+        {
+            auto controlType = static_cast<EACEControlType>(*busId);
+            QWidget* parentWidget = nullptr;
+            AzToolsFramework::EditorRequestBus::BroadcastResult(parentWidget, &AzToolsFramework::EditorRequestBus::Events::GetMainWindow);
+
+            AZStd::string levelName;
+            AzToolsFramework::EditorRequestBus::BroadcastResult(levelName, &AzToolsFramework::EditorRequests::GetLevelName);
+
+            ATLControlsDialog dialog(parentWidget, controlType);
+            dialog.SetScope(levelName);
+            return dialog.ChooseItem(previousValue.data());
+        }
+        return previousValue;
     }
 
-    //-------------------------------------------------------------------------------------------//
-    QString AudioSwitchStateSelector(const SResourceSelectorContext& context, const QString& pPreviousValue)
-    {
-        return ShowSelectDialog(context, pPreviousValue, eACET_SWITCH_STATE);
-    }
-
-    //-------------------------------------------------------------------------------------------//
-    QString AudioRTPCSelector(const SResourceSelectorContext& context, const QString& pPreviousValue)
-    {
-        return ShowSelectDialog(context, pPreviousValue, eACET_RTPC);
-    }
-
-    //-------------------------------------------------------------------------------------------//
-    QString AudioEnvironmentSelector(const SResourceSelectorContext& context, const QString& pPreviousValue)
-    {
-        return ShowSelectDialog(context, pPreviousValue, eACET_ENVIRONMENT);
-    }
-
-    //-------------------------------------------------------------------------------------------//
-    QString AudioPreloadRequestSelector(const SResourceSelectorContext& context, const QString& pPreviousValue)
-    {
-        return ShowSelectDialog(context, pPreviousValue, eACET_PRELOAD);
-    }
-
-    //-------------------------------------------------------------------------------------------//
-    REGISTER_RESOURCE_SELECTOR("AudioTrigger", AudioTriggerSelector, ":/AudioControlsEditor/Icons/Trigger_Icon.png");
-    REGISTER_RESOURCE_SELECTOR("AudioSwitch", AudioSwitchSelector, ":/AudioControlsEditor/Icons/Switch_Icon.png");
-    REGISTER_RESOURCE_SELECTOR("AudioSwitchState", AudioSwitchStateSelector, ":/AudioControlsEditor/Icons/State_Icon.png");
-    REGISTER_RESOURCE_SELECTOR("AudioRTPC", AudioRTPCSelector, ":/AudioControlsEditor/Icons/RTPC_Icon.png");
-    REGISTER_RESOURCE_SELECTOR("AudioEnvironment", AudioEnvironmentSelector, ":/AudioControlsEditor/Icons/Environment_Icon.png");
-    REGISTER_RESOURCE_SELECTOR("AudioPreloadRequest", AudioPreloadRequestSelector, ":/AudioControlsEditor/Icons/Bank_Icon.png");
 } // namespace AudioControls

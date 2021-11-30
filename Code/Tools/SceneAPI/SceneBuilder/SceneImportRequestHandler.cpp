@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -11,6 +12,7 @@
 #include <AzCore/Serialization/Json/JsonSerialization.h>
 #include <AzCore/Settings/SettingsRegistry.h>
 #include <AzCore/StringFunc/StringFunc.h>
+#include <AzToolsFramework/Asset/AssetUtils.h>
 #include <SceneAPI/SceneBuilder/SceneImportRequestHandler.h>
 #include <SceneAPI/SceneCore/Containers/Scene.h>
 #include <SceneAPI/SceneCore/Events/CallProcessorBus.h>
@@ -22,19 +24,21 @@ namespace AZ
     {
         void SceneImporterSettings::Reflect(AZ::ReflectContext* context)
         {
+            using namespace AzToolsFramework::AssetUtils;
             if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context); serializeContext)
             {
                 serializeContext->Class<SceneImporterSettings>()
                                 ->Version(2)
-                                ->Field("SupportedFileTypeExtensions", &SceneImporterSettings::m_supportedFileTypeExtensions);
+                                ->Field(AssetImporterSupportedFileTypeKey, &SceneImporterSettings::m_supportedFileTypeExtensions);
             }
         }
 
         void SceneImportRequestHandler::Activate()
         {
+            using namespace AzToolsFramework::AssetUtils;
             if (auto* settingsRegistry = AZ::SettingsRegistry::Get())
             {
-                settingsRegistry->GetObject(m_settings, "/O3DE/SceneAPI/AssetImporter");
+                settingsRegistry->GetObject(m_settings, AssetImporterSettingsKey);
             }
 
             BusConnect();

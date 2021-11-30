@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -10,6 +11,7 @@
 #include "Node.h"
 #include "MorphTarget.h"
 #include <MCore/Source/StringConversions.h>
+#include <MCore/Source/FastMath.h>
 #include <EMotionFX/Source/Allocators.h>
 
 namespace EMotionFX
@@ -21,18 +23,12 @@ namespace EMotionFX
     MorphTarget::MorphTarget(const char* name)
         : BaseObject()
     {
-        mRangeMin       = 0.0f;
-        mRangeMax       = 1.0f;
-        mPhonemeSets    = PHONEMESET_NONE;
+        m_rangeMin       = 0.0f;
+        m_rangeMax       = 1.0f;
+        m_phonemeSets    = PHONEMESET_NONE;
 
         // set the name
         SetName(name);
-    }
-
-
-    // destructor
-    MorphTarget::~MorphTarget()
-    {
     }
 
 
@@ -181,10 +177,10 @@ namespace EMotionFX
     // calculate the weight in range of 0..1
     float MorphTarget::CalcNormalizedWeight(float rangedWeight) const
     {
-        const float range = mRangeMax - mRangeMin;
+        const float range = m_rangeMax - m_rangeMin;
         if (MCore::Math::Abs(range) > 0.0f)
         {
-            return (rangedWeight - mRangeMin) / range;
+            return (rangedWeight - m_rangeMin) / range;
         }
         else
         {
@@ -205,99 +201,99 @@ namespace EMotionFX
     {
         if (enabled)
         {
-            mPhonemeSets = (EPhonemeSet)((uint32)mPhonemeSets | (uint32)set);
+            m_phonemeSets = (EPhonemeSet)((uint32)m_phonemeSets | (uint32)set);
         }
         else
         {
-            mPhonemeSets = (EPhonemeSet)((uint32)mPhonemeSets & (uint32) ~set);
+            m_phonemeSets = (EPhonemeSet)((uint32)m_phonemeSets & (uint32) ~set);
         }
     }
 
 
     // copy the base class members to the target class
-    void MorphTarget::CopyBaseClassMemberValues(MorphTarget* target)
+    void MorphTarget::CopyBaseClassMemberValues(MorphTarget* target) const
     {
-        target->mNameID         = mNameID;
-        target->mRangeMin       = mRangeMin;
-        target->mRangeMax       = mRangeMax;
-        target->mPhonemeSets    = mPhonemeSets;
+        target->m_nameId         = m_nameId;
+        target->m_rangeMin       = m_rangeMin;
+        target->m_rangeMax       = m_rangeMax;
+        target->m_phonemeSets    = m_phonemeSets;
     }
 
 
     const char* MorphTarget::GetName() const
     {
-        return MCore::GetStringIdPool().GetName(mNameID).c_str();
+        return MCore::GetStringIdPool().GetName(m_nameId).c_str();
     }
 
 
     const AZStd::string& MorphTarget::GetNameString() const
     {
-        return MCore::GetStringIdPool().GetName(mNameID);
+        return MCore::GetStringIdPool().GetName(m_nameId);
     }
 
 
     void MorphTarget::SetRangeMin(float rangeMin)
     {
-        mRangeMin = rangeMin;
+        m_rangeMin = rangeMin;
     }
 
 
     void MorphTarget::SetRangeMax(float rangeMax)
     {
-        mRangeMax = rangeMax;
+        m_rangeMax = rangeMax;
     }
 
 
     float MorphTarget::GetRangeMin() const
     {
-        return mRangeMin;
+        return m_rangeMin;
     }
 
 
     float MorphTarget::GetRangeMax() const
     {
-        return mRangeMax;
+        return m_rangeMax;
     }
 
 
     void MorphTarget::SetName(const char* name)
     {
-        mNameID = MCore::GetStringIdPool().GenerateIdForString(name);
+        m_nameId = MCore::GetStringIdPool().GenerateIdForString(name);
     }
 
 
     void MorphTarget::SetPhonemeSets(EPhonemeSet phonemeSets)
     {
-        mPhonemeSets = phonemeSets;
+        m_phonemeSets = phonemeSets;
     }
 
 
     MorphTarget::EPhonemeSet MorphTarget::GetPhonemeSets() const
     {
-        return mPhonemeSets;
+        return m_phonemeSets;
     }
 
 
     bool MorphTarget::GetIsPhonemeSetEnabled(EPhonemeSet set) const
     {
-        return (mPhonemeSets & set) != 0;
+        return (m_phonemeSets & set) != 0;
     }
 
 
     float MorphTarget::CalcRangedWeight(float weight) const
     {
-        return mRangeMin + (weight * (mRangeMax - mRangeMin));
+        return m_rangeMin + (weight * (m_rangeMax - m_rangeMin));
     }
 
 
     float MorphTarget::CalcZeroInfluenceWeight() const
     {
-        return MCore::Math::Abs(mRangeMin) / MCore::Math::Abs(mRangeMax - mRangeMin);
+        return MCore::Math::Abs(m_rangeMin) / MCore::Math::Abs(m_rangeMax - m_rangeMin);
     }
 
 
     bool MorphTarget::GetIsPhoneme() const
     {
-        return (mPhonemeSets != PHONEMESET_NONE);
+        return (m_phonemeSets != PHONEMESET_NONE);
     }
 } // namespace EMotionFX

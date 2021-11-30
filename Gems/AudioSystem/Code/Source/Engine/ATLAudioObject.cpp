@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -23,7 +24,6 @@
 
 #include <IRenderer.h>
 #include <IRenderAuxGeom.h>
-#include <IConsole.h>
 
 namespace Audio
 {
@@ -762,7 +762,7 @@ namespace Audio
         AZStd::string eventsString;
         for (auto activeEvent : m_cActiveEvents)
         {
-            eventsString = AZStd::string::format("%s%" PRIu64 "%s", eventsString.c_str(), activeEvent, sSeparator);
+            eventsString = AZStd::string::format("%s%llu%s", eventsString.c_str(), activeEvent, sSeparator);
         }
 
         return eventsString;
@@ -850,7 +850,7 @@ namespace Audio
             {
                 const float fDist = vPos.GetDistance(vListenerPos);
 
-                if ((g_audioCVars.m_nDrawAudioDebug & eADDF_DRAW_SPHERES) != 0)
+                if (CVars::s_debugDrawOptions.AreAllFlagsActive(DebugDraw::Options::DrawObjects))
                 {
                     const SAuxGeomRenderFlags nPreviousRenderFlags = auxGeom.GetRenderFlags();
                     SAuxGeomRenderFlags nNewRenderFlags(e_Def3DPublicRenderflags | e_AlphaBlended);
@@ -865,7 +865,7 @@ namespace Audio
                 const float fFontSize = 1.3f;
                 const float fLineHeight = 12.0f;
 
-                if ((g_audioCVars.m_nDrawAudioDebug & eADDF_SHOW_OBJECT_STATES) != 0)
+                if (CVars::s_debugDrawOptions.AreAllFlagsActive(DebugDraw::Options::ObjectStates))
                 {
                     AZ::Vector3 vSwitchPos(vScreenPos);
 
@@ -901,7 +901,7 @@ namespace Audio
                 const AZ::Color normalTextColor(0.75f, 0.75f, 0.75f, 1.f);
                 const AZ::Color dimmedTextColor(0.5f, 0.5f, 0.5f, 1.f);
 
-                if ((g_audioCVars.m_nDrawAudioDebug & eADDF_SHOW_OBJECT_LABEL) != 0)
+                if (CVars::s_debugDrawOptions.AreAllFlagsActive(DebugDraw::Options::ObjectLabels))
                 {
                     const TAudioObjectID nObjectID = GetID();
                     auxGeom.Draw2dLabel(
@@ -931,7 +931,7 @@ namespace Audio
                     );
                 }
 
-                if ((g_audioCVars.m_nDrawAudioDebug & eADDF_SHOW_OBJECT_TRIGGERS) != 0)
+                if (CVars::s_debugDrawOptions.AreAllFlagsActive(DebugDraw::Options::ObjectTriggers))
                 {
                     AZStd::string triggerStringFormatted;
 
@@ -963,7 +963,7 @@ namespace Audio
                         triggerStringFormatted.c_str());
                 }
 
-                if ((g_audioCVars.m_nDrawAudioDebug & eADDF_SHOW_OBJECT_RTPCS) != 0)
+                if (CVars::s_debugDrawOptions.AreAllFlagsActive(DebugDraw::Options::ObjectRtpcs))
                 {
                     AZ::Vector3 vRtpcPos(vScreenPos);
 
@@ -990,7 +990,7 @@ namespace Audio
                     }
                 }
 
-                if ((g_audioCVars.m_nDrawAudioDebug & eADDF_SHOW_OBJECT_ENVIRONMENTS) != 0)
+                if (CVars::s_debugDrawOptions.AreAllFlagsActive(DebugDraw::Options::ObjectEnvironments))
                 {
                     AZ::Vector3 vEnvPos(vScreenPos);
 
@@ -1041,8 +1041,9 @@ namespace Audio
         newRenderFlags.SetCullMode(e_CullModeNone);
         auxGeom.SetRenderFlags(newRenderFlags);
 
-        const bool drawRays = ((g_audioCVars.m_nDrawAudioDebug & eADDF_DRAW_OBSTRUCTION_RAYS) != 0);
-        const bool drawLabels = ((g_audioCVars.m_nDrawAudioDebug & eADDF_SHOW_OBSTRUCTION_RAY_LABELS) != 0);
+        const bool drawRays = CVars::s_debugDrawOptions.AreAllFlagsActive(DebugDraw::Options::DrawRays);
+        // ToDo: Update to work with Atom? LYN-3677
+        //const bool drawLabels = CVars::s_debugDrawOptions.AreAllFlagsActive(DebugDraw::Options::RayLabels);
 
         size_t numRays = m_obstOccType == eAOOCT_SINGLE_RAY ? 1 : s_maxRaysPerObject;
         for (size_t rayIndex = 0; rayIndex < numRays; ++rayIndex)

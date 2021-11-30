@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -35,7 +36,7 @@ void CNamedData::AddDataBlock(const QString& blockName, void*   pData, int nSize
     assert(pData);
     assert(nSize > 0);
 
-    DataBlock* pBlock = stl::find_in_map(m_blocks, blockName, (DataBlock*)0);
+    DataBlock* pBlock = stl::find_in_map(m_blocks, blockName, (DataBlock*)nullptr);
     if (pBlock)
     {
         delete pBlock;
@@ -65,7 +66,7 @@ void CNamedData::AddDataBlock(const QString& blockName, void*   pData, int nSize
 
 void CNamedData::AddDataBlock(const QString& blockName, CMemoryBlock& mem)
 {
-    DataBlock* pBlock = stl::find_in_map(m_blocks, blockName, (DataBlock*)0);
+    DataBlock* pBlock = stl::find_in_map(m_blocks, blockName, (DataBlock*)nullptr);
     if (pBlock)
     {
         delete pBlock;
@@ -101,7 +102,7 @@ void CNamedData::Clear()
 //////////////////////////////////////////////////////////////////////////
 bool CNamedData::GetDataBlock(const QString& blockName, void*& pData, int& nSize)
 {
-    pData = 0;
+    pData = nullptr;
     nSize = 0;
 
     bool bUncompressed = false;
@@ -118,10 +119,10 @@ bool CNamedData::GetDataBlock(const QString& blockName, void*& pData, int& nSize
 //////////////////////////////////////////////////////////////////////////
 CMemoryBlock* CNamedData::GetDataBlock(const QString& blockName, bool& bCompressed)
 {
-    DataBlock* pBlock = stl::find_in_map(m_blocks, blockName, (DataBlock*)0);
+    DataBlock* pBlock = stl::find_in_map(m_blocks, blockName, (DataBlock*)nullptr);
     if (!pBlock)
     {
-        return 0;
+        return nullptr;
     }
 
     if (bCompressed)
@@ -149,7 +150,7 @@ CMemoryBlock* CNamedData::GetDataBlock(const QString& blockName, bool& bCompress
             }
         }
     }
-    return 0;
+    return nullptr;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -157,7 +158,7 @@ bool CNamedData::Serialize(CArchive& ar)
 {
     if (ar.IsStoring())
     {
-        int iSize = m_blocks.size();
+        int iSize = static_cast<int>(m_blocks.size());
         ar << iSize;
 
         for (TBlocks::iterator it = m_blocks.begin(); it != m_blocks.end(); it++)
@@ -285,7 +286,7 @@ bool CNamedData::Load(const QString& levelPath, [[maybe_unused]] CPakFile& pakFi
         CCryFile cfile;
         if (cfile.Open(Path::Make(levelPath, filename).toUtf8().data(), "rb"))
         {
-            int fileSize = cfile.GetLength();
+            int fileSize = static_cast<int>(cfile.GetLength());
             if (fileSize > 0)
             {
                 QString key = Path::GetFileName(filename);
@@ -306,7 +307,7 @@ bool CNamedData::Load(const QString& levelPath, [[maybe_unused]] CPakFile& pakFi
         CCryFile cfile;
         if (cfile.Open(Path::Make(levelPath, filename).toUtf8().data(), "rb"))
         {
-            int fileSize = cfile.GetLength();
+            int fileSize = static_cast<uint32>(cfile.GetLength());
             if (fileSize > 0)
             {
                 // Read uncompressed data size.

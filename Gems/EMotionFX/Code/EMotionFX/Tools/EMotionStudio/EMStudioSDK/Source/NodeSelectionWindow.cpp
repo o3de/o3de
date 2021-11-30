@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -27,42 +28,42 @@ namespace EMStudio
     NodeSelectionWindow::NodeSelectionWindow(QWidget* parent, bool useSingleSelection)
         : QDialog(parent)
     {
-        mAccepted = false;
+        m_accepted = false;
         setWindowTitle("Node Selection Window");
 
         QVBoxLayout* layout = new QVBoxLayout();
 
-        mHierarchyWidget = new NodeHierarchyWidget(this, useSingleSelection);
+        m_hierarchyWidget = new NodeHierarchyWidget(this, useSingleSelection);
 
         // create the ok and cancel buttons
         QHBoxLayout* buttonLayout = new QHBoxLayout();
-        mOKButton       = new QPushButton("OK");
-        mCancelButton   = new QPushButton("Cancel");
-        buttonLayout->addWidget(mOKButton);
-        buttonLayout->addWidget(mCancelButton);
+        m_okButton       = new QPushButton("OK");
+        m_cancelButton   = new QPushButton("Cancel");
+        buttonLayout->addWidget(m_okButton);
+        buttonLayout->addWidget(m_cancelButton);
 
-        layout->addWidget(mHierarchyWidget);
+        layout->addWidget(m_hierarchyWidget);
         layout->addLayout(buttonLayout);
         setLayout(layout);
 
-        connect(mOKButton, &QPushButton::clicked, this, &NodeSelectionWindow::accept);
-        connect(mCancelButton, &QPushButton::clicked, this, &NodeSelectionWindow::reject);
+        connect(m_okButton, &QPushButton::clicked, this, &NodeSelectionWindow::accept);
+        connect(m_cancelButton, &QPushButton::clicked, this, &NodeSelectionWindow::reject);
         connect(this, &NodeSelectionWindow::accepted, this, &NodeSelectionWindow::OnAccept);
-        connect(mHierarchyWidget, static_cast<void (NodeHierarchyWidget::*)(MCore::Array<SelectionItem>)>(&NodeHierarchyWidget::OnDoubleClicked), this, &NodeSelectionWindow::OnDoubleClicked);
+        connect(m_hierarchyWidget, static_cast<void (NodeHierarchyWidget::*)(AZStd::vector<SelectionItem>)>(&NodeHierarchyWidget::OnDoubleClicked), this, &NodeSelectionWindow::OnDoubleClicked);
 
         // connect the window activation signal to refresh if reactivated
         //connect( this, SIGNAL(visibilityChanged(bool)), this, SLOT(OnVisibilityChanged(bool)) );
 
         // set the selection mode
-        mHierarchyWidget->SetSelectionMode(useSingleSelection);
-        mUseSingleSelection = useSingleSelection;
+        m_hierarchyWidget->SetSelectionMode(useSingleSelection);
+        m_useSingleSelection = useSingleSelection;
 
         setMinimumSize(QSize(500, 400));
         resize(700, 800);
     }
 
 
-    void NodeSelectionWindow::OnDoubleClicked(MCore::Array<SelectionItem> selection)
+    void NodeSelectionWindow::OnDoubleClicked(AZStd::vector<SelectionItem> selection)
     {
         MCORE_UNUSED(selection);
         accept();
@@ -71,7 +72,7 @@ namespace EMStudio
 
     void NodeSelectionWindow::OnAccept()
     {
-        mHierarchyWidget->FireSelectionDoneSignal();
+        m_hierarchyWidget->FireSelectionDoneSignal();
     }
 } // namespace EMStudio
 

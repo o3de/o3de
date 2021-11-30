@@ -1,12 +1,13 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
-#include <Atom/Window/MaterialEditorWindowFactoryRequestBus.h>
-#include <Atom/Window/MaterialEditorWindowSettings.h>
+#include <AtomToolsFramework/Window/AtomToolsMainWindowFactoryRequestBus.h>
+#include <AtomToolsFramework/Window/AtomToolsMainWindowRequestBus.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
@@ -29,47 +30,24 @@ namespace MaterialEditor
             serialize->Class<MaterialEditorWindowComponent, AZ::Component>()
                 ->Version(0);
         }
-
-        if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
-        {
-            behaviorContext->EBus<MaterialEditorWindowFactoryRequestBus>("MaterialEditorWindowFactoryRequestBus")
-                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
-                ->Attribute(AZ::Script::Attributes::Category, "Editor")
-                ->Attribute(AZ::Script::Attributes::Module, "materialeditor")
-                ->Event("CreateMaterialEditorWindow", &MaterialEditorWindowFactoryRequestBus::Events::CreateMaterialEditorWindow)
-                ->Event("DestroyMaterialEditorWindow", &MaterialEditorWindowFactoryRequestBus::Events::DestroyMaterialEditorWindow)
-                ;
-
-            behaviorContext->EBus<MaterialEditorWindowRequestBus>("MaterialEditorWindowRequestBus")
-                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
-                ->Attribute(AZ::Script::Attributes::Category, "Editor")
-                ->Attribute(AZ::Script::Attributes::Module, "materialeditor")
-                ->Event("ActivateWindow", &MaterialEditorWindowRequestBus::Events::ActivateWindow)
-                ->Event("SetDockWidgetVisible", &MaterialEditorWindowRequestBus::Events::SetDockWidgetVisible)
-                ->Event("IsDockWidgetVisible", &MaterialEditorWindowRequestBus::Events::IsDockWidgetVisible)
-                ->Event("GetDockWidgetNames", &MaterialEditorWindowRequestBus::Events::GetDockWidgetNames)
-                ->Event("ResizeViewportRenderTarget", &MaterialEditorWindowRequestBus::Events::ResizeViewportRenderTarget)
-                ->Event("LockViewportRenderTargetSize", &MaterialEditorWindowRequestBus::Events::LockViewportRenderTargetSize)
-                ->Event("UnlockViewportRenderTargetSize", &MaterialEditorWindowRequestBus::Events::UnlockViewportRenderTargetSize)
-                ;
-        }
     }
 
     void MaterialEditorWindowComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
-        required.push_back(AZ_CRC("AssetBrowserService", 0x1e54fffb));
-        required.push_back(AZ_CRC("PropertyManagerService", 0x63a3d7ad));
-        required.push_back(AZ_CRC("SourceControlService", 0x67f338fd));
+        required.push_back(AZ_CRC_CE("AssetBrowserService"));
+        required.push_back(AZ_CRC_CE("PropertyManagerService"));
+        required.push_back(AZ_CRC_CE("SourceControlService"));
+        required.push_back(AZ_CRC_CE("AtomToolsMainWindowSystemService"));
     }
 
     void MaterialEditorWindowComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("MaterialEditorWindowService", 0xb6e7d922));
+        provided.push_back(AZ_CRC_CE("MaterialEditorWindowService"));
     }
 
     void MaterialEditorWindowComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("MaterialEditorWindowService", 0xb6e7d922));
+        incompatible.push_back(AZ_CRC_CE("MaterialEditorWindowService"));
     }
 
     void MaterialEditorWindowComponent::Init()
@@ -79,26 +57,26 @@ namespace MaterialEditor
     void MaterialEditorWindowComponent::Activate()
     {
         AzToolsFramework::EditorWindowRequestBus::Handler::BusConnect();
-        MaterialEditorWindowFactoryRequestBus::Handler::BusConnect();
+        AtomToolsFramework::AtomToolsMainWindowFactoryRequestBus::Handler::BusConnect();
         AzToolsFramework::SourceControlConnectionRequestBus::Broadcast(&AzToolsFramework::SourceControlConnectionRequests::EnableSourceControl, true);
     }
 
     void MaterialEditorWindowComponent::Deactivate()
     {
-        MaterialEditorWindowFactoryRequestBus::Handler::BusDisconnect();
+        AtomToolsFramework::AtomToolsMainWindowFactoryRequestBus::Handler::BusDisconnect();
         AzToolsFramework::EditorWindowRequestBus::Handler::BusDisconnect();
 
         m_window.reset();
     }
 
-    void MaterialEditorWindowComponent::CreateMaterialEditorWindow()
+    void MaterialEditorWindowComponent::CreateMainWindow()
     {
         m_materialEditorBrowserInteractions.reset(aznew MaterialEditorBrowserInteractions);
 
         m_window.reset(aznew MaterialEditorWindow);
     }
 
-    void MaterialEditorWindowComponent::DestroyMaterialEditorWindow()
+    void MaterialEditorWindowComponent::DestroyMainWindow()
     {
         m_window.reset();
     }

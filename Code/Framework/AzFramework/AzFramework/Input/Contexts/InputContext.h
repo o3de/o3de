@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -53,6 +54,10 @@ namespace AzFramework
         ////////////////////////////////////////////////////////////////////////////////////////////
         // Allocator
         AZ_CLASS_ALLOCATOR(InputContext, AZ::SystemAllocator, 0);
+
+        ////////////////////////////////////////////////////////////////////////////////////////////
+        // Type Info
+        AZ_RTTI(InputContext, "{D17A85B2-405F-40AB-BBA7-F118256D39AB}", InputDevice);
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         //! Constructor

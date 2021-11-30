@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -40,7 +41,7 @@ namespace EMotionFX
         ASSERT_TRUE(motionSetWindow) << "No motion set window found";
 
         // Check there aren't any motion sets yet.
-        const uint32 numMotionSets = EMotionFX::GetMotionManager().GetNumMotionSets();
+        const size_t numMotionSets = EMotionFX::GetMotionManager().GetNumMotionSets();
         EXPECT_EQ(numMotionSets, 0);
 
         // Find the action to create a new motion set and press it.
@@ -49,7 +50,7 @@ namespace EMotionFX
         QTest::mouseClick(addMotionSetButton, Qt::LeftButton);
 
         // Check there is now a motion set.
-        const int numMotionSetsAfterCreate = EMotionFX::GetMotionManager().GetNumMotionSets();
+        const size_t numMotionSetsAfterCreate = EMotionFX::GetMotionManager().GetNumMotionSets();
         ASSERT_EQ(numMotionSetsAfterCreate, 1);
 
         EMotionFX::MotionSet* motionSet = EMotionFX::GetMotionManager().GetMotionSet(0);
@@ -58,7 +59,7 @@ namespace EMotionFX
         motionSetPlugin->SetSelectedSet(motionSet);
 
         // It should be empty at the moment.
-        const int numMotions = motionSet->GetNumMotionEntries();
+        const size_t numMotions = motionSet->GetNumMotionEntries();
         EXPECT_EQ(numMotions, 0);
 
         // Find the action to add a motion to the set and press it.
@@ -67,7 +68,7 @@ namespace EMotionFX
         QTest::mouseClick(addMotionButton, Qt::LeftButton);
 
         // There should now be a motion.
-        const int numMotionsAfterCreate = motionSet->GetNumMotionEntries();
+        const size_t numMotionsAfterCreate = motionSet->GetNumMotionEntries();
         ASSERT_EQ(numMotionsAfterCreate, 1);
 
         AZStd::unordered_map<AZStd::string, MotionSet::MotionEntry*> motions = motionSet->GetMotionEntries();
@@ -121,7 +122,7 @@ namespace EMotionFX
         ASSERT_TRUE(motionSetWindow) << "No motion set window found";
 
         // Check there aren't any motion sets yet.
-        const uint32 numMotionSets = EMotionFX::GetMotionManager().GetNumMotionSets();
+        const size_t numMotionSets = EMotionFX::GetMotionManager().GetNumMotionSets();
         EXPECT_EQ(numMotionSets, 0);
 
         // Find the action to create a new motion set and press it.
@@ -130,7 +131,7 @@ namespace EMotionFX
         QTest::mouseClick(addMotionSetButton, Qt::LeftButton);
 
         // Check there is now a motion set.
-        const int numMotionSetsAfterCreate = EMotionFX::GetMotionManager().GetNumMotionSets();
+        const size_t numMotionSetsAfterCreate = EMotionFX::GetMotionManager().GetNumMotionSets();
         ASSERT_EQ(numMotionSetsAfterCreate, 1);
 
         EMotionFX::MotionSet* motionSet = EMotionFX::GetMotionManager().GetMotionSet(0);
@@ -139,7 +140,7 @@ namespace EMotionFX
         motionSetPlugin->SetSelectedSet(motionSet);
 
         // It should be empty at the moment.
-        const int numMotions = motionSet->GetNumMotionEntries();
+        const size_t numMotions = motionSet->GetNumMotionEntries();
         EXPECT_EQ(numMotions, 0);
 
         // Find the action to add a motion to the set and press it twice.
@@ -149,7 +150,7 @@ namespace EMotionFX
         QTest::mouseClick(addMotionButton, Qt::LeftButton);
 
         // There should now be two motion.
-        const int numMotionsAfterCreate = motionSet->GetNumMotionEntries();
+        const size_t numMotionsAfterCreate = motionSet->GetNumMotionEntries();
         ASSERT_EQ(numMotionsAfterCreate, 2);
 
         AZStd::unordered_map<AZStd::string, MotionSet::MotionEntry*> motions = motionSet->GetMotionEntries();

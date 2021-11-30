@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -23,19 +24,6 @@
 
 namespace
 {
-    // Dimensions of the 2D grid into which we place the triangles for quick lookup
-    const uint32_t kGridCellCountX = 10;
-    const uint32_t kGridCellCountY = 10;
-
-    AZ_FORCE_INLINE void GetBoundsOfTriangle(const AZ::Vector2 triVerts[3],
-        float& minX, float& minY, float& maxX, float& maxY)
-    {
-        minX = AZStd::min(triVerts[0].GetX(), AZStd::min(triVerts[1].GetX(), triVerts[2].GetX()));
-        minY = AZStd::min(triVerts[0].GetY(), AZStd::min(triVerts[1].GetY(), triVerts[2].GetY()));
-        maxX = AZStd::max(triVerts[0].GetX(), AZStd::max(triVerts[1].GetX(), triVerts[2].GetX()));
-        maxY = AZStd::max(triVerts[0].GetY(), AZStd::max(triVerts[1].GetY(), triVerts[2].GetY()));
-    }
-
     AZ_FORCE_INLINE bool IsDegenerateTriangle(const AZ::Vector2& p0, const AZ::Vector2& p1, const AZ::Vector2& p2)
     {
         const AZ::Vector2 v01(p1 - p0);
@@ -159,7 +147,7 @@ namespace EMotionFX
 
     void BlendSpace2DNode::UniqueData::Update()
     {
-        BlendSpace2DNode* blendSpaceNode = azdynamic_cast<BlendSpace2DNode*>(mObject);
+        BlendSpace2DNode* blendSpaceNode = azdynamic_cast<BlendSpace2DNode*>(m_object);
         AZ_Assert(blendSpaceNode, "Unique data linked to incorrect node type.");
 
         blendSpaceNode->UpdateMotionInfos(this);
@@ -272,7 +260,7 @@ namespace EMotionFX
 
     bool BlendSpace2DNode::GetIsInPlace(AnimGraphInstance* animGraphInstance) const
     {
-        EMotionFX::BlendTreeConnection* inPlaceConnection = GetInputPort(INPUTPORT_INPLACE).mConnection;
+        EMotionFX::BlendTreeConnection* inPlaceConnection = GetInputPort(INPUTPORT_INPLACE).m_connection;
         if (inPlaceConnection)
         {
             return GetInputNumberAsBool(animGraphInstance, INPUTPORT_INPLACE);
@@ -294,13 +282,15 @@ namespace EMotionFX
 
     void BlendSpace2DNode::Output(AnimGraphInstance* animGraphInstance)
     {
+        AZ_PROFILE_SCOPE(Animation, "BlendSpace2DNode::Output");
+
         if (!AnimGraphInstanceExists(animGraphInstance))
         {
             return;
         }
 
         // If the node is disabled, simply output a bind pose.
-        if (mDisabled)
+        if (m_disabled)
         {
             SetBindPoseAtOutput(animGraphInstance);
             return;
@@ -377,7 +367,7 @@ namespace EMotionFX
 
         if (GetEMotionFX().GetIsInEditorMode() && GetCanVisualize(animGraphInstance))
         {
-            animGraphInstance->GetActorInstance()->DrawSkeleton(outputPose->GetPose(), mVisualizeColor);
+            animGraphInstance->GetActorInstance()->DrawSkeleton(outputPose->GetPose(), m_visualizeColor);
         }
     }
 
@@ -388,7 +378,7 @@ namespace EMotionFX
             return;
         }
 
-        if (mDisabled)
+        if (m_disabled)
         {
             return;
         }
@@ -400,7 +390,7 @@ namespace EMotionFX
         for (int i = 0; i < 2; ++i)
         {
             const uint32 portIdx = (i == 0) ? INPUTPORT_XVALUE : INPUTPORT_YVALUE;
-            EMotionFX::BlendTreeConnection* paramConnection = GetInputPort(portIdx).mConnection;
+            EMotionFX::BlendTreeConnection* paramConnection = GetInputPort(portIdx).m_connection;
             if (paramConnection)
             {
                 AnimGraphNode* paramSrcNode = paramConnection->GetSourceNode();
@@ -414,20 +404,22 @@ namespace EMotionFX
 
     void BlendSpace2DNode::Update(AnimGraphInstance* animGraphInstance, float timePassedInSeconds)
     {
+        AZ_PROFILE_SCOPE(Animation, "BlendSpace2DNode::Update");
+
         if (!AnimGraphInstanceExists(animGraphInstance))
         {
             return;
         }
 
-        if (!mDisabled)
+        if (!m_disabled)
         {
-            EMotionFX::BlendTreeConnection* param1Connection = GetInputPort(INPUTPORT_XVALUE).mConnection;
+            EMotionFX::BlendTreeConnection* param1Connection = GetInputPort(INPUTPORT_XVALUE).m_connection;
             if (param1Connection)
             {
                 UpdateIncomingNode(animGraphInstance, param1Connection->GetSourceNode(), timePassedInSeconds);
             }
 
-            EMotionFX::BlendTreeConnection* param2Connection = GetInputPort(INPUTPORT_YVALUE).mConnection;
+            EMotionFX::BlendTreeConnection* param2Connection = GetInputPort(INPUTPORT_YVALUE).m_connection;
             if (param2Connection)
             {
                 UpdateIncomingNode(animGraphInstance, param2Connection->GetSourceNode(), timePassedInSeconds);
@@ -440,7 +432,7 @@ namespace EMotionFX
         AZ_Assert(uniqueData, "Unique data not found for blend space 2D node '%s'.", GetName());
         uniqueData->Clear();
 
-        if (mDisabled)
+        if (m_disabled)
         {
             return;
         }
@@ -480,7 +472,7 @@ namespace EMotionFX
 
         UniqueData* uniqueData = static_cast<UniqueData*>(FindOrCreateUniqueNodeData(animGraphInstance));
 
-        if (mDisabled)
+        if (m_disabled)
         {
             RequestRefDatas(animGraphInstance);
             AnimGraphRefCountedData* data = uniqueData->GetRefCountedData();
@@ -489,12 +481,12 @@ namespace EMotionFX
             return;
         }
 
-        EMotionFX::BlendTreeConnection* param1Connection = GetInputPort(INPUTPORT_XVALUE).mConnection;
+        EMotionFX::BlendTreeConnection* param1Connection = GetInputPort(INPUTPORT_XVALUE).m_connection;
         if (param1Connection)
         {
             param1Connection->GetSourceNode()->PerformPostUpdate(animGraphInstance, timePassedInSeconds);
         }
-        EMotionFX::BlendTreeConnection* param2Connection = GetInputPort(INPUTPORT_YVALUE).mConnection;
+        EMotionFX::BlendTreeConnection* param2Connection = GetInputPort(INPUTPORT_YVALUE).m_connection;
         if (param2Connection)
         {
             param2Connection->GetSourceNode()->PerformPostUpdate(animGraphInstance, timePassedInSeconds);
@@ -564,7 +556,7 @@ namespace EMotionFX
 
             MotionInstance* motionInstance = motionInstancePool.RequestNew(motion, actorInstance);
             motionInstance->InitFromPlayBackInfo(playInfo, true);
-            motionInstance->SetRetargetingEnabled(animGraphInstance->GetRetargetingEnabled() && playInfo.mRetarget);
+            motionInstance->SetRetargetingEnabled(animGraphInstance->GetRetargetingEnabled() && playInfo.m_retarget);
             motionInstance->UnPause();
             motionInstance->SetIsActive(true);
             motionInstance->SetWeight(1.0f, 0.0f);
@@ -692,7 +684,7 @@ namespace EMotionFX
     void BlendSpace2DNode::SetMotions(const AZStd::vector<BlendSpaceMotion>& motions)
     {
         m_motions = motions;
-        if (mAnimGraph)
+        if (m_animGraph)
         {
             Reinit();
         }
@@ -708,7 +700,7 @@ namespace EMotionFX
     void BlendSpace2DNode::SetSyncLeaderMotionId(const AZStd::string& syncLeaderMotionId)
     {
         m_syncLeaderMotionId = syncLeaderMotionId;
-        if (mAnimGraph)
+        if (m_animGraph)
         {
             Reinit();
         }
@@ -724,7 +716,7 @@ namespace EMotionFX
     void BlendSpace2DNode::SetEvaluatorTypeX(const AZ::TypeId& evaluatorType)
     {
         m_evaluatorTypeX = evaluatorType;
-        if (mAnimGraph)
+        if (m_animGraph)
         {
             Reinit();
         }
@@ -746,7 +738,7 @@ namespace EMotionFX
     void BlendSpace2DNode::SetCalculationMethodX(ECalculationMethod calculationMethod)
     {
         m_calculationMethodX = calculationMethod;
-        if (mAnimGraph)
+        if (m_animGraph)
         {
             Reinit();
         }
@@ -762,7 +754,7 @@ namespace EMotionFX
     void BlendSpace2DNode::SetEvaluatorTypeY(const AZ::TypeId& evaluatorType)
     {
         m_evaluatorTypeY = evaluatorType;
-        if (mAnimGraph)
+        if (m_animGraph)
         {
             Reinit();
         }
@@ -784,7 +776,7 @@ namespace EMotionFX
     void BlendSpace2DNode::SetCalculationMethodY(ECalculationMethod calculationMethod)
     {
         m_calculationMethodY = calculationMethod;
-        if (mAnimGraph)
+        if (m_animGraph)
         {
             Reinit();
         }
@@ -1040,8 +1032,8 @@ namespace EMotionFX
         {
             AZ::Vector2 samplePoint;
 
-            EMotionFX::BlendTreeConnection* inputConnectionX = GetInputPort(INPUTPORT_XVALUE).mConnection;
-            EMotionFX::BlendTreeConnection* inputConnectionY = GetInputPort(INPUTPORT_YVALUE).mConnection;
+            EMotionFX::BlendTreeConnection* inputConnectionX = GetInputPort(INPUTPORT_XVALUE).m_connection;
+            EMotionFX::BlendTreeConnection* inputConnectionY = GetInputPort(INPUTPORT_YVALUE).m_connection;
 
             if (GetEMotionFX().GetIsInEditorMode())
             {

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -22,7 +23,6 @@ namespace AZ
         class SwapChain;
         class Fence;
 
-        AZ_ASSERT_NO_ALIGNMENT_PADDING_BEGIN
         struct QueueId
         {
             uint32_t m_familyIndex = 0;
@@ -31,7 +31,6 @@ namespace AZ
             bool operator==(const QueueId& other) const { return ::memcmp(this, &other, sizeof(other)) == 0; }
             bool operator!=(const QueueId& other) const { return !(*this == other); }
         };
-        AZ_ASSERT_NO_ALIGNMENT_PADDING_END
 
         class Queue final
             : public RHI::DeviceObject

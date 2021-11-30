@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -186,6 +187,7 @@ namespace AZ
         {
             m_name = slot.m_name;
             m_shaderInputName = slot.m_shaderInputName;
+            m_shaderImageDimensionsNameIndex = slot.m_shaderImageDimensionsName;
             m_shaderInputArrayIndex = slot.m_shaderInputArrayIndex;
             m_slotType = slot.m_slotType;
             m_scopeAttachmentUsage = slot.m_scopeAttachmentUsage;

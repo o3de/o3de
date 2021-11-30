@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -71,6 +72,7 @@ namespace AZ
             {
                 if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
                 {
+                    bool fileFound = false;
                     if (AZ::IO::FixedMaxPath projectModulePath;
                         settingsRegistry->Get(projectModulePath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_ProjectConfigurationBinPath))
                     {
@@ -78,6 +80,23 @@ namespace AZ
                         if (AZ::IO::SystemFile::Exists(projectModulePath.c_str()))
                         {
                             m_fileName.assign(projectModulePath.c_str(), projectModulePath.Native().size());
+                            fileFound = true;
+                        }
+                    }
+                    if (!fileFound)
+                    {
+                        if (AZ::IO::FixedMaxPath installedBinariesPath;
+                            settingsRegistry->Get(installedBinariesPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_InstalledBinaryFolder))
+                        {
+                            if (AZ::IO::FixedMaxPath engineRootFolder;
+                                settingsRegistry->Get(engineRootFolder.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder))
+                            {
+                                installedBinariesPath = engineRootFolder / installedBinariesPath / fullFilePath;
+                                if (AZ::IO::SystemFile::Exists(installedBinariesPath.c_str()))
+                                {
+                                    m_fileName.assign(installedBinariesPath.c_str(), installedBinariesPath.Native().size());
+                                }
+                            }
                         }
                     }
                 }
@@ -138,7 +157,7 @@ namespace AZ
             if (m_handle)
             {
                 result = dlclose(m_handle) == 0 ? true : false;
-                m_handle = 0;
+                m_handle = nullptr;
             }
             return result;
         }

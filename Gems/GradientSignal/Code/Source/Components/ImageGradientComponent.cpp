@@ -1,13 +1,14 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
-#include "GradientSignal_precompiled.h"
 #include "ImageGradientComponent.h"
 #include <AzCore/Asset/AssetManager.h>
+#include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Debug/Profiler.h>
 #include <AzCore/Math/MathUtils.h>
 #include <AzCore/RTTI/BehaviorContext.h>
@@ -190,7 +191,7 @@ namespace GradientSignal
 
     float ImageGradientComponent::GetValue(const GradientSampleParams& sampleParams) const
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
+        AZ_PROFILE_FUNCTION(Entity);
 
         AZ::Vector3 uvw = sampleParams.m_position;
 

@@ -1,5 +1,6 @@
 """
-Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+Copyright (c) Contributors to the Open 3D Engine Project.
+For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
@@ -17,6 +18,15 @@ logger = logging.getLogger(__name__)
 
 def check_path_exists(file_path: str) -> bool:
     return pathlib.Path(file_path).exists()
+
+
+def create_directory(dir_path: str) -> bool:
+    try:
+        pathlib.Path(dir_path).mkdir(parents=True, exist_ok=True)
+        return True
+    except FileExistsError:
+        logger.warning(f"Failed to create directory at {dir_path}")
+        return False
 
 
 def get_current_directory_path() -> str:
@@ -39,10 +49,10 @@ def find_files_with_suffix_under_directory(dir_path: str, suffix: str) -> List[s
     return results
 
 
-def normalize_file_path(file_path: str) -> str:
+def normalize_file_path(file_path: str, strict: bool = True) -> str:
     if file_path:
         try:
-            return str(pathlib.Path(file_path).resolve(True))
+            return str(pathlib.Path(file_path).resolve(strict))
         except (FileNotFoundError, RuntimeError):
             logger.warning(f"Failed to normalize file path {file_path}, return empty string instead")
     return ""

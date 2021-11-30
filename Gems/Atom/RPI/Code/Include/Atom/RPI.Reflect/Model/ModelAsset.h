@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -48,6 +49,12 @@ namespace AZ
 
             //! Returns the model-space axis aligned bounding box
             const AZ::Aabb& GetAabb() const;
+            
+            //! Returns the list of all ModelMaterialSlot's for the model, across all LODs.
+            const ModelMaterialSlotMap& GetMaterialSlots() const;
+            
+            //! Find a material slot with the given stableId, or returns an invalid slot if it isn't found.
+            const ModelMaterialSlot& FindMaterialSlot(uint32_t stableId) const;
 
             //! Returns the number of Lods in the model
             size_t GetLodCount() const;
@@ -70,6 +77,12 @@ namespace AZ
                 float& distanceNormalized, AZ::Vector3& normal) const;
 
         private:
+            // AssetData overrides...
+            bool HandleAutoReload() override
+            {
+                return false;
+            }
+
             void SetReady();
 
             AZ::Name m_name;
@@ -96,6 +109,13 @@ namespace AZ
             volatile mutable bool m_isKdTreeCalculationRunning = false;
             mutable AZStd::mutex m_kdTreeLock;
             mutable AZStd::optional<AZStd::size_t> m_modelTriangleCount;
+            
+            // Lists all of the material slots that are used by this LOD.
+            // Note the same slot can appear in multiple LODs in the model, so that LODs don't have to refer back to the model asset.
+            ModelMaterialSlotMap m_materialSlots;
+
+            // A default ModelMaterialSlot to be returned upon error conditions.
+            ModelMaterialSlot m_fallbackSlot;
 
             AZStd::size_t CalculateTriangleCount() const;
         };

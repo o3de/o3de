@@ -157,7 +157,7 @@
  *         #define SMAA_RT_METRICS float4(1.0 / 1280.0, 1.0 / 720.0, 1280.0, 720.0)
  *         #define SMAA_HLSL_4
  *         #define SMAA_PRESET_HIGH
- *         #include "SMAA.h"
+ *         include "SMAA.h" ('#' symbol before 'include' was removed on purpose to avoid parsing this azsli file during ShaderAssetBuilder::CreateJobs)
  *
  *     Note that SMAA_RT_METRICS doesn't need to be a macro, it can be a
  *     uniform variable. The code is designed to minimize the impact of not
@@ -1135,13 +1135,13 @@ float4 SMAABlendingWeightCalculationPS(float2 texcoord,
         if (!o_enableDiagonalDetectionFeature ||
             weights.r == -weights.g) // weights.r + weights.g == 0.0
         {
-            float2 d;
+            // NOTE: using separate floats for (dx, dy) and (sqrt_d_x, sqrt_d_y) instead of float2 due to android Mali driver problem crashing the device
 
             // Find the distance to the left:
             float3 coords;
             coords.x = SMAASearchXLeft(SMAATexturePass2D(edgesTex), SMAATexturePass2D(searchTex), offset[0].xy, offset[2].x);
             coords.y = offset[1].y; // offset[1].y = texcoord.y - 0.25 * SMAA_RT_METRICS.y (@CROSSING_OFFSET)
-            d.x = coords.x;
+            float dx = coords.x;
 
             // Now fetch the left crossing edges, two at a time using bilinear
             // filtering. Sampling at -0.25 (see @CROSSING_OFFSET) enables to
@@ -1150,26 +1150,29 @@ float4 SMAABlendingWeightCalculationPS(float2 texcoord,
 
             // Find the distance to the right:
             coords.z = SMAASearchXRight(SMAATexturePass2D(edgesTex), SMAATexturePass2D(searchTex), offset[0].zw, offset[2].y);
-            d.y = coords.z;
+            float dy = coords.z;
 
             // We want the distances to be in pixel units (doing this here allow to
             // better interleave arithmetic and memory accesses):
-            d = abs(round(mad(SMAA_RT_METRICS.zz, d, -pixcoord.xx)));
+            dx = abs(round(mad(SMAA_RT_METRICS.z, dx, -pixcoord.x)));
+            dy = abs(round(mad(SMAA_RT_METRICS.z, dy, -pixcoord.x)));
 
             // SMAAArea below needs a sqrt, as the areas texture is compressed
             // quadratically:
-            float2 sqrt_d = sqrt(d);
+            float sqrt_d_x = sqrt(dx);
+            float sqrt_d_y = sqrt(dy);
+
 
             // Fetch the right crossing edges:
             float e2 = SMAASampleLevelZeroOffset(edgesTex, coords.zy, int2(1, 0)).r;
 
             // Ok, we know how this pattern looks like, now it is time for getting
             // the actual area:
-            weights.rg = SMAAArea(SMAATexturePass2D(areaTex), sqrt_d, e1, e2, subsampleIndices.y);
+            weights.rg = SMAAArea(SMAATexturePass2D(areaTex), float2(sqrt_d_x, sqrt_d_y), e1, e2, subsampleIndices.y);
 
             // Fix corners:
             coords.y = texcoord.y;
-            SMAADetectHorizontalCornerPattern(SMAATexturePass2D(edgesTex), weights.rg, coords.xyzy, d);
+            SMAADetectHorizontalCornerPattern(SMAATexturePass2D(edgesTex), weights.rg, coords.xyzy, float2(dx, dy));
         }
         else
         {
@@ -1180,37 +1183,37 @@ float4 SMAABlendingWeightCalculationPS(float2 texcoord,
     SMAA_BRANCH
     if (e.r > 0.0) // Edge at west
     {
-        float2 d;
-
         // Find the distance to the top:
         float3 coords;
         coords.y = SMAASearchYUp(SMAATexturePass2D(edgesTex), SMAATexturePass2D(searchTex), offset[1].xy, offset[2].z);
         coords.x = offset[0].x; // offset[1].x = texcoord.x - 0.25 * SMAA_RT_METRICS.x;
-        d.x = coords.y;
+        float dx = coords.y;
 
         // Fetch the top crossing edges:
         float e1 = SMAASampleLevelZero(edgesTex, coords.xy).g;
 
         // Find the distance to the bottom:
         coords.z = SMAASearchYDown(SMAATexturePass2D(edgesTex), SMAATexturePass2D(searchTex), offset[1].zw, offset[2].w);
-        d.y = coords.z;
+        float dy = coords.z;
 
         // We want the distances to be in pixel units:
-        d = abs(round(mad(SMAA_RT_METRICS.ww, d, -pixcoord.yy)));
+        dx = abs(round(mad(SMAA_RT_METRICS.w, dx, -pixcoord.y)));
+        dy = abs(round(mad(SMAA_RT_METRICS.w, dy, -pixcoord.y)));
 
         // SMAAArea below needs a sqrt, as the areas texture is compressed 
         // quadratically:
-        float2 sqrt_d = sqrt(d);
+        float sqrt_d_x = sqrt(dx);
+        float sqrt_d_y = sqrt(dy);
 
         // Fetch the bottom crossing edges:
         float e2 = SMAASampleLevelZeroOffset(edgesTex, coords.xz, int2(0, 1)).g;
 
         // Get the area for this direction:
-        weights.ba = SMAAArea(SMAATexturePass2D(areaTex), sqrt_d, e1, e2, subsampleIndices.x);
+        weights.ba = SMAAArea(SMAATexturePass2D(areaTex), float2(sqrt_d_x, sqrt_d_y), e1, e2, subsampleIndices.x);
 
         // Fix corners:
         coords.x = texcoord.x;
-        SMAADetectVerticalCornerPattern(SMAATexturePass2D(edgesTex), weights.ba, coords.xyxz, d);
+        SMAADetectVerticalCornerPattern(SMAATexturePass2D(edgesTex), weights.ba, coords.xyxz, float2(dx, dy));
     }
 
     return weights;

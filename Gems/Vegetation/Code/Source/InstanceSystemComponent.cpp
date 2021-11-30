@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -13,9 +14,6 @@
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
-
-#include <LmbrCentral/Rendering/MaterialAsset.h>
-#include <LmbrCentral/Rendering/MeshAsset.h>
 
 #include <Vegetation/Ebuses/AreaInfoBus.h>
 #include <Vegetation/Ebuses/AreaSystemRequestBus.h>
@@ -168,7 +166,7 @@ namespace Vegetation
 
     DescriptorPtr InstanceSystemComponent::RegisterUniqueDescriptor(const Descriptor& descriptor)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
+        AZ_PROFILE_FUNCTION(Entity);
 
         AZStd::lock_guard<decltype(m_uniqueDescriptorsMutex)> lock(m_uniqueDescriptorsMutex);
 
@@ -216,7 +214,7 @@ namespace Vegetation
 
     void InstanceSystemComponent::ReleaseUniqueDescriptor(DescriptorPtr descriptorPtr)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
+        AZ_PROFILE_FUNCTION(Entity);
 
         AZStd::lock_guard<decltype(m_uniqueDescriptorsMutex)> lock(m_uniqueDescriptorsMutex);
 
@@ -266,7 +264,7 @@ namespace Vegetation
 
     void InstanceSystemComponent::CreateInstance(InstanceData& instanceData)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
+        AZ_PROFILE_FUNCTION(Entity);
 
         if (!IsDescriptorValid(instanceData.m_descriptorPtr))
         {
@@ -298,7 +296,7 @@ namespace Vegetation
 
     void InstanceSystemComponent::DestroyInstance(InstanceId instanceId)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
+        AZ_PROFILE_FUNCTION(Entity);
 
         if (instanceId == InvalidInstanceId)
         {
@@ -438,7 +436,7 @@ namespace Vegetation
 
     bool InstanceSystemComponent::IsInstanceSkippable(const InstanceData& instanceData) const
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
+        AZ_PROFILE_FUNCTION(Entity);
 
         //if the instance was queued for deletion before its creation task executed then skip it
         AZStd::lock_guard<decltype(m_instanceDeletionSetMutex)> instanceDeletionSet(m_instanceDeletionSetMutex);
@@ -447,7 +445,7 @@ namespace Vegetation
 
     void InstanceSystemComponent::CreateInstanceNode(const InstanceData& instanceData)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
+        AZ_PROFILE_FUNCTION(Entity);
 
         if (IsInstanceSkippable(instanceData))
         {
@@ -482,13 +480,13 @@ namespace Vegetation
             AZStd::lock_guard<decltype(m_instanceMapMutex)> scopedLock(m_instanceMapMutex);
             AZ_Assert(m_instanceMap.find(instanceData.m_instanceId) == m_instanceMap.end(), "InstanceId %llu is already in use!", instanceData.m_instanceId);
             m_instanceMap[instanceData.m_instanceId] = AZStd::make_pair(instanceData.m_descriptorPtr, opaqueInstanceData);
-            m_instanceCount = m_instanceMap.size();
+            m_instanceCount = static_cast<int>(m_instanceMap.size());
         }
     }
 
     void InstanceSystemComponent::ReleaseInstanceNode(InstanceId instanceId)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
+        AZ_PROFILE_FUNCTION(Entity);
 
         DescriptorPtr descriptor = nullptr;
         InstancePtr opaqueInstanceData = nullptr;
@@ -502,7 +500,7 @@ namespace Vegetation
                 opaqueInstanceData = instanceItr->second.second;
                 m_instanceMap.erase(instanceItr);
             }
-            m_instanceCount = m_instanceMap.size();
+            m_instanceCount = static_cast<int>(m_instanceMap.size());
         }
 
         if (opaqueInstanceData)
@@ -520,7 +518,7 @@ namespace Vegetation
 
     void InstanceSystemComponent::AddTask(const Task& task)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
+        AZ_PROFILE_FUNCTION(Entity);
 
         AZStd::lock_guard<decltype(m_mainThreadTaskMutex)> mainThreadTaskLock(m_mainThreadTaskMutex);
         if (m_mainThreadTaskQueue.empty() || m_mainThreadTaskQueue.back().size() >= m_configuration.m_maxInstanceTaskBatchSize)
@@ -533,7 +531,7 @@ namespace Vegetation
 
     void InstanceSystemComponent::ClearTasks()
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
+        AZ_PROFILE_FUNCTION(Entity);
 
         AZStd::lock_guard<decltype(m_mainThreadTaskInProgressMutex)> mainThreadTaskInProgressLock(m_mainThreadTaskInProgressMutex);
         AZStd::lock_guard<decltype(m_mainThreadTaskMutex)> mainThreadTaskLock(m_mainThreadTaskMutex);
@@ -545,7 +543,7 @@ namespace Vegetation
 
     bool InstanceSystemComponent::GetTasks(TaskList& removedTasks)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
+        AZ_PROFILE_FUNCTION(Entity);
 
         AZStd::lock_guard<decltype(m_mainThreadTaskMutex)> mainThreadTaskLock(m_mainThreadTaskMutex);
         if (!m_mainThreadTaskQueue.empty())
@@ -558,7 +556,7 @@ namespace Vegetation
 
     void InstanceSystemComponent::ExecuteTasks()
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
+        AZ_PROFILE_FUNCTION(Entity);
 
         AZStd::lock_guard<decltype(m_mainThreadTaskInProgressMutex)> scopedLock(m_mainThreadTaskInProgressMutex);
 
@@ -581,13 +579,13 @@ namespace Vegetation
         }
 
         //offloading garbage collection to job to save time deallocating tasks on main thread
-        auto garbageCollectionJob = AZ::CreateJobFunction([removedTasksPtr]() mutable {}, true);
+        auto garbageCollectionJob = AZ::CreateJobFunction([]() mutable {}, true);
         garbageCollectionJob->Start();
     }
 
     void InstanceSystemComponent::ProcessMainThreadTasks()
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
+        AZ_PROFILE_FUNCTION(Entity);
 
         ExecuteTasks();
     }

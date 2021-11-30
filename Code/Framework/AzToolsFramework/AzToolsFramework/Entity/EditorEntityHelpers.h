@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -104,6 +105,16 @@ namespace AzToolsFramework
     AZ::ComponentDescriptor* GetComponentDescriptor(const AZ::Component* component);
     Components::EditorComponentDescriptor* GetEditorComponentDescriptor(const AZ::Component* component);
     Components::EditorComponentBase* GetEditorComponent(AZ::Component* component);
+    // Returns true if the given component provides at least one of the services specified or no services are provided
+    bool OffersRequiredServices(
+        const AZ::SerializeContext::ClassData* componentClass,
+        const AZStd::vector<AZ::ComponentServiceType>& serviceFilter,
+        const AZStd::vector<AZ::ComponentServiceType>& incompatibleServiceFilter
+    );
+    bool OffersRequiredServices(
+        const AZ::SerializeContext::ClassData* componentClass,
+        const AZStd::vector<AZ::ComponentServiceType>& serviceFilter
+    );
 
     /// Return true if the editor should show this component to users,
     /// false if the component should be hidden from users.

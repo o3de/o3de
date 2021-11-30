@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -63,7 +64,7 @@ namespace GridMate
         // Create Callback
         AZStd::weak_ptr<TargetCallbackBase> CreateCallback(AZ::u64 revision)
         {
-            AZ_Assert(IsAckEnabled(), "ACK disabled.")  //Shouldn't happen
+            AZ_Assert(IsAckEnabled(), "ACK disabled.");  //Shouldn't happen
             AZ_Assert(m_replicaRevision <= revision, "Cannot decrease replica revision");
 
             if(!m_callback || m_callback->m_revision != revision)

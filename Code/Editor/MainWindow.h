@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -10,6 +11,7 @@
 #if !defined(Q_MOC_RUN)
 #include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <AzCore/Component/Component.h>
+#include <AzCore/EBus/Event.h>
 
 #include <QComboBox>
 #include <QMainWindow>
@@ -57,11 +59,17 @@ namespace AzQtComponents
 namespace AzToolsFramework
 {
     class Ticker;
-}
-
-namespace AzToolsFramework
-{
     class QtSourceControlNotificationHandler;
+
+    //! @name Reverse URLs.
+    //! Used to identify common actions and override them when necessary.
+    //@{
+    constexpr inline AZ::Crc32 EditModeMove = AZ_CRC_CE("com.o3de.action.editor.editmode.move");
+    constexpr inline AZ::Crc32 EditModeRotate = AZ_CRC_CE("com.o3de.action.editor.editmode.rotate");
+    constexpr inline AZ::Crc32 EditModeScale = AZ_CRC_CE("com.o3de.action.editor.editmode.scale");
+    constexpr inline AZ::Crc32 SnapToGrid = AZ_CRC_CE("com.o3de.action.editor.snaptogrid");
+    constexpr inline AZ::Crc32 SnapAngle = AZ_CRC_CE("com.o3de.action.editor.snapangle");
+    //@}
 }
 
 #define MAINFRM_LAYOUT_NORMAL "NormalLayout"

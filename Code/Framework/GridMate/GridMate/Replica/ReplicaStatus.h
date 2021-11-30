@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -11,7 +12,6 @@
 #include <GridMate/Replica/RemoteProcedureCall.h>
 #include <GridMate/Replica/ReplicaChunk.h>
 #include <GridMate/Replica/ReplicaStatusInterface.h>
-#include <GridMate/String/string.h>
 #include <GridMate/Serialize/ContainerMarshal.h>
 
 namespace GridMate
@@ -101,7 +101,7 @@ namespace GridMate
             };
 
             AZ::u8 m_flags;
-            string m_replicaName;
+            AZStd::string m_replicaName;
         };
 
         DataSet<ReplicaOptions, ReplicaOptions::Marshaler> m_options; // Flags and debug info

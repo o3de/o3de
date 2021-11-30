@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -19,9 +20,7 @@ namespace AZ
     public:
         void ActivateAllocators()
         {
-            // Note the parameter pack expansion, this creates the equivalent of a fold expression
-            // For each type, call InitAllocator<T>(), then put 0 in the initializer list
-            std::initializer_list<int> init{(InitAllocator<Allocators>(), 0)...};
+            (InitAllocator<Allocators>(), ...);
         }
 
         void DeactivateAllocators()

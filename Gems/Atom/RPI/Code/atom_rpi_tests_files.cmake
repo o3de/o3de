@@ -1,6 +1,7 @@
 #
-# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
-# 
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
@@ -9,8 +10,6 @@ set(FILES
     Tests/Buffer/BufferTests.cpp
     Tests/Common/AssetManagerTestFixture.cpp
     Tests/Common/AssetManagerTestFixture.h
-    Tests/Common/AssetSystemStub.cpp
-    Tests/Common/AssetSystemStub.h
     Tests/Common/ErrorMessageFinder.cpp
     Tests/Common/ErrorMessageFinder.h
     Tests/Common/ErrorMessageFinderTests.cpp
@@ -25,6 +24,8 @@ set(FILES
     Tests/Common/RHI/Factory.h
     Tests/Common/RHI/Stubs.cpp
     Tests/Common/RHI/Stubs.h
+    Tests/Common/ShaderAssetTestUtils.cpp
+    Tests/Common/ShaderAssetTestUtils.h
     Tests/Image/StreamingImageTests.cpp
     Tests/Material/LuaMaterialFunctorTests.cpp
     Tests/Material/MaterialTypeAssetTests.cpp
@@ -41,7 +42,6 @@ set(FILES
     Tests/Model/ModelTests.cpp
     Tests/Pass/PassTests.cpp
     Tests/Shader/ShaderTests.cpp
-    Tests/ShaderResourceGroup/ShaderResourceGroupAssetTests.cpp
     Tests/ShaderResourceGroup/ShaderResourceGroupBufferTests.cpp
     Tests/ShaderResourceGroup/ShaderResourceGroupConstantBufferTests.cpp
     Tests/ShaderResourceGroup/ShaderResourceGroupImageTests.cpp

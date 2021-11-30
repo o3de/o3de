@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -59,9 +60,13 @@ namespace AZ
         ) override;
         void ExecuteConfigFile(AZStd::string_view configFileName) override;
         void ExecuteCommandLine(const AZ::CommandLine& commandLine) override;
-        bool HasCommand(const char* command) override;
-        ConsoleFunctorBase* FindCommand(const char* command) override;
-        AZStd::string AutoCompleteCommand(const char* command, AZStd::vector<AZStd::string>* matches = nullptr) override;
+        bool ExecuteDeferredConsoleCommands() override;
+
+        void ClearDeferredConsoleCommands() override;
+
+        bool HasCommand(AZStd::string_view command) override;
+        ConsoleFunctorBase* FindCommand(AZStd::string_view command) override;
+        AZStd::string AutoCompleteCommand(AZStd::string_view command, AZStd::vector<AZStd::string>* matches = nullptr) override;
         void VisitRegisteredFunctors(const FunctorVisitor& visitor) override;
         void RegisterFunctor(ConsoleFunctorBase* functor) override;
         void UnregisterFunctor(ConsoleFunctorBase* functor) override;
@@ -97,7 +102,20 @@ namespace AZ
         using CommandMap = AZStd::unordered_map<CVarFixedString, AZStd::vector<ConsoleFunctorBase*>>;
         CommandMap m_commands;
         AZ::SettingsRegistryInterface::NotifyEventHandler m_consoleCommandKeyHandler;
+        struct DeferredCommand
+        {
+            using DeferredArguments = AZStd::vector<AZStd::string>;
+            AZStd::string m_command;
+            DeferredArguments m_arguments;
+            ConsoleSilentMode m_silentMode;
+            ConsoleInvokedFrom m_invokedFrom;
+            ConsoleFunctorFlags m_requiredSet;
+            ConsoleFunctorFlags m_requiredClear;
+        };
+        using DeferredCommandQueue = AZStd::deque<DeferredCommand>;
+        DeferredCommandQueue m_deferredCommands;
 
+        friend struct ConsoleCommandKeyNotificationHandler;
         friend class ConsoleFunctorBase;
     };
 }

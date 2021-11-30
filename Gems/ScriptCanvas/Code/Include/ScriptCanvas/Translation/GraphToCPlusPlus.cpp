@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -180,7 +181,6 @@ namespace ScriptCanvas
             m_dotCPP.WriteNewLine();
             WriteDoNotModify(m_dotCPP);
             m_dotCPP.WriteNewLine();
-            m_dotCPP.WriteLine("#include \"precompiled.h\"");
             m_dotCPP.WriteLine("#include \"%s.h\"", GetGraphName().data());
             m_dotCPP.WriteNewLine();
         }

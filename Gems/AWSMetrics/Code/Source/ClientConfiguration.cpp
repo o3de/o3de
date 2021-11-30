@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -98,7 +99,7 @@ namespace AWSMetrics
 
     AZ::s64 ClientConfiguration::GetMaxQueueSizeInBytes() const
     {
-        return m_maxQueueSizeInMb * 1000000;
+        return static_cast<AZ::s64>(m_maxQueueSizeInMb * 1000000);
     }
 
     AZ::s64 ClientConfiguration::GetQueueFlushPeriodInSeconds() const

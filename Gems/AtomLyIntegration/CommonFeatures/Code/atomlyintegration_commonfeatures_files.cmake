@@ -1,6 +1,7 @@
 #
-# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
-# 
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
@@ -82,6 +83,11 @@ set(FILES
     Source/PostProcess/Bloom/BloomComponentConfig.cpp
     Source/PostProcess/Bloom/BloomComponentController.cpp
     Source/PostProcess/Bloom/BloomComponentController.h
+    Source/PostProcess/ColorGrading/HDRColorGradingComponent.cpp
+    Source/PostProcess/ColorGrading/HDRColorGradingComponent.h
+    Source/PostProcess/ColorGrading/HDRColorGradingComponentConfig.cpp
+    Source/PostProcess/ColorGrading/HDRColorGradingComponentController.cpp
+    Source/PostProcess/ColorGrading/HDRColorGradingComponentController.h
     Source/PostProcess/DepthOfField/DepthOfFieldComponent.cpp
     Source/PostProcess/DepthOfField/DepthOfFieldComponent.h
     Source/PostProcess/DepthOfField/DepthOfFieldComponentConfig.cpp

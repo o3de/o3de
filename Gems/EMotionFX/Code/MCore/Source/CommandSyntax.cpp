@@ -1,12 +1,14 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
 // include the required headers
 #include "CommandSyntax.h"
+#include <AzCore/std/algorithm.h>
 #include "LogManager.h"
 #include "Algorithms.h"
 #include "StringConversions.h"
@@ -14,7 +16,7 @@
 namespace MCore
 {
     // the constructor
-    CommandSyntax::CommandSyntax(uint32 numParamsToReserve)
+    CommandSyntax::CommandSyntax(size_t numParamsToReserve)
     {
         ReserveParameters(numParamsToReserve);
     }
@@ -28,7 +30,7 @@ namespace MCore
 
 
     // reserve parameter space
-    void CommandSyntax::ReserveParameters(uint32 numParamsToReserve)
+    void CommandSyntax::ReserveParameters(size_t numParamsToReserve)
     {
         if (numParamsToReserve > 0)
         {
@@ -64,28 +66,28 @@ namespace MCore
 
 
     // check if this param is a required one or not
-    bool CommandSyntax::GetParamRequired(uint32 index) const
+    bool CommandSyntax::GetParamRequired(size_t index) const
     {
-        return m_parameters[index].mRequired;
+        return m_parameters[index].m_required;
     }
 
 
     // get the parameter name
-    const char* CommandSyntax::GetParamName(uint32 index) const
+    const char* CommandSyntax::GetParamName(size_t index) const
     {
-        return m_parameters[index].mName.c_str();
+        return m_parameters[index].m_name.c_str();
     }
 
 
     // get the parameter description
-    const char* CommandSyntax::GetParamDescription(uint32 index) const
+    const char* CommandSyntax::GetParamDescription(size_t index) const
     {
-        return m_parameters[index].mDescription.c_str();
+        return m_parameters[index].m_description.c_str();
     }
 
 
     // get the parameter type string
-    const char* CommandSyntax::GetParamTypeString(uint32 index) const
+    const char* CommandSyntax::GetParamTypeString(size_t index) const
     {
         return GetParamTypeString(m_parameters[index]);
     }
@@ -93,7 +95,7 @@ namespace MCore
     const char* CommandSyntax::GetParamTypeString(const Parameter& parameter) const
     {
         // check the type
-        switch (parameter.mParamType)
+        switch (parameter.m_paramType)
         {
             case PARAMTYPE_STRING:
                 return "String";
@@ -127,47 +129,41 @@ namespace MCore
     // get the parameter type
     CommandSyntax::EParamType CommandSyntax::GetParamType(size_t index) const
     {
-        return m_parameters[index].mParamType;
+        return m_parameters[index].m_paramType;
     }
 
 
     // check if we have a given parameter with a given name in this syntax
     bool CommandSyntax::CheckIfHasParameter(const char* parameter) const
     {
-        return (FindParameterIndex(parameter) != MCORE_INVALIDINDEX32);
+        return (FindParameterIndex(parameter) != InvalidIndex);
     }
 
 
     // find the parameter index of a given parameter name
-    uint32 CommandSyntax::FindParameterIndex(const char* parameter) const
+    size_t CommandSyntax::FindParameterIndex(const char* parameter) const
     {
-        // try to find the parameter with the given name
-        const size_t numParams = m_parameters.size();
-        for (size_t i = 0; i < numParams; ++i)
+        const auto foundParameter = AZStd::find_if(begin(m_parameters), end(m_parameters), [parameter](const Parameter& p)
         {
-            if (AzFramework::StringFunc::Equal(m_parameters[i].mName.c_str(), parameter, false /* no case */))
-            {
-                return static_cast<uint32>(i);
-            }
-        }
-
-        return MCORE_INVALIDINDEX32;
+            return AzFramework::StringFunc::Equal(p.m_name, parameter, false /* no case */);
+        });
+        return foundParameter != end(m_parameters) ? AZStd::distance(begin(m_parameters), foundParameter) : InvalidIndex;
     }
 
 
     // get the default value for a given parameter
-    const AZStd::string& CommandSyntax::GetDefaultValue(uint32 index) const
+    const AZStd::string& CommandSyntax::GetDefaultValue(size_t index) const
     {
-        return m_parameters[index].mDefaultValue;
+        return m_parameters[index].m_defaultValue;
     }
 
 
     const AZStd::string& CommandSyntax::GetDefaultValue(const char* paramName) const
     {
-        const uint32 index = FindParameterIndex(paramName);
-        if (index != MCORE_INVALIDINDEX32)
+        const size_t index = FindParameterIndex(paramName);
+        if (index != InvalidIndex)
         {
-            return m_parameters[index].mDefaultValue;
+            return m_parameters[index].m_defaultValue;
         }
 
         static const AZStd::string empty;
@@ -178,13 +174,13 @@ namespace MCore
     // get the default value for a given parameter name
     bool CommandSyntax::GetDefaultValue(const char* paramName, AZStd::string& outDefaultValue) const
     {
-        const uint32 index = FindParameterIndex(paramName);
-        if (index == MCORE_INVALIDINDEX32)
+        const size_t index = FindParameterIndex(paramName);
+        if (index == InvalidIndex)
         {
             return false;
         }
 
-        outDefaultValue = m_parameters[index].mDefaultValue;
+        outDefaultValue = m_parameters[index].m_defaultValue;
         return true;
     }
     
@@ -207,28 +203,28 @@ namespace MCore
         for (const Parameter& parameter : m_parameters)
         {
             // if the required parameter hasn't been specified
-            if (parameter.mRequired && commandLine.CheckIfHasParameter(parameter.mName) == false)
+            if (parameter.m_required && commandLine.CheckIfHasParameter(parameter.m_name) == false)
             {
-                outResult += AZStd::string::format("Required parameter '%s' has not been specified.\n", parameter.mName.c_str());
+                outResult += AZStd::string::format("Required parameter '%s' has not been specified.\n", parameter.m_name.c_str());
             }
             else
             {
                 // find the parameter index
-                const uint32 paramIndex = commandLine.FindParameterIndex(parameter.mName.c_str());
-                if (paramIndex != MCORE_INVALIDINDEX32)
+                const size_t paramIndex = commandLine.FindParameterIndex(parameter.m_name.c_str());
+                if (paramIndex != InvalidIndex)
                 {
                     const AZStd::string& value = commandLine.GetParameterValue(paramIndex);
-                    const AZStd::string& paramName = parameter.mName;
+                    const AZStd::string& paramName = parameter.m_name;
 
                     // if the parameter value has not been specified and it is not a boolean parameter
-                    if ((value.empty()) && parameter.mParamType != PARAMTYPE_BOOLEAN && parameter.mParamType != PARAMTYPE_STRING)
+                    if ((value.empty()) && parameter.m_paramType != PARAMTYPE_BOOLEAN && parameter.m_paramType != PARAMTYPE_STRING)
                     {
                         outResult += AZStd::string::format("Parameter '%s' has no value specified.\n", paramName.c_str());
                     }
                     else
                     {
                         // check if we specified a valid int
-                        if (parameter.mParamType == PARAMTYPE_INT)
+                        if (parameter.m_paramType == PARAMTYPE_INT)
                         {
                             if (!AzFramework::StringFunc::LooksLikeInt(value.c_str()))
                             {
@@ -237,7 +233,7 @@ namespace MCore
                         }
 
                         // check if the specified float is valid
-                        if (parameter.mParamType == PARAMTYPE_FLOAT)
+                        if (parameter.m_paramType == PARAMTYPE_FLOAT)
                         {
                             if (!AzFramework::StringFunc::LooksLikeFloat(value.c_str()))
                             {
@@ -246,7 +242,7 @@ namespace MCore
                         }
 
                         // check if this is a valid boolean
-                        if (parameter.mParamType == PARAMTYPE_BOOLEAN)
+                        if (parameter.m_paramType == PARAMTYPE_BOOLEAN)
                         {
                             if (!value.empty() && !AzFramework::StringFunc::LooksLikeBool(value.c_str()))
                             {
@@ -255,7 +251,7 @@ namespace MCore
                         }
 
                         // check if this is a valid boolean
-                        if (parameter.mParamType == PARAMTYPE_CHAR)
+                        if (parameter.m_paramType == PARAMTYPE_CHAR)
                         {
                             if (value.size() > 1)
                             {
@@ -264,7 +260,7 @@ namespace MCore
                         }
 
                         // check if the specified vector3 is valid
-                        if (parameter.mParamType == PARAMTYPE_VECTOR3)
+                        if (parameter.m_paramType == PARAMTYPE_VECTOR3)
                         {
                             if (!AzFramework::StringFunc::LooksLikeVector3(value.c_str()))
                             {
@@ -273,7 +269,7 @@ namespace MCore
                         }
 
                         // check if the specified vector3 is valid
-                        if (parameter.mParamType == PARAMTYPE_VECTOR4)
+                        if (parameter.m_paramType == PARAMTYPE_VECTOR4)
                         {
                             if (!AzFramework::StringFunc::LooksLikeVector4(value.c_str()))
                             {
@@ -281,13 +277,13 @@ namespace MCore
                             }
                         }
                     }
-                } // if (paramIndex != MCORE_INVALIDINDEX32)
+                } // if (paramIndex != InvalidIndex)
             }
         }
 
         // now add parameters that we specified but that are not defined in the syntax
-        const uint32 numCommandLineParams = commandLine.GetNumParameters();
-        for (uint32 p = 0; p < numCommandLineParams; ++p)
+        const size_t numCommandLineParams = commandLine.GetNumParameters();
+        for (size_t p = 0; p < numCommandLineParams; ++p)
         {
             if (CheckIfHasParameter(commandLine.GetParameterName(p).c_str()) == false)
             {
@@ -304,14 +300,13 @@ namespace MCore
     void CommandSyntax::LogSyntax()
     {
         // find the longest command name
-        uint32 offset = 0;
-        for (const Parameter& parameter : m_parameters)
+        size_t offset = AZStd::minmax_element(begin(m_parameters), end(m_parameters), [](const Parameter& left, const Parameter& right)
         {
-            offset = MCore::Max<uint32>(static_cast<uint32>(parameter.mName.size()), offset);
-        }
+            return left.m_name.size() < right.m_name.size();
+        }).second->m_name.size();
 
-        uint32 offset2 = offset;
-        uint32 offset3 = offset;
+        size_t offset2 = offset;
+        size_t offset3 = offset;
 
         // log the header
         AZStd::string header = "Name";
@@ -335,19 +330,19 @@ namespace MCore
         for (const Parameter& parameter : m_parameters)
         {
             offset2 = offset3;
-            final = parameter.mName;
+            final = parameter.m_name;
             offset2 += 5;
             final.append(offset2 - final.size(), MCore::CharacterConstants::space);
             final += GetParamTypeString(parameter);
             offset2 += 15;
             final.append(offset2 - final.size(), MCore::CharacterConstants::space);
-            final += parameter.mRequired ? "Yes" : "No";
+            final += parameter.m_required ? "Yes" : "No";
             offset2 += 10;
             final.append(offset2 - final.size(), MCore::CharacterConstants::space);
-            final += parameter.mDefaultValue;
+            final += parameter.m_defaultValue;
             offset2 += 20;
             final.append(offset2 - final.size(), MCore::CharacterConstants::space);
-            final += parameter.mDescription;
+            final += parameter.m_description;
 
             MCore::LogInfo(final.c_str());
         }

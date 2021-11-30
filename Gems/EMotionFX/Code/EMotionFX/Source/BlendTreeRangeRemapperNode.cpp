@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -71,8 +72,8 @@ namespace EMotionFX
         UpdateAllIncomingNodes(animGraphInstance, timePassedInSeconds);
 
         // if there are no incoming connections, there is nothing to do
-        const size_t numConnections = mConnections.size();
-        if (numConnections == 0 || mDisabled)
+        const size_t numConnections = m_connections.size();
+        if (numConnections == 0 || m_disabled)
         {
             if (numConnections > 0) // pass the input value as output in case we are disabled
             {
@@ -88,7 +89,7 @@ namespace EMotionFX
         float x = GetInputNumberAsFloat(animGraphInstance, INPUTPORT_X);
 
         // output the original input, so without remapping, if this node is disabled
-        if (mDisabled)
+        if (m_disabled)
         {
             GetOutputFloat(animGraphInstance, OUTPUTPORT_RESULT)->SetValue(x);
             return;

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -23,12 +24,12 @@ public:
     CSmartVariableArray mv_table;
     CSmartVariable<float> mv_command;
 
-    virtual void OnCreateVars()
+    void OnCreateVars() override
     {
         AddVariable(mv_table, "Key Properties");
         AddVariable(mv_table, mv_command, "Goto Time");
     }
-    bool SupportTrackType(const CAnimParamType& paramType, [[maybe_unused]] EAnimCurveType trackType, [[maybe_unused]] AnimValueType valueType) const
+    bool SupportTrackType(const CAnimParamType& paramType, [[maybe_unused]] EAnimCurveType trackType, [[maybe_unused]] AnimValueType valueType) const override
     {
         if (paramType == AnimParamType::Goto)
         {
@@ -39,10 +40,10 @@ public:
             return false;
         }
     }
-    virtual bool OnKeySelectionChange(CTrackViewKeyBundle& selectedKeys);
-    virtual void OnUIChange(IVariable* pVar, CTrackViewKeyBundle& selectedKeys);
+    bool OnKeySelectionChange(CTrackViewKeyBundle& selectedKeys) override;
+    void OnUIChange(IVariable* pVar, CTrackViewKeyBundle& selectedKeys) override;
 
-    virtual unsigned int GetPriority() const { return 1; }
+    unsigned int GetPriority() const override { return 1; }
 
     static const GUID& GetClassID()
     {

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -10,7 +11,6 @@
 #include <AzCore/Math/Quaternion.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/optional.h>
-#include <MCore/Source/Array.h>
 #include <MCore/Source/MemoryFile.h>
 #include <MCore/Source/Endian.h>
 #include <MCore/Source/Color.h>
@@ -57,6 +57,7 @@ namespace ExporterLib
 
     // endian conversion
     void ConvertUnsignedInt(uint32* value, MCore::Endian::EEndianType targetEndianType);
+    void ConvertUnsignedInt(uint64* value, MCore::Endian::EEndianType targetEndianType);
     void ConvertInt(int* value, MCore::Endian::EEndianType targetEndianType);
     void ConvertUnsignedShort(uint16* value, MCore::Endian::EEndianType targetEndianType);
     void ConvertFloat(float* value, MCore::Endian::EEndianType targetEndianType);
@@ -99,21 +100,21 @@ namespace ExporterLib
     // nodes
     void SaveNodes(MCore::Stream* file, EMotionFX::Actor* actor, MCore::Endian::EEndianType targetEndianType);
     void SaveNodeGroup(MCore::Stream* file, EMotionFX::NodeGroup* nodeGroup, MCore::Endian::EEndianType targetEndianType);
-    void SaveNodeGroups(MCore::Stream* file, const MCore::Array<EMotionFX::NodeGroup*>& nodeGroups, MCore::Endian::EEndianType targetEndianType);
+    void SaveNodeGroups(MCore::Stream* file, const AZStd::vector<EMotionFX::NodeGroup*>& nodeGroups, MCore::Endian::EEndianType targetEndianType);
     void SaveNodeGroups(MCore::Stream* file, EMotionFX::Actor* actor, MCore::Endian::EEndianType targetEndianType);
-    void SaveNodeMotionSources(MCore::Stream* file, EMotionFX::Actor* actor, MCore::Array<EMotionFX::Actor::NodeMirrorInfo>* mirrorInfo, MCore::Endian::EEndianType targetEndianType);
+    void SaveNodeMotionSources(MCore::Stream* file, EMotionFX::Actor* actor, AZStd::vector<EMotionFX::Actor::NodeMirrorInfo>* mirrorInfo, MCore::Endian::EEndianType targetEndianType);
     void SaveAttachmentNodes(MCore::Stream* file, EMotionFX::Actor* actor, MCore::Endian::EEndianType targetEndianType);
     void SaveAttachmentNodes(MCore::Stream* file, EMotionFX::Actor* actor, const AZStd::vector<uint16>& attachmentNodes, MCore::Endian::EEndianType targetEndianType);
 
     // morph targets
-    void SaveMorphTarget(MCore::Stream* file, EMotionFX::Actor* actor, EMotionFX::MorphTarget* inputMorphTarget, uint32 lodLevel, MCore::Endian::EEndianType targetEndianType);
-    void SaveMorphTargets(MCore::Stream* file, EMotionFX::Actor* actor, uint32 lodLevel, MCore::Endian::EEndianType targetEndianType);
+    void SaveMorphTarget(MCore::Stream* file, EMotionFX::Actor* actor, EMotionFX::MorphTarget* inputMorphTarget, size_t lodLevel, MCore::Endian::EEndianType targetEndianType);
+    void SaveMorphTargets(MCore::Stream* file, EMotionFX::Actor* actor, size_t lodLevel, MCore::Endian::EEndianType targetEndianType);
     void SaveMorphTargets(MCore::Stream* file, EMotionFX::Actor* actor, MCore::Endian::EEndianType targetEndianType);
 
     // actors
     const char* GetActorExtension(bool includingDot = true);
     void SaveActorHeader(MCore::Stream* file, MCore::Endian::EEndianType targetEndianType);
-    void SaveActorFileInfo(MCore::Stream* file, uint32 numLODLevels, uint32 motionExtractionNodeIndex, uint32 retargetRootNodeIndex, const char* sourceApp, const char* orgFileName, const char* actorName, MCore::Distance::EUnitType unitType, MCore::Endian::EEndianType targetEndianType, bool optimizeSkeleton);
+    void SaveActorFileInfo(MCore::Stream* file, uint64 numLODLevels, uint64 motionExtractionNodeIndex, uint64 retargetRootNodeIndex, const char* sourceApp, const char* orgFileName, const char* actorName, MCore::Distance::EUnitType unitType, MCore::Endian::EEndianType targetEndianType, bool optimizeSkeleton);
     void SaveActor(MCore::MemoryFile* file, const EMotionFX::Actor* actor, MCore::Endian::EEndianType targetEndianType, const AZStd::optional<AZ::Data::AssetId> meshAssetId = AZStd::nullopt);
     bool SaveActor(AZStd::string& filename, const EMotionFX::Actor* actor, MCore::Endian::EEndianType targetEndianType, const AZStd::optional<AZ::Data::AssetId> meshAssetId = AZStd::nullopt);
 

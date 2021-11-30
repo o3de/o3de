@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -10,7 +11,7 @@
 // include the required headers
 #include "EMotionFXConfig.h"
 #include "BaseObject.h"
-#include <MCore/Source/Array.h>
+#include <AzCore/std/containers/vector.h>
 #include <MCore/Source/MultiThreadManager.h>
 #include "MemoryCategories.h"
 #include "MotionInstance.h"
@@ -39,31 +40,31 @@ namespace EMotionFX
      */
     struct EMFX_API IntersectionInfo
     {
-        AZ::Vector3     mPosition;
-        AZ::Vector3     mNormal;
-        AZ::Vector2     mUV;
-        float           mBaryCentricU;
-        float           mBaryCentricV;
-        ActorInstance*  mActorInstance;
-        ActorInstance*  mIgnoreActorInstance;
-        Node*           mNode;
-        Mesh*           mMesh;
-        uint32          mStartIndex;
-        bool            mIsValid;
+        AZ::Vector3     m_position;
+        AZ::Vector3     m_normal;
+        AZ::Vector2     m_uv;
+        float           m_baryCentricU;
+        float           m_baryCentricV;
+        ActorInstance*  m_actorInstance;
+        ActorInstance*  m_ignoreActorInstance;
+        Node*           m_node;
+        Mesh*           m_mesh;
+        uint32          m_startIndex;
+        bool            m_isValid;
 
         IntersectionInfo()
         {
-            mPosition = AZ::Vector3::CreateZero();
-            mNormal.Set(0.0f, 1.0f, 0.0f);
-            mUV = AZ::Vector2::CreateZero();
-            mBaryCentricU   = 0.0f;
-            mBaryCentricV   = 0.0f;
-            mActorInstance  = nullptr;
-            mStartIndex     = 0;
-            mIgnoreActorInstance = nullptr;
-            mNode           = nullptr;
-            mMesh           = nullptr;
-            mIsValid        = false;
+            m_position = AZ::Vector3::CreateZero();
+            m_normal.Set(0.0f, 1.0f, 0.0f);
+            m_uv = AZ::Vector2::CreateZero();
+            m_baryCentricU   = 0.0f;
+            m_baryCentricV   = 0.0f;
+            m_actorInstance  = nullptr;
+            m_startIndex     = 0;
+            m_ignoreActorInstance = nullptr;
+            m_node           = nullptr;
+            m_mesh           = nullptr;
+            m_isValid        = false;
         }
     };
 
@@ -262,7 +263,7 @@ namespace EMotionFX
 
         /**
          * This event gets triggered once the given motion instance gets added to the motion queue.
-         * This happens when you set the PlayBackInfo::mPlayNow member to false. In that case the MotionSystem::PlayMotion() method (OnPlayMotion)
+         * This happens when you set the PlayBackInfo::m_playNow member to false. In that case the MotionSystem::PlayMotion() method (OnPlayMotion)
          * will not directly start playing the motion (OnStartMotionInstance), but will add it to the motion queue instead.
          * The motion queue will then start playing the motion instance once it should.
          * @param motionInstance The motion instance that gets added to the motion queue.
@@ -291,7 +292,7 @@ namespace EMotionFX
 
         /**
          * Perform a ray intersection test and return the intersection info.
-         * The first event handler registered that sets the IntersectionInfo::mIsValid to true will be outputting to the outIntersectInfo parameter.
+         * The first event handler registered that sets the IntersectionInfo::m_isValid to true will be outputting to the outIntersectInfo parameter.
          * @param start The start point, in world space.
          * @param end The end point, in world space.
          * @param outIntersectInfo The resulting intersection info.
@@ -346,14 +347,14 @@ namespace EMotionFX
          */
         struct EMFX_API RegisteredEventType
         {
-            AZStd::string   mEventType;                             /**< The string that describes the event, this is what artists type in 3DSMax/Maya. */
-            uint32          mEventID;                               /**< The unique ID for this event. */
+            AZStd::string   m_eventType;                             /**< The string that describes the event, this is what artists type in 3DSMax/Maya. */
+            uint32          m_eventId;                               /**< The unique ID for this event. */
         };
 
         using EventHandlerVector = AZStd::vector<EventHandler*>;
         AZStd::vector<EventHandlerVector> m_eventHandlersByEventType; /**< The event handler to use to process events organized by EventTypes. */
 
-        MCore::MutexRecursive               mLock;
+        MCore::MutexRecursive               m_lock;
         AZStd::mutex m_eventDataLock;
 
         AZStd::vector<AZStd::weak_ptr<const EMotionFX::EventData> > m_allEventData;

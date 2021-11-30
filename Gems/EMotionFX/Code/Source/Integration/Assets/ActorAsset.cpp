@@ -1,11 +1,11 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
-#include <EMotionFX/Source/ActorManager.h>
 #include <EMotionFX/Source/ActorInstance.h>
 #include <EMotionFX/Source/EMotionFXManager.h>
 #include <EMotionFX/Source/Importer/Importer.h>
@@ -54,7 +54,7 @@ namespace EMotionFX
             Importer::ActorSettings actorSettings;
             if (GetEMotionFX().GetEnableServerOptimization())
             {
-                actorSettings.mOptimizeForServer = true;
+                actorSettings.m_optimizeForServer = true;
             }
 
             assetData->m_emfxActor = EMotionFX::GetImporter().LoadActor(
@@ -63,8 +63,7 @@ namespace EMotionFX
                 &actorSettings,
                 "");
 
-            // Set the is owned by runtime flag before finalizing the actor, as that uses the flag already.
-            assetData->m_emfxActor->SetIsOwnedByRuntime(true);
+            assetData->m_emfxActor->SetFileName(asset.GetHint().c_str());
             assetData->m_emfxActor->Finalize();
 
             // Clear out the EMFX raw asset data.

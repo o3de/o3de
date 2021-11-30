@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -172,6 +173,7 @@ namespace AZ
 
             if (assetTracker)
             {
+                assetTracker->FixUpAsset(*instance);
                 assetTracker->AddAsset(*instance);
             }
 
@@ -184,7 +186,20 @@ namespace AZ
             return context.Report(result, message);
         }
 
-        void SerializedAssetTracker::AddAsset(Asset<AssetData>& asset)
+        void SerializedAssetTracker::SetAssetFixUp(AssetFixUp assetFixUpCallback)
+        {
+            m_assetFixUpCallback = AZStd::move(assetFixUpCallback);
+        }
+
+        void SerializedAssetTracker::FixUpAsset(Asset<AssetData>& asset)
+        {
+            if (m_assetFixUpCallback)
+            {
+                m_assetFixUpCallback(asset);
+            }
+        }
+
+        void SerializedAssetTracker::AddAsset(Asset<AssetData> asset)
         {
             m_serializedAssets.emplace_back(asset);
         }
@@ -198,5 +213,6 @@ namespace AZ
         {
             return m_serializedAssets;
         }
+
     } // namespace Data
 } // namespace AZ

@@ -1,19 +1,15 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
 
 // Description : Gathers level information. Loads a level.
-
-
-#ifndef CRYINCLUDE_CRYACTION_ILEVELSYSTEM_H
-#define CRYINCLUDE_CRYACTION_ILEVELSYSTEM_H
 #pragma once
 
-#include <CrySizer.h>
 #include <IXml.h>
 #include <AzCore/Asset/AssetCommon.h>
 
@@ -55,8 +51,6 @@ struct ILevelSystemListener
     virtual void OnLoadingProgress([[maybe_unused]] const char* levelName, [[maybe_unused]] int progressAmount) {}
     //! Called after a level is unloaded, before the data is freed.
     virtual void OnUnloadComplete([[maybe_unused]] const char* levelName) {}
-
-    void GetMemoryUsage([[maybe_unused]] ICrySizer* pSizer) const { }
 };
 
 struct ILevelSystem
@@ -94,5 +88,3 @@ protected:
 
     static constexpr const char* LevelsDirectoryName = "levels";
 };
-
-#endif // CRYINCLUDE_CRYACTION_ILEVELSYSTEM_H

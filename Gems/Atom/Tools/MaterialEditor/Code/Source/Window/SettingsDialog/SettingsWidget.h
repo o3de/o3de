@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -9,6 +10,7 @@
 
 #if !defined(Q_MOC_RUN)
 #include <Atom/Document/MaterialDocumentSettings.h>
+#include <AtomToolsFramework/Document/AtomToolsDocumentSystemSettings.h>
 #include <AtomToolsFramework/Inspector/InspectorWidget.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI_Internals.h>
 #endif
@@ -30,7 +32,8 @@ namespace MaterialEditor
         void Populate();
 
     private:
-        void AddDocumentGroup();
+        void AddDocumentSettingsGroup();
+        void AddDocumentSystemSettingsGroup();
 
         // AtomToolsFramework::InspectorRequestBus::Handler overrides...
         void Reset() override;
@@ -45,5 +48,6 @@ namespace MaterialEditor
         void PropertySelectionChanged(AzToolsFramework::InstanceDataNode*, bool) override {}
 
         AZStd::intrusive_ptr<MaterialDocumentSettings> m_documentSettings;
+        AZStd::intrusive_ptr<AtomToolsFramework::AtomToolsDocumentSystemSettings> m_documentSystemSettings;
     };
 } // namespace MaterialEditor

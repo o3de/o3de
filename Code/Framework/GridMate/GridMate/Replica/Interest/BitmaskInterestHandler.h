@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -132,7 +133,7 @@ namespace GridMate
 
         typedef AZStd::intrusive_ptr<BitmaskInterestChunk> Ptr;
         bool IsReplicaMigratable() override { return false; }
-        bool IsBroadcast() { return true; }
+        bool IsBroadcast() override { return true; }
         static const char* GetChunkName() { return "BitmaskInterestChunk"; }
 
         void OnReplicaActivate(const ReplicaContext& rc) override;

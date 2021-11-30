@@ -1,5 +1,6 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
  *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -29,7 +30,7 @@ namespace TranslationUtilitiesCPP
 
     AZ_INLINE const char* GetTabs(size_t tabs)
     {
-        AZ_Assert(tabs >= 0 && tabs <= k_maxTabs, "invalid argument to GetTabs");
+        AZ_Assert(tabs <= k_maxTabs, "invalid argument to GetTabs");
         
         static const char* const k_tabs[] =
         {
@@ -169,7 +170,8 @@ namespace ScriptCanvas
         AZStd::string_view GetCopyright()
         {
             return
-                "* Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.\n"
+                "* Copyright (c) Contributors to the Open 3D Engine Project.\n"
+                "* For complete copyright and license terms please see the LICENSE at the root of this distribution.\n"
                 "*\n"
                 "* SPDX-License-Identifier: Apache-2.0 OR MIT\n"
                 "*"

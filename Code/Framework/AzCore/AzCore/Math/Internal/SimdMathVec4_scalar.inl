@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -9,12 +10,9 @@
 
 #include <AzCore/Math/Internal/SimdMathCommon_scalar.inl>
 
-#ifdef _MSC_VER
 // Unity builds on windows using the scalar backend are tripping some really strange warning behavior..
 // Disable the warning so we can test the scalar implementation with unity on windows
-#   pragma warning (push)
-#   pragma warning (disable: 4723) // Potential divide by zero
-#endif
+AZ_PUSH_DISABLE_WARNING(4723, "-Wunknown-warning-option") // Potential divide by zero
 
 namespace AZ
 {
@@ -869,7 +867,6 @@ namespace AZ
             const FloatType cols0 = {{ rows[0].v[0], rows[1].v[0], rows[2].v[0], 0.0f }};
             const FloatType cols1 = {{ rows[0].v[1], rows[1].v[1], rows[2].v[1], 0.0f }};
             const FloatType cols2 = {{ rows[0].v[2], rows[1].v[2], rows[2].v[2], 0.0f }};
-            const FloatType cols3 = {{ rows[0].v[3], rows[1].v[3], rows[2].v[3], 1.0f }};
             out[0] = cols0;
             out[1] = cols1;
             out[2] = cols2;
@@ -1048,6 +1045,4 @@ namespace AZ
     }
 }
 
-#ifdef _MSC_VER
-#   pragma warning (pop)
-#endif
+AZ_POP_DISABLE_WARNING

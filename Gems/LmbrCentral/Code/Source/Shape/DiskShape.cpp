@@ -1,11 +1,11 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
-#include "LmbrCentral_precompiled.h"
 #include "DiskShape.h"
 
 #include <AzCore/Math/Aabb.h>
@@ -153,7 +153,7 @@ namespace LmbrCentral
         m_intersectionDataCache.UpdateIntersectionParams(m_currentTransform, m_diskShapeConfig);
 
         return AZ::Intersect::IntersectRayDisk(
-            src, dir, m_intersectionDataCache.m_position, m_intersectionDataCache.m_radius, m_intersectionDataCache.m_normal, distance) > 0;
+            src, dir, m_intersectionDataCache.m_position, m_intersectionDataCache.m_radius, m_intersectionDataCache.m_normal, distance);
     }
 
     void DiskShape::DiskIntersectionDataCache::UpdateIntersectionParamsImpl(

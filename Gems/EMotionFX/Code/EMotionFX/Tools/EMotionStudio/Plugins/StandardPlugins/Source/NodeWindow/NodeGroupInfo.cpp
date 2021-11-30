@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -22,10 +23,10 @@ namespace EMStudio
         m_name = nodeGroup->GetNameString();
 
         // iterate over the nodes inside the node group
-        const uint32 numGroupNodes = nodeGroup->GetNumNodes();
-        for (uint32 j = 0; j < numGroupNodes; ++j)
+        const size_t numGroupNodes = nodeGroup->GetNumNodes();
+        for (size_t j = 0; j < numGroupNodes; ++j)
         {
-            const uint16 nodeIndex = nodeGroup->GetNode(j);
+            const uint16 nodeIndex = nodeGroup->GetNode(static_cast<uint16>(j));
             const EMotionFX::Node* node = actor->GetSkeleton()->GetNode(nodeIndex);
             m_nodes.emplace_back(node->GetNameString());
         }

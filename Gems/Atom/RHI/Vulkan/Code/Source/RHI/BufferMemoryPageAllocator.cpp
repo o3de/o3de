@@ -1,10 +1,10 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "Atom_RHI_Vulkan_precompiled.h"
 #include <RHI/BufferMemoryPageAllocator.h>
 #include <RHI/Device.h>
 #include <RHI/Conversion.h>
@@ -55,7 +55,7 @@ namespace AZ
             RHI::Ptr<BufferMemory> bufferMemory;
 
             const VkMemoryPropertyFlags flags = ConvertHeapMemoryLevel(m_descriptor.m_heapMemoryLevel) | m_descriptor.m_additionalMemoryPropertyFlags;
-            RHI::Ptr<Memory> memory = GetDevice().AllocateMemory(memoryRequirements.size, memoryRequirements.memoryTypeBits, flags);
+            RHI::Ptr<Memory> memory = GetDevice().AllocateMemory(memoryRequirements.size, memoryRequirements.memoryTypeBits, flags, m_descriptor.m_bindFlags);
             if (memory)
             {
                 

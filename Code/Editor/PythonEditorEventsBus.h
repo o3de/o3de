@@ -1,12 +1,14 @@
 #pragma once
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 #pragma once
 
+#include <AzCore/IO/Path/Path.h>
 #include <AzCore/std/any.h>
 
 namespace AzToolsFramework
@@ -137,7 +139,7 @@ namespace AzToolsFramework
         /*
         * Finds a pak file name for a given file.
         */
-        virtual const char* GetPakFromFile(const char* filename) = 0;
+        virtual AZ::IO::Path GetPakFromFile(const char* filename) = 0;
 
         /*
         * Prints the message to the editor console window.

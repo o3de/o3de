@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -14,7 +15,7 @@
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/Utils//Utils.h>
 
-#include <AtomCore/Serialization/Json/JsonUtils.h>
+#include <AzCore/Serialization/Json/JsonUtils.h>
 
 #include <AzFramework/IO/LocalFileIO.h>
 
@@ -22,11 +23,11 @@ namespace AZ
 {
     namespace RPI
     {
-        AZStd::string GetMetricsFilePath()
+        AZ::IO::FixedMaxPath GetMetricsFilePath()
         {
-            char shaderMetricPath[AZ_MAX_PATH_LEN];
-            AZ::Utils::GetExecutableDirectory(shaderMetricPath, AZ_MAX_PATH_LEN);
-            return AZStd::string(shaderMetricPath) + AZ_CORRECT_FILESYSTEM_SEPARATOR_STRING + "ShaderMetrics.json";
+            AZ::IO::FixedMaxPath resolvedPath;
+            AZ::IO::LocalFileIO::GetInstance()->ResolvePath(resolvedPath, "@user@/ShaderMetrics.json");
+            return resolvedPath;
         }
 
         ShaderMetricsSystemInterface* ShaderMetricsSystemInterface::Get()
@@ -63,7 +64,7 @@ namespace AZ
 
         void ShaderMetricsSystem::ReadLog()
         {
-            const AZStd::string metricsFilePath = GetMetricsFilePath();
+            const AZ::IO::FixedMaxPath metricsFilePath = GetMetricsFilePath();
 
             if (AZ::IO::LocalFileIO::GetInstance()->Exists(metricsFilePath.c_str()))
             {
@@ -79,7 +80,7 @@ namespace AZ
 
         void ShaderMetricsSystem::WriteLog()
         {
-            const AZStd::string metricsFilePath = GetMetricsFilePath();
+            const AZ::IO::FixedMaxPath metricsFilePath = GetMetricsFilePath();
 
             auto saveResult = AZ::JsonSerializationUtils::SaveObjectToFile<ShaderVariantMetrics>(&m_metrics, metricsFilePath.c_str());
 
@@ -112,7 +113,7 @@ namespace AZ
                 return;
             }
 
-            AZ_PROFILE_FUNCTION(Debug::ProfileCategory::AzRender);
+            AZ_PROFILE_SCOPE(RPI, "ShaderMetricsSystem: RequestShaderVariant");
 
             AZStd::lock_guard<AZStd::mutex> lock(m_metricsMutex);
 

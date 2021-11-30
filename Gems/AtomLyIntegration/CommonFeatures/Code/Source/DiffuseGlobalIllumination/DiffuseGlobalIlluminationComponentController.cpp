@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -47,11 +48,7 @@ namespace AZ
 
         void DiffuseGlobalIlluminationComponentController::Activate(EntityId entityId)
         {
-            AZ_UNUSED(entityId);
-
-            const RPI::Scene* scene = AZ::RPI::RPISystemInterface::Get()->GetDefaultScene().get();
-            m_featureProcessor = scene->GetFeatureProcessor<DiffuseGlobalIlluminationFeatureProcessorInterface>();
-
+            m_featureProcessor = AZ::RPI::Scene::GetFeatureProcessorForEntity<DiffuseGlobalIlluminationFeatureProcessorInterface>(entityId);
             OnConfigChanged();
         }
 

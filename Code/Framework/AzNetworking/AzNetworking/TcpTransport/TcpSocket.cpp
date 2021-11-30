@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -52,18 +53,11 @@ namespace AzNetworking
     {
         Close();
 
-        if (!SocketCreateInternal())
+        if (!SocketCreateInternal()
+         || !BindSocketForListenInternal(port)
+         || !(SetSocketNonBlocking(m_socketFd) && SetSocketNoDelay(m_socketFd)))
         {
-            return false;
-        }
-
-        if (!BindSocketForListenInternal(port))
-        {
-            return false;
-        }
-
-        if (!(SetSocketNonBlocking(m_socketFd) && SetSocketNoDelay(m_socketFd)))
-        {
+            Close();
             return false;
         }
 
@@ -74,18 +68,11 @@ namespace AzNetworking
     {
         Close();
 
-        if (!SocketCreateInternal())
+        if (!SocketCreateInternal()
+         || !BindSocketForConnectInternal(address)
+         || !(SetSocketNonBlocking(m_socketFd) && SetSocketNoDelay(m_socketFd)))
         {
-            return false;
-        }
-
-        if (!BindSocketForConnectInternal(address))
-        {
-            return false;
-        }
-
-        if (!(SetSocketNonBlocking(m_socketFd) && SetSocketNoDelay(m_socketFd)))
-        {
+            Close();
             return false;
         }
 

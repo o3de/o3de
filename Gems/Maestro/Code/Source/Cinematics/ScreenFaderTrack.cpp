@@ -1,15 +1,15 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
 
-#include "Maestro_precompiled.h"
 #include <AzCore/Serialization/SerializeContext.h>
 #include "ScreenFaderTrack.h"
-#include <IRenderer.h>
+#include <ITexture.h>
 
 //-----------------------------------------------------------------------------
 CScreenFaderTrack::CScreenFaderTrack()
@@ -32,7 +32,7 @@ void CScreenFaderTrack::GetKeyInfo(int key, const char*& description, float& dur
     CheckValid();
     description = 0;
     duration = m_keys[key].m_fadeTime;
-    cry_strcpy(desc, m_keys[key].m_fadeType == IScreenFaderKey::eFT_FadeIn ? "In" : "Out");
+    azstrcpy(desc, AZ_ARRAY_SIZE(desc), m_keys[key].m_fadeType == IScreenFaderKey::eFT_FadeIn ? "In" : "Out");
 
     description = desc;
 }

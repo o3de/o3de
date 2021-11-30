@@ -1,10 +1,10 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "LyShine_precompiled.h"
 #include "UiLayoutRowComponent.h"
 
 #include <AzCore/Serialization/SerializeContext.h>
@@ -452,7 +452,7 @@ void UiLayoutRowComponent::ApplyLayoutWidth(float availableWidth)
     // Get the child element cell widths
     UiLayoutHelpers::LayoutCellSizes layoutCells;
     UiLayoutHelpers::GetLayoutCellWidths(GetEntityId(), m_ignoreDefaultLayoutCells, layoutCells);
-    int numChildren = layoutCells.size();
+    int numChildren = static_cast<int>(layoutCells.size());
     if (numChildren > 0)
     {
         // Calculate child widths
@@ -529,7 +529,7 @@ void UiLayoutRowComponent::ApplyLayoutHeight(float availableHeight)
     // Get the child element cell heights
     UiLayoutHelpers::LayoutCellSizes layoutCells;
     UiLayoutHelpers::GetLayoutCellHeights(GetEntityId(), m_ignoreDefaultLayoutCells, layoutCells);
-    int numChildren = layoutCells.size();
+    int numChildren = static_cast<int>(layoutCells.size());
     if (numChildren > 0)
     {
         // Set the child elements' transform properties based on the calculated child heights

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -86,7 +87,7 @@ namespace EMotionFX
 
         struct Leg
         {
-            AZ::u32 m_jointIndices[4];      // Use LegJointId as index into this array.
+            size_t m_jointIndices[4];      // Use LegJointId as index into this array.
             AZ::u8  m_flags         = static_cast<AZ::u8>(LegFlags::FirstUpdate);
             AZ::Vector3             m_footLockPosition = AZ::Vector3::CreateZero();
             AZ::Quaternion          m_footLockRotation;
@@ -137,7 +138,7 @@ namespace EMotionFX
             float       m_hipCorrectionTarget   = 0.0f;
             float       m_curHipCorrection      = 0.0f;
             float       m_timeDelta             = 0.0f;
-            AZ::u32     m_hipJointIndex         = MCORE_INVALIDINDEX32;
+            size_t      m_hipJointIndex         = InvalidIndex;
             AnimGraphEventBuffer m_eventBuffer;
         };
 

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -20,8 +21,6 @@
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Utils/Utils.h>
 #include <AzFramework/StringFunc/StringFunc.h>
-
-#include "SystemCFG.h"
 
 #if defined(AZ_RESTRICTED_PLATFORM)
 #undef AZ_RESTRICTED_SECTION
@@ -113,20 +112,22 @@ void CSystem::QueryVersionInfo()
 
     char ver[1024 * 8];
 
-    GetModuleFileName(NULL, moduleName, _MAX_PATH);  //retrieves the PATH for the current module
+    AZ::Utils::GetExecutablePath(moduleName, _MAX_PATH);  //retrieves the PATH for the current module
 
 #ifdef AZ_MONOLITHIC_BUILD
-    GetModuleFileName(NULL, moduleName, _MAX_PATH);  //retrieves the PATH for the current module
+    AZ::Utils::GetExecutablePath(moduleName, _MAX_PATH);  //retrieves the PATH for the current module
 #else // AZ_MONOLITHIC_BUILD
     azstrcpy(moduleName, AZ_ARRAY_SIZE(moduleName), "CrySystem.dll"); // we want to version from the system dll
 #endif // AZ_MONOLITHIC_BUILD
 
-    int verSize = GetFileVersionInfoSize(moduleName, &dwHandle);
+    AZStd::wstring moduleNameW;
+    AZStd::to_wstring(moduleNameW, moduleName);
+    int verSize = GetFileVersionInfoSizeW(moduleNameW.c_str(), &dwHandle);
     if (verSize > 0)
     {
-        GetFileVersionInfo(moduleName, dwHandle, 1024 * 8, ver);
+        GetFileVersionInfoW(moduleNameW.c_str(), dwHandle, 1024 * 8, ver);
         VS_FIXEDFILEINFO* vinfo;
-        VerQueryValue(ver, "\\", (void**)&vinfo, &len);
+        VerQueryValueW(ver, L"\\", (void**)&vinfo, &len);
 
         const uint32 verIndices[4] = {0, 1, 2, 3};
         m_fileVersion.v[verIndices[0]] = m_productVersion.v[verIndices[0]] = vinfo->dwFileVersionLS & 0xFFFF;
@@ -142,14 +143,14 @@ void CSystem::QueryVersionInfo()
         }* lpTranslate;
 
         UINT count = 0;
-        char path[256];
+        wchar_t path[256];
         char* version = NULL;
 
-        VerQueryValue(ver, "\\VarFileInfo\\Translation", (LPVOID*)&lpTranslate, &count);
+        VerQueryValueW(ver, L"\\VarFileInfo\\Translation", (LPVOID*)&lpTranslate, &count);
         if (lpTranslate != NULL)
         {
-            azsnprintf(path, sizeof(path), "\\StringFileInfo\\%04x%04x\\InternalName", lpTranslate[0].wLanguage, lpTranslate[0].wCodePage);
-            VerQueryValue(ver, path, (LPVOID*)&version, &count);
+            azsnwprintf(path, sizeof(path), L"\\StringFileInfo\\%04x%04x\\InternalName", lpTranslate[0].wLanguage, lpTranslate[0].wCodePage);
+            VerQueryValueW(ver, path, (LPVOID*)&version, &count);
             if (version)
             {
                 m_buildVersion.Set(version);
@@ -177,7 +178,7 @@ void CSystem::LogVersion()
     strftime(s, 128, "%d %b %y (%H %M %S)", today);
 #endif
 
-    const SFileVersion& ver = GetFileVersion();
+    [[maybe_unused]] const SFileVersion& ver = GetFileVersion();
 
     CryLogAlways("BackupNameAttachment=\" Build(%d) %s\"  -- used by backup system\n", ver.v[0], s);          // read by CreateBackupFile()
 
@@ -187,7 +188,7 @@ void CSystem::LogVersion()
 #else
     strftime(s, 128, "Log Started at %c", today);
 #endif
-    CryLogAlways(s);
+    CryLogAlways("%s", s);
 
     CryLogAlways("Built on " __DATE__ " " __TIME__);
 
@@ -210,7 +211,7 @@ void CSystem::LogVersion()
     CryLogAlways("Running 64 bit Mac version");
 #endif
 #if AZ_LEGACY_CRYSYSTEM_TRAIT_SYSTEMCFG_MODULENAME
-    GetModuleFileName(NULL, s, sizeof(s));
+    AZ::Utils::GetExecutablePath(s, sizeof(s));
 
     // Log EXE filename only if possible (not full EXE path which could contain sensitive info)
     AZStd::string exeName;
@@ -248,92 +249,10 @@ void CSystem::LogVersion()
 //////////////////////////////////////////////////////////////////////////
 void CSystem::LogBuildInfo()
 {
-    auto projectName = AZ::Utils::GetProjectName();
+    [[maybe_unused]] auto projectName = AZ::Utils::GetProjectName();
     CryLogAlways("GameName: %s", projectName.c_str());
     CryLogAlways("BuildTime: " __DATE__ " " __TIME__);
 }
-
-
-
-//////////////////////////////////////////////////////////////////////////
-
-
-//////////////////////////////////////////////////////////////////////////
-class CCVarSaveDump
-    : public ICVarDumpSink
-{
-public:
-
-    CCVarSaveDump(FILE* pFile)
-    {
-        m_pFile = pFile;
-    }
-
-    virtual void OnElementFound(ICVar* pCVar)
-    {
-        if (!pCVar)
-        {
-            return;
-        }
-        int nFlags = pCVar->GetFlags();
-        if (((nFlags & VF_DUMPTODISK) && (nFlags & VF_MODIFIED)) || (nFlags & VF_WASINCONFIG))
-        {
-            string szValue = pCVar->GetString();
-            int pos;
-
-            pos = 1;
-            for (;; )
-            {
-                pos = szValue.find_first_of("\\", pos);
-
-                if (pos == string::npos)
-                {
-                    break;
-                }
-
-                szValue.replace(pos, 1, "\\\\", 2);
-                pos += 2;
-            }
-
-            // replace " with \"
-            pos = 1;
-            for (;; )
-            {
-                pos = szValue.find_first_of("\"", pos);
-
-                if (pos == string::npos)
-                {
-                    break;
-                }
-
-                szValue.replace(pos, 1, "\\\"", 2);
-                pos += 2;
-            }
-
-            string szLine = pCVar->GetName();
-
-            if (pCVar->GetType() == CVAR_STRING)
-            {
-                szLine += " = \"" + szValue + "\"\r\n";
-            }
-            else
-            {
-                szLine += " = " + szValue + "\r\n";
-            }
-
-            if (pCVar->GetFlags() & VF_WARNING_NOTUSED)
-            {
-                fputs("-- REMARK: the following was not assigned to a console variable\r\n", m_pFile);
-            }
-
-            fputs(szLine.c_str(), m_pFile);
-        }
-    }
-
-private: // --------------------------------------------------------
-
-    FILE*              m_pFile;                     //
-};
 
 //////////////////////////////////////////////////////////////////////////
 void CSystem::SaveConfiguration()
@@ -341,47 +260,26 @@ void CSystem::SaveConfiguration()
 }
 
 //////////////////////////////////////////////////////////////////////////
-// system cfg
-//////////////////////////////////////////////////////////////////////////
-CSystemConfiguration::CSystemConfiguration(const string& strSysConfigFilePath, CSystem* pSystem, ILoadConfigurationEntrySink* pSink, bool warnIfMissing)
-    : m_strSysConfigFilePath(strSysConfigFilePath)
-    , m_bError(false)
-    , m_pSink(pSink)
-    , m_warnIfMissing(warnIfMissing)
+static bool ParseSystemConfig(const AZStd::string& strSysConfigFilePath, ILoadConfigurationEntrySink* pSink, bool warnIfMissing)
 {
     assert(pSink);
-
-    m_pSystem = pSystem;
-    m_bError = !ParseSystemConfig();
-}
-
-//////////////////////////////////////////////////////////////////////////
-CSystemConfiguration::~CSystemConfiguration()
-{
-}
-
-//////////////////////////////////////////////////////////////////////////
-bool CSystemConfiguration::ParseSystemConfig()
-{
-    string filename = m_strSysConfigFilePath;
-    if (strlen(PathUtil::GetExt(filename)) == 0)
+    AZStd::string filename = strSysConfigFilePath;
+    if (strlen(PathUtil::GetExt(filename.c_str())) == 0)
     {
         filename = PathUtil::ReplaceExtension(filename, "cfg");
     }
 
     CCryFile file;
-    string filenameLog;
+    AZStd::string filenameLog;
     {
-        int flags = AZ::IO::IArchive::FOPEN_HINT_QUIET | AZ::IO::IArchive::FOPEN_ONDISK;
-
         if (filename[0] == '@')
         {
             // this is used when theres a very specific file to read, like @user@/game.cfg which is read
             // IN ADDITION to the one in the game folder, and afterwards to override values in it.
             // if the file is missing and its already prefixed with an alias, there is no need to look any further.
-            if (!(file.Open(filename, "rb", flags)))
+            if (!(file.Open(filename.c_str(), "rb")))
             {
-                if (m_warnIfMissing)
+                if (warnIfMissing)
                 {
                     CryWarning(VALIDATOR_MODULE_SYSTEM, VALIDATOR_WARNING, "Config file %s not found!", filename.c_str());
                 }
@@ -393,14 +291,14 @@ bool CSystemConfiguration::ParseSystemConfig()
             // otherwise, if the file isn't prefixed with an alias, then its likely one of the convenience mappings
             // to either root or assets/config.  this is done so that code can just request a simple file name and get its data
             if (
-                !(file.Open(filename, "rb", flags)) &&
-                !(file.Open(string("@root@/") + filename, "rb", flags)) &&
-                !(file.Open(string("@assets@/") + filename, "rb", flags)) &&
-                !(file.Open(string("@assets@/config/") + filename, "rb", flags)) &&
-                !(file.Open(string("@assets@/config/spec/") + filename, "rb", flags))
+                !(file.Open(filename.c_str(), "rb")) &&
+                !(file.Open((AZStd::string("@products@/") + filename).c_str(), "rb")) &&
+                !(file.Open((AZStd::string("@products@/") + filename).c_str(), "rb")) &&
+                !(file.Open((AZStd::string("@products@/config/") + filename).c_str(), "rb")) &&
+                !(file.Open((AZStd::string("@products@/config/spec/") + filename).c_str(), "rb"))
                 )
             {
-                if (m_warnIfMissing)
+                if (warnIfMissing)
                 {
                     CryWarning(VALIDATOR_MODULE_SYSTEM, VALIDATOR_WARNING, "Config file %s not found!", filename.c_str());
                 }
@@ -408,12 +306,14 @@ bool CSystemConfiguration::ParseSystemConfig()
             }
         }
 
-        filenameLog = file.GetAdjustedFilename();
+        AZ::IO::FixedMaxPath resolvedFilePath;
+        AZ::IO::FileIOBase::GetInstance()->ResolvePath(resolvedFilePath, file.GetFilename());
+        filenameLog = resolvedFilePath.String();
     }
 
     INDENT_LOG_DURING_SCOPE();
 
-    int nLen = file.GetLength();
+    int nLen = static_cast<int>(file.GetLength());
     if (nLen == 0)
     {
         CryWarning(VALIDATOR_MODULE_SYSTEM, VALIDATOR_WARNING, "Couldn't get length for Config file %s", filename.c_str());
@@ -428,7 +328,7 @@ bool CSystemConfiguration::ParseSystemConfig()
     sAllText[nLen] = '\0';
     sAllText[nLen + 1] = '\0';
 
-    string strGroup;            // current group e.g. "[General]"
+    AZStd::string strGroup;            // current group e.g. "[General]"
 
     char* strLast = sAllText + nLen;
     char* str = sAllText;
@@ -446,26 +346,25 @@ bool CSystemConfiguration::ParseSystemConfig()
             str++;
         }
 
-        string strLine = s;
+        AZStd::string strLine = s;
+        AZ::StringFunc::TrimWhiteSpace(strLine, true, true);
 
         // detect groups e.g. "[General]"   should set strGroup="General"
         {
-            string strTrimmedLine(RemoveWhiteSpaces(strLine));
-            size_t size = strTrimmedLine.size();
+            size_t size = strLine.size();
 
             if (size >= 3)
             {
-                if (strTrimmedLine[0] == '[' && strTrimmedLine[size - 1] == ']')       // currently no comments are allowed to be behind groups
+                if (strLine[0] == '[' && strLine[size - 1] == ']')  // currently no comments are allowed to be behind groups
                 {
-                    strGroup = &strTrimmedLine[1];
-                    strGroup.resize(size - 2);                                  // remove [ and ]
+                    strGroup = &strLine[1];
+                    strGroup.resize(size - 2);                      // remove [ and ]
                     continue;                                       // next line
                 }
             }
         }
 
         //trim all whitespace characters at the beginning and the end of the current line and store its size
-        strLine.Trim();
         size_t strLineSize = strLine.size();
 
         //skip comments, comments start with ";" or "--" but may have preceding whitespace characters
@@ -487,35 +386,36 @@ bool CSystemConfiguration::ParseSystemConfig()
         }
 
         //if line contains a '=' try to read and assign console variable
-        string::size_type posEq(strLine.find("=", 0));
-        if (string::npos != posEq)
+        AZStd::string::size_type posEq(strLine.find("=", 0));
+        if (AZStd::string::npos != posEq)
         {
-            string stemp(strLine, 0, posEq);
-            string strKey(RemoveWhiteSpaces(stemp));
+            AZStd::string stemp;
+            AZStd::string strKey(strLine, 0, posEq);
+            AZ::StringFunc::TrimWhiteSpace(strKey, true, true);
 
             {
                 // extract value
-                string::size_type posValueStart(strLine.find("\"", posEq + 1) + 1);
-                string::size_type posValueEnd(strLine.rfind('\"'));
+                AZStd::string::size_type posValueStart(strLine.find("\"", posEq + 1) + 1);
+                AZStd::string::size_type posValueEnd(strLine.rfind('\"'));
 
-                string strValue;
+                AZStd::string strValue;
 
-                if (string::npos != posValueStart && string::npos != posValueEnd)
+                if (AZStd::string::npos != posValueStart && AZStd::string::npos != posValueEnd)
                 {
-                    strValue = string(strLine, posValueStart, posValueEnd - posValueStart);
+                    strValue = AZStd::string(strLine, posValueStart, posValueEnd - posValueStart);
                 }
                 else
                 {
-                    string strTmp(strLine, posEq + 1, strLine.size() - (posEq + 1));
-                    strValue = RemoveWhiteSpaces(strTmp);
+                    strValue = AZStd::string(strLine, posEq + 1, strLine.size() - (posEq + 1));
+                    AZ::StringFunc::TrimWhiteSpace(strValue, true, true);
                 }
 
                 {
                     // replace '\\\\' with '\\' and '\\\"' with '\"'
-                    strValue.replace("\\\\", "\\");
-                    strValue.replace("\\\"", "\"");
-                    
-                    m_pSink->OnLoadConfigurationEntry(strKey, strValue, strGroup);
+                    AZ::StringFunc::Replace(strValue, "\\\\", "\\");
+                    AZ::StringFunc::Replace(strValue, "\\\"", "\"");
+
+                    pSink->OnLoadConfigurationEntry(strKey.c_str(), strValue.c_str(), strGroup.c_str());
                 }
             }
         }
@@ -529,7 +429,7 @@ bool CSystemConfiguration::ParseSystemConfig()
 
     CryLog("Loading Config file %s (%s)", filename.c_str(), filenameLog.c_str());
 
-    m_pSink->OnLoadConfigurationEntry_End();
+    pSink->OnLoadConfigurationEntry_End();
 
     return true;
 }
@@ -571,7 +471,7 @@ void CSystem::LoadConfiguration(const char* sFilename, ILoadConfigurationEntrySi
             pSink = this;
         }
 
-        CSystemConfiguration tempConfig(sFilename, this, pSink, warnIfMissing);
+        ParseSystemConfig(sFilename, pSink, warnIfMissing);
     }
 }
 

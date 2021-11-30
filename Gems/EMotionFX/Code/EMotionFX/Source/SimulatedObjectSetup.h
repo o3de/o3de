@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -49,7 +50,7 @@ namespace EMotionFX
         };
 
         SimulatedJoint() = default;
-        SimulatedJoint(SimulatedObject* object, AZ::u32 skeletonJointIndex);
+        SimulatedJoint(SimulatedObject* object, size_t skeletonJointIndex);
         ~SimulatedJoint() override = default;
 
         SimulatedJoint* FindParentSimulatedJoint() const;
@@ -57,12 +58,12 @@ namespace EMotionFX
         AZ::Outcome<size_t> CalculateSimulatedJointIndex() const;
         size_t CalculateNumChildSimulatedJoints() const;
         size_t CalculateNumChildSimulatedJointsRecursive() const;
-        AZ::u32 CalculateChildIndex() const;
+        size_t CalculateChildIndex() const;
 
         bool InitAfterLoading(SimulatedObject* object);
 
         void SetSimulatedObject(SimulatedObject* object) { m_object = object; }
-        void SetSkeletonJointIndex(AZ::u32 jointIndex) { m_jointIndex = jointIndex; }
+        void SetSkeletonJointIndex(size_t jointIndex) { m_jointIndex = jointIndex; }
         void SetConeAngleLimit(float degrees) { m_coneAngleLimit = degrees; }
         void SetMass(float mass) { m_mass = mass; }
         void SetCollisionRadius(float radius)
@@ -80,7 +81,7 @@ namespace EMotionFX
         void SetGeometricAutoExclusion(bool enabled) { m_autoExcludeGeometric = enabled; }
 
         SimulatedObject* GetSimulatedObject() const { return m_object; }
-        AZ::u32 GetSkeletonJointIndex() const { return m_jointIndex; }
+        size_t GetSkeletonJointIndex() const { return m_jointIndex; }
         float GetConeAngleLimit() const { return m_coneAngleLimit; }
         float GetMass() const { return m_mass; }
         float GetCollisionRadius() const { return m_radius; }
@@ -100,7 +101,7 @@ namespace EMotionFX
         AZ::Crc32 GetPinnedOptionVisibility() const;
 
         SimulatedObject* m_object = nullptr; /**< The simulated object we belong to. */
-        AZ::u32 m_jointIndex = 0; /**< The joint index inside the skeleton of the actor. */
+        size_t m_jointIndex = 0; /**< The joint index inside the skeleton of the actor. */
         AZStd::string m_jointName; /**< The joint name in the actor skeleton. */
         float m_coneAngleLimit = 60.0f; /**< The conic angular limit, in degrees. A value of 180 means there are no limits. */
         float m_mass = 1.0f; /**< The mass of the joint. */
@@ -128,12 +129,12 @@ namespace EMotionFX
 
         void Clear();
 
-        SimulatedJoint* FindSimulatedJointBySkeletonJointIndex(AZ::u32 skeletonJointIndex) const;
+        SimulatedJoint* FindSimulatedJointBySkeletonJointIndex(size_t skeletonJointIndex) const;
         bool ContainsSimulatedJoint(const SimulatedJoint* joint) const;
-        SimulatedJoint* AddSimulatedJoint(AZ::u32 jointIndex);
-        void AddSimulatedJoints(AZStd::vector<AZ::u32> jointIndexes);
-        void AddSimulatedJointAndChildren(AZ::u32 jointIndex);
-        void RemoveSimulatedJoint(AZ::u32 jointIndex, bool removeChildren = false);
+        SimulatedJoint* AddSimulatedJoint(size_t jointIndex);
+        void AddSimulatedJoints(AZStd::vector<size_t> jointIndexes);
+        void AddSimulatedJointAndChildren(size_t jointIndex);
+        void RemoveSimulatedJoint(size_t jointIndex, bool removeChildren = false);
         size_t GetNumSimulatedJoints() const { return m_joints.size(); }
 
         SimulatedJoint* GetSimulatedRootJoint(size_t rootIndex) const;
@@ -166,7 +167,7 @@ namespace EMotionFX
         void SetSimulatedObjectSetup(SimulatedObjectSetup* setup) { m_simulatedObjectSetup = setup; }
         void BuildRootJointList();
         void SortJointList();
-        void MergeAndMakeJoints(const AZStd::vector<AZ::u32>& jointsToAdd);
+        void MergeAndMakeJoints(const AZStd::vector<size_t>& jointsToAdd);
 
         AZStd::string GetJointsTextOverride() const;
         AZStd::string GetColliderTag(int index) const;

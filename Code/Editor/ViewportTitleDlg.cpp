@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -14,12 +15,10 @@
 #include "ViewportTitleDlg.h"
 
 // Qt
+#include <QLabel>
 #include <QInputDialog>
 
 #include <AtomLyIntegration/AtomViewportDisplayInfo/AtomViewportInfoDisplayBus.h>
-
-// CryCommon
-#include <CryCommon/SFunctor.h>
 
 // Editor
 #include "Settings.h"
@@ -38,9 +37,13 @@
 #include "MathConversion.h"
 #include "EditorViewportSettings.h"
 
-#include <AzCore/std/algorithm.h>
+#include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Casting/numeric_cast.h>
+#include <AzCore/std/algorithm.h>
+#include <AzFramework/API/ApplicationAPI.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
+
+#include <LmbrCentral/Audio/AudioSystemComponentBus.h>
 
 AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
 #include "ui_ViewportTitleDlg.h"
@@ -90,7 +93,7 @@ namespace
         void ViewportInfoStatusUpdated(int newIndex);
 
     private:
-        void OnViewportInfoDisplayStateChanged(AZ::AtomBridge::ViewportInfoDisplayState state)
+        void OnViewportInfoDisplayStateChanged(AZ::AtomBridge::ViewportInfoDisplayState state) override
         {
             emit ViewportInfoStatusUpdated(static_cast<int>(state));
         }
@@ -118,17 +121,20 @@ CViewportTitleDlg::CViewportTitleDlg(QWidget* pParent)
     LoadCustomPresets("AspectRatioPresets", "AspectRatioPreset", m_customAspectRatioPresets);
     LoadCustomPresets("ResPresets", "ResPreset", m_customResPresets);
 
-    // audio request setup
-    m_oMuteAudioRequest.pData = &m_oMuteAudioRequestData;
-    m_oUnmuteAudioRequest.pData = &m_oUnmuteAudioRequestData;
-
     SetupCameraDropdownMenu();
     SetupResolutionDropdownMenu();
     SetupViewportInformationMenu();
     SetupHelpersButton();
     SetupOverflowMenu();
 
-    Audio::AudioSystemRequestBus::Broadcast(&Audio::AudioSystemRequestBus::Events::PushRequest, gSettings.bMuteAudio ? m_oMuteAudioRequest : m_oUnmuteAudioRequest);
+    if (gSettings.bMuteAudio)
+    {
+        LmbrCentral::AudioSystemComponentRequestBus::Broadcast(&LmbrCentral::AudioSystemComponentRequestBus::Events::GlobalMuteAudio);
+    }
+    else
+    {
+        LmbrCentral::AudioSystemComponentRequestBus::Broadcast(&LmbrCentral::AudioSystemComponentRequestBus::Events::GlobalUnmuteAudio);
+    }
 
     connect(this, &CViewportTitleDlg::ActionTriggered, MainWindow::instance()->GetActionManager(), &ActionManager::ActionTriggered);
 
@@ -142,6 +148,11 @@ CViewportTitleDlg::~CViewportTitleDlg()
     AZ::VR::VREventBus::Handler::BusDisconnect();
     GetISystem()->GetISystemEventDispatcher()->RemoveListener(this);
     GetIEditor()->UnregisterNotifyListener(this);
+
+    if (m_prefabViewportFocusPathHandler)
+    {
+        delete m_prefabViewportFocusPathHandler;
+    }
 }
 
 void CViewportTitleDlg::SetupCameraDropdownMenu()
@@ -151,6 +162,8 @@ void CViewportTitleDlg::SetupCameraDropdownMenu()
     cameraMenu->addMenu(GetFovMenu());
     m_ui->m_cameraMenu->setMenu(cameraMenu);
     m_ui->m_cameraMenu->setPopupMode(QToolButton::InstantPopup);
+    QObject::connect(cameraMenu, &QMenu::aboutToShow, this, &CViewportTitleDlg::CheckForCameraSpeedUpdate);
+
     QAction* gotoPositionAction = new QAction("Go to position", cameraMenu);
     connect(gotoPositionAction, &QAction::triggered, this, &CViewportTitleDlg::OnBnClickedGotoPosition);
     cameraMenu->addAction(gotoPositionAction);
@@ -171,8 +184,7 @@ void CViewportTitleDlg::SetupCameraDropdownMenu()
     cameraSpeedActionWidget->setDefaultWidget(cameraSpeedContainer);
 
     // Save off the move speed here since setting up the combo box can cause it to update values in the background.
-    float cameraMoveSpeed = gSettings.cameraMoveSpeed;
-
+    const float cameraMoveSpeed = SandboxEditor::CameraTranslateSpeed();
     // Populate the presets in the ComboBox
     for (float presetValue : m_speedPresetValues)
     {
@@ -182,7 +194,8 @@ void CViewportTitleDlg::SetupCameraDropdownMenu()
     auto comboBoxTextChanged = static_cast<void (QComboBox::*)(const QString&)>(&QComboBox::currentTextChanged);
 
     SetSpeedComboBox(cameraMoveSpeed);
-    m_cameraSpeed->setInsertPolicy(QComboBox::NoInsert);
+    m_cameraSpeed->setInsertPolicy(QComboBox::InsertAtBottom);
+    m_cameraSpeed->setDuplicatesEnabled(false);
     connect(m_cameraSpeed, comboBoxTextChanged, this, &CViewportTitleDlg::OnUpdateMoveSpeedText);
     connect(m_cameraSpeed->lineEdit(), &QLineEdit::returnPressed, this, &CViewportTitleDlg::OnSpeedComboBoxEnter);
 
@@ -287,8 +300,6 @@ void CViewportTitleDlg::SetViewPane(CLayoutViewPane* pViewPane)
 //////////////////////////////////////////////////////////////////////////
 void CViewportTitleDlg::OnInitDialog()
 {
-    m_ui->m_titleBtn->setText(m_title);
-
     // Add a child parented to us that listens for r_displayInfo changes.
     auto displayInfoHelper = new CViewportTitleDlgDisplayInfoHelper(this);
     connect(displayInfoHelper, &CViewportTitleDlgDisplayInfoHelper::ViewportInfoStatusUpdated, this, &CViewportTitleDlg::UpdateDisplayInfo);
@@ -305,17 +316,32 @@ void CViewportTitleDlg::OnInitDialog()
     AZ::VR::VREventBus::Handler::BusConnect();
 
     QFontMetrics metrics({});
-    int width = metrics.boundingRect("-9999.99").width() * m_fieldWidthMultiplier;
+    int width = static_cast<int>(metrics.boundingRect("-9999.99").width() * m_fieldWidthMultiplier);
 
     m_cameraSpeed->setFixedWidth(width);
 
+    bool isPrefabSystemEnabled = false;
+    AzFramework::ApplicationRequests::Bus::BroadcastResult(isPrefabSystemEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
+
+    if (isPrefabSystemEnabled)
+    {
+        m_prefabViewportFocusPathHandler = new AzToolsFramework::Prefab::PrefabViewportFocusPathHandler();
+        m_prefabViewportFocusPathHandler->Initialize(m_ui->m_prefabFocusPath, m_ui->m_prefabFocusBackButton);
+    }
+    else
+    {
+        m_ui->m_prefabFocusPath->setEnabled(false);
+        m_ui->m_prefabFocusBackButton->setEnabled(false);
+        m_ui->m_prefabFocusPath->hide();
+        m_ui->m_prefabFocusBackButton->hide();
+    }
+    
 }
 
 //////////////////////////////////////////////////////////////////////////
 void CViewportTitleDlg::SetTitle(const QString& title)
 {
     m_title = title;
-    m_ui->m_titleBtn->setText(m_title);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -447,21 +473,21 @@ void CViewportTitleDlg::AddFOVMenus(QMenu* menu, std::function<void(float)> call
 
     if (!customPresets.empty())
     {
-        for (size_t i = 0; i < customPresets.size(); ++i)
+        for (const QString& customPreset : customPresets)
         {
-            if (customPresets[i].isEmpty())
+            if (customPreset.isEmpty())
             {
                 break;
             }
 
             float fov = gSettings.viewports.fDefaultFov;
             bool ok;
-            float f = customPresets[i].toDouble(&ok);
+            float f = customPreset.toFloat(&ok);
             if (ok)
             {
                 fov = std::max(1.0f, f);
                 fov = std::min(120.0f, f);
-                QAction* action = menu->addAction(customPresets[i]);
+                QAction* action = menu->addAction(customPreset);
                 connect(action, &QAction::triggered, action, [fov, callback](){ callback(fov); });
             }
         }
@@ -476,7 +502,7 @@ void CViewportTitleDlg::OnMenuFOVCustom()
 
     if (ok)
     {
-        m_pViewPane->SetViewportFOV(fov);
+        m_pViewPane->SetViewportFOV(static_cast<float>(fov));
 
         // Update the custom presets.
         const QString text = QString::number(fov);
@@ -533,15 +559,15 @@ void CViewportTitleDlg::AddAspectRatioMenus(QMenu* menu, std::function<void(int,
 
     menu->addSeparator();
 
-    for (size_t i = 0; i < customPresets.size(); ++i)
+    for (const QString& customPreset : customPresets)
     {
-        if (customPresets[i].isEmpty())
+        if (customPreset.isEmpty())
         {
             break;
         }
 
         static QRegularExpression regex(QStringLiteral("^(\\d+):(\\d+)$"));
-        QRegularExpressionMatch matches = regex.match(customPresets[i]);
+        QRegularExpressionMatch matches = regex.match(customPreset);
         if (matches.hasMatch())
         {
             bool ok;
@@ -549,7 +575,7 @@ void CViewportTitleDlg::AddAspectRatioMenus(QMenu* menu, std::function<void(int,
             Q_ASSERT(ok);
             unsigned int height = matches.captured(2).toInt(&ok);
             Q_ASSERT(ok);
-            QAction* action = menu->addAction(customPresets[i]);
+            QAction* action = menu->addAction(customPreset);
             connect(action, &QAction::triggered, action, [width, height, callback]() {callback(width, height); });
         }
     }
@@ -642,13 +668,31 @@ void CViewportTitleDlg::CreateViewportInformationMenu()
 
 void CViewportTitleDlg::AddResolutionMenus(QMenu* menu, std::function<void(int, int)> callback, const QStringList& customPresets)
 {
-    static const CRenderViewport::SResolution resolutions[] = {
-        CRenderViewport::SResolution(1280, 720),
-        CRenderViewport::SResolution(1920, 1080),
-        CRenderViewport::SResolution(2560, 1440),
-        CRenderViewport::SResolution(2048, 858),
-        CRenderViewport::SResolution(1998, 1080),
-        CRenderViewport::SResolution(3840, 2160)
+    struct SResolution
+    {
+        SResolution()
+            : width(0)
+            , height(0)
+        {
+        }
+
+        SResolution(int w, int h)
+            : width(w)
+            , height(h)
+        {
+        }
+
+        int width;
+        int height;
+    };
+
+    static const SResolution resolutions[] = {
+        SResolution(1280, 720),
+        SResolution(1920, 1080),
+        SResolution(2560, 1440),
+        SResolution(2048, 858),
+        SResolution(1998, 1080),
+        SResolution(3840, 2160)
     };
 
     static const size_t resolutionCount = sizeof(resolutions) / sizeof(resolutions[0]);
@@ -664,15 +708,15 @@ void CViewportTitleDlg::AddResolutionMenus(QMenu* menu, std::function<void(int, 
 
     menu->addSeparator();
 
-    for (size_t i = 0; i < customPresets.size(); ++i)
+    for (const QString& customPreset : customPresets)
     {
-        if (customPresets[i].isEmpty())
+        if (customPreset.isEmpty())
         {
             break;
         }
 
         static QRegularExpression regex(QStringLiteral("^(\\d+) x (\\d+)$"));
-        QRegularExpressionMatch matches = regex.match(customPresets[i]);
+        QRegularExpressionMatch matches = regex.match(customPreset);
         if (matches.hasMatch())
         {
             bool ok;
@@ -680,7 +724,7 @@ void CViewportTitleDlg::AddResolutionMenus(QMenu* menu, std::function<void(int, 
             Q_ASSERT(ok);
             int height = matches.captured(2).toInt(&ok);
             Q_ASSERT(ok);
-            QAction* action = menu->addAction(customPresets[i]);
+            QAction* action = menu->addAction(customPreset);
             connect(action, &QAction::triggered, action, [width, height, callback](){ callback(width, height); });
         }
     }
@@ -776,8 +820,8 @@ void CViewportTitleDlg::OnSystemEvent(ESystemEvent event, UINT_PTR wparam, UINT_
             const int eventHeight = static_cast<int>(lparam);
             const QWidget* viewport = m_pViewPane->GetViewport();
 
-            // This should eventually be converted to an EBus to make it easy to connect to the correct viewport 
-            // sending the event.  But for now, just detect that we've gotten width/height values that match our 
+            // This should eventually be converted to an EBus to make it easy to connect to the correct viewport
+            // sending the event.  But for now, just detect that we've gotten width/height values that match our
             // associated viewport
             if (viewport && (eventWidth == viewport->width()) && (eventHeight == viewport->height()))
             {
@@ -858,16 +902,33 @@ void CViewportTitleDlg::OnBnClickedGotoPosition()
 void CViewportTitleDlg::OnBnClickedMuteAudio()
 {
     gSettings.bMuteAudio = !gSettings.bMuteAudio;
-
-    Audio::AudioSystemRequestBus::Broadcast(
-        &Audio::AudioSystemRequestBus::Events::PushRequest, gSettings.bMuteAudio ? m_oMuteAudioRequest : m_oUnmuteAudioRequest);
+    if (gSettings.bMuteAudio)
+    {
+        LmbrCentral::AudioSystemComponentRequestBus::Broadcast(&LmbrCentral::AudioSystemComponentRequestBus::Events::GlobalMuteAudio);
+    }
+    else
+    {
+        LmbrCentral::AudioSystemComponentRequestBus::Broadcast(&LmbrCentral::AudioSystemComponentRequestBus::Events::GlobalUnmuteAudio);
+    }
 
     UpdateMuteActionText();
 }
 
 void CViewportTitleDlg::UpdateMuteActionText()
 {
-    m_audioMuteAction->setText(gSettings.bMuteAudio ? tr("Un-mute Audio") : tr("Mute Audio"));
+    bool audioSystemConnected = false;
+    LmbrCentral::AudioSystemComponentRequestBus::BroadcastResult(
+        audioSystemConnected, &LmbrCentral::AudioSystemComponentRequestBus::Events::IsAudioSystemInitialized);
+    if (audioSystemConnected)
+    {
+        m_audioMuteAction->setEnabled(true);
+        m_audioMuteAction->setText(gSettings.bMuteAudio ? tr("Un-mute Audio") : tr("Mute Audio"));
+    }
+    else
+    {
+        m_audioMuteAction->setEnabled(false);
+        m_audioMuteAction->setText(tr("Mute Audio: Enable Audio Gem"));
+    }
 }
 
 void CViewportTitleDlg::OnHMDInitialized()
@@ -918,50 +979,51 @@ void CViewportTitleDlg::OnSpeedComboBoxEnter()
 
 void CViewportTitleDlg::OnUpdateMoveSpeedText(const QString& text)
 {
-    gSettings.cameraMoveSpeed = aznumeric_cast<float>(Round(text.toDouble(), m_speedStep));
+    SandboxEditor::SetCameraTranslateSpeed(aznumeric_cast<float>(Round(text.toDouble(), m_speedStep)));
 }
 
 void CViewportTitleDlg::CheckForCameraSpeedUpdate()
 {
-    if (gSettings.cameraMoveSpeed != m_prevMoveSpeed && !m_cameraSpeed->lineEdit()->hasFocus())
+    const float currentCameraMoveSpeed = SandboxEditor::CameraTranslateSpeed();
+    if (currentCameraMoveSpeed != m_prevMoveSpeed && !m_cameraSpeed->lineEdit()->hasFocus())
     {
-        m_prevMoveSpeed = gSettings.cameraMoveSpeed;
-        SetSpeedComboBox(gSettings.cameraMoveSpeed);
+        m_prevMoveSpeed = currentCameraMoveSpeed;
+        SetSpeedComboBox(currentCameraMoveSpeed);
     }
 }
 
 void CViewportTitleDlg::OnGridSnappingToggled()
 {
     m_gridSizeActionWidget->setEnabled(m_enableGridSnappingAction->isChecked());
-    MainWindow::instance()->GetActionManager()->GetAction(ID_SNAP_TO_GRID)->trigger();
+    MainWindow::instance()->GetActionManager()->GetAction(AzToolsFramework::SnapToGrid)->trigger();
 }
 
 void CViewportTitleDlg::OnAngleSnappingToggled()
 {
     m_angleSizeActionWidget->setEnabled(m_enableAngleSnappingAction->isChecked());
-    MainWindow::instance()->GetActionManager()->GetAction(ID_SNAPANGLE)->trigger();
+    MainWindow::instance()->GetActionManager()->GetAction(AzToolsFramework::SnapAngle)->trigger();
 }
 
 void CViewportTitleDlg::OnGridSpinBoxChanged(double value)
 {
-    SandboxEditor::SetGridSnappingSize(value);
+    SandboxEditor::SetGridSnappingSize(static_cast<float>(value));
 }
 
 void CViewportTitleDlg::OnAngleSpinBoxChanged(double value)
 {
-    SandboxEditor::SetAngleSnappingSize(value);
+    SandboxEditor::SetAngleSnappingSize(static_cast<float>(value));
 }
 
 void CViewportTitleDlg::UpdateOverFlowMenuState()
 {
-    bool gridSnappingActive = MainWindow::instance()->GetActionManager()->GetAction(ID_SNAP_TO_GRID)->isChecked();
+    bool gridSnappingActive = MainWindow::instance()->GetActionManager()->GetAction(AzToolsFramework::SnapToGrid)->isChecked();
     {
         QSignalBlocker signalBlocker(m_enableGridSnappingAction);
         m_enableGridSnappingAction->setChecked(gridSnappingActive);
     }
     m_gridSizeActionWidget->setEnabled(gridSnappingActive);
 
-    bool angleSnappingActive = MainWindow::instance()->GetActionManager()->GetAction(ID_SNAPANGLE)->isChecked();
+    bool angleSnappingActive = MainWindow::instance()->GetActionManager()->GetAction(AzToolsFramework::SnapAngle)->isChecked();
     {
         QSignalBlocker signalBlocker(m_enableAngleSnappingAction);
         m_enableAngleSnappingAction->setChecked(angleSnappingActive);

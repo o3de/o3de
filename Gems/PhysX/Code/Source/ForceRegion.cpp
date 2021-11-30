@@ -1,11 +1,10 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "PhysX_precompiled.h"
-
 #include <Source/ForceRegion.h>
 
 #include <PhysX/ColliderShapeBus.h>
@@ -63,10 +62,10 @@ namespace PhysX
             if (auto editContext = serializeContext->GetEditContext())
             {
                 editContext->Class<ForceRegion>(
-                    "Force Region", "Applies forces on entities within a region")
+                    "Force Region", "Applies forces on entities within a region.")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &ForceRegion::m_forces, "Forces", "Forces acting in the region")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &ForceRegion::m_forces, "Forces", "Forces acting in the region.")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ;
             }

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -9,9 +10,10 @@
 #include <AzCore/std/containers/vector.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <EMotionFX/Source/Actor.h>
-#include <EMotionFX/Source/EMotionFXManager.h>
 #include <EMotionFX/Source/Importer/Importer.h>
 #include <Tests/TestAssetCode/TestActorAssets.h>
+#include <Tests/TestAssetCode/ActorFactory.h>
+#include <Tests/TestAssetCode/JackActor.h>
 
 namespace EMotionFX
 {

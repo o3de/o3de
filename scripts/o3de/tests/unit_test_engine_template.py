@@ -1,5 +1,6 @@
 #
-# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
 #
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
@@ -30,17 +31,17 @@ TEST_TEMPLATED_CONTENT_WITHOUT_LICENSE = """
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/Interface/Interface.h>
 
-namespace ${Name}
+namespace ${SanitizedCppName}
 {
-    class ${Name}Requests
+    class ${SanitizedCppName}Requests
     {
     public:
-        AZ_RTTI(${Name}Requests, "{${Random_Uuid}}");
-        virtual ~${Name}Requests() = default;
+        AZ_RTTI(${SanitizedCppName}Requests, "{${Random_Uuid}}");
+        virtual ~${SanitizedCppName}Requests() = default;
         // Put your public methods here
     };
 
-    class ${Name}BusTraits
+    class ${SanitizedCppName}BusTraits
         : public AZ::EBusTraits
     {
     public:
@@ -51,31 +52,31 @@ namespace ${Name}
         //////////////////////////////////////////////////////////////////////////
     };
 
-    using ${Name}RequestBus = AZ::EBus<${Name}Requests, ${Name}BusTraits>;
-    using ${Name}Interface = AZ::Interface<${Name}Requests>;
+    using ${SanitizedCppName}RequestBus = AZ::EBus<${SanitizedCppName}Requests, ${SanitizedCppName}BusTraits>;
+    using ${SanitizedCppName}Interface = AZ::Interface<${SanitizedCppName}Requests>;
 
-} // namespace ${Name}
+} // namespace ${SanitizedCppName}
 """
 
 TEST_TEMPLATED_CONTENT_WITH_LICENSE = CPP_LICENSE_TEXT + TEST_TEMPLATED_CONTENT_WITHOUT_LICENSE
 
 TEST_CONCRETE_TESTTEMPLATE_CONTENT_WITHOUT_LICENSE = string.Template(
-    TEST_TEMPLATED_CONTENT_WITHOUT_LICENSE).safe_substitute({'Name': "TestTemplate"})
+    TEST_TEMPLATED_CONTENT_WITHOUT_LICENSE).safe_substitute({'SanitizedCppName': "TestTemplate"})
 
 TEST_CONCRETE_TESTTEMPLATE_CONTENT_WITH_LICENSE = string.Template(
-    TEST_TEMPLATED_CONTENT_WITH_LICENSE).safe_substitute({'Name': "TestTemplate"})
+    TEST_TEMPLATED_CONTENT_WITH_LICENSE).safe_substitute({'SanitizedCppName': "TestTemplate"})
 
 TEST_CONCRETE_TESTPROJECT_TEMPLATE_CONTENT_WITHOUT_LICENSE = string.Template(
-    TEST_TEMPLATED_CONTENT_WITHOUT_LICENSE).safe_substitute({'Name': "TestProject"})
+    TEST_TEMPLATED_CONTENT_WITHOUT_LICENSE).safe_substitute({'SanitizedCppName': "TestProject"})
 
 TEST_CONCRETE_TESTPROJECT_TEMPLATE_CONTENT_WITH_LICENSE = string.Template(
-    TEST_TEMPLATED_CONTENT_WITH_LICENSE).safe_substitute({'Name': "TestProject"})
+    TEST_TEMPLATED_CONTENT_WITH_LICENSE).safe_substitute({'SanitizedCppName': "TestProject"})
 
 TEST_CONCRETE_TESTGEM_TEMPLATE_CONTENT_WITHOUT_LICENSE = string.Template(
-    TEST_TEMPLATED_CONTENT_WITHOUT_LICENSE).safe_substitute({'Name': "TestGem"})
+    TEST_TEMPLATED_CONTENT_WITHOUT_LICENSE).safe_substitute({'SanitizedCppName': "TestGem"})
 
 TEST_CONCRETE_TESTGEM_TEMPLATE_CONTENT_WITH_LICENSE = string.Template(
-    TEST_TEMPLATED_CONTENT_WITH_LICENSE).safe_substitute({'Name': "TestGem"})
+    TEST_TEMPLATED_CONTENT_WITH_LICENSE).safe_substitute({'SanitizedCppName': "TestGem"})
 
 TEST_TEMPLATE_JSON_CONTENTS = """\
 {
@@ -262,6 +263,7 @@ class TestCreateTemplate:
             s.write(templated_contents)
 
         template_dest_path = engine_root / instantiated_name
+        # Skip registeration in test
         with patch('uuid.uuid4', return_value=uuid.uuid5(uuid.NAMESPACE_DNS, instantiated_name)) as uuid4_mock:
             result = create_from_template_func(template_dest_path, template_path=template_default_folder, force=True,
                                                           keep_license_text=keep_license_text, **create_from_template_kwargs)
@@ -344,7 +346,7 @@ class TestCreateTemplate:
         template_json_contents = json.dumps(template_json_dict, indent=4)
         self.instantiate_template_wrapper(tmpdir, engine_template.create_project, 'TestProject', concrete_contents,
                                           templated_contents, keep_license_text, force, expect_failure,
-                                          template_json_contents, template_file_map, project_name='TestProject')
+                                          template_json_contents, template_file_map, project_name='TestProject', no_register=True)
 
 
     @pytest.mark.parametrize(
@@ -378,6 +380,8 @@ class TestCreateTemplate:
                 "isTemplated": True,
                 "isOptional": False
             })
+        #Convert dict back to string
+        template_json_contents = json.dumps(template_json_dict, indent=4)
         self.instantiate_template_wrapper(tmpdir, engine_template.create_gem, 'TestGem', concrete_contents,
                                           templated_contents, keep_license_text, force, expect_failure,
-                                          template_json_contents, gem_name='TestGem')
+                                          template_json_contents, template_file_map, gem_name='TestGem', no_register=True)

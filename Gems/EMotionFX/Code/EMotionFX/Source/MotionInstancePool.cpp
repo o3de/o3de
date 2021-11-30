@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -19,9 +20,9 @@ namespace EMotionFX
 
     // constructor
     MotionInstancePool::SubPool::SubPool()
-        : mData(nullptr)
-        , mNumInstances(0)
-        , mNumInUse(0)
+        : m_data(nullptr)
+        , m_numInstances(0)
+        , m_numInUse(0)
     {
     }
 
@@ -29,8 +30,8 @@ namespace EMotionFX
     // destructor
     MotionInstancePool::SubPool::~SubPool()
     {
-        MCore::Free(mData);
-        mData = nullptr;
+        MCore::Free(m_data);
+        m_data = nullptr;
     }
 
 
@@ -41,39 +42,36 @@ namespace EMotionFX
     // constructor
     MotionInstancePool::Pool::Pool()
     {
-        mFreeList.SetMemoryCategory(EMFX_MEMCATEGORY_MOTIONINSTANCEPOOL);
-        mSubPools.SetMemoryCategory(EMFX_MEMCATEGORY_MOTIONINSTANCEPOOL);
-        mPoolType           = POOLTYPE_DYNAMIC;
-        mData               = nullptr;
-        mNumInstances       = 0;
-        mNumUsedInstances   = 0;
-        mSubPoolSize        = 0;
+        m_poolType           = POOLTYPE_DYNAMIC;
+        m_data               = nullptr;
+        m_numInstances       = 0;
+        m_numUsedInstances   = 0;
+        m_subPoolSize        = 0;
     }
 
 
     // destructor
     MotionInstancePool::Pool::~Pool()
     {
-        if (mPoolType == POOLTYPE_STATIC)
+        if (m_poolType == POOLTYPE_STATIC)
         {
-            MCore::Free(mData);
-            mData = nullptr;
-            mFreeList.Clear();
+            MCore::Free(m_data);
+            m_data = nullptr;
+            m_freeList.clear();
         }
         else
-        if (mPoolType == POOLTYPE_DYNAMIC)
+        if (m_poolType == POOLTYPE_DYNAMIC)
         {
-            MCORE_ASSERT(mData == nullptr);
+            MCORE_ASSERT(m_data == nullptr);
 
             // delete all subpools
-            const uint32 numSubPools = mSubPools.GetLength();
-            for (uint32 s = 0; s < numSubPools; ++s)
+            for (SubPool* subPool : m_subPools)
             {
-                delete mSubPools[s];
+                delete subPool;
             }
-            mSubPools.Clear();
+            m_subPools.clear();
 
-            mFreeList.Clear();
+            m_freeList.clear();
         }
         else
         {
@@ -91,19 +89,19 @@ namespace EMotionFX
     MotionInstancePool::MotionInstancePool()
         : BaseObject()
     {
-        mPool = nullptr;
+        m_pool = nullptr;
     }
 
 
     // destructor
     MotionInstancePool::~MotionInstancePool()
     {
-        if (mPool->mNumUsedInstances > 0)
+        if (m_pool->m_numUsedInstances > 0)
         {
-            MCore::LogError("EMotionFX::~MotionInstancePool() - There are still %d unfreed motion instances, please use the Free function in the MotionInstancePool to free them, just like you would delete the object.", mPool->mNumUsedInstances);
+            MCore::LogError("EMotionFX::~MotionInstancePool() - There are still %d unfreed motion instances, please use the Free function in the MotionInstancePool to free them, just like you would delete the object.", m_pool->m_numUsedInstances);
         }
 
-        delete mPool;
+        delete m_pool;
     }
 
 
@@ -115,9 +113,9 @@ namespace EMotionFX
 
 
     // init the motion instance pool
-    void MotionInstancePool::Init(uint32 numInitialInstances, EPoolType poolType, uint32 subPoolSize)
+    void MotionInstancePool::Init(size_t numInitialInstances, EPoolType poolType, size_t subPoolSize)
     {
-        if (mPool)
+        if (m_pool)
         {
             MCore::LogError("EMotionFX::MotionInstancePool::Init() - We have already initialized the pool, ignoring new init call.");
             return;
@@ -132,40 +130,40 @@ namespace EMotionFX
         }
 
         // create the subpool
-        mPool = new Pool();
-        mPool->mNumInstances    = numInitialInstances;
-        mPool->mPoolType        = poolType;
-        mPool->mSubPoolSize     = subPoolSize;
+        m_pool = new Pool();
+        m_pool->m_numInstances    = numInitialInstances;
+        m_pool->m_poolType        = poolType;
+        m_pool->m_subPoolSize     = subPoolSize;
 
         // if we have a static pool
         if (poolType == POOLTYPE_STATIC)
         {
-            mPool->mData    = (uint8*)MCore::Allocate(numInitialInstances * sizeof(MotionInstance), EMFX_MEMCATEGORY_MOTIONINSTANCEPOOL);// alloc space
-            mPool->mFreeList.ResizeFast(numInitialInstances);
-            for (uint32 i = 0; i < numInitialInstances; ++i)
+            m_pool->m_data    = (uint8*)MCore::Allocate(numInitialInstances * sizeof(MotionInstance), EMFX_MEMCATEGORY_MOTIONINSTANCEPOOL);// alloc space
+            m_pool->m_freeList.resize_no_construct(numInitialInstances);
+            for (size_t i = 0; i < numInitialInstances; ++i)
             {
-                void* memLocation = (void*)(mPool->mData + i * sizeof(MotionInstance));
-                mPool->mFreeList[i].mAddress = memLocation;
-                mPool->mFreeList[i].mSubPool = nullptr;
+                void* memLocation = (void*)(m_pool->m_data + i * sizeof(MotionInstance));
+                m_pool->m_freeList[i].m_address = memLocation;
+                m_pool->m_freeList[i].m_subPool = nullptr;
             }
         }
         else // if we have a dynamic pool
         if (poolType == POOLTYPE_DYNAMIC)
         {
-            mPool->mSubPools.Reserve(32);
+            m_pool->m_subPools.reserve(32);
 
             SubPool* subPool = new SubPool();
-            subPool->mData              = (uint8*)MCore::Allocate(numInitialInstances * sizeof(MotionInstance), EMFX_MEMCATEGORY_MOTIONINSTANCEPOOL);// alloc space
-            subPool->mNumInstances      = numInitialInstances;
+            subPool->m_data              = (uint8*)MCore::Allocate(numInitialInstances * sizeof(MotionInstance), EMFX_MEMCATEGORY_MOTIONINSTANCEPOOL);// alloc space
+            subPool->m_numInstances      = numInitialInstances;
 
-            mPool->mFreeList.ResizeFast(numInitialInstances);
-            for (uint32 i = 0; i < numInitialInstances; ++i)
+            m_pool->m_freeList.resize_no_construct(numInitialInstances);
+            for (size_t i = 0; i < numInitialInstances; ++i)
             {
-                mPool->mFreeList[i].mAddress = (void*)(subPool->mData + i * sizeof(MotionInstance));
-                mPool->mFreeList[i].mSubPool = subPool;
+                m_pool->m_freeList[i].m_address = (void*)(subPool->m_data + i * sizeof(MotionInstance));
+                m_pool->m_freeList[i].m_subPool = subPool;
             }
 
-            mPool->mSubPools.Add(subPool);
+            m_pool->m_subPools.emplace_back(subPool);
         }
         else
         {
@@ -178,69 +176,68 @@ namespace EMotionFX
     MotionInstance* MotionInstancePool::RequestNewWithoutLock(Motion* motion, ActorInstance* actorInstance)
     {
         // check if we already initialized
-        if (mPool == nullptr)
+        if (m_pool == nullptr)
         {
             MCore::LogWarning("EMotionFX::MotionInstancePool::RequestNew() - We have not yet initialized the pool, initializing it to a dynamic pool");
             Init();
         }
 
         // if there is are free items left
-        if (mPool->mFreeList.GetLength() > 0)
+        if (m_pool->m_freeList.size() > 0)
         {
-            const MemLocation& location = mPool->mFreeList.GetLast();
-            MotionInstance* result = MotionInstance::Create(location.mAddress, motion, actorInstance);
+            const MemLocation& location = m_pool->m_freeList.back();
+            MotionInstance* result = MotionInstance::Create(location.m_address, motion, actorInstance);
 
-            if (location.mSubPool)
+            if (location.m_subPool)
             {
-                location.mSubPool->mNumInUse++;
+                location.m_subPool->m_numInUse++;
             }
-            result->SetSubPool(location.mSubPool);
+            result->SetSubPool(location.m_subPool);
 
-            mPool->mFreeList.RemoveLast(); // remove it from the free list
-            mPool->mNumUsedInstances++;
+            m_pool->m_freeList.pop_back(); // remove it from the free list
+            m_pool->m_numUsedInstances++;
             return result;
         }
 
         // we have no more free attributes left
-        if (mPool->mPoolType == POOLTYPE_DYNAMIC) // we're dynamic, so we can just create new ones
+        if (m_pool->m_poolType == POOLTYPE_DYNAMIC) // we're dynamic, so we can just create new ones
         {
-            const uint32 numInstances = mPool->mSubPoolSize;
-            mPool->mNumInstances += numInstances;
+            const size_t numInstances = m_pool->m_subPoolSize;
+            m_pool->m_numInstances += numInstances;
 
             SubPool* subPool = new SubPool();
-            subPool->mData              = (uint8*)MCore::Allocate(numInstances * sizeof(MotionInstance), EMFX_MEMCATEGORY_MOTIONINSTANCEPOOL);// alloc space
-            subPool->mNumInstances      = numInstances;
+            subPool->m_data              = (uint8*)MCore::Allocate(numInstances * sizeof(MotionInstance), EMFX_MEMCATEGORY_MOTIONINSTANCEPOOL);// alloc space
+            subPool->m_numInstances      = numInstances;
 
-            const uint32 startIndex = mPool->mFreeList.GetLength();
-            //mPool->mFreeList.Reserve( numInstances * 2 );
-            if (mPool->mFreeList.GetMaxLength() < mPool->mNumInstances)
+            const size_t startIndex = m_pool->m_freeList.size();
+            if (m_pool->m_freeList.capacity() < m_pool->m_numInstances)
             {
-                mPool->mFreeList.Reserve(mPool->mNumInstances + mPool->mFreeList.GetMaxLength() / 2);
+                m_pool->m_freeList.reserve(m_pool->m_numInstances + m_pool->m_freeList.capacity() / 2);
             }
 
-            mPool->mFreeList.ResizeFast(startIndex + numInstances);
-            for (uint32 i = 0; i < numInstances; ++i)
+            m_pool->m_freeList.resize_no_construct(startIndex + numInstances);
+            for (size_t i = 0; i < numInstances; ++i)
             {
-                void* memAddress = (void*)(subPool->mData + i * sizeof(MotionInstance));
-                mPool->mFreeList[i + startIndex].mAddress = memAddress;
-                mPool->mFreeList[i + startIndex].mSubPool = subPool;
+                void* memAddress = (void*)(subPool->m_data + i * sizeof(MotionInstance));
+                m_pool->m_freeList[i + startIndex].m_address = memAddress;
+                m_pool->m_freeList[i + startIndex].m_subPool = subPool;
             }
 
-            mPool->mSubPools.Add(subPool);
+            m_pool->m_subPools.emplace_back(subPool);
 
-            const MemLocation& location = mPool->mFreeList.GetLast();
-            MotionInstance* result = MotionInstance::Create(location.mAddress, motion, actorInstance);
-            if (location.mSubPool)
+            const MemLocation& location = m_pool->m_freeList.back();
+            MotionInstance* result = MotionInstance::Create(location.m_address, motion, actorInstance);
+            if (location.m_subPool)
             {
-                location.mSubPool->mNumInUse++;
+                location.m_subPool->m_numInUse++;
             }
-            result->SetSubPool(location.mSubPool);
-            mPool->mFreeList.RemoveLast(); // remove it from the free list
-            mPool->mNumUsedInstances++;
+            result->SetSubPool(location.m_subPool);
+            m_pool->m_freeList.pop_back(); // remove it from the free list
+            m_pool->m_numUsedInstances++;
             return result;
         }
         else // we are static and ran out of free attributes
-        if (mPool->mPoolType == POOLTYPE_STATIC)
+        if (m_pool->m_poolType == POOLTYPE_STATIC)
         {
             MCore::LogError("EMotionFX::MotionInstancePool::RequestNew() - There are no free motion instance in the static pool. Please increase the size of the pool or make it dynamic when calling Init.");
             MCORE_ASSERT(false); // we ran out of free motion instances
@@ -262,7 +259,7 @@ namespace EMotionFX
             return;
         }
 
-        if (mPool == nullptr)
+        if (m_pool == nullptr)
         {
             MCore::LogWarning("EMotionFX::MotionInstancePool::Free() - The pool has not yet been initialized, please call Init first.");
             MCORE_ASSERT(false);
@@ -272,13 +269,13 @@ namespace EMotionFX
         // add it back to the free list
         if (motionInstance->GetSubPool())
         {
-            motionInstance->GetSubPool()->mNumInUse--;
+            motionInstance->GetSubPool()->m_numInUse--;
         }
 
-        mPool->mFreeList.AddEmpty();
-        mPool->mFreeList.GetLast().mAddress = motionInstance;
-        mPool->mFreeList.GetLast().mSubPool = motionInstance->GetSubPool();
-        mPool->mNumUsedInstances--;
+        m_pool->m_freeList.emplace_back();
+        m_pool->m_freeList.back().m_address = motionInstance;
+        m_pool->m_freeList.back().m_subPool = motionInstance->GetSubPool();
+        m_pool->m_numUsedInstances--;
 
         motionInstance->DecreaseReferenceCount();
         motionInstance->~MotionInstance(); // call the destructor
@@ -291,27 +288,27 @@ namespace EMotionFX
         Lock();
         MCore::LogInfo("EMotionFX::MotionInstancePool::LogMemoryStats() - Logging motion instance pool info");
 
-        const uint32 numFree    = mPool->mFreeList.GetLength();
-        uint32 numUsed          = mPool->mNumUsedInstances;
-        uint32 memUsage         = 0;
-        uint32 usedMemUsage     = 0;
-        uint32 totalMemUsage    = 0;
-        uint32 totalUsedInstancesMemUsage = 0;
+        const size_t numFree    = m_pool->m_freeList.size();
+        size_t numUsed          = m_pool->m_numUsedInstances;
+        size_t memUsage         = 0;
+        size_t usedMemUsage     = 0;
+        size_t totalMemUsage    = 0;
+        size_t totalUsedInstancesMemUsage = 0;
 
-        if (mPool->mPoolType == POOLTYPE_STATIC)
+        if (m_pool->m_poolType == POOLTYPE_STATIC)
         {
-            if (mPool->mNumInstances > 0)
+            if (m_pool->m_numInstances > 0)
             {
-                memUsage = mPool->mNumInstances * sizeof(MotionInstance);
+                memUsage = m_pool->m_numInstances * sizeof(MotionInstance);
                 usedMemUsage = numUsed * sizeof(MotionInstance);
             }
         }
         else
-        if (mPool->mPoolType == POOLTYPE_DYNAMIC)
+        if (m_pool->m_poolType == POOLTYPE_DYNAMIC)
         {
-            if (mPool->mNumInstances > 0)
+            if (m_pool->m_numInstances > 0)
             {
-                memUsage = mPool->mNumInstances * sizeof(MotionInstance);
+                memUsage = m_pool->m_numInstances * sizeof(MotionInstance);
                 usedMemUsage = numUsed * sizeof(MotionInstance);
             }
         }
@@ -319,17 +316,17 @@ namespace EMotionFX
         totalUsedInstancesMemUsage  += usedMemUsage;
         totalMemUsage += memUsage;
         totalMemUsage += sizeof(Pool);
-        totalMemUsage += mPool->mFreeList.CalcMemoryUsage(false);
+        totalMemUsage += m_pool->m_freeList.capacity() * sizeof(decltype(m_pool->m_freeList)::value_type);
 
         MCore::LogInfo("Pool:");
-        if (mPool->mPoolType == POOLTYPE_DYNAMIC)
+        if (m_pool->m_poolType == POOLTYPE_DYNAMIC)
         {
-            MCore::LogInfo("   - Num SubPools:          %d", mPool->mSubPools.GetLength());
+            MCore::LogInfo("   - Num SubPools:          %d", m_pool->m_subPools.size());
         }
-        MCore::LogInfo("   - Num Instances:         %d", mPool->mNumInstances);
+        MCore::LogInfo("   - Num Instances:         %d", m_pool->m_numInstances);
         MCore::LogInfo("   - Num Free:              %d", numFree);
         MCore::LogInfo("   - Num Used:              %d", numUsed);
-        MCore::LogInfo("   - PoolType:              %s", (mPool->mPoolType == POOLTYPE_STATIC) ? "Static" : "Dynamic");
+        MCore::LogInfo("   - PoolType:              %s", (m_pool->m_poolType == POOLTYPE_STATIC) ? "Static" : "Dynamic");
         MCore::LogInfo("   - Total Instances Mem:   %d bytes (%d k)", memUsage, memUsage / 1000);
         MCore::LogInfo("   - Used Instances Mem:    %d (%d k)", totalUsedInstancesMemUsage, totalUsedInstancesMemUsage / 1000);
         MCore::LogInfo("   - Total Mem Usage:       %d (%d k)", totalMemUsage, totalMemUsage / 1000);
@@ -360,14 +357,14 @@ namespace EMotionFX
     // wait with execution until we can set the lock
     void MotionInstancePool::Lock()
     {
-        mLock.Lock();
+        m_lock.Lock();
     }
 
 
     // release the lock again
     void MotionInstancePool::Unlock()
     {
-        mLock.Unlock();
+        m_lock.Unlock();
     }
 
 
@@ -376,26 +373,26 @@ namespace EMotionFX
     {
         Lock();
 
-        for (uint32 i = 0; i < mPool->mSubPools.GetLength(); )
+        for (size_t i = 0; i < m_pool->m_subPools.size(); )
         {
-            SubPool* subPool = mPool->mSubPools[i];
-            if (subPool->mNumInUse == 0)
+            SubPool* subPool = m_pool->m_subPools[i];
+            if (subPool->m_numInUse == 0)
             {
                 // remove all free allocations
-                for (uint32 a = 0; a < mPool->mFreeList.GetLength(); )
+                for (size_t a = 0; a < m_pool->m_freeList.size(); )
                 {
-                    if (mPool->mFreeList[a].mSubPool == subPool)
+                    if (m_pool->m_freeList[a].m_subPool == subPool)
                     {
-                        mPool->mFreeList.Remove(a);
+                        m_pool->m_freeList.erase(AZStd::next(begin(m_pool->m_freeList), a));
                     }
                     else
                     {
                         ++a;
                     }
                 }
-                mPool->mNumInstances -= subPool->mNumInstances;
+                m_pool->m_numInstances -= subPool->m_numInstances;
 
-                mPool->mSubPools.Remove(i);
+                m_pool->m_subPools.erase(AZStd::next(begin(m_pool->m_subPools), i));
                 delete subPool;
             }
             else
@@ -404,11 +401,10 @@ namespace EMotionFX
             }
         }
 
-        mPool->mSubPools.Shrink();
-        //mPool->mFreeList.Shrink();
-        if ((mPool->mFreeList.GetMaxLength() - mPool->mFreeList.GetLength()) > 4096)
+        m_pool->m_subPools.shrink_to_fit();
+        if ((m_pool->m_freeList.capacity() - m_pool->m_freeList.size()) > 4096)
         {
-            mPool->mFreeList.ReserveExact(mPool->mFreeList.GetLength() + 4096);
+            m_pool->m_freeList.reserve(m_pool->m_freeList.size() + 4096);
         }
 
         Unlock();

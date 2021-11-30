@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -78,7 +79,7 @@ namespace EMotionFX
     {
         // check the enabled state
         bool isEnabled = true;
-        if (mInputPorts[INPUTPORT_ENABLED].mConnection)
+        if (m_inputPorts[INPUTPORT_ENABLED].m_connection)
         {
             isEnabled = GetInputNumberAsBool(animGraphInstance, INPUTPORT_ENABLED);
         }
@@ -106,7 +107,7 @@ namespace EMotionFX
         uniqueData->Init(animGraphInstance, sourceNode);
 
         // apply mirroring to the sync track
-        if (GetIsMirroringEnabled(animGraphInstance) && !mDisabled)
+        if (GetIsMirroringEnabled(animGraphInstance) && !m_disabled)
         {
             EMotionFX::AnimGraphNodeData* sourceNodeData = sourceNode->FindOrCreateUniqueNodeData(animGraphInstance);
             uniqueData->SetSyncTrack(sourceNodeData->GetSyncTrack());
@@ -118,7 +119,7 @@ namespace EMotionFX
     // perform the calculations / actions
     void BlendTreeMirrorPoseNode::Output(AnimGraphInstance* animGraphInstance)
     {
-        if (mInputPorts[INPUTPORT_POSE].mConnection == nullptr)
+        if (m_inputPorts[INPUTPORT_POSE].m_connection == nullptr)
         {
             // get the output pose
             RequestPoses(animGraphInstance);
@@ -128,7 +129,7 @@ namespace EMotionFX
         }
 
         // if we're disabled just forward the input pose
-        if (mDisabled)
+        if (m_disabled)
         {
             OutputIncomingNode(animGraphInstance, GetInputNode(INPUTPORT_POSE));
             const AnimGraphPose* inputPose = GetInputPose(animGraphInstance, INPUTPORT_POSE)->GetValue();
@@ -163,20 +164,20 @@ namespace EMotionFX
             Transform outputTransform;
 
             // for all enabled nodes
-            const uint32 numNodes = actorInstance->GetNumEnabledNodes();
-            for (uint32 i = 0; i < numNodes; ++i)
+            const size_t numNodes = actorInstance->GetNumEnabledNodes();
+            for (size_t i = 0; i < numNodes; ++i)
             {
                 // get the node index that we sample the motion data from
-                const uint32 nodeIndex = actorInstance->GetEnabledNode(i);
+                const uint16 nodeIndex = actorInstance->GetEnabledNode(i);
                 const Actor::NodeMirrorInfo& mirrorInfo = actor->GetNodeMirrorInfo(nodeIndex);
 
                 // build the mirror plane normal, based on the mirror axis for this node
                 AZ::Vector3 mirrorPlaneNormal(0.0f, 0.0f, 0.0f);
-                mirrorPlaneNormal.SetElement(mirrorInfo.mAxis, 1.0f);
+                mirrorPlaneNormal.SetElement(mirrorInfo.m_axis, 1.0f);
 
                 // apply the mirrored delta to the bind pose of the current node
                 outputTransform = bindPose->GetLocalSpaceTransform(nodeIndex);
-                outputTransform.ApplyDeltaMirrored(bindPose->GetLocalSpaceTransform(mirrorInfo.mSourceNode), inPose.GetLocalSpaceTransform(mirrorInfo.mSourceNode), mirrorPlaneNormal, mirrorInfo.mFlags);
+                outputTransform.ApplyDeltaMirrored(bindPose->GetLocalSpaceTransform(mirrorInfo.m_sourceNode), inPose.GetLocalSpaceTransform(mirrorInfo.m_sourceNode), mirrorPlaneNormal, mirrorInfo.m_flags);
 
                 // update the pose with the new transform
                 outPose.SetLocalSpaceTransform(nodeIndex, outputTransform);
@@ -186,7 +187,7 @@ namespace EMotionFX
         // visualize it
         if (GetEMotionFX().GetIsInEditorMode() && GetCanVisualize(animGraphInstance))
         {
-            animGraphInstance->GetActorInstance()->DrawSkeleton(outputPose->GetPose(), mVisualizeColor);
+            animGraphInstance->GetActorInstance()->DrawSkeleton(outputPose->GetPose(), m_visualizeColor);
         }
     }
 
@@ -195,7 +196,7 @@ namespace EMotionFX
     void BlendTreeMirrorPoseNode::PostUpdate(AnimGraphInstance* animGraphInstance, float timePassedInSeconds)
     {
         // check if we have three incoming connections, if not, we can't really continue
-        if (mConnections.size() == 0 || mInputPorts[INPUTPORT_POSE].mConnection == nullptr)
+        if (m_connections.size() == 0 || m_inputPorts[INPUTPORT_POSE].m_connection == nullptr)
         {
             RequestRefDatas(animGraphInstance);
             AnimGraphNodeData* uniqueData = FindOrCreateUniqueNodeData(animGraphInstance);
@@ -215,7 +216,7 @@ namespace EMotionFX
 
         AnimGraphRefCountedData* sourceData = inputNode->FindOrCreateUniqueNodeData(animGraphInstance)->GetRefCountedData();
         data->SetEventBuffer(sourceData->GetEventBuffer());
-        if (GetIsMirroringEnabled(animGraphInstance) && mDisabled == false)
+        if (GetIsMirroringEnabled(animGraphInstance) && m_disabled == false)
         {
             data->SetTrajectoryDelta(sourceData->GetTrajectoryDeltaMirrored());
             data->SetTrajectoryDeltaMirrored(sourceData->GetTrajectoryDelta());

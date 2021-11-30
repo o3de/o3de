@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -8,7 +9,6 @@
 #define GM_CARRIER_H
 
 #include <GridMate/Types.h>
-#include <GridMate/String/string.h>
 #include <GridMate/EBus.h>
 #include <GridMate/Carrier/Compressor.h>
 #include <GridMate/Carrier/Driver.h>
@@ -87,7 +87,7 @@ namespace GridMate
         /// Connect with host and port. This is ASync operation, the connection is active after OnConnectionEstablished is called.
         virtual ConnectionID    Connect(const char* hostAddress, unsigned int port) = 0;
         /// Connect with internal address format. This is ASync operation, the connection is active after OnConnectionEstablished is called.
-        virtual ConnectionID    Connect(const string& address) = 0;
+        virtual ConnectionID    Connect(const AZStd::string& address) = 0;
         /// Request a disconnect procedure. This is ASync operation, the connection is closed after OnDisconnect is called.
         virtual void            Disconnect(ConnectionID id) = 0;
 
@@ -99,7 +99,7 @@ namespace GridMate
         /// Returns maximum message size (with splitting or without). Splitting will make your message reliable, which might not be optimal for Unreliable messages. It's better to send two unreliable.
         //virtual unsigned int  GetMaxMessageSize(bool withSplitting = true) = 0;
 
-        virtual string          ConnectionToAddress(ConnectionID id) = 0;
+        virtual AZStd::string   ConnectionToAddress(ConnectionID id) = 0;
 
         /**
         * Sends buffer with an ACK callback. When the transport layer recieves an ACK it will run the callback.
@@ -400,7 +400,7 @@ namespace GridMate
     public:
         virtual ~CarrierEventsBase() {}
 
-        string ReasonToString(CarrierDisconnectReason reason);
+        AZStd::string ReasonToString(CarrierDisconnectReason reason);
     };
 
     class CarrierEvents
@@ -516,7 +516,7 @@ namespace GridMate
             // Traffic control
 
             /// Called every second when you update last second statistics
-            virtual void OnUpdateStatistics(const GridMate::string& address, const TrafficControl::Statistics& lastSecond, const TrafficControl::Statistics& lifeTime, const TrafficControl::Statistics& effectiveLastSecond, const TrafficControl::Statistics& effectiveLifeTime) = 0;
+            virtual void OnUpdateStatistics(const AZStd::string& address, const TrafficControl::Statistics& lastSecond, const TrafficControl::Statistics& lifeTime, const TrafficControl::Statistics& effectiveLastSecond, const TrafficControl::Statistics& effectiveLifeTime) = 0;
 
             // Simulator
             /// Enable/Disable

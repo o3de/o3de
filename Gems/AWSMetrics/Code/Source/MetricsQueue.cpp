@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -13,8 +14,8 @@
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/Serialization/Json/JsonSerialization.h>
+#include <AzCore/Serialization/Json/JsonUtils.h>
 #include <AzCore/std/sort.h>
-#include <AzFramework/FileFunc/FileFunc.h>
 
 #include <sstream>
 
@@ -133,7 +134,7 @@ namespace AWSMetrics
 
     int MetricsQueue::GetNumMetrics() const
     {
-        return m_metrics.size();
+        return static_cast<int>(m_metrics.size());
     }
 
     size_t MetricsQueue::GetSizeInBytes() const
@@ -174,7 +175,7 @@ namespace AWSMetrics
             MetricsEvent& curEvent = m_metrics.front();
 
             curNum += 1;
-            curSizeInBytes += curEvent.GetSizeInBytes();
+            curSizeInBytes += static_cast<int>(curEvent.GetSizeInBytes());
             if (curNum <= maxBatchedRecordsCount && curSizeInBytes <= maxPayloadSizeInBytes)
             {
                 m_sizeSerializedToJson -= curEvent.GetSizeInBytes();
@@ -190,15 +191,7 @@ namespace AWSMetrics
 
     bool MetricsQueue::ReadFromJson(const AZStd::string& filePath)
     {
-        AZ::IO::FileIOBase* fileIO = AZ::IO::FileIOBase::GetDirectInstance();
-        if (!fileIO)
-        {
-            AZ_Error("AWSMetrics", false, "Failed to get file IO instance");
-            return false;
-        }
-
-        AZ::IO::Path fileIoPath(filePath);
-        auto result = AzFramework::FileFunc::ReadJsonFile(fileIoPath, fileIO);
+        auto result = AZ::JsonSerializationUtils::ReadJsonFile(filePath);
         if (!result.IsSuccess() ||!ReadFromJsonDocument(result.GetValue()))
         {
             AZ_Error("AWSMetrics", false, "Failed to read metrics file %s", filePath.c_str());
@@ -215,7 +208,7 @@ namespace AWSMetrics
             return false;
         }
 
-        for (int metricsIndex = 0; metricsIndex < doc.Size(); metricsIndex++)
+        for (rapidjson::SizeType metricsIndex = 0; metricsIndex < doc.Size(); metricsIndex++)
         {
             MetricsEvent metrics;
             if (!metrics.ReadFromJson(doc[metricsIndex]))

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -40,7 +41,7 @@ namespace ScriptCanvasEditor
                 azrtti_typeid<ScriptCanvasAsset>(),
                 "Script Canvas",
                 "Script Canvas Graph Asset",
-                "@devassets@/scriptcanvas",
+                "@projectroot@/scriptcanvas",
                 ".scriptcanvas",
                 "Script Canvas",
                 "Untitled-%i",
@@ -80,8 +81,8 @@ namespace ScriptCanvasEditor
         ScriptCanvas::Graph* GetScriptCanvasGraph() const;
         using Description = ScriptCanvasAssetDescription;
 
-        ScriptCanvas::ScriptCanvasData& GetScriptCanvasData();
-        const ScriptCanvas::ScriptCanvasData& GetScriptCanvasData() const;
+        ScriptCanvas::ScriptCanvasData& GetScriptCanvasData() override;
+        const ScriptCanvas::ScriptCanvasData& GetScriptCanvasData() const override;
 
     };
 }

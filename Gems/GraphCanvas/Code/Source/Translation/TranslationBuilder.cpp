@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -10,8 +11,6 @@
 
 namespace GraphCanvas
 {
-    constexpr const char* s_graphCanvasTranslationBuilderName = "GraphCanvasTranslationBuilder";
-
     AZ::Uuid TranslationAssetWorker::GetUUID()
     {
         return AZ::Uuid::CreateString("{459EF910-CAAF-465A-BA19-C91979DA5729}");
@@ -41,10 +40,14 @@ namespace GraphCanvas
         {
             AZ::Data::AssetManager::Instance().RegisterHandler(m_assetHandler.get(), assetType);
         }
+
+        AssetBuilderSDK::AssetBuilderCommandBus::Handler::BusConnect(GetUUID());
     }
 
     void TranslationAssetWorker::Deactivate()
     {
+        AssetBuilderSDK::AssetBuilderCommandBus::Handler::BusDisconnect();
+
         if (AZ::Data::AssetManager::Instance().GetHandler(AZ::Data::AssetType{ azrtti_typeid<TranslationAsset>() }))
         {
             AZ::Data::AssetManager::Instance().UnregisterHandler(m_assetHandler.get());

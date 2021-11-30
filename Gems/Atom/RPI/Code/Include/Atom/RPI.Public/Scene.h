@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -28,6 +29,7 @@
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/Script/ScriptTimePoint.h>
+#include <AzCore/Task/TaskGraph.h>
 
 #include <AzFramework/Scene/Scene.h>
 #include <AzFramework/Scene/SceneSystemInterface.h>
@@ -45,14 +47,6 @@ namespace AZ
 
         // Callback function to modify values of a ShaderResourceGroup
         using ShaderResourceGroupCallback = AZStd::function<void(ShaderResourceGroup*)>;
-
-        //! A structure for ticks which contains system time and game time.
-        struct TickTimeInfo
-        {
-            float m_currentGameTime;
-            float m_gameDeltaTime = 0;
-        };
-
 
         class Scene final
             : public SceneRequestBus::Handler
@@ -78,6 +72,9 @@ namespace AZ
             //! Gets the RPI::Scene for a given entityContextId.
             //! May return nullptr if there is no RPI::Scene created for that entityContext.
             static Scene* GetSceneForEntityContextId(AzFramework::EntityContextId entityContextId);
+            
+            //! Gets the RPI::Scene for a given entityId.
+            static Scene* GetSceneForEntityId(AZ::EntityId entityId);
 
             ~Scene();
 
@@ -128,14 +125,12 @@ namespace AZ
 
             void RemoveRenderPipeline(const RenderPipelineId& pipelineId);
 
-            //! Set a callback function to set values for scene's srg.
-            //! The callback function is usually defined by the one who create the scene since it knows how the layout look like.
-            void SetShaderResourceGroupCallback(ShaderResourceGroupCallback callback);
-
             const RHI::ShaderResourceGroup* GetRHIShaderResourceGroup() const;
             Data::Instance<ShaderResourceGroup> GetShaderResourceGroup() const;
 
             const SceneId& GetId() const;
+
+            AZ::Name GetName() const;
 
             //! Set default pipeline by render pipeline ID.
             //! It returns true if the default render pipeline was set from the input ID.
@@ -165,24 +160,30 @@ namespace AZ
 
             RenderPipelinePtr FindRenderPipelineForWindow(AzFramework::NativeWindowHandle windowHandle);
 
+            using PrepareSceneSrgEvent = AZ::Event<RPI::ShaderResourceGroup*>;
+            //! Connect a handler to listen to the event that the Scene is ready to update and compile its scene srg
+            //! User should use this event to update the part scene srg they know of
+            void ConnectEvent(PrepareSceneSrgEvent::Handler& handler);
+
         protected:
             // SceneFinder overrides...
-            Scene* FindSelf();
             void OnSceneNotifictaionHandlerConnected(SceneNotification* handler);
                         
             // Cpu simulation which runs all active FeatureProcessor Simulate() functions.
             // @param jobPolicy if it's JobPolicy::Parallel, the function will spawn a job thread for each FeatureProcessor's simulation.
-            void Simulate(const TickTimeInfo& tickInfo, RHI::JobPolicy jobPolicy);
+            // @param simulationTime the number of seconds since the application started
+            void Simulate(RHI::JobPolicy jobPolicy, float simulationTime);
 
             // Collect DrawPackets from FeatureProcessors
             // @param jobPolicy if it's JobPolicy::Parallel, the function will spawn a job thread for each FeatureProcessor's
             // PrepareRender.
-            void PrepareRender(const TickTimeInfo& tickInfo, RHI::JobPolicy jobPolicy);
+            // @param simulationTime the number of seconds since the application started; this is the same time value that was passed to Simulate()
+            void PrepareRender(RHI::JobPolicy jobPolicy, float simulationTime);
 
             // Function called when the current frame is finished rendering.
             void OnFrameEnd();
 
-            // Update and compile view srgs
+            // Update and compile scene and view srgs
             // This is called after PassSystem's FramePrepare so passes can still modify view srgs in its FramePrepareIntenal function before they are submitted to command list
             void UpdateSrgs();
 
@@ -193,17 +194,38 @@ namespace AZ
             // This function is called every time scene's render pipelines change.
             void RebuildPipelineStatesLookup();
 
+            // Helper function to wait for end of TaskGraph
+            void WaitTGEvent(AZ::TaskGraphEvent& completionTGEvent, AZStd::atomic_bool* workToWaitOn = nullptr);
+
             // Helper function for wait and clean up a completion job
             void WaitAndCleanCompletionJob(AZ::JobCompletion*& completionJob);
 
             // Add a created feature processor to this scene
             void AddFeatureProcessor(FeatureProcessorPtr fp);
 
+            // Send out event to PrepareSceneSrgEvent::Handlers so they can update scene srg as needed
+            // This happens in UpdateSrgs()
+            void PrepareSceneSrg();
+
+            // Implementation functions that allow scene to switch between using Jobs or TaskGraphs
+            void SimulateTaskGraph();
+            void SimulateJobs();
+
+            void CollectDrawPacketsTaskGraph();
+            void CollectDrawPacketsJobs();
+
+            void FinalizeDrawListsTaskGraph();
+            void FinalizeDrawListsJobs();
+
             // List of feature processors that are active for this scene
             AZStd::vector<FeatureProcessorPtr> m_featureProcessors;
 
             // List of pipelines of this scene. Each pipeline has an unique pipeline Id.
             AZStd::vector<RenderPipelinePtr> m_pipelines;
+
+            // CPU simulation TaskGraphEvent to wait for completion of all the simulation tasks
+            AZ::TaskGraphEvent m_simulationFinishedTGEvent;
+            AZStd::atomic_bool m_simulationFinishedWorkActive = false;
 
             // CPU simulation job completion for track all feature processors' simulation jobs
             AZ::JobCompletion* m_simulationCompletion = nullptr;
@@ -214,14 +236,19 @@ namespace AZ
             AZ::RPI::FeatureProcessor::SimulatePacket m_simulatePacket;
             AZ::RPI::FeatureProcessor::RenderPacket m_renderPacket;
 
-            // Scene's srg and its set function
+            // Scene's srg
             Data::Instance<ShaderResourceGroup> m_srg;
-            ShaderResourceGroupCallback m_srgCallback;
+            // Event to for prepare scene srg
+            PrepareSceneSrgEvent m_prepareSrgEvent;
 
             // The uuid to identify this scene.
             SceneId m_id;
 
+            // Scene's name which is set at initialization. Can be empty
+            AZ::Name m_name;
+
             bool m_activated = false;
+            bool m_taskGraphActive = false; // update during tick, to ensure it only changes on frame boundaries
 
             RenderPipelinePtr m_defaultPipeline;
 
@@ -233,6 +260,9 @@ namespace AZ
 
             // Registry which allocates draw filter tag for RenderPipeline
             RHI::Ptr<RHI::DrawFilterTagRegistry> m_drawFilterTagRegistry;
+
+            RHI::ShaderInputConstantIndex m_timeInputIndex;
+            float m_simulationTime;
         };
 
         // --- Template functions ---
@@ -259,13 +289,10 @@ namespace AZ
         template<typename FeatureProcessorType>
         FeatureProcessorType* Scene::GetFeatureProcessorForEntity(AZ::EntityId entityId)
         {
-            // Find the entity context for the entity ID.
-            AzFramework::EntityContextId entityContextId = AzFramework::EntityContextId::CreateNull();
-            AzFramework::EntityIdContextQueryBus::EventResult(entityContextId, entityId, &AzFramework::EntityIdContextQueryBus::Events::GetOwningContextId);
-
-            if (!entityContextId.IsNull())
+            RPI::Scene* renderScene = GetSceneForEntityId(entityId);            
+            if (renderScene)
             {
-                return GetFeatureProcessorForEntityContextId<FeatureProcessorType>(entityContextId);
+                return renderScene->GetFeatureProcessor<FeatureProcessorType>();
             }
             return nullptr;
         };

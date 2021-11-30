@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -9,6 +10,7 @@
 #include <AzCore/Math/MathUtils.h>
 #include <AzCore/Serialization/SerializeContext.h>
 
+#include <Atom/RPI.Public/Pass/PassFilter.h>
 #include <Atom/RPI.Public/Pass/PassSystemInterface.h>
 #include <Atom/RPI.Public/RenderPipeline.h>
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
@@ -187,21 +189,21 @@ namespace AZ
 
         void ExposureControlSettings::UpdateLuminanceHeatmap()
         {
-            auto* passSystem = AZ::RPI::PassSystemInterface::Get();
-
             // [GFX-TODO][ATOM-13194] Support multiple views for the luminance heatmap
-            // [GFX-TODO][ATOM-13224] Remove UpdateLuminanceHeatmap and UpdateEyeAdaptationPass
-            const RPI::Ptr<RPI::Pass> luminanceHeatmap = passSystem->GetRootPass()->FindPassByNameRecursive(m_luminanceHeatmapNameId);
-            if (luminanceHeatmap)
-            {
-                luminanceHeatmap->SetEnabled(m_heatmapEnabled);
-            }
+            // [GFX-TODO][ATOM-13224] Remove UpdateLuminanceHeatmap and UpdateEyeAdaptationPass            
+            RPI::PassFilter heatmapPassFilter = RPI::PassFilter::CreateWithPassName(m_luminanceHeatmapNameId, GetParentScene());
+            RPI::PassSystemInterface::Get()->ForEachPass(heatmapPassFilter, [this](RPI::Pass* pass) -> RPI::PassFilterExecutionFlow
+                {
+                    pass->SetEnabled(m_heatmapEnabled);
+                    return RPI::PassFilterExecutionFlow::ContinueVisitingPasses;
+                });
 
-            const RPI::Ptr<RPI::Pass> histogramGenerator = passSystem->GetRootPass()->FindPassByNameRecursive(m_luminanceHistogramGeneratorNameId);
-            if (histogramGenerator)
-            {
-                histogramGenerator->SetEnabled(m_heatmapEnabled);
-            }
+            RPI::PassFilter histogramPassFilter = RPI::PassFilter::CreateWithPassName(m_luminanceHistogramGeneratorNameId, GetParentScene());
+            RPI::PassSystemInterface::Get()->ForEachPass(histogramPassFilter, [this](RPI::Pass* pass) -> RPI::PassFilterExecutionFlow
+                {
+                    pass->SetEnabled(m_heatmapEnabled);
+                    return RPI::PassFilterExecutionFlow::ContinueVisitingPasses;
+                });
         }
 
         void ExposureControlSettings::UpdateBuffer()

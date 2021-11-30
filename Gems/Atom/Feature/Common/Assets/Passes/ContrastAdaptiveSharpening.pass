@@ -58,7 +58,7 @@
             "PassData": {
                 "$type": "ComputePassData",
                 "ShaderAsset": {
-                    "FilePath": "Shaders/Postprocessing/ContrastAdaptiveSharpening.shader"
+                    "FilePath": "Shaders/PostProcessing/ContrastAdaptiveSharpening.shader"
                 },
                 "Make Fullscreen Pass": true,
                 "ShaderDataMappings": {

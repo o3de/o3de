@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -559,7 +560,6 @@ namespace JsonSerializationTests
     {
         using namespace AZ::JsonSerializationResult;
 
-        TemplatedClass<int> instance;
         ResultCode result = AZ::JsonSerialization::Store(*m_jsonDocument, m_jsonDocument->GetAllocator(),
             nullptr, nullptr, azrtti_typeid<int>(), *m_serializationSettings);
 

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -38,6 +39,7 @@ namespace AzToolsFramework
         void FolderAssetBrowserEntry::UpdateChildPaths(AssetBrowserEntry* child) const
         {
             child->m_relativePath = m_relativePath / child->m_name;
+            child->m_displayPath = QString::fromUtf8(child->m_relativePath.c_str());
             child->m_fullPath = m_fullPath / child->m_name;
             AssetBrowserEntry::UpdateChildPaths(child);
         }

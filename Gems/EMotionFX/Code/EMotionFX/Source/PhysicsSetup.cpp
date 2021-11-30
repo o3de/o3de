@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -495,7 +496,7 @@ namespace EMotionFX
             : Transform::CreateIdentity();
 
         // if there are child nodes, point the bone direction to the average of their positions
-        const uint32 numChildNodes = node->GetNumChildNodes();
+        const size_t numChildNodes = node->GetNumChildNodes();
         if (numChildNodes > 0)
         {
             AZ::Vector3 meanChildPosition = AZ::Vector3::CreateZero();
@@ -503,21 +504,21 @@ namespace EMotionFX
             // weight by the number of descendants of each child node, so that things like jiggle bones and twist bones
             // have little influence on the bone direction.
             float totalSubChildren = 0.0f;
-            for (uint32 childNumber = 0; childNumber < numChildNodes; childNumber++)
+            for (size_t childNumber = 0; childNumber < numChildNodes; childNumber++)
             {
-                const uint32 childIndex = node->GetChildIndex(childNumber);
+                const size_t childIndex = node->GetChildIndex(childNumber);
                 const Node* childNode = skeleton->GetNode(childIndex);
                 const float numSubChildren = static_cast<float>(1 + childNode->GetNumChildNodesRecursive());
                 totalSubChildren += numSubChildren;
-                meanChildPosition += numSubChildren * (bindPose->GetModelSpaceTransform(childIndex).mPosition);
+                meanChildPosition += numSubChildren * (bindPose->GetModelSpaceTransform(childIndex).m_position);
             }
 
-            boneDirection = meanChildPosition / totalSubChildren - nodeBindTransform.mPosition;
+            boneDirection = meanChildPosition / totalSubChildren - nodeBindTransform.m_position;
         }
         // otherwise, point the bone direction away from the parent
         else
         {
-            boneDirection = nodeBindTransform.mPosition - parentBindTransform.mPosition;
+            boneDirection = nodeBindTransform.m_position - parentBindTransform.m_position;
         }
 
         return boneDirection;

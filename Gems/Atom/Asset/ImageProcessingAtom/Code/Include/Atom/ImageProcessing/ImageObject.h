@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -69,7 +70,6 @@ namespace ImageProcessingAtom
         virtual AZ::u32 GetPixelCount(AZ::u32 mip) const = 0;
         virtual AZ::u32 GetWidth(AZ::u32 mip) const = 0;
         virtual AZ::u32 GetHeight(AZ::u32 mip) const = 0;
-        virtual bool IsCubemap() const = 0;
         virtual AZ::u32 GetMipCount() const = 0;
 
         //get pixel data buffer
@@ -100,13 +100,6 @@ namespace ImageProcessingAtom
         //compare whether two images are same. return true if they are same.
         virtual bool CompareImage(const IImageObjectPtr otherImage) const = 0;
 
-        // Writes this image to file used for runtime, overwrites any existing file.
-        // It may write alpha image as attached image into the same file
-        // outFilePaths will save filenames finally saved to since the image might be split and saved to multiple files
-        virtual bool SaveImage(const char* filename, IImageObjectPtr alphaImage, AZStd::vector<AZStd::string>& outFilePaths) const = 0;
-        virtual bool SaveImage(AZ::IO::SystemFileStream& out) const = 0;
-        virtual bool SaveMipToFile(AZ::u32 mip, const AZStd::string& filename) const = 0;
-
         //get total image data size in memory of all mipmaps. Not includs header and flags.
         virtual AZ::u32 GetTextureMemory() const = 0;
 
@@ -134,9 +127,6 @@ namespace ImageProcessingAtom
         // The derived roughness is combined with the artist authored roughness stored in the alpha channel of the normal map.
         // The algorithm is based on the Frequency Domain Normal Mapping implementation presented by Neubelt and Pettineo at Siggraph 2013.
         virtual void GlossFromNormals(bool hasAuthoredGloss) = 0;
-
-        //convert gloss map from legacy distribution to new one. New World is still using legacy gloss map.
-        virtual void ConvertLegacyGloss() = 0;
 
         //clear image with color
         virtual void ClearColor(float r, float g, float b, float a) = 0;

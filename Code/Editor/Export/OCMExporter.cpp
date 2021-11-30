@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -214,7 +215,7 @@ bool COCMExporter::ExportToFile(const char* filename, const Export::IData* pExpo
     for (size_t a = 0; a < MeshCount; a++)
     {
         SOCMeshInfo MeshInfo;
-        MeshInfo.m_MeshHash =    pExportData->GetObject(a)->MeshHash();
+        MeshInfo.m_MeshHash =    pExportData->GetObject(static_cast<int>(a))->MeshHash();
         const tdMeshOffset::iterator it =   std::find(MeshOffsets.begin(), MeshOffsets.end(), MeshInfo);
         if (it != MeshOffsets.end())
         {
@@ -222,15 +223,15 @@ bool COCMExporter::ExportToFile(const char* filename, const Export::IData* pExpo
         }
         else
         {
-            MeshInfo.m_Offset   =   Offset;
-            Offset += SaveMesh(Writer, pExportData->GetObject(a), MeshInfo.m_OBBMat);
+            MeshInfo.m_Offset   = static_cast<uint32>(Offset);
+            Offset += SaveMesh(Writer, pExportData->GetObject(static_cast<int>(a)), MeshInfo.m_OBBMat);
         }
         MeshOffsets.push_back(MeshInfo);
     }
-    OffsetInstances =   Offset;
+    OffsetInstances =   static_cast<uint32>(Offset);
     for (size_t a = 0; a < InstCount; a++)
     {
-        SaveInstance(Writer, pExportData->GetObject(a), MeshOffsets[a]);
+        SaveInstance(Writer, pExportData->GetObject(static_cast<int>(a)), MeshOffsets[a]);
     }
     Writer.Seek(4);
     Writer.Write(static_cast<uint32>(MeshOffsets.size()));
@@ -262,7 +263,7 @@ const char* COCMExporter::TrimFloat(float fValue) const
     ++nCurBuf;
     sprintf_s(pBuf, bufSize, "%f", fValue);
 
-    for (int i = strlen(pBuf) - 1; i > 0; --i)
+    for (int i = static_cast<int>(strlen(pBuf)) - 1; i > 0; --i)
     {
         if (pBuf[i] == '0')
         {

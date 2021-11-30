@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -714,12 +715,7 @@ void AssetProcessingStateDataUnitTest::DataTest(AssetProcessor::AssetDatabaseCon
 
     //try retrieving this source by id
     UNIT_TEST_EXPECT_TRUE(stateData->GetJobByJobID(job.m_jobID, job));
-    if (job.m_jobID == AzToolsFramework::AssetDatabase::InvalidEntryId ||
-        job.m_jobID != job.m_jobID ||
-        job.m_sourcePK != job.m_sourcePK ||
-        job.m_jobKey != job.m_jobKey ||
-        job.m_fingerprint != job.m_fingerprint ||
-        job.m_platform != job.m_platform)
+    if (job.m_jobID == AzToolsFramework::AssetDatabase::InvalidEntryId)
     {
         Q_EMIT UnitTestFailed("AssetProcessingStateDataTest Failed - GetJobByJobID failed");
         return;

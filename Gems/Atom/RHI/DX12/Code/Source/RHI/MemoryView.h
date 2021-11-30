@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -75,6 +76,9 @@ namespace AZ
 
             /// Sets the name of the ID3D12Resource.
             void SetName(const AZStd::string_view& name);
+
+            /// Sets the name of the ID3D12Resource.
+            void SetName(const AZStd::wstring_view& name);
 
         private:
             void Construct();

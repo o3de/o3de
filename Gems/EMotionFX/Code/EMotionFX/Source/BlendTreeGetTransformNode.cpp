@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -32,15 +33,15 @@ namespace EMotionFX
 
     void BlendTreeGetTransformNode::UniqueData::Update()
     {
-        BlendTreeGetTransformNode* transformNode = azdynamic_cast<BlendTreeGetTransformNode*>(mObject);
+        BlendTreeGetTransformNode* transformNode = azdynamic_cast<BlendTreeGetTransformNode*>(m_object);
         AZ_Assert(transformNode, "Unique data linked to incorrect node type.");
 
-        m_nodeIndex = InvalidIndex32;
+        m_nodeIndex = InvalidIndex;
         const AZStd::string& nodeName = transformNode->GetNodeName();
         const int actorInstanceParentDepth = transformNode->GetActorInstanceParentDepth();
         
         // lookup the actor instance to get the node from
-        const ActorInstance* alignInstance = mAnimGraphInstance->FindActorInstanceFromParentDepth(actorInstanceParentDepth);
+        const ActorInstance* alignInstance = m_animGraphInstance->FindActorInstanceFromParentDepth(actorInstanceParentDepth);
         if (alignInstance)
         {
             const Node* alignNode = alignInstance->GetActor()->GetSkeleton()->FindNodeByName(nodeName);
@@ -105,18 +106,18 @@ namespace EMotionFX
 
         if (GetEMotionFX().GetIsInEditorMode())
         {
-            SetHasError(uniqueData, uniqueData->m_nodeIndex == MCORE_INVALIDINDEX32);
+            SetHasError(uniqueData, uniqueData->m_nodeIndex == InvalidIndex);
         }
 
         // make sure we have at least an input pose, otherwise output the bind pose
-        if (GetInputPort(INPUTPORT_POSE).mConnection)
+        if (GetInputPort(INPUTPORT_POSE).m_connection)
         {
             OutputIncomingNode(animGraphInstance, GetInputNode(INPUTPORT_POSE));
             inputPose = GetInputPose(animGraphInstance, INPUTPORT_POSE)->GetValue();
         }
 
         Pose* pose = nullptr;
-        if (uniqueData->m_nodeIndex != MCORE_INVALIDINDEX32)
+        if (uniqueData->m_nodeIndex != InvalidIndex)
         {
             if (m_actorNode.second == 0)
             {
@@ -161,11 +162,11 @@ namespace EMotionFX
             inputTransform.Identity();
         }
 
-        GetOutputVector3(animGraphInstance, OUTPUTPORT_TRANSLATION)->SetValue(inputTransform.mPosition);
-        GetOutputQuaternion(animGraphInstance, OUTPUTPORT_ROTATION)->SetValue(inputTransform.mRotation);
+        GetOutputVector3(animGraphInstance, OUTPUTPORT_TRANSLATION)->SetValue(inputTransform.m_position);
+        GetOutputQuaternion(animGraphInstance, OUTPUTPORT_ROTATION)->SetValue(inputTransform.m_rotation);
 
         #ifndef EMFX_SCALE_DISABLED
-            GetOutputVector3(animGraphInstance, OUTPUTPORT_SCALE)->SetValue(inputTransform.mScale);
+            GetOutputVector3(animGraphInstance, OUTPUTPORT_SCALE)->SetValue(inputTransform.m_scale);
         #else
             GetOutputVector3(animGraphInstance, OUTPUTPORT_SCALE)->SetValue(AZ::Vector3::CreateOne());
         #endif

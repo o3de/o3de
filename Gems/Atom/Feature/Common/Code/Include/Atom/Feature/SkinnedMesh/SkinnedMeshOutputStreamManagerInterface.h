@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -50,7 +51,7 @@ namespace AZ
             }
 
             //! Returns the buffer asset that is used for all skinned mesh outputs
-            virtual Data::Asset<RPI::BufferAsset> GetBufferAsset() const = 0;
+            virtual Data::Asset<RPI::BufferAsset> GetBufferAsset() = 0;
 
             //! Returns the buffer that is used for all skinned mesh outputs
             virtual Data::Instance<RPI::Buffer> GetBuffer() = 0;

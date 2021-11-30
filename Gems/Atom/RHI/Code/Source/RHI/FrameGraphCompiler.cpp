@@ -1,11 +1,11 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
-#include <Atom/RHI/CpuProfiler.h>
 #include <Atom/RHI/FrameGraphCompiler.h>
 #include <Atom/RHI/BufferFrameAttachment.h>
 #include <Atom/RHI/BufferScopeAttachment.h>
@@ -120,7 +120,7 @@ namespace AZ
          */
         MessageOutcome FrameGraphCompiler::Compile(const FrameGraphCompileRequest& request)
         {
-            AZ_ATOM_PROFILE_FUNCTION("RHI", "FrameGraphCompiler: Compile");
+            AZ_PROFILE_SCOPE(RHI, "FrameGraphCompiler: Compile");
 
             MessageOutcome outcome = ValidateCompileRequest(request);
             if (!outcome)
@@ -145,7 +145,7 @@ namespace AZ
 
             /// [Phase 4] Compile platform-specific scope data after all attachments and views have been compiled.
             {
-                AZ_ATOM_PROFILE_FUNCTION("RHI", "FrameGraphCompiler: Scope Compile");
+                AZ_PROFILE_SCOPE(RHI, "FrameGraphCompiler: Scope Compile");
 
                 for (Scope* scope : frameGraph.GetScopes())
                 {
@@ -161,7 +161,7 @@ namespace AZ
             FrameGraph& frameGraph,
             FrameSchedulerCompileFlags compileFlags)
         {
-            AZ_ATOM_PROFILE_FUNCTION("RHI", "FrameGraphCompiler: CompileQueueCentricScopeGraph");
+            AZ_PROFILE_SCOPE(RHI, "FrameGraphCompiler: CompileQueueCentricScopeGraph");
 
             const bool disableAsyncQueues = CheckBitsAll(compileFlags, FrameSchedulerCompileFlags::DisableAsyncQueues);
             if (disableAsyncQueues)
@@ -479,7 +479,7 @@ namespace AZ
                 return;
             }
 
-            AZ_ATOM_PROFILE_FUNCTION("RHI", "FrameGraphCompiler: CompileTransientAttachments");
+            AZ_PROFILE_SCOPE(RHI, "FrameGraphCompiler: CompileTransientAttachments");
 
             ExtendTransientAttachmentAsyncQueueLifetimes(frameGraph, compileFlags);
 
@@ -768,7 +768,7 @@ namespace AZ
 
         void FrameGraphCompiler::CompileResourceViews(const FrameGraphAttachmentDatabase& attachmentDatabase)
         {
-            AZ_ATOM_PROFILE_FUNCTION("RHI", "FrameGraphCompiler: CompileResourceViews");
+            AZ_PROFILE_SCOPE(RHI, "FrameGraphCompiler: CompileResourceViews");
 
             for (ImageFrameAttachment* imageAttachment : attachmentDatabase.GetImageAttachments())
             {

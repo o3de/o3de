@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -92,7 +93,6 @@ namespace AzToolsFramework
 class SandboxIntegrationManager
     : private AzToolsFramework::ToolsApplicationEvents::Bus::Handler
     , private AzToolsFramework::EditorRequests::Bus::Handler
-    , private AzToolsFramework::EditorPickModeNotificationBus::Handler
     , private AzToolsFramework::EditorContextMenuBus::Handler
     , private AzToolsFramework::EditorWindowRequests::Bus::Handler
     , private AzFramework::AssetCatalogEventBus::Handler
@@ -139,8 +139,6 @@ private:
     QDockWidget* InstanceViewPane(const char* paneName) override;
     void CloseViewPane(const char* paneName) override;
     void BrowseForAssets(AzToolsFramework::AssetBrowser::AssetSelectionModel& selection) override;
-    void HandleObjectModeSelection(const AZ::Vector2& point, int flags, bool& handled) override;
-    void UpdateObjectModeCursor(AZ::u32& cursorId, AZStd::string& cursorStr) override;
     void CreateEditorRepresentation(AZ::Entity* entity) override;
     bool DestroyEditorRepresentation(AZ::EntityId entityId, bool deleteAZEntity) override;
     void CloneSelection(bool& handled) override;
@@ -157,7 +155,6 @@ private:
     void LaunchLuaEditor(const char* files) override;
     bool IsLevelDocumentOpen() override;
     AZStd::string GetLevelName() override;
-    AZStd::string SelectResource(const AZStd::string& resourceType, const AZStd::string& previousValue) override;
     void OpenPinnedInspector(const AzToolsFramework::EntityIdSet& entities) override;
     void ClosePinnedInspector(AzToolsFramework::EntityPropertyEditor* editor) override;
     void GoToSelectedOrHighlightedEntitiesInViewports() override;
@@ -175,14 +172,10 @@ private:
     QWidget* GetAppMainWindow() override;
     //////////////////////////////////////////////////////////////////////////
 
-    // EditorPickModeNotificationBus
-    void OnEntityPickModeStarted() override;
-    void OnEntityPickModeStopped() override;
-
     //////////////////////////////////////////////////////////////////////////
     // AzToolsFramework::EditorContextMenu::Bus::Handler overrides
     void PopulateEditorGlobalContextMenu(QMenu* menu, const AZ::Vector2& point, int flags) override;
-    int GetMenuPosition() const;
+    int GetMenuPosition() const override;
     //////////////////////////////////////////////////////////////////////////
 
     //////////////////////////////////////////////////////////////////////////
@@ -240,6 +233,7 @@ private:
     }
 
     AZStd::string GetComponentEditorIcon(const AZ::Uuid& componentType, AZ::Component* component) override;
+    AZStd::string GetComponentTypeEditorIcon(const AZ::Uuid& componentType) override;
     AZStd::string GetComponentIconPath(const AZ::Uuid& componentType, AZ::Crc32 componentIconAttrib, AZ::Component* component) override;
 
     //////////////////////////////////////////////////////////////////////////
@@ -280,9 +274,7 @@ private:
 
 private:
     AZ::Vector2 m_contextMenuViewPoint;
-    AZ::Vector3 m_sliceWorldPos;
 
-    int m_inObjectPickMode;
     short m_startedUndoRecordingNestingLevel;   // used in OnBegin/EndUndo to ensure we only accept undo's we started recording
 
     AzToolsFramework::SliceOverridesNotificationWindowManager* m_notificationWindowManager;
@@ -295,10 +287,8 @@ private:
     AZStd::unordered_set<AZ::EntityId> m_unsavedEntities;
 
     const AZStd::string m_defaultComponentIconLocation = "Icons/Components/Component_Placeholder.svg";
-    const AZStd::string m_defaultComponentViewportIconLocation = "Icons/Components/Viewport/Component_Placeholder.png";
-    const AZStd::string m_defaultEntityIconLocation = "Icons/Components/Viewport/Transform.png";
-
-    bool m_debugDisplayBusImplementationActive = false;
+    const AZStd::string m_defaultComponentViewportIconLocation = "Icons/Components/Viewport/Component_Placeholder.svg";
+    const AZStd::string m_defaultEntityIconLocation = "Icons/Components/Viewport/Transform.svg";
 
     AzToolsFramework::Prefab::PrefabIntegrationManager* m_prefabIntegrationManager = nullptr;
 

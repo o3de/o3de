@@ -1,5 +1,6 @@
 """
-Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+Copyright (c) Contributors to the Open 3D Engine Project.
+For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
@@ -42,14 +43,17 @@ class AWSMetricsStack(core.Stack):
         )
 
         batch_processing_enabled = optional_features.get('batch_processing', False)
+        server_access_logs_bucket = optional_features.get('server_access_logs_bucket')
         self._data_lake_integration = DataLakeIntegration(
             self,
-            application_name=application_name
+            application_name=application_name,
+            server_access_logs_bucket=server_access_logs_bucket
         ) if batch_processing_enabled else None
 
         self._batch_processing = BatchProcessing(
             self,
             input_stream_arn=self._data_ingestion.input_stream_arn,
+            application_name=application_name,
             analytics_bucket_arn=self._data_lake_integration.analytics_bucket_arn,
             events_database_name=self._data_lake_integration.events_database_name,
             events_table_name=self._data_lake_integration.events_table_name
@@ -57,6 +61,7 @@ class AWSMetricsStack(core.Stack):
 
         self._batch_analytics = BatchAnalytics(
             self,
+            application_name=application_name,
             analytics_bucket_name=self._data_lake_integration.analytics_bucket_name,
             events_database_name=self._data_lake_integration.events_database_name,
             events_table_name=self._data_lake_integration.events_table_name

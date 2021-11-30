@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -27,7 +28,7 @@ namespace UnitTest
             m_application.reset();
         }
 
-        static constexpr const char TestDataFolder[] = "@devroot@/Gems/Atom/RHI/Code/Tests/UtilsTestsData/";
+        static constexpr const char TestDataFolder[] = "@engroot@/Gems/Atom/RHI/Code/Tests/UtilsTestsData/";
 
         AZStd::unique_ptr<AzFramework::Application> m_application;
     };

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -19,6 +20,7 @@ namespace AZ
             AZ_RTTI(AssImpMaterialWrapper, "{66992628-CFCE-441B-8849-9344A49AFAC9}", SDKMaterial::MaterialWrapper);
             AssImpMaterialWrapper(aiMaterial* aiMaterial);
             ~AssImpMaterialWrapper() override = default;
+            aiMaterial* GetAssImpMaterial() const;
             AZStd::string GetName() const override;
             AZ::u64 GetUniqueId() const override;
             AZ::Vector3 GetDiffuseColor() const override;
@@ -37,6 +39,9 @@ namespace AZ
             AZStd::optional<bool> GetUseEmissiveMap() const;
             AZStd::optional<float> GetEmissiveIntensity() const;
             AZStd::optional<bool> GetUseAOMap() const;
+
+        protected:
+            aiMaterial* m_assImpMaterial = nullptr;
         };
     } // namespace AssImpSDKWrapper
 }// namespace AZ

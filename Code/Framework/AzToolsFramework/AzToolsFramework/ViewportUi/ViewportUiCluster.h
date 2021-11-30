@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -11,16 +12,16 @@
 #include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <AzToolsFramework/ViewportUi/Button.h>
 #include <AzToolsFramework/ViewportUi/ViewportUiWidgetCallbacks.h>
-#include <QToolBar>
+
 #include <QPainter>
+#include <QToolBar>
 
 namespace AzToolsFramework::ViewportUi::Internal
 {
     class ButtonGroup;
 
     //! Helper class to make clusters (toolbars) for display in Viewport UI.
-    class ViewportUiCluster
-        : public QToolBar
+    class ViewportUiCluster : public QToolBar
     {
         Q_OBJECT
 
@@ -36,14 +37,15 @@ namespace AzToolsFramework::ViewportUi::Internal
         void Update();
         //! Adds a locked overlay to the button's icon.
         void SetButtonLocked(ButtonId buttonId, bool isLocked);
+        //! Updates the button's tooltip to the passed string.
+        void SetButtonTooltip(ButtonId buttonId, const AZStd::string& tooltip);
         //! Returns the widget manager.
         ViewportUiWidgetCallbacks GetWidgetCallbacks();
 
     private:
         //! Adds an action to the Viewport UI Cluster.
         void AddClusterAction(
-            QAction* action, const AZStd::function<void()>& callback = {},
-            const AZStd::function<void(QAction*)>& updateCallback = {});
+            QAction* action, const AZStd::function<void()>& callback = {}, const AZStd::function<void(QAction*)>& updateCallback = {});
         //! Removes an action from the Viewport UI Cluster.
         void RemoveClusterAction(QAction* action);
 

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -155,8 +156,8 @@ namespace SimulatedObjectSetupTests
 
     struct AddSimulatedJointAndChildrenParams
     {
-        AZ::u32 jointIndex;
-        size_t expectedSimulatedJointCount;
+        AZ::u32 m_jointIndex;
+        size_t m_expectedSimulatedJointCount;
     };
 
     class AddSimulatedJointAndChildrenFixture
@@ -176,8 +177,8 @@ namespace SimulatedObjectSetupTests
         SimulatedObjectSetup setup(&actor);
         SimulatedObject* object = setup.AddSimulatedObject();
 
-        object->AddSimulatedJointAndChildren(GetParam().jointIndex);
-        EXPECT_EQ(object->GetSimulatedJoints().size(), GetParam().expectedSimulatedJointCount);
+        object->AddSimulatedJointAndChildren(GetParam().m_jointIndex);
+        EXPECT_EQ(object->GetSimulatedJoints().size(), GetParam().m_expectedSimulatedJointCount);
     }
 
     INSTANTIATE_TEST_CASE_P(Test, AddSimulatedJointAndChildrenFixture,
@@ -405,7 +406,6 @@ namespace SimulatedObjectSetupTests
         const float newGravityFactor = 1.2f;
         const float newFriction = 0.3f;
         const bool newPinned = true;
-        const bool newStretchable = true;
 
         joint.SetConeAngleLimit(newConeAngleLimit);
         joint.SetMass(newMass);

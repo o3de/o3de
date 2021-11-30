@@ -10,25 +10,11 @@
                     "Gems/DevTextures"
                 ]
             },
-            "PBSreferenceMaterials":
-            {
-                "SourcePaths":
-                [
-                    "Gems/PBSreferenceMaterials"
-                ]
-            },
             "PhysicsEntities":
             {
                 "SourcePaths":
                 [
                     "Gems/PhysicsEntities"
-                ]
-            },
-            "PhysXSamples":
-            {
-                "SourcePaths":
-                [
-                    "Gems/PhysXSamples"
                 ]
             },
             "PrimitiveAssets":
@@ -50,6 +36,14 @@
                 "SourcePaths":
                 [
                     "Gems/UiBasics"
+                ]
+            },
+            "Hair":
+            {
+                "SourcePaths":
+                [
+                    "Gems/AtomTressFX/Assets",
+                    "Gems/AtomTressFX/Assets/Passes"
                 ]
             }
         }

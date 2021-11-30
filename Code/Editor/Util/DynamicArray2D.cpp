@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -57,14 +58,9 @@ CDynamicArray2D::~CDynamicArray2D()
     }
 
     delete [] m_Array;
-    m_Array = 0;
+    m_Array = nullptr;
 }
 
-
-void CDynamicArray2D::GetMemoryUsage(ICrySizer* pSizer)
-{
-    pSizer->Add((char*)this, m_Dimension1 * m_Dimension2 * sizeof(float) + sizeof(*this));
-}
 
 void CDynamicArray2D::ScaleImage(CDynamicArray2D* pDestination)
 {

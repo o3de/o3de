@@ -1,10 +1,12 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "RHI/Atom_RHI_DX12_precompiled.h"
+
+#include <AzCore/PlatformIncl.h>
 #include <RHI/Device.h>
 #include <RHI/CommandQueueContext.h>
 #include <RHI/NsightAftermath.h>
@@ -256,6 +258,14 @@ namespace AZ
             return RHI::ResultCode::Success;
         }
 
+        RHI::ResultCode Device::CreateSwapChain(
+            [[maybe_unused]] const DXGI_SWAP_CHAIN_DESCX& swapChainDesc,
+            [[maybe_unused]] AZStd::array<RHI::Ptr<ID3D12Resource>, RHI::Limits::Device::FrameCountMax>& outSwapChainResources)
+        {
+            AZ_Assert(false, "Wrong Device::CreateSwapChain function called on Windows.");
+            return RHI::ResultCode::Fail;
+        }
+
         AZStd::vector<RHI::Format> Device::GetValidSwapChainImageFormats(const RHI::WindowHandle& windowHandle) const
         {
             AZStd::vector<RHI::Format> formatsList;
@@ -314,6 +324,11 @@ namespace AZ
             formatsList.push_back(RHI::Format::R8G8B8A8_UNORM);
 
             return formatsList;
+        }
+
+        void Device::BeginFrameInternal()
+        {
+            m_commandQueueContext.Begin();
         }
     }
 }

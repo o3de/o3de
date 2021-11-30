@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -33,7 +34,7 @@ namespace AssetBundler
         for (const AZStd::string_view& platformString : m_platformHelper->GetPlatforms(PlatformFlags::AllNamedPlatforms))
         {
             // Create the CheckBox and store what platform it maps to
-            QSharedPointer<QCheckBox> platformCheckBox(new QCheckBox(QString::fromUtf8(platformString.data(), platformString.size())));
+            QSharedPointer<QCheckBox> platformCheckBox(new QCheckBox(QString::fromUtf8(platformString.data(), static_cast<int>(platformString.size()))));
             m_platformCheckBoxes.push_back(platformCheckBox);
             PlatformFlags currentPlatformFlag = m_platformHelper->GetPlatformFlag(platformString);
             m_platformList.push_back(currentPlatformFlag);

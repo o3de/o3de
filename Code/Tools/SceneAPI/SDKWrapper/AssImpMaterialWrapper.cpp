@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -20,9 +21,14 @@ namespace AZ
     {
 
         AssImpMaterialWrapper::AssImpMaterialWrapper(aiMaterial* aiMaterial)
-            :SDKMaterial::MaterialWrapper(aiMaterial)
+            :m_assImpMaterial(aiMaterial)
         {
             AZ_Assert(aiMaterial, "Asset Importer Material cannot be null");
+        }
+
+        aiMaterial* AssImpMaterialWrapper::GetAssImpMaterial() const
+        {
+            return m_assImpMaterial;
         }
 
         AZStd::string AssImpMaterialWrapper::GetName() const
@@ -193,7 +199,7 @@ namespace AZ
         AZStd::string AssImpMaterialWrapper::GetTextureFileName(MaterialMapType textureType) const
         {
             /// Engine currently doesn't support multiple textures. Right now we only use first texture.
-            int textureIndex = 0;
+            unsigned int textureIndex = 0;
             aiString absTexturePath;
             switch (textureType)
             {

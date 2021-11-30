@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -128,16 +129,16 @@ namespace AZStd
             {
             }
 
-            virtual void dispose() // nothrow
+            void dispose() override // nothrow
             {
                 AZStd::checked_delete(px_);
             }
-            virtual void destroy() // nothrow
+            void destroy() override // nothrow
             {
                 this->~this_type();
                 a_.deallocate(this, sizeof(this_type), AZStd::alignment_of<this_type>::value);
             }
-            virtual void* get_deleter(Internal::sp_typeinfo const&)
+            void* get_deleter(Internal::sp_typeinfo const&) override
             {
                 return 0;
             }
@@ -175,18 +176,18 @@ namespace AZStd
             {
             }
 
-            virtual void dispose() // nothrow
+            void dispose() override // nothrow
             {
                 d_(p_);
             }
 
-            virtual void destroy() // nothrow
+            void destroy() override // nothrow
             {
                 this->~this_type();
                 a_.deallocate(this, sizeof(this_type), AZStd::alignment_of<this_type>::value);
             }
 
-            virtual void* get_deleter(Internal::sp_typeinfo const& ti)
+            void* get_deleter(Internal::sp_typeinfo const& ti) override
             {
                 return ti == aztypeid(D) ? &reinterpret_cast<char&>(d_) : 0;
             }

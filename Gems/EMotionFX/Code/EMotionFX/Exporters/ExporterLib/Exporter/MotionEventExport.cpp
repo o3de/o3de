@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -10,8 +11,8 @@
 #include <AzCore/JSON/document.h>
 #include <AzCore/Serialization/Json/JsonSerialization.h>
 #include <AzCore/Serialization/Json/JsonSerializationResult.h>
+#include <AzCore/Serialization/Json/JsonUtils.h>
 #include <AzCore/Serialization/SerializeContext.h>
-#include <AzFramework/FileFunc/FileFunc.h>
 #include "Exporter.h"
 #include <MCore/Source/ReflectionSerializer.h>
 #include <EMotionFX/Source/MotionEvent.h>
@@ -54,10 +55,10 @@ namespace ExporterLib
         }
         
         AZStd::string serializedMotionEventTable;
-        auto writeToStringOutcome = AzFramework::FileFunc::WriteJsonToString(jsonDocument, serializedMotionEventTable);
+        auto writeToStringOutcome = AZ::JsonSerializationUtils::WriteJsonString(jsonDocument, serializedMotionEventTable);
         if (!writeToStringOutcome.IsSuccess())
         {
-            AZ_Error("EMotionFX", false, "WriteJsonToString failed: %s", writeToStringOutcome.GetError().c_str());
+            AZ_Error("EMotionFX", false, "WriteJsonString failed: %s", writeToStringOutcome.GetError().c_str());
             return;
         }
 
@@ -65,10 +66,10 @@ namespace ExporterLib
 
         // the motion event table chunk header
         EMotionFX::FileFormat::FileChunk chunkHeader;
-        chunkHeader.mChunkID = EMotionFX::FileFormat::SHARED_CHUNK_MOTIONEVENTTABLE;
-        chunkHeader.mVersion = 3;
+        chunkHeader.m_chunkId = EMotionFX::FileFormat::SHARED_CHUNK_MOTIONEVENTTABLE;
+        chunkHeader.m_version = 3;
 
-        chunkHeader.mSizeInBytes = static_cast<uint32>(serializedTableSizeInBytes + sizeof(EMotionFX::FileFormat::FileMotionEventTableSerialized));
+        chunkHeader.m_sizeInBytes = static_cast<uint32>(serializedTableSizeInBytes + sizeof(EMotionFX::FileFormat::FileMotionEventTableSerialized));
 
         EMotionFX::FileFormat::FileMotionEventTableSerialized tableHeader;
         tableHeader.m_size = serializedTableSizeInBytes;

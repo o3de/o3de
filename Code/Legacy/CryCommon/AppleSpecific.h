@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -11,14 +12,6 @@
 #ifndef CRYINCLUDE_CRYCOMMON_APPLESPECIFIC_H
 #define CRYINCLUDE_CRYCOMMON_APPLESPECIFIC_H
 #pragma once
-
-#if defined(__clang__)
-#pragma diagnostic ignore "-W#pragma-messages"
-#endif
-
-
-#define DEBUG_BREAK __builtin_trap()
-#define RC_EXECUTABLE "rc"
 
 //////////////////////////////////////////////////////////////////////////
 // Standard includes.
@@ -50,12 +43,6 @@
 #ifndef __COUNTER__
 #define __COUNTER__ __LINE__
 #endif
-
-#ifdef __FUNC__
-#undef __FUNC__
-#endif
-
-#define __FUNC__ __func__
 
 typedef void*                               LPVOID;
 #define VOID                    void
@@ -135,7 +122,6 @@ typedef uint8                               byte;
 #define STDMETHODCALLTYPE
 #endif
 
-#define _ALIGN(num) __attribute__ ((aligned(num)))
 #define _PACK __attribute__ ((packed))
 
 // Safe memory freeing
@@ -188,13 +174,8 @@ typedef WCHAR* LPUWSTR, * PUWSTR;
 typedef const WCHAR* LPCWSTR, * PCWSTR;
 typedef const WCHAR* LPCUWSTR, * PCUWSTR;
 
-#ifdef UNICODE
 typedef LPCWSTR LPCTSTR;
 typedef LPWSTR LPTSTR;
-#else
-typedef LPCSTR LPCTSTR;
-typedef LPSTR LPTSTR;
-#endif
 
 typedef DWORD COLORREF;
 #define RGB(r,g,b) ((COLORREF)(((BYTE)(r)|((WORD)((BYTE)(g))<<8))|(((DWORD)(BYTE)(b))<<16)))
@@ -237,6 +218,21 @@ typedef uint64 __uint64;
 
 #define _PTRDIFF_T_DEFINED 1
 
+typedef union _LARGE_INTEGER
+{
+    struct
+    {
+        DWORD LowPart;
+        LONG HighPart;
+    };
+    struct
+    {
+        DWORD LowPart;
+        LONG HighPart;
+    } u;
+    long long QuadPart;
+} LARGE_INTEGER;
+
 #define _A_RDONLY       (0x01)    /* Read only file */
 #define _A_HIDDEN (0x02)    /* Hidden file */
 #define _A_SUBDIR       (0x10)    /* Subdirectory */
@@ -260,13 +256,6 @@ typedef uint64 __uint64;
 #define FILE_ATTRIBUTE_ENCRYPTED            0x00004000
 
 #define INVALID_FILE_ATTRIBUTES (-1)
-
-#define DEFINE_ALIGNED_DATA(type, name, alignment) \
-    type __attribute__ ((aligned(alignment))) name;
-#define DEFINE_ALIGNED_DATA_STATIC(type, name, alignment) \
-    static type __attribute__ ((aligned(alignment))) name;
-#define DEFINE_ALIGNED_DATA_CONST(type, name, alignment) \
-    const type __attribute__ ((aligned(alignment))) name;
 
 #define BST_UNCHECKED   0x0000
 
@@ -299,17 +288,6 @@ enum
     IDCONTINUE  = 11
 };
 
-#define ES_MULTILINE    0x0004L
-#define ES_AUTOVSCROLL  0x0040L
-#define ES_AUTOHSCROLL  0x0080L
-#define ES_WANTRETURN   0x1000L
-
-#define LB_ERR  (-1)
-
-#define LB_ADDSTRING    0x0180
-#define LB_GETCOUNT     0x018B
-#define LB_SETTOPINDEX  0x0197
-
 #define MB_OK                0x00000000L
 #define MB_OKCANCEL          0x00000001L
 #define MB_ABORTRETRYIGNORE  0x00000002L
@@ -329,21 +307,15 @@ enum
 
 #define MB_APPLMODAL    0x00000000L
 
-#define MF_STRING   0x00000000L
-
 #define MK_LBUTTON  0x0001
 #define MK_RBUTTON  0x0002
 #define MK_SHIFT    0x0004
 #define MK_CONTROL  0x0008
 #define MK_MBUTTON  0x0010
 
-#define MK_ALT  ( 0x20 )
-
 #define SM_MOUSEPRESENT 0x00000000L
 
 #define SM_CMOUSEBUTTONS    43
-
-#define USER_TIMER_MINIMUM  0x0000000A
 
 #define VK_TAB      0x09
 #define VK_SHIFT    0x10
@@ -351,11 +323,6 @@ enum
 #define VK_ESCAPE   0x1B
 #define VK_SPACE    0x20
 #define VK_DELETE   0x2E
-
-#define VK_NUMPAD1  0x61
-#define VK_NUMPAD2  0x62
-#define VK_NUMPAD3  0x63
-#define VK_NUMPAD4  0x64
 
 #define VK_OEM_COMMA    0xBC   // ',' any country
 #define VK_OEM_PERIOD   0xBE   // '.' any country
@@ -387,12 +354,8 @@ enum
 #define wcsnicmp wcsncasecmp
 //#define memcpy_s(dest,bytes,src,n) memcpy(dest,src,n)
 #define _isnan ISNAN
-#define _wtof(str) wcstod(str, 0)
-
 
 #define TARGET_DEFAULT_ALIGN (0x8U)
-
-
 
 #define _msize malloc_size
 
@@ -499,36 +462,6 @@ typedef HANDLE HMENU;
 
 #endif //__cplusplus
 
-inline char* _fullpath(char* absPath, const char* relPath, size_t maxLength)
-{
-    char path[PATH_MAX];
-    
-    if (realpath(relPath, path) == NULL)
-    {
-        return NULL;
-    }
-    const size_t len = std::min(strlen(path), maxLength - 1);
-    memcpy(absPath, path, len);
-    absPath[len] = 0;
-    return absPath;
-}
-
-typedef union _LARGE_INTEGER
-{
-    struct
-    {
-        DWORD LowPart;
-        LONG HighPart;
-    };
-    struct
-    {
-        DWORD LowPart;
-        LONG HighPart;
-    } u;
-
-    long long QuadPart;
-} LARGE_INTEGER;
-
 extern bool QueryPerformanceCounter(LARGE_INTEGER*);
 extern bool QueryPerformanceFrequency(LARGE_INTEGER* frequency);
 
@@ -568,14 +501,6 @@ inline int closesocket(int s)
 {
     return ::close(s);
 }
-
-inline int WSAGetLastError()
-{
-    return errno;
-}
-
-//we take the definition of the pthread_t type directly from the pthread file
-#define THREADID_NULL 0
 
 template <typename T, size_t N>
 char (*RtlpNumberOf( T (&)[N] ))[N];

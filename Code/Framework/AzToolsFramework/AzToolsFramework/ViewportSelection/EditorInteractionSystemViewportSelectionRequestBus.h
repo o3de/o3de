@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -16,6 +17,7 @@
 namespace AzToolsFramework
 {
     class EditorVisibleEntityDataCache;
+    class ViewportEditorModeTrackerInterface;
 
     //! Bus to handle all mouse events originating from the viewport.
     //! Coordinated by the EditorInteractionSystemComponent
@@ -31,8 +33,8 @@ namespace AzToolsFramework
     };
 
     //! Alias for factory function to create a new type implementing the ViewportSelectionRequests interface.
-    using ViewportSelectionRequestsBuilderFn =
-        AZStd::function<AZStd::unique_ptr<ViewportInteraction::InternalViewportSelectionRequests>(const EditorVisibleEntityDataCache*)>;
+    using ViewportSelectionRequestsBuilderFn = AZStd::function<AZStd::unique_ptr<ViewportInteraction::InternalViewportSelectionRequests>(
+        const EditorVisibleEntityDataCache*, ViewportEditorModeTrackerInterface*)>;
 
     //! Interface for system component implementing the ViewportSelectionRequests interface.
     //! This interface also includes a setter to set a custom handler also implementing

@@ -1,12 +1,15 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <CryCommon/ITimer.h>
+#include <CryCommon/ISystem.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 inline void Gestures::RecognizerPinch::Config::Reflect(AZ::ReflectContext* context)
@@ -109,7 +112,7 @@ inline bool Gestures::RecognizerPinch::OnDownEvent(const AZ::Vector2& screenPosi
     }
 
     m_currentPositions[pointerIndex] = screenPosition;
-    m_lastUpdateTimes[pointerIndex] = gEnv->pTimer->GetFrameStartTime().GetValue();
+    m_lastUpdateTimes[pointerIndex] = (gEnv && gEnv->pTimer) ? gEnv->pTimer->GetFrameStartTime().GetValue() : 0;
     if (m_lastUpdateTimes[0] != m_lastUpdateTimes[1])
     {
         // We need to wait until both touches have been updated this frame.

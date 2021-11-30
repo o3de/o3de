@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -70,12 +71,13 @@ namespace AssetProcessor
             auto registry = AZ::SettingsRegistry::Get();
             auto bootstrapKey = AZ::SettingsRegistryInterface::FixedValueString(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey);
             auto projectPathKey = bootstrapKey + "/project_path";
-            registry->Set(projectPathKey, "AutomatedTesting");
+            AZ::IO::FixedMaxPath enginePath;
+            registry->Get(enginePath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder);
+            registry->Set(projectPathKey, (enginePath / "AutomatedTesting").Native());
             AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(*registry);
 
             // Forcing the branch token into settings registry before starting the application manager.
             // This avoids writing the asset_processor.setreg file which can cause fileIO errors.
-            AZ::IO::FixedMaxPathString enginePath = AZ::Utils::GetEnginePath();
             auto branchTokenKey = bootstrapKey + "/assetProcessor_branch_token";
             AZStd::string token;
             AzFramework::StringFunc::AssetPath::CalculateBranchToken(enginePath.c_str(), token);

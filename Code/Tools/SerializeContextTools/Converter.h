@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -42,7 +43,7 @@ namespace AZ
             using PathDocumentContainer = AZStd::vector<PathDocumentPair>;
 
             static bool ConvertSystemSettings(PathDocumentContainer& documents, const ComponentApplication::Descriptor& descriptor, 
-                const AZStd::string& configurationName, const AZ::IO::PathView& projectFolder, const AZStd::string& applicationRoot);
+                const AZStd::string& configurationName, const AZ::IO::PathView& projectFolder);
             static bool ConvertSystemComponents(PathDocumentContainer& documents, const Entity& entity,
                 const AZStd::string& configurationName, const AZ::IO::PathView& projectFolder,
                 const JsonSerializerSettings& convertSettings, const JsonDeserializerSettings& verifySettings);

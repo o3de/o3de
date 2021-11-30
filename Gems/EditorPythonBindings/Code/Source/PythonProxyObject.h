@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -56,6 +57,8 @@ namespace EditorPythonBindings
 
         //! Performs an equality operation to compare this object with another object
         bool DoEqualityEvaluation(pybind11::object pythonOther);
+
+        pybind11::object ToJson();
 
         //! Perform a comparison of a Python operator
         enum class Comparison

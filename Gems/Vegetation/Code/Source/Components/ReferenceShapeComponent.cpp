@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -49,6 +50,7 @@ namespace Vegetation
     void ReferenceShapeComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
         services.push_back(AZ_CRC("ShapeService", 0xe86aa5fe));
+        services.push_back(AZ_CRC_CE("ReferenceShapeService"));
     }
 
     void ReferenceShapeComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& services)

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -34,7 +35,7 @@ public:
 
     int rowCount(const QModelIndex& parent = QModelIndex()) const override
     {
-        return parent.isValid() ? 0 : CWipFeatureManager::Instance()->GetFeatures().size();
+        return parent.isValid() ? 0 : static_cast<int>(CWipFeatureManager::Instance()->GetFeatures().size());
     }
 
     int columnCount(const QModelIndex& parent = QModelIndex()) const override
@@ -151,7 +152,7 @@ public:
     }
 };
 
-CWipFeaturesDlg::CWipFeaturesDlg(QWidget* pParent /*=NULL*/)
+CWipFeaturesDlg::CWipFeaturesDlg(QWidget* pParent /*=nullptr*/)
     : QDialog(pParent)
     , m_ui(new Ui::WipFeaturesDlg)
 {

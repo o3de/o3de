@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -37,7 +38,7 @@ namespace EMotionFX
 
     void BlendTreeSimulatedObjectNode::UniqueData::Update()
     {
-        BlendTreeSimulatedObjectNode* simulatedObjectNode = azdynamic_cast<BlendTreeSimulatedObjectNode*>(mObject);
+        BlendTreeSimulatedObjectNode* simulatedObjectNode = azdynamic_cast<BlendTreeSimulatedObjectNode*>(m_object);
         AZ_Assert(simulatedObjectNode, "Unique data linked to incorrect node type.");
 
         const bool solverInitResult = simulatedObjectNode->InitSolvers(GetAnimGraphInstance(), this);
@@ -67,7 +68,7 @@ namespace EMotionFX
 
     void BlendTreeSimulatedObjectNode::Reinit()
     {
-        if (!mAnimGraph)
+        if (!m_animGraph)
         {
             return;
         }
@@ -211,7 +212,7 @@ namespace EMotionFX
         AnimGraphPose* outputPose;
 
         // If nothing is connected to the input pose, output a bind pose.
-        if (!GetInputPort(INPUTPORT_POSE).mConnection)
+        if (!GetInputPort(INPUTPORT_POSE).m_connection)
         {
             RequestPoses(animGraphInstance);
             outputPose = GetOutputPose(animGraphInstance, OUTPUTPORT_POSE)->GetValue();
@@ -222,14 +223,14 @@ namespace EMotionFX
 
         // Check whether we are active or not.
         bool isActive = true;
-        if (GetInputPort(INPUTPORT_ACTIVE).mConnection)
+        if (GetInputPort(INPUTPORT_ACTIVE).m_connection)
         {
             OutputIncomingNode(animGraphInstance, GetInputNode(INPUTPORT_ACTIVE));
             isActive = GetInputNumberAsBool(animGraphInstance, INPUTPORT_ACTIVE);
         }
 
         // If we're not active or if this node is disabled or it is optimized for server, we can skip all calculations and just output the input pose.
-        if (!isActive || mDisabled || GetEMotionFX().GetEnableServerOptimization())
+        if (!isActive || m_disabled || GetEMotionFX().GetEnableServerOptimization())
         {
             OutputIncomingNode(animGraphInstance, GetInputNode(INPUTPORT_POSE));
             const AnimGraphPose* inputPose = GetInputPose(animGraphInstance, INPUTPORT_POSE)->GetValue();
@@ -290,7 +291,7 @@ namespace EMotionFX
         {
             for (const Simulation* sim : uniqueData->m_simulations)
             {
-                sim->m_solver.DebugRender(outputPose->GetPose(), m_collisionDetection, true, mVisualizeColor);
+                sim->m_solver.DebugRender(outputPose->GetPose(), m_collisionDetection, true, m_visualizeColor);
             }
         }
     }
@@ -307,15 +308,15 @@ namespace EMotionFX
 
     void BlendTreeSimulatedObjectNode::AdjustParticles(const SpringSolver::ParticleAdjustFunction& func)
     {
-        if (!mAnimGraph)
+        if (!m_animGraph)
         {
             return;
         }
 
-        const size_t numInstances = mAnimGraph->GetNumAnimGraphInstances();
+        const size_t numInstances = m_animGraph->GetNumAnimGraphInstances();
         for (size_t i = 0; i < numInstances; ++i)
         {
-            AnimGraphInstance* animGraphInstance = mAnimGraph->GetAnimGraphInstance(i);
+            AnimGraphInstance* animGraphInstance = m_animGraph->GetAnimGraphInstance(i);
             UniqueData* uniqueData = static_cast<UniqueData*>(animGraphInstance->FindOrCreateUniqueNodeData(this));
             if (!uniqueData)
             {
@@ -331,15 +332,15 @@ namespace EMotionFX
 
     void BlendTreeSimulatedObjectNode::OnPropertyChanged(const PropertyChangeFunction& func)
     {
-        if (!mAnimGraph)
+        if (!m_animGraph)
         {
             return;
         }
 
-        const size_t numInstances = mAnimGraph->GetNumAnimGraphInstances();
+        const size_t numInstances = m_animGraph->GetNumAnimGraphInstances();
         for (size_t i = 0; i < numInstances; ++i)
         {
-            AnimGraphInstance* animGraphInstance = mAnimGraph->GetAnimGraphInstance(i);
+            AnimGraphInstance* animGraphInstance = m_animGraph->GetAnimGraphInstance(i);
             UniqueData* uniqueData = static_cast<UniqueData*>(animGraphInstance->FindOrCreateUniqueNodeData(this));
             if (!uniqueData)
             {

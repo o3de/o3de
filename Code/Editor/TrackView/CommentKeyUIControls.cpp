@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -29,7 +30,7 @@ public:
     CSmartVariableEnum<QString> mv_font;
 
 
-    virtual void OnCreateVars()
+    void OnCreateVars() override
     {
         AddVariable(mv_table, "Key Properties");
         AddVariable(mv_table, mv_comment, "Comment");
@@ -40,31 +41,31 @@ public:
 
         AddVariable(mv_table, mv_color, "Color", IVariable::DT_COLOR);
 
-        mv_align->SetEnumList(NULL);
+        mv_align->SetEnumList(nullptr);
         mv_align->AddEnumItem("Left", ICommentKey::eTA_Left);
         mv_align->AddEnumItem("Center", ICommentKey::eTA_Center);
         mv_align->AddEnumItem("Right", ICommentKey::eTA_Right);
         AddVariable(mv_table, mv_align, "Align");
 
-        mv_font->SetEnumList(NULL);
+        mv_font->SetEnumList(nullptr);
         IFileUtil::FileArray fa;
         CFileUtil::ScanDirectory((Path::GetEditingGameDataFolder() + "/Fonts/").c_str(), "*.xml", fa, true);
         for (size_t i = 0; i < fa.size(); ++i)
         {
-            string name = fa[i].filename.toUtf8().data();
+            AZStd::string name = fa[i].filename.toUtf8().data();
             PathUtil::RemoveExtension(name);
             mv_font->AddEnumItem(name.c_str(), name.c_str());
         }
         AddVariable(mv_table, mv_font, "Font");
     }
-    bool SupportTrackType(const CAnimParamType& paramType, [[maybe_unused]] EAnimCurveType trackType, [[maybe_unused]] AnimValueType valueType) const
+    bool SupportTrackType(const CAnimParamType& paramType, [[maybe_unused]] EAnimCurveType trackType, [[maybe_unused]] AnimValueType valueType) const override
     {
         return paramType == AnimParamType::CommentText;
     }
-    virtual bool OnKeySelectionChange(CTrackViewKeyBundle& selectedKeys);
-    virtual void OnUIChange(IVariable* pVar, CTrackViewKeyBundle& selectedKeys);
+    bool OnKeySelectionChange(CTrackViewKeyBundle& selectedKeys) override;
+    void OnUIChange(IVariable* pVar, CTrackViewKeyBundle& selectedKeys) override;
 
-    virtual unsigned int GetPriority() const { return 1; }
+    unsigned int GetPriority() const override { return 1; }
 
     static const GUID& GetClassID()
     {
@@ -121,7 +122,7 @@ void CCommentKeyUIControls::OnUIChange(IVariable* pVar, CTrackViewKeyBundle& sel
 
     for (size_t keyIndex = 0, num = selectedKeys.GetKeyCount(); keyIndex < num; keyIndex++)
     {
-        CTrackViewKeyHandle keyHandle = selectedKeys.GetKey(keyIndex);
+        CTrackViewKeyHandle keyHandle = selectedKeys.GetKey(static_cast<unsigned int>(keyIndex));
 
         CAnimParamType paramType = keyHandle.GetTrack()->GetParameterType();
         if (paramType == AnimParamType::CommentText)

@@ -1,18 +1,18 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
  *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
-#include "ExecutionStateInterpreted.h"
-
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/Script/ScriptContext.h>
 #include <AzCore/Script/ScriptSystemBus.h>
-
-#include "Execution/Interpreted/ExecutionStateInterpretedUtility.h"
-#include "Execution/RuntimeComponent.h"
+#include <Execution/Interpreted/ExecutionInterpretedAPI.h>
+#include <Execution/Interpreted/ExecutionStateInterpreted.h>
+#include <Execution/Interpreted/ExecutionStateInterpretedUtility.h>
+#include <Execution/RuntimeComponent.h>
 
 namespace ExecutionStateInterpretedCpp
 {
@@ -32,7 +32,25 @@ namespace ScriptCanvas
     ExecutionStateInterpreted::ExecutionStateInterpreted(const ExecutionStateConfig& config)
         : ExecutionState(config)
         , m_interpretedAsset(config.runtimeData.m_script)
-    {}
+    {
+        RuntimeAsset* runtimeAsset = config.asset.Get();
+
+#if defined(SCRIPT_CANVAS_RUNTIME_ASSET_CHECK)
+        if (!runtimeAsset)
+        {
+            AZ_Error("ScriptCanvas", false
+                , "ExecutionStateInterpreted created with ExecutionStateConfig that contained bad runtime asset data. %s"
+                , config.asset.GetId().ToString<AZStd::string>().data());
+            return;
+        }
+#else
+        AZ_Assert(false
+            , "ExecutionStateInterpreted created with ExecutionStateConfig that contained bad runtime asset data. %s"
+            , config.asset.GetId().ToString<AZStd::string>().data());
+#endif
+
+        Execution::InitializeInterpretedStatics(runtimeAsset->GetData());
+    }
 
     void ExecutionStateInterpreted::ClearLuaRegistryIndex()
     {

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -14,6 +15,7 @@
 #include <AzToolsFramework/ToolsComponents/EditorDisabledCompositionBus.h>
 #include <AzToolsFramework/ToolsComponents/EditorPendingCompositionBus.h>
 #include <AzToolsFramework/Entity/EditorEntityActionComponent.h>
+#include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 #include <AzToolsFramework/UI/PropertyEditor/InstanceDataHierarchy.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
 
@@ -74,6 +76,7 @@ namespace AzToolsFramework
                 serializeContext->Class<EditorComponentAPIComponent, AZ::Component>();
 
                 serializeContext->RegisterGenericType<AZStd::vector<AZ::EntityComponentIdPair>>();
+                serializeContext->RegisterGenericType<AZStd::vector<AZ::ComponentServiceType>>();
             }
 
             if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
@@ -98,6 +101,7 @@ namespace AzToolsFramework
                     ->Attribute(AZ::Script::Attributes::Module, "editor")
                     ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)
                     ->Event("FindComponentTypeIdsByEntityType", &EditorComponentAPIRequests::FindComponentTypeIdsByEntityType)
+                    ->Event("FindComponentTypeIdsByService", &EditorComponentAPIRequests::FindComponentTypeIdsByService)
                     ->Event("FindComponentTypeNames", &EditorComponentAPIRequests::FindComponentTypeNames)
                     ->Event("BuildComponentTypeNameListByEntityType", &EditorComponentAPIRequests::BuildComponentTypeNameListByEntityType)
                     ->Event("AddComponentsOfType", &EditorComponentAPIRequests::AddComponentsOfType)
@@ -215,6 +219,33 @@ namespace AzToolsFramework
             return foundTypeIds;
         }
 
+        AZStd::vector<AZ::Uuid> EditorComponentAPIComponent::FindComponentTypeIdsByService(const AZStd::vector<AZ::ComponentServiceType>& serviceFilter, const AZStd::vector<AZ::ComponentServiceType>& incompatibleServiceFilter)
+        {
+            AZStd::vector<AZ::Uuid> foundTypeIds;
+
+            m_serializeContext->EnumerateDerived<AZ::Component>(
+                [&foundTypeIds, serviceFilter, incompatibleServiceFilter](const AZ::SerializeContext::ClassData* componentClass, const AZ::Uuid& knownType) -> bool
+            {
+                AZ_UNUSED(knownType);
+
+                if (componentClass->m_editData)
+                {
+                    // If none of the required services are offered by this component, or the component
+                    // can not be added by the user, skip to the next component
+                    if (!OffersRequiredServices(componentClass, serviceFilter, incompatibleServiceFilter))
+                    {
+                        return true;
+                    }
+
+                    foundTypeIds.push_back(componentClass->m_typeId);
+                }
+
+                return true;
+            });
+
+            return foundTypeIds;
+        }
+
         AZStd::vector<AZStd::string> EditorComponentAPIComponent::FindComponentTypeNames(const AZ::ComponentTypeList& componentTypeIds)
         {
             AZStd::vector<AZStd::string> foundTypeNames;
@@ -261,7 +292,7 @@ namespace AzToolsFramework
             m_serializeContext->EnumerateDerived<AZ::Component>(
                 [&typeNameList, entityType](const AZ::SerializeContext::ClassData* componentClass, const AZ::Uuid& knownType) -> bool
                 {
-                    AZ_UNUSED(knownType)
+                    AZ_UNUSED(knownType);
 
                         if (!componentClass->m_editData)
                         {
@@ -566,11 +597,13 @@ namespace AzToolsFramework
                 pte.SetVisibleEnforcement(true);
             }
 
+            ScopedUndoBatch undo("Modify Entity Property");
             PropertyOutcome result = pte.SetProperty(propertyPath, value);
             if (result.IsSuccess())
             {
                 PropertyEditorEntityChangeNotificationBus::Event(componentInstance.GetEntityId(), &PropertyEditorEntityChangeNotifications::OnEntityComponentPropertyChanged, componentInstance.GetComponentId());
             }
+            undo.MarkEntityDirty(componentInstance.GetEntityId());
 
             return result;
         }

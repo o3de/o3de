@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -28,27 +29,27 @@ namespace AZ
         }
         namespace SceneData
         {
-            class MeshGroup
+            class SCENE_DATA_CLASS MeshGroup
                 : public DataTypes::IMeshGroup
             {
             public:
                 AZ_RTTI(MeshGroup, "{07B356B7-3635-40B5-878A-FAC4EFD5AD86}", DataTypes::IMeshGroup);
                 AZ_CLASS_ALLOCATOR(MeshGroup, SystemAllocator, 0)
 
-                MeshGroup();
-                ~MeshGroup() override = default;
+                SCENE_DATA_API MeshGroup();
+                SCENE_DATA_API ~MeshGroup() override = default;
 
-                const AZStd::string& GetName() const override;
-                void SetName(const AZStd::string& name);
-                void SetName(AZStd::string&& name) override;
-                const Uuid& GetId() const override;
-                void OverrideId(const Uuid& id) override;
+                SCENE_DATA_API const AZStd::string& GetName() const override;
+                SCENE_DATA_API void SetName(const AZStd::string& name);
+                SCENE_DATA_API void SetName(AZStd::string&& name) override;
+                SCENE_DATA_API const Uuid& GetId() const override;
+                SCENE_DATA_API void OverrideId(const Uuid& id) override;
 
-                Containers::RuleContainer& GetRuleContainer() override;
-                const Containers::RuleContainer& GetRuleContainerConst() const override;
+                SCENE_DATA_API Containers::RuleContainer& GetRuleContainer() override;
+                SCENE_DATA_API const Containers::RuleContainer& GetRuleContainerConst() const override;
 
-                DataTypes::ISceneNodeSelectionList& GetSceneNodeSelectionList() override;
-                const DataTypes::ISceneNodeSelectionList& GetSceneNodeSelectionList() const override;
+                SCENE_DATA_API DataTypes::ISceneNodeSelectionList& GetSceneNodeSelectionList() override;
+                SCENE_DATA_API const DataTypes::ISceneNodeSelectionList& GetSceneNodeSelectionList() const override;
 
                 static void Reflect(AZ::ReflectContext* context);
                 static bool VersionConverter(SerializeContext& context, SerializeContext::DataElementNode& classElement);

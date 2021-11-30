@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -53,8 +54,8 @@ namespace MCore
          * @param pnt A point on the plane.
          */
         MCORE_INLINE PlaneEq(const AZ::Vector3& norm, const AZ::Vector3& pnt)
-            : mNormal(norm)
-            , mDist(-((norm.GetX() * pnt.GetX()) + (norm.GetY() * pnt.GetY()) + (norm.GetZ() * pnt.GetZ()))) {}
+            : m_normal(norm)
+            , m_dist(-((norm.GetX() * pnt.GetX()) + (norm.GetY() * pnt.GetY()) + (norm.GetZ() * pnt.GetZ()))) {}
 
         /**
          * Constructor when you know the normal and the value of d out of the plane equation (Ax + By + Cz + d = 0)
@@ -62,8 +63,8 @@ namespace MCore
          * @param d The value of 'd' out of the plane equation.
          */
         MCORE_INLINE PlaneEq(const AZ::Vector3& norm, float d)
-            : mNormal(norm)
-            , mDist(d) {}
+            : m_normal(norm)
+            , m_dist(d) {}
 
         /**
          * Constructor when you know 3 points on the plane (the winding matters here (clockwise vs counter-clockwise)
@@ -73,8 +74,8 @@ namespace MCore
          * @param v3 The third point on the plane.
          */
         MCORE_INLINE PlaneEq(const AZ::Vector3& v1, const AZ::Vector3& v2, const AZ::Vector3& v3)
-            : mNormal((v2 - v1).Cross(v3 - v1).GetNormalized())
-            , mDist(-(mNormal.Dot(v1))) {}
+            : m_normal((v2 - v1).Cross(v3 - v1).GetNormalized())
+            , m_dist(-(m_normal.Dot(v1))) {}
 
         /**
          * Calculates and returns the dominant plane.
@@ -85,9 +86,9 @@ namespace MCore
          */
         MCORE_INLINE EPlane CalcDominantPlane() const
         {
-            return (Math::Abs(mNormal.GetY()) > Math::Abs(mNormal.GetX())
-                    ? (Math::Abs(mNormal.GetZ()) > Math::Abs(mNormal.GetY())
-                       ? PLANE_XY : PLANE_XZ) : (Math::Abs(mNormal.GetZ()) > Math::Abs(mNormal.GetX())
+            return (Math::Abs(m_normal.GetY()) > Math::Abs(m_normal.GetX())
+                    ? (Math::Abs(m_normal.GetZ()) > Math::Abs(m_normal.GetY())
+                       ? PLANE_XY : PLANE_XZ) : (Math::Abs(m_normal.GetZ()) > Math::Abs(m_normal.GetX())
                                                  ? PLANE_XY : PLANE_YZ));
         }
 
@@ -97,7 +98,7 @@ namespace MCore
          * @param v The vector representing the 3D point to use for the calculation.
          * @result The distance from 'v' to this plane, along the normal of this plane.
          */
-        MCORE_INLINE float CalcDistanceTo(const AZ::Vector3& v) const                                                       { return mNormal.Dot(v) + mDist; }
+        MCORE_INLINE float CalcDistanceTo(const AZ::Vector3& v) const                                                       { return m_normal.Dot(v) + m_dist; }
 
         /**
          * Construct the plane when the normal of the plane and a point on the plane are known.
@@ -106,8 +107,8 @@ namespace MCore
          */
         MCORE_INLINE void Construct(const AZ::Vector3& normal, const AZ::Vector3& pointOnPlane)
         {
-            mNormal = normal;
-            mDist = -((normal.GetX() * pointOnPlane.GetX()) + (normal.GetY() * pointOnPlane.GetY()) + (normal.GetZ() * pointOnPlane.GetZ()));
+            m_normal = normal;
+            m_dist = -((normal.GetX() * pointOnPlane.GetX()) + (normal.GetY() * pointOnPlane.GetY()) + (normal.GetZ() * pointOnPlane.GetZ()));
         }
 
         /**
@@ -117,8 +118,8 @@ namespace MCore
          */
         MCORE_INLINE void Construct(const AZ::Vector3& normal, float d)
         {
-            mNormal = normal;
-            mDist = d;
+            m_normal = normal;
+            m_dist = d;
         }
 
         /**
@@ -130,21 +131,21 @@ namespace MCore
          */
         MCORE_INLINE void Construct(const AZ::Vector3& v1, const AZ::Vector3& v2, const AZ::Vector3& v3)
         {
-            mNormal = (v2 - v1).Cross(v3 - v1).GetNormalized();
-            mDist = -(mNormal.Dot(v1));
+            m_normal = (v2 - v1).Cross(v3 - v1).GetNormalized();
+            m_dist = -(m_normal.Dot(v1));
         }
 
         /**
          * Get the normal of the plane.
          * @result Returns the normal of the plane.
          */
-        MCORE_INLINE const AZ::Vector3& GetNormal() const                                                                   { return mNormal; }
+        MCORE_INLINE const AZ::Vector3& GetNormal() const                                                                   { return m_normal; }
 
         /**
          * Get the 'd' out of the plane equation (Ax + By + Cz + d = 0).
          * @result Returns the 'd' from the plane equation.
          */
-        MCORE_INLINE float GetDist() const                                                                              { return mDist; }
+        MCORE_INLINE float GetDist() const                                                                              { return m_dist; }
 
         /**
          * Checks if a given axis aligned bounding box (AABB) is partially above (aka in front) this plane or not.
@@ -188,12 +189,12 @@ namespace MCore
          * @param vectorToProject The vector you wish to project onto the plane.
          * @result The projected vector.
          */
-        MCORE_INLINE AZ::Vector3 Project(const AZ::Vector3& vectorToProject)            { return vectorToProject - vectorToProject.Dot(mNormal) * mNormal; }
+        MCORE_INLINE AZ::Vector3 Project(const AZ::Vector3& vectorToProject)            { return vectorToProject - vectorToProject.Dot(m_normal) * m_normal; }
 
 
     private:
-        AZ::Vector3 mNormal;    /**< The normal of the plane. */
-        float   mDist;      /**< The D in the plane equation (Ax + By + Cz + D = 0). */
+        AZ::Vector3 m_normal;    /**< The normal of the plane. */
+        float   m_dist;      /**< The D in the plane equation (Ax + By + Cz + D = 0). */
     };
 
     // include the inline code

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -57,7 +58,6 @@ protected:
     AZStd::unique_ptr<AssetProcessorManager_Test> m_assetProcessorManager;
     AZStd::unique_ptr<AssetProcessor::MockApplicationManager> m_mockApplicationManager;
     AZStd::unique_ptr<AssetProcessor::PlatformConfiguration> m_config;
-    UnitTestUtils::AssertAbsorber m_assertAbsorber; // absorb asserts/warnings/errors so that the unit test output is not cluttered
     QString m_gameName;
     QDir m_normalizedCacheRootDir;
     AZStd::atomic_bool m_isIdling;
@@ -176,6 +176,13 @@ struct ModtimeScanningTest
     };
 
     AZStd::unique_ptr<StaticData> m_data;
+};
+
+
+struct MetadataFileTest
+    : public AssetProcessorManagerTest
+{
+    void SetUp() override;
 };
 
 struct FingerprintTest

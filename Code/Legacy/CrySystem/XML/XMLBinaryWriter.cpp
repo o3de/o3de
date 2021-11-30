@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -10,40 +11,6 @@
 #include "XMLBinaryWriter.h"
 #include "CryEndian.h"
 #include <string.h>  // memcpy()
-
-//////////////////////////////////////////////////////////////////////////
-namespace XMLBinary
-{
-    void SwapEndianness_Node(Node& t)
-    {
-        SwapEndian(t.nTagStringOffset, true);
-        SwapEndian(t.nContentStringOffset, true);
-        SwapEndian(t.nAttributeCount, true);
-        SwapEndian(t.nChildCount, true);
-        SwapEndian(t.nParentIndex, true);
-        SwapEndian(t.nFirstAttributeIndex, true);
-        SwapEndian(t.nFirstChildIndex, true);
-    }
-
-    void SwapEndianness_Attribute(Attribute& t)
-    {
-        SwapEndian(t.nKeyStringOffset, true);
-        SwapEndian(t.nValueStringOffset, true);
-    }
-
-    void SwapEndianness_Header(BinaryFileHeader& t)
-    {
-        SwapEndian(t.nXMLSize, true);
-        SwapEndian(t.nNodeTablePosition, true);
-        SwapEndian(t.nNodeCount, true);
-        SwapEndian(t.nAttributeTablePosition, true);
-        SwapEndian(t.nAttributeCount, true);
-        SwapEndian(t.nChildTablePosition, true);
-        SwapEndian(t.nChildCount, true);
-        SwapEndian(t.nStringDataPosition, true);
-        SwapEndian(t.nStringDataSize, true);
-    }
-}
 
 //////////////////////////////////////////////////////////////////////////
 XMLBinary::CXMLBinaryWriter::CXMLBinaryWriter()
@@ -83,7 +50,7 @@ static void write(XMLBinary::IDataWriter* const pFile, size_t& nPosition, const 
 }
 
 //////////////////////////////////////////////////////////////////////////
-bool XMLBinary::CXMLBinaryWriter::WriteNode(IDataWriter* pFile, XmlNodeRef node, bool bNeedSwapEndian, XMLBinary::IFilter* pFilter, string& error)
+bool XMLBinary::CXMLBinaryWriter::WriteNode(IDataWriter* pFile, XmlNodeRef node, XMLBinary::IFilter* pFilter, AZStd::string& error)
 {
     error = "";
 
@@ -98,7 +65,7 @@ bool XMLBinary::CXMLBinaryWriter::WriteNode(IDataWriter* pFile, XmlNodeRef node,
     static const uint nMaxNodeCount = (NodeIndex) ~0;
     if (m_nodes.size() > nMaxNodeCount)
     {
-        error.Format("XMLBinary: Too many nodes: %d (max is %i)", m_nodes.size(), nMaxNodeCount);
+        error = AZStd::string::format("XMLBinary: Too many nodes: %zu (max is %i)", m_nodes.size(), nMaxNodeCount);
         return false;
     }
 
@@ -108,49 +75,31 @@ bool XMLBinary::CXMLBinaryWriter::WriteNode(IDataWriter* pFile, XmlNodeRef node,
 
     BinaryFileHeader header;
     static const char signature[] = "CryXmlB";
-    COMPILE_TIME_ASSERT(sizeof(signature) == sizeof(header.szSignature));
+    static_assert(sizeof(signature) == sizeof(header.szSignature));
     memcpy(header.szSignature, signature, sizeof(header.szSignature));
     nTheoreticalPosition += sizeof(header);
     align(nTheoreticalPosition, nAlignment);
 
-    header.nNodeTablePosition = nTheoreticalPosition;
+    header.nNodeTablePosition = static_cast<uint32>(nTheoreticalPosition);
     header.nNodeCount = int(m_nodes.size());
     nTheoreticalPosition += header.nNodeCount * sizeof(Node);
     align(nTheoreticalPosition, nAlignment);
 
-    header.nChildTablePosition = nTheoreticalPosition;
+    header.nChildTablePosition = static_cast<uint32>(nTheoreticalPosition);
     header.nChildCount = int(m_childs.size());
     nTheoreticalPosition += header.nChildCount * sizeof(NodeIndex);
     align(nTheoreticalPosition, nAlignment);
 
-    header.nAttributeTablePosition = nTheoreticalPosition;
+    header.nAttributeTablePosition = static_cast<uint32>(nTheoreticalPosition);
     header.nAttributeCount = int(m_attributes.size());
     nTheoreticalPosition += header.nAttributeCount * sizeof(Attribute);
     align(nTheoreticalPosition, nAlignment);
 
-    header.nStringDataPosition = nTheoreticalPosition;
+    header.nStringDataPosition = static_cast<uint32>(nTheoreticalPosition);
     header.nStringDataSize = m_nStringDataSize;
     nTheoreticalPosition += header.nStringDataSize;
 
-    header.nXMLSize = nTheoreticalPosition;
-
-    // Swap endianness of the data structures
-    if (bNeedSwapEndian)
-    {
-        SwapEndianness_Header(header);
-        for (size_t i = 0, iCount = m_nodes.size(); i < iCount; ++i)
-        {
-            SwapEndianness_Node(m_nodes[i]);
-        }
-        for (size_t i = 0, iCount = m_attributes.size(); i < iCount; ++i)
-        {
-            SwapEndianness_Attribute(m_attributes[i]);
-        }
-        for (size_t i = 0, iCount = m_childs.size(); i < iCount; ++i)
-        {
-            SwapEndian(m_childs[i], true);
-        }
-    }
+    header.nXMLSize = static_cast<uint32>(nTheoreticalPosition);
 
     // Write file
     {
@@ -191,7 +140,7 @@ bool XMLBinary::CXMLBinaryWriter::WriteNode(IDataWriter* pFile, XmlNodeRef node,
     return true;
 }
 
-bool XMLBinary::CXMLBinaryWriter::CompileTables(XmlNodeRef node, XMLBinary::IFilter* pFilter, string& error)
+bool XMLBinary::CXMLBinaryWriter::CompileTables(XmlNodeRef node, XMLBinary::IFilter* pFilter, AZStd::string& error)
 {
     bool ok = CompileTablesForNode(node, -1, pFilter, error);
     ok = ok && CompileChildTable(node, pFilter, error);
@@ -199,7 +148,7 @@ bool XMLBinary::CXMLBinaryWriter::CompileTables(XmlNodeRef node, XMLBinary::IFil
 }
 
 //////////////////////////////////////////////////////////////////////////
-bool XMLBinary::CXMLBinaryWriter::CompileTablesForNode(XmlNodeRef node, int nParentIndex, XMLBinary::IFilter* pFilter, string& error)
+bool XMLBinary::CXMLBinaryWriter::CompileTablesForNode(XmlNodeRef node, int nParentIndex, XMLBinary::IFilter* pFilter, AZStd::string& error)
 {
     // Add the tag to the string table.
     int nTagStringOffset = AddString(node->getTag());
@@ -230,7 +179,7 @@ bool XMLBinary::CXMLBinaryWriter::CompileTablesForNode(XmlNodeRef node, int nPar
     static const int nMaxAttributeCount = (uint16) ~0;
     if (nAttributeCount > nMaxAttributeCount)
     {
-        error.Format("XMLBinary: Too many attributes in a node: %d (max is %i)", nAttributeCount, nMaxAttributeCount);
+        error = AZStd::string::format("XMLBinary: Too many attributes in a node: %d (max is %i)", nAttributeCount, nMaxAttributeCount);
         return false;
     }
 
@@ -243,7 +192,7 @@ bool XMLBinary::CXMLBinaryWriter::CompileTablesForNode(XmlNodeRef node, int nPar
         nd.nContentStringOffset = nContentStringOffset;
         nd.nParentIndex = nParentIndex;
         nd.nFirstAttributeIndex = nFirstAttributeIndex;
-        nd.nAttributeCount = nAttributeCount;
+        nd.nAttributeCount = static_cast<uint16>(nAttributeCount);
 
         m_nodes.push_back(nd);
     }
@@ -260,7 +209,7 @@ bool XMLBinary::CXMLBinaryWriter::CompileTablesForNode(XmlNodeRef node, int nPar
         {
             if (++nChildCount > nMaxChildCount)
             {
-                error.Format("XMLBinary: Too many children in node '%s': %d (max is %i)", childNode->getTag(), nChildCount, nMaxChildCount);
+                error = AZStd::string::format("XMLBinary: Too many children in node '%s': %d (max is %i)", childNode->getTag(), nChildCount, nMaxChildCount);
                 return false;
             }
             if (!CompileTablesForNode(childNode, nIndex, pFilter, error))
@@ -270,13 +219,13 @@ bool XMLBinary::CXMLBinaryWriter::CompileTablesForNode(XmlNodeRef node, int nPar
         }
     }
 
-    m_nodes[nIndex].nChildCount = nChildCount;
+    m_nodes[nIndex].nChildCount = static_cast<uint16>(nChildCount);
 
     return true;
 }
 
 //////////////////////////////////////////////////////////////////////////
-bool XMLBinary::CXMLBinaryWriter::CompileChildTable(XmlNodeRef node, XMLBinary::IFilter* pFilter, string& error)
+bool XMLBinary::CXMLBinaryWriter::CompileChildTable(XmlNodeRef node, XMLBinary::IFilter* pFilter, AZStd::string& error)
 {
     const int nIndex = m_nodesMap.find(node)->second; // Assume node always exist in map.
     const int nFirstChildIndex = (int)m_childs.size();
@@ -297,7 +246,7 @@ bool XMLBinary::CXMLBinaryWriter::CompileChildTable(XmlNodeRef node, XMLBinary::
     }
     if (nChildCount != nd.nChildCount)
     {
-        error.Format("XMLBinary: Internal error in CompileChildTable()");
+        error = AZStd::string::format("XMLBinary: Internal error in CompileChildTable()");
         return false;
     }
 
@@ -327,7 +276,7 @@ int XMLBinary::CXMLBinaryWriter::AddString(const XmlString& sString)
         // We don't have such string yet, so we should add it to the tables.
         m_strings.push_back(sString);
         itStringEntry = m_stringMap.insert(StringMap::value_type(sString, m_nStringDataSize)).first;
-        m_nStringDataSize += sString.length() + 1;
+        m_nStringDataSize += static_cast<uint>(sString.length() + 1);
     }
 
     // Return offset of the string in the string data buffer.

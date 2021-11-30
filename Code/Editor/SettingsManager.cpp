@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -104,7 +105,7 @@ bool CSettingsManager::CreateDefaultLayoutSettingsFile()
 
 AZStd::vector<AZStd::string> CSettingsManager::BuildSettingsList()
 {
-    XmlNodeRef root = NULL;
+    XmlNodeRef root = nullptr;
 
     root = m_pSettingsManagerMemoryNode;
 
@@ -131,8 +132,8 @@ void CSettingsManager::BuildSettingsList_Helper(const XmlNodeRef& node, const AZ
 {
     for (int i = 0; i < node->getNumAttributes(); ++i)
     {
-        const char* key = NULL;
-        const char* value = NULL;
+        const char* key = nullptr;
+        const char* value = nullptr;
         node->getAttributeByIndex(i, &key, &value);
         if (!pathToNode.empty())
         {
@@ -162,7 +163,7 @@ void CSettingsManager::BuildSettingsList_Helper(const XmlNodeRef& node, const AZ
                     result
                 );
             }
-            
+
         }
     }
 }
@@ -189,7 +190,7 @@ void CSettingsManager::SaveSetting(const QString& path, const QString& attr, con
     // Spaces in node names not allowed
     writeAttr.replace(" ", "");
 
-    XmlNodeRef root = NULL;
+    XmlNodeRef root = nullptr;
 
     root = m_pSettingsManagerMemoryNode;
 
@@ -275,11 +276,11 @@ XmlNodeRef CSettingsManager::LoadSetting(const QString& path, const QString& att
     // Spaces in node names not allowed
     readAttr.replace(" ", "");
 
-    XmlNodeRef root = NULL;
+    XmlNodeRef root = nullptr;
 
     root = m_pSettingsManagerMemoryNode;
 
-    XmlNodeRef tmpNode = NULL;
+    XmlNodeRef tmpNode = nullptr;
 
     if (NeedSettingsNode(path))
     {
@@ -292,7 +293,7 @@ XmlNodeRef CSettingsManager::LoadSetting(const QString& path, const QString& att
 
     if (!tmpNode)
     {
-        return 0;
+        return nullptr;
     }
 
     for (int i = 0; i < strNodes.size(); ++i)
@@ -303,13 +304,13 @@ XmlNodeRef CSettingsManager::LoadSetting(const QString& path, const QString& att
         }
         else
         {
-            return 0;
+            return nullptr;
         }
     }
 
     if (!tmpNode->findChild(readAttr.toUtf8().data()))
     {
-        return 0;
+        return nullptr;
     }
     else
     {
@@ -359,7 +360,7 @@ void CSettingsManager::AddToolVersion(const QString& toolName, const QString& to
         return;
     }
 
-    if (stl::find_in_map(m_toolNames, toolName, NULL) == "")
+    if (stl::find_in_map(m_toolNames, toolName, nullptr) == "")
     {
         if (!toolVersion.isEmpty())
         {
@@ -379,7 +380,7 @@ void CSettingsManager::AddToolName(const QString& toolName, const QString& human
         return;
     }
 
-    if (stl::find_in_map(m_toolNames, toolName, NULL) == "")
+    if (stl::find_in_map(m_toolNames, toolName, nullptr) == "")
     {
         if (!humanReadableName.isEmpty())
         {
@@ -498,7 +499,7 @@ void CSettingsManager::GetMatchingLayoutNames(TToolNamesMap& foundTools, XmlNode
         return;
     }
 
-    TToolNamesMap* toolNames = NULL;
+    TToolNamesMap* toolNames = nullptr;
 
     if (!foundTools.empty())
     {
@@ -592,11 +593,11 @@ bool CSettingsManager::NeedSettingsNode(const QString& path)
 {
     if ((path != EDITOR_LAYOUT_ROOT_NODE) && (path != TOOLBOX_NODE) && (path != TOOLBOXMACROS_NODE))
     {
-        return TRUE;
+        return true;
     }
     else
     {
-        return FALSE;
+        return false;
     }
 }
 
@@ -604,13 +605,13 @@ void CSettingsManager::SerializeCVars(XmlNodeRef& node, bool bLoad)
 {
     int nNumberOfVariables(0);
     int nCurrentVariable(0);
-    IConsole* piConsole(NULL);
-    ICVar* piVariable(NULL);
-    std::vector<char*>  cszVariableNames;
+    IConsole* piConsole(nullptr);
+    ICVar* piVariable(nullptr);
+    AZStd::vector<AZStd::string_view>  cszVariableNames;
 
-    char* szKey(NULL);
-    char* szValue(NULL);
-    ICVar* piCVar(NULL);
+    char* szKey(nullptr);
+    char* szValue(nullptr);
+    ICVar* piCVar(nullptr);
 
     piConsole = gEnv->pConsole;
 
@@ -621,7 +622,7 @@ void CSettingsManager::SerializeCVars(XmlNodeRef& node, bool bLoad)
 
     if (bLoad)
     {
-        XmlNodeRef readNode = NULL;
+        XmlNodeRef readNode = nullptr;
         XmlNodeRef inputCVarsNode = node->findChild(CVARS_NODE);
 
         if (!inputCVarsNode)
@@ -648,7 +649,7 @@ void CSettingsManager::SerializeCVars(XmlNodeRef& node, bool bLoad)
     }
     else
     {
-        XmlNodeRef newCVarNode = NULL;
+        XmlNodeRef newCVarNode = nullptr;
         XmlNodeRef oldCVarsNode = node->findChild(CVARS_NODE);
 
         if (oldCVarsNode)
@@ -659,9 +660,9 @@ void CSettingsManager::SerializeCVars(XmlNodeRef& node, bool bLoad)
         XmlNodeRef cvarsNode = XmlHelpers::CreateXmlNode(CVARS_NODE);
 
         nNumberOfVariables = piConsole->GetNumVisibleVars();
-        cszVariableNames.resize(nNumberOfVariables, NULL);
+        cszVariableNames.resize(nNumberOfVariables);
 
-        if (piConsole->GetSortedVars((const char**)&cszVariableNames.front(), nNumberOfVariables, NULL) != nNumberOfVariables)
+        if (piConsole->GetSortedVars(cszVariableNames) != nNumberOfVariables)
         {
             assert(false);
             return;
@@ -669,12 +670,12 @@ void CSettingsManager::SerializeCVars(XmlNodeRef& node, bool bLoad)
 
         for (nCurrentVariable = 0; nCurrentVariable < cszVariableNames.size(); ++nCurrentVariable)
         {
-            if (_stricmp(cszVariableNames[nCurrentVariable], "_TestFormatMessage") == 0)
+            if (_stricmp(cszVariableNames[nCurrentVariable].data(), "_TestFormatMessage") == 0)
             {
                 continue;
             }
 
-            piVariable = piConsole->GetCVar(cszVariableNames[nCurrentVariable]);
+            piVariable = piConsole->GetCVar(cszVariableNames[nCurrentVariable].data());
             if (!piVariable)
             {
                 assert(false);
@@ -682,7 +683,7 @@ void CSettingsManager::SerializeCVars(XmlNodeRef& node, bool bLoad)
             }
 
             newCVarNode = XmlHelpers::CreateXmlNode(CVAR_NODE);
-            newCVarNode->setAttr(cszVariableNames[nCurrentVariable], piVariable->GetString());
+            newCVarNode->setAttr(cszVariableNames[nCurrentVariable].data(), piVariable->GetString());
             cvarsNode->addChild(newCVarNode);
         }
 
@@ -710,8 +711,8 @@ void CSettingsManager::ReadValueStr(XmlNodeRef& sourceNode, const QString& path,
     // Spaces in node names not allowed
     readAttr.replace(" ", "");
 
-    XmlNodeRef root = NULL;
-    XmlNodeRef tmpNode = NULL;
+    XmlNodeRef root = nullptr;
+    XmlNodeRef tmpNode = nullptr;
 
     if (NeedSettingsNode(path))
     {
@@ -808,7 +809,7 @@ bool CSettingsManager::IsEventSafe(const SEventLog& event)
 
     if (!root)
     {
-        return TRUE;
+        return true;
     }
 
     QString eventName = event.m_eventName;
@@ -822,7 +823,7 @@ bool CSettingsManager::IsEventSafe(const SEventLog& event)
     // Log entry not found, so it is safe to start
     if (!resNode)
     {
-        return TRUE;
+        return true;
     }
 
     XmlNodeRef callerVersion = resNode->findChild(EVENT_LOG_CALLER_VERSION);
@@ -840,15 +841,15 @@ bool CSettingsManager::IsEventSafe(const SEventLog& event)
         {
             if (callerVersionStr != GetToolVersion(eventName))
             {
-                return TRUE;
+                return true;
             }
         }
 
         // The same version of tool/level found
-        return FALSE;
+        return false;
     }
 
-    return TRUE;
+    return true;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -946,15 +947,15 @@ XmlNodeRef CSettingsManager::LoadLogEventSetting(const QString& path, const QStr
 
     if (!root)
     {
-        return 0;
+        return nullptr;
     }
 
-    XmlNodeRef tmpNode = NULL;
+    XmlNodeRef tmpNode = nullptr;
     tmpNode = root;
 
     if (!tmpNode)
     {
-        return 0;
+        return nullptr;
     }
 
     for (int i = 0; i < strNodes.size(); ++i)
@@ -965,7 +966,7 @@ XmlNodeRef CSettingsManager::LoadLogEventSetting(const QString& path, const QStr
         }
         else
         {
-            return 0;
+            return nullptr;
         }
     }
 
@@ -974,7 +975,7 @@ XmlNodeRef CSettingsManager::LoadLogEventSetting(const QString& path, const QStr
         return tmpNode;
     }
 
-    return 0;
+    return nullptr;
 }
 
 QString CSettingsManager::GenerateContentHash(XmlNodeRef& node, QString sourceName)
@@ -986,7 +987,7 @@ QString CSettingsManager::GenerateContentHash(XmlNodeRef& node, QString sourceNa
         return sourceName;
     }
 
-    uint32 hash = CCrc32::ComputeLowercase(node->getXML(0));
+    uint32 hash = AZ::Crc32(node->getXML(0));
     hashStr = QString::number(hash);
 
     return hashStr;

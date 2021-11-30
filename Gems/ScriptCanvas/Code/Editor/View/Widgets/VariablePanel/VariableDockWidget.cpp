@@ -1,10 +1,10 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <precompiled.h>
 
 #include <QAction>
 #include <QCompleter>
@@ -120,7 +120,6 @@ namespace ScriptCanvasEditor
             m_variableName = m_variable->GetVariableName();
 
             const AZStd::string variableTypeName = TranslationHelper::GetSafeTypeName(m_variable->GetDatum()->GetType());
-            m_variable->SetDisplayName(variableTypeName);
 
             m_componentTitle = AZStd::string::format("%s Variable", variableTypeName.data());
 
@@ -259,7 +258,7 @@ namespace ScriptCanvasEditor
 
         QObject::connect(pasteAction,
             &QAction::triggered,
-            [dockWidget, varId](bool)
+            [dockWidget](bool)
         {
             GraphVariablesTableView::HandleVariablePaste(dockWidget->GetActiveScriptCanvasId());
         });

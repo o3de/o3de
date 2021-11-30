@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -12,6 +13,8 @@
 #define CRYINCLUDE_EDITOR_UTIL_MATH_H
 #pragma once
 
+#include <Editor/Util/EditorUtils.h>
+#include <CryCommon/Cry_GeoIntersect.h>
 
 //! Half PI
 #define PI_HALF (3.1415926535897932384626433832795f / 2.0f)
@@ -126,7 +129,7 @@ inline float PointToLineDistance(const Vec3& p1, const Vec3& p2, const Vec3& p3,
     @param p2 Target point of first line.
     @param p3 Source point of second line.
     @param p4 Target point of second line.
-    @return FALSE if no solution exists.
+    @return false if no solution exists.
 */
 inline bool LineLineIntersect(const Vec3& p1, const Vec3& p2, const Vec3& p3, const Vec3& p4,
     Vec3& pa, Vec3& pb, float& mua, float& mub)

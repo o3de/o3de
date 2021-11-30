@@ -1,11 +1,10 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-
-#include <PhysX_precompiled.h>
 
 #ifdef HAVE_BENCHMARK
 #include <benchmark/benchmark.h>
@@ -86,8 +85,7 @@ namespace PhysX::Benchmarks
     class PhysXCharactersBenchmarkFixture
         : public PhysX::Benchmarks::PhysXBaseBenchmarkFixture
     {
-    public:
-        virtual void SetUp([[maybe_unused]] const ::benchmark::State& state) override
+        void internalSetUp()
         {
             PhysX::Benchmarks::PhysXBaseBenchmarkFixture::SetUpInternal();
             //need to get the Physics::System to be able to spawn the rigid bodies
@@ -96,10 +94,29 @@ namespace PhysX::Benchmarks
             m_terrainEntity = PhysX::TestUtils::CreateFlatTestTerrain(m_testSceneHandle, CharacterConstants::TerrainSize, CharacterConstants::TerrainSize);
         }
 
-        virtual void TearDown([[maybe_unused]] const ::benchmark::State& state) override
+        void internalTearDown()
         {
             m_terrainEntity = nullptr;
             PhysX::Benchmarks::PhysXBaseBenchmarkFixture::TearDownInternal();
+        }
+
+    public:
+        void SetUp(const benchmark::State&) override
+        {
+            internalSetUp();
+        }
+        void SetUp(benchmark::State&) override
+        {
+            internalSetUp();
+        }
+
+        void TearDown(const benchmark::State&) override
+        {
+            internalTearDown();
+        }
+        void TearDown(benchmark::State&) override
+        {
+            internalTearDown();
         }
 
     protected:

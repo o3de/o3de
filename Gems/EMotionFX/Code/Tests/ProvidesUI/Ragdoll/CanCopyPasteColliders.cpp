@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -11,6 +12,7 @@
 #include <AzCore/std/algorithm.h>
 #include <AzFramework/Physics/Character.h>
 #include <AzFramework/Physics/ShapeConfiguration.h>
+#include <AzFramework/Physics/Common/PhysicsJoint.h>
 
 #include <EMotionFX/CommandSystem/Source/ColliderCommands.h>
 #include <EMotionFX/CommandSystem/Source/RagdollCommands.h>
@@ -24,6 +26,7 @@
 #include <Tests/Mocks/PhysicsSystem.h>
 #include <Tests/TestAssetCode/ActorFactory.h>
 #include <Tests/TestAssetCode/SimpleActors.h>
+#include <Tests/TestAssetCode/TestActorAssets.h>
 #include <Tests/UI/UIFixture.h>
 
 namespace EMotionFX
@@ -37,12 +40,26 @@ namespace EMotionFX
 
             UIFixture::SetUp();
 
-            D6JointLimitConfiguration::Reflect(GetSerializeContext());
+            AZ::SerializeContext* serializeContext = GetSerializeContext();
 
-            const AZ::TypeId& jointLimitTypeId = azrtti_typeid<D6JointLimitConfiguration>();
-            EXPECT_CALL(m_physicsSystem, GetSupportedJointTypes)
-                .WillRepeatedly(testing::Return(AZStd::vector<AZ::TypeId>{jointLimitTypeId}));
-            EXPECT_CALL(m_physicsSystem, ComputeInitialJointLimitConfiguration(jointLimitTypeId, _, _, _, _))
+            Physics::MockPhysicsSystem::Reflect(serializeContext); // Required by Ragdoll plugin to fake PhysX Gem is available
+            D6JointLimitConfiguration::Reflect(serializeContext);
+
+            EXPECT_CALL(m_jointHelpers, GetSupportedJointTypeIds)
+                .WillRepeatedly(testing::Return(AZStd::vector<AZ::TypeId>{ azrtti_typeid<D6JointLimitConfiguration>() }));
+
+            EXPECT_CALL(m_jointHelpers, GetSupportedJointTypeId(_))
+                .WillRepeatedly(
+                    [](AzPhysics::JointType jointType) -> AZStd::optional<const AZ::TypeId>
+                    {
+                        if (jointType == AzPhysics::JointType::D6Joint)
+                        {
+                            return azrtti_typeid<D6JointLimitConfiguration>();
+                        }
+                        return AZStd::nullopt;
+                    });
+
+            EXPECT_CALL(m_jointHelpers, ComputeInitialJointLimitConfiguration(_, _, _, _, _))
                 .WillRepeatedly([]([[maybe_unused]] const AZ::TypeId& jointLimitTypeId,
                                    [[maybe_unused]] const AZ::Quaternion& parentWorldRotation,
                                    [[maybe_unused]] const AZ::Quaternion& childWorldRotation,
@@ -54,6 +71,7 @@ namespace EMotionFX
     private:
         Physics::MockPhysicsSystem m_physicsSystem;
         Physics::MockPhysicsInterface m_physicsInterface;
+        Physics::MockJointHelpersInterface m_jointHelpers;
     };
 
 #if AZ_TRAIT_DISABLE_FAILED_EMOTION_FX_EDITOR_TESTS
@@ -62,7 +80,11 @@ namespace EMotionFX
     TEST_F(CopyPasteRagdollCollidersFixture, CanCopyCollider)
 #endif // AZ_TRAIT_DISABLE_FAILED_EMOTION_FX_EDITOR_TESTS
     {
-        AutoRegisteredActor actor{ActorFactory::CreateAndInit<SimpleJointChainActor>(4)};
+        AZ::Data::AssetId actorAssetId("{5060227D-B6F4-422E-BF82-41AAC5F228A5}");
+        AZ::Data::Asset<Integration::ActorAsset> actorAsset =
+            TestActorAssets::CreateActorAssetAndRegister<SimpleJointChainActor>(actorAssetId, 4);
+        const Actor* actor = actorAsset->GetActor();
+
         const Physics::RagdollConfiguration& ragdollConfig = actor->GetPhysicsSetup()->GetRagdollConfig();
         const Physics::CharacterColliderConfiguration& simulatedObjectConfig = actor->GetPhysicsSetup()->GetSimulatedObjectColliderConfig();
 
@@ -87,8 +109,7 @@ namespace EMotionFX
 
         {
             AZStd::string result;
-            EXPECT_TRUE(CommandSystem::GetCommandManager()->ExecuteCommand(
-                "Select -actorId " + AZStd::to_string(actor->GetID()),
+            EXPECT_TRUE(CommandSystem::GetCommandManager()->ExecuteCommand("Select -actorId " + AZStd::to_string(actor->GetID()),
                 result))
                 << result.c_str();
         }

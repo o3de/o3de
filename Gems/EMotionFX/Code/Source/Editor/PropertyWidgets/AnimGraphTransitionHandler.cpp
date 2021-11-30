@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -22,7 +23,6 @@
 #include <QLineEdit>
 #include <QMessageBox>
 #include <QMouseEvent>
-
 
 namespace EMotionFX
 {
@@ -125,8 +125,13 @@ namespace EMotionFX
         }
     }
 
-    void AnimGraphTransitionIdPicker::OnAboutToBeRemoved(const QModelIndex &parent, int first, int last)
+    void AnimGraphTransitionIdPicker::OnAboutToBeRemoved(const QModelIndex& parent, int first, int last)
     {
+        if (!parent.isValid())
+        {
+            return;
+        }
+
         EMStudio::EMStudioPlugin* plugin = EMStudio::GetPluginManager()->FindActivePlugin(EMStudio::AnimGraphPlugin::CLASS_ID);
         EMStudio::AnimGraphPlugin* animGraphPlugin = static_cast<EMStudio::AnimGraphPlugin*>(plugin);
         if (animGraphPlugin)
@@ -205,7 +210,7 @@ namespace EMotionFX
 
                 QPushButton* removeTransitionButton = new QPushButton();
                 EMStudio::EMStudioManager::MakeTransparentButton(removeTransitionButton, "Images/Icons/Trash.svg", "Remove transition from list");
-                connect(removeTransitionButton, &QPushButton::clicked, this, [this, removeTransitionButton, id]()
+                connect(removeTransitionButton, &QPushButton::clicked, this, [this, id]()
                     {
                         m_transitionIds.erase(AZStd::remove(m_transitionIds.begin(), m_transitionIds.end(), id), m_transitionIds.end());
                         Reinit();

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -23,13 +24,13 @@ AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 // CTrackViewFindDlg dialog
 
 
-CTrackViewFindDlg::CTrackViewFindDlg(const char* title, QWidget* pParent /*=NULL*/)
+CTrackViewFindDlg::CTrackViewFindDlg(const char* title, QWidget* pParent /*=nullptr*/)
     : QDialog(pParent)
     , ui(new Ui::TrackViewFindDlg)
 {
     setWindowTitle(title);
 
-    m_tvDlg = 0;
+    m_tvDlg = nullptr;
     m_numSeqs = 0;
 
     ui->setupUi(this);
@@ -60,7 +61,7 @@ void CTrackViewFindDlg::FillData()
             ObjName obj;
             obj.m_objName = pNode->GetName();
             obj.m_directorName = pNode->HasDirectorAsParent() ? pNode->HasDirectorAsParent()->GetName() : "";
-            string fullname = seq->GetName();
+            AZStd::string fullname = seq->GetName();
             obj.m_seqName = fullname.c_str();
             m_objs.push_back(obj);
         }

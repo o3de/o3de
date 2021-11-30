@@ -1,11 +1,10 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-
-#include "WhiteBox_precompiled.h"
 
 #include "WhiteBoxColliderComponent.h"
 
@@ -92,6 +91,11 @@ namespace WhiteBox
                 bodyConfiguration.m_position = worldTransform.GetTranslation();
                 bodyConfiguration.m_kinematic = true; // note: this field is ignored in the WhiteBoxBodyType::Static case
                 bodyConfiguration.m_colliderAndShapeData = shape;
+                // Since the shape used is a triangle mesh the COM, Mass and Inertia
+                // cannot be computed. Disable them to use default values.
+                bodyConfiguration.m_computeCenterOfMass = false;
+                bodyConfiguration.m_computeMass = false;
+                bodyConfiguration.m_computeInertiaTensor = false;
                 m_simulatedBodyHandle = sceneInterface->AddSimulatedBody(defaultScene, &bodyConfiguration);
             }
             break;

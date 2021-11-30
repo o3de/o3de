@@ -1,6 +1,7 @@
 #
-# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
-# 
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
@@ -80,6 +81,7 @@ ly_add_target(
 # specialization in order to look up the generated .setreg which contains the dependencies
 # specified for the target.
 if(TARGET AssetProcessor)
+    ly_set_gem_variant_to_load(TARGETS AssetProcessor VARIANTS Builders)
     set_source_files_properties(
         native/AssetProcessorBuildTarget.cpp
         PROPERTIES
@@ -129,6 +131,7 @@ endif()
 # specialization in order to look up the generated .setreg which contains the dependencies
 # specified for the target.
 if(TARGET AssetProcessorBatch)
+    ly_set_gem_variant_to_load(TARGETS AssetProcessorBatch VARIANTS Builders)
     set_source_files_properties(
         native/AssetProcessorBatchBuildTarget.cpp
         PROPERTIES
@@ -236,6 +239,14 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
             ${CMAKE_CURRENT_SOURCE_DIR}/testdata/DummyProject/AssetProcessorGamePlatformConfig.setreg
         OUTPUT_SUBDIRECTORY
             testdata/DummyProject
+    )
+    ly_add_target_files(
+        TARGETS
+            AssetProcessor.Tests
+        FILES
+            ${CMAKE_CURRENT_SOURCE_DIR}/testdata/config_metadata/AssetProcessorPlatformConfig.setreg
+        OUTPUT_SUBDIRECTORY
+            testdata/config_metadata
     )
 
     # Have the AssetProcessorTest use the LY_CMAKE_TARGET define of AssetProcessorBatch for the purpose

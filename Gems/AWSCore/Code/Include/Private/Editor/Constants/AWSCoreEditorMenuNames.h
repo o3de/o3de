@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -37,4 +38,14 @@ namespace AWSCore
     static constexpr const char AWSMetricsAPIReferenceActionText[] = "API reference";
     static constexpr const char AWSMetricsAdvancedTopicsActionText[] = "Advanced topics";
     static constexpr const char AWSMetricsSettingsActionText[] = "Metrics settings";
+
+    static constexpr const char AWSGameLiftActionText[] = "GameLift Gem";
+    static constexpr const char AWSGameLiftGemOverviewActionText[] = "Gem overview";
+    static constexpr const char AWSGameLiftGemSetupActionText[] = "Setup";
+    static constexpr const char AWSMGameLiftScriptingActionText[] = "Scripting reference";
+    static constexpr const char AWSGameLiftAPIReferenceActionText[] = "API reference";
+    static constexpr const char AWSGameLiftAdvancedTopicsActionText[] = "Advanced topics";
+    static constexpr const char AWSGameLiftLocalTestingActionText[] = "Local testing";
+    static constexpr const char AWSGameLiftBuildPackagingActionText[] = "Build packaging (Windows)";
+    static constexpr const char AWSGameLiftResourceManagementActionText[] = "Resource Management";
 } // namespace AWSCore

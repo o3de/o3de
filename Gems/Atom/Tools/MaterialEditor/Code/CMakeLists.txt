@@ -1,6 +1,7 @@
 #
-# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
-# 
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
@@ -59,7 +60,6 @@ ly_add_target(
             Gem::AtomToolsFramework.Editor
             Gem::Atom_RPI.Public
             Gem::Atom_Feature_Common.Public
-            Gem::ImageProcessingAtom.Headers
 )
 
 ly_add_target(
@@ -92,12 +92,14 @@ ly_add_target(
     AUTOMOC
     FILES_CMAKE
         materialeditor_files.cmake
-        Source/Platform/${PAL_PLATFORM_NAME}/platform_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
+        ${pal_source_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
+    PLATFORM_INCLUDE_FILES
+        ${pal_source_dir}/tool_dependencies_${PAL_PLATFORM_NAME_LOWERCASE}.cmake
     INCLUDE_DIRECTORIES
         PRIVATE
             .
             Source
-            Source/Platform/${PAL_PLATFORM_NAME}
+            ${pal_source_dir}
         PUBLIC
             Include
     BUILD_DEPENDENCIES
@@ -107,7 +109,12 @@ ly_add_target(
             Gem::MaterialEditor.Window
             Gem::MaterialEditor.Viewport
             Gem::MaterialEditor.Document
+    RUNTIME_DEPENDENCIES
+        Gem::AtomToolsFramework.Editor
+        Gem::EditorPythonBindings.Editor
 )
+
+ly_set_gem_variant_to_load(TARGETS MaterialEditor VARIANTS Tools)
 
 # Add a 'builders' alias to allow the MaterialEditor root gem path to be added to the generated
 # cmake_dependencies.<project>.assetprocessor.setreg to allow the asset scan folder for it to be added
@@ -116,23 +123,6 @@ ly_create_alias(NAME MaterialEditor.Builders NAMESPACE Gem)
 # Add build dependency to Editor for the MaterialEditor application since
 # Editor opens up the MaterialEditor
 ly_add_dependencies(Editor Gem::MaterialEditor)
-
-ly_add_target_files(
-    TARGETS
-        MaterialEditor
-    FILES
-        ${CMAKE_CURRENT_LIST_DIR}/../MaterialEditor.xml
-    OUTPUT_SUBDIRECTORY
-        Gems/Atom/Tools/MaterialEditor
-)
-
-ly_add_target_dependencies(
-    TARGETS
-        MaterialEditor
-    DEPENDENCIES_FILES
-        tool_dependencies.cmake
-        Source/Platform/${PAL_PLATFORM_NAME}/tool_dependencies_${PAL_PLATFORM_NAME_LOWERCASE}.cmake
-)
 
 # Inject the project path into the MaterialEditor VS debugger command arguments if the build system being invoked
 # in a project centric view

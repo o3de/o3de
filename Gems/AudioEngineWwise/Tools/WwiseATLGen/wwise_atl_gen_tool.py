@@ -1,5 +1,6 @@
 """
-Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+Copyright (c) Contributors to the Open 3D Engine Project.
+For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
@@ -13,7 +14,7 @@ import sys
 
 
 __version__ = '0.1.0'
-__copyright__ = 'Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution..'
+__copyright__ = 'Copyright (c) Contributors to the Open 3D Engine Project.\nFor complete copyright and license terms please see the LICENSE at the root of this distribution.'
 
 
 all_events = set()

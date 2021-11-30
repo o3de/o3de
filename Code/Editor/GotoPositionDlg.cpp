@@ -1,169 +1,119 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
 
+#include "GotoPositionDlg.h"
 #include "EditorDefs.h"
 
-#include "GotoPositionDlg.h"
-
 // Editor
-#include "ViewManager.h"
+#include "EditorViewportCamera.h"
+#include "EditorViewportSettings.h"
 #include "GameEngine.h"
+#include "ViewManager.h"
 
+#include <AzFramework/Viewport/CameraInput.h>
+
+#include <AzCore/Math/Transform.h>
+#include <AzCore/Math/Vector3.h>
 
 AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
 #include <ui_GotoPositionDlg.h>
 AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 
-/////////////////////////////////////////////////////////////////////////////
-// CGotoPositionDlg dialog
-
-
-CGotoPositionDlg::CGotoPositionDlg(QWidget* pParent /*=NULL*/)
-    : QDialog(pParent)
-    , m_ui(new Ui::GotoPositionDlg)
+GotoPositionDialog::GotoPositionDialog(QWidget* parent)
+    : QDialog(parent)
+    , m_ui(new Ui::GotoPositionDialog)
 {
     m_ui->setupUi(this);
     setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
     setFixedSize(size());
     OnInitDialog();
 
-    auto doubleValueChanged = static_cast<void(QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged);
-    auto valueChanged = static_cast<void(QSpinBox::*)(int)>(&QSpinBox::valueChanged);
+    auto doubleValueChanged = static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged);
 
-    connect(m_ui->m_posEdit, &QLineEdit::editingFinished, this, &CGotoPositionDlg::OnChangeEdit);
-    connect(m_ui->m_dymX, doubleValueChanged, this, &CGotoPositionDlg::OnUpdateNumbers);
-    connect(m_ui->m_dymY, doubleValueChanged, this, &CGotoPositionDlg::OnUpdateNumbers);
-    connect(m_ui->m_dymZ, doubleValueChanged, this, &CGotoPositionDlg::OnUpdateNumbers);
-    connect(m_ui->m_dymAngleX, doubleValueChanged, this, &CGotoPositionDlg::OnUpdateNumbers);
-    connect(m_ui->m_dymAngleY, doubleValueChanged, this, &CGotoPositionDlg::OnUpdateNumbers);
-    connect(m_ui->m_dymAngleZ, doubleValueChanged, this, &CGotoPositionDlg::OnUpdateNumbers);
-    connect(m_ui->m_dymSegX, valueChanged, this, &CGotoPositionDlg::OnUpdateNumbers);
-    connect(m_ui->m_dymSegY, valueChanged, this, &CGotoPositionDlg::OnUpdateNumbers);
+    connect(m_ui->m_posEdit, &QLineEdit::editingFinished, this, &GotoPositionDialog::OnChangeEdit);
+    connect(m_ui->m_dymX, doubleValueChanged, this, &GotoPositionDialog::OnUpdateNumbers);
+    connect(m_ui->m_dymY, doubleValueChanged, this, &GotoPositionDialog::OnUpdateNumbers);
+    connect(m_ui->m_dymZ, doubleValueChanged, this, &GotoPositionDialog::OnUpdateNumbers);
+    connect(m_ui->m_dymAnglePitch, doubleValueChanged, this, &GotoPositionDialog::OnUpdateNumbers);
+    connect(m_ui->m_dymAngleYaw, doubleValueChanged, this, &GotoPositionDialog::OnUpdateNumbers);
 }
 
-CGotoPositionDlg::~CGotoPositionDlg()
+GotoPositionDialog::~GotoPositionDialog() = default;
+
+void GotoPositionDialog::OnInitDialog()
 {
-}
+    const auto cameraTransform = SandboxEditor::GetDefaultViewportCameraTransform();
+    const auto cameraTranslation = cameraTransform.GetTranslation();
+    const auto cameraRotation = AzFramework::EulerAngles(AZ::Matrix3x3::CreateFromQuaternion(cameraTransform.GetRotation()));
+    const auto pitchDegrees = AZ::RadToDeg(cameraRotation.GetX());
+    const auto yawDegrees = AZ::RadToDeg(cameraRotation.GetZ());
 
-/////////////////////////////////////////////////////////////////////////////
-// CGotoPositionDlg message handlers
+    // position
+    m_ui->m_dymX->setRange(-64000.0, 64000.0);
+    m_ui->m_dymX->setValue(cameraTranslation.GetX());
 
+    m_ui->m_dymY->setRange(-64000.0, 64000.0);
+    m_ui->m_dymY->setValue(cameraTranslation.GetY());
 
-void CGotoPositionDlg::OnInitDialog()
-{
-    Vec3 pos;
-    Ang3 angle;
+    m_ui->m_dymZ->setRange(-64000.0, 64000.0);
+    m_ui->m_dymZ->setValue(cameraTranslation.GetZ());
 
-    CViewport* pRenderViewport = GetIEditor()->GetViewManager()->GetGameViewport();
-    if (pRenderViewport)
-    {
-        Matrix34 tm = pRenderViewport->GetViewTM();
-        pos   = pRenderViewport->GetViewTM().GetTranslation();
-        angle = RAD2DEG(Ang3::GetAnglesXYZ(tm));
-    }
+    // rotation
+    m_ui->m_dymAnglePitch->setRange(-180.0, 180.0);
+    m_ui->m_dymAnglePitch->setValue(pitchDegrees);
 
-    // CORDS --------------------------------------
-    m_ui->m_dymX->setRange(-64000, 64000);
-    m_ui->m_dymX->setValue(pos.x);
+    m_ui->m_dymAngleYaw->setRange(-180.0, 180.0);
+    m_ui->m_dymAngleYaw->setValue(yawDegrees);
 
-    m_ui->m_dymY->setRange(-64000, 64000);
-    m_ui->m_dymY->setValue(pos.y);
-
-    m_ui->m_dymZ->setRange(-64000, 64000);
-    m_ui->m_dymZ->setValue(pos.z);
-
-    // ANGLES -------------------------------------
-    m_ui->m_dymAngleX->setRange(-180, 180);
-    m_ui->m_dymAngleX->setValue(angle.x);
-
-    m_ui->m_dymAngleY->setRange(-180, 180);
-    m_ui->m_dymAngleY->setValue(angle.y);
-
-    m_ui->m_dymAngleZ->setRange(-180, 180);
-    m_ui->m_dymAngleZ->setValue(angle.z);
-
-
-    m_ui->m_labelSeg->setVisible(false);
-    m_ui->m_labelSegX->setVisible(false);
-    m_ui->m_labelSegY->setVisible(false);
-    m_ui->m_dymSegX->setVisible(false);
-    m_ui->m_dymSegY->setVisible(false);
-
-    // Ensure the goto button is highlighted correctly.
+    // ensure the goto button is highlighted correctly.
     m_ui->pushButton->setDefault(true);
 
     OnUpdateNumbers();
 }
 
-
-void CGotoPositionDlg::OnChangeEdit()
+void GotoPositionDialog::OnChangeEdit()
 {
-    const int lengthInSw = 8;
-    const int strNum = 6;
-    AZStd::vector<float> pos(strNum);
+    const int argCount = 5;
+    AZStd::vector<float> transform(argCount);
 
-    m_sPos = m_ui->m_posEdit->text();
-    const QStringList parts = m_sPos.split(QRegularExpression("[\\s,;\\t]"), Qt::SkipEmptyParts);
-    for (int k = 0; k < strNum && k < parts.count(); ++k)
+    m_transform = m_ui->m_posEdit->text();
+    const QStringList parts = m_transform.split(QRegularExpression("[\\s,;\\t]"), Qt::SkipEmptyParts);
+    for (int i = 0; i < argCount && i < parts.count(); ++i)
     {
-        pos[k] = parts[k].toDouble();
+        transform[i] = parts[i].toFloat();
     }
 
-    m_ui->m_dymX->setValue(pos[0]);
-    m_ui->m_dymY->setValue(pos[1]);
-    m_ui->m_dymZ->setValue(pos[2]);
-    m_ui->m_dymAngleX->setValue(pos[3]);
-    m_ui->m_dymAngleY->setValue(pos[4]);
-    m_ui->m_dymAngleZ->setValue(pos[5]);
-
-    if constexpr (strNum == lengthInSw)
-    {
-        if (parts.count() == lengthInSw)
-        {
-            m_ui->m_dymSegX->setValue(static_cast<int>(parts[6].toDouble()));
-            m_ui->m_dymSegY->setValue(static_cast<int>(parts[7].toDouble()));
-        }
-    }
+    m_ui->m_dymX->setValue(transform[0]);
+    m_ui->m_dymY->setValue(transform[1]);
+    m_ui->m_dymZ->setValue(transform[2]);
+    m_ui->m_dymAnglePitch->setValue(transform[3]);
+    m_ui->m_dymAngleYaw->setValue(transform[4]);
 }
 
-
-//////////////////////////////////////////////////////////////////////////
-void CGotoPositionDlg::OnUpdateNumbers()
+void GotoPositionDialog::OnUpdateNumbers()
 {
-    m_ui->m_posEdit->setText(QString::fromLatin1("%1, %2, %3, %4, %5, %6")
-            .arg(m_ui->m_dymX->value(), 2, 'f', 2).arg(m_ui->m_dymY->value(), 2, 'f', 2).arg(m_ui->m_dymZ->value(), 2, 'f', 2)
-            .arg(m_ui->m_dymAngleX->value(), 2, 'f', 2).arg(m_ui->m_dymAngleY->value(), 2, 'f', 2).arg(m_ui->m_dymAngleZ->value(), 2, 'f', 2));
+    m_ui->m_posEdit->setText(QString::fromLatin1("%1, %2, %3, %4, %5")
+                                 .arg(m_ui->m_dymX->value(), 2, 'f', 2)
+                                 .arg(m_ui->m_dymY->value(), 2, 'f', 2)
+                                 .arg(m_ui->m_dymZ->value(), 2, 'f', 2)
+                                 .arg(m_ui->m_dymAnglePitch->value(), 2, 'f', 2)
+                                 .arg(m_ui->m_dymAngleYaw->value(), 2, 'f', 2));
 }
 
-
-void CGotoPositionDlg::accept()
+void GotoPositionDialog::accept()
 {
-    Vec3 vPos(m_ui->m_dymX->value(), m_ui->m_dymY->value(), m_ui->m_dymZ->value());
-
-    m_ui->m_dymX->setValue(vPos.x);
-    m_ui->m_dymY->setValue(vPos.y);
-    m_ui->m_dymZ->setValue(vPos.z);
-
-    AzToolsFramework::IEditorCameraController* editorCameraController = AZ::Interface<AzToolsFramework::IEditorCameraController>::Get();
-    AZ_Error("editor", editorCameraController, "IEditorCameraCommands is not registered.");
-    if (editorCameraController)
-    {
-        editorCameraController->SetCurrentViewPosition(AZ::Vector3{
-            aznumeric_cast<float>(m_ui->m_dymX->value()),
-            aznumeric_cast<float>(m_ui->m_dymY->value()),
-            aznumeric_cast<float>(m_ui->m_dymZ->value())
-            });
-        editorCameraController->SetCurrentViewRotation(AZ::Vector3{
-            aznumeric_cast<float>(m_ui->m_dymAngleX->value()),
-            aznumeric_cast<float>(m_ui->m_dymAngleY->value()),
-            aznumeric_cast<float>(m_ui->m_dymAngleZ->value())
-            });
-    }
+    SandboxEditor::InterpolateDefaultViewportCameraToTransform(
+        AZ::Vector3(
+            aznumeric_cast<float>(m_ui->m_dymX->value()), aznumeric_cast<float>(m_ui->m_dymY->value()),
+            aznumeric_cast<float>(m_ui->m_dymZ->value())),
+        AZ::DegToRad(aznumeric_cast<float>(m_ui->m_dymAnglePitch->value())),
+        AZ::DegToRad(aznumeric_cast<float>(m_ui->m_dymAngleYaw->value())));
 
     QDialog::accept();
 }

@@ -1,7 +1,8 @@
 --------------------------------------------------------------------------------------
 --
--- Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
--- 
+-- Copyright (c) Contributors to the Open 3D Engine Project.
+-- For complete copyright and license terms please see the LICENSE at the root of this distribution.
+--
 -- SPDX-License-Identifier: Apache-2.0 OR MIT
 --
 --
@@ -80,7 +81,6 @@ function ProcessEditor(context)
     context:SetMaterialPropertyVisibility("opacity.textureMap", mainVisibility)
     context:SetMaterialPropertyVisibility("opacity.textureMapUv", mainVisibility)
     context:SetMaterialPropertyVisibility("opacity.factor", mainVisibility)
-    context:SetMaterialPropertyVisibility("opacity.doubleSided", mainVisibility)
 
     if(opacityMode == OpacityMode_Blended or opacityMode == OpacityMode_TintedTransparent) then
         context:SetMaterialPropertyVisibility("opacity.alphaAffectsSpecular", MaterialPropertyVisibility_Enabled)

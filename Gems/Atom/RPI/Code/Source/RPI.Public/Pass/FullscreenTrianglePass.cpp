@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -96,10 +97,10 @@ namespace AZ
             }
 
             // Load Pass SRG
-            const Data::Asset<ShaderResourceGroupAsset>& passSrgAsset = m_shader->FindShaderResourceGroupAsset(Name{ "PassSrg" });
-            if (passSrgAsset)
+            const auto passSrgLayout = m_shader->FindShaderResourceGroupLayout(SrgBindingSlot::Pass);
+            if (passSrgLayout)
             {
-                m_shaderResourceGroup = ShaderResourceGroup::Create(passSrgAsset);
+                m_shaderResourceGroup = ShaderResourceGroup::Create(shaderAsset, m_shader->GetSupervariantIndex(), passSrgLayout->GetName());
 
                 AZ_Assert(m_shaderResourceGroup, "[FullscreenTrianglePass '%s']: Failed to create SRG from shader asset '%s'",
                     GetPathName().GetCStr(),
@@ -110,10 +111,10 @@ namespace AZ
 
             // Load Draw SRG
             // this is necessary since the shader may have options, which require a default draw SRG
-            const Data::Asset<ShaderResourceGroupAsset>& drawSrgAsset = m_shader->FindShaderResourceGroupAsset(Name{ "DrawSrg" });
-            if (drawSrgAsset)
+            const auto drawSrgLayout = m_shader->FindShaderResourceGroupLayout(SrgBindingSlot::Draw);
+            if (drawSrgLayout)
             {
-                m_drawShaderResourceGroup = ShaderResourceGroup::Create(drawSrgAsset);
+                m_drawShaderResourceGroup = ShaderResourceGroup::Create(shaderAsset, m_shader->GetSupervariantIndex(), drawSrgLayout->GetName());
             }
 
             // Store stencil reference value for the draw call
@@ -135,6 +136,12 @@ namespace AZ
             RHI::DrawLinear draw = RHI::DrawLinear();
             draw.m_vertexCount = 3;
 
+            if (m_shader == nullptr)
+            {
+                AZ_Error("PassSystem", false, "[FullscreenTrianglePass]: Shader not loaded!");
+                return;
+            }
+
             RHI::PipelineStateDescriptorForDraw pipelineStateDescriptor;
 
             // [GFX TODO][ATOM-872] The pass should be able to drive the shader variant
@@ -154,7 +161,7 @@ namespace AZ
 
             m_item.m_arguments = RHI::DrawArguments(draw);
             m_item.m_pipelineState = m_shader->AcquirePipelineState(pipelineStateDescriptor);
-            m_item.m_stencilRef = m_stencilRef;
+            m_item.m_stencilRef = static_cast<uint8_t>(m_stencilRef);
         }
 
         void FullscreenTrianglePass::FrameBeginInternal(FramePrepareParams params)
@@ -178,10 +185,10 @@ namespace AZ
             RHI::Size targetImageSize = outputAttachment->m_descriptor.m_image.m_size;
 
             
-            m_viewportState.m_maxX = AZStd::min(static_cast<uint32_t>(params.m_viewportState.m_maxX), targetImageSize.m_width);
-            m_viewportState.m_maxY = AZStd::min(static_cast<uint32_t>(params.m_viewportState.m_maxY), targetImageSize.m_height);
-            m_viewportState.m_minX = AZStd::min(params.m_viewportState.m_minX, m_viewportState.m_maxX);
-            m_viewportState.m_minY = AZStd::min(params.m_viewportState.m_minY, m_viewportState.m_maxY);
+            m_viewportState.m_maxX = static_cast<float>(AZStd::min(static_cast<uint32_t>(params.m_viewportState.m_maxX), targetImageSize.m_width));
+            m_viewportState.m_maxY = static_cast<float>(AZStd::min(static_cast<uint32_t>(params.m_viewportState.m_maxY), targetImageSize.m_height));
+            m_viewportState.m_minX = static_cast<float>(AZStd::min(params.m_viewportState.m_minX, m_viewportState.m_maxX));
+            m_viewportState.m_minY = static_cast<float>(AZStd::min(params.m_viewportState.m_minY, m_viewportState.m_maxY));
 
             m_scissorState.m_maxX = AZStd::min(static_cast<uint32_t>(params.m_scissorState.m_maxX), targetImageSize.m_width);
             m_scissorState.m_maxY = AZStd::min(static_cast<uint32_t>(params.m_scissorState.m_maxY), targetImageSize.m_height);

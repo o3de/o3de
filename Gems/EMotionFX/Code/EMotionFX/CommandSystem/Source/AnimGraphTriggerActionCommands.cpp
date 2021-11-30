@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -57,7 +58,7 @@ namespace CommandSystem
 
     CommandAnimGraphAddTransitionAction::CommandAnimGraphAddTransitionAction(MCore::Command* orgCommand)
         : MCore::Command(s_commandName, orgCommand)
-        , m_oldActionIndex(MCORE_INVALIDINDEX32)
+        , m_oldActionIndex(InvalidIndex)
     {
     }
 
@@ -104,14 +105,14 @@ namespace CommandSystem
         }
 
         // get the location where to add the new action
-        size_t insertAt = MCORE_INVALIDINDEX32;
+        size_t insertAt = InvalidIndex;
         if (parameters.CheckIfHasParameter("insertAt"))
         {
             insertAt = parameters.GetValueAsInt("insertAt", this);
         }
 
         // add it to the transition
-        if (insertAt == MCORE_INVALIDINDEX32)
+        if (insertAt == InvalidIndex)
         {
             actionSetup.AddAction(newAction);
         }
@@ -213,7 +214,7 @@ namespace CommandSystem
         : MCore::Command(s_commandName, orgCommand)
     {
         m_oldActionType = AZ::TypeId::CreateNull();
-        m_oldActionIndex = MCORE_INVALIDINDEX32;
+        m_oldActionIndex = InvalidIndex;
     }
 
     bool CommandAnimGraphRemoveTransitionAction::Execute(const MCore::CommandLine& parameters, AZStd::string& outResult)
@@ -330,7 +331,7 @@ namespace CommandSystem
 
     CommandAnimGraphAddStateAction::CommandAnimGraphAddStateAction(MCore::Command* orgCommand)
         : MCore::Command(s_commandName, orgCommand)
-        , m_oldActionIndex(MCORE_INVALIDINDEX32)
+        , m_oldActionIndex(InvalidIndex)
     {
     }
 
@@ -384,14 +385,14 @@ namespace CommandSystem
         }
 
         // get the location where to add the new action
-        size_t insertAt = MCORE_INVALIDINDEX32;
+        size_t insertAt = InvalidIndex;
         if (parameters.CheckIfHasParameter("insertAt"))
         {
             insertAt = parameters.GetValueAsInt("insertAt", this);
         }
 
         // add it to the transition
-        if (insertAt == MCORE_INVALIDINDEX32)
+        if (insertAt == InvalidIndex)
         {
             actionSetup.AddAction(newAction);
         }
@@ -500,7 +501,7 @@ namespace CommandSystem
         : MCore::Command(s_commandName, orgCommand)
     {
         m_oldActionType   = AZ::TypeId::CreateNull();
-        m_oldActionIndex  = MCORE_INVALIDINDEX32;
+        m_oldActionIndex  = InvalidIndex;
     }
 
     bool CommandAnimGraphRemoveStateAction::Execute(const MCore::CommandLine& parameters, AZStd::string& outResult)

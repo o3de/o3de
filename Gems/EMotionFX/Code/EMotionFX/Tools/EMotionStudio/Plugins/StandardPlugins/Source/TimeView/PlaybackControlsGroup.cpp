@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -128,8 +129,8 @@ namespace EMStudio
             return false;
         }
 
-        const AZ::u32 numActorInstances = EMotionFX::GetActorManager().GetNumActorInstances();
-        for (AZ::u32 i = 0; i < numActorInstances; ++i)
+        const size_t numActorInstances = EMotionFX::GetActorManager().GetNumActorInstances();
+        for (size_t i = 0; i < numActorInstances; ++i)
         {
             EMotionFX::ActorInstance* actorInstance = EMotionFX::GetActorManager().GetActorInstance(i);
 

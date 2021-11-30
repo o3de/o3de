@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -66,24 +67,9 @@ namespace MaterialEditor
 
         // Create and register a scene with all available feature processors
         AZ::RPI::SceneDescriptor sceneDesc;
+        sceneDesc.m_nameId = AZ::Name("MaterialViewport");
         m_scene = AZ::RPI::Scene::CreateScene(sceneDesc);
         m_scene->EnableAllFeatureProcessors();
-
-        // Setup scene srg modification callback.
-        AZ::RPI::ShaderResourceGroupCallback callback = [this](AZ::RPI::ShaderResourceGroup* srg)
-        {
-            if (srg == nullptr)
-            {
-                return;
-            }
-            AZ::RHI::ShaderInputConstantIndex timeIndex = srg->FindShaderInputConstantIndex(AZ::Name{ "m_time" });
-            if (timeIndex.IsValid())
-            {
-                srg->SetConstant(timeIndex, m_simulateTime);
-                srg->Compile();
-            }
-        };
-        m_scene->SetShaderResourceGroupCallback(callback);
 
         // Bind m_defaultScene to the GameEntityContext's AzFramework::Scene
         auto sceneSystem = AzFramework::SceneSystemInterface::Get();
@@ -197,7 +183,9 @@ namespace MaterialEditor
             AZ_Error("MaterialViewportRenderer", m_shadowCatcherMaterial != nullptr, "Could not create shadow catcher material.");
 
             AZ::Render::MaterialAssignmentMap shadowCatcherMaterials;
-            shadowCatcherMaterials[AZ::Render::DefaultMaterialAssignmentId].m_materialInstance = m_shadowCatcherMaterial;
+            auto& shadowCatcherMaterialAssignment = shadowCatcherMaterials[AZ::Render::DefaultMaterialAssignmentId];
+            shadowCatcherMaterialAssignment.m_materialInstance = m_shadowCatcherMaterial;
+            shadowCatcherMaterialAssignment.m_materialInstancePreCreated = true;
 
             AZ::Render::MaterialComponentRequestBus::Event(m_shadowCatcherEntity->GetId(),
                 &AZ::Render::MaterialComponentRequestBus::Events::SetMaterialOverrides, shadowCatcherMaterials);
@@ -242,19 +230,17 @@ namespace MaterialEditor
         OnFieldOfViewChanged(viewportSettings->m_fieldOfView);
         OnDisplayMapperOperationTypeChanged(viewportSettings->m_displayMapperOperationType);
 
-        MaterialDocumentNotificationBus::Handler::BusConnect();
+        AtomToolsFramework::AtomToolsDocumentNotificationBus::Handler::BusConnect();
         MaterialViewportNotificationBus::Handler::BusConnect();
         AZ::TickBus::Handler::BusConnect();
         AZ::TransformNotificationBus::MultiHandler::BusConnect(m_cameraEntity->GetId());
-        AzFramework::WindowSystemRequestBus::Handler::BusConnect();
     }
 
     MaterialViewportRenderer::~MaterialViewportRenderer()
     {
-        AzFramework::WindowSystemRequestBus::Handler::BusDisconnect();
         AZ::TransformNotificationBus::MultiHandler::BusDisconnect();
         AZ::TickBus::Handler::BusDisconnect();
-        MaterialDocumentNotificationBus::Handler::BusDisconnect();
+        AtomToolsFramework::AtomToolsDocumentNotificationBus::Handler::BusDisconnect();
         MaterialViewportNotificationBus::Handler::BusDisconnect();
         AZ::Data::AssetBus::Handler::BusDisconnect();
 
@@ -302,18 +288,15 @@ namespace MaterialEditor
         return m_viewportController;
     }
 
-    AzFramework::NativeWindowHandle MaterialViewportRenderer::GetDefaultWindowHandle()
-    {
-        return (m_windowContext) ? m_windowContext->GetWindowHandle() : nullptr;
-    }
-
     void MaterialViewportRenderer::OnDocumentOpened(const AZ::Uuid& documentId)
     {
         AZ::Data::Instance<AZ::RPI::Material> materialInstance;
         MaterialDocumentRequestBus::EventResult(materialInstance, documentId, &MaterialDocumentRequestBus::Events::GetInstance);
 
         AZ::Render::MaterialAssignmentMap materials;
-        materials[AZ::Render::DefaultMaterialAssignmentId].m_materialInstance = materialInstance;
+        auto& materialAssignment = materials[AZ::Render::DefaultMaterialAssignmentId];
+        materialAssignment.m_materialInstance = materialInstance;
+        materialAssignment.m_materialInstancePreCreated = true;
 
         AZ::Render::MaterialComponentRequestBus::Event(m_modelEntity->GetId(),
             &AZ::Render::MaterialComponentRequestBus::Events::SetMaterialOverrides, materials);
@@ -323,7 +306,7 @@ namespace MaterialEditor
     {
         if (!preset)
         {
-            AZ_Error("MaterialViewportRenderer", false, "Attempting to set invalid lighting preset.");
+            AZ_Warning("MaterialViewportRenderer", false, "Attempting to set invalid lighting preset.");
             return;
         }
 
@@ -364,13 +347,13 @@ namespace MaterialEditor
     {
         if (!preset)
         {
-            AZ_Error("MaterialViewportRenderer", false, "Attempting to set invalid model preset.");
+            AZ_Warning("MaterialViewportRenderer", false, "Attempting to set invalid model preset.");
             return;
         }
 
         if (!preset->m_modelAsset.GetId().IsValid())
         {
-            AZ_Error("MaterialViewportRenderer", false, "Attempting to set invalid model for preset: '%s'\n.", preset->m_displayName.c_str());
+            AZ_Warning("MaterialViewportRenderer", false, "Attempting to set invalid model for preset: '%s'\n.", preset->m_displayName.c_str());
             return;
         }
 
@@ -447,13 +430,11 @@ namespace MaterialEditor
         }
     }
 
-    void MaterialViewportRenderer::OnTick(float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
+    void MaterialViewportRenderer::OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
     {
         m_renderPipeline->AddToRenderTickOnce();
 
         PerformanceMonitorRequestBus::Broadcast(&PerformanceMonitorRequestBus::Handler::GatherMetrics);
-
-        m_simulateTime += deltaTime;
 
         if (m_shadowCatcherMaterial)
         {

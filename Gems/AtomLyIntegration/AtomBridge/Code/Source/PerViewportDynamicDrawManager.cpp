@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -82,10 +83,10 @@ namespace AZ::AtomBridge
                 ViewportData& viewportData = m_viewportData[viewportId];
                 for (auto& context : viewportData.m_dynamicDrawContexts)
                 {
-                    context.second->SetRenderPipeline(pipeline.get());
+                    context.second->SetOutputScope(pipeline.get());
                 }
             });
-            viewportData.m_viewportDestroyedHandler = AZ::Event<AzFramework::ViewportId>::Handler([this, viewportId](AzFramework::ViewportId id)
+            viewportData.m_viewportDestroyedHandler = AZ::Event<AzFramework::ViewportId>::Handler([this](AzFramework::ViewportId id)
             {
                 AZStd::lock_guard lock(m_mutexDrawContexts);
                 m_viewportData.erase(id);
@@ -105,7 +106,8 @@ namespace AZ::AtomBridge
             {
                 return nullptr;
             }
-            context = RPI::DynamicDrawInterface::Get()->CreateDynamicDrawContext(pipeline);
+            context = RPI::DynamicDrawInterface::Get()->CreateDynamicDrawContext();
+            context->SetOutputScope(pipeline);
             contextFactoryIt->second(context);
         }
 

@@ -1,0 +1,6 @@
+<download name="Material_ComponentsInSyncWithLibrary" type="Map">
+ <index src="filelist.xml" dest="filelist.xml"/>
+ <files>
+  <file src="level.pak" dest="level.pak" size="39457" md5="1c5877cb1facb5363c20b2cb354c8702"/>
+ </files>
+</download>

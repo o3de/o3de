@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -51,33 +52,33 @@ namespace EMotionFX
     TEST(TransformFixture, CreateIdentity)
     {
         const Transform transform = Transform::CreateIdentity();
-        EXPECT_TRUE(transform.mPosition.IsZero());
-        EXPECT_EQ(transform.mRotation, AZ::Quaternion::CreateIdentity());
+        EXPECT_TRUE(transform.m_position.IsZero());
+        EXPECT_EQ(transform.m_rotation, AZ::Quaternion::CreateIdentity());
         EMFX_SCALECODE
         (
-            EXPECT_EQ(transform.mScale, AZ::Vector3::CreateOne());
+            EXPECT_EQ(transform.m_scale, AZ::Vector3::CreateOne());
         )
     }
 
     TEST(TransformFixture, CreateIdentityWithZeroScale)
     {
         const Transform transform = Transform::CreateIdentityWithZeroScale();
-        EXPECT_TRUE(transform.mPosition.IsZero());
-        EXPECT_EQ(transform.mRotation, AZ::Quaternion::CreateIdentity());
+        EXPECT_TRUE(transform.m_position.IsZero());
+        EXPECT_EQ(transform.m_rotation, AZ::Quaternion::CreateIdentity());
         EMFX_SCALECODE
         (
-            EXPECT_EQ(transform.mScale, AZ::Vector3::CreateZero());
+            EXPECT_EQ(transform.m_scale, AZ::Vector3::CreateZero());
         )
     }
 
     TEST(TransformFixture, CreateZero)
     {
         const Transform transform = Transform::CreateZero();
-        EXPECT_TRUE(transform.mPosition.IsZero());
-        EXPECT_EQ(transform.mRotation, AZ::Quaternion::CreateZero());
+        EXPECT_TRUE(transform.m_position.IsZero());
+        EXPECT_EQ(transform.m_rotation, AZ::Quaternion::CreateZero());
         EMFX_SCALECODE
         (
-            EXPECT_EQ(transform.mScale, AZ::Vector3::CreateZero());
+            EXPECT_EQ(transform.m_scale, AZ::Vector3::CreateZero());
         )
     }
 
@@ -85,11 +86,11 @@ namespace EMotionFX
     TEST(TransformFixture, ConstructFromVec3Quat)
     {
         const Transform transform(AZ::Vector3(6.0f, 7.0f, 8.0f), AZ::Quaternion::CreateRotationX(AZ::Constants::HalfPi));
-        EXPECT_EQ(transform.mPosition, AZ::Vector3(6.0f, 7.0f, 8.0f));
-        EXPECT_THAT(transform.mRotation, IsClose(AZ::Quaternion(sqrt2over2, 0.0f, 0.0f, sqrt2over2)));
+        EXPECT_EQ(transform.m_position, AZ::Vector3(6.0f, 7.0f, 8.0f));
+        EXPECT_THAT(transform.m_rotation, IsClose(AZ::Quaternion(sqrt2over2, 0.0f, 0.0f, sqrt2over2)));
         EMFX_SCALECODE
         (
-            EXPECT_EQ(transform.mScale, AZ::Vector3::CreateOne());
+            EXPECT_EQ(transform.m_scale, AZ::Vector3::CreateOne());
         )
     }
 
@@ -147,11 +148,11 @@ namespace EMotionFX
     TEST_P(TransformConstructFromVec3QuatVec3Fixture, ConstructFromVec3QuatVec3)
     {
         const Transform transform(ExpectedPosition(), ExpectedRotation(), ExpectedScale());
-        EXPECT_THAT(transform.mPosition, IsClose(ExpectedPosition()));
-        EXPECT_THAT(transform.mRotation, IsClose(ExpectedRotation()));
+        EXPECT_THAT(transform.m_position, IsClose(ExpectedPosition()));
+        EXPECT_THAT(transform.m_rotation, IsClose(ExpectedRotation()));
         EMFX_SCALECODE
         (
-            EXPECT_THAT(transform.mScale, IsClose(ExpectedScale()));
+            EXPECT_THAT(transform.m_scale, IsClose(ExpectedScale()));
         )
     }
 
@@ -159,11 +160,11 @@ namespace EMotionFX
     {
         Transform transform(AZ::Vector3(5.0f, 6.0f, 7.0f), AZ::Quaternion(0.1f, 0.2f, 0.3f, 0.4f), AZ::Vector3(8.0f, 9.0f, 10.0f));
         transform.Set(ExpectedPosition(), ExpectedRotation(), ExpectedScale());
-        EXPECT_THAT(transform.mPosition, IsClose(ExpectedPosition()));
-        EXPECT_THAT(transform.mRotation, IsClose(ExpectedRotation()));
+        EXPECT_THAT(transform.m_position, IsClose(ExpectedPosition()));
+        EXPECT_THAT(transform.m_rotation, IsClose(ExpectedRotation()));
         EMFX_SCALECODE
         (
-            EXPECT_THAT(transform.mScale, IsClose(ExpectedScale()));
+            EXPECT_THAT(transform.m_scale, IsClose(ExpectedScale()));
         )
     }
 
@@ -190,11 +191,11 @@ namespace EMotionFX
     {
         Transform transform(AZ::Vector3(5.0f, 6.0f, 7.0f), AZ::Quaternion(0.1f, 0.2f, 0.3f, 0.4f), AZ::Vector3(8.0f, 9.0f, 10.0f));
         transform.Set(AZ::Vector3(1.0f, 2.0f, 3.0f), AZ::Quaternion::CreateRotationX(AZ::Constants::QuarterPi));
-        EXPECT_EQ(transform.mPosition, AZ::Vector3(1.0f, 2.0f, 3.0f));
-        EXPECT_THAT(transform.mRotation, IsClose(AZ::Quaternion::CreateRotationX(AZ::Constants::QuarterPi)));
+        EXPECT_EQ(transform.m_position, AZ::Vector3(1.0f, 2.0f, 3.0f));
+        EXPECT_THAT(transform.m_rotation, IsClose(AZ::Quaternion::CreateRotationX(AZ::Constants::QuarterPi)));
         EMFX_SCALECODE
         (
-            EXPECT_EQ(transform.mScale, AZ::Vector3::CreateOne());
+            EXPECT_EQ(transform.m_scale, AZ::Vector3::CreateOne());
         )
     }
 
@@ -202,11 +203,11 @@ namespace EMotionFX
     {
         Transform transform(AZ::Vector3(1.0f, 2.0f, 3.0f), AZ::Quaternion(0.1f, 0.2f, 0.3f, 0.4f), AZ::Vector3(4.0f, 5.0f, 6.0f));
         transform.Identity();
-        EXPECT_EQ(transform.mPosition, AZ::Vector3::CreateZero());
-        EXPECT_EQ(transform.mRotation, AZ::Quaternion::CreateIdentity());
+        EXPECT_EQ(transform.m_position, AZ::Vector3::CreateZero());
+        EXPECT_EQ(transform.m_rotation, AZ::Quaternion::CreateIdentity());
         EMFX_SCALECODE
         (
-            EXPECT_EQ(transform.mScale, AZ::Vector3::CreateOne());
+            EXPECT_EQ(transform.m_scale, AZ::Vector3::CreateOne());
         )
     }
 
@@ -214,11 +215,11 @@ namespace EMotionFX
     {
         Transform transform(AZ::Vector3(1.0f, 2.0f, 3.0f), AZ::Quaternion(0.1f, 0.2f, 0.3f, 0.4f), AZ::Vector3(4.0f, 5.0f, 6.0f));
         transform.Zero();
-        EXPECT_EQ(transform.mPosition, AZ::Vector3::CreateZero());
-        EXPECT_EQ(transform.mRotation, AZ::Quaternion::CreateZero());
+        EXPECT_EQ(transform.m_position, AZ::Vector3::CreateZero());
+        EXPECT_EQ(transform.m_rotation, AZ::Quaternion::CreateZero());
         EMFX_SCALECODE
         (
-            EXPECT_EQ(transform.mScale, AZ::Vector3::CreateZero());
+            EXPECT_EQ(transform.m_scale, AZ::Vector3::CreateZero());
         )
     }
 
@@ -226,11 +227,11 @@ namespace EMotionFX
     {
         Transform transform(AZ::Vector3(1.0f, 2.0f, 3.0f), AZ::Quaternion(0.1f, 0.2f, 0.3f, 0.4f), AZ::Vector3(4.0f, 5.0f, 6.0f));
         transform.IdentityWithZeroScale();
-        EXPECT_EQ(transform.mPosition, AZ::Vector3::CreateZero());
-        EXPECT_EQ(transform.mRotation, AZ::Quaternion::CreateIdentity());
+        EXPECT_EQ(transform.m_position, AZ::Vector3::CreateZero());
+        EXPECT_EQ(transform.m_rotation, AZ::Quaternion::CreateIdentity());
         EMFX_SCALECODE
         (
-            EXPECT_EQ(transform.mScale, AZ::Vector3::CreateZero());
+            EXPECT_EQ(transform.m_scale, AZ::Vector3::CreateZero());
         )
     }
 
@@ -661,54 +662,54 @@ namespace EMotionFX
 
     struct ApplyDeltaParams
     {
-        const Transform initial;
-        const Transform a;
-        const Transform b;
-        const Transform expected;
-        const float weight;
+        const Transform m_initial;
+        const Transform m_a;
+        const Transform m_b;
+        const Transform m_expected;
+        const float m_weight;
     };
 
     using TransformApplyDeltaFixture = ::testing::TestWithParam<ApplyDeltaParams>;
 
     TEST_P(TransformApplyDeltaFixture, ApplyDelta)
     {
-        if (GetParam().weight != 1.0f)
+        if (GetParam().m_weight != 1.0f)
         {
             return;
         }
 
-        Transform transform = GetParam().initial;
-        transform.ApplyDelta(GetParam().a, GetParam().b);
+        Transform transform = GetParam().m_initial;
+        transform.ApplyDelta(GetParam().m_a, GetParam().m_b);
         EXPECT_THAT(
             transform,
-            IsClose(GetParam().expected)
+            IsClose(GetParam().m_expected)
         );
     }
 
     TEST_P(TransformApplyDeltaFixture, ApplyDeltaMirrored)
     {
-        if (GetParam().weight != 1.0f)
+        if (GetParam().m_weight != 1.0f)
         {
             return;
         }
 
         const AZ::Vector3 mirrorAxis = AZ::Vector3::CreateAxisX();
 
-        Transform transform = GetParam().initial;
-        transform.ApplyDeltaMirrored(GetParam().a, GetParam().b, mirrorAxis);
+        Transform transform = GetParam().m_initial;
+        transform.ApplyDeltaMirrored(GetParam().m_a, GetParam().m_b, mirrorAxis);
         EXPECT_THAT(
             transform,
-            IsClose(GetParam().expected.Mirrored(mirrorAxis))
+            IsClose(GetParam().m_expected.Mirrored(mirrorAxis))
         );
     }
 
     TEST_P(TransformApplyDeltaFixture, ApplyDeltaWithWeight)
     {
-        Transform transform = GetParam().initial;
-        transform.ApplyDeltaWithWeight(GetParam().a, GetParam().b, GetParam().weight);
+        Transform transform = GetParam().m_initial;
+        transform.ApplyDeltaWithWeight(GetParam().m_a, GetParam().m_b, GetParam().m_weight);
         EXPECT_THAT(
             transform,
-            IsClose(GetParam().expected)
+            IsClose(GetParam().m_expected)
         );
     }
 
@@ -773,7 +774,7 @@ namespace EMotionFX
             AZ::Quaternion(2.0f, 0.0f, 0.0f, 2.0f),
             AZ::Vector3::CreateOne()
         ).Normalize();
-        EXPECT_FLOAT_EQ(transform.mRotation.GetLength(), 1.0f);
+        EXPECT_FLOAT_EQ(transform.m_rotation.GetLength(), 1.0f);
     }
 
     TEST(TransformFixture, Normalized)
@@ -783,7 +784,7 @@ namespace EMotionFX
             AZ::Quaternion(2.0f, 0.0f, 0.0f, 2.0f),
             AZ::Vector3::CreateOne()
         ).Normalized();
-        EXPECT_FLOAT_EQ(transform.mRotation.GetLength(), 1.0f);
+        EXPECT_FLOAT_EQ(transform.m_rotation.GetLength(), 1.0f);
     }
 
     TEST(TransformFixture, BlendAdditive)
@@ -807,39 +808,39 @@ namespace EMotionFX
         : public ::testing::Test
     {
     protected:
-        const AZ::Vector3 translationA{5.0f, 6.0f, 7.0f};
-        const AZ::Quaternion rotationA = AZ::Quaternion::CreateFromAxisAngle(AZ::Vector3::CreateAxisX(), AZ::Constants::QuarterPi);
-        const AZ::Vector3 scaleA = AZ::Vector3::CreateOne();
+        const AZ::Vector3 m_translationA{5.0f, 6.0f, 7.0f};
+        const AZ::Quaternion m_rotationA = AZ::Quaternion::CreateFromAxisAngle(AZ::Vector3::CreateAxisX(), AZ::Constants::QuarterPi);
+        const AZ::Vector3 m_scaleA = AZ::Vector3::CreateOne();
 
-        const AZ::Vector3 translationB{11.0f, 12.0f, 13.0f};
-        const AZ::Quaternion rotationB = AZ::Quaternion::CreateFromAxisAngle(AZ::Vector3::CreateAxisX(), AZ::Constants::HalfPi);
-        const AZ::Vector3 scaleB{3.0f, 4.0f, 5.0f};
+        const AZ::Vector3 m_translationB{11.0f, 12.0f, 13.0f};
+        const AZ::Quaternion m_rotationB = AZ::Quaternion::CreateFromAxisAngle(AZ::Vector3::CreateAxisX(), AZ::Constants::HalfPi);
+        const AZ::Vector3 m_scaleB{3.0f, 4.0f, 5.0f};
 
     };
 
     TEST_F(TwoTransformsFixture, Blend)
     {
-        const Transform transformA(translationA, rotationA, scaleA);
-        const Transform transformB(translationB, rotationB, scaleB);
+        const Transform transformA(m_translationA, m_rotationA, m_scaleA);
+        const Transform transformB(m_translationB, m_rotationB, m_scaleB);
 
         EXPECT_THAT(
-            Transform(translationA, rotationA, scaleA).Blend(transformB, 0.0f),
+            Transform(m_translationA, m_rotationA, m_scaleA).Blend(transformB, 0.0f),
             IsClose(transformA)
         );
         EXPECT_THAT(
-            Transform(translationA, rotationA, scaleA).Blend(transformB, 0.25f),
+            Transform(m_translationA, m_rotationA, m_scaleA).Blend(transformB, 0.25f),
             IsClose(Transform(AZ::Vector3(6.5f, 7.5f, 8.5f), AZ::Quaternion::CreateFromAxisAngle(AZ::Vector3::CreateAxisX(), AZ::Constants::Pi * 5.0f / 16.0f), AZ::Vector3(1.5f, 1.75f, 2.0f)))
         );
         EXPECT_THAT(
-            Transform(translationA, rotationA, scaleA).Blend(transformB, 0.5f),
+            Transform(m_translationA, m_rotationA, m_scaleA).Blend(transformB, 0.5f),
             IsClose(Transform(AZ::Vector3(8.0f, 9.0f, 10.0f), AZ::Quaternion::CreateFromAxisAngle(AZ::Vector3::CreateAxisX(), AZ::Constants::Pi * 3.0f / 8.0f), AZ::Vector3(2.0f, 2.5f, 3.0f)))
         );
         EXPECT_THAT(
-            Transform(translationA, rotationA, scaleA).Blend(transformB, 0.75f),
+            Transform(m_translationA, m_rotationA, m_scaleA).Blend(transformB, 0.75f),
             IsClose(Transform(AZ::Vector3(9.5f, 10.5f, 11.5f), AZ::Quaternion::CreateFromAxisAngle(AZ::Vector3::CreateAxisX(), AZ::Constants::Pi * 7.0f / 16.0f), AZ::Vector3(2.5f, 3.25f, 4.0f)))
         );
         EXPECT_THAT(
-            Transform(translationA, rotationA, scaleA).Blend(transformB, 1.0f),
+            Transform(m_translationA, m_rotationA, m_scaleA).Blend(transformB, 1.0f),
             IsClose(transformB)
         );
     }
@@ -847,8 +848,8 @@ namespace EMotionFX
     TEST_F(TwoTransformsFixture, ApplyAdditiveTransform)
     {
         EXPECT_THAT(
-            Transform(translationA, rotationA, scaleA).ApplyAdditive(Transform(translationB, rotationB, scaleB)),
-            IsClose(Transform(translationA + translationB, rotationA * rotationB, scaleA * scaleB))
+            Transform(m_translationA, m_rotationA, m_scaleA).ApplyAdditive(Transform(m_translationB, m_rotationB, m_scaleB)),
+            IsClose(Transform(m_translationA + m_translationB, m_rotationA * m_rotationB, m_scaleA * m_scaleB))
         );
     }
 
@@ -856,16 +857,16 @@ namespace EMotionFX
     {
         const float factor = 0.5f;
         EXPECT_THAT(
-            Transform(translationA, rotationA, scaleA).ApplyAdditive(Transform(translationB, rotationB, scaleB), factor),
-            IsClose(Transform(translationA + translationB * factor, rotationA.NLerp(rotationA * rotationB, factor), scaleA * AZ::Vector3::CreateOne().Lerp(scaleB, factor)))
+            Transform(m_translationA, m_rotationA, m_scaleA).ApplyAdditive(Transform(m_translationB, m_rotationB, m_scaleB), factor),
+            IsClose(Transform(m_translationA + m_translationB * factor, m_rotationA.NLerp(m_rotationA * m_rotationB, factor), m_scaleA * AZ::Vector3::CreateOne().Lerp(m_scaleB, factor)))
         );
     }
 
     TEST_F(TwoTransformsFixture, AddTransform)
     {
         EXPECT_THAT(
-            Transform(translationA, rotationA, scaleA).Add(Transform(translationB, rotationB, scaleB)),
-            IsClose(Transform(translationA + translationB, rotationA + rotationB, scaleA + scaleB))
+            Transform(m_translationA, m_rotationA, m_scaleA).Add(Transform(m_translationB, m_rotationB, m_scaleB)),
+            IsClose(Transform(m_translationA + m_translationB, m_rotationA + m_rotationB, m_scaleA + m_scaleB))
         );
     }
 
@@ -873,16 +874,16 @@ namespace EMotionFX
     {
         const float factor = 0.5f;
         EXPECT_THAT(
-            Transform(translationA, rotationA, scaleA).Add(Transform(translationB, rotationB, scaleB), factor),
-            IsClose(Transform(translationA + translationB * factor, rotationA + rotationB * factor, scaleA + scaleB * factor))
+            Transform(m_translationA, m_rotationA, m_scaleA).Add(Transform(m_translationB, m_rotationB, m_scaleB), factor),
+            IsClose(Transform(m_translationA + m_translationB * factor, m_rotationA + m_rotationB * factor, m_scaleA + m_scaleB * factor))
         );
     }
 
     TEST_F(TwoTransformsFixture, Subtract)
     {
         EXPECT_THAT(
-            Transform(translationA, rotationA, scaleA).Subtract(Transform(translationB, rotationB, scaleB)),
-            IsClose(Transform(translationA - translationB, rotationA - rotationB, scaleA - scaleB))
+            Transform(m_translationA, m_rotationA, m_scaleA).Subtract(Transform(m_translationB, m_rotationB, m_scaleB)),
+            IsClose(Transform(m_translationA - m_translationB, m_rotationA - m_rotationB, m_scaleA - m_scaleB))
         );
     }
 

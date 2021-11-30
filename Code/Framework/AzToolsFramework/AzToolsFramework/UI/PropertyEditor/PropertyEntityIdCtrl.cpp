@@ -1,10 +1,10 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "AzToolsFramework_precompiled.h"
 #include "PropertyEntityIdCtrl.hxx"
 #include "PropertyQTConstants.h"
 
@@ -33,6 +33,7 @@ AZ_PUSH_DISABLE_WARNING(4244 4251, "-Wunknown-warning-option") // 4244: conversi
 AZ_POP_DISABLE_WARNING
 #include <QDropEvent>
 #include <QToolButton>
+#include <QtWidgets/QApplication>
 
 //just a test to see how it would work to pop a dialog
 
@@ -118,11 +119,12 @@ namespace AzToolsFramework
 
             // replace the default input handler with one specific for dealing with
             // entity selection in the viewport
+
             EditorInteractionSystemViewportSelectionRequestBus::Event(
                 GetEntityContextId(), &EditorInteractionSystemViewportSelection::SetHandler,
-                [](const EditorVisibleEntityDataCache* entityDataCache)
+                [](const EditorVisibleEntityDataCache* entityDataCache, ViewportEditorModeTrackerInterface* viewportEditorModeTracker)
             {
-                return AZStd::make_unique<EditorPickEntitySelection>(entityDataCache);
+                    return AZStd::make_unique<EditorPickEntitySelection>(entityDataCache, viewportEditorModeTracker);
             });
 
             if (!pickModeEntityContextId.IsNull())
@@ -517,8 +519,8 @@ namespace AzToolsFramework
 
     void EntityIdPropertyHandler::WriteGUIValuesIntoProperty(size_t index, PropertyEntityIdCtrl* GUI, property_t& instance, InstanceDataNode* node)
     {
-        (int)index;
-        (void)node;
+        AZ_UNUSED(index);
+        AZ_UNUSED(node);
         instance = GUI->GetEntityId();
     }
 

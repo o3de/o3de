@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -39,21 +40,21 @@ namespace EMotionFX
     void Material::SetName(const char* name)
     {
         // calculate the ID
-        mNameID = MCore::GetStringIdPool().GenerateIdForString(name);
+        m_nameId = MCore::GetStringIdPool().GenerateIdForString(name);
     }
 
 
     // return the material name
     const char* Material::GetName() const
     {
-        return MCore::GetStringIdPool().GetName(mNameID).c_str();
+        return MCore::GetStringIdPool().GetName(m_nameId).c_str();
     }
 
 
     // return the material name as a string
     const AZStd::string& Material::GetNameString() const
     {
-        return MCore::GetStringIdPool().GetName(mNameID);
+        return MCore::GetStringIdPool().GetName(m_nameId);
     }
 
 

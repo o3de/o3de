@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -13,13 +14,19 @@
 // Qt
 #include <QPainter>
 
+// AzCore
+#include <AzCore/Console/IConsole.h>
+
 // AzQtComponents
 #include <AzQtComponents/DragAndDrop/ViewportDragAndDrop.h>
 
 #include <AzToolsFramework/API/ComponentEntitySelectionBus.h>
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
+#include <AzToolsFramework/Viewport/ViewportMessages.h>
+#include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
 
 // Editor
+#include "Editor/Plugins/ComponentEntityEditorPlugin/SandboxIntegration.h"
 #include "ViewManager.h"
 #include "Include/ITransformManipulator.h"
 #include "Include/HitContext.h"
@@ -30,43 +37,34 @@
 #include "GameEngine.h"
 #include "Settings.h"
 
-
 #ifdef LoadCursor
 #undef LoadCursor
 #endif
+
+AZ_CVAR(
+    float,
+    ed_defaultEntityPlacementDistance,
+    10.0f,
+    nullptr,
+    AZ::ConsoleFunctorFlags::Null,
+    "The default distance to place an entity from the camera if no intersection is found");
+
+float GetDefaultEntityPlacementDistance()
+{
+    return ed_defaultEntityPlacementDistance;
+}
 
 //////////////////////////////////////////////////////////////////////
 // Viewport drag and drop support
 //////////////////////////////////////////////////////////////////////
 
-void QtViewport::BuildDragDropContext(AzQtComponents::ViewportDragContext& context, const QPoint& pt)
+void QtViewport::BuildDragDropContext(
+    AzQtComponents::ViewportDragContext& context, const AzFramework::ViewportId viewportId, const QPoint& point)
 {
-    context.m_hitLocation = AZ::Vector3::CreateZero();
-
-    PreWidgetRendering(); // required so that the current render cam is set.
-
-    Vec3 pos = Vec3(ZERO);
-    HitContext hit;
-    if (HitTest(pt, hit))
-    {
-        pos = hit.raySrc + hit.rayDir * hit.dist;
-        pos = SnapToGrid(pos);
-    }
-    else
-    {
-        bool hitTerrain;
-        pos = ViewToWorld(pt, &hitTerrain);
-        if (hitTerrain)
-        {
-            pos.z = GetIEditor()->GetTerrainElevation(pos.x, pos.y);
-        }
-        pos = SnapToGrid(pos);
-    }
-    context.m_hitLocation = AZ::Vector3(pos.x, pos.y, pos.z);
-
-    PostWidgetRendering();
+    context.m_hitLocation = AzToolsFramework::FindClosestPickIntersection(
+        viewportId, AzToolsFramework::ViewportInteraction::ScreenPointFromQPoint(point), AzToolsFramework::EditorPickRayLength,
+        GetDefaultEntityPlacementDistance());
 }
-
 
 void QtViewport::dragEnterEvent(QDragEnterEvent* event)
 {
@@ -86,7 +84,7 @@ void QtViewport::dragEnterEvent(QDragEnterEvent* event)
         // new bus-based way of doing it (install a listener!)
         using namespace AzQtComponents;
         ViewportDragContext context;
-        BuildDragDropContext(context, event->pos());
+        BuildDragDropContext(context, GetViewportId(), event->pos());
         DragAndDropEventsBus::Event(DragAndDropContexts::EditorViewport, &DragAndDropEvents::DragEnter, event, context);
     }
 }
@@ -109,7 +107,7 @@ void QtViewport::dragMoveEvent(QDragMoveEvent* event)
         // new bus-based way of doing it (install a listener!)
         using namespace AzQtComponents;
         ViewportDragContext context;
-        BuildDragDropContext(context, event->pos());
+        BuildDragDropContext(context, GetViewportId(), event->pos());
         DragAndDropEventsBus::Event(DragAndDropContexts::EditorViewport, &DragAndDropEvents::DragMove, event, context);
     }
 }
@@ -132,7 +130,7 @@ void QtViewport::dropEvent(QDropEvent* event)
     {
         // new bus-based way of doing it (install a listener!)
         ViewportDragContext context;
-        BuildDragDropContext(context, event->pos());
+        BuildDragDropContext(context, GetViewportId(), event->pos());
         DragAndDropEventsBus::Event(DragAndDropContexts::EditorViewport, &DragAndDropEvents::Drop, event, context);
     }
 }
@@ -188,14 +186,11 @@ QtViewport::QtViewport(QWidget* parent)
     {
         m_constructionMatrix[i].SetIdentity();
     }
-    m_viewTM.SetIdentity();
     m_screenTM.SetIdentity();
 
-    m_pMouseOverObject = 0;
+    m_pMouseOverObject = nullptr;
 
     m_bAdvancedSelectMode = false;
-
-    m_pVisibleObjectsCache = new CBaseObjectsCache;
 
     m_constructionPlane.SetPlane(Vec3_OneZ, Vec3_Zero);
     m_constructionPlaneAxisX = Vec3_Zero;
@@ -226,8 +221,6 @@ QtViewport::QtViewport(QWidget* parent)
 //////////////////////////////////////////////////////////////////////////
 QtViewport::~QtViewport()
 {
-    delete m_pVisibleObjectsCache;
-
     GetIEditor()->GetViewManager()->UnregisterViewport(this);
 }
 
@@ -366,13 +359,6 @@ void QtViewport::resizeEvent(QResizeEvent* event)
 }
 
 //////////////////////////////////////////////////////////////////////////
-void QtViewport::leaveEvent(QEvent* event)
-{
-    QWidget::leaveEvent(event);
-    MouseCallback(eMouseLeave, QPoint(), Qt::KeyboardModifiers(), Qt::MouseButtons());
-}
-
-//////////////////////////////////////////////////////////////////////////
 void QtViewport::paintEvent([[maybe_unused]] QPaintEvent* event)
 {
     QPainter painter(this);
@@ -397,12 +383,7 @@ void QtViewport::OnDeactivate()
 //////////////////////////////////////////////////////////////////////////
 void QtViewport::ResetContent()
 {
-    m_pMouseOverObject = 0;
-
-    // Need to clear visual object cache.
-    // Right after loading new level, some code(e.g. OnMouseMove) access invalid
-    // previous level object before cache updated.
-    GetVisibleObjectsCache()->ClearObjects();
+    m_pMouseOverObject = nullptr;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -417,15 +398,11 @@ void QtViewport::UpdateContent(int flags)
 //////////////////////////////////////////////////////////////////////////
 void QtViewport::Update()
 {
-    FUNCTION_PROFILER(GetIEditor()->GetSystem(), PROFILE_EDITOR);
     m_viewportUi.Update();
 
     m_bAdvancedSelectMode = false;
-    bool bSpaceClick = false;
-    {
-        bSpaceClick = CheckVirtualKey(Qt::Key_Space) & !CheckVirtualKey(Qt::Key_Shift) /*& !CheckVirtualKey(Qt::Key_Control)*/;
-    }
-    if (bSpaceClick && hasFocus())
+
+    if (CheckVirtualKey(Qt::Key_Space) && !CheckVirtualKey(Qt::Key_Shift) && hasFocus())
     {
         m_bAdvancedSelectMode = true;
     }
@@ -436,7 +413,7 @@ void QtViewport::Update()
 //////////////////////////////////////////////////////////////////////////
 QPoint QtViewport::WorldToView(const Vec3& wp) const
 {
-    return QPoint(wp.x, wp.y);
+    return QPoint(static_cast<int>(wp.x), static_cast<int>(wp.y));
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -444,8 +421,8 @@ Vec3 QtViewport::WorldToView3D(const Vec3& wp, [[maybe_unused]] int nFlags) cons
 {
     QPoint p = WorldToView(wp);
     Vec3 out;
-    out.x = p.x();
-    out.y = p.y();
+    out.x = static_cast<f32>(p.x());
+    out.y = static_cast<f32>(p.y());
     out.z = wp.z;
     return out;
 }
@@ -454,8 +431,8 @@ Vec3 QtViewport::WorldToView3D(const Vec3& wp, [[maybe_unused]] int nFlags) cons
 Vec3    QtViewport::ViewToWorld(const QPoint& vp, bool* pCollideWithTerrain, [[maybe_unused]] bool onlyTerrain, [[maybe_unused]] bool bSkipVegetation, [[maybe_unused]] bool bTestRenderMesh, [[maybe_unused]] bool* collideWithObject) const
 {
     Vec3 wp;
-    wp.x = vp.x();
-    wp.y = vp.y();
+    wp.x = static_cast<f32>(vp.x());
+    wp.y = static_cast<f32>(vp.y());
     wp.z = 0;
     if (pCollideWithTerrain)
     {
@@ -537,7 +514,7 @@ void QtViewport::mouseMoveEvent(QMouseEvent* event)
 
 void QtViewport::wheelEvent(QWheelEvent* event)
 {
-    OnMouseWheel(event->modifiers(), event->angleDelta().y(), event->position().toPoint());
+    OnMouseWheel(event->modifiers(), static_cast<short>(event->angleDelta().y()), event->position().toPoint());
     event->accept();
 }
 
@@ -615,63 +592,7 @@ void QtViewport::keyReleaseEvent(QKeyEvent* event)
     OnKeyUp(nativeKey, 1, event->nativeModifiers());
 }
 
-//////////////////////////////////////////////////////////////////////////
-void QtViewport::OnLButtonDown(Qt::KeyboardModifiers modifiers, const QPoint& point)
-{
-    // Save the mouse down position
-    m_cMouseDownPos = point;
 
-    if (MouseCallback(eMouseLDown, point, modifiers))
-    {
-        return;
-    }
-}
-
-//////////////////////////////////////////////////////////////////////////
-void QtViewport::OnLButtonUp(Qt::KeyboardModifiers modifiers, const QPoint& point)
-{
-    // Check Edit Tool.
-    MouseCallback(eMouseLUp, point, modifiers);
-}
-//////////////////////////////////////////////////////////////////////////
-void QtViewport::OnRButtonDown(Qt::KeyboardModifiers modifiers, const QPoint& point)
-{
-    MouseCallback(eMouseRDown, point, modifiers);
-}
-
-//////////////////////////////////////////////////////////////////////////
-void QtViewport::OnRButtonUp(Qt::KeyboardModifiers modifiers, const QPoint& point)
-{
-    MouseCallback(eMouseRUp, point, modifiers);
-}
-
-//////////////////////////////////////////////////////////////////////////
-void QtViewport::OnMButtonDown(Qt::KeyboardModifiers modifiers, const QPoint& point)
-{
-    // Check Edit Tool.
-    MouseCallback(eMouseMDown, point, modifiers);
-}
-
-//////////////////////////////////////////////////////////////////////////
-void QtViewport::OnMButtonUp(Qt::KeyboardModifiers modifiers, const QPoint& point)
-{
-    // Move the viewer to the mouse location.
-    // Check Edit Tool.
-    MouseCallback(eMouseMUp, point, modifiers);
-}
-
-//////////////////////////////////////////////////////////////////////////
-void QtViewport::OnMButtonDblClk(Qt::KeyboardModifiers modifiers, const QPoint& point)
-{
-    MouseCallback(eMouseMDblClick, point, modifiers);
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-void QtViewport::OnMouseMove(Qt::KeyboardModifiers modifiers, Qt::MouseButtons buttons, const QPoint& point)
-{
-    MouseCallback(eMouseMove, point, modifiers, buttons);
-}
 
 //////////////////////////////////////////////////////////////////////////
 void QtViewport::OnSetCursor()
@@ -728,44 +649,6 @@ void QtViewport::OnDragSelectRectangle(const QRect& rect, bool bNormalizeRect)
     char szNewStatusText[512];
     sprintf_s(szNewStatusText, "X:%g Y:%g Z:%g  W:%g H:%g", org.x, org.y, org.z, w, h);
     GetIEditor()->SetStatusText(szNewStatusText);
-}
-
-//////////////////////////////////////////////////////////////////////////
-void QtViewport::OnLButtonDblClk(Qt::KeyboardModifiers modifiers, const QPoint& point)
-{
-    if (GetIEditor()->IsInGameMode())
-    {
-        // Ignore double clicks while in game.
-        return;
-    }
-
-    MouseCallback(eMouseLDblClick, point, modifiers);
-}
-
-//////////////////////////////////////////////////////////////////////////
-void QtViewport::OnRButtonDblClk(Qt::KeyboardModifiers modifiers, const QPoint& point)
-{
-    MouseCallback(eMouseRDblClick, point, modifiers);
-}
-
-//////////////////////////////////////////////////////////////////////////
-void QtViewport::OnKeyDown([[maybe_unused]] UINT nChar, [[maybe_unused]] UINT nRepCnt, [[maybe_unused]] UINT nFlags)
-{
-    if (GetIEditor()->IsInGameMode())
-    {
-        // Ignore key downs while in game.
-        return;
-    }
-}
-
-//////////////////////////////////////////////////////////////////////////
-void QtViewport::OnKeyUp([[maybe_unused]] UINT nChar, [[maybe_unused]] UINT nRepCnt, [[maybe_unused]] UINT nFlags)
-{
-    if (GetIEditor()->IsInGameMode())
-    {
-        // Ignore key downs while in game.
-        return;
-    }
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -986,7 +869,7 @@ void QtViewport::MakeConstructionPlane(int axis)
 //////////////////////////////////////////////////////////////////////////
 Vec3 QtViewport::MapViewToCP(const QPoint& point, int axis)
 {
-    AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Editor);
+    AZ_PROFILE_FUNCTION(Editor);
 
     if (axis == AXIS_TERRAIN)
     {
@@ -1110,9 +993,8 @@ bool QtViewport::HitTest(const QPoint& point, HitContext& hitInfo)
     const int viewportId = GetViewportId();
 
     AzToolsFramework::EntityIdList visibleEntityIds;
-    AzToolsFramework::ViewportInteraction::MainEditorViewportInteractionRequestBus::Event(
-        viewportId,
-        &AzToolsFramework::ViewportInteraction::MainEditorViewportInteractionRequests::FindVisibleEntities,
+    AzToolsFramework::ViewportInteraction::EditorEntityViewportInteractionRequestBus::Event(
+        viewportId, &AzToolsFramework::ViewportInteraction::EditorEntityViewportInteractionRequestBus::Events::FindVisibleEntities,
         visibleEntityIds);
 
     // Look through all visible entities to find the closest one to the specified mouse point
@@ -1270,9 +1152,9 @@ float QtViewport::GetDistanceToLine(const Vec3& lineP1, const Vec3& lineP2, cons
     QPoint p2 = WorldToView(lineP2);
 
     return PointToLineDistance2D(
-        Vec3(p1.x(), p1.y(), 0), 
-        Vec3(p2.x(), p2.y(), 0), 
-        Vec3(point.x(), point.y(), 0));
+        Vec3(static_cast<f32>(p1.x()), static_cast<f32>(p1.y()), 0.0f),
+        Vec3(static_cast<f32>(p2.x()), static_cast<f32>(p2.y()), 0.0f),
+        Vec3(static_cast<f32>(point.x()), static_cast<f32>(point.y()), 0.0f));
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1328,111 +1210,8 @@ bool QtViewport::GetAdvancedSelectModeFlag()
 }
 
 //////////////////////////////////////////////////////////////////////////
-bool QtViewport::MouseCallback(EMouseEvent event, const QPoint& point, Qt::KeyboardModifiers modifiers, Qt::MouseButtons buttons)
-{
-    AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Editor);
-
-    // Ignore any mouse events in game mode.
-    if (GetIEditor()->IsInGameMode())
-    {
-        return true;
-    }
-
-    // We must ignore mouse events when we are in the middle of an assert.
-    // Reason: If we have an assert called from an engine module under the editor, if we call this function,
-    // it may call the engine again and cause a deadlock.
-    // Concrete example: CryPhysics called from Trackview causing an assert, and moving the cursor over the viewport
-    // would cause the editor to freeze as it calls CryPhysics again for a raycast while it didn't release the lock.
-    if (gEnv->pSystem->IsAssertDialogVisible())
-    {
-        return true;
-    }
-
-    // RAII wrapper for Pre / PostWidgetRendering calls.
-    // It also tracks the times a mouse callback potentially created a new viewport context.
-    struct ScopedProcessingMouseCallback
-    {
-        explicit ScopedProcessingMouseCallback(QtViewport* viewport)
-            : m_viewport(viewport)
-        {
-            m_viewport->m_processingMouseCallbacksCounter++;
-            m_viewport->PreWidgetRendering();
-        }
-
-        ~ScopedProcessingMouseCallback()
-        {
-            m_viewport->PostWidgetRendering();
-            m_viewport->m_processingMouseCallbacksCounter--;
-        }
-
-        QtViewport* m_viewport;
-    };
-
-    ScopedProcessingMouseCallback scopedProcessingMouseCallback(this);
-
-    //////////////////////////////////////////////////////////////////////////
-    // Hit test gizmo objects.
-    //////////////////////////////////////////////////////////////////////////
-    bool bAltClick = (modifiers & Qt::AltModifier);
-    bool bCtrlClick = (modifiers & Qt::ControlModifier);
-    bool bShiftClick = (modifiers & Qt::ShiftModifier);
-
-    int flags = (bCtrlClick ? MK_CONTROL : 0) |
-        (bShiftClick ? MK_SHIFT : 0) |
-        ((buttons& Qt::LeftButton) ? MK_LBUTTON : 0) |
-        ((buttons& Qt::MiddleButton) ? MK_MBUTTON : 0) |
-        ((buttons& Qt::RightButton) ? MK_RBUTTON : 0);
-
-    switch (event)
-    {
-    case eMouseMove:
-
-        if (m_nLastUpdateFrame == m_nLastMouseMoveFrame)
-        {
-            // If mouse move event generated in the same frame, ignore it.
-            return false;
-        }
-        m_nLastMouseMoveFrame = m_nLastUpdateFrame;
-
-        // Skip the marker position update if anything is selected, since it is only used
-        // by the info bar which doesn't show the marker when there is an active selection.
-        // This helps a performance issue when calling ViewToWorld (which calls RayWorldIntersection)
-        // on every mouse movement becomes very expensive in scenes with large amounts of entities.
-        CSelectionGroup* selection = GetIEditor()->GetSelection();
-        if (!(buttons & Qt::RightButton) /* && m_nLastUpdateFrame != m_nLastMouseMoveFrame*/ && (selection && selection->IsEmpty()))
-        {
-            //m_nLastMouseMoveFrame = m_nLastUpdateFrame;
-            Vec3 pos = ViewToWorld(point);
-            GetIEditor()->SetMarkerPosition(pos);
-        }
-        break;
-    }
-
-    QPoint tempPoint(point.x(), point.y());
-
-    //////////////////////////////////////////////////////////////////////////
-    // Handle viewport manipulators.
-    //////////////////////////////////////////////////////////////////////////
-    if (!bAltClick)
-    {
-        ITransformManipulator* pManipulator = GetIEditor()->GetTransformManipulator();
-        if (pManipulator)
-        {
-            if (pManipulator->MouseCallback(this, event, tempPoint, flags))
-            {
-                return true;
-            }
-        }
-    }
-
-    return false;
-}
-//////////////////////////////////////////////////////////////////////////
 void QtViewport::ProcessRenderLisneters(DisplayContext& rstDisplayContext)
 {
-    FUNCTION_PROFILER(GetIEditor()->GetSystem(), PROFILE_EDITOR);
-
-
     size_t nCount(0);
     size_t nTotal(0);
 
@@ -1489,7 +1268,7 @@ void QtViewport::OnRawInput([[maybe_unused]] UINT wParam, HRAWINPUT lParam)
                     float as = 0.001f * gSettings.cameraMoveSpeed;
                     Ang3 ypr = CCamera::CreateAnglesYPR(Matrix33(viewTM));
                     ypr.x += -all6DOFs[5] * as * fScaleYPR;
-                    ypr.y = CLAMP(ypr.y + all6DOFs[3] * as * fScaleYPR, -1.5f, 1.5f); // to keep rotation in reasonable range
+                    ypr.y = AZStd::clamp(ypr.y + all6DOFs[3] * as * fScaleYPR, -1.5f, 1.5f); // to keep rotation in reasonable range
                     ypr.z = 0;                                                  // to have camera always upward
 
                     viewTM = Matrix34(CCamera::CreateOrientationYPR(ypr), viewTM.GetTranslation());

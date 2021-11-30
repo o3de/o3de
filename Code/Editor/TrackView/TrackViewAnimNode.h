@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -26,7 +27,7 @@ class QWidget;
 class CTrackViewAnimNodeBundle
 {
 public:
-    unsigned int GetCount() const { return m_animNodes.size(); }
+    unsigned int GetCount() const { return static_cast<unsigned int>(m_animNodes.size()); }
     CTrackViewAnimNode* GetNode(const unsigned int index) { return m_animNodes[index]; }
     const CTrackViewAnimNode* GetNode(const unsigned int index) const { return m_animNodes[index]; }
 
@@ -123,7 +124,7 @@ public:
     virtual void SetAsViewCamera();
 
     // Name setter/getter
-    virtual const char* GetName() const override { return m_animNode->GetName(); }
+    AZStd::string GetName() const override { return m_animNode->GetName(); }
     virtual bool SetName(const char* pName) override;
     virtual bool CanBeRenamed() const override;
 
@@ -186,7 +187,7 @@ public:
     // Param
     unsigned int GetParamCount() const;
     CAnimParamType GetParamType(unsigned int index) const;
-    const char* GetParamName(const CAnimParamType& paramType) const;
+    AZStd::string GetParamName(const CAnimParamType& paramType) const;
     bool IsParamValid(const CAnimParamType& param) const;
     IAnimNode::ESupportedParamFlags GetParamFlags(const CAnimParamType& paramType) const;
     AnimValueType GetParamValueType(const CAnimParamType& paramType) const;

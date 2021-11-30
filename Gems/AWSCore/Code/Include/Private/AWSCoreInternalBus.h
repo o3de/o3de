@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -32,11 +33,6 @@ namespace AWSCore
         //! Get the path of AWS resource mapping config file
         //! @return The path of AWS resource mapping config file
         virtual AZStd::string GetResourceMappingConfigFilePath() const = 0;
-
-        //! GetResourceMappingConfigFolderPath
-        //! Get the path of AWS resource mapping config folder
-        //! @return The path of AWS resource mapping config folder
-        virtual AZStd::string GetResourceMappingConfigFolderPath() const = 0;
 
         //! ReloadConfiguration
         //! Reload AWSCore configuration without restarting application

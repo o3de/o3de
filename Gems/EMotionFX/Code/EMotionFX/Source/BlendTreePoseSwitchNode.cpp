@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -84,7 +85,7 @@ namespace EMotionFX
         AnimGraphPose* outputPose;
 
         // if the decision port has no incomming connection, there is nothing we can do
-        if (mInputPorts[INPUTPORT_DECISIONVALUE].mConnection == nullptr)
+        if (m_inputPorts[INPUTPORT_DECISIONVALUE].m_connection == nullptr)
         {
             RequestPoses(animGraphInstance);
             outputPose = GetOutputPose(animGraphInstance, OUTPUTPORT_POSE)->GetValue();
@@ -97,7 +98,7 @@ namespace EMotionFX
         const int32 decisionValue = MCore::Clamp<int32>(GetInputNumberAsInt32(animGraphInstance, INPUTPORT_DECISIONVALUE), 0, 9); // max 10 cases
 
         // check if there is an incoming connection from this port
-        if (mInputPorts[INPUTPORT_POSE_0 + decisionValue].mConnection == nullptr)
+        if (m_inputPorts[INPUTPORT_POSE_0 + decisionValue].m_connection == nullptr)
         {
             RequestPoses(animGraphInstance);
             outputPose = GetOutputPose(animGraphInstance, OUTPUTPORT_POSE)->GetValue();
@@ -106,7 +107,7 @@ namespace EMotionFX
             // visualize it
             if (GetEMotionFX().GetIsInEditorMode() && GetCanVisualize(animGraphInstance))
             {
-                animGraphInstance->GetActorInstance()->DrawSkeleton(outputPose->GetPose(), mVisualizeColor);
+                animGraphInstance->GetActorInstance()->DrawSkeleton(outputPose->GetPose(), m_visualizeColor);
             }
             return;
         }
@@ -123,7 +124,7 @@ namespace EMotionFX
         // visualize it
         if (GetEMotionFX().GetIsInEditorMode() && GetCanVisualize(animGraphInstance))
         {
-            animGraphInstance->GetActorInstance()->DrawSkeleton(outputPose->GetPose(), mVisualizeColor);
+            animGraphInstance->GetActorInstance()->DrawSkeleton(outputPose->GetPose(), m_visualizeColor);
         }
     }
 
@@ -132,7 +133,7 @@ namespace EMotionFX
     void BlendTreePoseSwitchNode::Update(AnimGraphInstance* animGraphInstance, float timePassedInSeconds)
     {
         // if the decision port has no incomming connection, there is nothing we can do
-        if (mInputPorts[INPUTPORT_DECISIONVALUE].mConnection == nullptr)
+        if (m_inputPorts[INPUTPORT_DECISIONVALUE].m_connection == nullptr)
         {
             UniqueData* uniqueData = static_cast<UniqueData*>(FindOrCreateUniqueNodeData(animGraphInstance));
             uniqueData->Clear();
@@ -140,13 +141,13 @@ namespace EMotionFX
         }
 
         // update the node that plugs into the decision value port
-        UpdateIncomingNode(animGraphInstance, mInputPorts[INPUTPORT_DECISIONVALUE].mConnection->GetSourceNode(), timePassedInSeconds);
+        UpdateIncomingNode(animGraphInstance, m_inputPorts[INPUTPORT_DECISIONVALUE].m_connection->GetSourceNode(), timePassedInSeconds);
 
         // get the index we choose
         const int32 decisionValue = MCore::Clamp<int32>(GetInputNumberAsInt32(animGraphInstance, INPUTPORT_DECISIONVALUE), 0, 9); // max 10 cases
 
         // check if there is an incoming connection from this port
-        if (mInputPorts[INPUTPORT_POSE_0 + decisionValue].mConnection == nullptr)
+        if (m_inputPorts[INPUTPORT_POSE_0 + decisionValue].m_connection == nullptr)
         {
             UniqueData* uniqueData = static_cast<UniqueData*>(FindOrCreateUniqueNodeData(animGraphInstance));
             uniqueData->Clear();
@@ -154,14 +155,14 @@ namespace EMotionFX
         }
 
         // pass through the motion extraction of the selected node
-        AnimGraphNode* sourceNode = mInputPorts[INPUTPORT_POSE_0 + decisionValue].mConnection->GetSourceNode();
+        AnimGraphNode* sourceNode = m_inputPorts[INPUTPORT_POSE_0 + decisionValue].m_connection->GetSourceNode();
 
         // if our decision value changed since last time, specify that we want to resync
         // this basically means that the motion extraction delta will be zero for one frame
         UniqueData* uniqueData = static_cast<UniqueData*>(FindOrCreateUniqueNodeData(animGraphInstance));
-        if (uniqueData->mDecisionIndex != decisionValue)
+        if (uniqueData->m_decisionIndex != decisionValue)
         {
-            uniqueData->mDecisionIndex = decisionValue;
+            uniqueData->m_decisionIndex = decisionValue;
             //sourceNode->RecursiveSetUniqueDataFlag(animGraphInstance, AnimGraphObjectData::FLAGS_RESYNC, true);
         }
 
@@ -175,7 +176,7 @@ namespace EMotionFX
     void BlendTreePoseSwitchNode::PostUpdate(AnimGraphInstance* animGraphInstance, float timePassedInSeconds)
     {
         // if the decision port has no incomming connection, there is nothing we can do
-        if (mInputPorts[INPUTPORT_DECISIONVALUE].mConnection == nullptr)
+        if (m_inputPorts[INPUTPORT_DECISIONVALUE].m_connection == nullptr)
         {
             RequestRefDatas(animGraphInstance);
             UniqueData* uniqueData = static_cast<UniqueData*>(FindOrCreateUniqueNodeData(animGraphInstance));
@@ -186,13 +187,13 @@ namespace EMotionFX
         }
 
         // update the node that plugs into the decision value port
-        mInputPorts[INPUTPORT_DECISIONVALUE].mConnection->GetSourceNode()->PerformPostUpdate(animGraphInstance, timePassedInSeconds);
+        m_inputPorts[INPUTPORT_DECISIONVALUE].m_connection->GetSourceNode()->PerformPostUpdate(animGraphInstance, timePassedInSeconds);
 
         // get the index we choose
         const int32 decisionValue = MCore::Clamp<int32>(GetInputNumberAsInt32(animGraphInstance, INPUTPORT_DECISIONVALUE), 0, 9); // max 10 cases
 
         // check if there is an incoming connection from this port
-        if (mInputPorts[INPUTPORT_POSE_0 + decisionValue].mConnection == nullptr)
+        if (m_inputPorts[INPUTPORT_POSE_0 + decisionValue].m_connection == nullptr)
         {
             RequestRefDatas(animGraphInstance);
             UniqueData* uniqueData = static_cast<UniqueData*>(FindOrCreateUniqueNodeData(animGraphInstance));
@@ -203,7 +204,7 @@ namespace EMotionFX
         }
 
         // pass through the motion extraction of the selected node
-        AnimGraphNode* sourceNode = mInputPorts[INPUTPORT_POSE_0 + decisionValue].mConnection->GetSourceNode();
+        AnimGraphNode* sourceNode = m_inputPorts[INPUTPORT_POSE_0 + decisionValue].m_connection->GetSourceNode();
         sourceNode->PerformPostUpdate(animGraphInstance, timePassedInSeconds);
 
         // output the events of the source node we picked
@@ -222,7 +223,7 @@ namespace EMotionFX
     void BlendTreePoseSwitchNode::TopDownUpdate(AnimGraphInstance* animGraphInstance, float timePassedInSeconds)
     {
         // if the decision port has no incomming connection, there is nothing we can do
-        if (mInputPorts[INPUTPORT_DECISIONVALUE].mConnection == nullptr)
+        if (m_inputPorts[INPUTPORT_DECISIONVALUE].m_connection == nullptr)
         {
             return;
         }
@@ -231,7 +232,7 @@ namespace EMotionFX
         const int32 decisionValue = MCore::Clamp<int32>(GetInputNumberAsInt32(animGraphInstance, INPUTPORT_DECISIONVALUE), 0, 9); // max 10 cases
 
         // check if there is an incoming connection from this port
-        if (mInputPorts[INPUTPORT_POSE_0 + decisionValue].mConnection == nullptr)
+        if (m_inputPorts[INPUTPORT_POSE_0 + decisionValue].m_connection == nullptr)
         {
             return;
         }
@@ -241,7 +242,7 @@ namespace EMotionFX
         HierarchicalSyncAllInputNodes(animGraphInstance, uniqueData);
 
         // top down update all incoming connections
-        for (BlendTreeConnection* connection : mConnections)
+        for (BlendTreeConnection* connection : m_connections)
         {
             connection->GetSourceNode()->PerformTopDownUpdate(animGraphInstance, timePassedInSeconds);
         }

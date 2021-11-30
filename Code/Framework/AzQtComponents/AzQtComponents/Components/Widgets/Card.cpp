@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -24,11 +25,6 @@
 
 namespace AzQtComponents
 {
-    namespace CardConstants
-    {
-        static const char* kPropertySelected = "selected";
-    }
-
     static QPixmap ApplyAlphaToPixmap(const QPixmap& pixmap, float alpha)
     {
         QImage image = pixmap.toImage().convertToFormat(QImage::Format_ARGB32);
@@ -346,7 +342,7 @@ namespace AzQtComponents
         config.toolTipPaddingInPixels = 5;
         config.headerIconSizeInPixels = CardHeader::defaultIconSize();
         config.rootLayoutSpacing = 0;
-        config.warningIcon = QStringLiteral(":/Cards/img/UI20/Cards/warning.svg");
+        config.warningIcon = QStringLiteral(":/Notifications/warning.svg");
         config.warningIconSize = {24, 24};
         config.disabledIconAlpha = 0.25;
 

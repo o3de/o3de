@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -9,9 +10,14 @@
 #pragma once
 
 #include <ILog.h>
-#include <CryThread.h>
-#include <MultiThread.h>
 #include <MultiThread_Containers.h>
+#include <list>
+#include <AzCore/std/string/fixed_string.h>
+#include <AzCore/IO/SystemFile.h>
+
+struct IConsole;
+struct ICVar;
+struct ISystem;
 
 //////////////////////////////////////////////////////////////////////
 #if defined(ANDROID) || defined(AZ_PLATFORM_MAC)
@@ -36,7 +42,7 @@ class CLog
 {
 public:
     typedef std::list<ILogCallback*> Callbacks;
-    typedef CryStackStringT<char, MAX_TEMP_LENGTH_SIZE> LogStringType;
+    typedef AZStd::fixed_string<MAX_TEMP_LENGTH_SIZE> LogStringType;
 
     // constructor
     CLog(ISystem* pSystem);
@@ -106,7 +112,6 @@ private: // -------------------------------------------------------------------
         ELogType logType;
         bool bAdd;
         Destination destination;
-        void GetMemoryUsage([[maybe_unused]] ICrySizer* pSizer) const {}
     };
 
     void CheckAndPruneBackupLogs() const;
@@ -167,15 +172,13 @@ private: // -------------------------------------------------------------------
     };
 
     std::vector<SAssetScopeInfo> m_assetScopeQueue;
-    CryCriticalSection m_assetScopeQueueLock;
+    AZStd::mutex m_assetScopeQueueLock;
     string m_assetScopeString;
 #endif
 
     ICVar*                 m_pLogIncludeTime;                                       //
 
     IConsole*          m_pConsole;                                                      //
-
-    CryCriticalSection m_logCriticalSection;
 
     struct SLogHistoryItem
     {
@@ -196,17 +199,6 @@ private: // -------------------------------------------------------------------
 #endif
 
 public: // -------------------------------------------------------------------
-
-    void GetMemoryUsage(ICrySizer* pSizer) const
-    {
-        pSizer->AddObject(this, sizeof(*this));
-        pSizer->AddObject(m_pLogVerbosity);
-        pSizer->AddObject(m_pLogWriteToFile);
-        pSizer->AddObject(m_pLogWriteToFileVerbosity);
-        pSizer->AddObject(m_pLogVerbosityOverridesWriteToFile);
-        pSizer->AddObject(m_pLogSpamDelay);
-        pSizer->AddObject(m_threadSafeMsgQueue);
-    }
     // checks the verbosity of the message and returns NULL if the message must NOT be
     // logged, or the pointer to the part of the message that should be logged
     const char* CheckAgainstVerbosity(const char* pText, bool& logtofile, bool& logtoconsole, const uint8 DefaultVerbosity = 2);

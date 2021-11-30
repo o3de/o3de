@@ -1,6 +1,7 @@
 #
-# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
-# 
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
@@ -48,16 +49,27 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
         NAME EMotionFX_Atom.Editor GEM_MODULE
 
         NAMESPACE Gem
+        AUTORCC
         FILES_CMAKE
             emotionfx_atom_editor_files.cmake
         INCLUDE_DIRECTORIES
             PRIVATE
                 Source
+                Tools
         BUILD_DEPENDENCIES
             PRIVATE
                 AZ::AzCore
                 Gem::EMotionFX_Atom.Static
+                Gem::EMotionFX.Editor.Static
+                Gem::AtomToolsFramework.Static
+                Gem::AtomToolsFramework.Editor
+                Gem::Atom_Component_DebugCamera.Static
+                Gem::Atom_Feature_Common.Static
+                Gem::AtomLyIntegration_CommonFeatures.Static
         RUNTIME_DEPENDENCIES
             Gem::EMotionFX.Editor
+        COMPILE_DEFINITIONS
+            PUBLIC
+            EMOTIONFXATOM_EDITOR
     )
 endif()

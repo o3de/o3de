@@ -1,13 +1,14 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "ImageProcessing_precompiled.h"
 
 #include <ImageLoader/ImageLoaders.h>
 #include <Atom/ImageProcessing/ImageObject.h>
+#include <ImageBuilderBaseType.h>
 
 //  warning C4251: class QT_Type needs to have dll-interface to be used by clients of class 'QT_Type'
 AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option")
@@ -27,6 +28,7 @@ namespace ImageProcessingAtom
             QImage qimage(filename.c_str());
             if (qimage.isNull())
             {
+                AZ_Error("ImageProcessing", false, "Failed to load [%s] via QImage", filename.c_str());
                 return NULL;
             }
 

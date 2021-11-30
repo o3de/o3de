@@ -1,14 +1,14 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
-#ifndef __MCOMMON_RENDERUTIL_H
-#define __MCOMMON_RENDERUTIL_H
+#pragma once
 
-// include required headers
+#include <AzCore/Math/Aabb.h>
 #include <AzCore/Math/Vector2.h>
 #include <MCore/Source/AzCoreConversions.h>
 #include <MCore/Source/Vector.h>
@@ -33,11 +33,11 @@ namespace MCommon
 
     public:
         // colors
-        static MCore::RGBAColor mSelectionColor;
-        static MCore::RGBAColor mSelectionColorDarker;
-        static MCore::RGBAColor mRed;
-        static MCore::RGBAColor mGreen;
-        static MCore::RGBAColor mBlue;
+        static MCore::RGBAColor s_selectionColor;
+        static MCore::RGBAColor s_selectionColorDarker;
+        static MCore::RGBAColor s_red;
+        static MCore::RGBAColor s_green;
+        static MCore::RGBAColor s_blue;
     };
 
 
@@ -110,7 +110,7 @@ namespace MCommon
          * Render tangents and bitangents of the mesh.
          * @param mesh A pointer to the mesh which will be rendered.
          * @param worldTM The world space transformation matrix of the node to which the given mesh belongs to.
-         * @param scale This parameter controls the length of the tangents and bitangentss. The default size of the tangents and bitangents is one unit.
+         * @param scale This parameter controls the length of the tangents and bitangents. The default size of the tangents and bitangents is one unit.
          * @param colorTangents The color of the tangents.
          * @param mirroredBitangentColor The color of the mirrored bitangents, so the ones that have a w value of -1.
          * @param colorBitangent The color of the face bitangents.
@@ -126,7 +126,7 @@ namespace MCommon
          * @param directlyRender Will call the RenderLines() function internally in case it is set to true. If false
          *                       you have to make sure to call RenderLines() manually at the end of your custom render frame function.
          */
-        void RenderAABB(const MCore::AABB& box, const MCore::RGBAColor& color, bool directlyRender = false);
+        void RenderAabb(const AZ::Aabb& box, const MCore::RGBAColor& color, bool directlyRender = false);
 
         /**
          * Render a selection gizmo around the given axis aligned bounding box.
@@ -135,7 +135,7 @@ namespace MCommon
          * @param directlyRender Will call the RenderLines() function internally in case it is set to true. If false
          *                       you have to make sure to call RenderLines() manually at the end of your custom render frame function.
          */
-        void RenderSelection(const MCore::AABB& box, const MCore::RGBAColor& color, bool directlyRender = false);
+        void RenderSelection(const AZ::Aabb& box, const MCore::RGBAColor& color, bool directlyRender = false);
 
         /**
          * The render settings used to enable the different AABB types of an actor instance.
@@ -149,14 +149,12 @@ namespace MCommon
              */
             AABBRenderSettings();
 
-            bool                mNodeBasedAABB;             /**< Enable in case you want to render the node based AABB (default=true). */
-            bool                mMeshBasedAABB;             /**< Enable in case you want to render the mesh based AABB (default=true). */
-            bool                mCollisionMeshBasedAABB;    /**< Enable in case you want to render the collision mesh based AABB (default=true). */
-            bool                mStaticBasedAABB;           /**< Enable in case you want to render the static based AABB (default=true). */
-            MCore::RGBAColor    mNodeBasedColor;            /**< The color of the node based AABB. */
-            MCore::RGBAColor    mMeshBasedColor;            /**< The color of the mesh based AABB. */
-            MCore::RGBAColor    mCollisionMeshBasedColor;   /**< The color of the collision mesh based AABB. */
-            MCore::RGBAColor    mStaticBasedColor;          /**< The color of the static based AABB. */
+            bool                m_nodeBasedAabb;             /**< Enable in case you want to render the node based AABB (default=true). */
+            bool                m_meshBasedAabb;             /**< Enable in case you want to render the mesh based AABB (default=true). */
+            bool                m_staticBasedAabb;           /**< Enable in case you want to render the static based AABB (default=true). */
+            MCore::RGBAColor    m_nodeBasedColor;            /**< The color of the node based AABB. */
+            MCore::RGBAColor    m_meshBasedColor;            /**< The color of the mesh based AABB. */
+            MCore::RGBAColor    m_staticBasedColor;          /**< The color of the static based AABB. */
         };
 
         /**
@@ -167,19 +165,7 @@ namespace MCommon
          * @param directlyRender Will call the RenderLines() function internally in case it is set to true. If false
          *                       you have to make sure to call RenderLines() manually at the end of your custom render frame function.
          */
-        void RenderAABBs(EMotionFX::ActorInstance* actorInstance, const AABBRenderSettings& renderSettings = AABBRenderSettings(), bool directlyRender = false);
-
-        /**
-         * Render OBB for all enabled nodes inside the actor instance.
-         * @param actorInstance A pointer to the actor instance which will be rendered.
-         * @param[in] visibleJointIndices List of visible joint indices. nullptr in case all joints should be rendered.
-         * @param[in] selectedJointIndices List of selected joint indices. nullptr in case selection should not be considered.
-         * @param[in] color The color of the OBBs.
-         * @param[in] selectedColor The color of the selected OBBs.
-         * @param[in] directlyRender Will call the RenderLines() function internally in case it is set to true. If false
-         *                           you have to make sure to call RenderLines() manually at the end of your custom render frame function.
-         */
-        void RenderOBBs(EMotionFX::ActorInstance* actorInstance, const AZStd::unordered_set<AZ::u32>* visibleJointIndices = nullptr, const AZStd::unordered_set<AZ::u32>* selectedJointIndices = nullptr, const MCore::RGBAColor& color = MCore::RGBAColor(1.0f, 1.0f, 0.0f, 1.0f), const MCore::RGBAColor& selectedColor = MCore::RGBAColor(1.0f, 0.647f, 0.0f), bool directlyRender = false);
+        void RenderAabbs(EMotionFX::ActorInstance* actorInstance, const AABBRenderSettings& renderSettings = AABBRenderSettings(), bool directlyRender = false);
 
         /**
          * Render a simple line based skeleton for all enabled nodes of the actor instance.
@@ -191,7 +177,7 @@ namespace MCommon
          * @param[in] directlyRender Will call the RenderLines() function internally in case it is set to true. If false
          *                           you have to make sure to call RenderLines() manually at the end of your custom render frame function.
          */
-        void RenderSimpleSkeleton(EMotionFX::ActorInstance* actorInstance, const AZStd::unordered_set<AZ::u32>* visibleJointIndices = nullptr, const AZStd::unordered_set<AZ::u32>* selectedJointIndices = nullptr,
+        void RenderSimpleSkeleton(EMotionFX::ActorInstance* actorInstance, const AZStd::unordered_set<size_t>* visibleJointIndices = nullptr, const AZStd::unordered_set<size_t>* selectedJointIndices = nullptr,
             const MCore::RGBAColor& color = MCore::RGBAColor(1.0f, 1.0f, 0.0f, 1.0f), const MCore::RGBAColor& selectedColor = MCore::RGBAColor(1.0f, 0.647f, 0.0f),
             float jointSphereRadius = 0.1f, bool directlyRender = false);
 
@@ -205,7 +191,7 @@ namespace MCommon
          * @param[in] color The desired skeleton color.
          * @param[in] selectedColor The color of the selected bones.
          */
-        void RenderSkeleton(EMotionFX::ActorInstance* actorInstance, const MCore::Array<uint32>& boneList, const AZStd::unordered_set<AZ::u32>* visibleJointIndices = nullptr, const AZStd::unordered_set<AZ::u32>* selectedJointIndices = nullptr, const MCore::RGBAColor& color = MCore::RGBAColor(1.0f, 0.0f, 0.0f, 1.0f), const MCore::RGBAColor& selectedColor = MCore::RGBAColor(1.0f, 0.647f, 0.0f));
+        void RenderSkeleton(EMotionFX::ActorInstance* actorInstance, const AZStd::vector<size_t>& boneList, const AZStd::unordered_set<size_t>* visibleJointIndices = nullptr, const AZStd::unordered_set<size_t>* selectedJointIndices = nullptr, const MCore::RGBAColor& color = MCore::RGBAColor(1.0f, 0.0f, 0.0f, 1.0f), const MCore::RGBAColor& selectedColor = MCore::RGBAColor(1.0f, 0.647f, 0.0f));
 
         /**
          * Render node orientations.
@@ -216,7 +202,7 @@ namespace MCommon
          * @param[in] scale The scaling value in units. Axes of normal nodes will use the scaling value as unit length, skinned bones will use the scaling value as multiplier.
          * @param[in] scaleBonesOnLength Automatically scales the bone orientations based on the bone length. This means finger node orientations will be rendered smaller than foot bones as the bone length is a lot smaller as well.
          */
-        void RenderNodeOrientations(EMotionFX::ActorInstance* actorInstance, const MCore::Array<uint32>& boneList, const AZStd::unordered_set<AZ::u32>* visibleJointIndices = nullptr, const AZStd::unordered_set<AZ::u32>* selectedJointIndices = nullptr, float scale = 1.0f, bool scaleBonesOnLength = true);
+        void RenderNodeOrientations(EMotionFX::ActorInstance* actorInstance, const AZStd::vector<size_t>& boneList, const AZStd::unordered_set<size_t>* visibleJointIndices = nullptr, const AZStd::unordered_set<size_t>* selectedJointIndices = nullptr, float scale = 1.0f, bool scaleBonesOnLength = true);
 
         /**
          * Render the bind pose of the given actor.
@@ -238,7 +224,7 @@ namespace MCommon
          * @param[in] visibleJointIndices List of visible joint indices. nullptr in case all joints should be rendered.
          * @param[in] selectedJointIndices List of selected joint indices. nullptr in case selection should not be considered.
          */
-        void RenderNodeNames(EMotionFX::ActorInstance* actorInstance, MCommon::Camera* camera, uint32 screenWidth, uint32 screenHeight, const MCore::RGBAColor& color, const MCore::RGBAColor& selectedColor, const AZStd::unordered_set<AZ::u32>& visibleJointIndices, const AZStd::unordered_set<AZ::u32>& selectedJointIndices);
+        void RenderNodeNames(EMotionFX::ActorInstance* actorInstance, MCommon::Camera* camera, uint32 screenWidth, uint32 screenHeight, const MCore::RGBAColor& color, const MCore::RGBAColor& selectedColor, const AZStd::unordered_set<size_t>& visibleJointIndices, const AZStd::unordered_set<size_t>& selectedJointIndices);
 
         /**
          * Render a sphere.
@@ -253,7 +239,7 @@ namespace MCommon
          * @param color The desired sphere color.
          * @param worldTM The world space transformation matrix.
          */
-        MCORE_INLINE void RenderSphere(const MCore::RGBAColor& color, const AZ::Transform& worldTM)                                                            { RenderUtilMesh(mUnitSphereMesh, color, worldTM); }
+        MCORE_INLINE void RenderSphere(const MCore::RGBAColor& color, const AZ::Transform& worldTM)                                                            { RenderUtilMesh(m_unitSphereMesh, color, worldTM); }
 
         /**
          * Render a circle, consisting of lines.
@@ -269,7 +255,7 @@ namespace MCommon
          * @param color The desired cube color.
          * @param worldTM The world space transformation matrix.
          */
-        MCORE_INLINE void RenderCube(const MCore::RGBAColor& color, const AZ::Transform& worldTM)                                                          { RenderUtilMesh(mUnitCubeMesh, color, worldTM); }
+        MCORE_INLINE void RenderCube(const MCore::RGBAColor& color, const AZ::Transform& worldTM)                                                          { RenderUtilMesh(m_unitCubeMesh, color, worldTM); }
 
         /**
          * Render a cylinder.
@@ -279,7 +265,7 @@ namespace MCommon
          * @param color The desired cylinder color.
          * @param worldTM The world space transformation matrix.
          */
-        MCORE_INLINE void RenderCylinder(float baseRadius, float topRadius, float length, const MCore::RGBAColor& color, const AZ::Transform& worldTM)     { FillCylinder(mCylinderMesh, baseRadius, topRadius, length); RenderUtilMesh(mCylinderMesh, color, worldTM); }
+        MCORE_INLINE void RenderCylinder(float baseRadius, float topRadius, float length, const MCore::RGBAColor& color, const AZ::Transform& worldTM)     { FillCylinder(m_cylinderMesh, baseRadius, topRadius, length); RenderUtilMesh(m_cylinderMesh, color, worldTM); }
 
         /**
          * Render a cylinder.
@@ -316,7 +302,7 @@ namespace MCommon
          * @param color The desired arrow head color.
          * @param worldTM The world space transformation matrix.
          */
-        MCORE_INLINE void RenderArrowHead(float height, float radius, const MCore::RGBAColor& color, const AZ::Transform& worldTM)             { FillArrowHead(mArrowHeadMesh, height, radius); RenderUtilMesh(mArrowHeadMesh, color, worldTM); }
+        MCORE_INLINE void RenderArrowHead(float height, float radius, const MCore::RGBAColor& color, const AZ::Transform& worldTM)             { FillArrowHead(m_arrowHeadMesh, height, radius); RenderUtilMesh(m_arrowHeadMesh, color, worldTM); }
 
         /**
          * Render an arrow head.
@@ -350,17 +336,17 @@ namespace MCommon
              */
             AxisRenderingSettings();
 
-            AZ::Transform   mWorldTM;           /**< The world space transformation matrix to visualize. */
-            AZ::Vector3     mCameraRight;       /**< The inverse of the camera's right vector used for billboarding the axis names. */
-            AZ::Vector3     mCameraUp;          /**< The inverse of the camera's up vector used for billboarding the axis names. */
-            float           mSize;              /**< The size value in units is used to control the scaling of the axis. */
-            bool            mRenderXAxis;       /**< Set to true if you want to render the x axis, false if the x axis should be skipped. */
-            bool            mRenderYAxis;       /**< Set to true if you want to render the y axis, false if the y axis should be skipped. */
-            bool            mRenderZAxis;       /**< Set to true if you want to render the z axis, false if the z axis should be skipped. */
-            bool            mRenderXAxisName;   /**< Set to true if you want to render the name of the x axis. The name will only be rendered if the axis itself will be rendered as well. */
-            bool            mRenderYAxisName;   /**< Set to true if you want to render the name of the y axis. The name will only be rendered if the axis itself will be rendered as well. */
-            bool            mRenderZAxisName;   /**< Set to true if you want to render the name of the z axis. The name will only be rendered if the axis itself will be rendered as well. */
-            bool            mSelected;          /**< Set to true if you want to render the axis using the selection color. */
+            AZ::Transform   m_worldTm;           /**< The world space transformation matrix to visualize. */
+            AZ::Vector3     m_cameraRight;       /**< The inverse of the camera's right vector used for billboarding the axis names. */
+            AZ::Vector3     m_cameraUp;          /**< The inverse of the camera's up vector used for billboarding the axis names. */
+            float           m_size;              /**< The size value in units is used to control the scaling of the axis. */
+            bool            m_renderXAxis;       /**< Set to true if you want to render the x axis, false if the x axis should be skipped. */
+            bool            m_renderYAxis;       /**< Set to true if you want to render the y axis, false if the y axis should be skipped. */
+            bool            m_renderZAxis;       /**< Set to true if you want to render the z axis, false if the z axis should be skipped. */
+            bool            m_renderXAxisName;   /**< Set to true if you want to render the name of the x axis. The name will only be rendered if the axis itself will be rendered as well. */
+            bool            m_renderYAxisName;   /**< Set to true if you want to render the name of the y axis. The name will only be rendered if the axis itself will be rendered as well. */
+            bool            m_renderZAxisName;   /**< Set to true if you want to render the name of the z axis. The name will only be rendered if the axis itself will be rendered as well. */
+            bool            m_selected;          /**< Set to true if you want to render the axis using the selection color. */
         };
 
         /**
@@ -386,8 +372,8 @@ namespace MCommon
         struct MCOMMON_API LineVertex
         {
             MCORE_MEMORYOBJECTCATEGORY(RenderUtil::LineVertex, MCore::MCORE_DEFAULT_ALIGNMENT, MEMCATEGORY_MCOMMON);
-            AZ::Vector3         mPosition;  /**< The position of the vertex. */
-            MCore::RGBAColor    mColor;     /**< The vertex color. */
+            AZ::Vector3         m_position;  /**< The position of the vertex. */
+            MCore::RGBAColor    m_color;     /**< The vertex color. */
         };
 
         /**
@@ -398,12 +384,12 @@ namespace MCommon
          */
         MCORE_INLINE void RenderLine(const AZ::Vector3& v1, const AZ::Vector3& v2, const MCore::RGBAColor& color)
         {
-            mVertexBuffer[mNumVertices].mPosition = v1;
-            mVertexBuffer[mNumVertices + 1].mPosition = v2;
-            mVertexBuffer[mNumVertices].mColor = color;
-            mVertexBuffer[mNumVertices + 1].mColor = color;
-            mNumVertices += 2;
-            if (mNumVertices >= mNumMaxLineVertices)
+            m_vertexBuffer[m_numVertices].m_position = v1;
+            m_vertexBuffer[m_numVertices + 1].m_position = v2;
+            m_vertexBuffer[m_numVertices].m_color = color;
+            m_vertexBuffer[m_numVertices + 1].m_color = color;
+            m_numVertices += 2;
+            if (m_numVertices >= s_numMaxLineVertices)
             {
                 RenderLines();
             }
@@ -430,11 +416,11 @@ namespace MCommon
         struct MCOMMON_API Line2D
         {
             MCORE_MEMORYOBJECTCATEGORY(RenderUtil::Line2D, MCore::MCORE_DEFAULT_ALIGNMENT, MEMCATEGORY_MCOMMON);
-            float               mX1;    /**< The x position of the first vertex. */
-            float               mY1;    /**< The y position of the first vertex. */
-            float               mX2;    /**< The x position of the second vertex. */
-            float               mY2;    /**< The y position of the second vertex. */
-            MCore::RGBAColor    mColor; /**< The line color. */
+            float               m_x1;    /**< The x position of the first vertex. */
+            float               m_y1;    /**< The y position of the first vertex. */
+            float               m_x2;    /**< The x position of the second vertex. */
+            float               m_y2;    /**< The y position of the second vertex. */
+            MCore::RGBAColor    m_color; /**< The line color. */
         };
 
         /**
@@ -447,13 +433,13 @@ namespace MCommon
          */
         MCORE_INLINE void Render2DLine(float x1, float y1, float x2, float y2, const MCore::RGBAColor& color)
         {
-            m2DLines[mNum2DLines].mX1 = x1;
-            m2DLines[mNum2DLines].mY1 = y1;
-            m2DLines[mNum2DLines].mX2 = x2;
-            m2DLines[mNum2DLines].mY2 = y2;
-            m2DLines[mNum2DLines].mColor = color;
-            mNum2DLines++;
-            if (mNum2DLines >= mNumMax2DLines)
+            m_m2DLines[m_num2DLines].m_x1 = x1;
+            m_m2DLines[m_num2DLines].m_y1 = y1;
+            m_m2DLines[m_num2DLines].m_x2 = x2;
+            m_m2DLines[m_num2DLines].m_y2 = y2;
+            m_m2DLines[m_num2DLines].m_color = color;
+            m_num2DLines++;
+            if (m_num2DLines >= s_numMax2DLines)
             {
                 Render2DLines();
             }
@@ -503,9 +489,9 @@ namespace MCommon
              */
             void Allocate(uint32 numVertices, uint32 numIndices, bool hasNormals);
 
-            AZStd::vector<AZ::Vector3>        mPositions;     /**< The vertex buffer. */
-            AZStd::vector<uint32>             mIndices;       /**< The index buffer. */
-            AZStd::vector<AZ::Vector3>        mNormals;       /**< The normal buffer. */
+            AZStd::vector<AZ::Vector3>        m_positions;     /**< The vertex buffer. */
+            AZStd::vector<uint32>             m_indices;       /**< The index buffer. */
+            AZStd::vector<AZ::Vector3>        m_normals;       /**< The normal buffer. */
         };
 
         /**
@@ -514,12 +500,12 @@ namespace MCommon
         struct UtilMeshVertex
         {
             MCORE_MEMORYOBJECTCATEGORY(RenderUtil::UtilMeshVertex, MCore::MCORE_DEFAULT_ALIGNMENT, MEMCATEGORY_MCOMMON);
-            AZ::Vector3 mPosition;   /**< The position of the vertex. */
-            AZ::Vector3 mNormal;     /**< The vertex normal. */
+            AZ::Vector3 m_position;   /**< The position of the vertex. */
+            AZ::Vector3 m_normal;     /**< The vertex normal. */
 
             UtilMeshVertex(const AZ::Vector3& pos, const AZ::Vector3& normal)
-                : mPosition(pos)
-                , mNormal(normal) {}
+                : m_position(pos)
+                , m_normal(normal) {}
         };
 
         /**
@@ -544,27 +530,9 @@ namespace MCommon
          * To avoid recalculating them several times we do this at a central place. This function needs to be called before switching to a new mesh inside
          * the render loop as well as before an animation update, so before calling any of the render normals, face normals, tangents and bitangents functions.
          */
-        MCORE_INLINE void ResetCurrentMesh()                                                                                { mCurrentMesh = NULL; }
+        MCORE_INLINE void ResetCurrentMesh()                                                                                { m_currentMesh = NULL; }
 
         //---------------------------------------------------------------------------------------------
-
-        /*struct MCOMMON_API Triangle
-        {
-            MCORE_MEMORYOBJECTCATEGORY( RenderUtil::Triangle, MCore::MCORE_DEFAULT_ALIGNMENT, MEMCATEGORY_MCOMMON );
-
-            AZ::Vector3  mPosA;
-            AZ::Vector3  mPosB;
-            AZ::Vector3  mPosC;
-
-            AZ::Vector3  mNormalA;
-            AZ::Vector3  mNormalB;
-            AZ::Vector3  mNormalC;
-
-            uint32          mColor;
-
-            Triangle() {}
-            Triangle(const AZ::Vector3& posA, const AZ::Vector3& posB, const AZ::Vector3& posC, const AZ::Vector3& normalA, const AZ::Vector3& normalB, const AZ::Vector3& normalC, uint32 color) : mPosA(posA), mPosB(posB), mPosC(posC), mNormalA(normalA), mNormalB(normalB), mNormalC(normalC), mColor(color) {}
-        };*/
 
         /**
          * The vertex structure to be used for rendering util meshes.
@@ -572,29 +540,29 @@ namespace MCommon
         struct TriangleVertex
         {
             MCORE_MEMORYOBJECTCATEGORY(RenderUtil::TriangleVertex, MCore::MCORE_DEFAULT_ALIGNMENT, MEMCATEGORY_MCOMMON);
-            AZ::Vector3  mPosition;      /**< The position of the vertex. */
-            AZ::Vector3  mNormal;        /**< The vertex normal. */
-            uint32       mColor;
+            AZ::Vector3  m_position;      /**< The position of the vertex. */
+            AZ::Vector3  m_normal;        /**< The vertex normal. */
+            uint32       m_color;
 
             MCORE_INLINE TriangleVertex(const AZ::Vector3& pos, const AZ::Vector3& normal, uint32 color)
-                : mPosition(pos)
-                , mNormal(normal)
-                , mColor(color) {}
+                : m_position(pos)
+                , m_normal(normal)
+                , m_color(color) {}
         };
 
         MCORE_INLINE void AddTriangle(const AZ::Vector3& posA, const AZ::Vector3& posB, const AZ::Vector3& posC, const AZ::Vector3& normalA, const AZ::Vector3& normalB, const AZ::Vector3& normalC, uint32 color)
         {
-            mTriangleVertices.Add(TriangleVertex(posA, normalA, color));
-            mTriangleVertices.Add(TriangleVertex(posB, normalB, color));
-            mTriangleVertices.Add(TriangleVertex(posC, normalC, color));
+            m_triangleVertices.emplace_back(TriangleVertex(posA, normalA, color));
+            m_triangleVertices.emplace_back(TriangleVertex(posB, normalB, color));
+            m_triangleVertices.emplace_back(TriangleVertex(posC, normalC, color));
 
-            if (mTriangleVertices.GetLength() + 2 >= mNumMaxTriangleVertices)
+            if (m_triangleVertices.size() + 2 >= s_numMaxTriangleVertices)
             {
                 RenderTriangles();
             }
         }
 
-        virtual void RenderTriangles(const MCore::Array<TriangleVertex>& triangleVertices) { MCORE_UNUSED(triangleVertices); }
+        virtual void RenderTriangles(const AZStd::vector<TriangleVertex>& triangleVertices) { MCORE_UNUSED(triangleVertices); }
         void RenderTriangles();
 
         //---------------------------------------------------------------------------------------------
@@ -614,24 +582,24 @@ namespace MCommon
          * Calculate the aabb which includes all actor instances.
          * @return The aabb which includes all actor instances.
          */
-        MCore::AABB CalcSceneAABB();
+        AZ::Aabb CalcSceneAabb();
 
         struct TrajectoryPathParticle
         {
-            EMotionFX::Transform mWorldTM;
+            EMotionFX::Transform m_worldTm;
         };
 
         struct TrajectoryTracePath
         {
-            MCore::Array<TrajectoryPathParticle> mTraceParticles;
-            EMotionFX::ActorInstance*   mActorInstance;
-            float                       mTimePassed;
+            AZStd::vector<TrajectoryPathParticle> m_traceParticles;
+            EMotionFX::ActorInstance*   m_actorInstance;
+            float                       m_timePassed;
 
             TrajectoryTracePath()
             {
-                mTraceParticles.Reserve(250);
-                mTimePassed     = 0.0f;
-                mActorInstance  = NULL;
+                m_traceParticles.reserve(250);
+                m_timePassed     = 0.0f;
+                m_actorInstance  = NULL;
             }
         };
 
@@ -651,7 +619,7 @@ namespace MCommon
         /**
          * Render text to screen. This will only work in case the Render2DLines() function has been implemented.
          */
-        MCORE_INLINE void RenderText(float x, float y, const char* text, const MCore::RGBAColor& color = MCore::RGBAColor(1.0f, 1.0f, 1.0f), float fontSize = 11.0f, bool centered = false)   { mFont->Render(x * m_devicePixelRatio, (y * m_devicePixelRatio) + fontSize - 1, fontSize, centered, text, color); }
+        MCORE_INLINE void RenderText(float x, float y, const char* text, const MCore::RGBAColor& color = MCore::RGBAColor(1.0f, 1.0f, 1.0f), float fontSize = 11.0f, bool centered = false)   { m_font->Render(x * m_devicePixelRatio, (y * m_devicePixelRatio) + fontSize - 1, fontSize, centered, text, color); }
 
         /**
          * Render text to screen. This will only work in case the Render2DLines() function has been implemented.
@@ -721,7 +689,7 @@ namespace MCommon
 
         /**
          * Change the shape of a given arrow head util mesh. This method can be used to adjust an already allocated arrow head util mesh.
-         * For example this can be usedful if you need to change the radius or the height of an arrow head.
+         * For example this can be useful if you need to change the radius or the height of an arrow head.
          * @param mesh A pointer to the arrow head util mesh. Note that this mesh has to be created using CreateArrowHead().
          * @param height The height of the arrow head from the base to the head.
          * @param radius The radius of the base of the arrow head.
@@ -734,7 +702,7 @@ namespace MCommon
          * @param radius The radius of the sphere.
          * @return A pointer to the newly created util sphere mesh.
          */
-        static UtilMesh* CreateSphere(float radius, uint32 numSegments = 8);
+        static UtilMesh* CreateSphere(float radius, uint32 numSegments = 5);
 
         /**
          * Create an util mesh we can use to render cubes.
@@ -764,19 +732,19 @@ namespace MCommon
             MCORE_INLINE float GetWidth() const
             {
                 float ret = 0.1f;
-                if (mIndexCount > 0)
+                if (m_indexCount > 0)
                 {
-                    ret = (mX2 - mX1) + 0.05f;
+                    ret = (m_x2 - m_x1) + 0.05f;
                 }
                 return ret;
             }
 
-            float                   mX1;
-            float                   mX2;
-            float                   mY1;
-            float                   mY2;
-            unsigned short          mIndexCount;
-            const unsigned short*   mIndices;
+            float                   m_x1;
+            float                   m_x2;
+            float                   m_y1;
+            float                   m_y2;
+            unsigned short          m_indexCount;
+            const unsigned short*   m_indices;
         };
 
         class MCOMMON_API VectorFont
@@ -794,42 +762,39 @@ namespace MCommon
             float CalculateTextWidth(const char* text);
 
         private:
-            uint32      mVersion;
-            uint32      mVcount;
-            uint32      mCount;
-            float*      mVertices;
-            uint32      mIcount;
-            FontChar    mCharacters[256];
-            RenderUtil* mRenderUtil;
+            uint32      m_version;
+            uint32      m_vcount;
+            uint32      m_count;
+            float*      m_vertices;
+            uint32      m_icount;
+            FontChar    m_characters[256];
+            RenderUtil* m_renderUtil;
         };
 
-        EMotionFX::Mesh*                mCurrentMesh;           /**< A pointer to the mesh whose world space positions are in the pre-calculated positions buffer. NULL in case we haven't pre-calculated any positions yet. */
-        AZStd::vector<AZ::Vector3>      mWorldSpacePositions;   /**< The buffer used to store world space positions for rendering normals, tangents and the wireframe. */
+        EMotionFX::Mesh*                m_currentMesh;           /**< A pointer to the mesh whose world space positions are in the pre-calculated positions buffer. NULL in case we haven't pre-calculated any positions yet. */
+        AZStd::vector<AZ::Vector3>      m_worldSpacePositions;   /**< The buffer used to store world space positions for rendering normals, tangents and the wireframe. */
 
-        LineVertex*                     mVertexBuffer;          /**< Array of line vertices. */
-        uint32                          mNumVertices;           /**< The current number of vertices in the array. */
-        static uint32                   mNumMaxLineVertices;    /**< The maximum capacity of the line vertex buffer. */
+        LineVertex*                     m_vertexBuffer;          /**< Array of line vertices. */
+        uint32                          m_numVertices;           /**< The current number of vertices in the array. */
+        static uint32                   s_numMaxLineVertices;    /**< The maximum capacity of the line vertex buffer. */
 
-        Line2D*                         m2DLines;               /**< Array of 2D lines. */
-        uint32                          mNum2DLines;            /**< The current number of 2D lines in the array. */
-        static uint32                   mNumMax2DLines;         /**< The maximum capacity of the 2D line buffer. */
-        static float                    m_wireframeSphereSegmentCount;
+        Line2D*                         m_m2DLines;               /**< Array of 2D lines. */
+        uint32                          m_num2DLines;            /**< The current number of 2D lines in the array. */
+        static uint32                   s_numMax2DLines;         /**< The maximum capacity of the 2D line buffer. */
+        static float                    s_wireframeSphereSegmentCount;
 
         float                           m_devicePixelRatio;
-        VectorFont*                     mFont;                  /**< The vector font used to render text. */
+        VectorFont*                     m_font;                  /**< The vector font used to render text. */
 
-        UtilMesh*                       mUnitSphereMesh;        /**< The preallocated and preconstructed sphere mesh used for rendering. */
-        UtilMesh*                       mCylinderMesh;          /**< The preallocated and preconstructed cylinder mesh used for rendering. */
-        UtilMesh*                       mUnitCubeMesh;          /**< The preallocated and preconstructed cube mesh used for rendering. */
-        UtilMesh*                       mArrowHeadMesh;         /**< The preallocated and preconstructed arrow head mesh used for rendering. */
-        static uint32                   mNumMaxMeshVertices;    /**< The maximum capacity of the util mesh vertex buffer. */
-        static uint32                   mNumMaxMeshIndices;     /**< The maximum capacity of the util mesh index buffer */
+        UtilMesh*                       m_unitSphereMesh;        /**< The preallocated and preconstructed sphere mesh used for rendering. */
+        UtilMesh*                       m_cylinderMesh;          /**< The preallocated and preconstructed cylinder mesh used for rendering. */
+        UtilMesh*                       m_unitCubeMesh;          /**< The preallocated and preconstructed cube mesh used for rendering. */
+        UtilMesh*                       m_arrowHeadMesh;         /**< The preallocated and preconstructed arrow head mesh used for rendering. */
+        static uint32                   s_numMaxMeshVertices;    /**< The maximum capacity of the util mesh vertex buffer. */
+        static uint32                   s_numMaxMeshIndices;     /**< The maximum capacity of the util mesh index buffer */
 
         // helper variables for rendering triangles
-        MCore::Array<TriangleVertex>    mTriangleVertices;
-        static uint32                   mNumMaxTriangleVertices;    /**< The maximum capacity of the triangle vertex buffer */
+        AZStd::vector<TriangleVertex>    m_triangleVertices;
+        static uint32                   s_numMaxTriangleVertices;    /**< The maximum capacity of the triangle vertex buffer */
     };
 } // namespace MCommon
-
-
-#endif

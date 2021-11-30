@@ -1,6 +1,7 @@
 #
-# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
-# 
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
@@ -23,6 +24,7 @@ set(FILES
     Include/Private/Authorization/AWSCognitoAuthorizationController.h
     Include/Private/Authorization/AWSClientAuthPersistentCognitoIdentityProvider.h
     Include/Private/Authorization/AWSCognitoAuthorizationNotificationBusBehaviorHandler.h
+    Include/Private/Authorization/AWSClientAuthCognitoCachingAuthenticatedCredentialsProvider.h
 
     Include/Private/UserManagement/AWSCognitoUserManagementController.h
     Include/Private/UserManagement/UserManagementNotificationBusBehaviorHandler.h
@@ -41,8 +43,10 @@ set(FILES
     Source/Authentication/LWAAuthenticationProvider.cpp
     Source/Authentication/GoogleAuthenticationProvider.cpp
 
+    Source/Authorization/ClientAuthAWSCredentials.cpp
     Source/Authorization/AWSCognitoAuthorizationController.cpp
     Source/Authorization/AWSClientAuthPersistentCognitoIdentityProvider.cpp
+    Source/Authorization/AWSClientAuthCognitoCachingAuthenticatedCredentialsProvider.cpp
 
     Source/UserManagement/AWSCognitoUserManagementController.cpp
 )

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -144,7 +145,7 @@ namespace UnitTest
         }};
 
         nv::cloth::Vector<physx::PxVec4>::Type nvEmpty;
-        nv::cloth::Vector<physx::PxVec4>::Type nvValues(azValues.size());
+        nv::cloth::Vector<physx::PxVec4>::Type nvValues(static_cast<uint32_t>(azValues.size()));
 
         nv::cloth::Range<physx::PxVec4> nvEmptyRange(nvEmpty.begin(), nvEmpty.end());
         nv::cloth::Range<physx::PxVec4> nvValuesRange(nvValues.begin(), nvValues.end());
@@ -191,7 +192,7 @@ namespace UnitTest
         }};
 
         nv::cloth::Vector<physx::PxVec4>::Type nvEmpty;
-        nv::cloth::Vector<physx::PxVec4>::Type nvValues(azValues.size());
+        nv::cloth::Vector<physx::PxVec4>::Type nvValues(static_cast<uint32_t>(azValues.size()));
 
         nv::cloth::Range<physx::PxVec4> nvEmptyRange(nvEmpty.begin(), nvEmpty.end());
         nv::cloth::Range<physx::PxVec4> nvValuesRange(nvValues.begin(), nvValues.end());
@@ -335,7 +336,7 @@ namespace UnitTest
         const nv::cloth::MappedRange<const physx::PxVec4> nvClothPreviousParticles = nv::cloth::readPreviousParticles(*m_nvCloth);
         for (size_t i = 0; i < newParticles.size(); ++i)
         {
-            EXPECT_NEAR(newParticles[i].GetW(), nvClothPreviousParticles[i].w, Tolerance);
+            EXPECT_NEAR(newParticles[i].GetW(), nvClothPreviousParticles[static_cast<uint32_t>(i)].w, Tolerance);
         }
     }
 
@@ -363,7 +364,7 @@ namespace UnitTest
         const nv::cloth::MappedRange<const physx::PxVec4> nvClothPreviousParticles = nv::cloth::readPreviousParticles(*m_nvCloth);
         for (size_t i = 0; i < newParticles.size(); ++i)
         {
-            EXPECT_NEAR(newParticles[i].GetW(), nvClothPreviousParticles[i].w, Tolerance);
+            EXPECT_NEAR(newParticles[i].GetW(), nvClothPreviousParticles[static_cast<uint32_t>(i)].w, Tolerance);
         }
     }
 
@@ -377,7 +378,7 @@ namespace UnitTest
         EXPECT_EQ(nvClothCurrentParticles.size(), nvClothPreviousParticles.size());
         for (size_t i = 0; i < nvClothCurrentParticles.size(); ++i)
         {
-            ExpectEq(nvClothCurrentParticles[i], nvClothPreviousParticles[i]);
+            ExpectEq(nvClothCurrentParticles[static_cast<uint32_t>(i)], nvClothPreviousParticles[static_cast<uint32_t>(i)]);
         }
     }
 
@@ -467,7 +468,7 @@ namespace UnitTest
         EXPECT_EQ(nvClothCurrentParticles.size(), nvClothPreviousParticles.size());
         for (size_t i = 0; i < nvClothCurrentParticles.size(); ++i)
         {
-            ExpectEq(nvClothCurrentParticles[i], nvClothPreviousParticles[i]);
+            ExpectEq(nvClothCurrentParticles[static_cast<uint32_t>(i)], nvClothPreviousParticles[static_cast<uint32_t>(i)]);
         }
     }
 
@@ -503,8 +504,8 @@ namespace UnitTest
         EXPECT_EQ(initialParticles.size(), nvClothPreviousParticles.size());
         for (size_t i = 0; i < initialParticles.size(); ++i)
         {
-            ExpectEq(initialParticles[i], nvClothCurrentParticles[i]);
-            ExpectEq(initialParticles[i], nvClothPreviousParticles[i]);
+            ExpectEq(initialParticles[i], nvClothCurrentParticles[static_cast<uint32_t>(i)]);
+            ExpectEq(initialParticles[i], nvClothPreviousParticles[static_cast<uint32_t>(i)]);
         }
     }
 
@@ -613,7 +614,7 @@ namespace UnitTest
         const nv::cloth::MappedRange<const physx::PxVec4> nvClothPreviousParticles = nv::cloth::readPreviousParticles(*m_nvCloth);
         for (size_t i = 0; i < initialParticles.size(); ++i)
         {
-            EXPECT_NEAR(nvClothPreviousParticles[i].w, initialParticles[i].GetW() / globalMass, Tolerance);
+            EXPECT_NEAR(nvClothPreviousParticles[static_cast<uint32_t>(i)].w, initialParticles[i].GetW() / globalMass, Tolerance);
         }
     }
 } // namespace UnitTest

@@ -1,11 +1,11 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
-#include "GradientSignal_precompiled.h"
 
 #include "Tests/GradientSignalTestMocks.h"
 
@@ -116,9 +116,9 @@ namespace UnitTest
             size_t value = 0;
             AZStd::hash_combine(value, seed);
 
-            for (int x = 0; x < width; ++x)
+            for (AZ::u32 x = 0; x < width; ++x)
             {
-                for (int y = 0; y < height; ++y)
+                for (AZ::u32 y = 0; y < height; ++y)
                 {
                     AZStd::hash_combine(value, x);
                     AZStd::hash_combine(value, y);
@@ -141,11 +141,11 @@ namespace UnitTest
             const AZ::u8 pixelValue = 255;
 
             // Image data should be stored inverted on the y axis relative to our engine, so loop backwards through y.
-            for (int y = height - 1; y >= 0; --y)
+            for (int y = static_cast<int>(height) - 1; y >= 0; --y)
             {
-                for (int x = 0; x < width; ++x)
+                for (AZ::u32 x = 0; x < width; ++x)
                 {
-                    if ((x == pixelX) && (y == pixelY))
+                    if ((x == static_cast<int>(pixelX)) && (y == static_cast<int>(pixelY)))
                     {
                         m_imageData->m_imageData.push_back(pixelValue);
                     }

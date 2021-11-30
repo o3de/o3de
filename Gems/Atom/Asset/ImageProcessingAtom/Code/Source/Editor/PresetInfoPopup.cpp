@@ -1,11 +1,11 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
-#include <ImageProcessing_precompiled.h>
 #include "PresetInfoPopup.h"
 #include <Source/Editor/ui_PresetInfoPopup.h>
 #include <BuilderSettings/PresetSettings.h>
@@ -66,7 +66,7 @@ namespace ImageProcessingAtomEditor
         }
 
         presetInfoText += QString("UUID: %1\n").arg(presetSettings->m_uuid.ToString<AZStd::string>().c_str());
-        presetInfoText += QString("Name: %1\n").arg(presetSettings->m_name.c_str());
+        presetInfoText += QString("Name: %1\n").arg(presetSettings->m_name.GetCStr());
         presetInfoText += QString("Generate IBL Only: %1\n").arg(presetSettings->m_generateIBLOnly ? "True" : "False");
         presetInfoText += QString("RGB Weight: %1\n").arg(RGBWeightToString(presetSettings->m_rgbWeight));
         presetInfoText += QString("Source ColorSpace: %1\n").arg(ColorSpaceToString(presetSettings->m_srcColorSpace));
@@ -82,11 +82,7 @@ namespace ImageProcessingAtomEditor
         presetInfoText += "\n";
         presetInfoText += QString("Suppress Engine Reduce: %1\n").arg(presetSettings->m_suppressEngineReduce ? "True" : "False");
         presetInfoText += QString("Discard Alpha: %1\n").arg(presetSettings->m_discardAlpha ? "True" : "False");
-        presetInfoText += QString("Is Power Of 2: %1\n").arg(presetSettings->m_isPowerOf2 ? "True" : "False");
-        presetInfoText += QString("Is Color Chart: %1\n").arg(presetSettings->m_isColorChart ? "True" : "False");
-        presetInfoText += QString("High Pass Mip: %1\n").arg(presetSettings->m_highPassMip);
         presetInfoText += QString("Gloss From Normal: %1\n").arg(presetSettings->m_glossFromNormals);
-        presetInfoText += QString("Use Legacy Gloss: %1\n").arg(presetSettings->m_isLegacyGloss ? "True" : "False");
         presetInfoText += QString("Mip Re-normalize: %1\n").arg(presetSettings->m_isMipRenormalize ? "True" : "False");
         presetInfoText += QString("Resident Mips Number: %1\n").arg(presetSettings->m_numResidentMips);
         presetInfoText += QString("Swizzle: %1\n").arg(presetSettings->m_swizzle.c_str());
@@ -99,9 +95,9 @@ namespace ImageProcessingAtomEditor
             presetInfoText += QString("Mip Slope: %1\n").arg(presetSettings->m_cubemapSetting->m_mipSlope);
             presetInfoText += QString("Edge Fixup: %1\n").arg(presetSettings->m_cubemapSetting->m_edgeFixup);
             presetInfoText += QString("Generate IBL Specular: %1\n").arg(presetSettings->m_cubemapSetting->m_generateIBLSpecular ? "True" : "False");
-            presetInfoText += QString("IBL Specular Preset: %1\n").arg(presetSettings->m_cubemapSetting->m_iblSpecularPreset.ToString<AZStd::string>().c_str());
+            presetInfoText += QString("IBL Specular Preset: %1\n").arg(presetSettings->m_cubemapSetting->m_iblSpecularPreset.GetCStr());
             presetInfoText += QString("Generate IBL Diffuse: %1\n").arg(presetSettings->m_cubemapSetting->m_generateIBLDiffuse ? "True" : "False");
-            presetInfoText += QString("IBL Diffuse Preset: %1\n").arg(presetSettings->m_cubemapSetting->m_iblDiffusePreset.ToString<AZStd::string>().c_str());
+            presetInfoText += QString("IBL Diffuse Preset: %1\n").arg(presetSettings->m_cubemapSetting->m_iblDiffusePreset.GetCStr());
             presetInfoText += QString("Requires Convolve: %1\n").arg(presetSettings->m_cubemapSetting->m_requiresConvolve ? "True" : "False");
             presetInfoText += QString("SubId: %1\n").arg(presetSettings->m_cubemapSetting->m_subId);
         }

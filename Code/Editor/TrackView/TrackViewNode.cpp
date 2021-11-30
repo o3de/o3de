@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -21,16 +22,12 @@
 ////////////////////////////////////////////////////////////////////////////
 void CTrackViewKeyConstHandle::GetKey(IKey* pKey) const
 {
-    assert(m_bIsValid);
-
     m_pTrack->GetKey(m_keyIndex, pKey);
 }
 
 ////////////////////////////////////////////////////////////////////////////
 float CTrackViewKeyConstHandle::GetTime() const
 {
-    assert(m_bIsValid);
-
     return m_pTrack->GetKeyTime(m_keyIndex);
 }
 
@@ -85,7 +82,7 @@ void CTrackViewKeyHandle::SetTime(float time, bool notifyListeners)
     if (!m_pTrack->IsSortMarkerKey(m_keyIndex))
     {
         CTrackViewKeyBundle allKeys = m_pTrack->GetAllKeys();
-        for (int x = 0; x < allKeys.GetKeyCount(); x++)
+        for (unsigned int x = 0; x < allKeys.GetKeyCount(); x++)
         {
             unsigned int curIndex = allKeys.GetKey(x).GetIndex();
             if (m_pTrack->IsSortMarkerKey(curIndex))
@@ -625,7 +622,7 @@ bool CTrackViewNode::operator<(const CTrackViewNode& otherNode) const
         if (thisTypeOrder == otherTypeOrder)
         {
             // Same node type, sort by name
-            return azstricmp(thisAnimNode.GetName(), otherAnimNode.GetName()) < 0;
+            return thisAnimNode.GetName() < otherAnimNode.GetName();
         }
 
         return thisTypeOrder < otherTypeOrder;
@@ -637,7 +634,7 @@ bool CTrackViewNode::operator<(const CTrackViewNode& otherNode) const
         if (thisTrack.GetParameterType() == otherTrack.GetParameterType())
         {
             // Same parameter type, sort by name
-            return azstricmp(thisTrack.GetName(), otherTrack.GetName()) < 0;
+            return thisTrack.GetName() < otherTrack.GetName();
         }
 
         return thisTrack.GetParameterType() < otherTrack.GetParameterType();

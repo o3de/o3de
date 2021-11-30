@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -9,7 +10,6 @@
 
 #include <AzCore/Debug/EventTrace.h>
 
-#include <Atom/RHI/CpuProfiler.h>
 #include <Atom/RHI/Factory.h>
 
 #include <Atom/RPI.Public/Image/ImageSystemInterface.h>
@@ -50,7 +50,7 @@ namespace AZ
             desc.m_bufferSrgName = "m_decals";
             desc.m_elementCountSrgName = "m_decalCount";
             desc.m_elementSize = sizeof(DecalData);
-            desc.m_srgLayout = RPI::RPISystemInterface::Get()->GetViewSrgAsset()->GetLayout();
+            desc.m_srgLayout = RPI::RPISystemInterface::Get()->GetViewSrgLayout().get();
 
             m_decalBufferHandler = GpuBufferHandler(desc);
 
@@ -106,13 +106,12 @@ namespace AZ
 
         void DecalFeatureProcessor::Simulate(const RPI::FeatureProcessor::SimulatePacket& packet)
         {
-            AZ_ATOM_PROFILE_FUNCTION("RPI", "DecalFeatureProcessor: Simulate");
+            AZ_PROFILE_SCOPE(RPI, "DecalFeatureProcessor: Simulate");
             AZ_UNUSED(packet);
 
             if (m_deviceBufferNeedsUpdate)
             {
-                [[maybe_unused]] bool success = m_decalBufferHandler.UpdateBuffer(m_decalData.GetDataVector<0>());
-                AZ_Error(FeatureProcessorName, success, "Unable to update buffer during Simulate().");
+                m_decalBufferHandler.UpdateBuffer(m_decalData.GetDataVector<0>());
                 m_deviceBufferNeedsUpdate = false;
             }
         }
@@ -131,7 +130,7 @@ namespace AZ
 
         void DecalFeatureProcessor::Render(const RPI::FeatureProcessor::RenderPacket& packet)
         {
-            AZ_ATOM_PROFILE_FUNCTION("RPI", "DecalFeatureProcessor: Render");
+            AZ_PROFILE_SCOPE(RPI, "DecalFeatureProcessor: Render");
 
             AZStd::array_view<Data::Instance<RPI::Image>> baseMaps = GetImagesFromDecalData<1>();
             AZStd::array_view<Data::Instance<RPI::Image>> opacityMaps = GetImagesFromDecalData<2>();
@@ -327,7 +326,7 @@ namespace AZ
 
         void DecalFeatureProcessor::CacheShaderIndices()
         {
-            const RHI::ShaderResourceGroupLayout* viewSrgLayout = RPI::RPISystemInterface::Get()->GetViewSrgAsset()->GetLayout();
+            const RHI::ShaderResourceGroupLayout* viewSrgLayout = RPI::RPISystemInterface::Get()->GetViewSrgLayout().get();
             m_baseColorMapsIndex = viewSrgLayout->FindShaderInputImageIndex(m_baseColorMapShaderName);
             AZ_Warning("DecalFeatureProcessor", m_baseColorMapsIndex.IsValid(), "Unable to find baseColorMaps in decal shader.");
 

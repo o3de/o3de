@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -10,9 +11,10 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/RTTI/BehaviorContext.h>
+#include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/Entity/EntityContext.h>
 #include <AzFramework/Components/TransformComponent.h>
-#include <AzFramework/API/ApplicationAPI.h>
+#include <AzFramework/Spawnable/SpawnableEntitiesInterface.h>
 
 #include "GameEntityContextComponent.h"
 
@@ -46,9 +48,9 @@ namespace AzFramework
                 ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
                 ->Event("CreateGameEntity", &GameEntityContextRequestBus::Events::CreateGameEntityForBehaviorContext)
                     ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)
-                ->Event("DestroyGameEntity", &GameEntityContextRequestBus::Events::DestroyGameEntityOnlyInSliceMode)
+                ->Event("DestroyGameEntity", &GameEntityContextRequestBus::Events::DestroyGameEntity)
                 ->Event(
-                    "DestroyGameEntityAndDescendants", &GameEntityContextRequestBus::Events::DestroyGameEntityAndDescendantsOnlyInSliceMode)
+                    "DestroyGameEntityAndDescendants", &GameEntityContextRequestBus::Events::DestroyGameEntityAndDescendants)
                 ->Event("ActivateGameEntity", &GameEntityContextRequestBus::Events::ActivateGameEntity)
                 ->Event("DeactivateGameEntity", &GameEntityContextRequestBus::Events::DeactivateGameEntity)
                     ->Attribute(AZ::ScriptCanvasAttributes::DeactivatesInputEntity, true)
@@ -248,47 +250,12 @@ namespace AzFramework
         DestroyGameEntityInternal(id, false);
     }
 
-    void GameEntityContextComponent::DestroyGameEntityOnlyInSliceMode(const AZ::EntityId& id)
-    {
-        bool isPrefabSystemEnabled = false;
-        AzFramework::ApplicationRequests::Bus::BroadcastResult(
-            isPrefabSystemEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
-        if (!isPrefabSystemEnabled)
-        {
-            DestroyGameEntityInternal(id, false);
-        }
-        else
-        {
-            AZ_Error(
-                "GameEntityContextComponent", false,
-                "Destroying a game entity is temporarily disabled until the Spawnable system can support this.");
-        }
-    }
-
     //=========================================================================
     // GameEntityContextComponent::DestroyGameEntityAndDescendantsById
     //=========================================================================
     void GameEntityContextComponent::DestroyGameEntityAndDescendants(const AZ::EntityId& id)
     {
         DestroyGameEntityInternal(id, true);
-    }
-
-    
-    void GameEntityContextComponent::DestroyGameEntityAndDescendantsOnlyInSliceMode(const AZ::EntityId& id)
-    {
-        bool isPrefabSystemEnabled = false;
-        AzFramework::ApplicationRequests::Bus::BroadcastResult(
-            isPrefabSystemEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
-        if (!isPrefabSystemEnabled)
-        {
-            DestroyGameEntityInternal(id, true);
-        }
-        else
-        {
-            AZ_Error(
-                "GameEntityContextComponent", false,
-                "Destroying a game entity and its descendants is temporarily disabled until the Spawnable system can support this.");
-        }
     }
 
     //=========================================================================
@@ -318,6 +285,28 @@ namespace AzFramework
             EBUS_EVENT_RESULT(currentEntity, AZ::ComponentApplicationBus, FindEntity, *entityIdIter);
             if (currentEntity)
             {
+                bool isPrefabSystemEnabled = false;
+                AzFramework::ApplicationRequests::Bus::BroadcastResult(
+                    isPrefabSystemEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
+                if (isPrefabSystemEnabled)
+                {
+                    if (currentEntity->GetSpawnTicketId() > 0)
+                    {
+                        SpawnableEntitiesDefinition* spawnableEntitiesInterface = SpawnableEntitiesInterface::Get();
+                        AZ_Assert(spawnableEntitiesInterface != nullptr, "SpawnableEntitiesInterface is not found.");
+                        spawnableEntitiesInterface->RetrieveEntitySpawnTicket(
+                            currentEntity->GetSpawnTicketId(),
+                            [spawnableEntitiesInterface, currentEntity](EntitySpawnTicket* entitySpawnTicket)
+                            {
+                                if (entitySpawnTicket != nullptr)
+                                {
+                                    spawnableEntitiesInterface->DespawnEntity(currentEntity->GetId(), *entitySpawnTicket);
+                                }
+                            });
+                        return;
+                    }
+                }
+
                 if (currentEntity->GetState() == AZ::Entity::State::Active)
                 {
                     // Deactivate the entity, we'll destroy it as soon as it is safe.

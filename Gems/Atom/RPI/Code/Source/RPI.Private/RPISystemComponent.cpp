@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -14,9 +15,11 @@
 
 #include <Atom/RHI/Factory.h>
 
+#include <AzCore/Asset/AssetManager.h>
 #include <AzCore/IO/IOUtils.h>
 #include <AzCore/Serialization/SerializeContext.h>
-#include <AzCore/Asset/AssetManager.h>
+#include <AzCore/Settings/SettingsRegistry.h>
+
 #ifdef RPI_EDITOR
 #include <Atom/RPI.Edit/Material/MaterialFunctorSourceDataRegistration.h>
 #endif
@@ -83,8 +86,11 @@ namespace AZ
 
         void RPISystemComponent::Activate()
         {
-            // [GFX TODO] [ATOM-1436] this can be removed when setup and save system component's configure from projectConfigure.exe is fixed.
-            m_rpiDescriptor.m_rhiSystemDescriptor.m_drawListTags.push_back(AZ::Name("forward"));
+            auto settingsRegistry = AZ::SettingsRegistry::Get();
+            if (settingsRegistry)
+            {
+                settingsRegistry->GetObject(m_rpiDescriptor, "/O3DE/Atom/RPI/Initialization");
+            }
 
             m_rpiSystem.Initialize(m_rpiDescriptor);
             AZ::SystemTickBus::Handler::BusConnect();

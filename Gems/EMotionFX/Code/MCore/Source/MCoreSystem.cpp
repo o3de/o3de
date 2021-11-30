@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -26,10 +27,10 @@ namespace MCore
 
     Initializer::InitSettings::InitSettings()
     {
-        mMemAllocFunction       = StandardAllocate;
-        mMemReallocFunction     = StandardRealloc;
-        mMemFreeFunction        = StandardFree;
-        mTrackMemoryUsage       = false;                // do not track memory usage on default, for maximum performance and pretty much zero tracking overhead
+        m_memAllocFunction       = StandardAllocate;
+        m_memReallocFunction     = StandardRealloc;
+        m_memFreeFunction        = StandardFree;
+        m_trackMemoryUsage       = false;                // do not track memory usage on default, for maximum performance and pretty much zero tracking overhead
     }
 
     // static main init method
@@ -46,7 +47,7 @@ namespace MCore
         {
             // create the main core object using placement new
             gMCore = AZ::Environment::CreateVariable<MCoreSystem*>(kMCoreInstanceVarName);
-            gMCore.Set(new(realSettings->mMemAllocFunction(sizeof(MCoreSystem), MCORE_MEMCATEGORY_MCORESYSTEM, 0, MCORE_FILE, MCORE_LINE))MCoreSystem());
+            gMCore.Set(new(realSettings->m_memAllocFunction(sizeof(MCoreSystem), MCORE_MEMCATEGORY_MCORESYSTEM, 0, MCORE_FILE, MCORE_LINE))MCoreSystem());
         }
         else
         {
@@ -80,19 +81,19 @@ namespace MCore
 
     // constructor
     MCoreSystem::MCoreSystem()
-        : mAllocateFunction(StandardAllocate)
-        , mReallocFunction(StandardRealloc)
-        , mFreeFunction(StandardFree)
+        : m_allocateFunction(StandardAllocate)
+        , m_reallocFunction(StandardRealloc)
+        , m_freeFunction(StandardFree)
     {
-        mLogManager         = nullptr;
-        mIDGenerator        = nullptr;
-        mStringIdPool       = nullptr;
-        mAttributeFactory   = nullptr;
-        mMemoryTracker      = nullptr;
-        mMemTempBuffer      = nullptr;
-        mMemTempBufferSize  = 0;
-        mTrackMemory        = true;
-        mMemoryMutex        = new Mutex();
+        m_logManager         = nullptr;
+        m_idGenerator        = nullptr;
+        m_stringIdPool       = nullptr;
+        m_attributeFactory   = nullptr;
+        m_memoryTracker      = nullptr;
+        m_memTempBuffer      = nullptr;
+        m_memTempBufferSize  = 0;
+        m_trackMemory        = true;
+        m_memoryMutex        = new Mutex();
     }
 
 
@@ -106,45 +107,45 @@ namespace MCore
     // init the mcore system
     bool MCoreSystem::Init(const MCore::Initializer::InitSettings& settings)
     {
-        if (settings.mMemAllocFunction)
+        if (settings.m_memAllocFunction)
         {
-            mAllocateFunction = settings.mMemAllocFunction;
+            m_allocateFunction = settings.m_memAllocFunction;
         }
         else
         {
-            mAllocateFunction = StandardAllocate;
+            m_allocateFunction = StandardAllocate;
         }
-        if (settings.mMemReallocFunction)
+        if (settings.m_memReallocFunction)
         {
-            mReallocFunction = settings.mMemReallocFunction;
-        }
-        else
-        {
-            mReallocFunction = StandardRealloc;
-        }
-        if (settings.mMemFreeFunction)
-        {
-            mFreeFunction = settings.mMemFreeFunction;
+            m_reallocFunction = settings.m_memReallocFunction;
         }
         else
         {
-            mFreeFunction = StandardFree;
+            m_reallocFunction = StandardRealloc;
+        }
+        if (settings.m_memFreeFunction)
+        {
+            m_freeFunction = settings.m_memFreeFunction;
+        }
+        else
+        {
+            m_freeFunction = StandardFree;
         }
 
         // allocate new objects
-        mMemoryTracker      = new MemoryTracker();
-        mTrackMemory        = settings.mTrackMemoryUsage;
-        mLogManager         = new LogManager();
-        mIDGenerator        = new IDGenerator();
-        mStringIdPool       = new StringIdPool();
-        mAttributeFactory   = new AttributeFactory();
-        mMemTempBufferSize  = 256 * 1024;
-        mMemTempBuffer      = Allocate(mMemTempBufferSize, MCORE_MEMCATEGORY_SYSTEM);// 256 kb
-        MCORE_ASSERT(mMemTempBuffer);
+        m_memoryTracker      = new MemoryTracker();
+        m_trackMemory        = settings.m_trackMemoryUsage;
+        m_logManager         = new LogManager();
+        m_idGenerator        = new IDGenerator();
+        m_stringIdPool       = new StringIdPool();
+        m_attributeFactory   = new AttributeFactory();
+        m_memTempBufferSize  = 256 * 1024;
+        m_memTempBuffer      = Allocate(m_memTempBufferSize, MCORE_MEMCATEGORY_SYSTEM);// 256 kb
+        MCORE_ASSERT(m_memTempBuffer);
 
-        if (mTrackMemory)
+        if (m_trackMemory)
         {
-            RegisterMemoryCategories(*mMemoryTracker);
+            RegisterMemoryCategories(*m_memoryTracker);
         }
 
         return true;
@@ -155,41 +156,41 @@ namespace MCore
     void MCoreSystem::Shutdown()
     {
         // free any mem temp buffer
-        MCore::Free(mMemTempBuffer);
-        mMemTempBuffer = nullptr;
-        mMemTempBufferSize = 0;
+        MCore::Free(m_memTempBuffer);
+        m_memTempBuffer = nullptr;
+        m_memTempBufferSize = 0;
 
         // shutdown the log manager
-        delete mLogManager;
-        mLogManager = nullptr;
+        delete m_logManager;
+        m_logManager = nullptr;
 
         // delete the ID generator
-        delete mIDGenerator;
-        mIDGenerator = nullptr;
+        delete m_idGenerator;
+        m_idGenerator = nullptr;
 
         // Delete the string based ID generator.
-        delete mStringIdPool;
-        mStringIdPool = nullptr;
+        delete m_stringIdPool;
+        m_stringIdPool = nullptr;
 
         // delete the attribute factory
-        delete mAttributeFactory;
-        mAttributeFactory = nullptr;
+        delete m_attributeFactory;
+        m_attributeFactory = nullptr;
 
         // Clear the memory of the file system secure save path.
-        FileSystem::mSecureSavePath.clear();
+        FileSystem::s_secureSavePath.clear();
 
         // log memory leaks
-        if (mTrackMemory)
+        if (m_trackMemory)
         {
-            mMemoryTracker->LogLeaks();
+            m_memoryTracker->LogLeaks();
         }
 
         // delete the memory tracker
-        delete mMemoryTracker;
-        mMemoryTracker = nullptr;
+        delete m_memoryTracker;
+        m_memoryTracker = nullptr;
 
-        delete mMemoryMutex;
-        mMemoryMutex = nullptr;
+        delete m_memoryMutex;
+        m_memoryMutex = nullptr;
     }
 
 
@@ -197,25 +198,25 @@ namespace MCore
     void MCoreSystem::MemTempBufferAssureSize(size_t numBytes)
     {
         // if the buffer is already big enough, we can just return
-        if (mMemTempBufferSize >= numBytes)
+        if (m_memTempBufferSize >= numBytes)
         {
             return;
         }
 
         // resize the buffer (make it bigger)
-        mMemTempBuffer = Realloc(mMemTempBuffer, numBytes, MCORE_MEMCATEGORY_SYSTEM);
-        MCORE_ASSERT(mMemTempBuffer);
+        m_memTempBuffer = Realloc(m_memTempBuffer, numBytes, MCORE_MEMCATEGORY_SYSTEM);
+        MCORE_ASSERT(m_memTempBuffer);
 
-        mMemTempBufferSize = numBytes;
+        m_memTempBufferSize = numBytes;
     }
 
 
     // free the temp buffer
     void MCoreSystem::MemTempBufferFree()
     {
-        MCore::Free(mMemTempBuffer);
-        mMemTempBuffer = nullptr;
-        mMemTempBufferSize = 0;
+        MCore::Free(m_memTempBuffer);
+        m_memTempBuffer = nullptr;
+        m_memTempBufferSize = 0;
     }
 
 

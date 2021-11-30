@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -11,16 +12,14 @@
 #pragma once
 
 #if !defined(Q_MOC_RUN)
-#include "RenderViewport.h"
 #include <AzCore/Component/Component.h>
-
-#include <IAudioSystem.h>
 
 #include <functional>
 #include <QSharedPointer>
 #include <QWidgetAction>
 #include <QComboBox>
 
+#include <AzToolsFramework/UI/Prefab/PrefabViewportFocusPathHandler.h>
 #include <AzQtComponents/Components/Widgets/SpinBox.h>
 
 #include <HMDBus.h>
@@ -79,7 +78,7 @@ Q_SIGNALS:
 protected:
     virtual void OnInitDialog();
 
-    virtual void OnEditorNotifyEvent(EEditorNotifyEvent event);
+    void OnEditorNotifyEvent(EEditorNotifyEvent event) override;
     void OnSystemEvent(ESystemEvent event, UINT_PTR wparam, UINT_PTR lparam) override;
 
     void OnMaximize();
@@ -113,11 +112,11 @@ protected:
     // Speed combobox/lineEdit settings
     double m_minSpeed = 0.01;
     double m_maxSpeed = 100.0;
-    double m_speedStep = 0.01;
+    double m_speedStep = 0.001;
     int m_numDecimals = 3;
 
     // Speed presets
-    float m_speedPresetValues[3] = { 0.1f, 1.0f, 10.0f };
+    float m_speedPresetValues[4] = { 0.01f, 0.1f, 1.0f, 10.0f };
 
     double m_fieldWidthMultiplier = 1.8;
 
@@ -178,11 +177,7 @@ protected:
     QWidgetAction* m_gridSizeActionWidget = nullptr;
     QWidgetAction* m_angleSizeActionWidget = nullptr;
 
-    Audio::SAudioRequest m_oMuteAudioRequest;
-    Audio::SAudioManagerRequestData<Audio::eAMRT_MUTE_ALL> m_oMuteAudioRequestData;
-    Audio::SAudioRequest m_oUnmuteAudioRequest;
-    Audio::SAudioManagerRequestData<Audio::eAMRT_UNMUTE_ALL> m_oUnmuteAudioRequestData;
-
+    AzToolsFramework::Prefab::PrefabViewportFocusPathHandler* m_prefabViewportFocusPathHandler = nullptr;
 
     QScopedPointer<Ui::ViewportTitleDlg> m_ui;
 };

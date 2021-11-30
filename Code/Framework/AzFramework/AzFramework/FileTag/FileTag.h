@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -10,6 +11,7 @@
 #include <AzCore/std/containers/map.h>
 #include <AzCore/std/containers/set.h>
 #include <AzCore/std/string/string.h>
+#include <AzCore/IO/Path/Path_fwd.h>
 #include <AzFramework/FileTag/FileTagBus.h>
 
 namespace AzFramework
@@ -87,7 +89,7 @@ namespace AzFramework
 
             /////////////////////////////////////////////////////////////////////////
 
-            static AZStd::string GetDefaultFileTagFilePath(FileTagType fileTagType);
+            static AZ::IO::Path GetDefaultFileTagFilePath(FileTagType fileTagType);
 
         protected:
 

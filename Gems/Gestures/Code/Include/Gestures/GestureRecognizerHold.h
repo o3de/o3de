@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -8,6 +9,8 @@
 
 #include "IGestureRecognizer.h"
 
+#include <CryCommon/ISystem.h>
+#include <CryCommon/ITimer.h>
 #include <AzCore/RTTI/ReflectContext.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -61,7 +64,7 @@ namespace Gestures
         AZ::Vector2 GetStartPosition() const { return m_startPosition; }
         AZ::Vector2 GetCurrentPosition() const { return m_currentPosition; }
 
-        float GetDuration() const { return gEnv->pTimer->GetFrameStartTime().GetDifferenceInSeconds(m_startTime); }
+        float GetDuration() const { return (gEnv && gEnv->pTimer) ? gEnv->pTimer->GetFrameStartTime().GetDifferenceInSeconds(m_startTime) : 0.0f; }
 
     private:
         enum class State

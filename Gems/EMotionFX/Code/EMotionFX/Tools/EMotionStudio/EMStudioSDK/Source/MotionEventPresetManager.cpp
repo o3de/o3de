@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -69,12 +70,12 @@ namespace EMStudio
 
     //-----------------------------------
 
-    const AZ::u32 MotionEventPresetManager::m_unknownEventColor = MCore::RGBA(193, 195, 196, 255);
+    const AZ::u32 MotionEventPresetManager::s_unknownEventColor = MCore::RGBA(193, 195, 196, 255);
 
     MotionEventPresetManager::MotionEventPresetManager()
-        : mDirtyFlag(false)
+        : m_dirtyFlag(false)
     {
-        mFileName = GetManager()->GetAppDataFolder() + "EMStudioDefaultEventPresets.cfg";
+        m_fileName = GetManager()->GetAppDataFolder() + "EMStudioDefaultEventPresets.cfg";
     }
 
 
@@ -95,51 +96,51 @@ namespace EMStudio
 
         serializeContext->Class<MotionEventPresetManager>()
             ->Version(1)
-            ->Field("eventPresets", &MotionEventPresetManager::mEventPresets)
+            ->Field("eventPresets", &MotionEventPresetManager::m_eventPresets)
             ;
     }
 
     void MotionEventPresetManager::Clear()
     {
-        for (MotionEventPreset* eventPreset : mEventPresets)
+        for (MotionEventPreset* eventPreset : m_eventPresets)
         {
             delete eventPreset;
         }
 
-        mEventPresets.clear();
+        m_eventPresets.clear();
     }
 
 
     size_t MotionEventPresetManager::GetNumPresets() const
     {
-        return mEventPresets.size();
+        return m_eventPresets.size();
     }
 
 
     bool MotionEventPresetManager::IsEmpty() const
     {
-        return mEventPresets.empty(); 
+        return m_eventPresets.empty(); 
     }
 
 
     void MotionEventPresetManager::AddPreset(MotionEventPreset* preset)
     {
-        mEventPresets.emplace_back(preset);
-        mDirtyFlag = true;
+        m_eventPresets.emplace_back(preset);
+        m_dirtyFlag = true;
     }
 
 
     void MotionEventPresetManager::RemovePreset(size_t index)
     {
-        delete mEventPresets[index];
-        mEventPresets.erase(mEventPresets.begin() + index);
-        mDirtyFlag = true;
+        delete m_eventPresets[index];
+        m_eventPresets.erase(m_eventPresets.begin() + index);
+        m_dirtyFlag = true;
     }
 
 
     MotionEventPreset* MotionEventPresetManager::GetPreset(size_t index) const
     {
-        return mEventPresets[index];
+        return m_eventPresets[index];
     }
 
 
@@ -151,14 +152,14 @@ namespace EMStudio
         MotionEventPreset* rightFootPreset = aznew MotionEventPreset("RightFoot", {AZStd::move(rightFootData)}, AZ::Color(AZ::u8(0), 255, 0, 255));
         leftFootPreset->SetIsDefault(true);
         rightFootPreset->SetIsDefault(true);
-        mEventPresets.emplace(mEventPresets.begin(), leftFootPreset);
-        mEventPresets.emplace(AZStd::next(mEventPresets.begin(), 1), rightFootPreset);
+        m_eventPresets.emplace(m_eventPresets.begin(), leftFootPreset);
+        m_eventPresets.emplace(AZStd::next(m_eventPresets.begin(), 1), rightFootPreset);
     }
 
 
     void MotionEventPresetManager::Load(const AZStd::string& filename)
     {
-        mFileName = filename;
+        m_fileName = filename;
 
         // Clear the old event presets.
         Clear();
@@ -168,11 +169,11 @@ namespace EMStudio
             LoadLegacyQSettingsFormat();
         }
 
-        // LoadLYSerializedFormat() will clear mEventPresets, so default
+        // LoadLYSerializedFormat() will clear m_eventPresets, so default
         // presets have to be made afterwards
         CreateDefaultPresets();
 
-        mDirtyFlag = false;
+        m_dirtyFlag = false;
 
         // Update the default preset settings filename so that next startup the presets get auto-loaded.
         SaveToSettings();
@@ -181,7 +182,7 @@ namespace EMStudio
 
     bool MotionEventPresetManager::LoadLegacyQSettingsFormat()
     {
-        QSettings settings(mFileName.c_str(), QSettings::IniFormat, GetManager()->GetMainWindow());
+        QSettings settings(m_fileName.c_str(), QSettings::IniFormat, GetManager()->GetMainWindow());
 
         if (settings.status() != QSettings::Status::NoError)
         {
@@ -220,18 +221,18 @@ namespace EMStudio
 
     bool MotionEventPresetManager::LoadLYSerializedFormat()
     {
-        return AZ::Utils::LoadObjectFromFileInPlace(mFileName, azrtti_typeid(mEventPresets), &mEventPresets);
+        return AZ::Utils::LoadObjectFromFileInPlace(m_fileName, azrtti_typeid(m_eventPresets), &m_eventPresets);
     }
 
 
     void MotionEventPresetManager::SaveAs(const AZStd::string& filename, bool showNotification)
     {
-        mFileName = filename;
+        m_fileName = filename;
 
         // Skip saving the built-in presets
         AZStd::vector<MotionEventPreset*> presets;
-        presets.reserve(mEventPresets.size());
-        for (MotionEventPreset* preset : mEventPresets)
+        presets.reserve(m_eventPresets.size());
+        for (MotionEventPreset* preset : m_eventPresets)
         {
             if (preset->GetIsDefault())
             {
@@ -250,7 +251,7 @@ namespace EMStudio
         // Check if the settings correctly saved.
         if (AZ::Utils::SaveObjectToFile(filename, AZ::DataStream::ST_XML, &presets))
         {
-            mDirtyFlag = false;
+            m_dirtyFlag = false;
 
             // Add file in case it did not exist before (when saving it the first time).
             if (!SourceControlCommand::CheckOutFile(filename.c_str(), fileExisted, checkoutResultString, /*useSourceControl=*/true, /*add=*/true))
@@ -278,11 +279,11 @@ namespace EMStudio
 
     void MotionEventPresetManager::SaveToSettings()
     {
-        if (!mFileName.empty())
+        if (!m_fileName.empty())
         {
             QSettings settings(GetManager()->GetMainWindow());
             settings.beginGroup("EMotionFX");
-            settings.setValue("lastEventPresetFile", mFileName.c_str());
+            settings.setValue("lastEventPresetFile", m_fileName.c_str());
             settings.endGroup();
         }
     }
@@ -297,7 +298,7 @@ namespace EMStudio
 
         if (!filename.empty())
         {
-            mFileName = AZStd::move(filename);
+            m_fileName = AZStd::move(filename);
         }
     }
 
@@ -305,7 +306,7 @@ namespace EMStudio
     // Check if motion event with this configuration exists and return color.
     AZ::u32 MotionEventPresetManager::GetEventColor(const EMotionFX::EventDataSet& eventDatas) const
     {
-        for (const MotionEventPreset* preset : mEventPresets)
+        for (const MotionEventPreset* preset : m_eventPresets)
         {
             EMotionFX::EventDataSet commonDatas;
             const EMotionFX::EventDataSet& presetDatas = preset->GetEventDatas();
@@ -324,6 +325,6 @@ namespace EMStudio
         }
 
         // Use the same color for all events that are not from a preset.
-        return m_unknownEventColor;
+        return s_unknownEventColor;
     }
 } // namespace EMStudio

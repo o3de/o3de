@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -60,7 +61,7 @@ namespace EMotionFX
         bool GetSupportsVisualization() const override              { return true; }
         AnimGraphPose* GetMainOutputPose(AnimGraphInstance* animGraphInstance) const override     { return GetOutputPose(animGraphInstance, OUTPUTPORT_RESULT)->GetValue(); }
         bool GetHasOutputPose() const override                      { return true; }
-        bool GetCanBeEntryNode() const                              { return true; }
+        bool GetCanBeEntryNode() const override                              { return true; }
         bool GetCanBeInsideStateMachineOnly() const override        { return true; }
         bool GetHasVisualOutputPorts() const override               { return false; }
         bool GetCanHaveOnlyOneInsideParent() const override         { return false; }

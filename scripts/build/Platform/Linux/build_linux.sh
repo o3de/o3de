@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 #
-# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
-# 
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
@@ -16,7 +17,10 @@ SOURCE_DIRECTORY=${PWD}
 pushd $OUTPUT_DIRECTORY
 
 LAST_CONFIGURE_CMD_FILE=ci_last_configure_cmd.txt
-CONFIGURE_CMD="cmake ${SOURCE_DIRECTORY} ${CMAKE_OPTIONS} ${EXTRA_CMAKE_OPTIONS} -DLY_3RDPARTY_PATH=${LY_3RDPARTY_PATH} -DLY_PROJECTS='${CMAKE_LY_PROJECTS}'"
+CONFIGURE_CMD="cmake ${SOURCE_DIRECTORY} ${CMAKE_OPTIONS} ${EXTRA_CMAKE_OPTIONS} -DLY_3RDPARTY_PATH=${LY_3RDPARTY_PATH}"
+if [[ -n "$CMAKE_LY_PROJECTS" ]]; then
+    CONFIGURE_CMD="${CONFIGURE_CMD} -DLY_PROJECTS='${CMAKE_LY_PROJECTS}'"
+fi
 if [[ ! -e "CMakeCache.txt" ]]; then
     echo [ci_build] First run, generating
     RUN_CONFIGURE=1
@@ -33,13 +37,13 @@ else
 fi
 if [[ ! -z "$RUN_CONFIGURE" ]]; then
     # have to use eval since $CMAKE_OPTIONS (${EXTRA_CMAKE_OPTIONS}) contains quotes that need to be processed
-    echo [ci_build] ${CONFIGURE_CMD}
+    eval echo [ci_build] ${CONFIGURE_CMD}
     eval ${CONFIGURE_CMD}
     # Save the run only if success
-    echo "${CONFIGURE_CMD}" > ${LAST_CONFIGURE_CMD_FILE}
+    eval echo "${CONFIGURE_CMD}" > ${LAST_CONFIGURE_CMD_FILE}
 fi
 
-echo [ci_build] cmake --build . --target ${CMAKE_TARGET} --config ${CONFIGURATION} -j $(grep -c processor /proc/cpuinfo) -- ${CMAKE_NATIVE_BUILD_ARGS}
-cmake --build . --target ${CMAKE_TARGET} --config ${CONFIGURATION} -j $(grep -c processor /proc/cpuinfo) -- ${CMAKE_NATIVE_BUILD_ARGS}
+eval echo [ci_build] cmake --build . --target ${CMAKE_TARGET} --config ${CONFIGURATION} -j $(grep -c processor /proc/cpuinfo) -- ${CMAKE_NATIVE_BUILD_ARGS}
+eval cmake --build . --target ${CMAKE_TARGET} --config ${CONFIGURATION} -j $(grep -c processor /proc/cpuinfo) -- ${CMAKE_NATIVE_BUILD_ARGS}
 
 popd

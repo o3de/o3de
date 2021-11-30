@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -59,6 +60,16 @@ namespace AZ
     {
     public:
         AZ_RTTI(JsonOptionalSerializer, "{F8AF1C95-BD1B-44D2-9B4A-F5726133A104}", JsonUnsupportedTypesSerializer);
+        AZ_CLASS_ALLOCATOR_DECL;
+
+    protected:
+        AZStd::string_view GetMessage() const override;
+    };
+
+    class JsonBitsetSerializer : public JsonUnsupportedTypesSerializer
+    {
+    public:
+        AZ_RTTI(JsonBitsetSerializer, "{10CE969D-D69E-4B3F-8593-069736F8F705}", JsonUnsupportedTypesSerializer);
         AZ_CLASS_ALLOCATOR_DECL;
 
     protected:

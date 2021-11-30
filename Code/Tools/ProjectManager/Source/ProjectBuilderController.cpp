@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -8,11 +9,13 @@
 #include <ProjectBuilderController.h>
 #include <ProjectBuilderWorker.h>
 #include <ProjectButtonWidget.h>
+#include <ProjectManagerSettings.h>
+
+#include <AzCore/Settings/SettingsRegistry.h>
 
 #include <QMessageBox>
 #include <QDesktopServices>
 #include <QUrl>
-
 
 namespace O3DE::ProjectManager
 {
@@ -25,6 +28,15 @@ namespace O3DE::ProjectManager
     {
         m_worker = new ProjectBuilderWorker(m_projectInfo);
         m_worker->moveToThread(&m_workerThread);
+
+        auto settingsRegistry = AZ::SettingsRegistry::Get();
+        if (settingsRegistry)
+        {
+            // Remove key here in case Project Manager crashing while building that causes HandleResults to not be called
+            QString settingsKey = GetProjectBuiltSuccessfullyKey(m_projectInfo.m_projectName);
+            settingsRegistry->Remove(settingsKey.toStdString().c_str());
+            SaveProjectManagerSettings();
+        }
 
         connect(&m_workerThread, &QThread::finished, m_worker, &ProjectBuilderWorker::deleteLater);
         connect(&m_workerThread, &QThread::started, m_worker, &ProjectBuilderWorker::BuildProject);
@@ -51,6 +63,7 @@ namespace O3DE::ProjectManager
 
         if (projectButton)
         {
+            projectButton->SetProjectBuilding();
             projectButton->SetProjectButtonAction(tr("Cancel Build"), [this] { HandleCancel(); });
 
             if (m_lastProgress != 0)
@@ -78,6 +91,8 @@ namespace O3DE::ProjectManager
 
     void ProjectBuilderController::HandleResults(const QString& result)
     {
+        QString settingsKey = GetProjectBuiltSuccessfullyKey(m_projectInfo.m_projectName);
+
         if (!result.isEmpty())
         {
             if (result.contains(tr("log")))
@@ -103,12 +118,30 @@ namespace O3DE::ProjectManager
                 QMessageBox::critical(m_parent, tr("Project Failed to Build!"), result);
 
                 m_projectInfo.m_buildFailed = true;
-                m_projectInfo.m_logUrl = QUrl();
+                m_projectInfo.m_logUrl = QUrl("file:///" + m_worker->GetLogFilePath());
                 emit NotifyBuildProject(m_projectInfo);
+            }
+
+            auto settingsRegistry = AZ::SettingsRegistry::Get();
+            if (settingsRegistry)
+            {
+                settingsRegistry->Remove(settingsKey.toStdString().c_str());
+                SaveProjectManagerSettings();
             }
 
             emit Done(false);
             return;
+        }
+        else
+        {
+            m_projectInfo.m_buildFailed = false;
+
+            auto settingsRegistry = AZ::SettingsRegistry::Get();
+            if (settingsRegistry)
+            {
+                settingsRegistry->Set(settingsKey.toStdString().c_str(), true);
+                SaveProjectManagerSettings();
+            }
         }
 
         emit Done(true);

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -21,6 +22,14 @@ namespace Multiplayer
         , m_pendingRecord(remoteNetworkRole)
         , m_sentRecords(net_EntityReplicatorRecordsMax)
     {
+        if ( ownsLifetime == OwnsLifetime::False )
+        {
+            // This entity is owned by some other authority; this publisher will only be used for updating (not creating).
+            // Since this replicator does not own it's lifetime, the remote replicator must exist (otherwise, we would never have created a replicator that doesn't own its lifetime).
+            m_remoteReplicatorEstablished = true;
+            m_replicatorState = EntityReplicatorState::Updating;
+        }
+
         AZ_Assert(m_netBindComponent, "NetBindComponent is nullptr");
         m_pendingRecord.SetRemoteNetworkRole(remoteNetworkRole);
     }
@@ -123,20 +132,23 @@ namespace Multiplayer
 
     bool PropertyPublisher::PrepareUpdateEntityRecord()
     {
-        // If we reach the maximum outstanding records, reset the replication state
+        bool didPrepare = true;
         if (m_sentRecords.size() >= net_EntityReplicatorRecordsMax)
         {
-            return PrepareAddEntityRecord();
+            // If we reach the maximum outstanding records, reset the replication state
+            didPrepare = PrepareAddEntityRecord();
         }
-
-        // We need to clear out old records, and build up a list of everything that has changed since the last acked packet
-        m_sentRecords.push_front(m_pendingRecord);
-        auto iter = m_sentRecords.begin();
-        ++iter; // Consider everything after the record we are going to send
-        for (; iter != m_sentRecords.end(); ++iter)
+        else
         {
-            // Sequence wasn't acked, so we need to send these bits again
-            m_pendingRecord.Append(*iter);
+            // We need to clear out old records, and build up a list of everything that has changed since the last acked packet
+            m_sentRecords.push_front(m_pendingRecord);
+            auto iter = m_sentRecords.begin();
+            ++iter; // Consider everything after the record we are going to send
+            for (; iter != m_sentRecords.end(); ++iter)
+            {
+                // Sequence wasn't acked, so we need to send these bits again
+                m_pendingRecord.Append(*iter);
+            }
         }
 
         // Don't send predictable properties back to the Autonomous unless we correct them
@@ -145,7 +157,7 @@ namespace Multiplayer
             m_pendingRecord.Subtract(m_netBindComponent->GetPredictableRecord());
         }
 
-        return true;
+        return didPrepare;
     }
 
     bool PropertyPublisher::PrepareDeleteEntityRecord()
@@ -324,7 +336,6 @@ namespace Multiplayer
         case PropertyPublisher::EntityReplicatorState::Deleting:
         {
             AZ_Assert(m_serializationPhase == PropertyPublisher::EntityReplicatorSerializationPhase::Prepared, "Unexpected serialization phase");
-
             FinalizeDeleteEntityRecord(sentId);
         }
         break;

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -133,7 +134,6 @@ namespace AZ
             m_scopeAttachmentLookup.clear();
             m_imageAttachments.clear();
             m_bufferAttachments.clear();
-            m_swapChainAttachments.clear();
             m_importedImageAttachments.clear();
             m_importedBufferAttachments.clear();
             m_transientImageAttachments.clear();
@@ -152,6 +152,13 @@ namespace AZ
                 delete attachment;
             }
             m_attachments.clear();
+
+            for (auto swapchainAttachment : m_swapChainAttachments)
+            {
+                swapchainAttachment->GetSwapChain()->ProcessRecreation();
+            }
+
+            m_swapChainAttachments.clear();
         }
 
         ImageDescriptor FrameGraphAttachmentDatabase::GetImageDescriptor(const AttachmentId& attachmentId) const

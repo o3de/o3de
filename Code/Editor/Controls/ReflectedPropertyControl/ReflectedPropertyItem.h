@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -121,7 +122,7 @@ protected:
 
 public:
     //! Get number of child nodes.
-    int GetChildCount() const { return m_childs.size(); };
+    int GetChildCount() const { return static_cast<int>(m_childs.size()); };
     //! Get Child by id.
     ReflectedPropertyItem* GetChild(int index) const { return m_childs[index]; }
     PropertyType GetType() const { return m_type; }

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -231,8 +232,8 @@ namespace ScriptCanvasEditor
         ScriptEventsEventNodePaletteTreeItem(const AZ::Data::AssetId& m_assetId, const ScriptEvents::Method& methodDefinition, const ScriptCanvas::EBusEventId& eventId);
         ~ScriptEventsEventNodePaletteTreeItem() = default;
 
-        GraphCanvas::GraphCanvasMimeEvent* CreateMimeEvent() const;
-        QVariant OnData(const QModelIndex& index, int role) const;
+        GraphCanvas::GraphCanvasMimeEvent* CreateMimeEvent() const override;
+        QVariant OnData(const QModelIndex& index, int role) const override;
 
         ScriptCanvas::EBusBusId GetBusIdentifier() const;
         ScriptCanvas::EBusEventId GetEventIdentifier() const;

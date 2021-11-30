@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -9,7 +10,6 @@
 // Description : Font class.
 
 
-#include <AtomLyIntegration/AtomFont/AtomFont_precompiled.h>
 
 #if !defined(USE_NULLFONT_ALWAYS)
 
@@ -26,7 +26,6 @@
 #include <AtomLyIntegration/AtomFont/FFont.h>
 #include <AtomLyIntegration/AtomFont/AtomFont.h>
 #include <AtomLyIntegration/AtomFont/FontTexture.h>
-#include <CryCommon/UnicodeIterator.h>
 #include <CryCommon/MathConversion.h>
 
 #include <AzCore/std/parallel/lock.h>
@@ -53,7 +52,6 @@ static const int TabCharCount = 4;
 // set buffer sizes to hold max characters that can be drawn in 1 DrawString call
 static const size_t MaxVerts = 8 * 1024; // 2048 quads
 static const size_t MaxIndices = (MaxVerts * 6) / 4; // 6 indices per quad, 6/4 * MaxVerts
-static const char DrawList2DPassName[] = "2dpass";
 
 AZ::FFont::FFont(AZ::AtomFont* atomFont, const char* fontName)
     : m_name(fontName)
@@ -124,17 +122,10 @@ bool AZ::FFont::Load(const char* fontFilePath, unsigned int width, unsigned int 
 
     Free();
 
-    auto pPak = gEnv->pCryPak;
+    auto fileIoBase = AZ::IO::FileIOBase::GetInstance();
 
-    string fullFile;
-    if (pPak->IsAbsPath(fontFilePath))
-    {
-        fullFile = fontFilePath;
-    }
-    else
-    {
-        fullFile = m_curPath + fontFilePath;
-    }
+    AZ::IO::Path fullFile(m_curPath);
+    fullFile /= fontFilePath;
 
     int smoothMethodFlag = (flags & TTFFLAG_SMOOTH_MASK) >> TTFFLAG_SMOOTH_SHIFT;
     AZ::FontSmoothMethod smoothMethod = AZ::FontSmoothMethod::None;
@@ -161,42 +152,41 @@ bool AZ::FFont::Load(const char* fontFilePath, unsigned int width, unsigned int 
     }
 
 
-    AZ::IO::HandleType fileHandle = pPak->FOpen(fullFile.c_str(), "rb");
+    AZ::IO::HandleType fileHandle = AZ::IO::InvalidHandle;
+    fileIoBase->Open(fullFile.c_str(), AZ::IO::GetOpenModeFromStringMode("rb"), fileHandle);
     if (fileHandle == AZ::IO::InvalidHandle)
     {
         return false;
     }
 
-    size_t fileSize = pPak->FGetSize(fileHandle);
+    AZ::u64 fileSize{};
+    fileIoBase->Size(fileHandle, fileSize);
     if (!fileSize)
     {
-        pPak->FClose(fileHandle);
+        fileIoBase->Close(fileHandle);
         return false;
     }
 
-    unsigned char* buffer = new unsigned char[fileSize];
-    if (!pPak->FReadRaw(buffer, fileSize, 1, fileHandle))
+    auto buffer = AZStd::make_unique<uint8_t[]>(fileSize);
+    if (!fileIoBase->Read(fileHandle, buffer.get(), fileSize))
     {
-        pPak->FClose(fileHandle);
-        delete [] buffer;
+        fileIoBase->Close(fileHandle);
         return false;
     }
 
-    pPak->FClose(fileHandle);
+    fileIoBase->Close(fileHandle);
 
     if (!m_fontTexture)
     {
         m_fontTexture = new FontTexture();
     }
-
-    if (!m_fontTexture || !m_fontTexture->CreateFromMemory(buffer, (int)fileSize, width, height, smoothMethod, smoothAmount, widthNumSlots, heightNumSlots, sizeRatio))
+    if (!m_fontTexture || !m_fontTexture->CreateFromMemory(buffer.get(), (int)fileSize, width, height, smoothMethod, smoothAmount, widthNumSlots, heightNumSlots, sizeRatio))
     {
-        delete [] buffer;
         return false;
     }
 
     m_monospacedFont = m_fontTexture->GetMonospaced();
-    m_fontBuffer = buffer;
+    m_fontBuffer = AZStd::move(buffer);
     m_fontBufferSize = fileSize;
     m_fontTexDirty = false;
     m_sizeRatio = sizeRatio;
@@ -213,10 +203,9 @@ void AZ::FFont::Free()
     m_fontImageVersion = 0;
 
     delete m_fontTexture;
-    m_fontTexture = 0;
+    m_fontTexture = nullptr;
 
-    delete[] m_fontBuffer;
-    m_fontBuffer = 0;
+    m_fontBuffer.reset();
     m_fontBufferSize = 0;
 }
 
@@ -331,7 +320,7 @@ void AZ::FFont::DrawStringUInternal(
             m_vertexBuffer[vertexOffset + 3].color.dcolor = packedColor;
             m_vertexBuffer[vertexOffset + 3].st = tc3;
 
-            uint16_t startingIndex = vertexOffset - startingVertexCount;
+            uint16_t startingIndex = static_cast<uint16_t>(vertexOffset - startingVertexCount);
             m_indexBuffer[indexOffset + 0] = startingIndex + 0;
             m_indexBuffer[indexOffset + 1] = startingIndex + 1;
             m_indexBuffer[indexOffset + 2] = startingIndex + 2;
@@ -409,6 +398,9 @@ Vec2 AZ::FFont::GetTextSizeUInternal(
     const size_t fxIdx = ctx.m_fxIdx < fxSize ? ctx.m_fxIdx : 0;
     const FontEffect& fx = m_effects[fxIdx];
 
+    AZStd::wstring strW;
+    AZStd::to_wstring(strW, str);
+
     for (size_t i = 0, numPasses = fx.m_passes.size(); i < numPasses; ++i)
     {
         const FontRenderingPass* pass = &fx.m_passes[numPasses - i - 1];
@@ -426,7 +418,7 @@ Vec2 AZ::FFont::GetTextSizeUInternal(
 
         // parse the string, ignoring control characters
         uint32_t nextCh = 0;
-        Unicode::CIterator<const char*, false> pChar(str);
+        const wchar_t* pChar = strW.c_str();
         while (uint32_t ch = *pChar)
         {
             ++pChar;
@@ -556,6 +548,9 @@ uint32_t AZ::FFont::GetNumQuadsForText(const char* str, const bool asciiMultiLin
     const size_t fxIdx = ctx.m_fxIdx < fxSize ? ctx.m_fxIdx : 0;
     const FontEffect& fx = m_effects[fxIdx];
 
+    AZStd::wstring strW;
+    AZStd::to_wstring(strW, str);
+
     for (size_t j = 0, numPasses = fx.m_passes.size(); j < numPasses; ++j)
     {
         size_t i = numPasses - j - 1;
@@ -567,7 +562,7 @@ uint32_t AZ::FFont::GetNumQuadsForText(const char* str, const bool asciiMultiLin
         }
 
         uint32_t nextCh = 0;
-        Unicode::CIterator<const char*, false> pChar(str);
+        const wchar_t* pChar = strW.c_str();
         while (uint32_t ch = *pChar)
         {
             ++pChar;
@@ -697,12 +692,12 @@ uint32_t AZ::FFont::WriteTextQuadsToBuffers(SVF_P2F_C4B_T2F_F4B* verts, uint16_t
                 vertexData[vertexOffset + 3].texIndex2 = 0;
                 vertexData[vertexOffset + 3].pad = 0;
 
-                indexData[indexOffset + 0] = vertexOffset + 0;
-                indexData[indexOffset + 1] = vertexOffset + 1;
-                indexData[indexOffset + 2] = vertexOffset + 2;
-                indexData[indexOffset + 3] = vertexOffset + 2;
-                indexData[indexOffset + 4] = vertexOffset + 3;
-                indexData[indexOffset + 5] = vertexOffset + 0;
+                indexData[indexOffset + 0] = static_cast<uint16_t>(vertexOffset + 0);
+                indexData[indexOffset + 1] = static_cast<uint16_t>(vertexOffset + 1);
+                indexData[indexOffset + 2] = static_cast<uint16_t>(vertexOffset + 2);
+                indexData[indexOffset + 3] = static_cast<uint16_t>(vertexOffset + 2);
+                indexData[indexOffset + 4] = static_cast<uint16_t>(vertexOffset + 3);
+                indexData[indexOffset + 5] = static_cast<uint16_t>(vertexOffset + 0);
 
                 vertexOffset += 4;
                 indexOffset += 6;
@@ -862,9 +857,12 @@ int AZ::FFont::CreateQuadsForText(const RHI::Viewport& viewport, float x, float 
             }
         }
 
+        AZStd::wstring strW;
+        AZStd::to_wstring(strW, str);
+
         // parse the string, ignoring control characters
         uint32_t nextCh = 0;
-        Unicode::CIterator<const char*, false> pChar(str);
+        const wchar_t* pChar = strW.c_str();
         while (uint32_t ch = *pChar)
         {
             ++pChar;
@@ -1060,7 +1058,7 @@ int AZ::FFont::CreateQuadsForText(const RHI::Viewport& viewport, float x, float 
             uint32_t packedColor = 0xffffffff;
             {
                 ColorB tempColor = color;
-                tempColor.a = ((uint32_t) tempColor.a * alphaBlend) >> 8;
+                tempColor.a = static_cast<uint8_t>(((uint32_t) tempColor.a * alphaBlend) >> 8);
                 packedColor = tempColor.pack_argb8888();                    //note: this ends up in r,g,b,a order on little-endian machines
             }
 
@@ -1166,7 +1164,7 @@ size_t AZ::FFont::GetTextLength(const char* str, const bool asciiMultiLine) cons
     return len;
 }
 
-void AZ::FFont::WrapText(string& result, float maxWidth, const char* str, const TextDrawContext& ctx)
+void AZ::FFont::WrapText(AZStd::string& result, float maxWidth, const char* str, const TextDrawContext& ctx)
 {
     result = str;
 
@@ -1188,7 +1186,7 @@ void AZ::FFont::WrapText(string& result, float maxWidth, const char* str, const 
     const bool multiLine = strSize.y > GetRestoredFontSize(ctx).y;
 
     int lastSpace = -1;
-    const char* pLastSpace = NULL;
+    const wchar_t* pLastSpace = NULL;
     float lastSpaceWidth = 0.0f;
 
     float curCharWidth = 0.0f;
@@ -1197,7 +1195,9 @@ void AZ::FFont::WrapText(string& result, float maxWidth, const char* str, const 
     float widthSum = 0.0f;
 
     int curChar = 0;
-    Unicode::CIterator<const char*, false> pChar(result.c_str());
+    AZStd::wstring resultW;
+    AZStd::to_wstring(resultW, result.c_str());
+    const wchar_t* pChar = resultW.c_str();
     while (uint32_t ch = *pChar)
     {
         // Dollar sign escape codes.  The following scenarios can happen with dollar signs embedded in a string.
@@ -1208,7 +1208,7 @@ void AZ::FFont::WrapText(string& result, float maxWidth, const char* str, const 
         if (ctx.m_processSpecialChars && ch == '$')
         {
             ++pChar;
-            char nextChar = *pChar;
+            char nextChar = static_cast<char>(*pChar);
 
             if (isdigit(nextChar) || nextChar == 'O' || nextChar == 'o')
             {
@@ -1224,7 +1224,7 @@ void AZ::FFont::WrapText(string& result, float maxWidth, const char* str, const 
         // get char width and sum it to the line width
         // Note: This is not unicode compatible, since char-width depends on surrounding context (ie, combining diacritics etc)
         char codepoint[5];
-        Unicode::Convert(codepoint, ch);
+        AZStd::to_string(codepoint, 5, { (wchar_t*)&ch, 1 });
         curCharWidth = GetTextSize(codepoint, true, ctx).x;
 
         // keep track of spaces
@@ -1233,15 +1233,15 @@ void AZ::FFont::WrapText(string& result, float maxWidth, const char* str, const 
         {
             lastSpace = curChar;
             lastSpaceWidth = curLineWidth + curCharWidth;
-            pLastSpace = pChar.GetPosition();
+            pLastSpace = pChar;
             assert(*pLastSpace == ' ');
         }
 
         bool prevCharWasNewline = false;
-        const bool notFirstChar = pChar.GetPosition() != result.c_str();
+        const bool notFirstChar = pChar != resultW.c_str();
         if (*pChar && notFirstChar)
         {
-            const char* pPrevCharStr = pChar.GetPosition() - 1;
+            const wchar_t* pPrevCharStr = pChar - 1;
             prevCharWasNewline = pPrevCharStr[0] == '\n';
         }
 
@@ -1268,12 +1268,12 @@ void AZ::FFont::WrapText(string& result, float maxWidth, const char* str, const 
             }
             else
             {
-                const char* buf = pChar.GetPosition();
-                size_t bytesProcessed = buf - result.c_str();
-                result.insert(bytesProcessed, '\n'); // Insert the newline, this invalidates the iterator
-                buf = result.c_str() + bytesProcessed; // In case reallocation occurs, we ensure we are inside the new buffer
+                const wchar_t* buf = pChar;
+                size_t bytesProcessed = buf - resultW.c_str();
+                resultW.insert(resultW.begin() + bytesProcessed, L'\n'); // Insert the newline, this invalidates the iterator
+                buf = resultW.c_str() + bytesProcessed; // In case reallocation occurs, we ensure we are inside the new buffer
                 assert(*buf == '\n');
-                pChar.SetPosition(buf); // pChar once again points inside the target string, at the current character
+                pChar = buf; // pChar once again points inside the target string, at the current character
                 assert(*pChar == ch);
                 ++pChar;
                 ++curChar;
@@ -1331,7 +1331,7 @@ unsigned int AZ::FFont::GetEffectId(const char* effectName) const
         {
             if (!strcmp(m_effects[i].m_name.c_str(), effectName))
             {
-                return i;
+                return static_cast<unsigned int>(i);
             }
         }
     }
@@ -1341,7 +1341,7 @@ unsigned int AZ::FFont::GetEffectId(const char* effectName) const
 
 unsigned int AZ::FFont::GetNumEffects() const
 {
-    return m_effects.size();
+    return static_cast<unsigned int>(m_effects.size());
 }
 
 const char* AZ::FFont::GetEffectName(unsigned int effectId) const
@@ -1468,7 +1468,7 @@ bool AZ::FFont::UpdateTexture()
         return false;
     }
 
-    if (m_fontTexture->GetWidth() != m_fontImage->GetDescriptor().m_size.m_width || m_fontTexture->GetHeight() != m_fontImage->GetDescriptor().m_size.m_height)
+    if (m_fontTexture->GetWidth() != static_cast<int>(m_fontImage->GetDescriptor().m_size.m_width) || m_fontTexture->GetHeight() != static_cast<int>(m_fontImage->GetDescriptor().m_size.m_height))
     {
         AZ_Assert(false, "AtomFont::FFont:::UpdateTexture size mismatch between texture and image!");
         return false;
@@ -1504,7 +1504,7 @@ bool AZ::FFont::InitCache()
     char* p = buf;
 
     // precache all [normal] printable characters to the string (missing ones are updated on demand)
-    for (int i = first; i <= last; ++i)
+    for (char i = first; i <= last; ++i)
     {
         *p++ = i;
     }
@@ -1640,7 +1640,7 @@ AZ::FFont::DrawParameters AZ::FFont::ExtractDrawParameters(const AzFramework::Te
     internalParams.m_ctx.EnableFrame(false);
     internalParams.m_ctx.SetProportional(!params.m_monospace && params.m_scaleWithWindow);
     internalParams.m_ctx.SetSizeIn800x600(params.m_scaleWithWindow && params.m_virtual800x600ScreenSize);
-    internalParams.m_ctx.SetSize(AZVec2ToLYVec2(AZ::Vector2(params.m_textSizeFactor, params.m_textSizeFactor) * params.m_scale));
+    internalParams.m_ctx.SetSize(AZVec2ToLYVec2(AZ::Vector2(params.m_textSizeFactor, params.m_textSizeFactor) * params.m_scale * internalParams.m_viewportContext->GetDpiScalingFactor()));
     internalParams.m_ctx.SetLineSpacing(params.m_lineSpacing);
 
     if (params.m_hAlign != AzFramework::TextHorizontalAlignment::Left ||
@@ -1682,7 +1682,7 @@ AZ::FFont::DrawParameters AZ::FFont::ExtractDrawParameters(const AzFramework::Te
         {
             posY -= textSize.y;
         }
-        internalParams.m_size = AZ::Vector2{textSize.x, textSize.y};
+        internalParams.m_size = AZ::Vector2{textSize.x, textSize.y} * internalParams.m_viewportContext->GetDpiScalingFactor();
     }
     SetCommonContextFlags(internalParams.m_ctx, params);
     internalParams.m_ctx.m_drawTextFlags |= eDrawText_2D;
@@ -1726,11 +1726,19 @@ void AZ::FFont::DrawScreenAlignedText3d(
     {
         return;
     }
-    AZ::Vector3 positionNDC = AzFramework::WorldToScreenNDC(
+    AZ::Vector3 positionNDC = AzFramework::WorldToScreenNdc(
         params.m_position,
         currentView->GetWorldToViewMatrix(),
         currentView->GetViewToClipMatrix()
     );
+
+    // Text behind the camera shouldn't get rendered.  WorldToScreenNDC returns values in the range 0 - 1, so Z < 0.5 is behind the screen
+    // and >= 0.5 is in front of the screen.
+    if (positionNDC.GetZ() < 0.5f)
+    {
+        return;
+    }
+
     internalParams.m_ctx.m_sizeIn800x600 = false;
 
     DrawStringUInternal(

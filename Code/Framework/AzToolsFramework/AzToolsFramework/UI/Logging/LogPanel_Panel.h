@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -299,13 +300,13 @@ namespace AzToolsFramework
             bool editorEvent(QEvent* event, QAbstractItemModel* model, const QStyleOptionViewItem& option, const QModelIndex& index) override;
             void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
 
-            QWidget* createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const;
+            QWidget* createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
 
-            void setEditorData(QWidget* editor, const QModelIndex& index) const;
-            void setModelData(QWidget* editor, QAbstractItemModel* model, const QModelIndex& index) const;
+            void setEditorData(QWidget* editor, const QModelIndex& index) const override;
+            void setModelData(QWidget* editor, QAbstractItemModel* model, const QModelIndex& index) const override;
 
             QSize sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const override;
-            void updateEditorGeometry(QWidget* editor, const QStyleOptionViewItem& option, const QModelIndex& index) const;
+            void updateEditorGeometry(QWidget* editor, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
 
             QWidget* pOwnerWidget;
             QLabel* m_painterLabel;

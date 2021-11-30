@@ -1,19 +1,18 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
-#include "precompiled.h"
-
 #include <ScriptEvents/ScriptEventsGem.h>
 #include <Source/Editor/ScriptEventsSystemEditorComponent.h>
 
-#include <ScriptEvents/Components/ScriptEventReferencesComponent.h>
 #include <Builder/ScriptEventsBuilderComponent.h>
 #include <ScriptEvents/ScriptEventsBus.h>
 
+#include <AzCore/Asset/AssetSerializer.h>
 #if defined(SCRIPTEVENTS_EDITOR)
 
 namespace ScriptEvents
@@ -74,7 +73,6 @@ namespace ScriptEvents
 
         m_descriptors.insert(m_descriptors.end(), {
             ScriptEventsEditor::ScriptEventEditorSystemComponent::CreateDescriptor(),
-            ScriptEvents::Components::ScriptEventReferencesComponent::CreateDescriptor(),
             ScriptEventsBuilder::ScriptEventsBuilderComponent::CreateDescriptor(),
         });
     }

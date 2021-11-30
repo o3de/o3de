@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -33,6 +34,9 @@ namespace AZ
 
             // Pass Overrides...
             void CompileResources(const RHI::FrameGraphCompileContext& context) override;
+            bool IsEnabled() const override;
+
+            mutable uint32_t m_frameDelayCount = 0;
         };
     }   // namespace RPI
 }   // namespace AZ

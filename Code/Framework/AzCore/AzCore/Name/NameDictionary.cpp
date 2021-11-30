@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -20,23 +21,23 @@ namespace AZ
 
     namespace NameDictionaryInternal
     {
-        static AZ::EnvironmentVariable<NameDictionary*> s_instance = nullptr;
+        static AZ::EnvironmentVariable<NameDictionary> s_instance = nullptr;
     }
 
     void NameDictionary::Create()
     {
         using namespace NameDictionaryInternal;
 
-        AZ_Assert(!s_instance || !s_instance.Get(), "NameDictionary already created!");
+        AZ_Assert(!s_instance, "NameDictionary already created!");
 
         if (!s_instance)
         {
-            s_instance = AZ::Environment::CreateVariable<NameDictionary*>(NameDictionaryInstanceName);
-        }
-
-        if (!s_instance.Get())
-        {
-            s_instance.Set(aznew NameDictionary());
+            // Because the NameDictionary allocates memory using the AZ::Allocator and it is created
+            // in the executable memory space, it's ownership cannot be transferred to other module memory spaces
+            // Otherwise this could cause the the NameDictionary to be destroyed in static de-init
+            // after the AZ::Allocators have been destroyed
+            // Therefore we supply the isTransferOwnership value of false using CreateVariableEx
+            s_instance = AZ::Environment::CreateVariableEx<NameDictionary>(NameDictionaryInstanceName, true, false);
         }
     }
 
@@ -45,8 +46,7 @@ namespace AZ
         using namespace NameDictionaryInternal;
 
         AZ_Assert(s_instance, "NameDictionary not created!");
-        delete (*s_instance);
-        *s_instance = nullptr;
+        s_instance.Reset();
     }
 
     bool NameDictionary::IsReady()
@@ -55,10 +55,15 @@ namespace AZ
 
         if (!s_instance)
         {
-            s_instance = Environment::FindVariable<NameDictionary*>(NameDictionaryInstanceName);
+            // Because the NameDictionary allocates memory using the AZ::Allocator and it is created
+            // in the executable memory space, it's ownership cannot be transferred to other module memory spaces
+            // Otherwise this could cause the the NameDictionary to be destroyed in static de-init
+            // after the AZ::Allocators have been destroyed
+            // Therefore we supply the isTransferOwnership value of false using CreateVariableEx
+            s_instance = AZ::Environment::CreateVariableEx<NameDictionary>(NameDictionaryInstanceName, true, false);
         }
 
-        return s_instance && *s_instance;
+        return s_instance.IsConstructed();
     }
 
     NameDictionary& NameDictionary::Instance()
@@ -67,12 +72,12 @@ namespace AZ
 
         if (!s_instance)
         {
-            s_instance = Environment::FindVariable<NameDictionary*>(NameDictionaryInstanceName);
+            s_instance = Environment::FindVariable<NameDictionary>(NameDictionaryInstanceName);
         }
 
-        AZ_Assert(s_instance && *s_instance, "NameDictionary has not been initialized yet.");
+        AZ_Assert(s_instance.IsConstructed(), "NameDictionary has not been initialized yet.");
 
-        return *(*s_instance);
+        return *s_instance;
     }
     
     NameDictionary::NameDictionary()
@@ -86,7 +91,7 @@ namespace AZ
         {
             Internal::NameData* nameData = keyValue.second;
             const int useCount = keyValue.second->m_useCount;
-            const bool hadCollision = keyValue.second->m_hashCollision;
+            [[maybe_unused]] const bool hadCollision = keyValue.second->m_hashCollision;
 
             if (useCount == 0)
             {
@@ -165,7 +170,7 @@ namespace AZ
         }
     }
 
-    void NameDictionary::TryReleaseName(Internal::NameData* nameData)
+    void NameDictionary::TryReleaseName(Name::Hash hash)
     {
         // Note that we don't remove NameData from the dictionary if it has been involved in a collision.
         // This avoids specific edge cases where a Name object could get an incorrect hash value. Consider
@@ -178,15 +183,24 @@ namespace AZ
         //      the dictionary *again*, this time with hash value 1000. Name objects pointing to the original
         //      entry and Name objects pointing to the new entry will fail comparison operations.
 
-        // Early exit to avoid locking the mutex unnecessarily.
-        if (nameData->m_hashCollision)
-        {
-            return;
-        }
 
         AZStd::unique_lock<AZStd::shared_mutex> lock(m_sharedMutex);
 
-        // Check m_hashCollision again inside the m_sharedMutex because a new collision could have happened
+        auto dictIt = m_dictionary.find(hash);
+        if (dictIt == m_dictionary.end())
+        {
+            // This check is to safeguard around the following scenario
+            // T1, gets into TryReleaseName
+            // T2 gets into MakeName, acquires the lock, returns a new Name that increments the counter
+            // T2 deletes the Name decrements the counter, gets into TryReleaseName
+            // T1 gets the lock, goes to the compare_exchange if and has a counter of 0, deletes
+            // Then T2 continues, gets the lock and crashes because nameData was deleted
+            return;
+        }
+
+        Internal::NameData* nameData = dictIt->second;
+
+        // Check m_hashCollision inside the m_sharedMutex because a new collision could have happened
         // on another thread before taking the lock.
         if (nameData->m_hashCollision)
         {

@@ -39,6 +39,14 @@ Setup will install [WixBundleName] on your computer. Click install to continue, 
     <String Id="ExecuteProgressLabel">Execution Progress</String>
     <String Id="ProgressCancelButton">&amp;Cancel</String>
 
+    <!-- files in use page (action blocking) -->
+    <String Id="FilesInUseHeader">Files In Use</String>
+    <String Id="FilesInUseLabel">The following applications are using files that need to be modified:</String>
+    <String Id="FilesInUseCloseRadioButton">Close the &amp;applications</String>
+    <String Id="FilesInUseDontCloseRadioButton">&amp;Do not close applications, may cause unexpected side effects</String>
+    <String Id="FilesInUseOkButton">&amp;OK</String>
+    <String Id="FilesInUseCancelButton">&amp;Cancel</String>
+
     <!-- final page (success state) -->
     <String Id="SuccessHeader">Setup Successful</String>
     <String Id="SuccessInstallHeader">Installation Successfully Completed</String>

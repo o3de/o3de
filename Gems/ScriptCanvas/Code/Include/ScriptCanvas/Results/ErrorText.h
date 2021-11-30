@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -40,6 +41,7 @@ namespace ScriptCanvas
         constexpr const char* InactiveGraph = "This graph defines no functions, it is never activated, and will never execute. Add a Start node or connect an event handler or define functions.";
         constexpr const char* InfiniteLoopWritingToVariable = "infinite loop when writing to variable";
         constexpr const char* InfiniteSelfActivationLoop = "infinite loop when activating the entity that owns this graph";
+        constexpr const char* InvalidDataTypeInInput = "invalid data type in input slot";
         constexpr const char* MetaDataNeedsTupleTypeIdForEventCall = "Meta data needs an AzTypeId for Tuple if an EBus call returns multiple types to ScriptCanvas";
         constexpr const char* MetaDataRequiredForEventCall = "Meta data is required for ACM node that is an EBus call";
         constexpr const char* MissingFalseExecutionSlotOnIf = "A 'False' Execution output slot is required in an If branch node";

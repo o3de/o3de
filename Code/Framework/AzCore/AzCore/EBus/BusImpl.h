@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -159,8 +160,8 @@ namespace AZ
             /**
              * Locking primitive that is used when executing events in the event queue.
              */
-            using EventQueueMutexType = typename AZStd::Utils::if_c<AZStd::is_same<typename Traits::EventQueueMutexType, NullMutex>::value, // if EventQueueMutexType==NullMutex use MutexType otherwise EventQueueMutexType
-                MutexType, typename Traits::EventQueueMutexType>::type;
+            using EventQueueMutexType = AZStd::conditional_t<AZStd::is_same<typename Traits::EventQueueMutexType, NullMutex>::value, // if EventQueueMutexType==NullMutex use MutexType otherwise EventQueueMutexType
+                MutexType, typename Traits::EventQueueMutexType>;
 
             /**
              * Pointer to an address on the bus.
@@ -179,14 +180,22 @@ namespace AZ
              * `<BusName>::ExecuteQueuedEvents()`.
              * By default, the event queue is disabled.
              */
-            static const bool EnableEventQueue = Traits::EnableEventQueue;
-            static const bool EventQueueingActiveByDefault = Traits::EventQueueingActiveByDefault;
-            static const bool EnableQueuedReferences = Traits::EnableQueuedReferences;
+            static constexpr bool EnableEventQueue = Traits::EnableEventQueue;
+            static constexpr bool EventQueueingActiveByDefault = Traits::EventQueueingActiveByDefault;
+            static constexpr bool EnableQueuedReferences = Traits::EnableQueuedReferences;
 
             /**
              * True if the EBus supports more than one address. Otherwise, false.
              */
-            static const bool HasId = Traits::AddressPolicy != EBusAddressPolicy::Single;
+            static constexpr bool HasId = Traits::AddressPolicy != EBusAddressPolicy::Single;
+
+            /**
+            * Template Lock Guard class that wraps around the Mutex
+            * The EBus uses for Dispatching Events.
+            * This is not the EBus Context Mutex if LocklessDispatch is true
+            */
+            template <typename DispatchMutex>
+            using DispatchLockGuard = typename Traits::template DispatchLockGuard<DispatchMutex, Traits::LocklessDispatch>;
         };
 
         /**
@@ -459,7 +468,7 @@ namespace AZ
             using BusPtr = typename Traits::BusPtr;
 
             /**
-             * Helper to queue an event by BusIdType only when function queueing is enabled 
+             * Helper to queue an event by BusIdType only when function queueing is enabled
              * @param id            Address ID. Handlers that are connected to this ID will receive the event.
              * @param func          Function pointer of the event to dispatch.
              * @param args          Function arguments that are passed to each handler.
@@ -580,7 +589,7 @@ namespace AZ
             , public EBusBroadcaster<Bus, Traits>
             , public EBusEventer<Bus, Traits>
             , public EBusEventEnumerator<Bus, Traits>
-            , public AZStd::Utils::if_c<Traits::EnableEventQueue, EBusEventQueue<Bus, Traits>, EBusNullQueue>::type
+            , public AZStd::conditional_t<Traits::EnableEventQueue, EBusEventQueue<Bus, Traits>, EBusNullQueue>
         {
         };
 
@@ -598,7 +607,7 @@ namespace AZ
             : public EventDispatcher<Bus, Traits>
             , public EBusBroadcaster<Bus, Traits>
             , public EBusBroadcastEnumerator<Bus, Traits>
-            , public AZStd::Utils::if_c<Traits::EnableEventQueue, EBusBroadcastQueue<Bus, Traits>, EBusNullQueue>::type
+            , public AZStd::conditional_t<Traits::EnableEventQueue, EBusBroadcastQueue<Bus, Traits>, EBusNullQueue>
         {
         };
 
@@ -654,7 +663,7 @@ namespace AZ
                 static void Validate() {}
             };
 
-            template <class Function, bool IsBindExpression = AZStd::is_bind_expression_v<Function>>
+            template <class Function>
             struct ArgumentValidatorHelper
             {
                 constexpr static void Validate()
@@ -671,13 +680,6 @@ namespace AZ
                     static_assert(!AZStd::disjunction_v<is_non_const_lvalue_reference<AZStd::function_traits_get_arg_t<Function, ArgIndices>>...>,
                         "It is not safe to queue a function call with non-const lvalue ref arguments");
                 }
-            };
-
-            // bind has already copied/bound its arguments, we can't validate them further in any reasonable way
-            template <class Function>
-            struct ArgumentValidatorHelper<Function, true>
-            {
-                constexpr static void Validate() {}
             };
 
             template <class Function>

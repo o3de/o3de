@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -88,7 +89,7 @@ namespace PhysX
 
         PxMaterialUniquePtr m_pxMaterial;
         AZ::Crc32 m_surfaceType = 0;
-        AZ::u32 m_cryEngineSurfaceId = -1;
+        AZ::u32 m_cryEngineSurfaceId = std::numeric_limits<AZ::u32>::max();
         AZStd::string m_surfaceString;
         float m_density = 1000.0f;
         AZ::Color m_debugColor = AZ::Colors::White;

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -25,66 +26,61 @@ namespace RenderGL
         : RenderUtil()
     {
         // set/reset the member variables
-        mGraphicsManager        = graphicsManager;
-        mLineShader             = nullptr;
-        mMeshShader             = nullptr;
-        mMeshVertexBuffer       = nullptr;
-        mMeshIndexBuffer        = nullptr;
+        m_graphicsManager        = graphicsManager;
+        m_lineShader             = nullptr;
+        m_meshShader             = nullptr;
+        m_meshVertexBuffer       = nullptr;
+        m_meshIndexBuffer        = nullptr;
 
-        mTriangleVertexBuffer    = nullptr;
-        mTriangleIndexBuffer     = nullptr;
+        m_triangleVertexBuffer    = nullptr;
+        m_triangleIndexBuffer     = nullptr;
 
-        mCurrentLineVB          = 0;
-
-        for (uint32 i = 0; i < MAX_LINE_VERTEXBUFFERS; ++i)
-        {
-            mLineVertexBuffers[i] = nullptr;
-        }
+        m_currentLineVb          = 0;
 
         // initialize the vertex buffers and the shader used for line rendering
-        for (uint32 i = 0; i < MAX_LINE_VERTEXBUFFERS; ++i)
+        for (VertexBuffer*& lineVertexBuffer : m_lineVertexBuffers)
         {
-            mLineVertexBuffers[i] = new VertexBuffer();
-            if (mLineVertexBuffers[i]->Init(sizeof(LineVertex), mNumMaxLineVertices, USAGE_DYNAMIC) == false)
+            lineVertexBuffer = new VertexBuffer();
+            if (lineVertexBuffer->Init(sizeof(LineVertex), s_numMaxLineVertices, USAGE_DYNAMIC) == false)
             {
                 MCore::LogError("[OpenGL]  Failed to create render utility line vertex buffer.");
                 CleanUp();
             }
         }
 
-        mLineShader = graphicsManager->LoadShader("Line_VS.glsl", "Line_PS.glsl");
+        m_lineShader = graphicsManager->LoadShader("Line_VS.glsl", "Line_PS.glsl");
 
         // initialize the vertex and the index buffers as well as the shader used for rendering util meshes
-        mMeshVertexBuffer   = new VertexBuffer();
-        mMeshIndexBuffer    = new IndexBuffer();
+        m_meshVertexBuffer   = new VertexBuffer();
+        m_meshIndexBuffer    = new IndexBuffer();
 
-        if (mMeshVertexBuffer->Init(sizeof(UtilMeshVertex), mNumMaxMeshVertices, USAGE_DYNAMIC) == false)
+        if (m_meshVertexBuffer->Init(sizeof(UtilMeshVertex), s_numMaxMeshVertices, USAGE_DYNAMIC) == false)
         {
             MCore::LogError("[OpenGL]  Failed to create render utility mesh vertex buffer.");
             CleanUp();
             return;
         }
 
-        if (mMeshIndexBuffer->Init(IndexBuffer::INDEXSIZE_32BIT, mNumMaxMeshIndices, USAGE_DYNAMIC) == false)
+        if (m_meshIndexBuffer->Init(IndexBuffer::INDEXSIZE_32BIT, s_numMaxMeshIndices, USAGE_DYNAMIC) == false)
         {
             MCore::LogError("[OpenGL]  Failed to create render utility mesh index buffer.");
             CleanUp();
             return;
         }
 
-        mMeshShader = graphicsManager->LoadShader("RenderUtil_VS.glsl", "RenderUtil_PS.glsl");
+        m_meshShader = graphicsManager->LoadShader("RenderUtil_VS.glsl", "RenderUtil_PS.glsl");
 
         // initialize the triangle rendering buffers
-        mTriangleVertexBuffer = new VertexBuffer();
-        if (mTriangleVertexBuffer->Init(sizeof(TriangleVertex), mNumMaxTriangleVertices, USAGE_DYNAMIC) == false)
+        m_triangleVertexBuffer = new VertexBuffer();
+        if (m_triangleVertexBuffer->Init(sizeof(TriangleVertex), s_numMaxTriangleVertices, USAGE_DYNAMIC) == false)
         {
             MCore::LogError("[OpenGL]  Failed to create triangle vertex buffer.");
             CleanUp();
             return;
         }
 
-        mTriangleIndexBuffer = new IndexBuffer();
-        if (mTriangleIndexBuffer->Init(IndexBuffer::INDEXSIZE_32BIT, mNumMaxTriangleVertices, USAGE_STATIC) == false)
+        m_triangleIndexBuffer = new IndexBuffer();
+        if (m_triangleIndexBuffer->Init(IndexBuffer::INDEXSIZE_32BIT, s_numMaxTriangleVertices, USAGE_STATIC) == false)
         {
             MCore::LogError("[OpenGL]  Failed to create triangle index buffer.");
             CleanUp();
@@ -92,24 +88,23 @@ namespace RenderGL
         }
 
         // lock the index buffer and fill in the static indices
-        uint32* indices = (uint32*)mTriangleIndexBuffer->Lock();
+        uint32* indices = (uint32*)m_triangleIndexBuffer->Lock();
         if (indices)
         {
-            for (uint32 i = 0; i < mNumMaxTriangleVertices; ++i)
+            for (uint32 i = 0; i < s_numMaxTriangleVertices; ++i)
             {
                 indices[i] = i;
             }
 
-            mTriangleIndexBuffer->Unlock();
+            m_triangleIndexBuffer->Unlock();
         }
 
         // texture rendering
-        mMaxNumTextures     = 256;
-        mNumTextures        = 0;
-        mTextures           = new TextureEntry[mMaxNumTextures];
+        m_maxNumTextures     = 256;
+        m_numTextures        = 0;
+        m_textures           = new TextureEntry[m_maxNumTextures];
 
         // text rendering
-        mTextEntries.SetMemoryCategory(MEMCATEGORY_RENDERING);
     }
 
 
@@ -126,60 +121,59 @@ namespace RenderGL
 
     void GLRenderUtil::Validate()
     {
-        if (mLineShader)
+        if (m_lineShader)
         {
-            mLineShader->Validate();
+            m_lineShader->Validate();
         }
-        if (mMeshShader)
+        if (m_meshShader)
         {
-            mMeshShader->Validate();
+            m_meshShader->Validate();
         }
     }
 
     // destroy the allocated memory
     void GLRenderUtil::CleanUp()
     {
-        for (uint32 i = 0; i < MAX_LINE_VERTEXBUFFERS; ++i)
+        for (VertexBuffer*& lineVertexBuffer : m_lineVertexBuffers)
         {
-            delete mLineVertexBuffers[i];
-            mLineVertexBuffers[i] = nullptr;
+            delete lineVertexBuffer;
+            lineVertexBuffer = nullptr;
         }
 
-        delete mMeshVertexBuffer;
-        delete mMeshIndexBuffer;
+        delete m_meshVertexBuffer;
+        delete m_meshIndexBuffer;
 
-        delete mTriangleVertexBuffer;
-        delete mTriangleIndexBuffer;
+        delete m_triangleVertexBuffer;
+        delete m_triangleIndexBuffer;
 
-        mMeshVertexBuffer   = nullptr;
-        mMeshIndexBuffer    = nullptr;
+        m_meshVertexBuffer   = nullptr;
+        m_meshIndexBuffer    = nullptr;
 
-        mTriangleVertexBuffer   = nullptr;
-        mTriangleIndexBuffer    = nullptr;
+        m_triangleVertexBuffer   = nullptr;
+        m_triangleIndexBuffer    = nullptr;
 
-        mCurrentLineVB      = 0;
+        m_currentLineVb      = 0;
 
         // get rid of the texture entries
-        delete[] mTextures;
+        delete[] m_textures;
 
         // get rid of texture entries
-        const uint32 numTextEntries = mTextEntries.GetLength();
-        for (uint32 i = 0; i < numTextEntries; ++i)
+        for (TextEntry* textEntry : m_textEntries)
         {
-            delete mTextEntries[i];
+            delete textEntry;
         }
-        mTextEntries.Clear();
+        m_textEntries.clear();
     }
 
 
     // render texture
     void GLRenderUtil::RenderTexture(Texture* texture, const AZ::Vector2& pos)
     {
-        mTextures[mNumTextures].pos     = pos;
-        mTextures[mNumTextures].texture = texture;
-        mNumTextures++;
+        m_textures[m_numTextures].m_pos     = pos;
+        m_textures[m_numTextures].m_texture = texture;
+        m_numTextures++;
 
-        if (mNumTextures >= mMaxNumTextures)
+        if (m_numTextures >= m_maxNumTextures)
         {
             RenderTextures();
         }
@@ -189,7 +183,7 @@ namespace RenderGL
     // render textures
     void GLRenderUtil::RenderTextures()
     {
-        if (mNumTextures == 0)
+        if (m_numTextures == 0)
         {
             return;
         }
@@ -222,44 +216,41 @@ namespace RenderGL
         glColor3f(1.0f, 1.0f, 1.0f);
 
         // iterate through the textures and render them
-        for (uint32 i = 0; i < mNumTextures; ++i)
+        for (uint32 i = 0; i < m_numTextures; ++i)
         {
-            TextureEntry&   e = mTextures[i];
-            float           w = static_cast<float>(e.texture->GetWidth());
-            float           h = static_cast<float>(e.texture->GetHeight());
+            TextureEntry&   e = m_textures[i];
+            float           w = static_cast<float>(e.m_texture->GetWidth());
+            float           h = static_cast<float>(e.m_texture->GetHeight());
 
-            glBindTexture(GL_TEXTURE_2D, e.texture->GetID());
+            glBindTexture(GL_TEXTURE_2D, e.m_texture->GetID());
 
             glBegin(GL_QUADS);
             glTexCoord2f(0.0f,           0.0f);
-            glVertex3f(e.pos.GetX(),       e.pos.GetY(),       -1.0f);
+            glVertex3f(e.m_pos.GetX(),       e.m_pos.GetY(),       -1.0f);
             glTexCoord2f(1.0f,           0.0f);
-            glVertex3f(e.pos.GetX() + w,   e.pos.GetY(),       -1.0f);
+            glVertex3f(e.m_pos.GetX() + w,   e.m_pos.GetY(),       -1.0f);
             glTexCoord2f(1.0f,           1.0f);
-            glVertex3f(e.pos.GetX() + w,   e.pos.GetY() + h,   -1.0f);
+            glVertex3f(e.m_pos.GetX() + w,   e.m_pos.GetY() + h,   -1.0f);
             glTexCoord2f(0.0f,           1.0f);
-            glVertex3f(e.pos.GetX(),       e.pos.GetY() + h,   -1.0f);
+            glVertex3f(e.m_pos.GetX(),       e.m_pos.GetY() + h,   -1.0f);
             glEnd();
         }
 
         glPopAttrib();
 
-        //const float renderTime = time.GetTime();
-        //LOG("numTextures=%i, renderTime=%.3fms", mNumTextures, renderTime*1000);
-
-        mNumTextures = 0;
+        m_numTextures = 0;
     }
 
 
     // overloaded render lines function
     void GLRenderUtil::RenderLines(LineVertex* vertices, uint32 numVertices)
     {
-        if (mLineShader == nullptr)
+        if (m_lineShader == nullptr)
         {
             return;
         }
 
-        VertexBuffer* vertexBuffer = mLineVertexBuffers[mCurrentLineVB];
+        VertexBuffer* vertexBuffer = m_lineVertexBuffers[m_currentLineVb];
 
         // copy the vertices into the OpenGL vertex buffer
         LineVertex* lineVertices = (LineVertex*)vertexBuffer->Lock();
@@ -274,23 +265,23 @@ namespace RenderGL
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
         // setup the shader and render the lines
-        mLineShader->Activate();
+        m_lineShader->Activate();
 
-        mLineShader->SetAttribute("inPosition",   4, GL_FLOAT, sizeof(LineVertex), 0);
-        mLineShader->SetAttribute("inColor",      4, GL_FLOAT, sizeof(LineVertex), sizeof(AZ::Vector3));
-        mLineShader->SetUniform("matViewProj",  mGraphicsManager->GetCamera()->GetViewProjMatrix(), false);
+        m_lineShader->SetAttribute("inPosition",   4, GL_FLOAT, sizeof(LineVertex), 0);
+        m_lineShader->SetAttribute("inColor",      4, GL_FLOAT, sizeof(LineVertex), sizeof(AZ::Vector3));
+        m_lineShader->SetUniform("matViewProj",  m_graphicsManager->GetCamera()->GetViewProjMatrix(), false);
 
         glDrawArrays(GL_LINES, 0, numVertices);
 
-        mLineShader->Deactivate();
+        m_lineShader->Deactivate();
         GetGraphicsManager()->SetShader(nullptr);       // if only lines are rendered, we need to unbind this shader totally
         // otherwise it will stay active and another context can't use it
         vertexBuffer->Deactivate();
 
-        mCurrentLineVB++;
-        if (mCurrentLineVB >= MAX_LINE_VERTEXBUFFERS)
+        m_currentLineVb++;
+        if (m_currentLineVb >= MAX_LINE_VERTEXBUFFERS)
         {
-            mCurrentLineVB = 0;
+            m_currentLineVb = 0;
         }
     }
 
@@ -320,14 +311,14 @@ namespace RenderGL
         glLoadIdentity();
 
         // use the fixed function pipeline
-        mGraphicsManager->SetShader(nullptr);
+        m_graphicsManager->SetShader(nullptr);
 
         glBegin(GL_LINES);
         for (uint32 i = 0; i < numLines; ++i)
         {
-            glColor3f(lines[i].mColor.r, lines[i].mColor.g, lines[i].mColor.b);
-            glVertex3f(lines[i].mX1, lines[i].mY1, 0.0);
-            glVertex3f(lines[i].mX2, lines[i].mY2, 0.0);
+            glColor3f(lines[i].m_color.m_r, lines[i].m_color.m_g, lines[i].m_color.m_b);
+            glVertex3f(lines[i].m_x1, lines[i].m_y1, 0.0);
+            glVertex3f(lines[i].m_x2, lines[i].m_y2, 0.0);
         }
         glEnd();
 
@@ -359,9 +350,9 @@ namespace RenderGL
         glLoadIdentity();
 
         // use the fixed function pipeline
-        mGraphicsManager->SetShader(nullptr);
+        m_graphicsManager->SetShader(nullptr);
 
-        glColor3f(fillColor.r, fillColor.g, fillColor.b);
+        glColor3f(fillColor.m_r, fillColor.m_g, fillColor.m_b);
         glBegin(GL_QUADS);
         glVertex3i(left, top, 0);
         glVertex3i(left, bottom, 0);
@@ -381,65 +372,65 @@ namespace RenderGL
     // overloaded render util mesh function
     void GLRenderUtil::RenderUtilMesh(UtilMesh* mesh, const MCore::RGBAColor& color, const AZ::Transform& globalTM)
     {
-        if (mMeshShader == nullptr)
+        if (m_meshShader == nullptr)
         {
             return;
         }
 
         // lock the vertex and the index buffer
-        UtilMeshVertex* vertices = (UtilMeshVertex*)mMeshVertexBuffer->Lock();
-        uint32*         indices = (uint32*)mMeshIndexBuffer->Lock();
+        UtilMeshVertex* vertices = (UtilMeshVertex*)m_meshVertexBuffer->Lock();
+        uint32*         indices = (uint32*)m_meshIndexBuffer->Lock();
 
         // copy the vertices and the indices into the OpenGL buffers
-        MCORE_ASSERT(mesh->mPositions.size() <= mNumMaxMeshVertices);
-        MCore::MemCopy(indices, mesh->mIndices.data(), mesh->mIndices.size() * sizeof(uint32));
+        MCORE_ASSERT(mesh->m_positions.size() <= s_numMaxMeshVertices);
+        MCore::MemCopy(indices, mesh->m_indices.data(), mesh->m_indices.size() * sizeof(uint32));
 
-        if (mesh->mNormals.empty())
+        if (mesh->m_normals.empty())
         {
-            const size_t numVertices = mesh->mPositions.size();
+            const size_t numVertices = mesh->m_positions.size();
             for (size_t i = 0; i < numVertices; ++i)
             {
-                vertices[i].mPosition = mesh->mPositions[i];
-                vertices[i].mNormal   = AZ::Vector3(1.0f, 0.0f, 0.0f);
+                vertices[i].m_position = mesh->m_positions[i];
+                vertices[i].m_normal   = AZ::Vector3(1.0f, 0.0f, 0.0f);
             }
         }
         else
         {
-            const size_t numVertices = mesh->mPositions.size();
+            const size_t numVertices = mesh->m_positions.size();
             for (size_t i = 0; i < numVertices; ++i)
             {
-                vertices[i].mPosition = mesh->mPositions[i];
-                vertices[i].mNormal   = mesh->mNormals[i];
+                vertices[i].m_position = mesh->m_positions[i];
+                vertices[i].m_normal   = mesh->m_normals[i];
             }
         }
 
         // unlock and activate the vertex and the index buffer
-        mMeshVertexBuffer->Unlock();
-        mMeshIndexBuffer->Unlock();
-        mMeshVertexBuffer->Activate();
-        mMeshIndexBuffer->Activate();
+        m_meshVertexBuffer->Unlock();
+        m_meshIndexBuffer->Unlock();
+        m_meshVertexBuffer->Activate();
+        m_meshIndexBuffer->Activate();
 
         // setup shader
-        mMeshShader->Activate();
+        m_meshShader->Activate();
 
-        MCommon::Camera* camera = mGraphicsManager->GetCamera();
+        MCommon::Camera* camera = m_graphicsManager->GetCamera();
         const AZ::Matrix4x4 globalMatrix = AZ::Matrix4x4::CreateFromTransform(globalTM);
-        mMeshShader->SetUniform("worldViewProjectionMatrix", camera->GetViewProjMatrix() * globalMatrix);
-        mMeshShader->SetUniform("cameraPosition", camera->GetPosition());
-        mMeshShader->SetUniform("lightDirection", MCore::GetUp(camera->GetViewMatrix().GetTranspose()).GetNormalized());   // This is GetUp() now, as lookat matrices always seem to use the z axis to point forward
-        mMeshShader->SetUniform("diffuseColor", color);
-        mMeshShader->SetUniform("specularColor", AZ::Vector3::CreateOne() * 0.3f);
-        mMeshShader->SetUniform("specularPower", 8.0f);
+        m_meshShader->SetUniform("worldViewProjectionMatrix", camera->GetViewProjMatrix() * globalMatrix);
+        m_meshShader->SetUniform("cameraPosition", camera->GetPosition());
+        m_meshShader->SetUniform("lightDirection", MCore::GetUp(camera->GetViewMatrix().GetTranspose()).GetNormalized());   // This is GetUp() now, as lookat matrices always seem to use the z axis to point forward
+        m_meshShader->SetUniform("diffuseColor", color);
+        m_meshShader->SetUniform("specularColor", AZ::Vector3::CreateOne() * 0.3f);
+        m_meshShader->SetUniform("specularPower", 8.0f);
 
         // setup shader attributes and draw the mesh
         const uint32 stride = sizeof(UtilMeshVertex);
-        mMeshShader->SetAttribute("inPosition", 4, GL_FLOAT, stride, 0);
-        mMeshShader->SetAttribute("inNormal", 4, GL_FLOAT, stride, sizeof(AZ::Vector3));
-        mMeshShader->SetUniform("worldMatrix", globalMatrix);
+        m_meshShader->SetAttribute("inPosition", 4, GL_FLOAT, stride, 0);
+        m_meshShader->SetAttribute("inNormal", 4, GL_FLOAT, stride, sizeof(AZ::Vector3));
+        m_meshShader->SetUniform("worldMatrix", globalMatrix);
 
-        glDrawElements(GL_TRIANGLES, (GLsizei)mesh->mIndices.size(), GL_UNSIGNED_INT, (GLvoid*)nullptr);
+        glDrawElements(GL_TRIANGLES, (GLsizei)mesh->m_indices.size(), GL_UNSIGNED_INT, (GLvoid*)nullptr);
 
-        mMeshShader->Deactivate();
+        m_meshShader->Deactivate();
     }
 
 
@@ -450,7 +441,7 @@ namespace RenderGL
 
         // load the camera view projection matrix
         glMatrixMode(GL_PROJECTION);
-        MCommon::Camera* camera = mGraphicsManager->GetCamera();
+        MCommon::Camera* camera = m_graphicsManager->GetCamera();
         const AZ::Matrix4x4 transposedProjMatrix = camera->GetViewProjMatrix().GetTranspose();
         glLoadMatrixf((float*)&transposedProjMatrix);
     
@@ -459,14 +450,14 @@ namespace RenderGL
         glLoadIdentity();
 
         // disable the shaders
-        mGraphicsManager->SetShader(nullptr);
+        m_graphicsManager->SetShader(nullptr);
 
         // set up blending properties
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
         // render the triangle
-        glColor4f(color.r, color.g, color.b, color.a);
+        glColor4f(color.m_r, color.m_g, color.m_b, color.m_a);
         glBegin(GL_TRIANGLES);
         glVertex3f(v1.GetX(), v1.GetY(), v1.GetZ());
         glVertex3f(v2.GetX(), v2.GetY(), v2.GetZ());
@@ -480,10 +471,10 @@ namespace RenderGL
     }
 
 
-    void GLRenderUtil::RenderTriangles(const MCore::Array<TriangleVertex>& triangleVertices)
+    void GLRenderUtil::RenderTriangles(const AZStd::vector<TriangleVertex>& triangleVertices)
     {
         // check if there are any triangles to render, if not return directly
-        if (triangleVertices.GetIsEmpty())
+        if (triangleVertices.empty())
         {
             return;
         }
@@ -491,67 +482,67 @@ namespace RenderGL
         glDisable(GL_CULL_FACE);
 
         // get the number of vertices to render
-        const uint32 numVertices = triangleVertices.GetLength();
-        MCORE_ASSERT(numVertices <= mNumMaxTriangleVertices);
+        const uint32 numVertices = aznumeric_caster(triangleVertices.size());
+        MCORE_ASSERT(numVertices <= s_numMaxTriangleVertices);
 
         // lock the vertex buffer
-        TriangleVertex* vertices = (TriangleVertex*)mTriangleVertexBuffer->Lock();
+        TriangleVertex* vertices = (TriangleVertex*)m_triangleVertexBuffer->Lock();
         if (vertices == nullptr)
         {
             return;
         }
 
         // TODO: Not nice yet, get the color from the first vertex and use if for all triangles
-        MCore::RGBAColor color((uint32)triangleVertices[0].mColor);
+        MCore::RGBAColor color((uint32)triangleVertices[0].m_color);
 
         // fill in the vertex buffer
         for (uint32 i = 0; i < numVertices; ++i)
         {
-            vertices[i].mPosition = triangleVertices[i].mPosition;
-            vertices[i].mNormal   = triangleVertices[i].mNormal;
+            vertices[i].m_position = triangleVertices[i].m_position;
+            vertices[i].m_normal   = triangleVertices[i].m_normal;
         }
 
         // unlock and activate the vertex buffer and index buffer
-        mTriangleVertexBuffer->Unlock();
-        mTriangleVertexBuffer->Activate();
-        mTriangleIndexBuffer->Activate();
+        m_triangleVertexBuffer->Unlock();
+        m_triangleVertexBuffer->Activate();
+        m_triangleIndexBuffer->Activate();
 
         // setup shader
-        mMeshShader->Activate();
+        m_meshShader->Activate();
 
-        MCommon::Camera* camera = mGraphicsManager->GetCamera();
+        MCommon::Camera* camera = m_graphicsManager->GetCamera();
 
-        mMeshShader->SetUniform("worldViewProjectionMatrix", camera->GetViewProjMatrix());
-        mMeshShader->SetUniform("cameraPosition", camera->GetPosition());
-        mMeshShader->SetUniform("lightDirection", MCore::GetUp(camera->GetViewMatrix().GetTranspose()).GetNormalized());
-        mMeshShader->SetUniform("diffuseColor", color);
-        mMeshShader->SetUniform("specularColor", AZ::Vector3::CreateOne());
-        mMeshShader->SetUniform("specularPower", 30.0f);
+        m_meshShader->SetUniform("worldViewProjectionMatrix", camera->GetViewProjMatrix());
+        m_meshShader->SetUniform("cameraPosition", camera->GetPosition());
+        m_meshShader->SetUniform("lightDirection", MCore::GetUp(camera->GetViewMatrix().GetTranspose()).GetNormalized());
+        m_meshShader->SetUniform("diffuseColor", color);
+        m_meshShader->SetUniform("specularColor", AZ::Vector3::CreateOne());
+        m_meshShader->SetUniform("specularPower", 30.0f);
 
         // setup shader attributes and draw the mesh
         const uint32 stride = sizeof(TriangleVertex);
-        mMeshShader->SetAttribute("inPosition", 4, GL_FLOAT, stride, 0);
-        mMeshShader->SetAttribute("inNormal", 4, GL_FLOAT, stride, sizeof(AZ::Vector3));
-        mMeshShader->SetUniform("worldMatrix", AZ::Matrix4x4::CreateIdentity());
+        m_meshShader->SetAttribute("inPosition", 4, GL_FLOAT, stride, 0);
+        m_meshShader->SetAttribute("inNormal", 4, GL_FLOAT, stride, sizeof(AZ::Vector3));
+        m_meshShader->SetUniform("worldMatrix", AZ::Matrix4x4::CreateIdentity());
 
         glDrawElements(GL_TRIANGLES, numVertices, GL_UNSIGNED_INT, (GLvoid*)nullptr);
 
-        mMeshShader->Deactivate();
+        m_meshShader->Deactivate();
     }
 
 
     void GLRenderUtil::RenderTextPeriod(uint32 x, uint32 y, const char* text, float lifeTime, const MCore::RGBAColor& color, float fontSize, bool centered)
     {
         TextEntry* textEntry = new TextEntry();
-        textEntry->mX       = x;
-        textEntry->mY       = y;
-        textEntry->mText    = text;
-        textEntry->mLifeTime = lifeTime;
-        textEntry->mColor   = color;
-        textEntry->mFontSize = fontSize;
-        textEntry->mCentered = centered;
+        textEntry->m_x       = x;
+        textEntry->m_y       = y;
+        textEntry->m_text    = text;
+        textEntry->m_lifeTime = lifeTime;
+        textEntry->m_color   = color;
+        textEntry->m_fontSize = fontSize;
+        textEntry->m_centered = centered;
 
-        mTextEntries.Add(textEntry);
+        m_textEntries.emplace_back(textEntry);
     }
 
 
@@ -559,16 +550,16 @@ namespace RenderGL
     {
         static AZ::Debug::Timer timer;
         const float timeDelta = static_cast<float>(timer.StampAndGetDeltaTimeInSeconds());
-        for (uint32 i = 0; i < mTextEntries.GetLength(); )
+        for (uint32 i = 0; i < m_textEntries.size(); )
         {
-            TextEntry* textEntry = mTextEntries[i];
-            RenderText(static_cast<float>(textEntry->mX), static_cast<float>(textEntry->mY), textEntry->mText.c_str(), textEntry->mColor, textEntry->mFontSize, textEntry->mCentered);
+            TextEntry* textEntry = m_textEntries[i];
+            RenderText(static_cast<float>(textEntry->m_x), static_cast<float>(textEntry->m_y), textEntry->m_text.c_str(), textEntry->m_color, textEntry->m_fontSize, textEntry->m_centered);
 
-            textEntry->mLifeTime -= timeDelta;
-            if (textEntry->mLifeTime < 0.0f)
+            textEntry->m_lifeTime -= timeDelta;
+            if (textEntry->m_lifeTime < 0.0f)
             {
                 delete textEntry;
-                mTextEntries.Remove(i);
+                m_textEntries.erase(AZStd::next(begin(m_textEntries), i));
             }
             else
             {

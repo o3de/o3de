@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -17,7 +18,7 @@ namespace AZ
             if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
             {
                 serializeContext->Class<AreaLightComponentConfig, ComponentConfig>()
-                    ->Version(6) // ATOM-15654
+                    ->Version(7) // ATOM-16034
                     ->Field("LightType", &AreaLightComponentConfig::m_lightType)
                     ->Field("Color", &AreaLightComponentConfig::m_color)
                     ->Field("IntensityMode", &AreaLightComponentConfig::m_intensityMode)
@@ -32,12 +33,11 @@ namespace AZ
                     ->Field("OuterShutterAngleDegrees", &AreaLightComponentConfig::m_outerShutterAngleDegrees)
                     // Shadows
                     ->Field("Enable Shadow", &AreaLightComponentConfig::m_enableShadow)
+                    ->Field("Shadow Bias", &AreaLightComponentConfig::m_bias)
+                    ->Field("Normal Shadow Bias", &AreaLightComponentConfig::m_normalShadowBias)
                     ->Field("Shadowmap Max Size", &AreaLightComponentConfig::m_shadowmapMaxSize)
                     ->Field("Shadow Filter Method", &AreaLightComponentConfig::m_shadowFilterMethod)
-                    ->Field("Softening Boundary Width", &AreaLightComponentConfig::m_boundaryWidthInDegrees)
-                    ->Field("Prediction Sample Count", &AreaLightComponentConfig::m_predictionSampleCount)
                     ->Field("Filtering Sample Count", &AreaLightComponentConfig::m_filteringSampleCount)
-                    ->Field("Pcf Method", &AreaLightComponentConfig::m_pcfMethod)
                     ->Field("Esm Exponent", &AreaLightComponentConfig::m_esmExponent)
                     ;
             }
@@ -180,20 +180,9 @@ namespace AZ
                 m_shadowFilterMethod == ShadowFilterMethod::EsmPcf);
         }
 
-        bool AreaLightComponentConfig::IsPcfBoundarySearchDisabled() const
-        {
-            if (IsShadowPcfDisabled())
-            {
-                return true;
-            }
-
-            return m_pcfMethod != PcfMethod::BoundarySearch;
-        }
-
         bool AreaLightComponentConfig::IsEsmDisabled() const
         {
             return !(m_shadowFilterMethod == ShadowFilterMethod::Esm || m_shadowFilterMethod == ShadowFilterMethod::EsmPcf);
         }
-
     }
 }

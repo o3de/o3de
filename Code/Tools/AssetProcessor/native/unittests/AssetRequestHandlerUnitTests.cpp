@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -48,13 +49,13 @@ namespace
         bool m_deleteFenceFileResult = false;
 
     protected:
-        virtual QString CreateFenceFile(unsigned int fenceId)
+        QString CreateFenceFile(unsigned int fenceId) override
         {
             m_numTimesCreateFenceFileCalled++;
             m_fenceId = fenceId;
             return m_fenceFileName;
         }
-        virtual bool DeleteFenceFile(QString fenceFileName)
+        bool DeleteFenceFile(QString fenceFileName) override
         {
             m_numTimesDeleteFenceFileCalled++;
             return m_deleteFenceFileResult;

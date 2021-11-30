@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -259,7 +260,7 @@ namespace EMotionFX
         GetEMotionFX().Update(0.0f);
         EXPECT_EQ(Transform::CreateIdentity(), GetOutputTransform());
 
-        static_cast<MCore::AttributeFloat*>(m_animGraphInstance->GetParameterValue(m_animGraph->FindParameterIndex(m_parameter).GetValue()))->SetValue(1.0f);
+        static_cast<MCore::AttributeFloat*>(m_animGraphInstance->GetParameterValue(static_cast<uint32>(m_animGraph->FindParameterIndex(m_parameter).GetValue())))->SetValue(1.0f);
 
         GetEMotionFX().Update(0.0f);
         EXPECT_EQ(Transform::CreateIdentity() * AZ::Transform::CreateTranslation(AZ::Vector3(10.0f, 0.0f, 0.0f)), GetOutputTransform());
@@ -312,7 +313,7 @@ namespace EMotionFX
 
         // Changing this one parameter value should change it through all 3
         // layers of reference nodes, down to the referenced Transform node
-        static_cast<MCore::AttributeFloat*>(m_animGraphInstance->GetParameterValue(m_animGraph->FindParameterIndex(m_topLevelParameter).GetValue()))->SetValue(1.0f);
+        static_cast<MCore::AttributeFloat*>(m_animGraphInstance->GetParameterValue(static_cast<uint32>(m_animGraph->FindParameterIndex(m_topLevelParameter).GetValue())))->SetValue(1.0f);
 
         GetEMotionFX().Update(0.0f);
         EXPECT_EQ(Transform::CreateIdentity() * AZ::Transform::CreateTranslation(AZ::Vector3(10.0f, 0.0f, 0.0f)), GetOutputTransform());

@@ -1,14 +1,14 @@
 
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
 #pragma once
 
-#include <AzFramework/Physics/Joint.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
 #include <AzToolsFramework/API/ComponentEntitySelectionBus.h>
 #include <AzToolsFramework/ComponentMode/ComponentModeDelegate.h>
@@ -41,7 +41,7 @@ namespace PhysX
         // PhysX::EditorJointRequests
         float GetLinearValue(const AZStd::string& parameterName) override;
         AngleLimitsFloatPair GetLinearValuePair(const AZStd::string& parameterName) override;
-        bool IsParameterUsed(const AZStd::string& parameterName) override;
+        AZStd::vector<JointsComponentModeCommon::SubModeParamaterState> GetSubComponentModesState() override;
         void SetBoolValue(const AZStd::string& parameterName, bool value) override;
         void SetLinearValue(const AZStd::string& parameterName, float value) override;
         void SetLinearValuePair(const AZStd::string& parameterName, const AngleLimitsFloatPair& valuePair) override;

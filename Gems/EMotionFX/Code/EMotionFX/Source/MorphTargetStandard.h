@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -58,31 +59,31 @@ namespace EMotionFX
              */
             struct EMFX_API VertexDelta
             {
-                MCore::Compressed16BitVector3   mPosition;          /**< The position delta. */
-                MCore::Compressed8BitVector3    mNormal;            /**< The normal delta. */
-                MCore::Compressed8BitVector3    mTangent;           /**< The first tangent layer delta. */
-                MCore::Compressed8BitVector3    mBitangent;         /**< The first bitangent layer delta. */
-                uint32                          mVertexNr;          /**< The vertex number inside the mesh to apply this to. */
+                MCore::Compressed16BitVector3   m_position;          /**< The position delta. */
+                MCore::Compressed8BitVector3    m_normal;            /**< The normal delta. */
+                MCore::Compressed8BitVector3    m_tangent;           /**< The first tangent layer delta. */
+                MCore::Compressed8BitVector3    m_bitangent;         /**< The first bitangent layer delta. */
+                uint32                          m_vertexNr;          /**< The vertex number inside the mesh to apply this to. */
             };
 
-            static DeformData* Create(uint32 nodeIndex, uint32 numVerts);
+            static DeformData* Create(size_t nodeIndex, uint32 numVerts);
 
             // creates a clone
             DeformData* Clone();
 
         public:
-            VertexDelta*    mDeltas;            /**< The delta values. */
-            uint32          mNumVerts;          /**< The number of vertices in the mDeltas and mVertexNumbers arrays. */
-            uint32          mNodeIndex;         /**< The node which this data works on. */
-            float           mMinValue;          /**< The compression/decompression minimum value for the delta positions. */
-            float           mMaxValue;          /**< The compression/decompression maximum value for the delta positions. */
+            VertexDelta*    m_deltas;            /**< The delta values. */
+            uint32          m_numVerts;          /**< The number of vertices in the m_deltas and m_vertexNumbers arrays. */
+            size_t          m_nodeIndex;         /**< The node which this data works on. */
+            float           m_minValue;          /**< The compression/decompression minimum value for the delta positions. */
+            float           m_maxValue;          /**< The compression/decompression maximum value for the delta positions. */
 
             /**
              * The constructor.
              * @param nodeIndex The node number on which the deformations should work.
              * @param numVerts The number of vertices modified by this deform.
              */
-            DeformData(uint32 nodeIndex, uint32 numVerts);
+            DeformData(size_t nodeIndex, uint32 numVerts);
 
             /**
              * The destructor.
@@ -97,15 +98,14 @@ namespace EMotionFX
          * Please keep in mind that the rotation is stored as non-delta value, while the position and scale are
          * stored as delta values.
          */
-        struct EMFX_API MCORE_ALIGN_PRE(16) Transformation
+        struct EMFX_API alignas(16) Transformation
         {
-            AZ::Quaternion      mRotation;          /**< The rotation as absolute value. So not a delta value, but a target (absolute) rotation. */
-            AZ::Quaternion      mScaleRotation;     /**< The scale rotation, as absolute value. */
-            AZ::Vector3         mPosition;          /**< The position as a delta, so the difference between the original and target position. */
-            AZ::Vector3         mScale;             /**< The scale as a delta, so the difference between the original and target scale. */
-            uint32              mNodeIndex;         /**< The node number to apply this on. */
-        }
-        MCORE_ALIGN_POST(16);
+            AZ::Quaternion      m_rotation;          /**< The rotation as absolute value. So not a delta value, but a target (absolute) rotation. */
+            AZ::Quaternion      m_scaleRotation;     /**< The scale rotation, as absolute value. */
+            AZ::Vector3         m_position;          /**< The position as a delta, so the difference between the original and target position. */
+            AZ::Vector3         m_scale;             /**< The scale as a delta, so the difference between the original and target scale. */
+            size_t              m_nodeIndex;         /**< The node number to apply this on. */
+        };
 
         /**
          * The constructor.
@@ -154,14 +154,14 @@ namespace EMotionFX
          * @param scale The input scale to which relative adjustments will be applied.
          * @param weight The absolute weight value.
          */
-        void ApplyTransformation(ActorInstance* actorInstance, uint32 nodeIndex, AZ::Vector3& position, AZ::Quaternion& rotation, AZ::Vector3& scale, float weight) override;
+        void ApplyTransformation(ActorInstance* actorInstance, size_t nodeIndex, AZ::Vector3& position, AZ::Quaternion& rotation, AZ::Vector3& scale, float weight) override;
 
         /**
          * Checks if this morph target would influence the given node.
          * @param nodeIndex The node to perform the check with.
          * @result Returns true if the given node will be modified by this morph target, otherwise false is returned.
          */
-        bool Influences(uint32 nodeIndex) const override;
+        bool Influences(size_t nodeIndex) const override;
 
         /**
          * Apply the relative deformations for this morph target to the given actor instance.
@@ -174,14 +174,14 @@ namespace EMotionFX
          * Get the number of deform data objects.
          * @result The number of deform data objects.
          */
-        uint32 GetNumDeformDatas() const;
+        size_t GetNumDeformDatas() const;
 
         /**
          * Get a given deform data object.
          * @param nr The deform data number, which must be in range of [0..GetNumDeformDatas()-1].
          * @result A pointer to the deform data object.
          */
-        DeformData* GetDeformData(uint32 nr) const;
+        DeformData* GetDeformData(size_t nr) const;
 
         /**
          * Add a given deform data to the array of deform data objects.
@@ -199,20 +199,20 @@ namespace EMotionFX
          * Get the number of transformations which are part of this bones morph target.
          * @result The number of tranformations.
          */
-        uint32 GetNumTransformations() const;
+        size_t GetNumTransformations() const;
 
         /**
          * Get a given transformation and it's corresponding node id to which the transformation belongs to.
          * @param nr The transformation number, must be in range of [0..GetNumTransformations()-1].
          * @result A reference to the transformation.
          */
-        Transformation& GetTransformation(uint32 nr);
+        Transformation& GetTransformation(size_t nr);
 
         /**
          * Creates an exact clone of this  morph target.
          * @result Returns a pointer to an exact clone of this morph target.
          */
-        MorphTarget* Clone() override;
+        MorphTarget* Clone() const override;
 
         /**
          * Remove all deform data objects from memory as well as from the class.
@@ -229,27 +229,27 @@ namespace EMotionFX
          * @param index The deform data to remove. The index must be in range of [0, GetNumDeformDatas()].
          * @param delFromMem Set to true (default) when you wish to also delete the specified deform data from memory.
          */
-        void RemoveDeformData(uint32 index, bool delFromMem = true);
+        void RemoveDeformData(size_t index, bool delFromMem = true);
 
         /**
          * Remove the given transformation.
          * @param index The transformation to remove. The index must be in range of [0, GetNumTransformations()].
          */
-        void RemoveTransformation(uint32 index);
+        void RemoveTransformation(size_t index);
 
         /**
          * Reserve (pre-allocate) space in the array of deform datas.
          * This does NOT change the value returned by GetNumDeformDatas().
          * @param numDeformDatas The absolute number of deform datas to pre-allocate space for.
          */
-        void ReserveDeformDatas(uint32 numDeformDatas);
+        void ReserveDeformDatas(size_t numDeformDatas);
 
         /**
          * Reserve (pre-allocate) space in the array of transformations.
          * This does NOT change the value returned by GetNumTransformations().
          * @param numTransforms The absolute number of transformations to pre-allocate space for.
          */
-        void ReserveTransformations(uint32 numTransforms);
+        void ReserveTransformations(size_t numTransforms);
 
         /**
          * Scale all transform and positional data.
@@ -259,8 +259,8 @@ namespace EMotionFX
         void Scale(float scaleFactor) override;
 
     private:
-        MCore::Array<Transformation>    mTransforms;            /**< The relative transformations for the given nodes, in local space. The rotation however is absolute. */
-        AZStd::vector<DeformData*>      mDeformDatas;           /**< The deformation data objects. */
+        AZStd::vector<Transformation>   m_transforms;            /**< The relative transformations for the given nodes, in local space. The rotation however is absolute. */
+        AZStd::vector<DeformData*>      m_deformDatas;           /**< The deformation data objects. */
 
         /**
          * The constructor.

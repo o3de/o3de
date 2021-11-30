@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -65,7 +66,7 @@ namespace GradientSignal
 
         AZ::u32 GetHandlerName() const override;
         bool ReadValueIntoGUI(size_t index, GradientPreviewDataWidget* GUI, void* value, const AZ::Uuid& propertyType) override;
-        void ConsumeAttribute(GradientPreviewDataWidget* GUI, AZ::u32 attrib, AzToolsFramework::PropertyAttributeReader* attrValue, const char* debugName);
+        void ConsumeAttribute(GradientPreviewDataWidget* GUI, AZ::u32 attrib, AzToolsFramework::PropertyAttributeReader* attrValue, const char* debugName) override;
         QWidget* CreateGUI(QWidget* pParent) override;
         void PreventRefresh(QWidget* widget, bool shouldPrevent) override;
 

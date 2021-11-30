@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -31,14 +32,12 @@ namespace AZ::TangentGeneration::Mesh::MikkT
         return customData->m_meshData->GetFaceCount();
     }
 
-
     int GetNumVerticesOfFace(const SMikkTSpaceContext* context, const int face)
     {
         AZ_UNUSED(context);
         AZ_UNUSED(face);
         return 3;
     }
-
 
     void GetPosition(const SMikkTSpaceContext* context, float posOut[], const int face, const int vert)
     {
@@ -50,7 +49,6 @@ namespace AZ::TangentGeneration::Mesh::MikkT
         posOut[2] = pos.GetZ();
     }
 
-
     void GetNormal(const SMikkTSpaceContext* context, float normOut[], const int face, const int vert)
     {
         MikktCustomData* customData = static_cast<MikktCustomData*>(context->m_pUserData);
@@ -61,7 +59,6 @@ namespace AZ::TangentGeneration::Mesh::MikkT
         normOut[2] = normal.GetZ();
     }
 
-
     void GetTexCoord(const SMikkTSpaceContext* context, float texOut[], const int face, const int vert)
     {
         MikktCustomData* customData = static_cast<MikktCustomData*>(context->m_pUserData);
@@ -70,7 +67,6 @@ namespace AZ::TangentGeneration::Mesh::MikkT
         texOut[0] = uv.GetX();
         texOut[1] = uv.GetY();
     }
-
 
     // This function is used to return the tangent and signValue to the application.
     // tangent is a unit length vector.
@@ -89,7 +85,6 @@ namespace AZ::TangentGeneration::Mesh::MikkT
         customData->m_tangentData->SetTangent(vertexIndex, AZ::Vector4(tangentVec3.GetX(), tangentVec3.GetY(), tangentVec3.GetZ(), signValue));
         customData->m_bitangentData->SetBitangent(vertexIndex, bitangent);
     }
-
 
     // This function is used to return tangent space results to the application.
     // tangent and bitangent are unit length vectors and magS and magT are their
@@ -110,43 +105,42 @@ namespace AZ::TangentGeneration::Mesh::MikkT
         customData->m_bitangentData->SetBitangent(vertexIndex, bitangentVec);
     }
 
-
-    bool GenerateTangents(AZ::SceneAPI::Containers::SceneManifest& manifest, AZ::SceneAPI::Containers::SceneGraph& graph, const AZ::SceneAPI::Containers::SceneGraph::NodeIndex& nodeIndex, AZ::SceneAPI::DataTypes::IMeshData* meshData, size_t uvSet)
+    bool GenerateTangents(const AZ::SceneAPI::DataTypes::IMeshData* meshData,
+        const AZ::SceneAPI::DataTypes::IMeshVertexUVData* uvData,
+        AZ::SceneAPI::DataTypes::IMeshVertexTangentData* outTangentData,
+        AZ::SceneAPI::DataTypes::IMeshVertexBitangentData* outBitangentData,
+        AZ::SceneAPI::DataTypes::MikkTSpaceMethod tSpaceMethod)
     {
-        // Create tangent and bitangent data sets and relate them to the given UV set.
-        AZ::SceneAPI::DataTypes::IMeshVertexUVData*         uvData          = AZ::SceneAPI::SceneData::TangentsRule::FindUVData(graph, nodeIndex, uvSet);
-        AZ::SceneAPI::DataTypes::IMeshVertexTangentData*    tangentData     = nullptr;
-        AZ::SceneAPI::DataTypes::IMeshVertexBitangentData*  bitangentData   = nullptr;
-        if (!uvData)
-        {
-            AZ_TracePrintf(AZ::SceneAPI::Utilities::ErrorWindow, "Cannot find UV data (set index=%d) to generate tangents and bitangents from in MikkT generator!\n", uvSet);
-            return false;
-        }
-
-        if (!AZ::SceneGenerationComponents::TangentGenerateComponent::CreateTangentBitangentLayers(manifest, nodeIndex, meshData->GetVertexCount(), uvSet, AZ::SceneAPI::DataTypes::TangentSpace::MikkT, "MikkT", graph, &tangentData, &bitangentData))
-        {
-            AZ_TracePrintf(AZ::SceneAPI::Utilities::ErrorWindow, "Failed to create tangents and bitangents data sets inside MikkT generator!\n");
-            return false;
-        }
-
-        //----------------------------------
-
         // Provide the MikkT interface.
         SMikkTSpaceInterface mikkInterface;
         mikkInterface.m_getNumFaces         = GetNumFaces;
         mikkInterface.m_getNormal           = GetNormal;
         mikkInterface.m_getPosition         = GetPosition;
         mikkInterface.m_getTexCoord         = GetTexCoord;
-        mikkInterface.m_setTSpace           = SetTSpace;
-        mikkInterface.m_setTSpaceBasic      = nullptr;//SetTSpaceBasic;
         mikkInterface.m_getNumVerticesOfFace= GetNumVerticesOfFace;
+
+        switch (tSpaceMethod)
+        {
+        case AZ::SceneAPI::DataTypes::MikkTSpaceMethod::TSpaceBasic:
+        {
+            mikkInterface.m_setTSpace = nullptr;
+            mikkInterface.m_setTSpaceBasic = SetTSpaceBasic;
+            break;
+        }
+        default:
+        {
+            mikkInterface.m_setTSpace = SetTSpace;
+            mikkInterface.m_setTSpaceBasic = nullptr;
+            break;
+        }
+        }
 
         // Set the MikkT custom data.
         MikktCustomData customData;
         customData.m_meshData       = meshData;
         customData.m_uvData         = uvData;
-        customData.m_tangentData    = tangentData;
-        customData.m_bitangentData  = bitangentData;
+        customData.m_tangentData    = outTangentData;
+        customData.m_bitangentData  = outBitangentData;
 
         // Generate the tangents.
         SMikkTSpaceContext mikkContext;
@@ -154,7 +148,7 @@ namespace AZ::TangentGeneration::Mesh::MikkT
         mikkContext.m_pUserData     = &customData;
         if (genTangSpaceDefault(&mikkContext) == 0)
         {
-            AZ_TracePrintf(AZ::SceneAPI::Utilities::ErrorWindow, "Failed to generate tangents and bitangents using MikkT, because MikkT reported failure!\n");
+            AZ_TracePrintf(AZ::SceneAPI::Utilities::ErrorWindow, "Failed to generate tangents and bitangents using MikkT.\n");
             return false;
         }
 

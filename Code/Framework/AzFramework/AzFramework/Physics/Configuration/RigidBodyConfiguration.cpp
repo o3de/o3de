@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -122,6 +123,12 @@ namespace AzPhysics
                 ->Field("Kinematic", &RigidBodyConfiguration::m_kinematic)
                 ->Field("CCD Enabled", &RigidBodyConfiguration::m_ccdEnabled)
                 ->Field("Compute Mass", &RigidBodyConfiguration::m_computeMass)
+                ->Field("Lock Linear X", &RigidBodyConfiguration::m_lockLinearX)
+                ->Field("Lock Linear Y", &RigidBodyConfiguration::m_lockLinearY)
+                ->Field("Lock Linear Z", &RigidBodyConfiguration::m_lockLinearZ)
+                ->Field("Lock Angular X", &RigidBodyConfiguration::m_lockAngularX)
+                ->Field("Lock Angular Y", &RigidBodyConfiguration::m_lockAngularY)
+                ->Field("Lock Angular Z", &RigidBodyConfiguration::m_lockAngularZ)
                 ->Field("Mass", &RigidBodyConfiguration::m_mass)
                 ->Field("Compute COM", &RigidBodyConfiguration::m_computeCenterOfMass)
                 ->Field("Centre of mass offset", &RigidBodyConfiguration::m_centerOfMassOffset)

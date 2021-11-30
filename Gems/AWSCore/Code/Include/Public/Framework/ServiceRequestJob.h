@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -118,7 +119,7 @@ namespace AWSCore
         Error error;
 
         /// Determines if the AWS credentials, as supplied by the credentialsProvider from
-        /// the ServiceReqestJobConfig object (which defaults to the user's credentials), 
+        /// the ServiceRequestJobConfig object (which defaults to the user's credentials), 
         /// are used to sign the request. The default is true. Override this and return false 
         /// if calling a public API and want to avoid the overhead of signing requests.
         bool UseAWSCredentials() {
@@ -390,7 +391,7 @@ namespace AWSCore
                     int offset = 0;
                     while (offset < message.size())
                     {
-                        int count = (offset + MAX_MESSAGE_LENGTH < message.size()) ? MAX_MESSAGE_LENGTH : message.size() - offset;
+                        int count = static_cast<int>((offset + MAX_MESSAGE_LENGTH < message.size()) ? MAX_MESSAGE_LENGTH : message.size() - offset);
                         AZ_Warning(ServiceClientJobType::COMPONENT_DISPLAY_NAME, false, message.substr(offset, count).c_str());
                         offset += MAX_MESSAGE_LENGTH;
                     }
@@ -564,13 +565,11 @@ namespace AWSCore
             }
 
             AZStd::string requestContent;
-            AZStd::string responseContent;
-
-            std::istreambuf_iterator<AZStd::string::value_type> eos;
 
             std::shared_ptr<Aws::IOStream> requestStream = response->GetOriginatingRequest().GetContentBody();
             if (requestStream)
             {
+                std::istreambuf_iterator<AZStd::string::value_type> eos;
                 requestStream->clear();
                 requestStream->seekg(0);
                 requestContent = AZStd::string{ std::istreambuf_iterator<AZStd::string::value_type>(*requestStream.get()),eos };
@@ -583,7 +582,7 @@ namespace AWSCore
             Aws::IOStream& responseStream = response->GetResponseBody();
             responseStream.clear();
             responseStream.seekg(0);
-            responseContent = AZStd::string{ std::istreambuf_iterator<AZStd::string::value_type>(responseStream),responseEos };
+            AZStd::string responseContent = AZStd::string{ std::istreambuf_iterator<AZStd::string::value_type>(responseStream), responseEos };
             responseContent = EscapePercentCharsInString(responseContent);
             responseStream.seekg(0);
 

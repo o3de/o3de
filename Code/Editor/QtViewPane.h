@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -122,18 +123,18 @@ public:
     {
     }
 
-    virtual ESystemClassID SystemClassID() { return m_classId; };
+    ESystemClassID SystemClassID() override { return m_classId; };
     static const GUID& GetClassID()
     {
         return TWidget::GetClassID();
     }
 
-    virtual const GUID& ClassID()
+    const GUID& ClassID() override
     {
         return GetClassID();
     }
-    virtual QString ClassName() { return m_name; };
-    virtual QString Category() { return m_category; };
+    QString ClassName() override { return m_name; };
+    QString Category() override { return m_category; };
 
     QObject* CreateQObject() const override { return new TWidget(); };
     QString GetPaneTitle() override { return m_name; };

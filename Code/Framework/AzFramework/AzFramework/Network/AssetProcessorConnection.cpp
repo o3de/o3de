@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -135,7 +136,7 @@ namespace AzFramework
             AZStd::array<char, MaxMessageSize> buffer;
             azsnprintf(buffer.data(), buffer.size(), "(%p/%#" PRIxPTR "): %s\n", this, numericThreadId, msg.data());
 
-            Platform::DebugOutput(buffer.data());
+            AZ::Debug::Platform::OutputToDebugger("AssetProcessorConnection", buffer.data());
 #else // ASSETPROCESORCONNECTION_VERBOSE_LOGGING is not defined
             (void)format;
 #endif
@@ -176,7 +177,7 @@ namespace AzFramework
         //trying to connect, if any error occurs start the disconnect thread
         void AssetProcessorConnection::ConnectThread()
         {
-            static constexpr char ConnectThreadWindow[] = "AssetProcessorConnection::ConnectThread";
+            [[maybe_unused]] static constexpr char ConnectThreadWindow[] = "AssetProcessorConnection::ConnectThread";
 
             //check for join before doing an op
             if (m_connectThread.m_join)
@@ -592,7 +593,7 @@ namespace AzFramework
             
             DebugMessage("StartThread: Starting %s", thread.m_desc.m_name);
             thread.m_join = false;
-            thread.m_thread = AZStd::thread(thread.m_main, &thread.m_desc);
+            thread.m_thread = AZStd::thread(thread.m_desc, thread.m_main);
         }
 
         void AssetProcessorConnection::JoinThread(ThreadState& thread, AZStd::condition_variable* wakeUpCondition /* = nullptr */)

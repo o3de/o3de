@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -116,7 +117,7 @@ namespace DebugDraw
         void OnBeginPrepareRender() override;
 
         // AZ::Render::Bootstrap::NotificationBus
-        void OnBootstrapSceneReady(AZ::RPI::Scene* scene);
+        void OnBootstrapSceneReady(AZ::RPI::Scene* scene) override;
 
         // EntityBus
         void OnEntityDeactivated(const AZ::EntityId& entityId) override;

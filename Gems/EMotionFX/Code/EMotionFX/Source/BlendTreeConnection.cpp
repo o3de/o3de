@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -19,9 +20,9 @@ namespace EMotionFX
         : m_animGraph(nullptr)
         , m_sourceNode(nullptr)
         , m_id(AnimGraphConnectionId::Create())
-        , mSourcePort(MCORE_INVALIDINDEX16)
-        , mTargetPort(MCORE_INVALIDINDEX16)
-        , mVisited(false)
+        , m_sourcePort(MCORE_INVALIDINDEX16)
+        , m_targetPort(MCORE_INVALIDINDEX16)
+        , m_visited(false)
     {
     }
 
@@ -33,8 +34,8 @@ namespace EMotionFX
             m_animGraph = sourceNode->GetAnimGraph();
         }
 
-        mSourcePort = sourcePort;
-        mTargetPort = targetPort;
+        m_sourcePort = sourcePort;
+        m_targetPort = targetPort;
 
         SetSourceNode(sourceNode);
     }
@@ -79,7 +80,7 @@ namespace EMotionFX
     bool BlendTreeConnection::GetIsValid() const
     {
         // make sure the node and input numbers are valid
-        if (!m_sourceNode || mSourcePort == MCORE_INVALIDINDEX16 || mTargetPort == MCORE_INVALIDINDEX16)
+        if (!m_sourceNode || m_sourcePort == MCORE_INVALIDINDEX16 || m_targetPort == MCORE_INVALIDINDEX16)
         {
             return false;
         }
@@ -100,7 +101,7 @@ namespace EMotionFX
             ->Version(2)
             ->Field("id", &BlendTreeConnection::m_id)
             ->Field("sourceNodeId", &BlendTreeConnection::m_sourceNodeId)
-            ->Field("sourcePortNr", &BlendTreeConnection::mSourcePort)
-            ->Field("targetPortNr", &BlendTreeConnection::mTargetPort);
+            ->Field("sourcePortNr", &BlendTreeConnection::m_sourcePort)
+            ->Field("targetPortNr", &BlendTreeConnection::m_targetPort);
     }
 } // namespace EMotionFX

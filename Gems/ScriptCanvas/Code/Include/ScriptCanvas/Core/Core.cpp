@@ -1,5 +1,6 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
  *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -52,8 +53,6 @@ namespace ScriptCanvas
         }
         auto lhsIter = lhs.begin();
         auto rhsIter = rhs.begin();
-
-        const bool isCaseSensitive = false;
 
         for (; lhsIter != lhs.end(); ++lhsIter, ++rhsIter)
         {
@@ -136,8 +135,19 @@ namespace ScriptCanvas
         if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<VersionData>()
+                ->Version(2, [](AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& classElement)
+                    {
+                        if (classElement.GetVersion() < 2)
+                        {
+                            FileVersion fileVersion = ScriptCanvas::FileVersion::Initial;
+                            classElement.AddElementWithData(context, "_fileVersion", fileVersion);
+                        }
+
+                        return true;
+                    })
                 ->Field("_grammarVersion", &VersionData::grammarVersion)
                 ->Field("_runtimeVersion", &VersionData::runtimeVersion)
+                ->Field("_fileVersion", &VersionData::fileVersion)
                 ;
         }
     }
@@ -153,5 +163,24 @@ namespace ScriptCanvas
     {
         grammarVersion = GrammarVersion::Current;
         runtimeVersion = RuntimeVersion::Current;
+        fileVersion = FileVersion::Current;
     }
+
+    void ReflectEventTypeOnDemand(const AZ::TypeId& typeId, AZStd::string_view name, AZ::IRttiHelper* rttiHelper)
+    {
+        AZ::SerializeContext* serializeContext{};
+        AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationRequests::GetSerializeContext);
+        AZ::SerializeContext::ClassData classData;
+        classData.m_name = name.data();
+        classData.m_typeId = typeId;
+        classData.m_azRtti = rttiHelper;
+
+        auto EventPlaceholderAnyCreator = [](AZ::SerializeContext*) -> AZStd::any
+        {
+            return AZStd::make_any<AZStd::monostate>();
+        };
+
+        serializeContext->RegisterType(typeId, AZStd::move(classData), EventPlaceholderAnyCreator);
+    }
+
 }

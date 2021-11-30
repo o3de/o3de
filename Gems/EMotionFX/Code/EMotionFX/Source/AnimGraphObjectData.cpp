@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -19,9 +20,9 @@ namespace EMotionFX
     AnimGraphObjectData::AnimGraphObjectData(AnimGraphObject* object, AnimGraphInstance* animGraphInstance)
         : BaseObject()
     {
-        mObject             = object;
-        mAnimGraphInstance = animGraphInstance;
-        mObjectFlags        = 0;
+        m_object             = object;
+        m_animGraphInstance = animGraphInstance;
+        m_objectFlags        = 0;
     }
 
     AnimGraphObjectData::~AnimGraphObjectData()

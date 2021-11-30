@@ -1,16 +1,17 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "AssetMemoryAnalyzer_precompiled.h"
 
 #include "AssetMemoryAnalyzer.h"
 
 #include <AzCore/Memory/MemoryDrillerBus.h>
 #include <AzCore/Debug/AssetTrackingTypesImpl.h>
 #include <AzCore/Debug/AssetTracking.h>
+#include <AzCore/std/containers/unordered_set.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 
 ///////////////////////////////////////////////////////////////////////////////

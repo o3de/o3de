@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -11,6 +12,8 @@
 
 #pragma once
 
+#include <CryCommon/BaseTypes.h>
+#include <CryCommon/platform.h>
 
 class CTimeValue
 {
@@ -18,8 +21,6 @@ public:
     static const int64      TIMEVALUE_PRECISION = 100000;         // one second
 
 public:
-    void GetMemoryUsage(class ICrySizer*) const { /*nothing*/}
-
     // Default constructor.
     ILINE CTimeValue()
     {
@@ -160,10 +161,6 @@ public:
     ILINE bool operator<=(const CTimeValue& inRhs) const { return m_lValue <= inRhs.m_lValue; };
     ILINE bool operator==(const CTimeValue& inRhs) const { return m_lValue == inRhs.m_lValue; };
     ILINE bool operator!=(const CTimeValue& inRhs) const { return m_lValue != inRhs.m_lValue; };
-
-    AUTO_STRUCT_INFO
-
-    void GetMemoryStatistics(class ICrySizer*) const { /*nothing*/}
 
 private: // ----------------------------------------------------------
 

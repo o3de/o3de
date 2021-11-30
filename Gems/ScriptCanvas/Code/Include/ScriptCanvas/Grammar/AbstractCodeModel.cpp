@@ -1,5 +1,6 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
  *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -1357,17 +1358,23 @@ namespace ScriptCanvas
                 {
                     if (variable->m_isMember)
                     {
-                        return !this->m_variableUse.memberVariables.contains(variable);
+                        if (!this->m_variableUse.memberVariables.contains(variable))
+                        {
+                            m_variablesUnused.push_back(variable);
+                            return true;
+                        }
                     }
                     else
                     {
-                        return !this->m_variableUse.localVariables.contains(variable);
+                        if (!this->m_variableUse.localVariables.contains(variable))
+                        {
+                            m_variablesUnused.push_back(variable);
+                            return true;
+                        }
                     }
                 }
-                else
-                {
-                    return false;
-                }
+
+                return false;
             });
         }
 
@@ -2065,6 +2072,11 @@ namespace ScriptCanvas
         const AZStd::vector<VariableConstPtr>& AbstractCodeModel::GetVariables() const
         {
             return m_variables;
+        }
+
+        const AZStd::vector<VariableConstPtr>& AbstractCodeModel::GetVariablesUnused() const
+        {
+            return m_variablesUnused;
         }
 
         bool AbstractCodeModel::IsActiveGraph() const
@@ -3229,7 +3241,7 @@ namespace ScriptCanvas
             auto valueSlot = forEachNodeSC->GetSlot(forEachNodeSC->GetValueSlotId());
             AZ_Assert(valueSlot, "no value slot in for each node");
 
-            lastExecution->AddChild({});
+            lastExecution->AddChild({ &loopSlot, {}, nullptr });
             auto outputValue = CreateOutputData(lastExecution, lastExecution->ModChild(0), *valueSlot);
             lastExecution->ModChild(0).m_output.push_back({ valueSlot, outputValue });
 
@@ -4308,6 +4320,12 @@ namespace ScriptCanvas
         {
             AZ_Assert(execution->GetSymbol() != Symbol::FunctionDefinition, "Function definition input is not handled in AbstractCodeModel::ParseInputDatum");
 
+            if (!input.GetDataType().IsValid())
+            {
+                AddError(nullptr, aznew Internal::ParseError(execution->GetNodeId(), ParseErrors::InvalidDataTypeInInput));
+                return;
+            }
+
             auto nodes = execution->GetId().m_node->GetConnectedNodes(input);
             if (nodes.empty())
             {
@@ -4342,6 +4360,9 @@ namespace ScriptCanvas
 
                     execution->AddInput({ &input, inputVariable, DebugDataSource::FromSelfSlot(input, inputVariable->m_datum.GetType()) });
                 }
+
+                // Check for known null reads
+                CheckForKnownNullDereference(execution, execution->GetInput(execution->GetInputCount() - 1), input);
             }
             else
             {
@@ -4373,9 +4394,6 @@ namespace ScriptCanvas
                     return;
                 }
             }
-
-            // Check for known null reads
-            CheckForKnownNullDereference(execution, execution->GetInput(execution->GetInputCount() - 1), input);
         }
 
         bool AbstractCodeModel::ParseInputThisPointer(ExecutionTreePtr execution)

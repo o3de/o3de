@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -24,13 +25,13 @@ namespace EMStudio
     OpenGLRenderPlugin::OpenGLRenderPlugin()
         : EMStudio::RenderPlugin()
     {
-        mGraphicsManager = nullptr;
+        m_graphicsManager = nullptr;
     }
 
     OpenGLRenderPlugin::~OpenGLRenderPlugin()
     {
         // get rid of the OpenGL graphics manager
-        delete mGraphicsManager;
+        delete m_graphicsManager;
     }
 
     // init after the parent dock window has been created
@@ -47,7 +48,7 @@ namespace EMStudio
     // initialize the OpenGL engine
     bool OpenGLRenderPlugin::InitializeGraphicsManager()
     {
-        if (mGraphicsManager)
+        if (m_graphicsManager)
         {
             // initialize all already existing actors and actor instances
             ReInit();
@@ -58,15 +59,15 @@ namespace EMStudio
         const auto shaderPath = AZ::IO::Path(MysticQt::GetDataDir()) / "Shaders";
 
         // create graphics manager and initialize it
-        mGraphicsManager = new RenderGL::GraphicsManager();
-        if (mGraphicsManager->Init(shaderPath) == false)
+        m_graphicsManager = new RenderGL::GraphicsManager();
+        if (m_graphicsManager->Init(shaderPath) == false)
         {
             MCore::LogError("Could not initialize OpenGL graphics manager.");
             return false;
         }
 
         // set the render util in the base render plugin
-        mRenderUtil = mGraphicsManager->GetRenderUtil();
+        m_renderUtil = m_graphicsManager->GetRenderUtil();
 
         // initialize all already existing actors and actor instances
         ReInit();

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -18,8 +19,8 @@ namespace EMotionFX
     MeshDeformer::MeshDeformer(Mesh* mesh)
         : BaseObject()
     {
-        mMesh       = mesh;
-        mIsEnabled  = true;
+        m_mesh       = mesh;
+        m_isEnabled  = true;
     }
 
 
@@ -32,19 +33,19 @@ namespace EMotionFX
     // check if the deformer is enabled
     bool MeshDeformer::GetIsEnabled() const
     {
-        return mIsEnabled;
+        return m_isEnabled;
     }
 
 
     // enable or disable it
     void MeshDeformer::SetIsEnabled(bool enabled)
     {
-        mIsEnabled = enabled;
+        m_isEnabled = enabled;
     }
 
 
     // reinitialize the mesh deformer
-    void MeshDeformer::Reinitialize(Actor* actor, Node* node, uint32 lodLevel)
+    void MeshDeformer::Reinitialize(Actor* actor, Node* node, size_t lodLevel)
     {
         MCORE_UNUSED(actor);
         MCORE_UNUSED(node);

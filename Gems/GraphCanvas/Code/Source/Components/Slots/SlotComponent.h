@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -71,7 +72,7 @@ namespace GraphCanvas
         const AZ::EntityId& GetNode() const override;
         void SetNode(const AZ::EntityId&) override;
 
-        Endpoint GetEndpoint() const;
+        Endpoint GetEndpoint() const override;
 
         const AZStd::string GetName() const  override { return m_slotConfiguration.m_name.GetDisplayString(); }
         void SetName(const AZStd::string& name) override;

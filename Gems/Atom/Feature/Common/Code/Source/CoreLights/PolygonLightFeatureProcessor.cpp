@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -15,7 +16,6 @@
 
 #include <Atom/Feature/CoreLights/CoreLightsConstants.h>
 
-#include <Atom/RHI/CpuProfiler.h>
 #include <Atom/RHI/Factory.h>
 
 #include <Atom/RPI.Public/ColorManagement/TransformColor.h>
@@ -49,7 +49,7 @@ namespace AZ::Render
         desc.m_bufferSrgName = "m_polygonLights";
         desc.m_elementCountSrgName = "m_polygonLightCount";
         desc.m_elementSize = sizeof(PolygonLightData);
-        desc.m_srgLayout = RPI::RPISystemInterface::Get()->GetViewSrgAsset()->GetLayout();
+        desc.m_srgLayout = RPI::RPISystemInterface::Get()->GetViewSrgLayout().get();
 
         m_lightBufferHandler = GpuBufferHandler(desc);
 
@@ -58,7 +58,7 @@ namespace AZ::Render
         desc.m_bufferSrgName = "m_polygonLightPoints";
         desc.m_elementCountSrgName = "";
         desc.m_elementSize = 16; // While only a 12 byte float3 is needed for positions, using 16 bytes since that's the minimal alignment.
-        desc.m_srgLayout = RPI::RPISystemInterface::Get()->GetViewSrgAsset()->GetLayout();
+        desc.m_srgLayout = RPI::RPISystemInterface::Get()->GetViewSrgLayout().get();
 
         m_lightPolygonPointBufferHandler = GpuBufferHandler(desc);
 
@@ -131,7 +131,7 @@ namespace AZ::Render
 
     void PolygonLightFeatureProcessor::Simulate(const FeatureProcessor::SimulatePacket& packet)
     {
-        AZ_ATOM_PROFILE_FUNCTION("RPI", "PolygonLightFeatureProcessor: Simulate");
+        AZ_PROFILE_SCOPE(RPI, "PolygonLightFeatureProcessor: Simulate");
         AZ_UNUSED(packet);
 
         if (m_deviceBufferNeedsUpdate)
@@ -144,7 +144,7 @@ namespace AZ::Render
                 // individual point as its own element instead of each array being its own element. Since all
                 // the arrays are stored in a contiguous vector, we can treat it as one giant array.
                 const LightPosition* firstPosition = m_polygonLightData.GetDataVector<1>().at(0).data();
-                m_lightPolygonPointBufferHandler.UpdateBuffer(firstPosition, m_polygonLightData.GetDataCount() * MaxPolygonPoints);
+                m_lightPolygonPointBufferHandler.UpdateBuffer(firstPosition, static_cast<uint32_t>(m_polygonLightData.GetDataCount() * MaxPolygonPoints));
             }
             m_deviceBufferNeedsUpdate = false;
         }
@@ -152,7 +152,7 @@ namespace AZ::Render
 
     void PolygonLightFeatureProcessor::Render(const PolygonLightFeatureProcessor::RenderPacket& packet)
     {
-        AZ_ATOM_PROFILE_FUNCTION("RPI", "PolygonLightFeatureProcessor: Render");
+        AZ_PROFILE_SCOPE(RPI, "PolygonLightFeatureProcessor: Render");
 
         for (const RPI::ViewPtr& view : packet.m_views)
         {

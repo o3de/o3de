@@ -1,16 +1,18 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "precompiled.h"
 
 #include <QCoreApplication>
 #include <qgraphicslayoutitem.h>
 #include <qgraphicsscene.h>
 #include <qsizepolicy.h>
 #include <QGraphicsSceneDragDropEvent>
+
+#include <AzQtComponents/Components/ToastNotification.h>
 
 #include <Components/Slots/Data/DataSlotLayoutComponent.h>
 
@@ -157,8 +159,8 @@ namespace GraphCanvas
                                     anchorPoint = QPointF(1.0f, 0.5f);
                                 }
                                 
-                                ToastConfiguration toastConfiguration(ToastType::Error, "Unable to drop onto to slot", error);
-                                toastConfiguration.SetCloseOnClick(false);
+                                AzQtComponents::ToastConfiguration toastConfiguration(AzQtComponents::ToastType::Error, "Unable to drop onto to slot", error.c_str());
+                                toastConfiguration.m_closeOnClick = false;
 
                                 m_toastId = viewHandler->ShowToastAtPoint(globalConnectionPoint.toPoint(), anchorPoint, toastConfiguration);
                             }

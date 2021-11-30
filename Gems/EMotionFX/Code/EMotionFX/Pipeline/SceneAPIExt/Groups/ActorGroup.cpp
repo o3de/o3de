@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -107,7 +108,7 @@ namespace EMotionFX
 
                 serializeContext->Class<IActorGroup, AZ::SceneAPI::DataTypes::IGroup>()->Version(3, IActorGroupVersionConverter);
 
-                serializeContext->Class<ActorGroup, IActorGroup>()->Version(6, ActorVersionConverter)
+                serializeContext->Class<ActorGroup, IActorGroup>()->Version(7, ActorVersionConverter)
                     ->Field("name", &ActorGroup::m_name)
                     ->Field("selectedRootBone", &ActorGroup::m_selectedRootBone)
                     ->Field("id", &ActorGroup::m_id)

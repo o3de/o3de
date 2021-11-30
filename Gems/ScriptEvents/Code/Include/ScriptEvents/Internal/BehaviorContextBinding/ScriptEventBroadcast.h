@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -8,6 +9,7 @@
 #pragma once
 
 #include <AzCore/Math/Crc.h>
+#include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/string/string_view.h>
 
@@ -37,8 +39,8 @@ namespace ScriptEvents
 
         void ReserveArguments(size_t numArguments);
 
-        size_t GetNumArguments() const override { return m_behaviorParameters.size(); } 
-        const AZ::BehaviorParameter* GetArgument(size_t index) const override 
+        size_t GetNumArguments() const override { return m_behaviorParameters.size(); }
+        const AZ::BehaviorParameter* GetArgument(size_t index) const override
         {
             if (index >= m_behaviorParameters.size())
             {

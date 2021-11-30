@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -16,8 +17,8 @@
 #include "EditorPreferencesPageGeneral.h"
 #include "EditorPreferencesPageFiles.h"
 #include "EditorPreferencesPageViewportGeneral.h"
-#include "EditorPreferencesPageViewportGizmo.h"
-#include "EditorPreferencesPageViewportMovement.h"
+#include "EditorPreferencesPageViewportManipulator.h"
+#include "EditorPreferencesPageViewportCamera.h"
 #include "EditorPreferencesPageViewportDebug.h"
 #include "EditorPreferencesPageExperimentalLighting.h"
 #include "EditorPreferencesPageAWS.h"
@@ -34,8 +35,8 @@ CStdPreferencesClassDesc::CStdPreferencesClassDesc()
         [](){ return new CEditorPreferencesPage_General(); },
         [](){ return new CEditorPreferencesPage_Files(); },
         [](){ return new CEditorPreferencesPage_ViewportGeneral(); },
-        [](){ return new CEditorPreferencesPage_ViewportMovement(); },
-        [](){ return new CEditorPreferencesPage_ViewportGizmo(); },
+        [](){ return new CEditorPreferencesPage_ViewportCamera(); },
+        [](){ return new CEditorPreferencesPage_ViewportManipulator(); },
         [](){ return new CEditorPreferencesPage_ViewportDebug(); }
     };
 
@@ -88,7 +89,7 @@ REFGUID CStdPreferencesClassDesc::ClassID()
 //////////////////////////////////////////////////////////////////////////
 int CStdPreferencesClassDesc::GetPagesCount()
 {
-    return m_pageCreators.size();
+    return static_cast<int>(m_pageCreators.size());
 }
 
 IPreferencesPage* CStdPreferencesClassDesc::CreateEditorPreferencesPage(int index)

@@ -1,11 +1,11 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
-#include "LmbrCentral_precompiled.h"
 #include "CylinderShapeComponent.h"
 
 #include <AzCore/Math/IntersectPoint.h>
@@ -243,7 +243,6 @@ namespace LmbrCentral
             AZ::Vector3 diff = m_intersectionDataCache.m_baseCenterPoint - point;
             return diff.GetLengthSq();
         }
-
         return Distance::Point_CylinderSq(
             point, m_intersectionDataCache.m_baseCenterPoint,
             m_intersectionDataCache.m_baseCenterPoint + m_intersectionDataCache.m_axisVector,

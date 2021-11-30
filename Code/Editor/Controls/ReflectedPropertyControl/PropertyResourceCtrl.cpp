@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -16,9 +17,9 @@
 // AzToolsFramework
 #include <AzToolsFramework/AssetBrowser/AssetSelectionModel.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
+#include <AzToolsFramework/UI/PropertyEditor/PropertyAudioCtrl.h>
 
 // Editor
-#include "IResourceSelectorHost.h"
 #include "Controls/QToolTipWidget.h"
 #include "Controls/BitmapToolTip.h"
 
@@ -34,8 +35,8 @@ BrowseButton::BrowseButton(PropertyType type, QWidget* parent /*= nullptr*/)
 
 void BrowseButton::SetPathAndEmit(const QString& path)
 {
-    //only emit if path changes, except for ePropertyGeomCache. Old property control
-    if (path != m_path || m_propertyType == ePropertyGeomCache)
+    //only emit if path changes. Old property control
+    if (path != m_path)
     {
         m_path = path;
         emit PathChanged(m_path);
@@ -77,21 +78,6 @@ private:
             // Filters for texture.
             selection = AssetSelectionModel::AssetGroupSelection("Texture");
         }
-        else if (m_propertyType == ePropertyModel)
-        {
-            // Filters for models.
-            selection = AssetSelectionModel::AssetGroupSelection("Geometry");
-        }
-        else if (m_propertyType == ePropertyGeomCache)
-        {
-            // Filters for geom caches.
-            selection = AssetSelectionModel::AssetTypeSelection("Geom Cache");
-        }
-        else if (m_propertyType == ePropertyFile)
-        {
-            // Filters for files.
-            selection = AssetSelectionModel::AssetTypeSelection("File");
-        }
         else
         {
             return;
@@ -105,14 +91,7 @@ private:
             switch (m_propertyType)
             {
             case ePropertyTexture:
-            case ePropertyModel:
                 newPath.replace("\\\\", "/");
-            }
-            switch (m_propertyType)
-            {
-            case ePropertyTexture:
-            case ePropertyModel:
-            case ePropertyFile:
                 if (newPath.size() > MAX_PATH)
                 {
                     newPath.resize(MAX_PATH);
@@ -124,26 +103,51 @@ private:
     }
 };
 
-class ResourceSelectorButton
+class AudioControlSelectorButton
     : public BrowseButton
 {
 public:
-    AZ_CLASS_ALLOCATOR(ResourceSelectorButton, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(AudioControlSelectorButton, AZ::SystemAllocator, 0);
 
-    ResourceSelectorButton(PropertyType type, QWidget* pParent = nullptr)
+    AudioControlSelectorButton(PropertyType type, QWidget* pParent = nullptr)
         : BrowseButton(type, pParent)
     {
-        setToolTip(tr("Select resource"));
+        setToolTip(tr("Select Audio Control"));
     }
 
 private:
     void OnClicked() override
     {
-        SResourceSelectorContext x;
-        x.parentWidget = this;
-        x.typeName = Prop::GetPropertyTypeToResourceType(m_propertyType);
-        QString newPath = GetIEditor()->GetResourceSelectorHost()->SelectResource(x, m_path);
-        SetPathAndEmit(newPath);
+        AZStd::string resourceResult;
+        auto ConvertLegacyAudioPropertyType = [](const PropertyType type) -> AzToolsFramework::AudioPropertyType
+        {
+            switch (type)
+            {
+            case ePropertyAudioTrigger:
+                return AzToolsFramework::AudioPropertyType::Trigger;
+            case ePropertyAudioRTPC:
+                return AzToolsFramework::AudioPropertyType::Rtpc;
+            case ePropertyAudioSwitch:
+                return AzToolsFramework::AudioPropertyType::Switch;
+            case ePropertyAudioSwitchState:
+                return AzToolsFramework::AudioPropertyType::SwitchState;
+            case ePropertyAudioEnvironment:
+                return AzToolsFramework::AudioPropertyType::Environment;
+            case ePropertyAudioPreloadRequest:
+                return AzToolsFramework::AudioPropertyType::Preload;
+            default:
+                return AzToolsFramework::AudioPropertyType::NumTypes;
+            }
+        };
+
+        auto propType = ConvertLegacyAudioPropertyType(m_propertyType);
+        if (propType != AzToolsFramework::AudioPropertyType::NumTypes)
+        {
+            AzToolsFramework::AudioControlSelectorRequestBus::EventResult(
+                resourceResult, propType, &AzToolsFramework::AudioControlSelectorRequestBus::Events::SelectResource,
+                AZStd::string_view{ m_path.toUtf8().constData() });
+            SetPathAndEmit(QString{ resourceResult.c_str() });
+        }
     }
 };
 
@@ -234,18 +238,13 @@ void FileResourceSelectorWidget::SetPropertyType(PropertyType type)
         AddButton(new TextureEditButton);
         m_previewToolTip.reset(new CBitmapToolTip);
         break;
-    case ePropertyModel:
-    case ePropertyGeomCache:
     case ePropertyAudioTrigger:
     case ePropertyAudioSwitch:
     case ePropertyAudioSwitchState:
     case ePropertyAudioRTPC:
     case ePropertyAudioEnvironment:
     case ePropertyAudioPreloadRequest:
-        AddButton(new ResourceSelectorButton(type));
-        break;
-    case ePropertyFile:
-        AddButton(new FileBrowseButton(type));
+        AddButton(new AudioControlSelectorButton(type));
         break;
     default:
         break;

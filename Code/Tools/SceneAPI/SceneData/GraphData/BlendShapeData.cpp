@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -9,6 +10,7 @@
 #include <SceneAPI/SceneData/GraphData/BlendShapeData.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/RTTI/BehaviorContext.h>
+#include <AzCore/std/containers/bitset.h>
 
 namespace AZ
 {
@@ -280,26 +282,8 @@ namespace AZ
             void BlendShapeData::GetDebugOutput(SceneAPI::Utilities::DebugOutput& output) const
             {
                 output.Write("Positions", m_positions);
-                int index = 0;
-                for (const auto& position : m_positions)
-                {
-                    output.Write(AZStd::string::format("\t%d", index).c_str(), position);
-                    ++index;
-                }
-                index = 0;
                 output.Write("Normals", m_normals);
-                for (const auto& normal : m_normals)
-                {
-                    output.Write(AZStd::string::format("\t%d", index).c_str(), normal);
-                    ++index;
-                }
-                index = 0;
                 output.Write("Faces", m_faces);
-                for (const auto& face : m_faces)
-                {
-                    output.WriteArray(AZStd::string::format("\t%d", index).c_str(), face.vertexIndex, 3);
-                    ++index;
-                }
             }
         } // GraphData
     } // SceneData

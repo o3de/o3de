@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -24,19 +25,14 @@ namespace EMotionFX
     ActorManager::ActorManager()
         : BaseObject()
     {
-        mScheduler  = nullptr;
-
-        // set memory categories
-        mActorInstances.SetMemoryCategory(EMFX_MEMCATEGORY_ACTORMANAGER);
-        mRootActorInstances.SetMemoryCategory(EMFX_MEMCATEGORY_ACTORMANAGER);
+        m_scheduler  = nullptr;
 
         // setup the default scheduler
         SetScheduler(MultiThreadScheduler::Create());
 
         // reserve memory
-        m_actors.reserve(512);
-        mActorInstances.Reserve(1024);
-        mRootActorInstances.Reserve(1024);
+        m_actorInstances.reserve(1024);
+        m_rootActorInstances.reserve(1024);
     }
 
 
@@ -44,7 +40,7 @@ namespace EMotionFX
     ActorManager::~ActorManager()
     {
         // delete the scheduler
-        mScheduler->Destroy();
+        m_scheduler->Destroy();
     }
 
 
@@ -60,8 +56,8 @@ namespace EMotionFX
         // destroy all actor instances
         while (GetNumActorInstances() > 0)
         {
-            MCORE_ASSERT(mActorInstances[0]->GetReferenceCount() == 1);
-            mActorInstances[0]->Destroy();
+            MCORE_ASSERT(m_actorInstances[0]->GetReferenceCount() == 1);
+            m_actorInstances[0]->Destroy();
         }
 
         UnregisterAllActorInstances();
@@ -78,11 +74,11 @@ namespace EMotionFX
     void ActorManager::UnregisterAllActorInstances()
     {
         LockActorInstances();
-        mActorInstances.Clear();
-        mRootActorInstances.Clear();
-        if (mScheduler)
+        m_actorInstances.clear();
+        m_rootActorInstances.clear();
+        if (m_scheduler)
         {
-            mScheduler->Clear();
+            m_scheduler->Clear();
         }
         UnlockActorInstances();
     }
@@ -94,19 +90,19 @@ namespace EMotionFX
         LockActorInstances();
 
         // delete the existing scheduler, if wanted
-        if (delExisting && mScheduler)
+        if (delExisting && m_scheduler)
         {
-            mScheduler->Destroy();
+            m_scheduler->Destroy();
         }
 
         // update the scheduler pointer
-        mScheduler = scheduler;
+        m_scheduler = scheduler;
 
         // adjust all visibility flags to false for all actor instances
-        const uint32 numActorInstances = mActorInstances.GetLength();
-        for (uint32 i = 0; i < numActorInstances; ++i)
+        const size_t numActorInstances = m_actorInstances.size();
+        for (size_t i = 0; i < numActorInstances; ++i)
         {
-            mActorInstances[i]->SetIsVisible(false);
+            m_actorInstances[i]->SetIsVisible(false);
         }
 
         UnlockActorInstances();
@@ -114,20 +110,23 @@ namespace EMotionFX
 
 
     // register the actor
-    void ActorManager::RegisterActor(AZStd::shared_ptr<Actor> actor)
+    void ActorManager::RegisterActor(ActorAssetData actorAsset)
     {
         LockActors();
 
         // check if we already registered
-        if (FindActorIndex(actor.get()) != MCORE_INVALIDINDEX32)
+        if (FindActorIndex(actorAsset.GetId()) != InvalidIndex)
         {
-            MCore::LogWarning("EMotionFX::ActorManager::RegisterActor() - The actor at location 0x%x has already been registered as actor, most likely already by the LoadActor of the importer.", actor.get());
+            MCore::LogWarning(
+                "EMotionFX::ActorManager::RegisterActor() - The actor %s has already been registered as actor, most likely "
+                "already by the LoadActor of the importer.",
+                actorAsset->GetActor()->GetName());
             UnlockActors();
             return;
         }
 
         // register it
-        m_actors.emplace_back(AZStd::move(actor));
+        m_actorAssets.emplace_back(AZStd::move(actorAsset));
 
         UnlockActors();
     }
@@ -138,7 +137,7 @@ namespace EMotionFX
     {
         LockActorInstances();
 
-        mActorInstances.Add(actorInstance);
+        m_actorInstances.emplace_back(actorInstance);
         UpdateActorInstanceStatus(actorInstance, false);
 
         UnlockActorInstances();
@@ -149,60 +148,82 @@ namespace EMotionFX
     Actor* ActorManager::FindActorByName(const char* actorName) const
     {
         // get the number of actors and iterate through them
-        const auto found = AZStd::find_if(m_actors.begin(), m_actors.end(), [actorName](const AZStd::shared_ptr<Actor>& a)
+        const auto found = AZStd::find_if(
+            m_actorAssets.begin(), m_actorAssets.end(),
+            [actorName](const ActorAssetData& a)
         {
-            return a->GetNameString() == actorName;
+                return a->GetActor()->GetNameString() == actorName;
         });
 
-        return (found != m_actors.end()) ? found->get() : nullptr;
+        return (found != m_actorAssets.end()) ? (*found)->GetActor() : nullptr;
     }
 
 
     // find the actor for a given filename
     Actor* ActorManager::FindActorByFileName(const char* fileName) const
     {
-        const auto found = AZStd::find_if(m_actors.begin(), m_actors.end(), [fileName](const AZStd::shared_ptr<Actor>& a)
+        const auto found = AZStd::find_if(
+            m_actorAssets.begin(), m_actorAssets.end(),
+            [fileName](const ActorAssetData& a)
         {
-            return AzFramework::StringFunc::Equal(a->GetFileNameString().c_str(), fileName, false /* no case */);
+                return AzFramework::StringFunc::Equal(
+                    a->GetActor()->GetFileNameString().c_str(), fileName, false /* no case */);
         });
 
-        return (found != m_actors.end()) ? found->get() : nullptr;
+        return (found != m_actorAssets.end()) ? (*found)->GetActor() : nullptr;
     }
 
 
     // find the leader actor record for a given actor
-    uint32 ActorManager::FindActorIndex(Actor* actor) const
+    size_t ActorManager::FindActorIndex(AZ::Data::AssetId assetId) const
     {
-        const auto found = AZStd::find_if(m_actors.begin(), m_actors.end(), [actor](const AZStd::shared_ptr<Actor>& a)
+        const auto found = AZStd::find_if(
+            m_actorAssets.begin(), m_actorAssets.end(),
+            [assetId](const ActorAssetData& a)
         {
-            return a.get() == actor;
+                return a.GetId() == assetId;
         });
 
-        return (found != m_actors.end()) ? static_cast<uint32>(AZStd::distance(m_actors.begin(), found)) : MCORE_INVALIDINDEX32;
+        return (found != m_actorAssets.end()) ? AZStd::distance(m_actorAssets.begin(), found) : InvalidIndex;
     }
 
+    size_t ActorManager::FindActorIndex(const Actor* actor) const
+    {
+        const auto found = AZStd::find_if(
+            m_actorAssets.begin(), m_actorAssets.end(),
+            [actor](const ActorAssetData& a)
+            {
+                return a->GetActor() == actor;
+            });
+
+        return (found != m_actorAssets.end()) ? AZStd::distance(m_actorAssets.begin(), found) : InvalidIndex;
+    }
 
     // find the actor for a given actor name
-    uint32 ActorManager::FindActorIndexByName(const char* actorName) const
+    size_t ActorManager::FindActorIndexByName(const char* actorName) const
     {
-        const auto found = AZStd::find_if(m_actors.begin(), m_actors.end(), [actorName](const AZStd::shared_ptr<Actor>& a)
+        const auto found = AZStd::find_if(
+            m_actorAssets.begin(), m_actorAssets.end(),
+            [actorName](const ActorAssetData& a)
         {
-            return a->GetNameString() == actorName;
+                return a->GetActor()->GetNameString() == actorName;
         });
 
-        return (found != m_actors.end()) ? static_cast<uint32>(AZStd::distance(m_actors.begin(), found)) : MCORE_INVALIDINDEX32;
+        return (found != m_actorAssets.end()) ? AZStd::distance(m_actorAssets.begin(), found) : InvalidIndex;
     }
 
 
     // find the actor for a given actor filename
-    uint32 ActorManager::FindActorIndexByFileName(const char* filename) const
+    size_t ActorManager::FindActorIndexByFileName(const char* filename) const
     {
-        const auto found = AZStd::find_if(m_actors.begin(), m_actors.end(), [filename](const AZStd::shared_ptr<Actor>& a)
+        const auto found = AZStd::find_if(
+            m_actorAssets.begin(), m_actorAssets.end(),
+            [filename](const ActorAssetData& a)
         {
-            return a->GetFileNameString() == filename;
+                return a->GetActor()->GetFileNameString() == filename;
         });
 
-        return (found != m_actors.end()) ? static_cast<uint32>(AZStd::distance(m_actors.begin(), found)) : MCORE_INVALIDINDEX32;
+        return (found != m_actorAssets.end()) ? AZStd::distance(m_actorAssets.begin(), found) : InvalidIndex;
     }
 
 
@@ -212,96 +233,79 @@ namespace EMotionFX
         LockActorInstances();
 
         // get the number of actor instances and iterate through them
-        const uint32 numActorInstances = mActorInstances.GetLength();
-        for (uint32 i = 0; i < numActorInstances; ++i)
-        {
-            if (mActorInstances[i] == actorInstance)
-            {
-                UnlockActorInstances();
-                return true;
-            }
-        }
-
-        // in case we haven't found it return failure
+        const bool foundActor = AZStd::find(begin(m_actorInstances), end(m_actorInstances), actorInstance) != end(m_actorInstances);
         UnlockActorInstances();
-        return false;
+        return foundActor;
     }
 
 
     // find the given actor instance inside the actor manager and return its index
-    uint32 ActorManager::FindActorInstanceIndex(ActorInstance* actorInstance) const
+    size_t ActorManager::FindActorInstanceIndex(ActorInstance* actorInstance) const
     {
-        // get the number of actor instances and iterate through them
-        const uint32 numActorInstances = mActorInstances.GetLength();
-        for (uint32 i = 0; i < numActorInstances; ++i)
-        {
-            if (mActorInstances[i] == actorInstance)
-            {
-                return i;
-            }
-        }
-
-        // in case we haven't found it return failure
-        return MCORE_INVALIDINDEX32;
+        const auto foundActorInstance = AZStd::find(begin(m_actorInstances), end(m_actorInstances), actorInstance);
+        return foundActorInstance != end(m_actorInstances) ? AZStd::distance(begin(m_actorInstances), foundActorInstance) : InvalidIndex;
     }
 
 
     // find the actor instance by the identification number
     ActorInstance* ActorManager::FindActorInstanceByID(uint32 id) const
     {
-        // get the number of actor instances and iterate through them
-        const uint32 numActorInstances = mActorInstances.GetLength();
-        for (uint32 i = 0; i < numActorInstances; ++i)
+        const auto foundActorInstance = AZStd::find_if(begin(m_actorInstances), end(m_actorInstances), [id](const ActorInstance* actorInstance)
         {
-            if (mActorInstances[i]->GetID() == id)
-            {
-                return mActorInstances[i];
-            }
-        }
-
-        // in case we haven't found it return failure
-        return nullptr;
+            return actorInstance->GetID() == id;
+        });
+        return foundActorInstance != end(m_actorInstances) ? *foundActorInstance : nullptr;
     }
 
 
     // find the actor by the identification number
     Actor* ActorManager::FindActorByID(uint32 id) const
     {
-        const auto found = AZStd::find_if(m_actors.begin(), m_actors.end(), [id](const AZStd::shared_ptr<Actor>& a)
+        const auto found = AZStd::find_if(
+            m_actorAssets.begin(), m_actorAssets.end(),
+            [id](const ActorAssetData& a)
         {
-            return a->GetID() == id;
+                return a->GetActor()->GetID() == id;
         });
 
-        return (found != m_actors.end()) ? found->get() : nullptr;
+        return (found != m_actorAssets.end()) ? (*found)->GetActor() : nullptr;
     }
 
-    AZStd::shared_ptr<Actor> ActorManager::FindSharedActorByID(uint32 id) const
+    AZ::Data::AssetId ActorManager::FindAssetIdByActorId(uint32 id) const
     {
-        const auto found = AZStd::find_if(m_actors.begin(), m_actors.end(), [id](const AZStd::shared_ptr<Actor>& a)
+        const auto found = AZStd::find_if(
+            m_actorAssets.begin(), m_actorAssets.end(),
+            [id](const ActorAssetData& a)
         {
-            return a->GetID() == id;
+            return a->GetActor()->GetID() == id;
         });
 
-        return (found != m_actors.end()) ? *found : nullptr;
+        return (found != m_actorAssets.end()) ? found->GetId() : AZ::Data::AssetId();
     }
 
 
     // unregister a given actor instance
-    void ActorManager::UnregisterActorInstance(uint32 nr)
+    void ActorManager::UnregisterActorInstance(size_t nr)
     {
-        UnregisterActorInstance(mActorInstances[nr]);
+        UnregisterActorInstance(m_actorInstances[nr]);
     }
 
 
     // unregister an actor
-    void ActorManager::UnregisterActor(const AZStd::shared_ptr<Actor>& actor)
+    void ActorManager::UnregisterActor(AZ::Data::AssetId actorAssetID)
     {
         LockActors();
-        auto result = AZStd::find(m_actors.begin(), m_actors.end(), actor);
-        if (result != m_actors.end())
+        const auto found = AZStd::find_if(
+        m_actorAssets.begin(), m_actorAssets.end(),
+            [actorAssetID](const ActorAssetData& a)
+            {
+                return a.GetId() == actorAssetID;
+            });
+        if (found != m_actorAssets.end())
         {
-            m_actors.erase(result);
+            m_actorAssets.erase(found);
         }
+
         UnlockActors();
     }
 
@@ -314,7 +318,7 @@ namespace EMotionFX
 
         // execute the schedule
         // this makes all the callback OnUpdate calls etc
-        mScheduler->Execute(timePassedInSeconds);
+        m_scheduler->Execute(timePassedInSeconds);
 
         UnlockActorInstances();
         UnlockActors();
@@ -327,7 +331,7 @@ namespace EMotionFX
         LockActors();
 
         // clear all actors
-        m_actors.clear();
+        m_actorAssets.clear();
 
         // TODO: what if there are still references to the actors inside the list of registered actor instances?
         UnlockActors();
@@ -348,16 +352,19 @@ namespace EMotionFX
         if (actorInstance->GetAttachedTo() == nullptr)
         {
             // make sure it's in the root list
-            if (mRootActorInstances.Contains(actorInstance) == false)
+            if (AZStd::find(begin(m_rootActorInstances), end(m_rootActorInstances), actorInstance) == end(m_rootActorInstances))
             {
-                mRootActorInstances.Add(actorInstance);
+                m_rootActorInstances.emplace_back(actorInstance);
             }
         }
         else // no root actor instance
         {
             // remove it from the root list
-            mRootActorInstances.RemoveByValue(actorInstance);
-            mScheduler->RecursiveRemoveActorInstance(actorInstance);
+            if (const auto it = AZStd::find(begin(m_rootActorInstances), end(m_rootActorInstances), actorInstance); it != end(m_rootActorInstances))
+            {
+                m_rootActorInstances.erase(it);
+            }
+            m_scheduler->RecursiveRemoveActorInstance(actorInstance);
         }
 
         if (lock)
@@ -373,13 +380,19 @@ namespace EMotionFX
         LockActorInstances();
 
         // remove the actor instance from the list
-        mActorInstances.RemoveByValue(instance);
+        if (const auto it = AZStd::find(begin(m_actorInstances), end(m_actorInstances), instance); it != end(m_actorInstances))
+        {
+            m_actorInstances.erase(it);
+        }
 
         // remove it from the list of roots, if it is in there
-        mRootActorInstances.RemoveByValue(instance);
+        if (const auto it = AZStd::find(begin(m_rootActorInstances), end(m_rootActorInstances), instance); it != end(m_rootActorInstances))
+        {
+            m_rootActorInstances.erase(it);
+        }
 
         // remove it from the schedule
-        mScheduler->RemoveActorInstance(instance);
+        m_scheduler->RemoveActorInstance(instance);
 
         UnlockActorInstances();
     }
@@ -387,42 +400,48 @@ namespace EMotionFX
 
     void ActorManager::LockActorInstances()
     {
-        mActorInstanceLock.Lock();
+        m_actorInstanceLock.Lock();
     }
 
 
     void ActorManager::UnlockActorInstances()
     {
-        mActorInstanceLock.Unlock();
+        m_actorInstanceLock.Unlock();
     }
 
 
     void ActorManager::LockActors()
     {
-        mActorLock.Lock();
+        m_actorLock.Lock();
     }
 
 
     void ActorManager::UnlockActors()
     {
-        mActorLock.Unlock();
+        m_actorLock.Unlock();
     }
 
 
-    Actor* ActorManager::GetActor(uint32 nr) const
+    Actor* ActorManager::GetActor(size_t nr) const
     {
-        return m_actors[nr].get();
+        return m_actorAssets[nr]->GetActor();
     }
 
 
-    const MCore::Array<ActorInstance*>& ActorManager::GetActorInstanceArray() const
+    ActorAssetData ActorManager::GetActorAsset(size_t nr) const
     {
-        return mActorInstances;
+        return m_actorAssets[nr];
+    }
+
+
+    const AZStd::vector<ActorInstance*>& ActorManager::GetActorInstanceArray() const
+    {
+        return m_actorInstances;
     }
 
 
     ActorUpdateScheduler* ActorManager::GetScheduler() const
     {
-        return mScheduler;
+        return m_scheduler;
     }
 }   // namespace EMotionFX

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -91,13 +92,13 @@ namespace EMotionFX
          * Get a pointer to the data for a given attribute. You have to typecast the data yourself.
          * @result A pointer to the vertex data of the specified attribute number.
          */
-        MCORE_INLINE void* GetData(uint32 attributeNr)                  { return (mData + mAttribSizeInBytes * attributeNr);  }
+        MCORE_INLINE void* GetData(uint32 attributeNr)                  { return (m_data + m_attribSizeInBytes * attributeNr);  }
 
         /**
          * Get a pointer to the data. You have to typecast the data yourself.
          * @result A pointer to the vertex data.
          */
-        MCORE_INLINE void* GetData() override                           { return mData; }
+        MCORE_INLINE void* GetData() override                           { return m_data; }
 
         /**
          * Get the size of one attribute in bytes.
@@ -105,7 +106,7 @@ namespace EMotionFX
          * equal to sizeof(Vector3).
          * @result The size of a single attribute, in bytes.
          */
-        MCORE_INLINE uint32 GetAttributeSizeInBytes() const             { return mAttribSizeInBytes; }
+        MCORE_INLINE uint32 GetAttributeSizeInBytes() const             { return m_attribSizeInBytes; }
 
         /**
          * Get a pointer to the original data, as it is stored in the base pose, before any mesh deformers have been applied.
@@ -114,13 +115,13 @@ namespace EMotionFX
          */
         MCORE_INLINE void* GetOriginalData() override
         {
-            if (mKeepOriginals)
+            if (m_keepOriginals)
             {
-                return (mData + (mAttribSizeInBytes * mNumAttributes));
+                return (m_data + (m_attribSizeInBytes * m_numAttributes));
             }
             else
             {
-                return mData;
+                return m_data;
             }
         }
 
@@ -131,13 +132,13 @@ namespace EMotionFX
          */
         MCORE_INLINE void* GetOriginalData(uint32 attributeNr)
         {
-            if (mKeepOriginals)
+            if (m_keepOriginals)
             {
-                return (mData + (mAttribSizeInBytes * mNumAttributes) + (mAttribSizeInBytes * attributeNr));
+                return (m_data + (m_attribSizeInBytes * m_numAttributes) + (m_attribSizeInBytes * attributeNr));
             }
             else
             {
-                return (mData + mAttribSizeInBytes * attributeNr);
+                return (m_data + m_attribSizeInBytes * attributeNr);
             }
         }
 
@@ -165,10 +166,10 @@ namespace EMotionFX
         bool GetIsAbstractDataClass() const override;
 
     private:
-        uint8*  mData;                  /**< The buffer containing the data. */
-        uint8*  mSwapBuffer;            /**< The swap buffer, used for swapping items. This will only be allocated once you call SwapAttribute, like the LOD generation system does. */
-        uint32  mAttribSizeInBytes;     /**< The size of a single attribute, in bytes. */
-        uint32  mTypeID;                /**< The type ID that identifies the type of the data, for example if it is position data, normal data, or colors, etc. */
+        uint8*  m_data;                  /**< The buffer containing the data. */
+        uint8*  m_swapBuffer;            /**< The swap buffer, used for swapping items. This will only be allocated once you call SwapAttribute, like the LOD generation system does. */
+        uint32  m_attribSizeInBytes;     /**< The size of a single attribute, in bytes. */
+        uint32  m_typeId;                /**< The type ID that identifies the type of the data, for example if it is position data, normal data, or colors, etc. */
 
         /**
          * The constructor.

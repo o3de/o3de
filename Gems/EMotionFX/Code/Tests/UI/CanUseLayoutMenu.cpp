@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -16,7 +17,6 @@
 #include <Editor/InputDialogValidatable.h>
 #include <EMotionFX/CommandSystem/Source/CommandManager.h>
 #include <EMotionFX/Source/Actor.h>
-#include <EMotionFX/Source/AutoRegisteredActor.h>
 #include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/DockWidgetPlugin.h>
 #include <EMotionStudio/EMStudioSDK/Source/EMStudioPlugin.h>
 #include <EMotionStudio/EMStudioSDK/Source/EMStudioManager.h>

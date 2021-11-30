@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -209,12 +210,17 @@ namespace Gestures
     ////////////////////////////////////////////////////////////////////////////////////////////////
     inline uint32_t IRecognizer::GetGesturePointerIndex(const AzFramework::InputChannel& inputChannel)
     {
-        const auto& mouseButtonIt = AZStd::find(AzFramework::InputDeviceMouse::Button::All.cbegin(),
-                                                AzFramework::InputDeviceMouse::Button::All.cend(),
-                                                inputChannel.GetInputChannelId());
-        if (mouseButtonIt != AzFramework::InputDeviceMouse::Button::All.cend())
+        // Only recognize gestures for the default mouse input device. The Editor may register synthetic
+        // mouse input devices with the same mouse input channels, which can confuse gesture recognition.
+        if (inputChannel.GetInputDevice().GetInputDeviceId() == AzFramework::InputDeviceMouse::Id)
         {
-            return static_cast<uint32_t>(mouseButtonIt - AzFramework::InputDeviceMouse::Button::All.cbegin());
+            const auto& mouseButtonIt = AZStd::find(AzFramework::InputDeviceMouse::Button::All.cbegin(),
+                                                    AzFramework::InputDeviceMouse::Button::All.cend(),
+                                                    inputChannel.GetInputChannelId());
+            if (mouseButtonIt != AzFramework::InputDeviceMouse::Button::All.cend())
+            {
+                return static_cast<uint32_t>(mouseButtonIt - AzFramework::InputDeviceMouse::Button::All.cbegin());
+            }
         }
 
         const auto& touchIndexIt = AZStd::find(AzFramework::InputDeviceTouch::Touch::All.cbegin(),

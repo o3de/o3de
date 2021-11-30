@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -50,9 +51,9 @@ CTVSequenceProps::~CTVSequenceProps()
 }
 
 // CTVSequenceProps message handlers
-BOOL CTVSequenceProps::OnInitDialog()
+bool CTVSequenceProps::OnInitDialog()
 {
-    ui->NAME->setText(m_pSequence->GetName());
+    ui->NAME->setText(m_pSequence->GetName().c_str());
     int seqFlags = m_pSequence->GetFlags();
 
     ui->ALWAYS_PLAY->setChecked((seqFlags & IAnimSequence::eSeqFlags_PlayOnReset));
@@ -96,7 +97,7 @@ BOOL CTVSequenceProps::OnInitDialog()
         ui->ORT_ONCE->setChecked(true);
     }
 
-    return TRUE;  // return TRUE unless you set the focus to a control
+    return true;  // return true unless you set the focus to a control
     // EXCEPTION: OCX Property Pages should return FALSE
 }
 
@@ -105,8 +106,8 @@ void CTVSequenceProps::MoveScaleKeys()
     // Move/Rescale the sequence to a new time range.
     Range timeRangeOld = m_pSequence->GetTimeRange();
     Range timeRangeNew;
-    timeRangeNew.start = ui->START_TIME->value();
-    timeRangeNew.end = ui->END_TIME->value();
+    timeRangeNew.start = static_cast<float>(ui->START_TIME->value());
+    timeRangeNew.end = static_cast<float>(ui->END_TIME->value());
 
     if (!(timeRangeNew == timeRangeOld))
     {
@@ -122,14 +123,14 @@ void CTVSequenceProps::UpdateSequenceProps(const QString& name)
     }
 
     Range timeRange;
-    timeRange.start = ui->START_TIME->value();
-    timeRange.end = ui->END_TIME->value();
+    timeRange.start = static_cast<float>(ui->START_TIME->value());
+    timeRange.end = static_cast<float>(ui->END_TIME->value());
 
     if (m_timeUnit == Frames)
     {
         float invFPS = 1.0f / m_FPS;
-        timeRange.start = ui->START_TIME->value() * invFPS;
-        timeRange.end = ui->END_TIME->value() * invFPS;
+        timeRange.start = static_cast<float>(ui->START_TIME->value()) * invFPS;
+        timeRange.end = static_cast<float>(ui->END_TIME->value()) * invFPS;
     }
 
     m_pSequence->SetTimeRange(timeRange);
@@ -140,7 +141,7 @@ void CTVSequenceProps::UpdateSequenceProps(const QString& name)
         ac->UpdateTimeRange();
     }
 
-    QString seqName = m_pSequence->GetName();
+    QString seqName = QString::fromUtf8(m_pSequence->GetName().c_str());
     if (name != seqName)
     {
         // Rename sequence.
@@ -258,7 +259,7 @@ void CTVSequenceProps::OnOK()
 
 void CTVSequenceProps::ToggleCutsceneOptions(bool bActivated)
 {
-    if (bActivated == FALSE)
+    if (bActivated == false)
     {
         ui->NOABORT->setChecked(false);
         ui->DISABLEPLAYER->setChecked(false);

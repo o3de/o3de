@@ -1,6 +1,7 @@
 #
-# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
-# 
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
@@ -35,38 +36,7 @@ ly_add_target(
             ${additional_dependencies}
     COMPILE_DEFINITIONS 
         PRIVATE
-            UNICODE
             STANDALONETOOLS_ENABLE_LUA_IDE
 )
 
-ly_add_target(
-    NAME Profiler APPLICATION
-    NAMESPACE AZ
-    AUTOMOC
-    AUTOUIC
-    AUTORCC
-    FILES_CMAKE
-        standalone_tools_files.cmake
-        profiler_files.cmake
-        Platform/${PAL_PLATFORM_NAME}/profiler_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
-    INCLUDE_DIRECTORIES
-        PRIVATE
-            .
-            Source/Editor
-            Source/Driller
-            Source/Driller/Carrier
-            Source/Driller/Profiler
-            Source/Driller/IO
-    BUILD_DEPENDENCIES
-        PRIVATE
-            Legacy::CryCommon
-            AZ::AzCore
-            AZ::AzFramework
-            AZ::AzToolsFramework
-            AZ::GridMate
-            ${additional_dependencies}
-    COMPILE_DEFINITIONS 
-        PRIVATE
-            UNICODE
-            STANDALONETOOLS_ENABLE_PROFILER
-)
+ly_add_dependencies(Editor LuaIDE)

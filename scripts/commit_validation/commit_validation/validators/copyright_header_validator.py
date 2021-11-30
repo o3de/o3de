@@ -1,6 +1,7 @@
 #
 # Copyright (c) Contributors to the Open 3D Engine Project
-#
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+
 # SPDX-License-Identifier: Apache-2.0 OR MIT#
 #
 
@@ -11,8 +12,10 @@ from typing import Type, List
 
 from commit_validation.commit_validation import Commit, CommitValidator, IsFileSkipped, SOURCE_AND_SCRIPT_FILE_EXTENSIONS, EXCLUDED_VALIDATION_PATTERNS, VERBOSE
 
-OPEN_3D_ENGINE_PATTERN_STALE = re.compile(r'copyright[\s]*(?:\(c\))?[\s]*.*?Contributors\sto\sthe\sOpen\s3D\sEngine\sProject\s*$', re.IGNORECASE | re.DOTALL)
 OPEN_3D_ENGINE_PATTERN = re.compile(r'copyright[\s]*(?:\(c\))?[\s]*.*?Contributors\sto\sthe\sOpen\s3D\sEngine\sProject\.\sFor\scomplete\scopyright\sand\slicense\sterms\splease\ssee\sthe\sLICENSE\sat\sthe\sroot\sof\sthis\sdistribution\.', re.IGNORECASE | re.DOTALL)
+OPEN_3D_ENGINE_PATTERN_L1 = re.compile(r'copyright[\s]*(?:\(c\))?[\s]*.*?Contributors\sto\sthe\sOpen\s3D\sEngine\sProject', re.IGNORECASE | re.DOTALL)
+OPEN_3D_ENGINE_PATTERN_L2 = re.compile(r'For\scomplete\scopyright\sand\slicense\sterms\splease\ssee\sthe\sLICENSE\sat\sthe\sroot\sof\sthis\sdistribution', re.IGNORECASE | re.DOTALL)
+
 AMAZON_ORIGINAL_COPYRIGHT_PATTERN = re.compile(r'.*?this\sfile\sCopyright\s*\(c\)\s*Amazon\.com.*?', re.IGNORECASE | re.DOTALL)
 AMAZON_MODIFICATION_COPYRIGHT_PATTERN = re.compile(r'.*?Modifications\scopyright\sAmazon\.com', re.IGNORECASE | re.DOTALL)
 CRYTEK_COPYRIGHT_PATTERN = re.compile(r'Copyright Crytek', re.MULTILINE)
@@ -46,7 +49,9 @@ class CopyrightHeaderValidator(CommitValidator):
                     if VERBOSE: print(f'{file_name}::{self.__class__.__name__} SKIPPED - File excluded based on extension.')
                     continue
 
-                has_o3de_pattern = False
+                has_o3de_pattern_line_1 = False
+                has_o3de_pattern_line_2 = False
+                has_o3de_pattern_single_line = False
                 has_amazon_mod_pattern = False
                 has_crytek_pattern = False
                 has_original_amazon_copyright_pattern = False
@@ -54,10 +59,12 @@ class CopyrightHeaderValidator(CommitValidator):
 
                 with open(file_name, 'rt', encoding='utf8', errors='replace') as fh:
                     for line in fh:
-                        if OPEN_3D_ENGINE_PATTERN_STALE.search(line):
-                            has_stale_o3de_pattern = True
                         if OPEN_3D_ENGINE_PATTERN.search(line):
-                            has_o3de_pattern = True
+                            has_o3de_pattern_single_line = True
+                        elif OPEN_3D_ENGINE_PATTERN_L1.search(line):
+                            has_o3de_pattern_line_1 = True
+                        elif OPEN_3D_ENGINE_PATTERN_L2.search(line):
+                            has_o3de_pattern_line_2 = True
                         elif AMAZON_ORIGINAL_COPYRIGHT_PATTERN.search(line):
                             has_original_amazon_copyright_pattern = True
                         elif CRYTEK_COPYRIGHT_PATTERN.search(line):
@@ -77,13 +84,13 @@ class CopyrightHeaderValidator(CommitValidator):
                     if VERBOSE: print(error_message)
                     errors.append(error_message)
 
-                if has_stale_o3de_pattern:
+                if has_o3de_pattern_line_1 and not has_o3de_pattern_line_2:
                     # Has the stale the O3DE copyright (without the 'For complete copyright...')
                     error_message = str(f"{file_name}::{self.__class__.__name__} FAILED - Source file O3DE copyright header missing 'For complete copyright...'")
                     if VERBOSE: print(error_message)
                     errors.append(error_message)
 
-                if not has_o3de_pattern:
+                if not has_o3de_pattern_single_line and not has_o3de_pattern_line_1 and not has_o3de_pattern_line_2:
                     # Missing the O3DE copyright AND does not have the Amazon Modifications copyright, assuming that this file is missing valid copyrights in general
                     error_message = str(f'{file_name}::{self.__class__.__name__} FAILED - Source file missing O3DE copyright header.')
                     if VERBOSE: print(error_message)
@@ -94,7 +101,7 @@ class CopyrightHeaderValidator(CommitValidator):
                     if VERBOSE: print(error_message)
                     errors.append(error_message)
 
-                if not has_o3de_pattern and not has_original_amazon_copyright_pattern and not has_crytek_pattern and not has_amazon_mod_pattern:
+                if not has_o3de_pattern_single_line and not has_o3de_pattern_line_1 and not has_o3de_pattern_line_2 and not has_original_amazon_copyright_pattern and not has_crytek_pattern and not has_amazon_mod_pattern:
                     error_message = str(f'{file_name}::{self.__class__.__name__} FAILED - Source file missing any recognized copyrights.')
                     if VERBOSE: print(error_message)
                     errors.append(error_message)

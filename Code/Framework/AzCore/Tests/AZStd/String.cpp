@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -443,7 +444,7 @@ namespace UnitTest
         str2.back() = 'p';
         AZ_TEST_ASSERT(str2.back() == 'p');
 
-        AZ_TEST_ASSERT(str2.c_str() != 0);
+        AZ_TEST_ASSERT(str2.c_str() != nullptr);
         AZ_TEST_ASSERT(::strlen(str2.c_str()) == str2.length());
 
         str2.resize(30, 'm');
@@ -627,10 +628,6 @@ namespace UnitTest
         }
     }
 
-#if defined(AZ_COMPILER_MSVC)
-#   pragma warning(push)
-#   pragma warning( disable: 4428 )   // universal-character-name encountered in source
-#endif // AZ_COMPILER_MSVC
     TEST_F(String, Algorithms)
     {
         string str = string::format("%s %d", "BlaBla", 5);
@@ -677,6 +674,7 @@ namespace UnitTest
         string str1;
         to_string(str1, wstr);
         AZ_TEST_ASSERT(str1 == "BlaBla 5");
+        EXPECT_EQ(8, to_string_length(wstr));
 
         str1 = string::format("%ls", wstr.c_str());
         AZ_TEST_ASSERT(str1 == "BlaBla 5");
@@ -688,6 +686,32 @@ namespace UnitTest
 
         wstr1 = wstring::format(L"%hs", str.c_str());
         AZ_TEST_ASSERT(wstr1 == L"BLABLA 5");
+
+        // wstring to char buffer
+        char strBuffer[9];
+        to_string(strBuffer, 9, wstr1.c_str());
+        AZ_TEST_ASSERT(0 == azstricmp(strBuffer, "BLABLA 5"));
+        EXPECT_EQ(8, to_string_length(wstr1));
+
+        // wstring to char with unicode
+        wstring ws1InfinityEscaped = L"Infinity: \u221E"; // escaped
+        EXPECT_EQ(13, to_string_length(ws1InfinityEscaped));
+
+        // wchar_t buffer to char buffer
+        wchar_t wstrBuffer[9] = L"BLABLA 5";
+        memset(strBuffer, 0, AZ_ARRAY_SIZE(strBuffer));
+        to_string(strBuffer, 9, wstrBuffer);
+        AZ_TEST_ASSERT(0 == azstricmp(strBuffer, "BLABLA 5"));
+
+        // string to wchar_t buffer
+        memset(wstrBuffer, 0, AZ_ARRAY_SIZE(wstrBuffer));
+        to_wstring(wstrBuffer, 9, str1.c_str());
+        AZ_TEST_ASSERT(0 == azwcsicmp(wstrBuffer, L"BlaBla 5"));
+
+        // char buffer to wchar_t buffer
+        memset(wstrBuffer, L' ', AZ_ARRAY_SIZE(wstrBuffer)); // to check that the null terminator is properly placed
+        to_wstring(wstrBuffer, 9, strBuffer);
+        AZ_TEST_ASSERT(0 == azwcsicmp(wstrBuffer, L"BLABLA 5"));
 
         // wchar UTF16/UTF32 to/from Utf8
         wstr1 = L"this is a \u20AC \u00A3 test"; // that's a euro and a pound sterling
@@ -769,7 +793,7 @@ namespace UnitTest
         AZ_TEST_ASSERT(alphanum_comp(strdup("Alpha 2 B"), strA) > 0);
 
         // show usage of the comparison functor with a set
-        typedef set<string, alphanum_less<string> > StringSetType;
+        using StringSetType = set<string, alphanum_less<string>>;
         StringSetType s;
         s.insert("Xiph Xlater 58");
         s.insert("Xiph Xlater 5000");
@@ -855,7 +879,7 @@ namespace UnitTest
         AZ_TEST_ASSERT(*setIt++ == "Xiph Xlater 10000");
 
         // show usage of comparison functor with a map
-        typedef map<string, int, alphanum_less<string> > StringIntMapType;
+        using StringIntMapType = map<string, int, alphanum_less<string>>;
         StringIntMapType m;
         m["z1.doc"] = 1;
         m["z10.doc"] = 2;
@@ -1113,11 +1137,6 @@ namespace UnitTest
         EXPECT_FALSE(other2.Valid());
     }
 
-    // StringAlgorithmTest-End
-#if defined(AZ_COMPILER_MSVC)
-#   pragma warning(pop)
-#endif // AZ_COMPILER_MSVC
-
     TEST_F(String, ConstString)
     {
         string_view cstr1;
@@ -1191,9 +1210,6 @@ namespace UnitTest
 
         AZStd::string findStr("Hay");
         string_view view3(findStr);
-        string_view nullptrView4(nullptr);
-
-        EXPECT_EQ(emptyView1, nullptrView4);
 
         // copy
         const size_t destBufferSize = 32;
@@ -1210,7 +1226,7 @@ namespace UnitTest
         string_view subView2 = view2.substr(10);
         EXPECT_EQ("Haystack", subView2);
         AZ_TEST_START_TRACE_SUPPRESSION;
-        string_view assertSubView = view2.substr(view2.size() + 1);
+        [[maybe_unused]] string_view assertSubView = view2.substr(view2.size() + 1);
         AZ_TEST_STOP_TRACE_SUPPRESSION(1);
 
         // compare
@@ -1244,9 +1260,6 @@ namespace UnitTest
         // rfind
         AZStd::size_t rfindResult = view3.rfind('a', 2);
         EXPECT_EQ(1, rfindResult);
-
-        rfindResult = nullptrView4.rfind("");
-        EXPECT_EQ(string_view::npos, rfindResult);
 
         rfindResult = emptyView1.rfind("");
         EXPECT_EQ(string_view::npos, rfindResult);
@@ -1354,17 +1367,11 @@ namespace UnitTest
     {
         string_view view1("The quick brown fox jumped over the lazy dog");
         string_view view2("Needle in Haystack");
-        string_view nullBeaverView(nullptr);
         string_view emptyBeaverView;
         string_view superEmptyBeaverView("");
         
-        EXPECT_EQ(nullBeaverView, emptyBeaverView);
-        EXPECT_EQ(superEmptyBeaverView, nullBeaverView);
-        EXPECT_EQ(emptyBeaverView, superEmptyBeaverView);
-        EXPECT_EQ(nullBeaverView, "");
-        EXPECT_EQ(nullBeaverView, nullptr);
         EXPECT_EQ("", emptyBeaverView);
-        EXPECT_EQ(nullptr, superEmptyBeaverView);
+        EXPECT_EQ("", superEmptyBeaverView);
 
         EXPECT_EQ("The quick brown fox jumped over the lazy dog", view1);
         EXPECT_NE("The slow brown fox jumped over the lazy dog", view1);
@@ -1402,8 +1409,6 @@ namespace UnitTest
         EXPECT_LE(beaverView, "Busy Beaver");
         EXPECT_LE("Likable Beaver", notBeaverView);
         EXPECT_LE("Busy Beaver", beaverView);
-        EXPECT_LE(nullBeaverView, nullBeaverView);
-        EXPECT_LE(nullBeaverView, lowerBeaverStr);
         EXPECT_LE(microBeaverStr, view1);
         EXPECT_LE(compareStr, beaverView);
         
@@ -1422,7 +1427,7 @@ namespace UnitTest
 
     TEST_F(String, String_FormatOnlyAllowsValidArgs)
     {
-        constexpr bool                 v1 = 0;
+        constexpr bool                 v1 = false;
         constexpr char                 v2 = 0;
         constexpr unsigned char        v3 = 0;
         constexpr signed char          v4 = 0;
@@ -1439,21 +1444,21 @@ namespace UnitTest
         constexpr double               v15 = 0;
         constexpr const char*          v16 = "Hello";
         constexpr const wchar_t*       v17 = L"Hello";
-        constexpr void*                v18 = 0;
+        constexpr void*                v18 = nullptr;
 
         // This shouldn't give a compile error
         AZStd::string::format(
-            "%i  %c %uc  %c %c %i  %i  %u   %i   %lu  %li  %llu  %lli  %f   %f   %s   %ls  %p",
+           "%i %c %uc " AZ_TRAIT_FORMAT_STRING_PRINTF_CHAR AZ_TRAIT_FORMAT_STRING_PRINTF_WCHAR " %i %i %u %i %lu %li %llu %lli %f %f " AZ_TRAIT_FORMAT_STRING_PRINTF_STRING AZ_TRAIT_FORMAT_STRING_PRINTF_WSTRING " %p",
             v1, v2, v3, v4, v5, v6, v7, v8,  v9,  v10, v11, v12,  v13,  v14, v15, v16, v17, v18);
 
         // This shouldn't give a compile error
         AZStd::wstring::format(
-            L"%i  %c %uc  %c %lc  %i  %i  %u   %i   %lu  %li  %llu  %lli  %f   %f   %s   %ls  %p",
-              v1, v2, v3, v4, v5, v6, v7, v8,  v9,  v10, v11, v12,  v13,  v14, v15, v16, v17, v18);
+          L"%i %c %uc " AZ_TRAIT_FORMAT_STRING_WPRINTF_CHAR AZ_TRAIT_FORMAT_STRING_WPRINTF_WCHAR " %i %i %u %i %lu %li %llu %lli %f %f " AZ_TRAIT_FORMAT_STRING_WPRINTF_STRING AZ_TRAIT_FORMAT_STRING_WPRINTF_WSTRING " %p",
+            v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11, v12, v13, v14, v15, v16, v17, v18);
 
         class WrappedInt
         {
-            int val;
+            [[maybe_unused]] int val;
         };
 
         using ValidFormatArg = AZStd::string::_Format_Internal::ValidFormatArg;
@@ -1732,6 +1737,7 @@ namespace UnitTest
         static constexpr basic_string_view<TypeParam> elementView1(compileTimeString1);
         static constexpr basic_string_view<TypeParam> elementView2(compileTimeString2);
         static_assert(elementView1.data(), "string_view.data() should be non-nullptr");
+        static_assert(elementView2.data(), "string_view.data() should be non-nullptr");
     }
 
     TYPED_TEST(BasicStringViewConstexprFixture, StringView_SizeOperatorsConstexpr)
@@ -1760,7 +1766,7 @@ namespace UnitTest
     {
         using TypeParam = char;
         // null terminated compile time string
-        auto MakeCompileTimeString1 = []() constexpr -> const TypeParam*
+        [[maybe_unused]] auto MakeCompileTimeString1 = []() constexpr -> const TypeParam*
         {
             return "HelloWorld";
         };
@@ -2112,7 +2118,6 @@ namespace UnitTest
         constexpr AZStd::fixed_string<128> test3{ AZStd::fixed_string<128>{}.insert(0, "Brown") };
         constexpr AZStd::fixed_string<128> test4{ AZStd::fixed_string<128>{ "App" }.insert(0, AZStd::string_view("Blue")) };
         constexpr AZStd::fixed_string<128> test5{ AZStd::fixed_string<128>{ "App" }.insert(0, test1, 2, 2) };
-        constexpr AZStd::string_view redView("Red");
         constexpr AZStd::fixed_string<128> test6{ AZStd::fixed_string<128>{ "App" }.insert(size_t(0), 5, 'X') };
         constexpr AZStd::fixed_string<128> test7{ AZStd::fixed_string<128>{ "App" }.insert(0, "GreenTea", 5) };
         auto MakeFixedStringWithInsertWithIteratorPos1 = []() constexpr

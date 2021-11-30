@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -44,11 +45,11 @@ namespace EMStudio
         void SetFilterTypes(const AZStd::vector<AZ::TypeId>& filterTypes);
         void Update(EMotionFX::AnimGraph* animGraph, const AZStd::vector<AZStd::string>& selectedParameters);
         void FireSelectionDoneSignal();
-        MCORE_INLINE QTreeWidget* GetTreeWidget()                                                               { return mTreeWidget; }
+        MCORE_INLINE QTreeWidget* GetTreeWidget()                                                               { return m_treeWidget; }
         MCORE_INLINE AzQtComponents::FilteredSearchWidget* GetSearchWidget()                                    { return m_searchWidget; }
 
         // this calls UpdateSelection() and then returns the member array containing the selected items
-        AZStd::vector<AZStd::string>& GetSelectedParameters()                                                   { UpdateSelection(); return mSelectedParameters; }
+        AZStd::vector<AZStd::string>& GetSelectedParameters()                                                   { UpdateSelection(); return m_selectedParameters; }
 
     signals:
         void OnSelectionDone(const AZStd::vector<AZStd::string>& selectedItems);
@@ -64,13 +65,13 @@ namespace EMStudio
     private:
         void AddParameterToInterface(EMotionFX::AnimGraph* animGraph, const EMotionFX::Parameter* parameter, QTreeWidgetItem* groupParameterItem);
 
-        EMotionFX::AnimGraph* mAnimGraph;
-        QTreeWidget* mTreeWidget;
+        EMotionFX::AnimGraph* m_animGraph;
+        QTreeWidget* m_treeWidget;
         AzQtComponents::FilteredSearchWidget* m_searchWidget;
         AZStd::string m_searchWidgetText;
         AZStd::vector<AZ::TypeId> m_filterTypes;
-        AZStd::vector<AZStd::string> mSelectedParameters;
-        AZStd::vector<AZStd::string> mOldSelectedParameters;
-        bool mUseSingleSelection;
+        AZStd::vector<AZStd::string> m_selectedParameters;
+        AZStd::vector<AZStd::string> m_oldSelectedParameters;
+        bool m_useSingleSelection;
     };
 } // namespace EMStudio

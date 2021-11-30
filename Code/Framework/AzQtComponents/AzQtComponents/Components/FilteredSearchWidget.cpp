@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -851,7 +852,7 @@ namespace AzQtComponents
         {
             FilterCriteriaButton* button = createCriteriaButton(filter, index);
             connect(button, &FilterCriteriaButton::RequestClose, this, [this, index]() { SetFilterStateByIndex(index, false); });
-            connect(button, &FilterCriteriaButton::ExtraButtonClicked, this, [this, index](FilterCriteriaButton::ExtraButtonType type)
+            connect(button, &FilterCriteriaButton::ExtraButtonClicked, this, [](FilterCriteriaButton::ExtraButtonType type)
             {
                 switch (type)
                 {

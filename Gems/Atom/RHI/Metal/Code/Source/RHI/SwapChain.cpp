@@ -1,14 +1,15 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "Atom_RHI_Metal_precompiled.h"
 
+#include <AzCore/Debug/Profiler.h>
 #include <AzCore/std/string/conversions.h>
 #include <AzCore/std/string/string.h>
-#include <Atom/RHI/CpuProfiler.h>
+#include <AzFramework/Windowing/WindowBus.h>
 #include <RHI/Device.h>
 #include <RHI/Image.h>
 #include <RHI/SwapChain.h>
@@ -19,8 +20,9 @@ namespace Platform
     CGFloat GetScreenScale();
     void AttachViewController(NativeWindowType* nativeWindow, NativeViewControllerType* viewController, RHIMetalView* metalView);
     void UnAttachViewController(NativeWindowType* nativeWindow, NativeViewControllerType* viewController);
-    void PresentInternal(id <MTLCommandBuffer> mtlCommandBuffer, id<CAMetalDrawable> drawable, float syncInterval);
+    void PresentInternal(id <MTLCommandBuffer> mtlCommandBuffer, id<CAMetalDrawable> drawable, float syncInterval, float refreshRate);
     void ResizeInternal(RHIMetalView* metalView, CGSize viewSize);
+    float GetRefreshRate();
     RHIMetalView* GetMetalView(NativeWindowType* nativeWindow);
 }
 
@@ -79,6 +81,10 @@ namespace AZ
             {
                 *nativeDimensions = descriptor.m_dimensions;
             }
+
+            AzFramework::WindowRequestBus::EventResult(
+                m_refreshRate, m_nativeWindow, &AzFramework::WindowRequestBus::Events::GetDisplayRefreshRate);
+
             return RHI::ResultCode::Success;
         }
 
@@ -117,9 +123,6 @@ namespace AZ
 
         RHI::ResultCode SwapChain::InitImageInternal(const InitImageRequest& request)
         {
-            const RHI::SwapChainDescriptor& descriptor = GetDescriptor();
-            Device& device = GetDevice();
-            
             Name name(AZStd::string::format("SwapChainImage_%d", request.m_imageIndex));
             Image& image = static_cast<Image&>(*request.m_image);
             
@@ -148,10 +151,12 @@ namespace AZ
         uint32_t SwapChain::PresentInternal()
         {
             const uint32_t currentImageIndex = GetCurrentImageIndex();
-            //GFX TODO][ATOM-432] - Hardcoding to 30fps for now. Only used by ios. This needs to be driven by higher level code.
-            float syncInterval = 1.0f/30.0f;
+            
             //Preset the drawable
-            Platform::PresentInternal(m_mtlCommandBuffer, m_drawables[currentImageIndex], syncInterval);
+            Platform::PresentInternal(
+                m_mtlCommandBuffer,
+                m_drawables[currentImageIndex], GetDescriptor().m_verticalSyncInterval,
+                m_refreshRate);
             
             [m_drawables[currentImageIndex] release];
             m_drawables[currentImageIndex] = nil;
@@ -187,7 +192,7 @@ namespace AZ
     
         id<MTLTexture> SwapChain::RequestDrawable(bool isFrameCaptureEnabled)
         {
-            AZ_ATOM_PROFILE_FUNCTION("RHI", "SwapChain::RequestDrawable");
+            AZ_PROFILE_SCOPE(RHI, "SwapChain::RequestDrawable");
             m_metalView.metalLayer.framebufferOnly = !isFrameCaptureEnabled;
             const uint32_t currentImageIndex = GetCurrentImageIndex();
             if(m_drawables[currentImageIndex])

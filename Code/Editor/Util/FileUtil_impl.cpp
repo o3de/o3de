@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -19,19 +20,9 @@ void CFileUtil_impl::ShowInExplorer(const QString& path)
     CFileUtil::ShowInExplorer(path);
 }
 
-bool CFileUtil_impl::CompileLuaFile(const char* luaFilename)
-{
-    return CFileUtil::CompileLuaFile(luaFilename);
-}
-
 bool CFileUtil_impl::ExtractFile(QString& file, bool bMsgBoxAskForExtraction, const char* pDestinationFilename)
 {
     return CFileUtil::ExtractFile(file, bMsgBoxAskForExtraction, pDestinationFilename);
-}
-
-void CFileUtil_impl::EditTextFile(const char* txtFile, int line, ETextFileType fileType)
-{
-    CFileUtil::EditTextFile(txtFile, line, fileType);
 }
 
 void CFileUtil_impl::EditTextureFile(const char* txtureFile, bool bUseGameFolder)

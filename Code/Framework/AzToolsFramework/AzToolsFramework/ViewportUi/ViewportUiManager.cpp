@@ -1,17 +1,16 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
-#include "AzToolsFramework_precompiled.h"
-
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzToolsFramework/ViewportUi/Button.h>
 #include <AzToolsFramework/ViewportUi/ButtonGroup.h>
-#include <AzToolsFramework/ViewportUi/ViewportUiManager.h>
 #include <AzToolsFramework/ViewportUi/ViewportUiDisplay.h>
+#include <AzToolsFramework/ViewportUi/ViewportUiManager.h>
 
 namespace AzToolsFramework::ViewportUi
 {
@@ -51,6 +50,16 @@ namespace AzToolsFramework::ViewportUi
         }
     }
 
+    void ViewportUiManager::ClearClusterActiveButton(ClusterId clusterId)
+    {
+        if (auto clusterIt = m_clusterButtonGroups.find(clusterId); clusterIt != m_clusterButtonGroups.end())
+        {
+            auto cluster = clusterIt->second;
+            cluster->ClearHighlightedButton();
+            UpdateButtonGroupUi(cluster.get());
+        }
+    }
+
     void ViewportUiManager::SetSwitcherActiveButton(const SwitcherId switcherId, const ButtonId buttonId)
     {
         if (auto switcherIt = m_switcherButtonGroups.find(switcherId); switcherIt != m_switcherButtonGroups.end())
@@ -68,6 +77,16 @@ namespace AzToolsFramework::ViewportUi
         {
             auto cluster = clusterIt->second;
             m_viewportUi->SetClusterButtonLocked(cluster->GetViewportUiElementId(), buttonId, isLocked);
+            UpdateButtonGroupUi(cluster.get());
+        }
+    }
+
+    void ViewportUiManager::SetClusterButtonTooltip(const ClusterId clusterId, const ButtonId buttonId, const AZStd::string& tooltip)
+    {
+        if (auto clusterIt = m_clusterButtonGroups.find(clusterId); clusterIt != m_clusterButtonGroups.end())
+        {
+            auto cluster = clusterIt->second;
+            m_viewportUi->SetClusterButtonTooltip(cluster->GetViewportUiElementId(), buttonId, tooltip);
             UpdateButtonGroupUi(cluster.get());
         }
     }
@@ -104,7 +123,8 @@ namespace AzToolsFramework::ViewportUi
         return ButtonId(0);
     }
 
-    const ButtonId ViewportUiManager::CreateSwitcherButton(const SwitcherId switcherId, const AZStd::string& icon, const AZStd::string& name)
+    const ButtonId ViewportUiManager::CreateSwitcherButton(
+        const SwitcherId switcherId, const AZStd::string& icon, const AZStd::string& name)
     {
         if (auto switcherIt = m_switcherButtonGroups.find(switcherId); switcherIt != m_switcherButtonGroups.end())
         {
@@ -136,8 +156,7 @@ namespace AzToolsFramework::ViewportUi
         }
     }
 
-    static void SetViewportUiElementVisible(
-        Internal::ViewportUiDisplay* ui, ViewportUiElementId id, bool visible)
+    static void SetViewportUiElementVisible(Internal::ViewportUiDisplay* ui, ViewportUiElementId id, bool visible)
     {
         if (visible)
         {
@@ -176,11 +195,9 @@ namespace AzToolsFramework::ViewportUi
     }
 
     const TextFieldId ViewportUiManager::CreateTextField(
-        const AZStd::string& labelText, const AZStd::string& textFieldDefaultText,
-        TextFieldValidationType validationType) 
+        const AZStd::string& labelText, const AZStd::string& textFieldDefaultText, TextFieldValidationType validationType)
     {
-        auto textField = AZStd::make_shared<Internal::TextField>(
-            labelText, textFieldDefaultText, validationType);
+        auto textField = AZStd::make_shared<Internal::TextField>(labelText, textFieldDefaultText, validationType);
         m_viewportUi->AddTextField(textField);
 
         return RegisterNewTextField(textField);
@@ -196,8 +213,7 @@ namespace AzToolsFramework::ViewportUi
         }
     }
 
-    void ViewportUiManager::RegisterTextFieldCallback(
-        TextFieldId textFieldId, AZ::Event<AZStd::string>::Handler& handler) 
+    void ViewportUiManager::RegisterTextFieldCallback(TextFieldId textFieldId, AZ::Event<AZStd::string>::Handler& handler)
     {
         if (auto textFieldIt = m_textFields.find(textFieldId); textFieldIt != m_textFields.end())
         {
@@ -224,22 +240,21 @@ namespace AzToolsFramework::ViewportUi
         }
     }
 
-
-    void ViewportUiManager::CreateComponentModeBorder(const AZStd::string& borderTitle)
+    void ViewportUiManager::CreateViewportBorder(
+        const AZStd::string& borderTitle, AZStd::optional<ViewportUiBackButtonCallback> backButtonCallback)
     {
-        m_viewportUi->CreateComponentModeBorder(borderTitle);
+        m_viewportUi->CreateViewportBorder(borderTitle, backButtonCallback);
     }
 
-    void ViewportUiManager::RemoveComponentModeBorder()
+    void ViewportUiManager::RemoveViewportBorder()
     {
-        m_viewportUi->RemoveComponentModeBorder();
+        m_viewportUi->RemoveViewportBorder();
     }
 
     void ViewportUiManager::PressButton(ClusterId clusterId, ButtonId buttonId)
     {
         // Find cluster using ID and cluster map
-        if (auto clusterIt = m_clusterButtonGroups.find(clusterId);
-            clusterIt != m_clusterButtonGroups.end())
+        if (auto clusterIt = m_clusterButtonGroups.find(clusterId); clusterIt != m_clusterButtonGroups.end())
         {
             clusterIt->second->PressButton(buttonId);
         }
@@ -295,7 +310,7 @@ namespace AzToolsFramework::ViewportUi
     SwitcherId ViewportUiManager::RegisterNewSwitcher(AZStd::shared_ptr<Internal::ButtonGroup>& buttonGroup)
     {
         SwitcherId newId = SwitcherId(m_switcherButtonGroups.size() + 1);
-        m_switcherButtonGroups.insert({newId, buttonGroup});
+        m_switcherButtonGroups.insert({ newId, buttonGroup });
 
         return newId;
     }

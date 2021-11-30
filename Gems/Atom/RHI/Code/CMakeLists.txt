@@ -1,13 +1,22 @@
 #
-# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
-# 
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
 
 ly_get_list_relative_pal_filename(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME})
+ly_get_list_relative_pal_filename(pal_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/${PAL_PLATFORM_NAME})
 
 include(${pal_dir}/AtomRHITests_traits_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
+
+if(PAL_TRAIT_BUILD_RENDERDOC_SUPPORTED)
+    set(LY_RENDERDOC_ENABLED OFF CACHE BOOL "Enable RenderDoc integration. Use LY_RENDERDOC_PATH to specific the path to RenderDoc.")
+    if(LY_RENDERDOC_ENABLED)
+        set(RENDERDOC_DEPENDENCY 3rdParty::renderdoc)
+    endif()
+endif()
 
 ly_add_target(
     NAME Atom_RHI.Reflect STATIC
@@ -32,9 +41,12 @@ ly_add_target(
     NAMESPACE Gem
     FILES_CMAKE
         atom_rhi_public_files.cmake
+        ${pal_source_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
+        ${pal_source_dir}/platform_private_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
     INCLUDE_DIRECTORIES
         PRIVATE
             Source
+            ${pal_source_dir}
         PUBLIC
             Include
     BUILD_DEPENDENCIES
@@ -42,6 +54,8 @@ ly_add_target(
             AZ::AzCore
             AZ::AzFramework
             Gem::Atom_RHI.Reflect
+        PUBLIC
+            ${RENDERDOC_DEPENDENCY}
 )
 
 ly_add_target(

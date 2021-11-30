@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -162,7 +163,11 @@ namespace AzFramework
                     AZ_TracePrintfOnce("AssetSystemComponent", "Failed to find asset platform, setting 'pc'\n");
                     outputConnectionSettings.m_assetPlatform = "pc";
                 }
-                outputConnectionSettings.m_assetPlatform = assetsPlatform;
+                else
+                {
+                    outputConnectionSettings.m_assetPlatform = assetsPlatform;
+                }
+
                 if (outputConnectionSettings.m_assetPlatform.empty())
                 {
                     assetsPlatform = AzFramework::OSPlatformToDefaultAssetPlatform(AZ_TRAIT_OS_PLATFORM_CODENAME);

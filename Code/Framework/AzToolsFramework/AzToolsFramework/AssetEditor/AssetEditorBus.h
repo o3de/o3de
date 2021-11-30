@@ -1,17 +1,21 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 #pragma once
 
 #include <AzCore/Asset/AssetCommon.h>
+#include <AzCore/Outcome/Outcome.h>
 #include <AzCore/UserSettings/UserSettings.h>
-#include <AzCore/Asset/AssetCommon.h>
-#include <AzCore/std/containers/unordered_map.h>
+#include <AzCore/std/containers/unordered_set.h>
 
-namespace AZ { namespace Data { class AssetData; } }
+namespace AZ::Data
+{
+    class AssetData;
+}
 
 namespace AZStd
 {
@@ -43,15 +47,7 @@ namespace AzToolsFramework
 
             static constexpr const char* s_name = "AssetEditorWindowSettings";
 
-            static void Reflect(AZ::ReflectContext* context)
-            {
-                if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
-                {
-                    serializeContext->Class<AssetEditorWindowSettings>()
-                        ->Field("m_openAssets", &AssetEditorWindowSettings::m_openAssets)
-                        ;
-                }
-            }
+            static void Reflect(AZ::ReflectContext* context);
         };
 
         // External interaction with Asset Editor

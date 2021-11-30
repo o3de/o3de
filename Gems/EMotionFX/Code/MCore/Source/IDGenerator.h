@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -27,10 +28,10 @@ namespace MCore
          * This is thread safe.
          * @return The unique id.
          */
-        uint32 GenerateID();
+        size_t GenerateID();
 
     private:
-        AtomicUInt32    mNextID;    /**< The id used for the next GenerateID() call. */
+        AZStd::atomic<size_t>    m_nextId;    /**< The id used for the next GenerateID() call. */
 
         /**
          * Default constructor.

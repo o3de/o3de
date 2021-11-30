@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -71,8 +72,6 @@
 #define IDC_GROUPBOX_GLOBALTAGS                    2916
 #define IDC_GROUPBOX_FRAGMENTTAGS                  2917
 #define ID_RESOURCES_REDUCEWORKINGSET              32896
-#define ID_EDIT_HIDE                               32898
-#define ID_EDIT_UNHIDEALL                          32899
 #define ID_RELOAD_TERRAIN                          32902
 #define ID_VIEW_CONFIGURELAYOUT                    32906
 #define ID_TOOLS_LOGMEMORYUSAGE                    32908
@@ -83,10 +82,6 @@
 #define ID_TOOLS_CUSTOMIZEKEYBOARD                 32914
 #define ID_EXPORT_INDOORS                          32915
 #define ID_VIEW_CYCLE2DVIEWPORT                    32916
-#define ID_SNAPANGLE                               32917
-#define ID_CHANGEMOVESPEED_INCREASE                32928
-#define ID_CHANGEMOVESPEED_DECREASE                32929
-#define ID_CHANGEMOVESPEED_CHANGESTEP              32930
 #define ID_PHYSICS_GETPHYSICSSTATE                 32937
 #define ID_PHYSICS_RESETPHYSICSSTATE               32938
 #define ID_GAME_SYNCPLAYER                         32941
@@ -100,7 +95,6 @@
 #define ID_TOOL_LAST                               33173
 #define ID_TOOL_SHELVE_FIRST                       33174
 #define ID_TOOL_SHELVE_LAST                        33375
-#define ID_EDIT_SELECTALL                          33376
 #define ID_WIREFRAME                               33410
 #define ID_FILE_GENERATETERRAINTEXTURE             33445
 #define ID_GENERATORS_TEXTURE                      33448
@@ -109,17 +103,14 @@
 #define ID_EDIT_FETCH                              33465
 #define ID_FILE_EXPORTTOGAMENOSURFACETEXTURE       33473
 #define ID_VIEW_SWITCHTOGAME                       33477
-#define ID_EDIT_DELETE                             33480
+#define ID_VIEW_SWITCHTOGAME_FULLSCREEN            33478
+#define ID_VIEW_SWITCHTOGAME_VIEWPORT              33479
 #define ID_MOVE_OBJECT                             33481
 #define ID_RENAME_OBJ                              33483
 #define ID_FETCH                                   33496
-#define ID_EDITMODE_ROTATE                         33506
-#define ID_EDITMODE_SCALE                          33507
-#define ID_EDITMODE_MOVE                           33508
 #define ID_SELECTION_DELETE                        33512
 #define ID_EDIT_ESCAPE                             33513
 #define ID_UNDO                                    33524
-#define ID_EDIT_CLONE                              33525
 #define ID_GOTO_SELECTED                           33535
 #define ID_EDIT_LEVELDATA                          33542
 #define ID_FILE_EDITEDITORINI                      33543
@@ -143,7 +134,6 @@
 #define ID_ADDNODE                                 33570
 #define ID_ADDSCENETRACK                           33573
 #define ID_FIND                                    33574
-#define ID_SNAP_TO_GRID                            33575
 #define ID_TAG_LOC1                                33576
 #define ID_TAG_LOC2                                33577
 #define ID_TAG_LOC3                                33578
@@ -187,7 +177,6 @@
 #define ID_PANEL_VEG_RENAMECATEGORY                33683
 #define ID_PANEL_VEG_REMOVECATEGORY                33684
 #define ID_TOOLS_PREFERENCES                       33691
-#define ID_EDIT_INVERTSELECTION                    33692
 #define ID_TOOLTERRAINMODIFY_SMOOTH                33695
 #define ID_TERRAINMODIFY_SMOOTH                    33696
 #define ID_TERRAIN_PAINTLAYERS                     33698
@@ -195,7 +184,6 @@
 #define ID_SWITCHCAMERA_SEQUENCECAMERA             33701
 #define ID_SWITCHCAMERA_SELECTEDCAMERA             33702
 #define ID_TV_RECORD_AUTO                          33703
-#define ID_GRAPHICS_SETTINGS                       33705
 #define ID_VIEW_OPENVIEWPANE                       33709
 #define ID_VIEW_OPENPANE_FIRST          33712
 #define ID_VIEW_OPENPANE_LAST           33811
@@ -227,10 +215,6 @@
 #define ID_SPLINE_SNAP_GRID_X                      33933
 #define ID_SPLINE_SNAP_GRID_Y                      33934
 #define ID_FREEZE_TANGENTS                         33935
-#define ID_GAME_PC_ENABLELOWSPEC                   33960
-#define ID_GAME_PC_ENABLEMEDIUMSPEC                33961
-#define ID_GAME_PC_ENABLEHIGHSPEC                  33962
-#define ID_GAME_PC_ENABLEVERYHIGHSPEC              33963
 #define ID_PANEL_VEG_CREATE_SEL                    33990
 #define ID_TOOLS_UPDATEPROCEDURALVEGETATION        33999
 #define ID_DISPLAY_GOTOPOSITION                    34004
@@ -295,14 +279,6 @@
 #define ID_CLEAR_REGISTRY                          34470
 #define ID_SOUND_STOPALLSOUNDS                     34476
 #define ID_AUDIO_REFRESH_AUDIO_SYSTEM              34477
-#define ID_GAME_ANDROID_ENABLELOWSPEC              34490
-#define ID_GAME_ANDROID_ENABLEMEDIUMSPEC           34491
-#define ID_GAME_ANDROID_ENABLEHIGHSPEC             34492
-#define ID_GAME_ANDROID_ENABLEVERYHIGHSPEC         34493
-#define ID_GAME_IOS_ENABLELOWSPEC                  34494
-#define ID_GAME_IOS_ENABLEMEDIUMSPEC               34495
-#define ID_GAME_IOS_ENABLEHIGHSPEC                 34496
-#define ID_GAME_IOS_ENABLEVERYHIGHSPEC             34497
 #define ID_OPEN_AUDIO_CONTROLS_BROWSER              34580
 #define ID_CREATE_GLOBAL_FG_MODULE_FROM_SELECTION                   35076
 #define ID_CREATE_LEVEL_FG_MODULE_FROM_SELECTION                    35077
@@ -332,24 +308,6 @@
 #define ID_DOCUMENTATION_FEEDBACK                    36043
 #define ID_OPEN_SUBSTANCE_EDITOR                     36060
 #define ID_IMPORT_ASSET                              36069
-#define ID_EDIT_PIVOT                                36203
-#define ID_EDIT_RESET                                36204
-#define ID_EDIT_RESET_LOCAL                          36205
-#define ID_EDIT_RESET_WORLD                          36206
-#define ID_EDIT_RESET_MANIPULATOR                    36207
-#define ID_GAME_PROVO_ENABLELOWSPEC                   34603
-#define ID_GAME_PROVO_ENABLEMEDIUMSPEC                34604
-#define ID_GAME_PROVO_ENABLEHIGHSPEC                  34605
-#define ID_GAME_OSXMETAL_ENABLELOWSPEC              34606
-#define ID_GAME_OSXMETAL_ENABLEMEDIUMSPEC           34607
-#define ID_GAME_OSXMETAL_ENABLEHIGHSPEC             34608
-#define ID_GAME_OSXMETAL_ENABLEVERYHIGHSPEC         34609
-#define ID_GAME_SALEM_ENABLELOWSPEC                 34610
-#define ID_GAME_SALEM_ENABLEMEDIUMSPEC              34611
-#define ID_GAME_SALEM_ENABLEHIGHSPEC                34612
-#define ID_GAME_JASPER_ENABLELOWSPEC                34613
-#define ID_GAME_JASPER_ENABLEMEDIUMSPEC             34614
-#define ID_GAME_JASPER_ENABLEHIGHSPEC               34615
 #define ID_FILE_RESAVESLICES                        36210
 #define FIRST_QT_ACTION                      50000
 #define ID_VIEW_CONSOLEWINDOW                50001

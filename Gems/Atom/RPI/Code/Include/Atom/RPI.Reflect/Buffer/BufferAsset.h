@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -59,6 +60,12 @@ namespace AZ
             const AZStd::string& GetName() const;
 
         private:
+            // AssetData overrides...
+            bool HandleAutoReload() override
+            {
+                return false;
+            }
+
             // Called by asset creators to assign the asset to a ready state.
             void SetReady();
 

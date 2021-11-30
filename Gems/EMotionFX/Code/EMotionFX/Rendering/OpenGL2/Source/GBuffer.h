@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -49,32 +50,30 @@ namespace RenderGL
 
         void Render();
 
-        MCORE_INLINE uint32 GetTextureID(EComponent component) const    { return mComponents[component]; }
+        MCORE_INLINE uint32 GetTextureID(EComponent component) const    { return m_components[component]; }
 
         bool Resize(uint32 width, uint32 height);
         bool ResizeTextures(uint32 screenWidth, uint32 screenHeight);
 
-        MCORE_INLINE RenderTexture* GetRenderTargetA()                  { return mRenderTargetA; }
-        MCORE_INLINE RenderTexture* GetRenderTargetB()                  { return mRenderTargetB; }
-        MCORE_INLINE RenderTexture* GetRenderTargetC()                  { return mRenderTargetC; }
-        MCORE_INLINE RenderTexture* GetRenderTargetD()                  { return mRenderTargetD; }
-        MCORE_INLINE RenderTexture* GetRenderTargetE()                  { return mRenderTargetE; }
+        MCORE_INLINE RenderTexture* GetRenderTargetA()                  { return m_renderTargetA; }
+        MCORE_INLINE RenderTexture* GetRenderTargetB()                  { return m_renderTargetB; }
+        MCORE_INLINE RenderTexture* GetRenderTargetC()                  { return m_renderTargetC; }
+        MCORE_INLINE RenderTexture* GetRenderTargetD()                  { return m_renderTargetD; }
+        MCORE_INLINE RenderTexture* GetRenderTargetE()                  { return m_renderTargetE; }
 
 
     private:
-        uint32  mFBO;
-        uint32  mComponents[NUM_COMPONENTS];
-        uint32  mDepthBufferID;
-        //uint32    mPrevWidth;
-        //uint32    mPrevHeight;
-        uint32  mWidth;
-        uint32  mHeight;
+        uint32  m_fbo;
+        uint32  m_components[NUM_COMPONENTS];
+        uint32  m_depthBufferId;
+        uint32  m_width;
+        uint32  m_height;
 
-        RenderTexture*      mRenderTargetA; /**< A temp render target. */
-        RenderTexture*      mRenderTargetB; /**< A temp render target. */
-        RenderTexture*      mRenderTargetC; /**< A temp render target. */
-        RenderTexture*      mRenderTargetD; /**< Render target with width and height divided by four. */
-        RenderTexture*      mRenderTargetE; /**< Render target with width and height divided by four. */
+        RenderTexture*      m_renderTargetA; /**< A temp render target. */
+        RenderTexture*      m_renderTargetB; /**< A temp render target. */
+        RenderTexture*      m_renderTargetC; /**< A temp render target. */
+        RenderTexture*      m_renderTargetD; /**< Render target with width and height divided by four. */
+        RenderTexture*      m_renderTargetE; /**< Render target with width and height divided by four. */
     };
 }   // namespace RenderGL
 

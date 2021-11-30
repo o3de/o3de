@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -58,19 +59,19 @@ private: // --------------------------------------------------------
     // insert if the name starts with the with prefix
     void InsertConsoleCommands(std::set<const char*, string_nocase_lt>& setCmdAndVars, const char* szPrefix) const;
     // insert if the name does not start with any of the prefix in the map
-    void InsertConsoleVars(std::set<const char*, string_nocase_lt>& setCmdAndVars, std::map<string, const char*> mapPrefix) const;
+    void InsertConsoleVars(std::set<const char*, string_nocase_lt>& setCmdAndVars, std::map<AZStd::string, const char*> mapPrefix) const;
     // insert if the name does not start with any of the prefix in the map
-    void InsertConsoleCommands(std::set<const char*, string_nocase_lt>& setCmdAndVars, std::map<string, const char*> mapPrefix) const;
+    void InsertConsoleCommands(std::set<const char*, string_nocase_lt>& setCmdAndVars, std::map<AZStd::string, const char*> mapPrefix) const;
 
     // a single file for the entry is generate
     void CreateSingleEntryFile(const char* szName) const;
 
     void IncludeSingleEntry(FILE* f, const char* szName) const;
 
-    static string FixAnchorName(const char* szName);
-    static string GetCleanPrefix(const char* p);
+    static AZStd::string FixAnchorName(const char* szName);
+    static AZStd::string GetCleanPrefix(const char* p);
     // split before "|" (to get the prefix itself)
-    static string SplitPrefixString_Part1(const char* p);
+    static AZStd::string SplitPrefixString_Part1(const char* p);
     // split string after "|" (to get the optional help)
     static const char* SplitPrefixString_Part2(const char* p);
 

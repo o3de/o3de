@@ -1,6 +1,7 @@
 #
-# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
-# 
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
@@ -38,6 +39,7 @@ ly_add_source_properties(
 )
 
 if(TARGET AssetBuilder)
+    ly_set_gem_variant_to_load(TARGETS AssetBuilder VARIANTS Builders)
     # Adds the AssetBuilder target as a C preprocessor define so that it can be used as a Settings Registry
     # specialization in order to look up the generated .setreg which contains the dependencies
     # specified for the AssetBuilder in the <Project>/Gem/Code/CMakeLists via ly_add_project_dependencies

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -12,8 +13,6 @@
 #include <Atom/RPI.Public/RPISystemInterface.h>
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Public/View.h>
-
-#include <Atom/RHI/CpuProfiler.h>
 
 #include <AzCore/Math/MatrixUtils.h>
 #include <AzCore/Math/ShapeIntersection.h>
@@ -30,7 +29,7 @@
 #include <MaskedOcclusionCulling/MaskedOcclusionCulling.h>
 #endif
 
-//Enables more inner-loop profiling scopes (can create high overhead in RadTelemetry if there are many-many objects in a scene)
+//Enables more inner-loop profiling scopes (can create high overhead in telemetry if there are many-many objects in a scene)
 //#define AZ_CULL_PROFILE_DETAILED
 
 //Enables more detailed profiling descriptions within the culling system, but adds some performance overhead.
@@ -298,7 +297,7 @@ namespace AZ
             //work function
             void Process() override
             {
-                AZ_PROFILE_FUNCTION(Debug::ProfileCategory::AzRender);
+                AZ_PROFILE_SCOPE(RPI, "AddObjectsToViewJob: Process");
 
                 const View::UsageFlags viewFlags = m_jobData->m_view->GetUsageFlags();
                 const RHI::DrawListMask drawListMask = m_jobData->m_view->GetDrawListMask();
@@ -311,7 +310,7 @@ namespace AZ
                     bool nodeIsContainedInFrustum = ShapeIntersection::Contains(m_jobData->m_frustum, nodeData.m_bounds);
 
 #ifdef AZ_CULL_PROFILE_VERBOSE
-                    AZ_PROFILE_SCOPE_DYNAMIC(Debug::ProfileCategory::AzRender, "process node (view: %s, skip fine cull: %d",
+                    AZ_PROFILE_SCOPE(RPI, "process node (view: %s, skip fine cull: %d",
                         m_view->GetName().GetCStr(), nodeIsContainedInFrustum ? 1 : 0);
 #endif
 
@@ -384,7 +383,7 @@ namespace AZ
 
                     if (m_jobData->m_debugCtx->m_debugDraw && (m_jobData->m_view->GetName() == m_jobData->m_debugCtx->m_currentViewSelectionName))
                     {
-                        AZ_PROFILE_SCOPE(Debug::ProfileCategory::AzRender, "debug draw culling");
+                        AZ_PROFILE_SCOPE(RPI, "debug draw culling");
 
                         AuxGeomDrawPtr auxGeomPtr = AuxGeomFeatureProcessorInterface::GetDrawQueueForScene(m_jobData->m_scene);
                         if (auxGeomPtr)
@@ -506,7 +505,7 @@ namespace AZ
 
         void CullingScene::ProcessCullables(const Scene& scene, View& view, AZ::Job& parentJob)
         {
-            AZ_PROFILE_SCOPE_DYNAMIC(Debug::ProfileCategory::AzRender, "CullingScene::ProcessCullables() - %s", view.GetName().GetCStr());
+            AZ_PROFILE_SCOPE(RPI, "CullingScene::ProcessCullables() - %s", view.GetName().GetCStr());
 
             const Matrix4x4& worldToClip = view.GetWorldToClipMatrix();
             Frustum frustum = Frustum::CreateFromMatrixColumnMajor(worldToClip);
@@ -595,9 +594,9 @@ namespace AZ
             jobData->m_maskedOcclusionCulling = maskedOcclusionCulling;
 #endif
 
-            auto nodeVisitorLambda = [this, jobData, &parentJob, &frustum, &worklist](const AzFramework::IVisibilityScene::NodeData& nodeData) -> void
+            auto nodeVisitorLambda = [jobData, &parentJob, &worklist](const AzFramework::IVisibilityScene::NodeData& nodeData) -> void
             {
-                AZ_PROFILE_SCOPE(Debug::ProfileCategory::AzRender, "nodeVisitorLambda()");
+                AZ_PROFILE_SCOPE(RPI, "nodeVisitorLambda()");
                 AZ_Assert(nodeData.m_entries.size() > 0, "should not get called with 0 entries");
                 AZ_Assert(worklist.size() < worklist.capacity(), "we should always have room to push a node on the queue");
 
@@ -644,7 +643,7 @@ namespace AZ
         uint32_t AddLodDataToView(const Vector3& pos, const Cullable::LodData& lodData, RPI::View& view)
         {
 #ifdef AZ_CULL_PROFILE_DETAILED
-            AZ_PROFILE_FUNCTION(Debug::ProfileCategory::AzRender);
+            AZ_PROFILE_SCOPE(RPI, "AddLodDataToView");
 #endif
 
             const Matrix4x4& viewToClip = view.GetViewToClipMatrix();
@@ -662,7 +661,7 @@ namespace AZ
             auto addLodToDrawPacket = [&](const Cullable::LodData::Lod& lod)
             {
 #ifdef AZ_CULL_PROFILE_VERBOSE
-                AZ_PROFILE_SCOPE_DYNAMIC(Debug::ProfileCategory::AzRender, "add draw packets: %zu", lod.m_drawPackets.size());
+                AZ_PROFILE_SCOPE(RPI, "add draw packets: %zu", lod.m_drawPackets.size());
 #endif
                 numVisibleDrawPackets += static_cast<uint32_t>(lod.m_drawPackets.size());   //don't want to pay the cost of aznumeric_cast<> here so using static_cast<> instead
                 for (const RHI::DrawPacket* drawPacket : lod.m_drawPackets)
@@ -671,20 +670,25 @@ namespace AZ
                 }
             };
 
-            if (lodData.m_lodOverride == Cullable::NoLodOverride)
+            switch (lodData.m_lodConfiguration.m_lodType)
             {
-                for (const Cullable::LodData::Lod& lod : lodData.m_lods)
-                {
-                    //Note that this supports overlapping lod ranges (to suport cross-fading lods, for example)
-                    if (approxScreenPercentage >= lod.m_screenCoverageMin && approxScreenPercentage <= lod.m_screenCoverageMax)
+                case Cullable::LodType::SpecificLod:
+                    if (lodData.m_lodConfiguration.m_lodOverride < lodData.m_lods.size())
                     {
-                        addLodToDrawPacket(lod);
+                        addLodToDrawPacket(lodData.m_lods.at(lodData.m_lodConfiguration.m_lodOverride));
                     }
-                }
-            }
-            else if(lodData.m_lodOverride < lodData.m_lods.size())
-            {
-                addLodToDrawPacket(lodData.m_lods.at(lodData.m_lodOverride));
+                    break;
+                case Cullable::LodType::ScreenCoverage:
+                default:
+                    for (const Cullable::LodData::Lod& lod : lodData.m_lods)
+                    {
+                        // Note that this supports overlapping lod ranges (to suport cross-fading lods, for example)
+                        if (approxScreenPercentage >= lod.m_screenCoverageMin && approxScreenPercentage <= lod.m_screenCoverageMax)
+                        {
+                            addLodToDrawPacket(lod);
+                        }
+                    }
+                    break;
             }
 
             return numVisibleDrawPackets;
@@ -695,9 +699,7 @@ namespace AZ
             m_parentScene = parentScene;
 
             AZ_Assert(m_visScene == nullptr, "IVisibilityScene already created for this RPI::Scene");
-            char sceneIdBuf[40] = "";
-            m_parentScene->GetId().ToString(sceneIdBuf);
-            AZ::Name visSceneName(AZStd::string::format("RenderCullScene[%s]", sceneIdBuf));
+            AZ::Name visSceneName(AZStd::string::format("RenderCullScene[%s]", m_parentScene->GetName().GetCStr()));
             m_visScene = AZ::Interface<AzFramework::IVisibilitySystem>::Get()->CreateVisibilityScene(visSceneName);
 
 #ifdef AZ_CULL_DEBUG_ENABLED
@@ -719,15 +721,26 @@ namespace AZ
 
         void CullingScene::BeginCulling(const AZStd::vector<ViewPtr>& views)
         {
+            AZ_PROFILE_SCOPE(RPI, "CullingScene: BeginCulling");
             m_cullDataConcurrencyCheck.soft_lock();
 
             m_debugCtx.ResetCullStats();
             m_debugCtx.m_numCullablesInScene = GetNumCullables();
+            AZ::JobCompletion beginCullingCompletion;
 
             for (auto& view : views)
             {
-                view->BeginCulling();
+                const auto cullingLambda = [&view]()
+                {
+                    view->BeginCulling();
+                };
+
+                AZ::Job* cullingJob = AZ::CreateJobFunction(AZStd::move(cullingLambda), true, nullptr);
+                cullingJob->SetDependent(&beginCullingCompletion);
+                cullingJob->Start();
             }
+
+            beginCullingCompletion.StartAndWaitForCompletion();
 
             AuxGeomDrawPtr auxGeom;
             if (m_debugCtx.m_debugDraw)

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -170,7 +171,7 @@ namespace SceneLoggingExample
         {
             // While it's generally preferable to stick with either index- or iterator-based traversal, there may be times where switching between one
             // or the other becomes necessary. The SceneGraph provides utility functions to convert between the two approaches.
-            AZ::SceneAPI::Containers::SceneGraph::NodeIndex itNodeIndex = graph.ConvertToNodeIndex(it.GetHierarchyIterator());
+            [[maybe_unused]] AZ::SceneAPI::Containers::SceneGraph::NodeIndex itNodeIndex = graph.ConvertToNodeIndex(it.GetHierarchyIterator());
 
             // Nodes in the SceneGraph can be marked as endpoints. To the graph, this means that these nodes are not allowed to have children. 
             // While not a true one-to-one mapping, endpoints often act as attributes to a node. For example, a transform can be marked as an endpoint. 

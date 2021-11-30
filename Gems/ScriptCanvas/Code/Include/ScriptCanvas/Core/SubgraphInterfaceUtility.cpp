@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -12,7 +13,6 @@
 
 namespace SubgraphInterfaceUtilityCpp
 {
-    const constexpr size_t k_uniqueOutIndex = 0;
     const constexpr size_t k_signatureIndex = 1;
     const constexpr AZ::u64 k_defaultOutIdSignature = 0x3ACF20E73ACF20E7ull;
 

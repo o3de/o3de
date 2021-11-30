@@ -89,8 +89,8 @@
                         "$type": "RasterPassData",
                         "DrawListTag": "reflectionprobeblendweight",
                         "PipelineViewTag": "MainCamera",
-                        "PassSrgAsset": {
-                            "FilePath": "shaders/reflections/reflectionprobeblendweight.azsl:PassSrg"
+                        "PassSrgShaderAsset": {
+                            "FilePath": "Shaders/Reflections/ReflectionProbeBlendWeight.shader"
                         }
                     }
                 },
@@ -203,8 +203,8 @@
                         "$type": "RasterPassData",
                         "DrawListTag": "reflectionproberenderouter",
                         "PipelineViewTag": "MainCamera",
-                        "PassSrgAsset": {
-                            "FilePath": "shaders/reflections/reflectionproberenderouter.azsl:PassSrg"
+                        "PassSrgShaderAsset": {
+                            "FilePath": "Shaders/Reflections/ReflectionProbeRenderOuter.shader"
                         }
                     }
                 },
@@ -253,8 +253,8 @@
                         "$type": "RasterPassData",
                         "DrawListTag": "reflectionproberenderinner",
                         "PipelineViewTag": "MainCamera",
-                        "PassSrgAsset": {
-                            "FilePath": "shaders/reflections/reflectionproberenderinner.azsl:PassSrg"
+                        "PassSrgShaderAsset": {
+                            "FilePath": "Shaders/Reflections/ReflectionProbeRenderInner.shader"
                         }
                     }
                 },

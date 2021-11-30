@@ -1,12 +1,12 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
-#include "EMotionFX_precompiled.h"
-
+#include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
@@ -26,6 +26,12 @@
 #include <EMotionFX/Source/Transform.h>
 #include <EMotionFX/Source/RagdollInstance.h>
 #include <EMotionFX/Source/DebugDraw.h>
+#include <EMotionFX/Source/AttachmentSkin.h>
+#include <EMotionFX/Source/Node.h>
+#include <EMotionFX/Source/TransformData.h>
+#include <EMotionFX/Source/AttachmentNode.h>
+
+#include <MCore/Source/AzCoreConversions.h>
 
 #include <Atom/RPI.Reflect/Model/ModelAsset.h>
 
@@ -53,13 +59,88 @@ namespace EMotionFX
         };
 
         //////////////////////////////////////////////////////////////////////////
+        void ActorComponent::BoundingBoxConfiguration::Set(ActorInstance* actorInstance) const
+        {
+            actorInstance->SetExpandBoundsBy(m_expandBy * 0.01f); // Normalize percentage for internal use. (1% == 0.01f)
+
+            if (m_autoUpdateBounds)
+            {
+                actorInstance->SetupAutoBoundsUpdate(m_updateTimeFrequency, m_boundsType, m_updateItemFrequency);
+            }
+            else
+            {
+                actorInstance->SetBoundsUpdateType(m_boundsType);
+                actorInstance->SetBoundsUpdateEnabled(false);
+            }
+        }
+
+        void ActorComponent::BoundingBoxConfiguration::SetAndUpdate(ActorInstance* actorInstance) const
+        {
+            Set(actorInstance);
+
+            const AZ::u32 updateFrequency = actorInstance->GetBoundsUpdateEnabled() ? actorInstance->GetBoundsUpdateItemFrequency() : 1;
+            const ActorInstance::EBoundsType boundUpdateType = actorInstance->GetBoundsUpdateType();
+
+            actorInstance->UpdateBounds(actorInstance->GetLODLevel(), boundUpdateType, updateFrequency);
+        }
+
+        void ActorComponent::BoundingBoxConfiguration::Reflect(AZ::ReflectContext* context)
+        {
+            if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+            {
+                serializeContext->Class<BoundingBoxConfiguration>()
+                    ->Version(2, [](AZ::SerializeContext& sc, AZ::SerializeContext::DataElementNode& node)
+                    {
+                        if (node.GetVersion() < 2)
+                        {
+                            // m_boundsType used to be an enum class with `int' underlying type, is now `u8'
+                            static const char* m_boundsType_name = "m_boundsType";
+                            static AZ::Crc32 m_boundsType_nameCrc(m_boundsType_name);
+
+                            int m_boundsType_as_int;
+                            if (!node.GetChildData(m_boundsType_nameCrc, m_boundsType_as_int))
+                            {
+                                return false;
+                            }
+                            if (!node.RemoveElementByName(m_boundsType_nameCrc)) return false;
+                            if (node.AddElementWithData(sc, m_boundsType_name, (AZ::u8)m_boundsType_as_int) == -1) return false;
+                        }
+                        return true;
+                    })
+                    ->Field("m_boundsType", &BoundingBoxConfiguration::m_boundsType)
+                    ->Field("m_autoUpdateBounds", &BoundingBoxConfiguration::m_autoUpdateBounds)
+                    ->Field("m_updateTimeFrequency", &BoundingBoxConfiguration::m_updateTimeFrequency)
+                    ->Field("m_updateItemFrequency", &BoundingBoxConfiguration::m_updateItemFrequency)
+                    ->Field("expandBy", &BoundingBoxConfiguration::m_expandBy)
+                    ;
+            }
+        }
+
+        AZ::Crc32 ActorComponent::BoundingBoxConfiguration::GetVisibilityAutoUpdate() const
+        {
+            return m_boundsType != EMotionFX::ActorInstance::BOUNDS_STATIC_BASED ? AZ::Edit::PropertyVisibility::Show : AZ::Edit::PropertyVisibility::Hide;
+        }
+
+        AZ::Crc32 ActorComponent::BoundingBoxConfiguration::GetVisibilityAutoUpdateSettings() const
+        {
+            if (m_boundsType == EMotionFX::ActorInstance::BOUNDS_STATIC_BASED || m_autoUpdateBounds == false)
+            {
+                return AZ::Edit::PropertyVisibility::Hide;
+            }
+
+            return AZ::Edit::PropertyVisibility::Show;
+        }
+
+        //////////////////////////////////////////////////////////////////////////
         void ActorComponent::Configuration::Reflect(AZ::ReflectContext* context)
         {
+            BoundingBoxConfiguration::Reflect(context);
+
             auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
             if (serializeContext)
             {
                 serializeContext->Class<Configuration>()
-                    ->Version(3)
+                    ->Version(4)
                     ->Field("ActorAsset", &Configuration::m_actorAsset)
                     ->Field("MaterialPerLOD", &Configuration::m_materialPerLOD)
                     ->Field("RenderSkeleton", &Configuration::m_renderSkeleton)
@@ -69,6 +150,7 @@ namespace EMotionFX
                     ->Field("AttachmentTarget", &Configuration::m_attachmentTarget)
                     ->Field("SkinningMethod", &Configuration::m_skinningMethod)
                     ->Field("LODLevel", &Configuration::m_lodLevel)
+                    ->Field("BoundingBoxConfig", &Configuration::m_bboxConfig)
                     ->Field("ForceJointsUpdateOOV", &Configuration::m_forceUpdateJointsOOV)
                 ;
             }
@@ -130,6 +212,7 @@ namespace EMotionFX
                     ->Event("DebugDrawRoot", &ActorComponentRequestBus::Events::DebugDrawRoot)
                     ->Event("GetRenderCharacter", &ActorComponentRequestBus::Events::GetRenderCharacter)
                     ->Event("SetRenderCharacter", &ActorComponentRequestBus::Events::SetRenderCharacter)
+                    ->Event("GetRenderActorVisible", &ActorComponentRequestBus::Events::GetRenderActorVisible)
                     ->VirtualProperty("RenderCharacter", "GetRenderCharacter", "SetRenderCharacter")
                 ;
 
@@ -285,6 +368,14 @@ namespace EMotionFX
         }
 
         //////////////////////////////////////////////////////////////////////////
+        bool ActorComponent::GetRenderActorVisible() const
+        {
+            if (m_renderActorInstance)
+            {
+                return m_renderActorInstance->IsVisible();
+            }
+            return false;
+        }
         SkinningMethod ActorComponent::GetSkinningMethod() const
         {
             return m_configuration.m_skinningMethod;
@@ -344,6 +435,8 @@ namespace EMotionFX
             AZ::TransformNotificationBus::MultiHandler::BusConnect(GetEntityId());
 
             m_actorInstance->UpdateWorldTransform();
+            // Set bounds update mode and compute bbox first time 
+            m_configuration.m_bboxConfig.SetAndUpdate(m_actorInstance.get());
             m_actorInstance->UpdateBounds(0, ActorInstance::EBoundsType::BOUNDS_STATIC_BASED);
 
             // Creating the render actor AFTER both actor asset and mesh asset loaded.
@@ -443,14 +536,14 @@ namespace EMotionFX
                 if (m_actorInstance)
                 {
                     const Transform localTransform = m_actorInstance->GetParentWorldSpaceTransform().Inversed() * Transform(world);
-                    m_actorInstance->SetLocalSpacePosition(localTransform.mPosition);
-                    m_actorInstance->SetLocalSpaceRotation(localTransform.mRotation);
+                    m_actorInstance->SetLocalSpacePosition(localTransform.m_position);
+                    m_actorInstance->SetLocalSpaceRotation(localTransform.m_rotation);
 
                     // Disable updating the scale to prevent feedback from adding up.
                     // We need to find a better way to handle this or to prevent this feedback loop.
                     EMFX_SCALECODE
                     (
-                        m_actorInstance->SetLocalSpaceScale(localTransform.mScale);
+                        m_actorInstance->SetLocalSpaceScale(localTransform.m_scale);
                     )
                 }
             }
@@ -459,7 +552,7 @@ namespace EMotionFX
         //////////////////////////////////////////////////////////////////////////
         void ActorComponent::OnTick(float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Animation);
+            AZ_PROFILE_FUNCTION(Animation);
 
             if (!m_actorInstance || !m_actorInstance->GetIsEnabled())
             {
@@ -580,8 +673,8 @@ namespace EMotionFX
                 if (emfxNode)
                 {
                     const Transform& nodeTransform = emfxPose->GetModelSpaceTransform(emfxNode->GetNodeIndex());
-                    physicsPose[nodeIndex].m_position = nodeTransform.mPosition;
-                    physicsPose[nodeIndex].m_orientation = nodeTransform.mRotation;
+                    physicsPose[nodeIndex].m_position = nodeTransform.m_position;
+                    physicsPose[nodeIndex].m_orientation = nodeTransform.m_rotation;
                 }
             }
 
@@ -639,10 +732,10 @@ namespace EMotionFX
         {
             AZ_Assert(m_actorInstance, "The actor instance needs to be valid.");
 
-            const AZ::u32 index = static_cast<AZ::u32>(jointIndex);
-            const AZ::u32 numNodes = m_actorInstance->GetActor()->GetNumNodes();
+            const size_t index = jointIndex;
+            const size_t numNodes = m_actorInstance->GetActor()->GetNumNodes();
 
-            AZ_Error("EMotionFX", index < numNodes, "GetJointTransform: The joint index %d is out of bounds [0;%d]. Entity: %s",
+            AZ_Error("EMotionFX", index < numNodes, "GetJointTransform: The joint index %zu is out of bounds [0;%zu]. Entity: %s",
                 index, numNodes, GetEntity()->GetName().c_str());
 
             if (index >= numNodes)
@@ -679,10 +772,10 @@ namespace EMotionFX
         {
             AZ_Assert(m_actorInstance, "The actor instance needs to be valid.");
 
-            const AZ::u32 index = static_cast<AZ::u32>(jointIndex);
-            const AZ::u32 numNodes = m_actorInstance->GetActor()->GetNumNodes();
+            const size_t index = jointIndex;
+            const size_t numNodes = m_actorInstance->GetActor()->GetNumNodes();
 
-            AZ_Error("EMotionFX", index < numNodes, "GetJointTransformComponents: The joint index %d is out of bounds [0;%d]. Entity: %s",
+            AZ_Error("EMotionFX", index < numNodes, "GetJointTransformComponents: The joint index %zu is out of bounds [0;%zu]. Entity: %s",
                 index, numNodes, GetEntity()->GetName().c_str());
 
             if (index >= numNodes)
@@ -697,11 +790,11 @@ namespace EMotionFX
             case Space::LocalSpace:
             {
                 const Transform& localTransform = currentPose->GetLocalSpaceTransform(index);
-                outPosition = localTransform.mPosition;
-                outRotation = localTransform.mRotation;
+                outPosition = localTransform.m_position;
+                outRotation = localTransform.m_rotation;
                 EMFX_SCALECODE
                 (
-                    outScale = localTransform.mScale;
+                    outScale = localTransform.m_scale;
                 )
                 return;
             }
@@ -709,11 +802,11 @@ namespace EMotionFX
             case Space::ModelSpace:
             {
                 const Transform& modelTransform = currentPose->GetModelSpaceTransform(index);
-                outPosition = modelTransform.mPosition;
-                outRotation = modelTransform.mRotation;
+                outPosition = modelTransform.m_position;
+                outRotation = modelTransform.m_rotation;
                 EMFX_SCALECODE
                 (
-                    outScale = modelTransform.mScale;
+                    outScale = modelTransform.m_scale;
                 )
                 return;
             }
@@ -721,11 +814,11 @@ namespace EMotionFX
             case Space::WorldSpace:
             {
                 const Transform worldTransform = currentPose->GetWorldSpaceTransform(index);
-                outPosition = worldTransform.mPosition;
-                outRotation = worldTransform.mRotation;
+                outPosition = worldTransform.m_position;
+                outRotation = worldTransform.m_rotation;
                 EMFX_SCALECODE
                 (
-                    outScale = worldTransform.mScale;
+                    outScale = worldTransform.m_scale;
                 )
                 return;
             }
@@ -787,7 +880,7 @@ namespace EMotionFX
                 Node* node = jointName ? m_actorInstance->GetActor()->GetSkeleton()->FindNodeByName(jointName) : m_actorInstance->GetActor()->GetSkeleton()->GetNode(0);
                 if (node)
                 {
-                    const AZ::u32 jointIndex = node->GetNodeIndex();
+                    const size_t jointIndex = node->GetNodeIndex();
                     Attachment* attachment = AttachmentNode::Create(m_actorInstance.get(), jointIndex, targetActorInstance, true /* Managed externally, by this component. */);
                     m_actorInstance->AddAttachment(attachment);
                 }

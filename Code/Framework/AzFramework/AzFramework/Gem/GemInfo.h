@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -28,6 +29,10 @@ namespace AzFramework
         AZStd::vector<AZ::IO::Path> m_absoluteSourcePaths; //!< Where the gem's source path folder are located(as an absolute path)
 
         static constexpr const char* GetGemAssetFolder() { return "Assets"; }
+        static constexpr const char* GetGemRegistryFolder()
+        {
+            return "Registry";
+        }
     };
 
     //! Returns a list of GemInfo of all the gems that are active for the for the specified game project. 

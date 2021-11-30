@@ -1,6 +1,7 @@
 #
-# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
-# 
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
@@ -109,7 +110,7 @@ platform=${PAL_PLATFORM_NAME}
 game_projects=${LY_PROJECTS_TARGET_NAME}
 asset_deploy_mode=${LY_ASSET_DEPLOY_MODE}
 asset_deploy_type=${LY_ASSET_DEPLOY_ASSET_TYPE}
-override_pak_root=${LY_OVERRIDE_PAK_FOLDER_ROOT}
+override_pak_root=${LY_ASSET_OVERRIDE_PAK_FOLDER_ROOT}
 ")
 
 endfunction()

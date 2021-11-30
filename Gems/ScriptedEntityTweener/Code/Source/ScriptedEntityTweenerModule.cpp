@@ -1,11 +1,10 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-
-#include "ScriptedEntityTweener_precompiled.h"
 
 #include <IGem.h>
 
@@ -40,7 +39,7 @@ namespace ScriptedEntityTweener
             };
         }
 
-        void OnSystemEvent(ESystemEvent systemEvent, UINT_PTR wparam, UINT_PTR lparam)
+        void OnSystemEvent(ESystemEvent systemEvent, UINT_PTR wparam, UINT_PTR lparam) override
         {
             CryHooksModule::OnSystemEvent(systemEvent, wparam, lparam);
 

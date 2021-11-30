@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -52,21 +53,21 @@ namespace EMotionFX
     // lock the event manager
     void EventManager::Lock()
     {
-        mLock.Lock();
+        m_lock.Lock();
     }
 
 
     // unlock the event manager
     void EventManager::Unlock()
     {
-        mLock.Unlock();
+        m_lock.Unlock();
     }
 
 
     // register event handler to the manager
     void EventManager::AddEventHandler(EventHandler* eventHandler)
     {
-        MCore::LockGuardRecursive lock(mLock);
+        MCore::LockGuardRecursive lock(m_lock);
 
         AZ_Assert(eventHandler, "Expected non-null event handler");
         for (const EventTypes eventType : eventHandler->GetHandledEventTypes())
@@ -81,7 +82,7 @@ namespace EMotionFX
     // unregister event handler from the manager
     void EventManager::RemoveEventHandler(EventHandler* eventHandler)
     {
-        MCore::LockGuardRecursive lock(mLock);
+        MCore::LockGuardRecursive lock(m_lock);
 
         for (const EventTypes eventType : eventHandler->GetHandledEventTypes())
         {
@@ -100,9 +101,9 @@ namespace EMotionFX
         }
 
         // trigger the event handlers inside the motion instance
-        if (eventInfo.mMotionInstance)
+        if (eventInfo.m_motionInstance)
         {
-            eventInfo.mMotionInstance->OnEvent(eventInfo);
+            eventInfo.m_motionInstance->OnEvent(eventInfo);
         }
 
         // Call event handlers
@@ -569,7 +570,7 @@ namespace EMotionFX
         for (EventHandler* eventHandler : eventHandlers)
         {
             const bool result = eventHandler->OnRayIntersectionTest(start, end, outIntersectInfo);
-            if (outIntersectInfo->mIsValid)
+            if (outIntersectInfo->m_isValid)
             {
                 return result;
             }

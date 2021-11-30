@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -75,10 +76,10 @@ namespace AzToolsFramework
         void ResetContext() override;
         void GetRequiredComponentTypes(AZ::ComponentTypeList& required) override;
         bool IsSliceMetadataEntity(const AZ::EntityId entityId) override;
-        AZ::Entity* GetMetadataEntity(const AZ::EntityId entityId);
+        AZ::Entity* GetMetadataEntity(const AZ::EntityId entityId) override;
         AZ::EntityId GetMetadataEntityIdFromEditorEntity(const AZ::EntityId editorEntityId) override;
         AZ::EntityId GetMetadataEntityIdFromSliceAddress(const AZ::SliceComponent::SliceInstanceAddress& address) override;
-        void AddMetadataEntityToContext(const AZ::SliceComponent::SliceInstanceAddress& /*sliceAddress*/, AZ::Entity& entity);
+        void AddMetadataEntityToContext(const AZ::SliceComponent::SliceInstanceAddress& /*sliceAddress*/, AZ::Entity& entity) override;
         //////////////////////////////////////////////////////////////////////////
 
 

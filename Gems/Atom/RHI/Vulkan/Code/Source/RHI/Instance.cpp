@@ -1,10 +1,10 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "Atom_RHI_Vulkan_precompiled.h"
 #include <RHI/Device.h>
 #include <RHI/Instance.h>
 #include <Atom/RHI.Loader/FunctionLoader.h>
@@ -16,12 +16,27 @@ namespace AZ
     {
         static const uint32_t s_minVulkanSupportedVersion = VK_API_VERSION_1_0;
 
+        static EnvironmentVariable<Instance> s_vulkanInstance;
+        static constexpr const char* s_vulkanInstanceKey = "VulkanInstance";
+
         Instance& Instance::GetInstance()
         {
-            static Instance s_instance;
-            return s_instance;
+            if (!s_vulkanInstance)
+            {
+                s_vulkanInstance = Environment::FindVariable<Instance>(s_vulkanInstanceKey);
+                if (!s_vulkanInstance)
+                {
+                    s_vulkanInstance = Environment::CreateVariable<Instance>(s_vulkanInstanceKey);
+                }
+            }
+
+            return s_vulkanInstance.Get();
         }
 
+        void Instance::Reset()
+        {
+            s_vulkanInstance.Reset();
+        }
 
         Instance::~Instance()
         {

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -96,7 +97,6 @@ namespace AZ
             {
                 const auto iter = AZStd::find(vec.begin(), vec.end(), elementToErase);
                 AZ_Assert(iter != vec.end(), "EraseFromVector failed to find the given object");
-                const auto indexToRemove = AZStd::distance(vec.begin(), iter);
                 AZStd::swap(*iter, vec.back());
                 vec.pop_back();
             }

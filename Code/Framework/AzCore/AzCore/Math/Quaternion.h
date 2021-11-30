@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -245,10 +246,6 @@ namespace AZ
         //! Takes the absolute value of each component of the quaternion.
         Quaternion GetAbs() const;
 
-#ifdef AZ_COMPILER_MSVC
-#   pragma warning(push)
-#   pragma warning(disable:4201) // anonymous union
-#endif
         union
         {
             Simd::Vec4::FloatType m_value;
@@ -262,9 +259,6 @@ namespace AZ
                 float m_w;
             };
         };
-#ifdef AZ_COMPILER_MSVC
-#   pragma warning(pop)
-#endif
     };
 
     //! Non-member functionality belonging to the AZ namespace

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -122,6 +123,36 @@ namespace AZ
         using NotifyEvent = AZ::Event<AZStd::string_view, Type>;
         using NotifyEventHandler = typename NotifyEvent::Handler;
 
+        using PreMergeEventCallback = AZStd::function<void(AZStd::string_view path, AZStd::string_view rootKey)>;
+        using PostMergeEventCallback = AZStd::function<void(AZStd::string_view path, AZStd::string_view rootKey)>;
+        using PreMergeEvent = AZ::Event<AZStd::string_view, AZStd::string_view>;
+        using PostMergeEvent = AZ::Event<AZStd::string_view, AZStd::string_view>;
+        using PreMergeEventHandler = typename PreMergeEvent::Handler;
+        using PostMergeEventHandler = typename PostMergeEvent::Handler;
+
+        struct ScopedMergeEvent
+        {
+            ScopedMergeEvent(
+                PreMergeEvent& preMergeEvent, PostMergeEvent& postMergeEvent, AZStd::string_view filePath, AZStd::string_view rootKey)
+                : m_preMergeEvent{ preMergeEvent }
+                , m_postMergeEvent{ postMergeEvent }
+                , m_filePath{ filePath }
+                , m_rootKey{ rootKey }
+            {
+                preMergeEvent.Signal(m_filePath, m_rootKey);
+            }
+
+            ~ScopedMergeEvent()
+            {
+                m_postMergeEvent.Signal(m_filePath, m_rootKey);
+            }
+
+            PreMergeEvent& m_preMergeEvent;
+            PostMergeEvent& m_postMergeEvent;
+            AZStd::string_view m_filePath;
+            AZStd::string_view m_rootKey;
+        };
+
         using VisitorCallback =
             AZStd::function<VisitResponse(AZStd::string_view path, AZStd::string_view valueName, VisitAction action, Type type)>;
         //! Base class for the visitor class during traversal over the Settings Registry. The type-agnostic function is always
@@ -161,12 +192,34 @@ namespace AZ
         //! @param path An offset at which traversal should start.
         //! @return Whether or not entries could be visited.
         virtual bool Visit(const VisitorCallback& callback, AZStd::string_view path) const = 0;
+
         //! Register a callback that will be called whenever an entry gets a new/updated value.
+        //!
         //! @callback The function to call when an entry gets a new/updated value.
-        [[nodiscard]] virtual NotifyEventHandler RegisterNotifier(const NotifyCallback& callback) = 0;
-        //! Register a callback that will be called whenever an entry gets a new/updated value.
-        //! @callback The function to call when an entry gets a new/updated value.
-        [[nodiscard]] virtual NotifyEventHandler RegisterNotifier(NotifyCallback&& callback) = 0;
+        //! @return NotifyEventHandler instance which must persist to receive event signal
+        [[nodiscard]] virtual NotifyEventHandler RegisterNotifier(NotifyCallback callback) = 0;
+        //! Register a notify event handler with the NotifyEvent.
+        //! The handler will be called whenever an entry gets a new/updated value.
+        //! @param handler The handler to register with the NotifyEvent.
+        virtual void RegisterNotifier(NotifyEventHandler& handler) = 0;
+
+        //! Register a function that will be called before a file is merged.
+        //! @param callback The function to call before a file is merged.
+        //! @return PreMergeEventHandler instance which must persist to receive event signal
+        [[nodiscard]] virtual PreMergeEventHandler RegisterPreMergeEvent(PreMergeEventCallback callback) = 0;
+        //! Register a pre-merge handler with the PreMergeEvent.
+        //! The handler will be called before a file is merged.
+        //! @param handler The hanlder to register with the PreMergeEvent.
+        virtual void RegisterPreMergeEvent(PreMergeEventHandler& handler) = 0;
+
+        //! Register a function that will be called after a file is merged.
+        //! @param callback The function to call after a file is merged.
+        //! @return PostMergeEventHandler instance which must persist to receive event signal
+        [[nodiscard]] virtual PostMergeEventHandler RegisterPostMergeEvent(PostMergeEventCallback callback) = 0;
+        //! Register a post-merge hahndler with the PostMergeEvent.
+        //! The handler will be called after a file is merged.
+        //! @param handler The handler to register with the PostmergeEVent.
+        virtual void RegisterPostMergeEvent(PostMergeEventHandler& hanlder) = 0;
 
         //! Gets the boolean value at the provided path.
         //! @param result The target to write the result to.
@@ -281,23 +334,25 @@ namespace AZ
         //! - all digits and dot -> floating point number
         //! - Everything else is considered a string.
         //! @param argument The command line argument.
-        //! @param structure which contains functors which determine what characters are delimiters
+        //! @param anchorKey The key where the merged command line argument will be anchored under
+        //! @param commandLineSettings structure which contains functors which determine what characters are delimiters
         //! @return True if the command line argument could be parsed, otherwise false.
-        virtual bool MergeCommandLineArgument(AZStd::string_view argument, AZStd::string_view rootKey = "",
+        virtual bool MergeCommandLineArgument(AZStd::string_view argument, AZStd::string_view anchorKey = "",
             const CommandLineArgumentSettings& commandLineSettings = {}) = 0;
         //! Merges the json data provided into the settings registry.
         //! @param data The json data stored in a string.
         //! @param format The format of the provided data.
+        //! @param anchorKey The key where the merged json content will be anchored under.
         //! @return True if the data was successfully merged, otherwise false.
-        virtual bool MergeSettings(AZStd::string_view data, Format format) = 0;
+        virtual bool MergeSettings(AZStd::string_view data, Format format, AZStd::string_view anchorKey = "") = 0;
         //! Loads a settings file and merges it into the registry.
         //! @param path The path to the registry file.
         //! @param format The format of the text data in the file at the provided path.
-        //! @param rootKey The key where the root of the settings file will be stored under.
+        //! @param anchorKey The key where the content of the settings file will be anchored.
         //! @param scratchBuffer An optional buffer that's used to load the file into. Use this when loading multiple patches to
         //!     reduce the number of intermediate memory allocations.
         //! @return True if the registry file was successfully merged, otherwise false.
-        virtual bool MergeSettingsFile(AZStd::string_view path, Format format, AZStd::string_view rootKey = "",
+        virtual bool MergeSettingsFile(AZStd::string_view path, Format format, AZStd::string_view anchorKey = "",
             AZStd::vector<char>* scratchBuffer = nullptr) = 0;
         //! Loads all settings files in a folder and merges them into the registry.
         //!     With the specializations "a" and "b" and platform "c" the files would be loaded in the order:
@@ -312,11 +367,12 @@ namespace AZ
         //! @param platform An optional name of a platform. Platform overloads are located at <path>/Platform/<platform>/
         //!     Files in a platform are applied in the same order as for the main folder but always after the same file
         //!     in the main folder.
+        //! @param anchorKey The registry path location where the settings will be anchored
         //! @param scratchBuffer An optional buffer that's used to load the file into. Use this when loading multiple patches to
         //!     reduce the number of intermediate memory allocations.
         //! @return True if the registry folder was successfully merged, otherwise false.
         virtual bool MergeSettingsFolder(AZStd::string_view path, const Specializations& specializations,
-            AZStd::string_view platform = {}, AZStd::string_view rootKey = "", AZStd::vector<char>* scratchBuffer = nullptr) = 0;
+            AZStd::string_view platform = {}, AZStd::string_view anchorKey = "", AZStd::vector<char>* scratchBuffer = nullptr) = 0;
 
         //! Stores the settings structure which is used when merging settings to the Settings Registry
         //! using JSON Merge Patch or JSON Merge Patch.
@@ -325,6 +381,11 @@ namespace AZ
         //! @param applyPatchSettings The ApplyPatchSettings which are using during JSON Merging
         virtual void SetApplyPatchSettings(const AZ::JsonApplyPatchSettings& applyPatchSettings) = 0;
         virtual void GetApplyPatchSettings(AZ::JsonApplyPatchSettings& applyPatchSettings) = 0;
+
+        //! Stores option to indicate whether the FileIOBase instance should be used for file operations
+        //! @param useFileIo If true the FileIOBase instance will attempted to be used for FileIOBase
+        //! operations before falling back to use SystemFile
+        virtual void SetUseFileIO(bool useFileIo) = 0;
     };
 
     inline SettingsRegistryInterface::Visitor::~Visitor() = default;

@@ -1,5 +1,6 @@
 """
-Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+Copyright (c) Contributors to the Open 3D Engine Project.
+For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
@@ -15,7 +16,7 @@ import azlmbr.entity as entity
 import azlmbr.math as math
 import azlmbr.paths
 
-sys.path.append(os.path.join(azlmbr.paths.devroot, 'AutomatedTesting', 'Gem', 'PythonTests'))
+sys.path.append(os.path.join(azlmbr.paths.projectroot, 'Gem', 'PythonTests'))
 from automatedtesting_shared.editor_test_helper import EditorTestHelper
 
 

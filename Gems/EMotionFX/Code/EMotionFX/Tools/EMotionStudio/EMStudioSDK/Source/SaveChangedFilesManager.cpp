@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -29,11 +30,11 @@
 namespace EMStudio
 {
     SaveDirtyFilesCallback::ObjectPointer::ObjectPointer() :
-        mActor(nullptr),
-        mMotion(nullptr),
-        mMotionSet(nullptr),
-        mAnimGraph(nullptr),
-        mWorkspace(nullptr)
+        m_actor(nullptr),
+        m_motion(nullptr),
+        m_motionSet(nullptr),
+        m_animGraph(nullptr),
+        m_workspace(nullptr)
     {
     }
 
@@ -51,7 +52,7 @@ namespace EMStudio
             return;
         }
 
-        mSaveDirtyFilesCallbacks.erase(AZStd::remove(mSaveDirtyFilesCallbacks.begin(), mSaveDirtyFilesCallbacks.end(), callback), mSaveDirtyFilesCallbacks.end());
+        m_saveDirtyFilesCallbacks.erase(AZStd::remove(m_saveDirtyFilesCallbacks.begin(), m_saveDirtyFilesCallbacks.end(), callback), m_saveDirtyFilesCallbacks.end());
 
         if (delFromMem)
         {
@@ -62,21 +63,18 @@ namespace EMStudio
 
     void DirtyFileManager::SaveSettings()
     {
-        const size_t numDirtyFilesCallbacks = mSaveDirtyFilesCallbacks.size();
+        const size_t numDirtyFilesCallbacks = m_saveDirtyFilesCallbacks.size();
 
         // save the callback settings to the config file
         QSettings settings;
         settings.beginGroup("EMotionFX");
 
         settings.beginGroup("DirtyFileManager");
-        //settings.setValue("ShowSettingsWindow", mShowDirtyFileSettingsWindow);
 
         for (size_t i = 0; i < numDirtyFilesCallbacks; ++i)
         {
-            settings.beginGroup(mSaveDirtyFilesCallbacks[i]->GetFileType());
-            settings.setValue("FileExtension", mSaveDirtyFilesCallbacks[i]->GetExtension());
-            //settings.setValue( "AskIndividually", mSaveDirtyFilesCallbacks[i]->AskIndividually());
-            //settings.setValue( "SkipSaving", mSaveDirtyFilesCallbacks[i]->SkipSaving());
+            settings.beginGroup(m_saveDirtyFilesCallbacks[i]->GetFileType());
+            settings.setValue("FileExtension", m_saveDirtyFilesCallbacks[i]->GetExtension());
             settings.endGroup();
         }
 
@@ -88,12 +86,12 @@ namespace EMStudio
     // destructor
     DirtyFileManager::~DirtyFileManager()
     {
-        const size_t numDirtyFilesCallbacks = mSaveDirtyFilesCallbacks.size();
+        const size_t numDirtyFilesCallbacks = m_saveDirtyFilesCallbacks.size();
         for (size_t i = 0; i < numDirtyFilesCallbacks; ++i)
         {
-            delete mSaveDirtyFilesCallbacks[i];
+            delete m_saveDirtyFilesCallbacks[i];
         }
-        mSaveDirtyFilesCallbacks.clear();
+        m_saveDirtyFilesCallbacks.clear();
     }
 
 
@@ -133,10 +131,10 @@ namespace EMStudio
         size_t insertIndex = MCORE_INVALIDINDEX32;
 
         // get the number of callbacks and iterate through them
-        const size_t numCallbacks = mSaveDirtyFilesCallbacks.size();
+        const size_t numCallbacks = m_saveDirtyFilesCallbacks.size();
         for (size_t i = 0; i < numCallbacks; ++i)
         {
-            const uint32 currentPriority = mSaveDirtyFilesCallbacks[i]->GetPriority();
+            const uint32 currentPriority = m_saveDirtyFilesCallbacks[i]->GetPriority();
 
             if (newPriority > currentPriority)
             {
@@ -148,11 +146,11 @@ namespace EMStudio
         // add the new callback
         if (insertIndex == MCORE_INVALIDINDEX32)
         {
-            mSaveDirtyFilesCallbacks.push_back(callback);
+            m_saveDirtyFilesCallbacks.push_back(callback);
         }
         else
         {
-            mSaveDirtyFilesCallbacks.insert(mSaveDirtyFilesCallbacks.begin()+insertIndex, callback);
+            m_saveDirtyFilesCallbacks.insert(m_saveDirtyFilesCallbacks.begin()+insertIndex, callback);
         }
     }
 
@@ -161,12 +159,12 @@ namespace EMStudio
     {
         AZStd::vector<SaveDirtyFilesCallback*> neededCallbacks;
 
-        const size_t numDirtyFilesCallbacks = mSaveDirtyFilesCallbacks.size();
+        const size_t numDirtyFilesCallbacks = m_saveDirtyFilesCallbacks.size();
 
         // check if there are any dirty files
         for (size_t i = 0; i < numDirtyFilesCallbacks; ++i)
         {
-            SaveDirtyFilesCallback* callback = mSaveDirtyFilesCallbacks[i];
+            SaveDirtyFilesCallback* callback = m_saveDirtyFilesCallbacks[i];
 
             // make sure we want to handle the given save dirty files callback
             if ((type != MCORE_INVALIDINDEX32 && callback->GetType() != type) || (filter != MCORE_INVALIDINDEX32 && callback->GetType() == filter))
@@ -183,11 +181,11 @@ namespace EMStudio
     {
         AZStd::vector<SaveDirtyFilesCallback*> neededCallbacks;
 
-        const size_t numDirtyFilesCallbacks = mSaveDirtyFilesCallbacks.size();
+        const size_t numDirtyFilesCallbacks = m_saveDirtyFilesCallbacks.size();
 
         for (size_t i = 0; i < numDirtyFilesCallbacks; ++i)
         {
-            SaveDirtyFilesCallback* callback = mSaveDirtyFilesCallbacks[i];
+            SaveDirtyFilesCallback* callback = m_saveDirtyFilesCallbacks[i];
 
             // make sure we want to handle the given save dirty files callback
             if (AZStd::find(typeIds.begin(), typeIds.end(), callback->GetFileRttiType()) != typeIds.end())
@@ -332,9 +330,9 @@ namespace EMStudio
         MCORE_ASSERT(dirtyFileNames.size() == objects.size());
 
         // store values
-        mFileNames      = dirtyFileNames;
-        mObjects        = objects;
-        mSaveDirtyFiles = true;
+        m_fileNames      = dirtyFileNames;
+        m_objects        = objects;
+        m_saveDirtyFiles = true;
 
         // update title of the dialog
         setWindowTitle("Save Changes To Files");
@@ -349,54 +347,54 @@ namespace EMStudio
         vLayout->addWidget(new QLabel("Do you want to save changes? The following files have been changed but have not been saved yet:"));
 
         // create the lod information table
-        mTableWidget = new QTableWidget();
-        mTableWidget->setAlternatingRowColors(true);
-        mTableWidget->setSelectionMode(QAbstractItemView::NoSelection);
-        mTableWidget->setEditTriggers(QAbstractItemView::NoEditTriggers);
-        mTableWidget->setMinimumHeight(250);
-        mTableWidget->setMinimumWidth(600);
-        mTableWidget->verticalHeader()->hide();
+        m_tableWidget = new QTableWidget();
+        m_tableWidget->setAlternatingRowColors(true);
+        m_tableWidget->setSelectionMode(QAbstractItemView::NoSelection);
+        m_tableWidget->setEditTriggers(QAbstractItemView::NoEditTriggers);
+        m_tableWidget->setMinimumHeight(250);
+        m_tableWidget->setMinimumWidth(600);
+        m_tableWidget->verticalHeader()->hide();
 
         // disable the corner button between the row and column selection thingies
-        mTableWidget->setCornerButtonEnabled(false);
+        m_tableWidget->setCornerButtonEnabled(false);
 
         // enable the custom context menu for the motion table
-        mTableWidget->setContextMenuPolicy(Qt::DefaultContextMenu);
+        m_tableWidget->setContextMenuPolicy(Qt::DefaultContextMenu);
 
         // disable sorting when adding the items
-        mTableWidget->setSortingEnabled(false);
+        m_tableWidget->setSortingEnabled(false);
 
         // clear the table widget
-        mTableWidget->clear();
-        mTableWidget->setColumnCount(3);
+        m_tableWidget->clear();
+        m_tableWidget->setColumnCount(3);
 
         // set header items for the table
         QTableWidgetItem* headerItem = new QTableWidgetItem("");
         headerItem->setTextAlignment(Qt::AlignVCenter | Qt::AlignLeft);
-        mTableWidget->setHorizontalHeaderItem(0, headerItem);
+        m_tableWidget->setHorizontalHeaderItem(0, headerItem);
         headerItem = new QTableWidgetItem("FileName");
         headerItem->setTextAlignment(Qt::AlignVCenter | Qt::AlignLeft);
-        mTableWidget->setHorizontalHeaderItem(1, headerItem);
+        m_tableWidget->setHorizontalHeaderItem(1, headerItem);
         headerItem = new QTableWidgetItem("Type");
         headerItem->setTextAlignment(Qt::AlignVCenter | Qt::AlignLeft);
-        mTableWidget->setHorizontalHeaderItem(2, headerItem);
+        m_tableWidget->setHorizontalHeaderItem(2, headerItem);
 
         // set column resize modes.  The main filename is in column 1, and
         // stretches to fill any remaining space. The other columns are
         // informational only, and not very wide, so setting them to always
         // resize to their contents means we don't have to manage their column
         // widths.
-        QHeaderView* horizontalHeader = mTableWidget->horizontalHeader();
+        QHeaderView* horizontalHeader = m_tableWidget->horizontalHeader();
         horizontalHeader->setSectionResizeMode(0, QHeaderView::ResizeToContents);
         horizontalHeader->setSectionResizeMode(1, QHeaderView::Stretch);
         horizontalHeader->setSectionResizeMode(2, QHeaderView::ResizeToContents);
 
         const size_t numDirtyFiles = dirtyFileNames.size();
-        mTableWidget->setRowCount(static_cast<int>(numDirtyFiles));
+        m_tableWidget->setRowCount(static_cast<int>(numDirtyFiles));
 
         for (size_t i = 0; i < numDirtyFiles; ++i)
         {
-            SaveDirtyFilesCallback::ObjectPointer object = mObjects[i];
+            SaveDirtyFilesCallback::ObjectPointer object = m_objects[i];
 
             QString labelText;
             if (dirtyFileNames[i].empty())
@@ -437,23 +435,23 @@ namespace EMStudio
             filenameLabel->setText(labelText);
 
             QString typeString;
-            if (object.mMotion)
+            if (object.m_motion)
             {
                 typeString = "Motion";
             }
-            else if (object.mActor)
+            else if (object.m_actor)
             {
                 typeString = "Actor";
             }
-            else if (object.mMotionSet)
+            else if (object.m_motionSet)
             {
                 typeString = "Motion Set";
             }
-            else if (object.mAnimGraph)
+            else if (object.m_animGraph)
             {
                 typeString = "Anim Graph";
             }
-            else if (object.mWorkspace)
+            else if (object.m_workspace)
             {
                 typeString = "Workspace";
             }
@@ -463,19 +461,19 @@ namespace EMStudio
             itemType->setData(Qt::UserRole, row);
 
             // add table items to the current row
-            mTableWidget->setCellWidget(row, 0, checkbox);
-            mTableWidget->setCellWidget(row, 1, filenameLabel);
-            mTableWidget->setItem(row, 2, itemType);
+            m_tableWidget->setCellWidget(row, 0, checkbox);
+            m_tableWidget->setCellWidget(row, 1, filenameLabel);
+            m_tableWidget->setItem(row, 2, itemType);
 
             // set the row height
-            mTableWidget->setRowHeight(row, 21);
+            m_tableWidget->setRowHeight(row, 21);
         }
 
         // enable sorting
-        mTableWidget->setSortingEnabled(true);
+        m_tableWidget->setSortingEnabled(true);
 
         // add the table in the layout
-        vLayout->addWidget(mTableWidget);
+        vLayout->addWidget(m_tableWidget);
 
         // the buttons at the bottom of the dialog
         QDialogButtonBox* buttonBox = new QDialogButtonBox(buttons);
@@ -524,26 +522,26 @@ namespace EMStudio
         outFileNames->clear();
         outObjects->clear();
 
-        const uint32 numRows = mTableWidget->rowCount();
+        const uint32 numRows = m_tableWidget->rowCount();
 
         // iteration for motions, motion sets, actors and anim graphs
         for (uint32 i = 0; i < numRows; ++i)
         {
             // get the checkbox
-            QWidget*    widget      = mTableWidget->cellWidget(i, 0);
+            QWidget*    widget      = m_tableWidget->cellWidget(i, 0);
             QCheckBox*  checkbox    = static_cast<QCheckBox*>(widget);
 
             // get the type item
-            QTableWidgetItem*   item            = mTableWidget->item(i, 2);
+            QTableWidgetItem*   item            = m_tableWidget->item(i, 2);
             const int32         filenameIndex   = item->data(Qt::UserRole).toInt();
 
             // get the object pointer
-            SaveDirtyFilesCallback::ObjectPointer objPointer = mObjects[filenameIndex];
+            SaveDirtyFilesCallback::ObjectPointer objPointer = m_objects[filenameIndex];
 
             // add the filename to the list of selected filenames in case the checkbox in the same row is checked
             if (checkbox->isChecked())
             {
-                outFileNames->push_back(mFileNames[filenameIndex]);
+                outFileNames->push_back(m_fileNames[filenameIndex]);
                 outObjects->push_back(objPointer);
             }
         }

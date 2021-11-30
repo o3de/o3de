@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -17,16 +18,11 @@
 #include "ScopedVariableSetter.h"
 #include "GridUtils.h"
 
-
-static const QColor timeMarkerCol = QColor(255, 0, 255);
-static const QColor textCol = QColor(0, 0, 0);
-static const QColor ltgrayCol = QColor(110, 110, 110);
-
 QColor InterpolateColor(const QColor& c1, const QColor& c2, float fraction)
 {
-    const int r = (c2.red() - c1.red()) * fraction + c1.red();
-    const int g = (c2.green() - c1.green()) * fraction + c1.green();
-    const int b = (c2.blue() - c1.blue()) * fraction + c1.blue();
+    const int r = static_cast<int>(static_cast<float>(c2.red() - c1.red()) * fraction + c1.red());
+    const int g = static_cast<int>(static_cast<float>(c2.green() - c1.green()) * fraction + c1.green());
+    const int b = static_cast<int>(static_cast<float>(c2.blue() - c1.blue()) * fraction + c1.blue());
     return QColor(r, g, b);
 }
 
@@ -57,7 +53,7 @@ TimelineWidget::TimelineWidget(QWidget* parent /* = nullptr */)
 
     m_bIgnoreSetTime = false;
 
-    m_pKeyTimeSet = 0;
+    m_pKeyTimeSet = nullptr;
 
     m_markerStyle = MARKER_STYLE_SECONDS;
     m_fps = 30.0f;
@@ -119,7 +115,7 @@ float TimelineWidget::SnapTime(float time)
 {
     double t = floor((double)time * m_ticksStep + 0.5);
     t = t / m_ticksStep;
-    return t;
+    return static_cast<float>(t);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -152,10 +148,10 @@ void TimelineWidget::DrawTicks(QPainter* painter)
     painter->setPen(redpen);
     int x = TimeToClient(m_fTimeMarker);
     painter->setBrush(Qt::NoBrush);
-    painter->drawRect(QRect(QPoint(x - 3, rc.top()), QPoint(x + 2, rc.bottom())));
+    painter->drawRect(QRect(QPoint(x - 3, static_cast<int>(rc.top())), QPoint(x + 2, static_cast<int>(rc.bottom()))));
 
     painter->setPen(redpen);
-    painter->drawLine(x, rc.top(), x, rc.bottom());
+    painter->drawLine(x, static_cast<int>(rc.top()), x, static_cast<int>(rc.bottom()));
     painter->setBrush(Qt::NoBrush);
 
     // Draw vertical line showing current time.
@@ -189,7 +185,7 @@ void TimelineWidget::DrawTicks(QPainter* painter)
         float keyTime = (m_pKeyTimeSet ? m_pKeyTimeSet->GetKeyTime(keyTimeIndex) : 0.0f);
 
         int x2 = TimeToClient(keyTime);
-        painter->drawRect(QRect(QPoint(x2 - 1, rc.top()), QPoint(x2 + 2, rc.bottom())));
+        painter->drawRect(QRect(QPoint(x2 - 1, static_cast<int>(rc.top())), QPoint(x2 + 2, static_cast<int>(rc.bottom()))));
     }
 
     painter->setPen(pOldPen);

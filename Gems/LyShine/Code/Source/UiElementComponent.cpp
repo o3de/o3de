@@ -1,10 +1,10 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "LyShine_precompiled.h"
 #include "UiElementComponent.h"
 
 #include <AzCore/Math/Crc.h>
@@ -26,6 +26,8 @@
 #include <LyShine/Bus/UiInteractableBus.h>
 #include <LyShine/Bus/UiEntityContextBus.h>
 #include <LyShine/Bus/UiLayoutManagerBus.h>
+
+#include <CryCommon/StlUtils.h>
 
 #include "UiTransform2dComponent.h"
 
@@ -142,7 +144,7 @@ void UiElementComponent::RenderElement(LyShine::IRenderGraph* renderGraph, bool 
     if (m_renderControlInterface)
     {
         // give control of rendering this element and its children to the render control component on this element
-        m_renderControlInterface->Render(renderGraph, this, m_renderInterface, m_childElementComponents.size(), isInGame);
+        m_renderControlInterface->Render(renderGraph, this, m_renderInterface, static_cast<int>(m_childElementComponents.size()), isInGame);
     }
     else
     {
@@ -153,7 +155,7 @@ void UiElementComponent::RenderElement(LyShine::IRenderGraph* renderGraph, bool 
         }
 
         // now render child elements
-        int numChildren = m_childElementComponents.size();
+        int numChildren = static_cast<int>(m_childElementComponents.size());
         for (int i = 0; i < numChildren; ++i)
         {
             GetChildElementComponent(i)->RenderElement(renderGraph, isInGame);
@@ -194,7 +196,7 @@ AZ::EntityId UiElementComponent::GetParentEntityId()
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 int UiElementComponent::GetNumChildElements()
 {
-    return m_childEntityIdOrder.size();
+    return static_cast<int>(m_childEntityIdOrder.size());
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -236,7 +238,7 @@ UiElementInterface* UiElementComponent::GetChildElementInterface(int index)
 int UiElementComponent::GetIndexOfChild(const AZ::Entity* child)
 {
     AZ::EntityId childEntityId = child->GetId();
-    int numChildren = m_childEntityIdOrder.size();
+    int numChildren = static_cast<int>(m_childEntityIdOrder.size());
     for (int i = 0;  i < numChildren; ++i)
     {
         if (m_childEntityIdOrder[i].m_entityId == childEntityId)
@@ -251,7 +253,7 @@ int UiElementComponent::GetIndexOfChild(const AZ::Entity* child)
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 int UiElementComponent::GetIndexOfChildByEntityId(AZ::EntityId childId)
 {
-    int numChildren = m_childEntityIdOrder.size();
+    int numChildren = static_cast<int>(m_childEntityIdOrder.size());
     for (int i = 0;  i < numChildren; ++i)
     {
         if (m_childEntityIdOrder[i].m_entityId == childId)
@@ -266,7 +268,7 @@ int UiElementComponent::GetIndexOfChildByEntityId(AZ::EntityId childId)
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 LyShine::EntityArray UiElementComponent::GetChildElements()
 {
-    int numChildren = m_childEntityIdOrder.size();
+    int numChildren = static_cast<int>(m_childEntityIdOrder.size());
     LyShine::EntityArray children;
     children.reserve(numChildren);
 
@@ -477,7 +479,7 @@ AZ::Entity* UiElementComponent::FindFrontmostChildContainingPoint(AZ::Vector2 po
     // this traverses all of the elements in reverse hierarchy order and returns the first one that
     // is containing the point.
     // If necessary, this could be optimized using a spatial partitioning data structure.
-    for (int i = m_childEntityIdOrder.size() - 1; !matchElem && i >= 0; i--)
+    for (int i = static_cast<int>(m_childEntityIdOrder.size() - 1); !matchElem && i >= 0; i--)
     {
         AZ::EntityId child = m_childEntityIdOrder[i].m_entityId;
 
@@ -559,7 +561,7 @@ LyShine::EntityArray UiElementComponent::FindAllChildrenIntersectingRect(const A
         // Check children of this child first
         // child elements do not have to be contained in the parent element's bounds
         LyShine::EntityArray childMatches = childElementComponent->FindAllChildrenIntersectingRect(bound0, bound1, isInGame);
-        result.push_back(childMatches);
+        result.insert(result.end(),childMatches.begin(),childMatches.end());
 
         bool isSelectable = true;
         if (!isInGame)
@@ -602,7 +604,7 @@ AZ::EntityId UiElementComponent::FindInteractableToHandleEvent(AZ::Vector2 point
         EBUS_EVENT_ID_RESULT(isMasked, GetEntityId(), UiInteractionMaskBus, IsPointMasked, point);
         if (!isMasked)
         {
-            for (int i = m_childEntityIdOrder.size() - 1; !result.IsValid() && i >= 0; i--)
+            for (int i = static_cast<int>(m_childEntityIdOrder.size() - 1); !result.IsValid() && i >= 0; i--)
             {
                 result = GetChildElementComponent(i)->FindInteractableToHandleEvent(point);
             }
@@ -674,7 +676,7 @@ AZ::Entity* UiElementComponent::FindChildByName(const LyShine::NameType& name)
 
     if (AreChildPointersValid())
     {
-        int numChildren = m_childElementComponents.size();
+        int numChildren = static_cast<int>(m_childElementComponents.size());
         for (int i = 0; i < numChildren; ++i)
         {
             AZ::Entity* childEntity = GetChildElementComponent(i)->GetEntity();
@@ -709,7 +711,7 @@ AZ::Entity* UiElementComponent::FindDescendantByName(const LyShine::NameType& na
 
     if (AreChildPointersValid())
     {
-        int numChildren = m_childElementComponents.size();
+        int numChildren = static_cast<int>(m_childElementComponents.size());
         for (int i = 0; i < numChildren; ++i)
         {
             UiElementComponent* childElementComponent = GetChildElementComponent(i);
@@ -771,7 +773,7 @@ AZ::Entity* UiElementComponent::FindChildByEntityId(AZ::EntityId id)
 {
     AZ::Entity* matchElem = nullptr;
 
-    int numChildren = m_childEntityIdOrder.size();
+    int numChildren = static_cast<int>(m_childEntityIdOrder.size());
     for (int i = 0; i < numChildren; ++i)
     {
         if (id == m_childEntityIdOrder[i].m_entityId)
@@ -803,7 +805,7 @@ AZ::Entity* UiElementComponent::FindDescendantById(LyShine::ElementId id)
 
     if (AreChildPointersValid())
     {
-        int numChildren = m_childEntityIdOrder.size();
+        int numChildren = static_cast<int>(m_childEntityIdOrder.size());
         for (int i = 0; !match && i < numChildren; ++i)
         {
             match = GetChildElementComponent(i)->FindDescendantById(id);
@@ -825,7 +827,7 @@ void UiElementComponent::FindDescendantElements(AZStd::function<bool(const AZ::E
 {
     if (AreChildPointersValid())
     {
-        int numChildren = m_childElementComponents.size();
+        int numChildren = static_cast<int>(m_childElementComponents.size());
         for (int i = 0; i < numChildren; ++i)
         {
             UiElementComponent* childElementComponent = GetChildElementComponent(i);
@@ -860,7 +862,7 @@ void UiElementComponent::CallOnDescendantElements(AZStd::function<void(const AZ:
 {
     if (AreChildPointersValid())
     {
-        int numChildren = m_childEntityIdOrder.size();
+        int numChildren = static_cast<int>(m_childEntityIdOrder.size());
         for (int i = 0; i < numChildren; ++i)
         {
             callFunction(m_childEntityIdOrder[i].m_entityId);
@@ -941,7 +943,7 @@ bool UiElementComponent::GetAreElementAndAncestorsEnabled()
     {
         return m_parentElementComponent->GetAreElementAndAncestorsEnabled();
     }
-    
+
     return true;
 }
 
@@ -1068,7 +1070,7 @@ void UiElementComponent::AddChild(AZ::Entity* child, AZ::Entity* insertBefore)
 
     if (insertBefore)
     {
-        int numChildren = m_childEntityIdOrder.size();
+        int numChildren = static_cast<int>(m_childEntityIdOrder.size());
         for (int i = 0; i < numChildren; ++i)
         {
             if (m_childEntityIdOrder[i].m_entityId == insertBefore->GetId())
@@ -1211,8 +1213,8 @@ bool UiElementComponent::FixupPostLoad(AZ::Entity* entity, UiCanvasComponent* ca
 #ifdef AZ_DEBUG_BUILD
     // check that the m_childEntityIdOrder is ordered such that the m_sortIndex fields are in order and contiguous
     {
-        int numChildren = m_childEntityIdOrder.size();
-        for (AZ::u64 index = 0; index < numChildren; ++index)
+        size_t numChildren = m_childEntityIdOrder.size();
+        for (size_t index = 0; index < numChildren; ++index)
         {
             if (m_childEntityIdOrder[index].m_sortIndex != index)
             {
@@ -1325,7 +1327,7 @@ void UiElementComponent::Reflect(AZ::ReflectContext* context)
         serializeContext->Class<ChildEntityIdOrderEntry>()
             // Persistent IDs for this are simply the entity id
             ->PersistentId([](const void* instance) -> AZ::u64
-            { 
+            {
                 const ChildEntityIdOrderEntry* entry = reinterpret_cast<const ChildEntityIdOrderEntry*>(instance);
                 return static_cast<AZ::u64>(entry->m_entityId);
             })
@@ -1678,7 +1680,7 @@ void UiElementComponent::OnPatchEnd(const AZ::DataPatchNodeInfo& patchInfo)
                             entityIdLoaded = true;
                         }
                     }
-                    
+
                     if (entityIdLoaded)
                     {
                         oldChildrenDataPatchFound = true;
@@ -1696,7 +1698,7 @@ void UiElementComponent::OnPatchEnd(const AZ::DataPatchNodeInfo& patchInfo)
             // the lookupAddress is the same length as the "Children" address plus an index
             // check if the address is childrenAddress plus an extra element
             bool match = true;
-            for (int i = childrenAddress.size() - 1; i >= 0; --i)
+            for (int i = static_cast<int>(childrenAddress.size() - 1); i >= 0; --i)
             {
                 if (lookupAddress[i] != childrenAddress[i])
                 {
@@ -1810,7 +1812,7 @@ void UiElementComponent::OnPatchEnd(const AZ::DataPatchNodeInfo& patchInfo)
                 m_childEntityIdOrder.push_back({elementChanged.second, m_childEntityIdOrder.size()});
             }
         }
- 
+
         // sort the added elements by index
         AZStd::sort(elementsAdded.begin(), elementsAdded.end());
         for (auto& elementAdded : elementsAdded)
@@ -1827,7 +1829,7 @@ void UiElementComponent::OnPatchEnd(const AZ::DataPatchNodeInfo& patchInfo)
     // This will sort all the entity order entries by sort index (primary) and entity id (secondary) which should never result in any collisions
     // This is used since slice data patching may create duplicate entries for the same sort index, missing indices and the like.
     // It should never result in multiple entity id entries since the serialization of this data uses a persistent id which is the entity id
-    int numChildren = m_childEntityIdOrder.size();
+    int numChildren = static_cast<int>(m_childEntityIdOrder.size());
     if (numChildren > 0)
     {
         AZStd::sort(m_childEntityIdOrder.begin(), m_childEntityIdOrder.end());

@@ -1,11 +1,11 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
-#include <PhysX_precompiled.h>
 #include <System/PhysXJob.h>
 #include <AzCore/Debug/Profiler.h>
 
@@ -19,7 +19,7 @@ namespace PhysX
 
     void PhysXJob::Process()
     {
-        AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::Physics, m_pxTask.getName());
+        AZ_PROFILE_SCOPE(Physics, m_pxTask.getName());
         m_pxTask.run();
         m_pxTask.release();
     }

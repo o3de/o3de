@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -74,6 +75,12 @@ namespace AZ
             const AZ::Name& GetTargetedPassDebuggingName() const override;
             void ConnectEvent(OnReadyLoadTemplatesEvent::Handler& handler) override;
             PassSystemState GetState() const override;
+            SwapChainPass* FindSwapChainPass(AzFramework::NativeWindowHandle windowHandle) const override;
+
+            // PassSystemInterface statistics related functions
+            void IncrementFrameDrawItemCount(u32 numDrawItems) override;
+            void IncrementFrameRenderPassCount() override;
+            PassSystemFrameStatistics GetFrameStatistics() override;
 
             // PassSystemInterface factory related functions...
             void AddPassCreator(Name className, PassCreator createFunction) override;
@@ -85,14 +92,13 @@ namespace AZ
 
             // PassSystemInterface library related functions...
             bool HasPassesForTemplateName(const Name& templateName) const override;
-            const AZStd::vector<Pass*>& GetPassesForTemplateName(const Name& templateName) const override;
             bool AddPassTemplate(const Name& name, const AZStd::shared_ptr<PassTemplate>& passTemplate) override;
             const AZStd::shared_ptr<PassTemplate> GetPassTemplate(const Name& name) const override;
             void RemovePassFromLibrary(Pass* pass) override;
             void RegisterPass(Pass* pass) override;
             void UnregisterPass(Pass* pass) override;
-            AZStd::vector<Pass*> FindPasses(const PassFilter& passFilter) const override;
-            SwapChainPass* FindSwapChainPass(AzFramework::NativeWindowHandle windowHandle) const override;
+            void ForEachPass(const PassFilter& filter, AZStd::function<PassFilterExecutionFlow(Pass*)> passFunction) override;
+            Pass* FindFirstPass(const PassFilter& filter) override;
 
         private:
             // Returns the root of the pass tree hierarchy
@@ -114,6 +120,9 @@ namespace AZ
             void QueueForBuild(Pass* pass) override;
             void QueueForRemoval(Pass* pass) override;
             void QueueForInitialization(Pass* pass) override;
+
+            // Resets the frame statistic counters
+            void ResetFrameStatistics();
 
             // Lists for queuing passes for various function calls
             // Name of the list reflects the pass function it will call
@@ -140,13 +149,16 @@ namespace AZ
             AZ::Name m_targetedPassDebugName;
 
             // Counts the number of passes
-            int32_t m_passCounter = 0;
+            u32 m_passCounter = 0;
 
             // Events
             OnReadyLoadTemplatesEvent m_loadTemplatesEvent;
 
             // Used to track what phase of execution the pass system is in
             PassSystemState m_state = PassSystemState::Unitialized;
+
+            // Counters used to gather statistics about the frame
+            PassSystemFrameStatistics m_frameStatistics;
         };
     }   // namespace RPI
 }   // namespace AZ

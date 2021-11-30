@@ -1,12 +1,12 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
 
-#include "Maestro_precompiled.h"
 #include <AzCore/Serialization/SerializeContext.h>
 #include "TimeRangesTrack.h"
 
@@ -69,7 +69,7 @@ void CTimeRangesTrack::GetKeyInfo(int key, const char*& description, float& dura
 
 int CTimeRangesTrack::GetActiveKeyIndexForTime(const float time)
 {
-    const unsigned int numKeys = m_keys.size();
+    const unsigned int numKeys = static_cast<unsigned int>(m_keys.size());
 
     if (numKeys == 0 || m_keys[0].time > time)
     {

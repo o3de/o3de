@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -27,16 +28,11 @@ enum PropertyType
     ePropertyAngle,
     ePropertyFloatCurve,
     ePropertyColorCurve,
-    ePropertyFile,
     ePropertyTexture,
-    ePropertyAnimation,
-    ePropertyModel,
     ePropertySelection,
     ePropertyList,
     ePropertyShader,
-    ePropertyDeprecated2, // formerly ePropertyMaterial
     ePropertyEquip,
-    ePropertyReverbPreset,
     ePropertyLocalString,
     ePropertyDeprecated0, // formerly ePropertyCustomAction
     ePropertyGameToken,
@@ -47,7 +43,6 @@ enum PropertyType
     ePropertyLightAnimation,
     ePropertyDeprecated1, // formerly ePropertyFlare
     ePropertyParticleName,
-    ePropertyGeomCache,
     ePropertyAudioTrigger,
     ePropertyAudioSwitch,
     ePropertyAudioSwitchState,

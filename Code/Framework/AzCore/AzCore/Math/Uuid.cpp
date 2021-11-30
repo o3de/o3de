@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -55,7 +56,7 @@ namespace AZ
 
     Uuid Uuid::CreateStringSkipWarnings(const char* string, size_t stringLength, [[maybe_unused]] bool skipWarnings)
     {
-        if (string == NULL)
+        if (string == nullptr)
         {
             return Uuid::CreateNull();
         }
@@ -70,7 +71,7 @@ namespace AZ
 
         if (len < 32 || len > 38)
         {
-            AZ_Warning("Math", skipWarnings, "Invalid UUID format %s (must be) {xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx} (or without dashes and braces)", string != NULL ? string : "null");
+            AZ_Warning("Math", skipWarnings, "Invalid UUID format %s (must be) {xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx} (or without dashes and braces)", string != nullptr ? string : "null");
             return Uuid::CreateNull();
         }
 
@@ -134,18 +135,12 @@ namespace AZ
         {
             stringLength = strlen(uuidString);
         }
-        if (stringLength > MaxPermissiveStringSize)
-        {
-            if (!skipWarnings)
-            {
-                AZ_Warning("Math", false, "Can't create UUID from string length %zu over maximum %zu", stringLength, MaxPermissiveStringSize);
-            }
-            return Uuid::CreateNull();
-        }
+
         size_t newLength{ 0 };
         char createString[MaxPermissiveStringSize];
 
-        for (size_t curPos = 0; curPos < stringLength; ++curPos)
+        // Loop until we get to the end of the string OR stop once we've accumulated a full UUID string worth of data
+        for (size_t curPos = 0; curPos < stringLength && newLength < ValidUuidStringLength; ++curPos)
         {
             char curChar = uuidString[curPos];
             switch (curChar)

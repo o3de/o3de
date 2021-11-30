@@ -1,12 +1,14 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
 #include <Decals/DecalComponentController.h>
 
+#include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
@@ -228,7 +230,7 @@ namespace AZ
         {
             DecalNotificationBus::Event(m_entityId, &DecalNotifications::OnMaterialChanged, m_configuration.m_materialAsset);
 
-            if (m_featureProcessor && m_configuration.m_materialAsset.GetId().IsValid())
+            if (m_featureProcessor)
             {
                 m_featureProcessor->SetDecalMaterial(m_handle, m_configuration.m_materialAsset.GetId());
             }

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -16,6 +17,9 @@
 #include <ISystem.h>
 #include <AzFramework/Archive/IArchive.h>
 #include <IConsole.h>
+#include <AzCore/std/string/string.h>
+#include <AzCore/std/string/conversions.h>
+#include <AzCore/StringFunc/StringFunc.h>
 
 #include "platform.h"
 
@@ -30,26 +34,28 @@
 #define CRY_NATIVE_PATH_SEPSTR  DOS_PATH_SEP_STR
 #endif
 
+typedef AZStd::fixed_string<512> stack_string;
+
 namespace PathUtil
 {
     const static int maxAliasLength = 32;
-    inline string GetLocalizationFolder()
+    inline AZStd::string GetLocalizationFolder()
     {
         return gEnv->pCryPak->GetLocalizationFolder();
     }
 
-    inline string GetLocalizationRoot()
+    inline AZStd::string GetLocalizationRoot()
     {
         return gEnv->pCryPak->GetLocalizationRoot();
     }
 
     //! Convert a path to the uniform form.
-    inline string ToUnixPath(const string& strPath)
+    inline AZStd::string ToUnixPath(const AZStd::string& strPath)
     {
-        if (strPath.find(DOS_PATH_SEP_CHR) != string::npos)
+        if (strPath.find(DOS_PATH_SEP_CHR) != AZStd::string::npos)
         {
-            string path = strPath;
-            path.replace(DOS_PATH_SEP_CHR, UNIX_PATH_SEP_CHR);
+            AZStd::string path = strPath;
+            AZ::StringFunc::Replace(path, DOS_PATH_SEP_CHR, UNIX_PATH_SEP_CHR);
             return path;
         }
         return strPath;
@@ -72,19 +78,19 @@ namespace PathUtil
     }
 
     //! Convert a path to the DOS form.
-    inline string ToDosPath(const string& strPath)
+    inline AZStd::string ToDosPath(const AZStd::string& strPath)
     {
-        if (strPath.find(UNIX_PATH_SEP_CHR) != string::npos)
+        if (strPath.find(UNIX_PATH_SEP_CHR) != AZStd::string::npos)
         {
-            string path = strPath;
-            path.replace(UNIX_PATH_SEP_CHR, DOS_PATH_SEP_CHR);
+            AZStd::string path = strPath;
+            AZ::StringFunc::Replace(path, UNIX_PATH_SEP_CHR, DOS_PATH_SEP_CHR);
             return path;
         }
         return strPath;
     }
 
     //! Convert a path to the Native form.
-    inline string ToNativePath(const string& strPath)
+    inline AZStd::string ToNativePath(const AZStd::string& strPath)
     {
 #if AZ_LEGACY_CRYCOMMON_TRAIT_USE_UNIX_PATHS
         return ToUnixPath(strPath);
@@ -94,10 +100,10 @@ namespace PathUtil
     }
 
     //! Convert a path to lowercase form
-    inline string ToLower(const string& strPath)
+    inline AZStd::string ToLower(const AZStd::string& strPath)
     {
-        string path = strPath;
-        path.MakeLower();
+        AZStd::string path = strPath;
+        AZStd::to_lower(path.begin(), path.end());
         return path;
     }
 
@@ -107,9 +113,9 @@ namespace PathUtil
     //! @param path [OUT] Extracted file path.
     //! @param filename [OUT] Extracted file (without extension).
     //! @param ext [OUT] Extracted files extension.
-    inline void Split(const string& filepath, string& path, string& filename, string& fext)
+    inline void Split(const AZStd::string& filepath, AZStd::string& path, AZStd::string& filename, AZStd::string& fext)
     {
-        path = filename = fext = string();
+        path = filename = fext = AZStd::string();
         if (filepath.empty())
         {
             return;
@@ -141,16 +147,16 @@ namespace PathUtil
     //! @param filepath [IN] Full file name inclusing path.
     //! @param path [OUT] Extracted file path.
     //! @param file [OUT] Extracted file (with extension).
-    inline void Split(const string& filepath, string& path, string& file)
+    inline void Split(const AZStd::string& filepath, AZStd::string& path, AZStd::string& file)
     {
-        string fext;
+        AZStd::string fext;
         Split(filepath, path, file, fext);
         file += fext;
     }
 
     // Extract extension from full specified file path
     // Returns
-    //   pointer to the extension (without .) or pointer to an empty 0-terminated string
+    //   pointer to the extension (without .) or pointer to an empty 0-terminated AZStd::string
     inline const char* GetExt(const char* filepath)
     {
         const char* str = filepath;
@@ -173,7 +179,7 @@ namespace PathUtil
     }
 
     //! Extract path from full specified file path.
-    inline string GetPath(const string& filepath)
+    inline AZStd::string GetPath(const AZStd::string& filepath)
     {
         const char* str = filepath.c_str();
         for (const char* p = str + filepath.length() - 1; p >= str; --p)
@@ -190,9 +196,9 @@ namespace PathUtil
     }
 
     //! Extract path from full specified file path.
-    inline string GetPath(const char* filepath)
+    inline AZStd::string GetPath(const char* filepath)
     {
-        return GetPath(string(filepath));
+        return GetPath(AZStd::string(filepath));
     }
 
     //! Extract path from full specified file path.
@@ -213,7 +219,7 @@ namespace PathUtil
     }
 
     //! Extract file name with extension from full specified file path.
-    inline string GetFile(const string& filepath)
+    inline AZStd::string GetFile(const AZStd::string& filepath)
     {
         const char* str = filepath.c_str();
         for (const char* p = str + filepath.length() - 1; p >= str; --p)
@@ -246,7 +252,7 @@ namespace PathUtil
     }
 
     //! Replace extension for given file.
-    inline void RemoveExtension(string& filepath)
+    inline void RemoveExtension(AZStd::string& filepath)
     {
         const char* str = filepath.c_str();
         for (const char* p = str + filepath.length() - 1; p >= str; --p)
@@ -290,15 +296,15 @@ namespace PathUtil
     }
 
     //! Extract file name without extension from full specified file path.
-    inline string GetFileName(const string& filepath)
+    inline AZStd::string GetFileName(const AZStd::string& filepath)
     {
-        string file = filepath;
+        AZStd::string file = filepath;
         RemoveExtension(file);
         return GetFile(file);
     }
 
     //! Removes the trailing slash or backslash from a given path.
-    inline string RemoveSlash(const string& path)
+    inline AZStd::string RemoveSlash(const AZStd::string& path)
     {
         if (path.empty() || (path[path.length() - 1] != '/' && path[path.length() - 1] != '\\'))
         {
@@ -308,13 +314,13 @@ namespace PathUtil
     }
 
     //! get slash
-    inline string GetSlash()
+    inline AZStd::string GetSlash()
     {
         return CRY_NATIVE_PATH_SEPSTR;
     }
 
     //! add a backslash if needed
-    inline string AddSlash(const string& path)
+    inline AZStd::string AddSlash(const AZStd::string& path)
     {
         if (path.empty() || path[path.length() - 1] == '/')
         {
@@ -342,9 +348,9 @@ namespace PathUtil
     }
 
     //! add a backslash if needed
-    inline string AddSlash(const char* path)
+    inline AZStd::string AddSlash(const char* path)
     {
-        return AddSlash(string(path));
+        return AddSlash(AZStd::string(path));
     }
 
     inline stack_string ReplaceExtension(const stack_string& filepath, const char* ext)
@@ -363,9 +369,9 @@ namespace PathUtil
     }
 
     //! Replace extension for given file.
-    inline string ReplaceExtension(const string& filepath, const char* ext)
+    inline AZStd::string ReplaceExtension(const AZStd::string& filepath, const char* ext)
     {
-        string str = filepath;
+        AZStd::string str = filepath;
         if (ext != 0)
         {
             RemoveExtension(str);
@@ -379,29 +385,30 @@ namespace PathUtil
     }
 
     //! Replace extension for given file.
-    inline string ReplaceExtension(const char* filepath, const char* ext)
+    inline AZStd::string ReplaceExtension(const char* filepath, const char* ext)
     {
-        return ReplaceExtension(string(filepath), ext);
+        return ReplaceExtension(AZStd::string(filepath), ext);
     }
 
     //! Makes a fully specified file path from path and file name.
-    inline string Make(const string& path, const string& file)
+    inline AZStd::string Make(const AZStd::string& path, const AZStd::string& file)
     {
         return AddSlash(path) + file;
     }
 
     //! Makes a fully specified file path from path and file name.
-    inline string Make(const string& dir, const string& filename, const string& ext)
+    inline AZStd::string Make(const AZStd::string& dir, const AZStd::string& filename, const AZStd::string& ext)
     {
-        string path = ReplaceExtension(filename, ext);
+        AZStd::string path = filename;
+        AZ::StringFunc::Path::ReplaceExtension(path, ext.c_str());
         path = AddSlash(dir) + path;
         return path;
     }
 
     //! Makes a fully specified file path from path and file name.
-    inline string Make(const string& dir, const string& filename, const char* ext)
+    inline AZStd::string Make(const AZStd::string& dir, const AZStd::string& filename, const char* ext)
     {
-        return Make(dir, filename, string(ext));
+        return Make(dir, filename, AZStd::string(ext));
     }
 
     //! Makes a fully specified file path from path and file name.
@@ -413,42 +420,43 @@ namespace PathUtil
     //! Makes a fully specified file path from path and file name.
     inline stack_string Make(const stack_string& dir, const stack_string& filename, const stack_string& ext)
     {
-        stack_string path = ReplaceExtension(filename, ext);
-        path = AddSlash(dir) + path;
-        return path;
+        AZStd::string path = filename.c_str();
+        AZ::StringFunc::Path::ReplaceExtension(path, ext.c_str());
+        path = AddSlash(dir.c_str()) + path;
+        return stack_string(path.c_str());
     }
 
     //! Makes a fully specified file path from path and file name.
-    inline string Make(const char* path, const string& file)
+    inline AZStd::string Make(const char* path, const AZStd::string& file)
     {
-        return Make(string(path), file);
+        return Make(AZStd::string(path), file);
     }
 
     //! Makes a fully specified file path from path and file name.
-    inline string Make(const string& path, const char* file)
+    inline AZStd::string Make(const AZStd::string& path, const char* file)
     {
-        return Make(path, string(file));
+        return Make(path, AZStd::string(file));
     }
 
     //! Makes a fully specified file path from path and file name.
-    inline string Make(const char path[], const char file[])
+    inline AZStd::string Make(const char path[], const char file[])
     {
-        return Make(string(path), string(file));
+        return Make(AZStd::string(path), AZStd::string(file));
     }
 
     //! Makes a fully specified file path from path and file name.
-    inline string Make(const char* path, const char* file, const char* ext)
+    inline AZStd::string Make(const char* path, const char* file, const char* ext)
     {
-        return Make(string(path), string(file), string(ext));
+        return Make(AZStd::string(path), AZStd::string(file), AZStd::string(ext));
     }
 
     //! Makes a fully specified file path from path and file name.
-    inline string MakeFullPath(const string& relativePath)
+    inline AZStd::string MakeFullPath(const AZStd::string& relativePath)
     {
         return relativePath;
     }
 
-    inline string GetParentDirectory (const string& strFilePath, int nGeneration = 1)
+    inline AZStd::string GetParentDirectory (const AZStd::string& strFilePath, int nGeneration = 1)
     {
         for (const char* p = strFilePath.c_str() + strFilePath.length() - 2; // -2 is for the possible trailing slash: there always must be some trailing symbol which is the file/directory name for which we should get the parent
              p >= strFilePath.c_str();
@@ -457,23 +465,23 @@ namespace PathUtil
             switch (*p)
             {
             case ':':
-                return string (strFilePath.c_str(), p);
+                return AZStd::string(strFilePath.c_str(), p);
             case '/':
             case '\\':
                 // we've reached a path separator - return everything before it.
                 if (!--nGeneration)
                 {
-                    return string(strFilePath.c_str(), p);
+                    return AZStd::string(strFilePath.c_str(), p);
                 }
                 break;
             }
         }
         // it seems the file name is a pure name, without path or extension
-        return string();
+        return AZStd::string();
     }
 
     template<typename T, size_t SIZE>
-    inline CryStackStringT<T, SIZE> GetParentDirectoryStackString(const CryStackStringT<T, SIZE>& strFilePath, int nGeneration = 1)
+    inline AZStd::basic_fixed_string<T, SIZE> GetParentDirectoryStackString(const AZStd::basic_fixed_string<T, SIZE>& strFilePath, int nGeneration = 1)
     {
         for (const char* p = strFilePath.c_str() + strFilePath.length() - 2; // -2 is for the possible trailing slash: there always must be some trailing symbol which is the file/directory name for which we should get the parent
              p >= strFilePath.c_str();
@@ -482,19 +490,19 @@ namespace PathUtil
             switch (*p)
             {
             case ':':
-                return CryStackStringT<T, SIZE> (strFilePath.c_str(), p);
+                return AZStd::basic_fixed_string<T, SIZE> (strFilePath.c_str(), p);
             case '/':
             case '\\':
                 // we've reached a path separator - return everything before it.
                 if (!--nGeneration)
                 {
-                    return CryStackStringT<T, SIZE>(strFilePath.c_str(), p);
+                    return AZStd::basic_fixed_string<T, SIZE>(strFilePath.c_str(), p);
                 }
                 break;
             }
         }
         // it seems the file name is a pure name, without path or extension
-        return CryStackStringT<T, SIZE>();
+        return AZStd::basic_fixed_string<T, SIZE>();
     }
 
     //////////////////////////////////////////////////////////////////////////
@@ -502,7 +510,8 @@ namespace PathUtil
     //    Make a game correct path out of any input path.
     inline stack_string MakeGamePath(const stack_string& path)
     {
-        stack_string relativePath(ToUnixPath(path));
+        stack_string relativePath = path;
+        ToUnixPath(relativePath);
 
         if ((!gEnv) || (!gEnv->pFileIO))
         {
@@ -511,25 +520,25 @@ namespace PathUtil
         unsigned int index = 0;
         if (relativePath.length() && relativePath[index] == '@') // already aliased
         {
-            if (relativePath.compareNoCase(0, 9, "@assets@/") == 0)
+            if (AZ::StringFunc::Equal(relativePath.c_str(), "@products@/", false, 9))
             {
                 return relativePath.substr(9); // assets is assumed.
             }
             return relativePath;
         }
 
-        const char* rootValue = gEnv->pFileIO->GetAlias("@root@");
+        const char* rootValue = gEnv->pFileIO->GetAlias("@products@");
         if (rootValue)
         {
             stack_string rootPath(ToUnixPath(rootValue));
             if (
                 (rootPath.size() > 0) &&
                 (rootPath.size() < relativePath.size()) &&
-                (relativePath.compareNoCase(0, rootPath.size(), rootPath) == 0)
+                (AZ::StringFunc::Equal(relativePath.c_str(), rootPath.c_str(), false, rootPath.size()))
                 )
             {
                 stack_string chopped_string = relativePath.substr(rootPath.size());
-                stack_string rooted = stack_string("@root@") + chopped_string;
+                stack_string rooted = stack_string("@products@") + chopped_string;
                 return rooted;
             }
         }
@@ -542,13 +551,13 @@ namespace PathUtil
     //////////////////////////////////////////////////////////////////////////
     // Description:
     //    Make a game correct path out of any input path.
-    inline string MakeGamePath(const string& path)
+    inline AZStd::string MakeGamePath(const AZStd::string& path)
     {
         stack_string stackPath(path.c_str());
         return MakeGamePath(stackPath).c_str();
     }
 
-    // returns true if the string matches the wildcard
+    // returns true if the AZStd::string matches the wildcard
     inline bool MatchWildcard (const char* szString, const char* szWildcard)
     {
         const char* pString = szString, * pWildcard = szWildcard;
@@ -594,7 +603,7 @@ namespace PathUtil
 
             if (!*pWildcard)
             {
-                return true;     // the rest of the string doesn't matter: the wildcard ends with *
+                return true;     // the rest of the AZStd::string doesn't matter: the wildcard ends with *
             }
             for (; *pString; ++pString)
             {

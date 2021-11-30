@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -80,8 +81,6 @@ namespace AZ
         );
 
         void ReflectRenderStateEnums(ReflectContext* context);
-
-        AZ_ASSERT_NO_ALIGNMENT_PADDING_BEGIN
 
         struct RasterState
         {
@@ -214,8 +213,6 @@ namespace AZ
         static constexpr uint32_t RenderStates_InvalidUInt = std::numeric_limits<uint32_t>::max();
         static constexpr int32_t RenderStates_InvalidInt = std::numeric_limits<int32_t>::max();
         static constexpr float RenderStates_InvalidFloat = std::numeric_limits<float>::max();
-
-        AZ_ASSERT_NO_ALIGNMENT_PADDING_END
 
         //! Merges any render states in stateToMerge into the result state object. 
         //! The values in stateToMerge are only copied over into the result if they are

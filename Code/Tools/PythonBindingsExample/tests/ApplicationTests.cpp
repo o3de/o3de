@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -58,7 +59,7 @@ namespace PythonBindingsExample
 
     AZStd::unique_ptr<PythonBindingsExample::Application> PythonBindingsExampleTest::s_application;
 
-    TEST_F(PythonBindingsExampleTest, Application_Run_Works)
+    TEST_F(PythonBindingsExampleTest, Application_Run_Succeeds)
     {
         EXPECT_TRUE(s_application->Run());
     }
@@ -86,7 +87,7 @@ namespace PythonBindingsExample
     TEST_F(PythonBindingsExampleTest, Application_ImportAzLmbrPaths_Works)
     {
         ApplicationParameters params;
-        params.m_pythonStatement = "import azlmbr.paths; print (azlmbr.paths.engroot); print (azlmbr.paths.devroot)";
+        params.m_pythonStatement = "import azlmbr.paths; print (azlmbr.paths.engroot)";
         EXPECT_TRUE(s_application->RunWithParameters(params));
     }
 

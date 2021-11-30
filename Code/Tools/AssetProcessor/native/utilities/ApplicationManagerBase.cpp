@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -47,8 +48,6 @@ static const qint64 s_ReservedDiskSpaceInBytes = 256 * 1024;
 
 //! Maximum number of temp folders allowed
 static const int s_MaximumTempFolders = 10000;
-
-const char AdditionalScanFolders[] = "additionalScanFolders";
 
 ApplicationManagerBase::ApplicationManagerBase(int* argc, char*** argv, QObject* parent)
     : ApplicationManager(argc, argv, parent)
@@ -154,55 +153,90 @@ void ApplicationManagerBase::InitAssetProcessorManager()
     const AzFramework::CommandLine* commandLine = nullptr;
     AzFramework::ApplicationRequests::Bus::BroadcastResult(commandLine, &AzFramework::ApplicationRequests::GetCommandLine);
 
-    if(commandLine->HasSwitch("zeroAnalysisMode"))
+    struct APCommandLineSwitch
+    {
+        APCommandLineSwitch(const char* switchTitle, const char* helpText)
+            : m_switch(switchTitle)
+            , m_helpText(helpText)
+        {
+
+        }
+        const char* m_switch;
+        const char* m_helpText;
+    };
+
+    const APCommandLineSwitch Command_waitOnLaunch("waitOnLaunch", "Briefly pauses Asset Processor during initializiation. Useful if you want to attach a debugger.");
+    const APCommandLineSwitch Command_zeroAnalysisMode("zeroAnalysisMode", "Enables using file modification time when examining source assets for processing.");
+    const APCommandLineSwitch Command_enableQueryLogging("enableQueryLogging", "Enables logging database queries.");
+    const APCommandLineSwitch Command_dependencyScanPattern("dependencyScanPattern", "Scans assets that match the given pattern for missing product dependencies.");
+    const APCommandLineSwitch Command_dsp("dsp", Command_dependencyScanPattern.m_helpText);
+    const APCommandLineSwitch Command_fileDependencyScanPattern("fileDependencyScanPattern", "Used with dependencyScanPattern to farther filter the scan.");
+    const APCommandLineSwitch Command_fdsp("fdsp", Command_fileDependencyScanPattern.m_helpText);
+    const APCommandLineSwitch Command_additionalScanFolders("additionalScanFolders", "Used with dependencyScanPattern to farther filter the scan.");
+    const APCommandLineSwitch Command_dependencyScanMaxIteration("dependencyScanMaxIteration", "Used to limit the number of recursive searches per line when running dependencyScanPattern.");
+    const APCommandLineSwitch Command_warningLevel("warningLevel", "Configure the error and warning reporting level for AssetProcessor. Pass in 1 for fatal errors, 2 for fatal errors and warnings.");
+    const APCommandLineSwitch Command_acceptInput("acceptInput", "Enable external control messaging via the ControlRequestHandler, used with automated tests.");
+    const APCommandLineSwitch Command_debugOutput("debugOutput", "When enabled, builders that support it will output debug information as product assets. Used primarily with scene files.");
+    const APCommandLineSwitch Command_sortJobsByDBSourceName("sortJobsByDBSourceName", "When enabled, sorts pending jobs with equal priority and dependencies by database source name instead of job ID. Useful for automated tests to process assets in the same order each time.");
+    const APCommandLineSwitch Command_truncatefingerprint("truncatefingerprint", "Truncates the fingerprint used for processed assets. Useful if you plan to compress product assets to share on another machine because some compression formats like zip will truncate file mod timestamps.");
+    const APCommandLineSwitch Command_help("help", "Displays this message.");
+    const APCommandLineSwitch Command_h("h", Command_help.m_helpText);
+
+    if (commandLine->HasSwitch(Command_waitOnLaunch.m_switch))
+    {
+        // Useful for attaching the debugger, this forces a short pause.
+        AZStd::this_thread::sleep_for(AZStd::chrono::seconds(20));
+    }
+
+    if (commandLine->HasSwitch(Command_zeroAnalysisMode.m_switch))
     {
         m_assetProcessorManager->SetEnableModtimeSkippingFeature(true);
     }
     
-    if(commandLine->HasSwitch("enableQueryLogging"))
+    if (commandLine->HasSwitch(Command_enableQueryLogging.m_switch))
     {
         m_assetProcessorManager->SetQueryLogging(true);
     }
 
-    if (commandLine->HasSwitch("dependencyScanPattern"))
+    if (commandLine->HasSwitch(Command_dependencyScanPattern.m_switch))
     {
-        m_dependencyScanPattern = commandLine->GetSwitchValue("dependencyScanPattern", 0).c_str();
+        m_dependencyScanPattern = commandLine->GetSwitchValue(Command_dependencyScanPattern.m_switch, 0).c_str();
     }
-    else if (commandLine->HasSwitch("dsp"))
+    else if (commandLine->HasSwitch(Command_dsp.m_switch))
     {
-        m_dependencyScanPattern = commandLine->GetSwitchValue("dsp", 0).c_str();
+        m_dependencyScanPattern = commandLine->GetSwitchValue(Command_dsp.m_switch, 0).c_str();
     }
     
     m_fileDependencyScanPattern = "*";
 
-    if (commandLine->HasSwitch("fileDependencyScanPattern"))
+    if (commandLine->HasSwitch(Command_fileDependencyScanPattern.m_switch))
     {
-        m_fileDependencyScanPattern = commandLine->GetSwitchValue("fileDependencyScanPattern", 0).c_str();
+        m_fileDependencyScanPattern = commandLine->GetSwitchValue(Command_fileDependencyScanPattern.m_switch, 0).c_str();
     }
-    else if (commandLine->HasSwitch("fdsp"))
+    else if (commandLine->HasSwitch(Command_fdsp.m_switch))
     {
-        m_fileDependencyScanPattern = commandLine->GetSwitchValue("fdsp", 0).c_str();
+        m_fileDependencyScanPattern = commandLine->GetSwitchValue(Command_fdsp.m_switch, 0).c_str();
     }
 
-    if (commandLine->HasSwitch(AdditionalScanFolders))
+    if (commandLine->HasSwitch(Command_additionalScanFolders.m_switch))
     {
-        for (size_t idx = 0; idx < commandLine->GetNumSwitchValues(AdditionalScanFolders); idx++)
+        for (size_t idx = 0; idx < commandLine->GetNumSwitchValues(Command_additionalScanFolders.m_switch); idx++)
         {
-            AZStd::string value = commandLine->GetSwitchValue(AdditionalScanFolders, idx);
+            AZStd::string value = commandLine->GetSwitchValue(Command_additionalScanFolders.m_switch, idx);
             m_dependencyAddtionalScanFolders.emplace_back(AZStd::move(value));
         }
     }
 
-    if (commandLine->HasSwitch("dependencyScanMaxIteration"))
+    if (commandLine->HasSwitch(Command_dependencyScanMaxIteration.m_switch))
     {
-        AZStd::string maxIterationAsString = commandLine->GetSwitchValue("dependencyScanMaxIteration", 0);
+        AZStd::string maxIterationAsString = commandLine->GetSwitchValue(Command_dependencyScanMaxIteration.m_switch, 0);
         m_dependencyScanMaxIteration = AZStd::stoi(maxIterationAsString);
     }
 
-    if (commandLine->HasSwitch("warningLevel"))
+    if (commandLine->HasSwitch(Command_warningLevel.m_switch))
     {
         using namespace AssetProcessor;
-        const AZStd::string& levelString = commandLine->GetSwitchValue("warningLevel", 0);
+        const AZStd::string& levelString = commandLine->GetSwitchValue(Command_warningLevel.m_switch, 0);
         WarningLevel warningLevel = WarningLevel::Default;
 
         switch(AZStd::stoi(levelString))
@@ -216,26 +250,30 @@ void ApplicationManagerBase::InitAssetProcessorManager()
         }
         AssetProcessor::JobDiagnosticRequestBus::Broadcast(&AssetProcessor::JobDiagnosticRequestBus::Events::SetWarningLevel, warningLevel);
     }
-    if (commandLine->HasSwitch("acceptInput"))
+    if (commandLine->HasSwitch(Command_acceptInput.m_switch))
     {
         InitControlRequestHandler();
     }
 
-    if (commandLine->HasSwitch("debugOutput"))
+    if (commandLine->HasSwitch(Command_debugOutput.m_switch))
     {
         m_assetProcessorManager->SetBuilderDebugFlag(true);
     }
 
-    constexpr char truncateFingerprintSwitch[] = "truncatefingerprint";
-    if(commandLine->HasSwitch(truncateFingerprintSwitch))
+    if (commandLine->HasSwitch(Command_sortJobsByDBSourceName.m_switch))
+    {
+        m_sortJobsByDBSourceName = true;
+    }
+
+    if (commandLine->HasSwitch(Command_truncatefingerprint.m_switch))
     {
         // Zip archive format uses 2 second precision truncated
         const int ArchivePrecision = 2000;
         int precision = ArchivePrecision;
 
-        if(commandLine->GetNumSwitchValues(truncateFingerprintSwitch) > 0)
+        if (commandLine->GetNumSwitchValues(Command_truncatefingerprint.m_switch) > 0)
         {
-            precision = AZStd::stoi(commandLine->GetSwitchValue(truncateFingerprintSwitch, 0));
+            precision = AZStd::stoi(commandLine->GetSwitchValue(Command_truncatefingerprint.m_switch, 0));
 
             if(precision < 1)
             {
@@ -244,6 +282,31 @@ void ApplicationManagerBase::InitAssetProcessorManager()
         }
 
         AssetUtilities::SetTruncateFingerprintTimestamp(precision);
+    }
+
+    if (commandLine->HasSwitch(Command_help.m_switch) || commandLine->HasSwitch(Command_h.m_switch))
+    {
+        // Other O3DE tools have a more full featured system for registering command flags
+        // that includes help output, but right now the AssetProcessor just checks strings
+        // via HasSwitch. This means this help output has to be updated manually.
+        AZ_TracePrintf("AssetProcessor", "Asset Processor Command Line Flags:\n");
+        AZ_TracePrintf("AssetProcessor", "\t%s : %s\n", Command_waitOnLaunch.m_switch, Command_waitOnLaunch.m_helpText);
+        AZ_TracePrintf("AssetProcessor", "\t%s : %s\n", Command_zeroAnalysisMode.m_switch, Command_zeroAnalysisMode.m_helpText);
+        AZ_TracePrintf("AssetProcessor", "\t%s : %s\n", Command_enableQueryLogging.m_switch, Command_enableQueryLogging.m_helpText);
+        AZ_TracePrintf("AssetProcessor", "\t%s : %s\n", Command_dependencyScanPattern.m_switch, Command_dependencyScanPattern.m_helpText);
+        AZ_TracePrintf("AssetProcessor", "\t%s : %s\n", Command_dsp.m_switch, Command_dsp.m_helpText);
+        AZ_TracePrintf("AssetProcessor", "\t%s : %s\n", Command_fileDependencyScanPattern.m_switch, Command_fileDependencyScanPattern.m_helpText);
+        AZ_TracePrintf("AssetProcessor", "\t%s : %s\n", Command_fdsp.m_switch, Command_fdsp.m_helpText);
+        AZ_TracePrintf("AssetProcessor", "\t%s : %s\n", Command_additionalScanFolders.m_switch, Command_additionalScanFolders.m_helpText);
+        AZ_TracePrintf("AssetProcessor", "\t%s : %s\n", Command_dependencyScanMaxIteration.m_switch, Command_dependencyScanMaxIteration.m_helpText);
+        AZ_TracePrintf("AssetProcessor", "\t%s : %s\n", Command_warningLevel.m_switch, Command_warningLevel.m_helpText);
+        AZ_TracePrintf("AssetProcessor", "\t%s : %s\n", Command_acceptInput.m_switch, Command_acceptInput.m_helpText);
+        AZ_TracePrintf("AssetProcessor", "\t%s : %s\n", Command_debugOutput.m_switch, Command_debugOutput.m_helpText);
+        AZ_TracePrintf("AssetProcessor", "\t%s : %s\n", Command_sortJobsByDBSourceName.m_switch, Command_sortJobsByDBSourceName.m_helpText);
+        AZ_TracePrintf("AssetProcessor", "\t%s : %s\n", Command_truncatefingerprint.m_switch, Command_truncatefingerprint.m_helpText);
+        AZ_TracePrintf("AssetProcessor", "\t%s : %s\n", Command_help.m_switch, Command_help.m_helpText);
+        AZ_TracePrintf("AssetProcessor", "\t%s : %s\n", Command_h.m_switch, Command_h.m_helpText);
+        AZ_TracePrintf("AssetProcessor", "\tregset : set the given registry key to the given value.\n");
     }
 }
 
@@ -279,6 +342,11 @@ void ApplicationManagerBase::InitAssetCatalog()
 void ApplicationManagerBase::InitRCController()
 {
     m_rcController = new AssetProcessor::RCController(m_platformConfiguration->GetMinJobs(), m_platformConfiguration->GetMaxJobs());
+
+    if (m_sortJobsByDBSourceName)
+    {
+        m_rcController->SetQueueSortOnDBSourceName();
+    }
 
     QObject::connect(m_assetProcessorManager, &AssetProcessor::AssetProcessorManager::AssetToProcess, m_rcController, &AssetProcessor::RCController::JobSubmitted);
     QObject::connect(m_rcController, &AssetProcessor::RCController::FileCompiled, m_assetProcessorManager, &AssetProcessor::AssetProcessorManager::AssetProcessed, Qt::UniqueConnection);
@@ -1141,7 +1209,7 @@ void ApplicationManagerBase::InitFileProcessor()
     AssetProcessor::ThreadController<AssetProcessor::FileProcessor>* fileProcessorHelper = new AssetProcessor::ThreadController<AssetProcessor::FileProcessor>();
 
     addRunningThread(fileProcessorHelper);
-    m_fileProcessor.reset(fileProcessorHelper->initialize([this, &fileProcessorHelper]()
+    m_fileProcessor.reset(fileProcessorHelper->initialize([this]()
     {
         return new AssetProcessor::FileProcessor(m_platformConfiguration);
     }));
@@ -1806,4 +1874,3 @@ void ApplicationManagerBase::OnActiveJobsCountChanged(unsigned int count)
     AssetProcessor::AssetProcessorStatusEntry entry(AssetProcessor::AssetProcessorStatus::Processing_Jobs, count);
     Q_EMIT AssetProcessorStatusChanged(entry);
 }
-

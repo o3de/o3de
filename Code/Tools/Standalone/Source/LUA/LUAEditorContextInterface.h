@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -13,10 +14,8 @@
 #include <AzToolsFramework/UI/LegacyFramework/Core/EditorContextBus.h>
 #include <AzCore/IO/SystemFile.h>
 #include <AzToolsFramework/SourceControl/SourceControlAPI.h>
-
-#if defined(AZ_PLATFORM_WINDOWS)
-#include <windows.h>
-#endif
+#include <AzCore/PlatformIncl.h>
+#include <CryCommon/platform.h>
 
 namespace LUAEditor
 {

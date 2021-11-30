@@ -1,12 +1,12 @@
 #
-# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
-# 
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
 
 set(FILES
-    Source/ImageProcessing_precompiled.h
     Source/Compressors/CryTextureSquisher/CryTextureSquisher.cpp
     Source/Compressors/CryTextureSquisher/CryTextureSquisher.h
     Include/Atom/ImageProcessing/ImageProcessingBus.h
@@ -103,8 +103,6 @@ set(FILES
     Source/Converters/ConvertPixelFormat.cpp
     Source/Converters/Cubemap.h
     Source/Converters/Cubemap.cpp
-    Source/Converters/ColorChart.cpp
-    Source/Converters/HighPass.cpp
     Source/Converters/Histogram.cpp
     Source/Converters/Histogram.h
     ../External/CubeMapGen/CBBoxInt32.cpp
@@ -114,14 +112,12 @@ set(FILES
     ../External/CubeMapGen/CImageSurface.cpp
     ../External/CubeMapGen/CImageSurface.h
     ../External/CubeMapGen/VectorMacros.h
+    Source/Compressors/ASTCCompressor.cpp
+    Source/Compressors/ASTCCompressor.h
     Source/Compressors/Compressor.h
     Source/Compressors/Compressor.cpp
     Source/Compressors/CTSquisher.h
     Source/Compressors/CTSquisher.cpp
-    Source/Compressors/PVRTC.cpp
-    Source/Compressors/PVRTC.h
-    Source/Compressors/ETC2.cpp
-    Source/Compressors/ETC2.h
     Source/Compressors/CryTextureSquisher/ColorBlockRGBA4x4f.cpp
     Source/Compressors/CryTextureSquisher/ColorBlockRGBA4x4s.cpp
     Source/Compressors/CryTextureSquisher/ColorBlockRGBA4x4c.cpp
@@ -129,6 +125,8 @@ set(FILES
     Source/Compressors/CryTextureSquisher/ColorBlockRGBA4x4s.h
     Source/Compressors/CryTextureSquisher/ColorBlockRGBA4x4c.h
     Source/Compressors/CryTextureSquisher/ColorTypes.h
+    Source/Compressors/ISPCTextureCompressor.cpp
+    Source/Compressors/ISPCTextureCompressor.h
     Source/Thumbnail/ImageThumbnail.cpp
     Source/Thumbnail/ImageThumbnail.h
     Source/Thumbnail/ImageThumbnailSystemComponent.cpp

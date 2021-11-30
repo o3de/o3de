@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -15,7 +16,6 @@
 #include <Atom/Feature/CoreLights/CoreLightsConstants.h>
 
 #include <Atom/RHI/Factory.h>
-#include <Atom/RHI/CpuProfiler.h>
 
 #include <Atom/RPI.Public/ColorManagement/TransformColor.h>
 #include <Atom/RPI.Public/RPISystemInterface.h>
@@ -48,7 +48,7 @@ namespace AZ
             desc.m_bufferSrgName = "m_capsuleLights";
             desc.m_elementCountSrgName = "m_capsuleLightCount";
             desc.m_elementSize = sizeof(CapsuleLightData);
-            desc.m_srgLayout = RPI::RPISystemInterface::Get()->GetViewSrgAsset()->GetLayout();
+            desc.m_srgLayout = RPI::RPISystemInterface::Get()->GetViewSrgLayout().get();
 
             m_lightBufferHandler = GpuBufferHandler(desc);
         }
@@ -101,20 +101,19 @@ namespace AZ
 
         void CapsuleLightFeatureProcessor::Simulate(const FeatureProcessor::SimulatePacket& packet)
         {
-            AZ_ATOM_PROFILE_FUNCTION("RPI", "CapsuleLightFeatureProcessor: Simulate");
+            AZ_PROFILE_SCOPE(RPI, "CapsuleLightFeatureProcessor: Simulate");
             AZ_UNUSED(packet);
 
             if (m_deviceBufferNeedsUpdate)
             {
-                [[maybe_unused]] bool success = m_lightBufferHandler.UpdateBuffer(m_capsuleLightData.GetDataVector());
-                AZ_Error(FeatureProcessorName, success, "Unable to update buffer during Simulate().");
+                m_lightBufferHandler.UpdateBuffer(m_capsuleLightData.GetDataVector());
                 m_deviceBufferNeedsUpdate = false;
             }
         }
 
         void CapsuleLightFeatureProcessor::Render(const CapsuleLightFeatureProcessor::RenderPacket& packet)
         {
-            AZ_ATOM_PROFILE_FUNCTION("RPI", "CapsuleLightFeatureProcessor: Render");
+            AZ_PROFILE_SCOPE(RPI, "CapsuleLightFeatureProcessor: Render");
 
             for (const RPI::ViewPtr& view : packet.m_views)
             {

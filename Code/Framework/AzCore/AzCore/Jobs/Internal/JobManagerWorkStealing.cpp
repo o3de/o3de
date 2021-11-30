@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -121,7 +122,7 @@ void JobManagerWorkStealing::AddPendingJob(Job* job)
     }
 #endif
 
-    AZ_PROFILE_INTERVAL_START(AZ::Debug::ProfileCategory::JobManagerDetailed, job, "AzCore Job Queued Awaiting Execute");
+    AZ_PROFILE_INTERVAL_START(JobManagerDetailed, job, "AzCore Job Queued Awaiting Execute");
 
     if (job->IsCompletion())
     {
@@ -191,15 +192,15 @@ void JobManagerWorkStealing::SuspendJobUntilReady(Job* job)
     ThreadInfo* info = GetCurrentOrCreateThreadInfo();
     AZ_Assert(info->m_currentJob == job, ("Can't suspend a job which isn't currently running"));
 
-    info->m_currentJob = NULL; //clear current job
+    info->m_currentJob = nullptr; //clear current job
 
     if (IsAsynchronous())
     {
-        ProcessJobsAssist(info, job, NULL);
+        ProcessJobsAssist(info, job, nullptr);
     }
     else
     {
-        ProcessJobsSynchronous(info, job, NULL);
+        ProcessJobsSynchronous(info, job, nullptr);
     }
 
     info->m_currentJob = job; //restore current job
@@ -222,11 +223,11 @@ void JobManagerWorkStealing::StartJobAndAssistUntilComplete(Job* job)
     //the processing functions will return when the empty job dependent count has reached 1
     if (IsAsynchronous())
     {
-        ProcessJobsAssist(info, NULL, &notifyFlag);
+        ProcessJobsAssist(info, nullptr, &notifyFlag);
     }
     else
     {
-        ProcessJobsSynchronous(info, NULL, &notifyFlag);
+        ProcessJobsSynchronous(info, nullptr, &notifyFlag);
     }
 
     AZ_Assert(!m_currentThreadInfo, "");
@@ -305,9 +306,9 @@ void JobManagerWorkStealing::ProcessJobsWorker(ThreadInfo* info)
     //setup thread-local storage
     m_currentThreadInfo = info;
 
-    ProcessJobsInternal(info, NULL, NULL);
+    ProcessJobsInternal(info, nullptr, nullptr);
 
-    m_currentThreadInfo = NULL;
+    m_currentThreadInfo = nullptr;
 }
 
 void JobManagerWorkStealing::ProcessJobsAssist(ThreadInfo* info, Job* suspendedJob, AZStd::atomic<bool>* notifyFlag)
@@ -370,7 +371,7 @@ void JobManagerWorkStealing::ProcessJobsInternal(ThreadInfo* info, Job* suspende
                 {
                     //no available work, so go to sleep (or we have already been signaled by another thread and will acquire the semaphore but not actually sleep)
                     info->m_waitEvent.acquire();
-                    AZ_PROFILE_INTERVAL_END(AZ::Debug::ProfileCategory::JobManagerDetailed, info);
+                    AZ_PROFILE_INTERVAL_END(JobManagerDetailed, info);
 
                     if (m_quitRequested)
                     {
@@ -456,7 +457,7 @@ void JobManagerWorkStealing::ProcessJobsInternal(ThreadInfo* info, Job* suspende
             else
             {
                 //attempt to steal a job from another thread's queue
-                AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::AzCore, "JobManagerWorkStealing::ProcessJobsInternal:WorkStealing");
+                AZ_PROFILE_SCOPE(AzCore, "JobManagerWorkStealing::ProcessJobsInternal:WorkStealing");
 
                 unsigned int numStealAttempts = 0;
                 const unsigned int maxStealAttempts = (unsigned int)m_workerThreads.size() * 3; //try every thread a few times before giving up
@@ -528,7 +529,7 @@ void JobManagerWorkStealing::ProcessJobsSynchronous(ThreadInfo* info, Job* suspe
 
         info->m_currentJob = job;
         Process(job);
-        info->m_currentJob = NULL;
+        info->m_currentJob = nullptr;
 
         //...after calling Process we cannot use the job pointer again, the job has completed and may not exist anymore
 #ifdef JOBMANAGER_ENABLE_STATS
@@ -643,11 +644,11 @@ JobManagerWorkStealing::ThreadList JobManagerWorkStealing::CreateWorkerThreads(c
         }
 
         info->m_thread = AZStd::thread(
+            threadDesc,
             [this, info]()
             {
                 this->ProcessJobsWorker(info);
-            },
-            &threadDesc
+            }
         );
 
         info->m_threadId = info->m_thread.get_id();
@@ -673,7 +674,7 @@ inline void JobManagerWorkStealing::ActivateWorker()
                 m_numAvailableWorkers.fetch_sub(1, AZStd::memory_order_acq_rel);
                 // resume the thread execution
 
-                AZ_PROFILE_INTERVAL_START(AZ::Debug::ProfileCategory::JobManagerDetailed, info, "AzCore WakeJobThread %d", info->m_workerId);
+                AZ_PROFILE_INTERVAL_START(JobManagerDetailed, info, "AzCore WakeJobThread %d", info->m_workerId);
                 info->m_waitEvent.release();
                 return;
             }

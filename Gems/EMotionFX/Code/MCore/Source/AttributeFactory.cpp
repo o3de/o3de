@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -40,35 +41,35 @@ namespace MCore
     {
         if (delFromMem)
         {
-            for (Attribute* attribute : mRegistered)
+            for (Attribute* attribute : m_registered)
             {
                 delete attribute;
             }
         }
 
-        mRegistered.clear();
+        m_registered.clear();
     }
 
 
     void AttributeFactory::RegisterAttribute(Attribute* attribute)
     {
         // check first if the type hasn't already been registered
-        const uint32 attribIndex = FindAttributeIndexByType(attribute->GetType());
-        if (attribIndex != MCORE_INVALIDINDEX32)
+        const size_t attribIndex = FindAttributeIndexByType(attribute->GetType());
+        if (attribIndex != InvalidIndex)
         {
-            MCore::LogWarning("MCore::AttributeFactory::RegisterAttribute() - There is already an attribute of the same type registered (typeID %d vs %d - typeString '%s' vs '%s')", attribute->GetType(), mRegistered[attribIndex]->GetType(), attribute->GetTypeString(), mRegistered[attribIndex]->GetTypeString());
+            MCore::LogWarning("MCore::AttributeFactory::RegisterAttribute() - There is already an attribute of the same type registered (typeID %d vs %d - typeString '%s' vs '%s')", attribute->GetType(), m_registered[attribIndex]->GetType(), attribute->GetTypeString(), m_registered[attribIndex]->GetTypeString());
             return;
         }
 
-        mRegistered.emplace_back(attribute);
+        m_registered.emplace_back(attribute);
     }
 
 
     void AttributeFactory::UnregisterAttribute(Attribute* attribute, bool delFromMem)
     {
         // check first if the type hasn't already been registered
-        const uint32 attribIndex = FindAttributeIndexByType(attribute->GetType());
-        if (attribIndex == MCORE_INVALIDINDEX32)
+        const size_t attribIndex = FindAttributeIndexByType(attribute->GetType());
+        if (attribIndex == InvalidIndex)
         {
             MCore::LogWarning("MCore::AttributeFactory::UnregisterAttribute() - No attribute with the given type found (typeID=%d - typeString='%s'", attribute->GetType(), attribute->GetTypeString());
             return;
@@ -76,44 +77,39 @@ namespace MCore
 
         if (delFromMem)
         {
-            delete mRegistered[attribIndex];
+            delete m_registered[attribIndex];
         }
 
-        mRegistered.erase(mRegistered.begin() + attribIndex);
+        m_registered.erase(m_registered.begin() + attribIndex);
     }
 
 
-    uint32 AttributeFactory::FindAttributeIndexByType(uint32 typeID) const
+    size_t AttributeFactory::FindAttributeIndexByType(size_t typeID) const
     {
-        const size_t numAttributes = mRegistered.size();
-        for (size_t i = 0; i < numAttributes; ++i)
+        const auto foundAttribute = AZStd::find_if(begin(m_registered), end(m_registered), [typeID](const Attribute* registeredAttribute)
         {
-            if (mRegistered[i]->GetType() == typeID) // we found one with the same type
-            {
-                return static_cast<uint32>(i);
-            }
-        }
+            return registeredAttribute->GetType() == typeID;
+        });
 
-        // no attribute of this type found
-        return MCORE_INVALIDINDEX32;
+        return foundAttribute != end(m_registered) ? AZStd::distance(begin(m_registered), foundAttribute) : InvalidIndex;
     }
 
 
-    Attribute* AttributeFactory::CreateAttributeByType(uint32 typeID) const
+    Attribute* AttributeFactory::CreateAttributeByType(size_t typeID) const
     {
-        const uint32 attribIndex = FindAttributeIndexByType(typeID);
-        if (attribIndex == MCORE_INVALIDINDEX32)
+        const size_t attribIndex = FindAttributeIndexByType(typeID);
+        if (attribIndex == InvalidIndex)
         {
             return nullptr;
         }
 
-        return mRegistered[attribIndex]->Clone();
+        return m_registered[attribIndex]->Clone();
     }
 
 
     void AttributeFactory::RegisterStandardTypes()
     {
-        mRegistered.reserve(10);
+        m_registered.reserve(10);
         RegisterAttribute(aznew AttributeFloat());
         RegisterAttribute(aznew AttributeInt32());
         RegisterAttribute(aznew AttributeString());

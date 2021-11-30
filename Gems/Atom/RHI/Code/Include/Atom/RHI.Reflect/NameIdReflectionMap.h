@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -67,6 +68,9 @@ namespace AZ
 
             /// Return the number of entries
             size_t Size() const;
+
+            // Returns true if size is zero
+            bool IsEmpty() const;
 
             class NameIdReflectionMapSerializationEvents
                 : public SerializeContext::IEventHandler
@@ -166,6 +170,12 @@ namespace AZ
         size_t NameIdReflectionMap<IndexType>::Size() const
         {
             return m_reflectionMap.size();
+        }
+
+        template <typename IndexType>
+        bool NameIdReflectionMap<IndexType>::IsEmpty() const
+        {
+            return Size() == 0;
         }
 
         template <typename IndexType>

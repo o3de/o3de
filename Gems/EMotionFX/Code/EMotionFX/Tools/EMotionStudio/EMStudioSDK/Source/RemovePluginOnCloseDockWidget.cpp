@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -14,13 +15,13 @@ namespace EMStudio
 {
     RemovePluginOnCloseDockWidget::RemovePluginOnCloseDockWidget(QWidget* parent, const QString& name, EMStudio::EMStudioPlugin* plugin)
         : AzQtComponents::StyledDockWidget(name, parent)
-        , mPlugin(plugin)
+        , m_plugin(plugin)
     {}
 
     void RemovePluginOnCloseDockWidget::closeEvent(QCloseEvent* event)
     {
         MCORE_UNUSED(event);
-        GetPluginManager()->RemoveActivePlugin(mPlugin);
+        GetPluginManager()->RemoveActivePlugin(m_plugin);
         GetMainWindow()->UpdateCreateWindowMenu();
     }
 }

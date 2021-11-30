@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -18,11 +19,14 @@ namespace AZ
 {
     namespace RPI
     {
-        Data::Instance<ModelLod> ModelLod::FindOrCreate(const Data::Asset<ModelLodAsset>& lodAsset)
+        Data::Instance<ModelLod> ModelLod::FindOrCreate(const Data::Asset<ModelLodAsset>& lodAsset, const Data::Asset<ModelAsset>& modelAsset)
         {
+            AZStd::any modelAssetAny{&modelAsset};
+
             return Data::InstanceDatabase<ModelLod>::Instance().FindOrCreate(
                 Data::InstanceId::CreateFromAssetId(lodAsset.GetId()),
-                lodAsset);
+                lodAsset,
+                &modelAssetAny);
         }
 
         AZStd::array_view<ModelLod::Mesh> ModelLod::GetMeshes() const
@@ -30,10 +34,13 @@ namespace AZ
             return m_meshes;
         }
 
-        Data::Instance<ModelLod> ModelLod::CreateInternal(ModelLodAsset& lodAsset)
+        Data::Instance<ModelLod> ModelLod::CreateInternal(const Data::Asset<ModelLodAsset>& lodAsset, const AZStd::any* modelAssetAny)
         {
+            AZ_Assert(modelAssetAny != nullptr, "Invalid model asset param");
+            auto modelAsset = AZStd::any_cast<Data::Asset<ModelAsset>*>(*modelAssetAny);
+
             Data::Instance<ModelLod> lod = aznew ModelLod();
-            const RHI::ResultCode resultCode = lod->Init(lodAsset);
+            const RHI::ResultCode resultCode = lod->Init(lodAsset, *modelAsset);
 
             if (resultCode == RHI::ResultCode::Success)
             {
@@ -43,11 +50,11 @@ namespace AZ
             return nullptr;
         }
 
-        RHI::ResultCode ModelLod::Init(ModelLodAsset& lodAsset)
+        RHI::ResultCode ModelLod::Init(const Data::Asset<ModelLodAsset>& lodAsset, const Data::Asset<ModelAsset>& modelAsset)
         {
             AZ_TRACE_METHOD();
 
-            for (const ModelLodAsset::Mesh& mesh : lodAsset.GetMeshes())
+            for (const ModelLodAsset::Mesh& mesh : lodAsset->GetMeshes())
             {
                 Mesh meshInstance;
 
@@ -99,10 +106,13 @@ namespace AZ
                     }
                 }
 
-                auto& materialAsset = mesh.GetMaterialAsset();
-                if (materialAsset.IsReady())
+                const ModelMaterialSlot& materialSlot = modelAsset->FindMaterialSlot(mesh.GetMaterialSlotId());
+
+                meshInstance.m_materialSlotStableId = materialSlot.m_stableId;
+
+                if (materialSlot.m_defaultMaterialAsset.IsReady())
                 {
-                    meshInstance.m_material = Material::FindOrCreate(materialAsset);
+                    meshInstance.m_material = Material::FindOrCreate(materialSlot.m_defaultMaterialAsset);
                 }
 
                 m_meshes.emplace_back(AZStd::move(meshInstance));
@@ -254,8 +264,6 @@ namespace AZ
             const MaterialModelUvOverrideMap& materialModelUvMap,
             const MaterialUvNameMap& materialUvNameMap) const
         {
-            AZ_PROFILE_FUNCTION(Debug::ProfileCategory::AzRender);
-
             streamBufferViewsOut.clear();
 
             RHI::InputStreamLayoutBuilder layoutBuilder;
@@ -356,8 +364,6 @@ namespace AZ
             const MaterialModelUvOverrideMap& materialModelUvMap,
             const MaterialUvNameMap& materialUvNameMap) const
         {
-            AZ_PROFILE_FUNCTION(Debug::ProfileCategory::AzRender);
-
             const Mesh& mesh = m_meshes[meshIndex];
 
             auto defaultUv = FindDefaultUvStream(meshIndex, materialUvNameMap);

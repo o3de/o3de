@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -17,7 +18,7 @@
 #include <QPointer>
 #include "ActionManager.h"
 #include "QtViewPaneManager.h"
-#include <AzToolsFramework/ComponentMode/EditorComponentModeBus.h>
+#include <AzToolsFramework/API/ViewportEditorModeTrackerNotificationBus.h>
 #endif
 
 class MainWindow;
@@ -27,12 +28,12 @@ struct QtViewPane;
 
 class LevelEditorMenuHandler
     : public QObject
-    , private AzToolsFramework::ComponentModeFramework::EditorComponentModeNotificationBus::Handler
+    , private AzToolsFramework::ViewportEditorModeNotificationsBus::Handler
     , private AzToolsFramework::EditorMenuRequestBus::Handler
 {
     Q_OBJECT
 public:
-    LevelEditorMenuHandler(MainWindow* mainWindow, QtViewPaneManager* const viewPaneManager, QSettings& settings);
+    LevelEditorMenuHandler(MainWindow* mainWindow, QtViewPaneManager* const viewPaneManager);
     ~LevelEditorMenuHandler();
 
     void Initialize();
@@ -87,9 +88,11 @@ private:
 
     void AddDisableActionInSimModeListener(QAction* action);
 
-    // EditorComponentModeNotificationBus
-    void EnteredComponentMode(const AZStd::vector<AZ::Uuid>& componentModeTypes) override;
-    void LeftComponentMode(const AZStd::vector<AZ::Uuid>& componentModeTypes) override;
+    // ViewportEditorModeNotificationsBus overrides ...
+    void OnEditorModeActivated(
+        const AzToolsFramework::ViewportEditorModesInterface& editorModeState, AzToolsFramework::ViewportEditorMode mode) override;
+    void OnEditorModeDeactivated(
+        const AzToolsFramework::ViewportEditorModesInterface& editorModeState, AzToolsFramework::ViewportEditorMode mode) override;
 
     // EditorMenuRequestBus
     void AddEditMenuAction(QAction* action) override;
@@ -105,7 +108,6 @@ private:
     ActionManager::MenuWrapper m_toolsMenu;
 
     QMenu* m_mostRecentLevelsMenu = nullptr;
-    QMenu* m_mostRecentProjectsMenu = nullptr;
     QMenu* m_editmenu = nullptr;
 
     ActionManager::MenuWrapper m_viewPanesMenu;
@@ -116,7 +118,6 @@ private:
     int m_viewPaneVersion = 0;
 
     QList<QMenu*> m_topLevelMenus;
-    QSettings& m_settings;
 };
 
 #endif // LEVELEDITORMENUHANDLER_H

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -446,7 +447,6 @@ TEST_F(RCBuilderTest, ProcessLegacyRCJob_ProcessStandardSingleJob_Valid)
 TEST_F(RCBuilderTest, ProcessLegacyRCJob_ProcessCopySingleJob_Valid)
 {
     AZStd::string                       name = "test";
-    AZ::Uuid                            builderUuid = AZ::Uuid::CreateRandom();
     AZ::Uuid                            assetTypeUUid = AZ::Uuid::CreateRandom();
     MockRCCompiler*                     mockRC = new MockRCCompiler();
     TestInternalRecognizerBasedBuilder  test(mockRC);
@@ -505,7 +505,6 @@ TEST_F(RCBuilderTest, MatchTempFileToSkip_SkipRCFiles_false)
 
 TEST_F(RCBuilderTest, ProcessJob_ProcessStandardRCSingleJob_Valid)
 {
-    AZ::Uuid                            assetTypeUUid = AZ::Uuid::CreateRandom();
     MockRCCompiler*                     mockRC = new MockRCCompiler();
     TestInternalRecognizerBasedBuilder  test(mockRC);
     MockRecognizerConfiguration         configuration;
@@ -535,7 +534,6 @@ TEST_F(RCBuilderTest, ProcessJob_ProcessStandardRCSingleJob_Valid)
 
 TEST_F(RCBuilderTest, ProcessJob_ProcessStandardRCSingleJob_Failed)
 {
-    AZ::Uuid                            assetTypeUUid = AZ::Uuid::CreateRandom();
     MockRCCompiler*                     mockRC = new MockRCCompiler();
     TestInternalRecognizerBasedBuilder  test(mockRC);
     MockRecognizerConfiguration         configuration;
@@ -563,7 +561,6 @@ TEST_F(RCBuilderTest, ProcessJob_ProcessStandardRCSingleJob_Failed)
 
 TEST_F(RCBuilderTest, ProcessJob_ProcessStandardCopySingleJob_Valid)
 {
-    AZ::Uuid                            assetTypeUUid = AZ::Uuid::CreateRandom();
     MockRCCompiler*                     mockRC = new MockRCCompiler();
     TestInternalRecognizerBasedBuilder  test(mockRC);
     MockRecognizerConfiguration         configuration;
@@ -589,7 +586,6 @@ TEST_F(RCBuilderTest, ProcessJob_ProcessStandardCopySingleJob_Valid)
 
 TEST_F(RCBuilderTest, ProcessJob_ProcessStandardSkippedSingleJob_Invalid)
 {
-    AZ::Uuid                            assetTypeUUid = AZ::Uuid::CreateRandom();
     MockRCCompiler*                     mockRC = new MockRCCompiler();
     TestInternalRecognizerBasedBuilder  test(mockRC);
     MockRecognizerConfiguration         configuration;
@@ -813,7 +809,7 @@ public:
 
         AssetRecognizer     good;
         good.m_name = "Good";
-        good.m_version = versionNumber;
+        good.m_version = static_cast<char>(versionNumber);
         good.m_patternMatcher = AssetBuilderSDK::FilePatternMatcher("*.foo", AssetBuilderSDK::AssetBuilderPattern::PatternType::Wildcard);
         good.m_platformSpecs["pc"] = good_spec;
         good.m_productAssetType = builderProductType;

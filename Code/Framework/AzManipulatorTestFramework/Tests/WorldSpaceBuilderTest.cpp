@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -139,8 +140,8 @@ namespace UnitTest
         // given a left mouse down ray in world space
         // consume the mouse move event
         state.m_actionDispatcher->CameraState(m_cameraState)
-            ->MouseLButtonDown()
             ->MousePosition(AzManipulatorTestFramework::GetCameraStateViewportCenter(m_cameraState))
+            ->MouseLButtonDown()
             ->ExpectTrue(state.m_linearManipulator->PerformingAction())
             ->ExpectManipulatorBeingInteracted()
             ->MouseLButtonUp()

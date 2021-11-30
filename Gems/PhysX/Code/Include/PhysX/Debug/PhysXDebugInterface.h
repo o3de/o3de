@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -23,7 +24,7 @@ namespace PhysX
         using PvdConfigurationChangedEvent = AZ::Event<const PvdConfiguration&>;
 
         //! Event to notify changes to the Debug display data
-        //! When triggered the event will send the newly applied DEbug display data.
+        //! When triggered the event will send the newly applied Debug display data.
         using DebugDisplayDataChangedEvent = AZ::Event<const DebugDisplayData&>;
 
         //! Interface for interacting with the PhysX Debug options.

@@ -1,19 +1,19 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
-#ifndef EditorFrameworkAPI_H
-#define EditorFrameworkAPI_H
+#pragma once
 
 #include <AzCore/base.h>
 #include <AzCore/Math/Uuid.h>
 #include <AzCore/EBus/EBus.h>
+#include <AzCore/PlatformIncl.h>
+#include <AzCore/Component/EntityId.h>
 #include <AzFramework/CommandLine/CommandLine.h>
-
-#pragma once
 
 // this file contains the API for the buses that the framework communicates on to NON-GUI-CLIENTS
 // note that this does not include UI messaging, this is for non-ui parts of it!
@@ -22,10 +22,6 @@ namespace AZ
 {
     class SerializeContext;
 }
-
-#ifdef AZ_PLATFORM_WINDOWS
-    typedef HINSTANCE HMODULE;
-#endif
 
 namespace LegacyFramework
 {
@@ -219,9 +215,7 @@ namespace LegacyFramework
         /** (Windows) retrieves the main module of the executable.
         * This is always going to be the main executable except in the situation where the framework may be running as a DLL belonging to another process or program.
         */
-#ifdef AZ_PLATFORM_WINDOWS
-        virtual HMODULE GetMainModule() = 0;
-#endif
+        virtual void* GetMainModule() = 0;
 
         virtual const char* GetApplicationName() = 0;
         virtual const char* GetApplicationModule() = 0;
@@ -328,5 +322,3 @@ namespace LegacyFramework
 
     typedef AZ::EBus<IPCCommandAPI> IPCCommandBus;
 };
-
-#endif

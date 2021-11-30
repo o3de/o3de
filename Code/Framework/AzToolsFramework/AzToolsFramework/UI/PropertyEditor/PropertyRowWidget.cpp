@@ -1,10 +1,10 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "AzToolsFramework_precompiled.h"
 #include "PropertyRowWidget.hxx"
 
 #include <AzQtComponents/Components/StyleManager.h>
@@ -12,6 +12,7 @@
 
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzToolsFramework/UI/UICore/WidgetHelpers.h>
+#include <AzToolsFramework/UI/PropertyEditor/PropertyCheckBoxCtrl.hxx>
 
 AZ_PUSH_DISABLE_WARNING(4244 4251 4800, "-Wunknown-warning-option") // 4244: conversion from 'int' to 'float', possible loss of data
                                                                     // 4251: class '...' needs to have dll-interface to be used by clients of class 'QInputEvent'
@@ -69,7 +70,7 @@ namespace AzToolsFramework
 
         m_leftAreaContainer = new QWidget(this);
         m_middleAreaContainer = new QWidget(this);
-        const int minimumControlWidth = 192;
+        const int minimumControlWidth = 142;
         m_middleAreaContainer->setMinimumWidth(minimumControlWidth);
         m_mainLayout->addWidget(m_leftAreaContainer, LabelColumnStretch, Qt::AlignLeft);
         m_mainLayout->addWidget(m_middleAreaContainer, ValueColumnStretch);
@@ -141,6 +142,11 @@ namespace AzToolsFramework
         m_treeDepth = 0;
 
         delete m_dropDownArrow;
+        if (m_toggleSwitch != nullptr)
+        {
+            m_handler->DestroyGUI(m_toggleSwitch);
+            m_toggleSwitch = nullptr;
+        }
 
         if (m_childWidget)
         {
@@ -362,10 +368,15 @@ namespace AzToolsFramework
             delete m_containerAddButton;
         }
 
+        this->unsetCursor();
+
         if ((m_parentRow) && (m_parentRow->IsContainerEditable()))
         {
             if (!m_elementRemoveButton)
             {
+                QIcon icon = QIcon(QStringLiteral(":/Cursors/Grab_release.svg"));
+                this->setCursor(QCursor(icon.pixmap(16), 5, 2));
+
                 static QIcon s_iconRemove(QStringLiteral(":/stylesheet/img/UI20/delete-16.svg"));
                 m_elementRemoveButton = new QToolButton(this);
                 m_elementRemoveButton->setAutoRaise(true);
@@ -385,6 +396,13 @@ namespace AzToolsFramework
         OnValuesUpdated();
 
         setUpdatesEnabled(true);
+    }
+
+    void PropertyRowWidget::InitializeToggleGroup(const char* groupName, PropertyRowWidget* pParent, int depth, InstanceDataNode* node, int labelWidth)
+    {
+        Initialize(groupName, pParent, depth, labelWidth);
+        ChangeSourceNode(node);
+        CreateGroupToggleSwitch();
     }
 
     void PropertyRowWidget::Initialize(const char* groupName, PropertyRowWidget* pParent, int depth, int labelWidth)
@@ -440,7 +458,7 @@ namespace AzToolsFramework
 
     void PropertyRowWidget::OnValuesUpdated()
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         if (m_sourceNode)
         {
@@ -557,7 +575,12 @@ namespace AzToolsFramework
         AZ_Assert(m_selectionEnabled, "Property is not selectable");
         m_isSelected = selected;
         m_nameLabel->setProperty("selected", selected);
-    }    
+    }
+
+    bool PropertyRowWidget::GetSelected()
+    {
+        return m_isSelected;
+    }   
     
     void PropertyRowWidget::SetSelectionEnabled(bool selectionEnabled)
     {
@@ -1079,10 +1102,7 @@ namespace AzToolsFramework
             {
                 m_dropDownArrow->hide();
             }
-            m_indent->changeSize((m_treeDepth * m_treeIndentation) + m_leafIndentation, 1, QSizePolicy::Fixed, QSizePolicy::Fixed);
-            m_leftHandSideLayout->invalidate();
-            m_leftHandSideLayout->update();
-            m_leftHandSideLayout->activate();
+            SetIndentSize(m_treeDepth * m_treeIndentation + m_leafIndentation);
         }
         else
         {
@@ -1094,11 +1114,21 @@ namespace AzToolsFramework
                 connect(m_dropDownArrow, &QCheckBox::clicked, this, &PropertyRowWidget::OnClickedExpansionButton);
             }
             m_dropDownArrow->show();
-            m_indent->changeSize((m_treeDepth * m_treeIndentation), 1, QSizePolicy::Fixed, QSizePolicy::Fixed);
-            m_leftHandSideLayout->invalidate();
-            m_leftHandSideLayout->update();
-            m_leftHandSideLayout->activate();
+            SetIndentSize(m_treeDepth * m_treeIndentation);
             m_dropDownArrow->setChecked(m_expanded);
+        }
+    }
+
+    void PropertyRowWidget::CreateGroupToggleSwitch()
+    {
+        if (m_toggleSwitch == nullptr)
+        {
+            m_handlerName = AZ::Edit::UIHandlers::CheckBox;
+            PropertyTypeRegistrationMessages::Bus::BroadcastResult(m_handler, &PropertyTypeRegistrationMessages::Bus::Events::ResolvePropertyHandler, m_handlerName, azrtti_typeid<bool>());
+            m_toggleSwitch = m_handler->CreateGUI(this);
+            m_middleLayout->insertWidget(0, m_toggleSwitch, 1);
+            auto checkBoxCtrl = static_cast<AzToolsFramework::PropertyCheckBoxCtrl*>(m_toggleSwitch);
+            QObject::connect(checkBoxCtrl, &AzToolsFramework::PropertyCheckBoxCtrl::valueChanged, this, &PropertyRowWidget::OnClickedToggleButton);
         }
     }
 
@@ -1110,6 +1140,18 @@ namespace AzToolsFramework
         m_leftHandSideLayout->activate();
     }
 
+    void PropertyRowWidget::OnClickedToggleButton(bool checked)
+    {
+        if (m_expanded != checked)
+        {
+            DoExpandOrContract(!IsExpanded(), 0 != (QGuiApplication::keyboardModifiers() & Qt::ControlModifier));
+        }
+    }
+
+    void PropertyRowWidget::ChangeSourceNode(InstanceDataNode* node)
+    {
+        m_sourceNode = node;
+    }
 
     void PropertyRowWidget::SetExpanded(bool expanded)
     {
@@ -1355,6 +1397,21 @@ namespace AzToolsFramework
     bool PropertyRowWidget::HasChildRows() const
     {
         return !m_childrenRows.empty(); 
+    }
+
+    AZ::u32 PropertyRowWidget::GetChildRowCount() const
+    {
+        return static_cast<AZ::u32>(m_childrenRows.size());
+    }
+
+    PropertyRowWidget* PropertyRowWidget::GetChildRowByIndex(AZ::u32 index) const
+    {
+        if (index >= m_childrenRows.size())
+        {
+            return nullptr;
+        }
+
+        return m_childrenRows[index];
     }
 
     bool PropertyRowWidget::ShouldPreValidatePropertyChange() const
@@ -1657,10 +1714,9 @@ namespace AzToolsFramework
         }
         else
         {
-            m_indicatorButton->setVisible(true);
-
             QPixmap pixmap(imagePath);
             m_indicatorButton->setIcon(pixmap);
+            m_indicatorButton->setVisible(true);
         };
     }
 
@@ -1683,6 +1739,162 @@ namespace AzToolsFramework
         }
 
         return m_parentRow->CanChildrenBeReordered();
+    }
+
+        int PropertyRowWidget::GetIndexInParent() const
+    {
+        if (!GetParentRow())
+        {
+            return -1;
+        }
+
+        for (AZ::u32 index = 0; index < GetParentRow()->GetChildRowCount(); index++)
+        {
+            if (GetParentRow()->GetChildrenRows()[index] == this)
+            {
+                return index;
+            }
+        }
+
+        return -1;
+    }
+
+    bool PropertyRowWidget::CanMoveUp() const
+    {
+        if (!CanBeReordered())
+        {
+            return false;
+        }
+
+        return this != m_parentRow->GetChildRowByIndex(0);
+    }
+
+    bool PropertyRowWidget::CanMoveDown() const
+    {
+        if (!CanBeReordered())
+        {
+            return false;
+        }
+
+        AZ::u32 numChildrenOfParent = m_parentRow->GetChildRowCount();
+
+        return this != m_parentRow->GetChildRowByIndex(numChildrenOfParent - 1);
+    }
+
+    int PropertyRowWidget::GetContainingEditorFrameWidth()
+    {
+        QWidget* parent = parentWidget();
+
+        // Find the first ancestor that can be cast to a QFrame, this will be the RPE.
+        while (!qobject_cast<QFrame*>(parent))
+        {
+            parent = parent->parentWidget();
+        }
+
+        if (!parent)
+        {
+            return 0;
+        }
+
+        // The parent of the RPE is the size we want.
+        parent = parent->parentWidget();
+        
+        return parent->rect().width();
+    }
+
+    int PropertyRowWidget::GetHeightOfRowAndVisibleChildren()
+    {
+        int height = rect().height();
+
+        if (!GetChildRowCount() || !IsExpanded())
+        {
+            return height;
+        }
+
+        for (auto childRow : GetChildrenRows())
+        {
+            height += childRow->GetHeightOfRowAndVisibleChildren();
+        }
+
+        return height;
+    }
+
+    int PropertyRowWidget::DrawDragImageAndVisibleChildrenInto(QPainter& painter, int xpos, int ypos)
+    {
+        // Render our image into the given painter.
+        int ystart = ypos;
+
+        render(&painter, QPoint(xpos, ypos));
+
+        if (!GetChildRowCount() || !IsExpanded())
+        {
+            return rect().height();
+        }
+
+        ypos += rect().height();
+
+        // Recursively draw any children.
+        for (auto childRow : GetChildrenRows())
+        {
+            ypos += childRow->DrawDragImageAndVisibleChildrenInto(painter, xpos, ypos);
+        }
+
+        return ypos - ystart;
+    }
+
+    QPixmap PropertyRowWidget::createDragImage(
+        const QColor backgroundColor, const QColor borderColor, const float alpha, DragImageType imageType)
+    {
+        // Make the drag box as wide as the containing editor minus a gap each side for the border.
+        static constexpr int ParentEditorBorderSize = 2;
+        int width = GetContainingEditorFrameWidth() - ParentEditorBorderSize * 2;
+        int height = 0;
+
+        if (imageType == DragImageType::IncludeVisibleChildren)
+        {
+            height = GetHeightOfRowAndVisibleChildren();
+        }
+        else
+        {
+            height = rect().height();
+        }
+
+        const auto dpr = devicePixelRatioF();
+        QPixmap dragImage(static_cast<int>(width * dpr), static_cast<int>(height * dpr));
+        dragImage.setDevicePixelRatio(dpr);
+        dragImage.fill(Qt::transparent);
+
+        QRect imageRect = QRect(0, 0, width, height);
+
+        QPainter dragPainter(&dragImage);
+        dragPainter.setCompositionMode(QPainter::CompositionMode_Source);
+        dragPainter.fillRect(imageRect, Qt::transparent);
+        dragPainter.setCompositionMode(QPainter::CompositionMode_SourceOver);
+        dragPainter.setOpacity(alpha);
+        dragPainter.fillRect(imageRect, backgroundColor);
+
+        dragPainter.setOpacity(1.0f);
+
+        int marginWidth = (imageRect.width() - rect().width()) / 2 + ParentEditorBorderSize - 1;
+
+        if (imageType == DragImageType::IncludeVisibleChildren)
+        {
+            DrawDragImageAndVisibleChildrenInto(dragPainter, marginWidth, 0);
+        }
+        else
+        {
+            render(&dragPainter, QPoint(marginWidth, 0));
+        }
+
+        QPen pen;
+        pen.setColor(QColor(borderColor));
+        pen.setWidth(1);
+        dragPainter.setPen(pen);
+        dragPainter.drawRect(0, 0, imageRect.width() - 1, imageRect.height() - 1);
+
+        dragPainter.end();
+
+        return dragImage;
     }
 }
 

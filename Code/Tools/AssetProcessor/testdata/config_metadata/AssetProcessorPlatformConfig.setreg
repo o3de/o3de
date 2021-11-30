@@ -1,0 +1,16 @@
+{
+	"O3DE":
+	{
+		"SceneAPI":
+		{
+			"AssetImporter":
+			{
+				"SupportedFileTypeExtensions":
+				[
+					".aaa",
+					".bbb"
+				]
+			}
+		}
+	}
+}

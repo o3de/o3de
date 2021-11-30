@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -28,22 +29,15 @@ namespace Multiplayer
         void OnDeactivate(Multiplayer::EntityIsMigrating entityIsMigrating) override;
 
     private:
-        void OnPreRender(float deltaTime, float blendFactor);
-
-        void OnRotationChangedEvent(const AZ::Quaternion& rotation);
-        void OnTranslationChangedEvent(const AZ::Vector3& translation);
-        void OnScaleChangedEvent(float scale);
-        void OnResetCountChangedEvent();
-
-        AZ::Transform m_previousTransform = AZ::Transform::CreateIdentity();
-        AZ::Transform m_targetTransform = AZ::Transform::CreateIdentity();
-
-        AZ::Event<AZ::Quaternion>::Handler m_rotationEventHandler;
-        AZ::Event<AZ::Vector3>::Handler m_translationEventHandler;
-        AZ::Event<float>::Handler m_scaleEventHandler;
-        AZ::Event<uint8_t>::Handler m_resetCountEventHandler;
-
+        void OnPreRender(float deltaTime);
+        void OnCorrection();
+        void OnParentChanged(NetEntityId parentId);
+        
         EntityPreRenderEvent::Handler m_entityPreRenderEventHandler;
+        EntityCorrectionEvent::Handler m_entityCorrectionEventHandler;
+        AZ::Event<NetEntityId>::Handler m_parentChangedEventHandler;
+
+        Multiplayer::HostFrameId m_targetHostFrameId = HostFrameId(0);
     };
 
     class NetworkTransformComponentController
@@ -56,8 +50,10 @@ namespace Multiplayer
         void OnDeactivate(Multiplayer::EntityIsMigrating entityIsMigrating) override;
 
     private:
-        void OnTransformChangedEvent(const AZ::Transform& worldTm);
+        void OnTransformChangedEvent(const AZ::Transform& localTm, const AZ::Transform& worldTm);
+        void OnParentIdChangedEvent(AZ::EntityId oldParent, AZ::EntityId newParent);
 
         AZ::TransformChangedEvent::Handler m_transformChangedHandler;
+        AZ::ParentChangedEvent::Handler m_parentIdChangedHandler;
     };
 }

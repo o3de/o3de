@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -29,8 +30,6 @@ static constexpr const char TEST_EXPECTED_BUCKET_TYPE[] = "AWS::S3::Bucket";
 static constexpr const char TEST_EXPECTED_BUCKET_NAMEID[] = "MyTestS3Bucket";
 
 static constexpr const char TEST_EXPECTED_SERVICE_KEYNAME[] = "TestService";
-static constexpr const char TEST_EXPECTED_RESTAPI_ID_KEYNAME[] = "TestService.RESTApiId";
-static constexpr const char TEST_EXPECTED_RESTAPI_STAGE_KEYNAME[] = "TestService.RESTApiStage";
 
 static constexpr const char TEST_VALID_RESOURCE_MAPPING_CONFIG_FILE[] =
 R"({
@@ -60,12 +59,47 @@ R"({
     "Version": "1.0.0"
 })";
 
+static constexpr const char TEST_VALID_EMPTY_ACCOUNTID_RESOURCE_MAPPING_CONFIG_FILE[] =
+    R"({
+    "AWSResourceMappings": {
+        "TestLambda": {
+            "Type": "AWS::Lambda::Function",
+            "Name/ID": "MyTestLambda",
+            "Region": "us-east-1",
+            "AccountId": "012345678912"
+        },
+        "TestS3Bucket": {
+            "Type": "AWS::S3::Bucket",
+            "Name/ID": "MyTestS3Bucket"
+        },
+        "TestService.RESTApiId": {
+            "Type": "AWS::ApiGateway::RestApi",
+            "Name/ID": "1234567890"
+        },
+        "TestService.RESTApiStage": {
+            "Type": "AWS::ApiGateway::Stage",
+            "Name/ID": "prod",
+            "Region": "us-east-1"
+        }
+    },
+    "AccountId": "",
+    "Region": "us-west-2",
+    "Version": "1.1.0"
+})";
+
 static constexpr const char TEST_INVALID_RESOURCE_MAPPING_CONFIG_FILE[] =
 R"({
     "AWSResourceMappings": {},
     "AccountId": "123",
     "Region": "123",
     "Version": "123"
+})";
+static constexpr const char TEST_TEMPLATE_RESOURCE_MAPPING_CONFIG_FILE[] =
+    R"({
+    "AWSResourceMappings": {},
+    "AccountId": "EMPTY",
+    "Region": "us-west-2",
+    "Version": "1.0.0"
 })";
 
 class AWSResourceMappingManagerTest
@@ -114,7 +148,6 @@ public:
     // AWSCoreInternalRequestBus interface implementation
     AZStd::string GetProfileName() const override { return ""; }
     AZStd::string GetResourceMappingConfigFilePath() const override { return m_normalizedConfigFilePath; }
-    AZStd::string GetResourceMappingConfigFolderPath() const override { return m_normalizedConfigFolderPath; }
     void ReloadConfiguration() override { m_reloadConfigurationCounter++; }
 
     AZStd::unique_ptr<AWSCore::AWSResourceMappingManager> m_resourceMappingManager;
@@ -192,12 +225,27 @@ TEST_F(AWSResourceMappingManagerTest, ActivateManager_ParseValidConfigFile_Confi
     EXPECT_TRUE(m_resourceMappingManager->GetStatus() == AWSResourceMappingManager::Status::Ready);
 }
 
+TEST_F(AWSResourceMappingManagerTest, ActivateManager_ParseTemplateConfigFile_ConfigDataIsNotEmpty)
+{
+    CreateTestConfigFile(TEST_TEMPLATE_RESOURCE_MAPPING_CONFIG_FILE);
+    m_resourceMappingManager->ActivateManager();
+
+    AZStd::string actualAccountId;
+    AZStd::string actualRegion;
+    AWSResourceMappingRequestBus::BroadcastResult(actualAccountId, &AWSResourceMappingRequests::GetDefaultAccountId);
+    AWSResourceMappingRequestBus::BroadcastResult(actualRegion, &AWSResourceMappingRequests::GetDefaultRegion);
+    EXPECT_EQ(m_reloadConfigurationCounter, 0);
+    EXPECT_FALSE(actualAccountId.empty());
+    EXPECT_FALSE(actualRegion.empty());
+    EXPECT_TRUE(m_resourceMappingManager->GetStatus() == AWSResourceMappingManager::Status::Ready);
+}
+
 TEST_F(AWSResourceMappingManagerTest, ActivateManager_ParseValidConfigFile_ConfigDataIsNotEmptyWithMultithreadCalls)
 {
     CreateTestConfigFile(TEST_VALID_RESOURCE_MAPPING_CONFIG_FILE);
     m_resourceMappingManager->ActivateManager();
 
-    int testThreadNumber = 10;
+    constexpr int testThreadNumber = 10;
     AZStd::atomic<int> actualEbusCalls = 0;
     AZStd::vector<AZStd::thread> testThreadPool;
     for (int index = 0; index < testThreadNumber; index++)
@@ -206,7 +254,7 @@ TEST_F(AWSResourceMappingManagerTest, ActivateManager_ParseValidConfigFile_Confi
             AZStd::string actualAccountId;
             AWSResourceMappingRequestBus::BroadcastResult(actualAccountId, &AWSResourceMappingRequests::GetDefaultAccountId);
             EXPECT_FALSE(actualAccountId.empty());
-            actualEbusCalls++;
+            ++actualEbusCalls;
         }));
     }
 
@@ -215,6 +263,21 @@ TEST_F(AWSResourceMappingManagerTest, ActivateManager_ParseValidConfigFile_Confi
         testThread.join();
     }
     EXPECT_TRUE(actualEbusCalls == testThreadNumber);
+}
+
+TEST_F(AWSResourceMappingManagerTest, ActivateManager_ParseValidConfigFile_GlobalAccountIdEmpty)
+{
+    CreateTestConfigFile(TEST_VALID_EMPTY_ACCOUNTID_RESOURCE_MAPPING_CONFIG_FILE);
+    m_resourceMappingManager->ActivateManager();
+
+    AZStd::string actualAccountId;
+    AZStd::string actualRegion;
+    AWSResourceMappingRequestBus::BroadcastResult(actualAccountId, &AWSResourceMappingRequests::GetDefaultAccountId);
+    AWSResourceMappingRequestBus::BroadcastResult(actualRegion, &AWSResourceMappingRequests::GetDefaultRegion);
+    EXPECT_EQ(m_reloadConfigurationCounter, 0);
+    EXPECT_TRUE(actualAccountId.empty());
+    EXPECT_FALSE(actualRegion.empty());
+    EXPECT_TRUE(m_resourceMappingManager->GetStatus() == AWSResourceMappingManager::Status::Ready);
 }
 
 TEST_F(AWSResourceMappingManagerTest, DeactivateManager_AfterActivatingWithValidConfigFile_ConfigDataGetCleanedUp)

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -108,7 +109,7 @@ namespace GraphCanvas
         void SetTranslationKeyedTooltip(const TranslationKeyedString& tooltip) override;
         const AZStd::string GetTooltip() const override { return m_configuration.GetTooltip(); }
 
-        void SetShowInOutliner(bool showInOutliner) { m_configuration.SetShowInOutliner(showInOutliner); }
+        void SetShowInOutliner(bool showInOutliner) override { m_configuration.SetShowInOutliner(showInOutliner); }
         bool ShowInOutliner() const override { return m_configuration.GetShowInOutliner(); }
 
         void AddSlot(const AZ::EntityId& slotId) override;

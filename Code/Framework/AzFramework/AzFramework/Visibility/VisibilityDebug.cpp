@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -90,7 +91,7 @@ namespace AzFramework
                                          const AZ::Frustum::PlaneId planeId3)
         {
             AZ::Vector3 corner = AZ::Vector3::CreateZero();
-            const auto intersectionOkay = AZ::ShapeIntersection::IntersectThreePlanes(
+            [[maybe_unused]] const auto intersectionOkay = AZ::ShapeIntersection::IntersectThreePlanes(
                 frustum.GetPlane(planeId1), frustum.GetPlane(planeId2), frustum.GetPlane(planeId3), corner);
             AZ_Assert(intersectionOkay, "Plane intersection of Frustum failed");
 

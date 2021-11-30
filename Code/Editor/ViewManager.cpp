@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -25,18 +26,15 @@
 #include "LayoutWnd.h"
 #include "2DViewport.h"
 #include "TopRendererWnd.h"
-#include "RenderViewport.h"
 #include "EditorViewportWidget.h"
 #include "CryEditDoc.h"
 
 #include <AzCore/Console/IConsole.h>
 
-AZ_CVAR(bool, ed_useAtomNativeViewport, true, nullptr, AZ::ConsoleFunctorFlags::Null, "Use the new Atom-native Editor viewport (experimental, not yet stable");
-
 bool CViewManager::IsMultiViewportEnabled()
 {
     // Enable multi-viewport for legacy renderer, or if we're using the new fully Atom-native viewport
-    return ed_useAtomNativeViewport;
+    return true;
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -54,7 +52,7 @@ CViewManager::CViewManager()
     m_updateRegion.min = Vec3(-100000, -100000, -100000);
     m_updateRegion.max = Vec3(100000, 100000, 100000);
 
-    m_pSelectedView = NULL;
+    m_pSelectedView = nullptr;
 
     m_nGameViewports = 0;
     m_bGameViewportsUpdated = false;
@@ -73,14 +71,7 @@ CViewManager::CViewManager()
     RegisterQtViewPane<C2DViewport_YZ>(GetIEditor(), "Left", LyViewPane::CategoryViewport, viewportOptions);
 
     viewportOptions.viewportType = ET_ViewportCamera;
-    if (ed_useAtomNativeViewport)
-    {
-        RegisterQtViewPaneWithName<EditorViewportWidget>(GetIEditor(), "Perspective", LyViewPane::CategoryViewport, viewportOptions);
-    }
-    else
-    {
-        RegisterQtViewPaneWithName<CRenderViewport>(GetIEditor(), "Perspective", LyViewPane::CategoryViewport, viewportOptions);
-    }
+    RegisterQtViewPaneWithName<EditorViewportWidget>(GetIEditor(), "Perspective", LyViewPane::CategoryViewport, viewportOptions);
 
     viewportOptions.viewportType = ET_ViewportMap;
     RegisterQtViewPane<QTopRendererWnd>(GetIEditor(), "Map", LyViewPane::CategoryViewport, viewportOptions);
@@ -116,7 +107,7 @@ void CViewManager::UnregisterViewport(CViewport* pViewport)
 {
     if (m_pSelectedView == pViewport)
     {
-        m_pSelectedView = NULL;
+        m_pSelectedView = nullptr;
     }
     stl::find_and_erase(m_viewports, pViewport);
     m_bGameViewportsUpdated = false;
@@ -136,7 +127,7 @@ CViewport* CViewManager::GetViewport(EViewportType type) const
             return m_viewports[i];
         }
     }
-    return 0;
+    return nullptr;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -149,7 +140,7 @@ CViewport* CViewManager::GetViewport(const QString& name) const
             return m_viewports[i];
         }
     }
-    return 0;
+    return nullptr;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -233,7 +224,7 @@ void CViewManager::SelectViewport(CViewport* pViewport)
 {
     // Audio: Handle viewport change for listeners
 
-    if (m_pSelectedView != NULL && m_pSelectedView != pViewport)
+    if (m_pSelectedView != nullptr && m_pSelectedView != pViewport)
     {
         m_pSelectedView->SetSelected(false);
 
@@ -241,7 +232,7 @@ void CViewManager::SelectViewport(CViewport* pViewport)
 
     m_pSelectedView = pViewport;
 
-    if (m_pSelectedView != NULL)
+    if (m_pSelectedView != nullptr)
     {
         m_pSelectedView->SetSelected(true);
     }
@@ -250,11 +241,6 @@ void CViewManager::SelectViewport(CViewport* pViewport)
 //////////////////////////////////////////////////////////////////////////
 CViewport* CViewManager::GetGameViewport() const
 {
-    if (CRenderViewport::GetPrimaryViewport())
-    {
-        return CRenderViewport::GetPrimaryViewport();
-    }
-
     return GetViewport(ET_ViewportCamera);;
 }
 

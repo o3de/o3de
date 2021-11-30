@@ -1,35 +1,37 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
-#include "AzToolsFramework_precompiled.h"
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Component/ComponentApplication.h>
 
 #include "EditorFrameworkAPI.h"
 
+#include <QtCore/QString>
+
 namespace LegacyFramework
 {
     const char* appName()
     {
-        const char* result = NULL;
+        const char* result = nullptr;
         EBUS_EVENT_RESULT(result, FrameworkApplicationMessages::Bus, GetApplicationName);
         return result;
     }
 
     const char* appModule()
     {
-        const char* result = NULL;
+        const char* result = nullptr;
         EBUS_EVENT_RESULT(result, FrameworkApplicationMessages::Bus, GetApplicationModule);
         return result;
     }
 
     const char* appDir()
     {
-        const char* result = NULL;
+        const char* result = nullptr;
         EBUS_EVENT_RESULT(result, FrameworkApplicationMessages::Bus, GetApplicationDirectory);
         return result;
     }
@@ -72,7 +74,7 @@ namespace LegacyFramework
     // helper function which retrieves the serialize context and asserts if its not found.
     AZ::SerializeContext* GetSerializeContext()
     {
-        AZ::SerializeContext* serializeContext = NULL;
+        AZ::SerializeContext* serializeContext = nullptr;
         EBUS_EVENT_RESULT(serializeContext, AZ::ComponentApplicationBus, GetSerializeContext);
         AZ_Assert(serializeContext, "No serialize context");
         return serializeContext;

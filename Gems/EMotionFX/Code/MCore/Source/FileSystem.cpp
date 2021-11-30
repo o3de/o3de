@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -17,13 +18,13 @@
 namespace MCore
 {
     // The folder path used to keep a backup in SaveToFileSecured.
-    StaticString FileSystem::mSecureSavePath;
+    StaticString FileSystem::s_secureSavePath;
 
     // Save to file secured by a backup file.
     bool FileSystem::SaveToFileSecured(const char* filename, const AZStd::function<bool()>& saveFunction, CommandManager* commandManager)
     {
         // If the secure save path is not set, simply call the save function.
-        if (mSecureSavePath.empty())
+        if (s_secureSavePath.empty())
         {
             return saveFunction();
         }
@@ -44,12 +45,12 @@ namespace MCore
             // Find a unique backup filename.
             AZ::u32 backupFileIndex = 0;
             AZStd::string backupFileIndexString;
-            AZStd::string backupFilename = mSecureSavePath.c_str() + baseFilename + '.' + extension;
+            AZStd::string backupFilename = s_secureSavePath.c_str() + baseFilename + '.' + extension;
             while (fileIo->Exists(backupFilename.c_str()))
             {
                 AZStd::to_string(backupFileIndexString, ++backupFileIndex);
 
-                backupFilename = mSecureSavePath.c_str() +  baseFilename + backupFileIndexString + '.' + extension;
+                backupFilename = s_secureSavePath.c_str() +  baseFilename + backupFileIndexString + '.' + extension;
             }
 
             // Copy the file to the backup filename.

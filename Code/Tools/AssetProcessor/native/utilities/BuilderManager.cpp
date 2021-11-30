@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -14,6 +15,7 @@
 #include <native/connection/connection.h>
 #include <native/utilities/AssetBuilderInfo.h>
 #include <QCoreApplication>
+#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 
 namespace AssetProcessor
 {
@@ -26,7 +28,7 @@ namespace AssetProcessor
     //! Amount of time in seconds to wait for a builder to start up and connect
     // sometimes, builders take a long time to start because of things like virus scanners scanning each
     // builder DLL, so we give them a large margin.
-    static const int s_StartupConnectionWaitTimeS = 120;
+    static const int s_StartupConnectionWaitTimeS = 300;
 
     static const int s_MillisecondsInASecond = 1000;
 
@@ -218,6 +220,26 @@ namespace AssetProcessor
         #else
             params = AZStd::string::format(R"(%s -input="\"%s\"" -output="\"%s\"")", params.c_str(), jobDescriptionFile.c_str(), jobResponseFile.c_str());
         #endif // !AZ_TRAIT_OS_PLATFORM_APPLE && !AZ_TRAIT_OS_USE_WINDOWS_FILE_PATHS
+        }
+
+        auto settingsRegistry = AZ::SettingsRegistry::Get();
+        AZ::CommandLine commandLine;
+        AZ::SettingsRegistryMergeUtils::GetCommandLineFromRegistry(*settingsRegistry, commandLine);
+        AZStd::fixed_vector optionKeys{ "regset", "regremove" };
+        for (auto&& optionKey : optionKeys)
+        {
+            size_t commandOptionCount = commandLine.GetNumSwitchValues(optionKey);
+            for (size_t optionIndex = 0; optionIndex < commandOptionCount; ++optionIndex)
+            {
+                const AZStd::string& optionValue = commandLine.GetSwitchValue(optionKey, optionIndex);
+                params.append(AZStd::string::format(
+#if !AZ_TRAIT_OS_PLATFORM_APPLE && !AZ_TRAIT_OS_USE_WINDOWS_FILE_PATHS
+                    R"( --%s="%s")",
+#else
+                    R"( --%s="\"%s\"")",
+#endif
+                    optionKey, optionValue.c_str()));
+            }
         }
 
         return params;

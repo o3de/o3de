@@ -1,5 +1,5 @@
 { 
-    "Source" : "ReflectionProbeStencil",
+    "Source" : "ReflectionProbeStencil.azsl",
 
     "RasterState" :
     {
@@ -47,5 +47,14 @@
                 "type": "Vertex"
             }
         ]
-    }
+    },
+
+    "Supervariants":
+    [
+        {
+            "Name": "NoMSAA",
+            "PlusArguments": "--no-ms",
+            "MinusArguments": ""
+        }
+    ]
 }

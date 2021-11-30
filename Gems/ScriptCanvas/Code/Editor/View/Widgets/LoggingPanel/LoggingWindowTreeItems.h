@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -114,7 +115,7 @@ namespace ScriptCanvasEditor
 
     protected:
 
-        bool OnMatchesFilter([[maybe_unused]] const DebugLogFilter& treeFilter) { return true; }
+        bool OnMatchesFilter([[maybe_unused]] const DebugLogFilter& treeFilter) override { return true; }
 
         UpdatePolicy m_updatePolicy;
         QTimer m_additionTimer;

@@ -12,7 +12,6 @@
         "FbxSdk/2016.1.2-az.1/**": "#include",
         "OpenSSL/1.1.1b-noasm-az/**": "#include",
         "Qt/5.15.1.2-az/**": "#include",
-        "RadTelemetry/3.5.0.17/**": "#include",
         "tiff/3.9.5-az.3/**": "#include",
         "Wwise/2019.2.8.7432/**": "#include"
     }

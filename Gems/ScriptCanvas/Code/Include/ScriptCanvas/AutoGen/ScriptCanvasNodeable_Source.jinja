@@ -1,5 +1,6 @@
 {#
-Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+Copyright (c) Contributors to the Open 3D Engine Project.
+For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
 #}
@@ -14,6 +15,7 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 //
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+#include <AzCore/Asset/AssetSerializer.h>
 #include <ScriptCanvas/Core/Contracts.h>
 #include <ScriptCanvas/Core/NodeableNode.h>
 #include <ScriptCanvas/Core/SlotExecutionMap.h>
@@ -159,7 +161,9 @@ void {{attribute_QualifiedName}}::Reflect(AZ::ReflectContext* context)
     {
 {% if ExtendReflectionSerialize is defined %}   auto {{preSerialize}} = {% else %}   {% endif %}serializeContext->Class<{{ attribute_Name }}{% if attribute_Base is defined %}, {{ attribute_Base }}{% endif %}>(){{postSerialize}}
 {% if attribute_EventHandler is defined %}
+#if defined(OBJECT_STREAM_EDITOR_ASSET_LOADING_SUPPORT_ENABLED)////
             {{preSerialize}}->EventHandler<{{ attribute_EventHandler }}>(){{postSerialize}}
+#endif//defined(OBJECT_STREAM_EDITOR_ASSET_LOADING_SUPPORT_ENABLED)
 {% endif %}
 
 {# Serialized Properties #}
@@ -196,7 +200,8 @@ void {{attribute_QualifiedName}}::Reflect(AZ::ReflectContext* context)
 {% if item.attrib['Description'] is defined %}
     {% set description = item.attrib['Description'] %}
 {% endif %}
-        // {{ item.attrib['Name'] }}
+
+                        // {{ item.attrib['Name'] }}
                         {{preEdit}}->DataElement({{ uihandler }}, &{{ attribute_Name }}::{{ item.attrib['Name'] }}, "{{ item.attrib['Name'] }}", "{{ description }}"){{postEdit}}
 {%          for EditAttribute in item.iter('EditAttribute') %}
                         {{preEdit}}->Attribute({{ EditAttribute.attrib['Key'] }}, {{ EditAttribute.attrib['Value'] }}){{postEdit}}
@@ -271,6 +276,9 @@ void Nodes::{{ nodeableNodeName }}::Reflect(AZ::ReflectContext* context)
         {
             {% if ExtendReflectionEdit is defined %}auto {{preEdit}} = {%endif%}editContext->Class<{{ nodeableNodeName }}>("{{ attribute_PreferredClassName }}", "{{ attribute_Description }}"){{postEdit}}
                 {{preEdit}}->ClassElement(AZ::Edit::ClassElements::EditorData, ""){{postEdit}}
+{% if attribute_Category is defined %}
+                {{preEdit}}->Attribute(AZ::Edit::Attributes::Category, "{{ attribute_Category }}"){{postEdit}}
+{% endif %}
                 {{preEdit}}->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly){{postEdit}}
                 {{preEdit}}->Attribute(AZ::Edit::Attributes::AutoExpand, true){{postEdit}}
                 ;

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -213,6 +214,22 @@ namespace ScriptCanvas
         }
         SCRIPT_CANVAS_GENERIC_FUNCTION_NODE_DEPRECATED(Subtract, k_categoryName, "{A5FA6465-9C39-4A44-BD7C-E8ECF9503E46}", "This node is deprecated, use Subtract (-), it provides contextual type and slots", "A", "B");
 
+        AZ_INLINE void DirectionToDefaults(Node& node)
+        {
+            SetDefaultValuesByIndex<0>::_(node, Data::Vector4Type());
+            SetDefaultValuesByIndex<1>::_(node, Data::Vector4Type());
+            SetDefaultValuesByIndex<2>::_(node, Data::NumberType(1.));
+        }
+
+        AZ_INLINE std::tuple<Vector4Type, NumberType> DirectionTo(const Vector4Type from, const Vector4Type to, NumberType optionalScale = 1.f)
+        {
+            Vector4Type r = to - from;
+            float length = r.NormalizeWithLength();
+            r.SetLength(static_cast<float>(optionalScale));
+            return std::make_tuple(r, length);
+        }
+        SCRIPT_CANVAS_GENERIC_FUNCTION_NODE_WITH_DEFAULTS(DirectionTo, DirectionToDefaults, k_categoryName, "{463762DE-E541-4AFE-80C2-FED1C5273319}", "Returns a direction vector between two points and the distance between them, by default the direction will be normalized, but it may be optionally scaled using the Scale parameter if different from 1.0", "From", "To", "Scale");
+
         using Registrar = RegistrarGeneric <
             AbsoluteNode,
             AddNode,
@@ -259,7 +276,8 @@ namespace ScriptCanvas
 #endif
 
             ReciprocalNode,
-            SubtractNode
+            SubtractNode,
+            DirectionToNode
         > ;
 
     }

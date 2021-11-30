@@ -1,6 +1,7 @@
 #
-# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
-# 
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
@@ -371,9 +372,29 @@ CUSTOM_GRADLE_COPY_NATIVE_CONFIG_BUILD_ARTIFACTS_FORMAT_STR = """
     }}
 
     compile{config}Sources.dependsOn copyNativeArtifacts{config}
+"""
+
+CUSTOM_GRADLE_COPY_NATIVE_CONFIG_BUILD_ARTIFACTS_DEPENDENCY_FORMAT_STR = """
 
     copyNativeArtifacts{config}.mustRunAfter {{
-        tasks.findAll {{ task->task.name.contains('externalNativeBuild{config}') }}
+        tasks.findAll {{ task->task.name.contains('syncLYLayoutMode{config}') }}
+    }}
+"""
+
+CUSTOM_GRADLE_COPY_REGISTRY_FOLDER_FORMAT_STR = """
+     task copyRegistryFolder{config}(type: Copy) {{
+        from ('build/intermediates/cmake/{config_lower}/obj/arm64-v8a/{config_lower}/Registry')
+        into ('{asset_layout_folder}/registry')
+        include ('*.setreg')
+    }}
+
+    compile{config}Sources.dependsOn copyRegistryFolder{config}
+"""
+
+CUSTOM_GRADLE_COPY_REGISTRY_FOLDER_DEPENDENCY_FORMAT_STR = """
+
+    copyRegistryFolder{config}.mustRunAfter {{
+        tasks.findAll {{ task->task.name.contains('syncLYLayoutMode{config}') }}
     }}
 """
 
@@ -382,7 +403,13 @@ CUSTOM_APPLY_ASSET_LAYOUT_TASK_FORMAT_STR = """
         workingDir '{working_dir}'
         commandLine '{python_full_path}', 'layout_tool.py', '--project-path', '{project_path}', '-p', 'Android', '-a', '{asset_type}', '-m', '{asset_mode}', '--create-layout-root', '-l', '{asset_layout_folder}'
     }}
+    
     compile{config}Sources.dependsOn syncLYLayoutMode{config}
+
+    syncLYLayoutMode{config}.mustRunAfter {{
+        tasks.findAll {{ task->task.name.contains('externalNativeBuild{config}') }}
+    }}
+
 """
 
 
@@ -831,25 +858,27 @@ class AndroidProjectGenerator(object):
                                                                                        asset_layout_folder=(self.build_dir / 'app/src/main/assets').resolve().as_posix(),
                                                                                        file_includes='Test.Assets/**/*.*')
             else:
-                # Copy over settings registry files from the Registry folder with build output directory
                 gradle_build_env[f'CUSTOM_APPLY_ASSET_LAYOUT_{native_config_upper}_TASK'] = \
-                    CUSTOM_GRADLE_COPY_NATIVE_CONFIG_BUILD_ARTIFACTS_FORMAT_STR.format(config=native_config,
-                                                                                       config_lower=native_config_lower,
-                                                                                       asset_layout_folder=(self.build_dir / 'app/src/main/assets').resolve().as_posix(),
-                                                                                       file_includes='**/Registry/*.setreg')
-
-            if self.include_assets_in_apk:
-                if not self.is_test_project:
+                    CUSTOM_APPLY_ASSET_LAYOUT_TASK_FORMAT_STR.format(working_dir=common.normalize_path_for_settings(self.engine_root / 'cmake/Tools'),
+                                                                     python_full_path=common.normalize_path_for_settings(self.engine_root / 'python' / PYTHON_SCRIPT),
+                                                                     asset_type=self.asset_type,
+                                                                     project_path=self.project_path.as_posix(),
+                                                                     asset_mode=self.asset_mode if native_config != 'Release' else 'PAK',
+                                                                     asset_layout_folder=(self.build_dir / 'app/src/main/assets').resolve().as_posix(),
+                                                                     config=native_config)
+                # Copy over settings registry files from the Registry folder with build output directory
+                gradle_build_env[f'CUSTOM_APPLY_ASSET_LAYOUT_{native_config_upper}_TASK'] += \
+                    CUSTOM_GRADLE_COPY_REGISTRY_FOLDER_FORMAT_STR.format(config=native_config,
+                                                                        config_lower=native_config_lower,
+                                                                        asset_layout_folder=(self.build_dir / 'app/src/main/assets').resolve().as_posix())
+                if self.include_assets_in_apk:
+                    # This is a dependency of the layout sync only if we are including assets in the APK
                     gradle_build_env[f'CUSTOM_APPLY_ASSET_LAYOUT_{native_config_upper}_TASK'] += \
-                        CUSTOM_APPLY_ASSET_LAYOUT_TASK_FORMAT_STR.format(working_dir=common.normalize_path_for_settings(self.engine_root / 'cmake/Tools'),
-                                                                         python_full_path=common.normalize_path_for_settings(self.engine_root / 'python' / PYTHON_SCRIPT),
-                                                                         asset_type=self.asset_type,
-                                                                         project_path=self.project_path.as_posix(),
-                                                                         asset_mode=self.asset_mode if native_config != 'Release' else 'PAK',
-                                                                         asset_layout_folder=(self.build_dir / 'app/src/main/assets').resolve().as_posix(),
-                                                                         config=native_config)
-            else:
-                gradle_build_env[f'CUSTOM_APPLY_ASSET_LAYOUT_{native_config_upper}_TASK'] = ''
+                        CUSTOM_GRADLE_COPY_REGISTRY_FOLDER_DEPENDENCY_FORMAT_STR.format(config=native_config)
+
+
+
+
             if self.signing_config:
                 gradle_build_env[f'SIGNING_{native_config_upper}_CONFIG'] = f'signingConfig signingConfigs.{native_config_lower}' if self.signing_config else ''
             else:

@@ -1,7 +1,8 @@
 
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -72,14 +73,14 @@ namespace EMotionFX
         for (int i = 0; i < iterationCount; ++i)
         {
             m_motionNode->PickNewActiveMotion(m_animGraphInstance, nodeUniqueData);
-            auto mapIterator = m_selectedMotionCount->find(nodeUniqueData->mActiveMotionIndex);
+            auto mapIterator = m_selectedMotionCount->find(nodeUniqueData->m_activeMotionIndex);
             if (mapIterator != m_selectedMotionCount->end())
             {
                 mapIterator->second++;
             }
             else
             {
-                m_selectedMotionCount->emplace(nodeUniqueData->mActiveMotionIndex, 1);
+                m_selectedMotionCount->emplace(nodeUniqueData->m_activeMotionIndex, 1);
             }
         }
 

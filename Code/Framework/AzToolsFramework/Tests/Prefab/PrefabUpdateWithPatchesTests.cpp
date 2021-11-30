@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -67,7 +68,7 @@ namespace UnitTest
         // Create a car with 0 entities and 1 axle instance.
         AZStd::unique_ptr<Instance> axleUnderCar = m_prefabSystemComponent->InstantiatePrefab(axleTemplateId);
         AZStd::unique_ptr<Instance> carInstance = m_prefabSystemComponent->CreatePrefab({},
-            MakeInstanceList( AZStd::move(axleUnderCar) ), CarPrefabMockFilePath);
+            MakeInstanceList(AZStd::move(axleUnderCar)), CarPrefabMockFilePath);
         const TemplateId carTemplateId = carInstance->GetTemplateId();
         const AZStd::vector<InstanceAlias> axleInstanceAliasesUnderCar = carInstance->GetNestedInstanceAliases(axleTemplateId);
         PrefabDom& carTemplateDom = m_prefabSystemComponent->FindTemplateDom(carTemplateId);
@@ -135,7 +136,10 @@ namespace UnitTest
 
         PrefabDomValueReference wheelEntityComponentBoolPropertyValue =
             PrefabDomUtils::FindPrefabDomValue(wheelEntityComponentValue->get(), PrefabTestDomUtils::BoolPropertyName);
-        ASSERT_FALSE(wheelEntityComponentBoolPropertyValue.has_value());
+
+        ASSERT_TRUE(wheelEntityComponentBoolPropertyValue.has_value());
+        ASSERT_TRUE(wheelEntityComponentBoolPropertyValue->get().IsBool());
+        ASSERT_FALSE(wheelEntityComponentBoolPropertyValue->get().GetBool());
 
         // Validate that the axles under the car have the same DOM as the axle template.
         PrefabTestDomUtils::ValidatePrefabDomInstances(axleInstanceAliasesUnderCar, carTemplateDom, axleTemplateDom);

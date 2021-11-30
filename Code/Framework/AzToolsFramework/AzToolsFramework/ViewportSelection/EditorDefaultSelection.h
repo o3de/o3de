@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -14,6 +15,8 @@
 
 namespace AzToolsFramework
 {
+    class ViewportEditorModeTrackerInterface;
+
     //! The default selection/input handler for the editor (includes handling ComponentMode).
     class EditorDefaultSelection
         : public ViewportInteraction::InternalViewportSelectionRequests
@@ -24,7 +27,7 @@ namespace AzToolsFramework
         AZ_CLASS_ALLOCATOR_DECL
 
         //! @cond
-        explicit EditorDefaultSelection(const EditorVisibleEntityDataCache* entityDataCache);
+        EditorDefaultSelection(const EditorVisibleEntityDataCache* entityDataCache, ViewportEditorModeTrackerInterface* viewportEditorModeTracker);
         EditorDefaultSelection(const EditorDefaultSelection&) = delete;
         EditorDefaultSelection& operator=(const EditorDefaultSelection&) = delete;
         virtual ~EditorDefaultSelection();
@@ -98,7 +101,7 @@ namespace AzToolsFramework
             {
             }
 
-            AZ::Crc32 m_uri; //!< Unique identifier for the Action. (In the form 'com.amazon.action.---").
+            AZ::Crc32 m_uri; //!< Unique identifier for the Action. (In the form 'com.o3de.action.---").
             AZStd::vector<AZStd::function<void()>> m_callbacks; //!< Callbacks associated with this Action (note: with multi-selections
                                                                 //!< there will be a callback per Entity/Component).
             AZStd::unique_ptr<QAction> m_action; //!< The QAction associated with the overrideWidget for all ComponentMode actions.
@@ -109,5 +112,7 @@ namespace AzToolsFramework
 
         AZStd::shared_ptr<AzToolsFramework::ManipulatorManager> m_manipulatorManager; //!< The default manipulator manager.
         ViewportInteraction::MouseInteraction m_currentInteraction; //!< Current mouse interaction to be used for drawing manipulators.
+        ViewportEditorModeTrackerInterface* m_viewportEditorModeTracker = nullptr; //!< Tracker for activating/deactivating viewport editor modes.
+
     };
 } // namespace AzToolsFramework

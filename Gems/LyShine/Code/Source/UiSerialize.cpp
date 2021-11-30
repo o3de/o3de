@@ -1,10 +1,10 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "LyShine_precompiled.h"
 #include "UiSerialize.h"
 
 #include <LyShine/UiAssetTypes.h>
@@ -31,67 +31,6 @@
 
 namespace UiSerialize
 {
-    ////////////////////////////////////////////////////////////////////////////////////////////////////
-    class CryStringTCharSerializer
-        : public AZ::SerializeContext::IDataSerializer
-    {
-        /// Return the size of binary buffer necessary to store the value in binary format
-        size_t  GetRequiredBinaryBufferSize(const void* classPtr) const
-        {
-            const CryStringT<char>* string = reinterpret_cast<const CryStringT<char>*>(classPtr);
-            return string->length() + 1;
-        }
-
-        /// Store the class data into a stream.
-        size_t Save(const void* classPtr, AZ::IO::GenericStream& stream, [[maybe_unused]] bool isDataBigEndian /*= false*/) override
-        {
-            const CryStringT<char>* string = reinterpret_cast<const CryStringT<char>*>(classPtr);
-            const char* data = string->c_str();
-
-            return static_cast<size_t>(stream.Write(string->length() + 1, reinterpret_cast<const void*>(data)));
-        }
-
-        size_t DataToText(AZ::IO::GenericStream& in, AZ::IO::GenericStream& out, [[maybe_unused]] bool isDataBigEndian /*= false*/) override
-        {
-            size_t len = in.GetLength();
-            char* buffer = static_cast<char*>(azmalloc(len));
-            in.Read(in.GetLength(), reinterpret_cast<void*>(buffer));
-
-            AZStd::string outText = buffer;
-            azfree(buffer);
-
-            return static_cast<size_t>(out.Write(outText.size(), outText.data()));
-        }
-
-        size_t TextToData(const char* text, unsigned int textVersion, AZ::IO::GenericStream& stream, [[maybe_unused]] bool isDataBigEndian /*= false*/) override
-        {
-            (void)textVersion;
-
-            size_t len = strlen(text) + 1;
-            stream.Seek(0, AZ::IO::GenericStream::ST_SEEK_BEGIN);
-            return static_cast<size_t>(stream.Write(len, reinterpret_cast<const void*>(text)));
-        }
-
-        bool Load(void* classPtr, AZ::IO::GenericStream& stream, unsigned int /*version*/, [[maybe_unused]] bool isDataBigEndian /*= false*/) override
-        {
-            CryStringT<char>* string = reinterpret_cast<CryStringT<char>*>(classPtr);
-
-            size_t len = stream.GetLength();
-            char* buffer = static_cast<char*>(azmalloc(len));
-
-            stream.Read(len, reinterpret_cast<void*>(buffer));
-
-            *string = buffer;
-            azfree(buffer);
-            return true;
-        }
-
-        bool CompareValueData(const void* lhs, const void* rhs) override
-        {
-            return AZ::SerializeContext::EqualityCompareHelper<CryStringT<char> >::CompareValues(lhs, rhs);
-        }
-    };
-
     //////////////////////////////////////////////////////////////////////////
     void UiOffsetsScriptConstructor(UiTransform2dInterface::Offsets* thisPtr, AZ::ScriptDataContext& dc)
     {
@@ -553,9 +492,6 @@ namespace UiSerialize
 
         if (serializeContext)
         {
-            serializeContext->Class<CryStringT<char> >()->
-                Serializer(&AZ::Serialize::StaticInstance<CryStringTCharSerializer>::s_instance);
-
             serializeContext->Class<AnimationData>()
                 ->Version(1)
                 ->Field("SerializeString", &AnimationData::m_serializeData);

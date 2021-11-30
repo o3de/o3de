@@ -1,10 +1,10 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "Atom_RHI_Vulkan_precompiled.h"
 #include <RHI/Buffer.h>
 #include <RHI/BufferPool.h>
 #include <RHI/BufferView.h>
@@ -466,7 +466,7 @@ namespace AZ
 
         bool DescriptorSet::IsNullDescriptorInfo(const VkDescriptorImageInfo& descriptorInfo)
         {
-            return descriptorInfo.imageView == VK_NULL_HANDLE;
+            return (descriptorInfo.imageView == VK_NULL_HANDLE && descriptorInfo.sampler == VK_NULL_HANDLE);
         }
 
         bool DescriptorSet::IsNullDescriptorInfo(const VkBufferView& descriptorInfo)

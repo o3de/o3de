@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -18,18 +19,17 @@ namespace EMotionFX
 
 
     // constructor
-    SubMesh::SubMesh(Mesh* parentMesh, uint32 startVertex, uint32 startIndex, uint32 startPolygon, uint32 numVerts, uint32 numIndices, uint32 numPolygons, uint32 materialIndex, uint32 numBones)
+    SubMesh::SubMesh(Mesh* parentMesh, uint32 startVertex, uint32 startIndex, uint32 startPolygon, uint32 numVerts, uint32 numIndices, uint32 numPolygons, uint32 materialIndex, size_t numBones)
     {
-        mParentMesh     = parentMesh;
-        mNumVertices    = numVerts;
-        mNumIndices     = numIndices;
-        mNumPolygons    = numPolygons;
-        mStartIndex     = startIndex;
-        mStartVertex    = startVertex;
-        mStartPolygon   = startPolygon;
-        mMaterial       = materialIndex;
+        m_parentMesh     = parentMesh;
+        m_numVertices    = numVerts;
+        m_numIndices     = numIndices;
+        m_numPolygons    = numPolygons;
+        m_startIndex     = startIndex;
+        m_startVertex    = startVertex;
+        m_startPolygon   = startPolygon;
+        m_material       = materialIndex;
 
-        mBones.SetMemoryCategory(EMFX_MEMCATEGORY_GEOMETRY_MESHES);
         SetNumBones(numBones);
     }
 
@@ -41,7 +41,7 @@ namespace EMotionFX
 
 
     // create
-    SubMesh* SubMesh::Create(Mesh* parentMesh, uint32 startVertex, uint32 startIndex, uint32 startPolygon, uint32 numVerts, uint32 numIndices, uint32 numPolygons, uint32 materialIndex, uint32 numBones)
+    SubMesh* SubMesh::Create(Mesh* parentMesh, uint32 startVertex, uint32 startIndex, uint32 startPolygon, uint32 numVerts, uint32 numIndices, uint32 numPolygons, uint32 materialIndex, size_t numBones)
     {
         return aznew SubMesh(parentMesh, startVertex, startIndex, startPolygon, numVerts, numIndices, numPolygons, materialIndex, numBones);
     }
@@ -50,27 +50,16 @@ namespace EMotionFX
     // clone the submesh
     SubMesh* SubMesh::Clone(Mesh* newParentMesh)
     {
-        SubMesh* clone = aznew SubMesh(newParentMesh, mStartVertex, mStartIndex, mStartPolygon, mNumVertices, mNumIndices, mNumPolygons, mMaterial, mBones.GetLength());
-        clone->mBones = mBones;
+        SubMesh* clone = aznew SubMesh(newParentMesh, m_startVertex, m_startIndex, m_startPolygon, m_numVertices, m_numIndices, m_numPolygons, m_material, m_bones.size());
+        clone->m_bones = m_bones;
         return clone;
     }
 
 
     // remap bone (oldNodeNr) to bone (newNodeNr)
-    void SubMesh::RemapBone(uint16 oldNodeNr, uint16 newNodeNr)
+    void SubMesh::RemapBone(size_t oldNodeNr, size_t newNodeNr)
     {
-        // get the number of bones stored inside the submesh
-        const uint32 numBones = mBones.GetLength();
-
-        // iterate through all bones and remap the bones
-        for (uint32 i = 0; i < numBones; ++i)
-        {
-            // remap the bone
-            if (mBones[i] == oldNodeNr)
-            {
-                mBones[i] = newNodeNr;
-            }
-        }
+        AZStd::replace(m_bones.begin(), m_bones.end(), oldNodeNr, newNodeNr);
     }
 
 
@@ -78,10 +67,10 @@ namespace EMotionFX
     void SubMesh::ReinitBonesArray(SkinningInfoVertexAttributeLayer* skinLayer)
     {
         // clear the bones array
-        mBones.Clear(false);
+        m_bones.clear();
 
         // get shortcuts to the original vertex numbers
-        const uint32* orgVertices = (uint32*)mParentMesh->FindOriginalVertexData(Mesh::ATTRIB_ORGVTXNUMBERS);
+        const uint32* orgVertices = (uint32*)m_parentMesh->FindOriginalVertexData(Mesh::ATTRIB_ORGVTXNUMBERS);
 
         // for all vertices in the submesh
         const uint32 startVertex = GetStartVertex();
@@ -97,12 +86,12 @@ namespace EMotionFX
             {
                 // if the bone is disabled
                 SkinInfluence*  influence   = skinLayer->GetInfluence(orgVertex, i);
-                const uint32    nodeNr      = influence->GetNodeNr();
+                const uint16    nodeNr      = influence->GetNodeNr();
 
                 // put the node index in the bones array in case it isn't in already
-                if (mBones.Contains(nodeNr) == false)
+                if (AZStd::find(begin(m_bones), end(m_bones), nodeNr) == end(m_bones))
                 {
-                    mBones.Add(nodeNr);
+                    m_bones.emplace_back(nodeNr);
                 }
             }
         }
@@ -127,144 +116,136 @@ namespace EMotionFX
 
     uint32 SubMesh::GetStartIndex() const
     {
-        return mStartIndex;
+        return m_startIndex;
     }
 
 
     uint32 SubMesh::GetStartVertex() const
     {
-        return mStartVertex;
+        return m_startVertex;
     }
 
 
     uint32 SubMesh::GetStartPolygon() const
     {
-        return mStartPolygon;
+        return m_startPolygon;
     }
 
 
     uint32* SubMesh::GetIndices() const
     {
-        return (uint32*)(((uint8*)mParentMesh->GetIndices()) + mStartIndex * sizeof(uint32));
+        return (uint32*)(((uint8*)m_parentMesh->GetIndices()) + m_startIndex * sizeof(uint32));
     }
 
 
     uint8* SubMesh::GetPolygonVertexCounts() const
     {
-        uint8* polyVertCounts = mParentMesh->GetPolygonVertexCounts();
-        return &polyVertCounts[mStartPolygon];
+        uint8* polyVertCounts = m_parentMesh->GetPolygonVertexCounts();
+        return &polyVertCounts[m_startPolygon];
     }
 
 
     uint32 SubMesh::GetNumVertices() const
     {
-        return mNumVertices;
+        return m_numVertices;
     }
 
 
     uint32 SubMesh::GetNumIndices() const
     {
-        return mNumIndices;
+        return m_numIndices;
     }
 
 
     uint32 SubMesh::GetNumPolygons() const
     {
-        return mNumPolygons;
+        return m_numPolygons;
     }
 
 
     Mesh* SubMesh::GetParentMesh() const
     {
-        return mParentMesh;
+        return m_parentMesh;
     }
 
 
     void SubMesh::SetParentMesh(Mesh* mesh)
     {
-        mParentMesh = mesh;
+        m_parentMesh = mesh;
     }
 
 
     void SubMesh::SetMaterial(uint32 materialIndex)
     {
-        mMaterial = materialIndex;
+        m_material = materialIndex;
     }
 
 
     uint32 SubMesh::GetMaterial() const
     {
-        return mMaterial;
+        return m_material;
     }
 
 
     void SubMesh::SetStartIndex(uint32 indexOffset)
     {
-        mStartIndex = indexOffset;
+        m_startIndex = indexOffset;
     }
 
 
     void SubMesh::SetStartPolygon(uint32 polygonNumber)
     {
-        mStartPolygon = polygonNumber;
+        m_startPolygon = polygonNumber;
     }
 
 
     void SubMesh::SetStartVertex(uint32 vertexOffset)
     {
-        mStartVertex = vertexOffset;
+        m_startVertex = vertexOffset;
     }
 
 
     void SubMesh::SetNumIndices(uint32 numIndices)
     {
-        mNumIndices = numIndices;
+        m_numIndices = numIndices;
     }
 
 
     void SubMesh::SetNumVertices(uint32 numVertices)
     {
-        mNumVertices = numVertices;
+        m_numVertices = numVertices;
     }
 
 
-    uint32 SubMesh::FindBoneIndex(uint32 nodeNr) const
+    size_t SubMesh::FindBoneIndex(size_t nodeNr) const
     {
-        const uint32 numBones = mBones.GetLength();
-        for (uint32 i = 0; i < numBones; ++i)
-        {
-            if (mBones[i] == nodeNr)
-            {
-                return i;
-            }
-        }
-
-        return MCORE_INVALIDINDEX32;
+        const auto foundBone = AZStd::find(m_bones.begin(), m_bones.end(), nodeNr);
+        return foundBone != m_bones.end() ? AZStd::distance(m_bones.begin(), foundBone) : InvalidIndex;
     }
 
 
     // remove the given bone
-    void SubMesh::RemoveBone(uint16 index)
+    void SubMesh::RemoveBone(size_t index)
     {
-        mBones.Remove(index);
+        m_bones.erase(AZStd::next(begin(m_bones), index));
     }
 
 
-    void SubMesh::SetNumBones(uint32 numBones)
+    void SubMesh::SetNumBones(size_t numBones)
     {
         if (numBones == 0)
         {
-            mBones.Clear();
+            m_bones.clear();
         }
         else
         {
-            mBones.Resize(numBones);
+            m_bones.resize(numBones);
         }
     }
 
 
-    void SubMesh::SetBone(uint32 index, uint32 nodeIndex)
+    void SubMesh::SetBone(size_t index, size_t nodeIndex)
     {
-        mBones[index] = nodeIndex;
+        m_bones[index] = nodeIndex;
     }
 } // namespace EMotionFX

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -471,7 +472,7 @@ void CTrackViewTrack::RestoreFromMemento(const CTrackViewTrackMemento& memento)
 }
 
 //////////////////////////////////////////////////////////////////////////
-const char* CTrackViewTrack::GetName() const
+AZStd::string CTrackViewTrack::GetName() const
 {
     CTrackViewNode* pParentNode = GetParentNode();
 
@@ -809,7 +810,7 @@ void CTrackViewTrack::CopyKeysToClipboard(XmlNodeRef& xmlNode, const bool bOnlyS
     }
 
     XmlNodeRef childNode = xmlNode->newChild("Track");
-    childNode->setAttr("name", GetName());
+    childNode->setAttr("name", GetName().c_str());
     GetParameterType().SaveToXml(childNode);
     childNode->setAttr("valueType", static_cast<int>(GetValueType()));
 

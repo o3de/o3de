@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -32,7 +33,6 @@
 
 #include "CryLibrary.h"
 #include "CryPath.h"
-#include <StringUtils.h>
 
 #include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
 #include <AzFramework/IO/LocalFileIO.h>
@@ -97,7 +97,6 @@
 #include <CrySystemBus.h>
 #include <AzCore/Jobs/JobFunction.h>
 #include <AzCore/Jobs/JobManagerBus.h>
-#include <AzFramework/Driller/DrillerConsoleAPI.h>
 
 #if defined(ANDROID)
     #include <AzCore/Android/Utils.h>
@@ -174,8 +173,6 @@ void CryEngineSignalHandler(int signal)
 
 //////////////////////////////////////////////////////////////////////////
 #if defined(WIN32) || defined(LINUX) || defined(APPLE)
-#   define DLL_MODULE_INIT_ISYSTEM "ModuleInitISystem"
-#   define DLL_MODULE_SHUTDOWN_ISYSTEM "ModuleShutdownISystem"
 #   define DLL_INITFUNC_RENDERER "PackageRenderConstructor"
 #   define DLL_INITFUNC_SOUND "CreateSoundSystem"
 #   define DLL_INITFUNC_FONT "CreateCryFontInterface"
@@ -189,8 +186,6 @@ void CryEngineSignalHandler(int signal)
 #if defined(AZ_RESTRICTED_SECTION_IMPLEMENTED)
 #undef AZ_RESTRICTED_SECTION_IMPLEMENTED
 #else
-#   define DLL_MODULE_INIT_ISYSTEM (LPCSTR)2
-#   define DLL_MODULE_SHUTDOWN_ISYSTEM (LPCSTR)3
 #   define DLL_INITFUNC_RENDERER  (LPCSTR)1
 #   define DLL_INITFUNC_RENDERER  (LPCSTR)1
 #   define DLL_INITFUNC_SOUND     (LPCSTR)1
@@ -251,15 +246,15 @@ static void CmdCrashTest(IConsoleCmdArgs* pArgs)
         case 1:
         {
             int* p = 0;
-            PREFAST_SUPPRESS_WARNING(6011) * p = 0xABCD;
+            *p = 0xABCD;
         }
         break;
         case 2:
         {
             float a = 1.0f;
             memset(&a, 0, sizeof(a));
-            float* b = &a;
-            float c = 3;
+            [[maybe_unused]] float* b = &a;
+            [[maybe_unused]] float c = 3;
             CryLog("%f", (c / *b));
         }
         break;
@@ -432,8 +427,6 @@ AZStd::unique_ptr<AZ::DynamicModuleHandle> CSystem::LoadDynamiclibrary(const cha
 //////////////////////////////////////////////////////////////////////////
 AZStd::unique_ptr<AZ::DynamicModuleHandle> CSystem::LoadDLL(const char* dllName)
 {
-    LOADING_TIME_PROFILE_SECTION(GetISystem());
-
     AZ_TracePrintf(AZ_TRACE_SYSTEM_WINDOW, "Loading DLL: %s", dllName);
 
     AZStd::unique_ptr<AZ::DynamicModuleHandle> handle = LoadDynamiclibrary(dllName);
@@ -446,18 +439,6 @@ AZStd::unique_ptr<AZ::DynamicModuleHandle> CSystem::LoadDLL(const char* dllName)
         AZ_Assert(false, "Error loading dll: %s, error code %d", dllName, GetLastError());
 #endif
         return handle;
-    }
-
-    //////////////////////////////////////////////////////////////////////////
-    // After loading DLL initialize it by calling ModuleInitISystem
-    //////////////////////////////////////////////////////////////////////////
-    string moduleName = PathUtil::GetFileName(dllName);
-
-    typedef void*(*PtrFunc_ModuleInitISystem)(ISystem* pSystem, const char* moduleName);
-    PtrFunc_ModuleInitISystem pfnModuleInitISystem = handle->GetFunction<PtrFunc_ModuleInitISystem>(DLL_MODULE_INIT_ISYSTEM);
-    if (pfnModuleInitISystem)
-    {
-        pfnModuleInitISystem(this, moduleName.c_str());
     }
 
     return handle;
@@ -476,7 +457,7 @@ bool CSystem::UnloadDLL(const char* dllName)
 {
     bool isSuccess = false;
 
-    CCryNameCRC key(dllName);
+    AZ::Crc32 key(dllName);
     AZStd::unique_ptr<AZ::DynamicModuleHandle> empty;
     AZStd::unique_ptr<AZ::DynamicModuleHandle>& hModule = stl::find_in_map_ref(m_moduleDLLHandles, key, empty);
     if ((hModule) && (hModule->IsLoaded()))
@@ -500,13 +481,6 @@ void CSystem::ShutdownModuleLibraries()
 #if !defined(AZ_MONOLITHIC_BUILD)
     for (auto iterator = m_moduleDLLHandles.begin(); iterator != m_moduleDLLHandles.end(); ++iterator)
     {
-        typedef void*( * PtrFunc_ModuleShutdownISystem )(ISystem* pSystem);
-
-        PtrFunc_ModuleShutdownISystem pfnModuleShutdownISystem = iterator->second->GetFunction<PtrFunc_ModuleShutdownISystem>(DLL_MODULE_SHUTDOWN_ISYSTEM);
-        if (pfnModuleShutdownISystem)
-        {
-            pfnModuleShutdownISystem(this);
-        }
         if (iterator->second->IsLoaded())
         {
             iterator->second->Unload();
@@ -521,99 +495,8 @@ void CSystem::ShutdownModuleLibraries()
 
 /////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////
-
-#if defined(WIN32) || defined(WIN64)
-wstring GetErrorStringUnsupportedGPU(const char* gpuName, unsigned int gpuVendorId, unsigned int gpuDeviceId)
-{
-    const size_t fullLangID = (size_t) GetKeyboardLayout(0);
-    const size_t primLangID = fullLangID & 0x3FF;
-
-    const wchar_t* pFmt = L"Unsupported video card detected! Continuing to run might lead to unexpected results or crashes. "
-        L"Please check the manual for further information on hardware requirements.\n\n\"%S\" [vendor id = 0x%.4x, device id = 0x%.4x]";
-
-    switch (primLangID)
-    {
-    case 0x04: // Chinese
-    {
-        static const wchar_t fmt[] = {0x5075, 0x6E2C, 0x5230, 0x4E0D, 0x652F, 0x63F4, 0x7684, 0x986F, 0x793A, 0x5361, 0xFF01, 0x7E7C, 0x7E8C, 0x57F7, 0x884C, 0x53EF, 0x80FD, 0x5C0E, 0x81F4, 0x7121, 0x6CD5, 0x9810, 0x671F, 0x7684, 0x7D50, 0x679C, 0x6216, 0x7576, 0x6A5F, 0x3002, 0x8ACB, 0x6AA2, 0x67E5, 0x8AAA, 0x660E, 0x66F8, 0x4E0A, 0x7684, 0x786C, 0x9AD4, 0x9700, 0x6C42, 0x4EE5, 0x53D6, 0x5F97, 0x66F4, 0x591A, 0x76F8, 0x95DC, 0x8CC7, 0x8A0A, 0x3002, 0x000A, 0x000A, 0x0022, 0x0025, 0x0053, 0x0022, 0x0020, 0x005B, 0x5EE0, 0x5546, 0x7DE8, 0x865F, 0x0020, 0x003D, 0x0020, 0x0030, 0x0078, 0x0025, 0x002E, 0x0034, 0x0078, 0x002C, 0x0020, 0x88DD, 0x7F6E, 0x7DE8, 0x865F, 0x0020, 0x003D, 0x0020, 0x0030, 0x0078, 0x0025, 0x002E, 0x0034, 0x0078, 0x005D, 0};
-        pFmt = fmt;
-        break;
-    }
-    case 0x05: // Czech
-    {
-        static const wchar_t fmt[] = {0x0042, 0x0079, 0x006C, 0x0061, 0x0020, 0x0064, 0x0065, 0x0074, 0x0065, 0x006B, 0x006F, 0x0076, 0x00E1, 0x006E, 0x0061, 0x0020, 0x0067, 0x0072, 0x0061, 0x0066, 0x0069, 0x0063, 0x006B, 0x00E1, 0x0020, 0x006B, 0x0061, 0x0072, 0x0074, 0x0061, 0x002C, 0x0020, 0x006B, 0x0074, 0x0065, 0x0072, 0x00E1, 0x0020, 0x006E, 0x0065, 0x006E, 0x00ED, 0x0020, 0x0070, 0x006F, 0x0064, 0x0070, 0x006F, 0x0072, 0x006F, 0x0076, 0x00E1, 0x006E, 0x0061, 0x002E, 0x0020, 0x0050, 0x006F, 0x006B, 0x0072, 0x0061, 0x010D, 0x006F, 0x0076, 0x00E1, 0x006E, 0x00ED, 0x0020, 0x006D, 0x016F, 0x017E, 0x0065, 0x0020, 0x0076, 0x00E9, 0x0073, 0x0074, 0x0020, 0x006B, 0x0065, 0x0020, 0x006B, 0x0072, 0x0069, 0x0074, 0x0069, 0x0063, 0x006B, 0x00FD, 0x006D, 0x0020, 0x0063, 0x0068, 0x0079, 0x0062, 0x00E1, 0x006D, 0x0020, 0x006E, 0x0065, 0x0062, 0x006F, 0x0020, 0x006E, 0x0065, 0x0073, 0x0074, 0x0061, 0x0062, 0x0069, 0x006C, 0x0069, 0x0074, 0x011B, 0x0020, 0x0073, 0x0079, 0x0073, 0x0074, 0x00E9, 0x006D, 0x0075, 0x002E, 0x0020, 0x0050, 0x0159, 0x0065, 0x010D, 0x0074, 0x011B, 0x0074, 0x0065, 0x0020, 0x0073, 0x0069, 0x0020, 0x0070, 0x0072, 0x006F, 0x0073, 0x00ED, 0x006D, 0x0020, 0x0075, 0x017E, 0x0069, 0x0076, 0x0061, 0x0074, 0x0065, 0x006C, 0x0073, 0x006B, 0x006F, 0x0075, 0x0020, 0x0070, 0x0159, 0x00ED, 0x0072, 0x0075, 0x010D, 0x006B, 0x0075, 0x0020, 0x0070, 0x0072, 0x006F, 0x0020, 0x0070, 0x006F, 0x0064, 0x0072, 0x006F, 0x0062, 0x006E, 0x00E9, 0x0020, 0x0069, 0x006E, 0x0066, 0x006F, 0x0072, 0x006D, 0x0061, 0x0063, 0x0065, 0x0020, 0x006F, 0x0020, 0x0073, 0x0079, 0x0073, 0x0074, 0x00E9, 0x006D, 0x006F, 0x0076, 0x00FD, 0x0063, 0x0068, 0x0020, 0x0070, 0x006F, 0x017E, 0x0061, 0x0064, 0x0061, 0x0076, 0x0063, 0x00ED, 0x0063, 0x0068, 0x002E, 0x000A, 0x000A, 0x0022, 0x0025, 0x0053, 0x0022, 0x0020, 0x005B, 0x0076, 0x0065, 0x006E, 0x0064, 0x006F, 0x0072, 0x0020, 0x0069, 0x0064, 0x0020, 0x003D, 0x0020, 0x0030, 0x0078, 0x0025, 0x002E, 0x0034, 0x0078, 0x002C, 0x0020, 0x0064, 0x0065, 0x0076, 0x0069, 0x0063, 0x0065, 0x0020, 0x0069, 0x0064, 0x0020, 0x003D, 0x0020, 0x0030, 0x0078, 0x0025, 0x002E, 0x0034, 0x0078, 0x005D, 0};
-        pFmt = fmt;
-        break;
-    }
-    case 0x07: // German
-    {
-        static const wchar_t fmt[] = {0x004E, 0x0069, 0x0063, 0x0068, 0x0074, 0x002D, 0x0075, 0x006E, 0x0074, 0x0065, 0x0072, 0x0073, 0x0074, 0x00FC, 0x0074, 0x007A, 0x0074, 0x0065, 0x0020, 0x0056, 0x0069, 0x0064, 0x0065, 0x006F, 0x006B, 0x0061, 0x0072, 0x0074, 0x0065, 0x0020, 0x0067, 0x0065, 0x0066, 0x0075, 0x006E, 0x0064, 0x0065, 0x006E, 0x0021, 0x0020, 0x0046, 0x006F, 0x0072, 0x0074, 0x0066, 0x0061, 0x0068, 0x0072, 0x0065, 0x006E, 0x0020, 0x006B, 0x0061, 0x006E, 0x006E, 0x0020, 0x007A, 0x0075, 0x0020, 0x0075, 0x006E, 0x0065, 0x0072, 0x0077, 0x0061, 0x0072, 0x0074, 0x0065, 0x0074, 0x0065, 0x006E, 0x0020, 0x0045, 0x0072, 0x0067, 0x0065, 0x0062, 0x006E, 0x0069, 0x0073, 0x0073, 0x0065, 0x006E, 0x0020, 0x006F, 0x0064, 0x0065, 0x0072, 0x0020, 0x0041, 0x0062, 0x0073, 0x0074, 0x00FC, 0x0072, 0x007A, 0x0065, 0x006E, 0x0020, 0x0066, 0x00FC, 0x0068, 0x0072, 0x0065, 0x006E, 0x002E, 0x0020, 0x0042, 0x0069, 0x0074, 0x0074, 0x0065, 0x0020, 0x006C, 0x0069, 0x0065, 0x0073, 0x0020, 0x0064, 0x0061, 0x0073, 0x0020, 0x004D, 0x0061, 0x006E, 0x0075, 0x0061, 0x006C, 0x0020, 0x0066, 0x00FC, 0x0072, 0x0020, 0x0077, 0x0065, 0x0069, 0x0074, 0x0065, 0x0072, 0x0065, 0x0020, 0x0049, 0x006E, 0x0066, 0x006F, 0x0072, 0x006D, 0x0061, 0x0074, 0x0069, 0x006F, 0x006E, 0x0065, 0x006E, 0x0020, 0x007A, 0x0075, 0x0020, 0x0048, 0x0061, 0x0072, 0x0064, 0x0077, 0x0061, 0x0072, 0x0065, 0x002D, 0x0041, 0x006E, 0x0066, 0x006F, 0x0072, 0x0064, 0x0065, 0x0072, 0x0075, 0x006E, 0x0067, 0x0065, 0x006E, 0x002E, 0x000A, 0x000A, 0x0022, 0x0025, 0x0053, 0x0022, 0x0020, 0x005B, 0x0076, 0x0065, 0x006E, 0x0064, 0x006F, 0x0072, 0x0020, 0x0069, 0x0064, 0x0020, 0x003D, 0x0020, 0x0030, 0x0078, 0x0025, 0x002E, 0x0034, 0x0078, 0x002C, 0x0020, 0x0064, 0x0065, 0x0076, 0x0069, 0x0063, 0x0065, 0x0020, 0x0069, 0x0064, 0x0020, 0x003D, 0x0020, 0x0030, 0x0078, 0x0025, 0x002E, 0x0034, 0x0078, 0x005D, 0};
-        pFmt = fmt;
-        break;
-    }
-    case 0x0a: // Spanish
-    {
-        static const wchar_t fmt[] = {0x0053, 0x0065, 0x0020, 0x0068, 0x0061, 0x0020, 0x0064, 0x0065, 0x0074, 0x0065, 0x0063, 0x0074, 0x0061, 0x0064, 0x006F, 0x0020, 0x0075, 0x006E, 0x0061, 0x0020, 0x0074, 0x0061, 0x0072, 0x006A, 0x0065, 0x0074, 0x0061, 0x0020, 0x0067, 0x0072, 0x00E1, 0x0066, 0x0069, 0x0063, 0x0061, 0x0020, 0x006E, 0x006F, 0x0020, 0x0063, 0x006F, 0x006D, 0x0070, 0x0061, 0x0074, 0x0069, 0x0062, 0x006C, 0x0065, 0x002E, 0x0020, 0x0053, 0x0069, 0x0020, 0x0073, 0x0069, 0x0067, 0x0075, 0x0065, 0x0073, 0x0020, 0x0065, 0x006A, 0x0065, 0x0063, 0x0075, 0x0074, 0x0061, 0x006E, 0x0064, 0x006F, 0x0020, 0x0065, 0x006C, 0x0020, 0x006A, 0x0075, 0x0065, 0x0067, 0x006F, 0x002C, 0x0020, 0x0065, 0x0073, 0x0020, 0x0070, 0x006F, 0x0073, 0x0069, 0x0062, 0x006C, 0x0065, 0x0020, 0x0071, 0x0075, 0x0065, 0x0020, 0x0073, 0x0065, 0x0020, 0x0070, 0x0072, 0x006F, 0x0064, 0x0075, 0x007A, 0x0063, 0x0061, 0x006E, 0x0020, 0x0065, 0x0066, 0x0065, 0x0063, 0x0074, 0x006F, 0x0073, 0x0020, 0x0069, 0x006E, 0x0065, 0x0073, 0x0070, 0x0065, 0x0072, 0x0061, 0x0064, 0x006F, 0x0073, 0x0020, 0x006F, 0x0020, 0x0071, 0x0075, 0x0065, 0x0020, 0x0065, 0x006C, 0x0020, 0x0070, 0x0072, 0x006F, 0x0067, 0x0072, 0x0061, 0x006D, 0x0061, 0x0020, 0x0064, 0x0065, 0x006A, 0x0065, 0x0020, 0x0064, 0x0065, 0x0020, 0x0066, 0x0075, 0x006E, 0x0063, 0x0069, 0x006F, 0x006E, 0x0061, 0x0072, 0x002E, 0x0020, 0x0050, 0x006F, 0x0072, 0x0020, 0x0066, 0x0061, 0x0076, 0x006F, 0x0072, 0x002C, 0x0020, 0x0063, 0x006F, 0x006D, 0x0070, 0x0072, 0x0075, 0x0065, 0x0062, 0x0061, 0x0020, 0x0065, 0x006C, 0x0020, 0x006D, 0x0061, 0x006E, 0x0075, 0x0061, 0x006C, 0x0020, 0x0070, 0x0061, 0x0072, 0x0061, 0x0020, 0x006F, 0x0062, 0x0074, 0x0065, 0x006E, 0x0065, 0x0072, 0x0020, 0x006D, 0x00E1, 0x0073, 0x0020, 0x0069, 0x006E, 0x0066, 0x006F, 0x0072, 0x006D, 0x0061, 0x0063, 0x0069, 0x00F3, 0x006E, 0x0020, 0x0061, 0x0063, 0x0065, 0x0072, 0x0063, 0x0061, 0x0020, 0x0064, 0x0065, 0x0020, 0x006C, 0x006F, 0x0073, 0x0020, 0x0072, 0x0065, 0x0071, 0x0075, 0x0069, 0x0073, 0x0069, 0x0074, 0x006F, 0x0073, 0x0020, 0x0064, 0x0065, 0x006C, 0x0020, 0x0073, 0x0069, 0x0073, 0x0074, 0x0065, 0x006D, 0x0061, 0x002E, 0x000A, 0x000A, 0x0022, 0x0025, 0x0053, 0x0022, 0x0020, 0x005B, 0x0076, 0x0065, 0x006E, 0x0064, 0x006F, 0x0072, 0x0020, 0x0069, 0x0064, 0x0020, 0x003D, 0x0020, 0x0030, 0x0078, 0x0025, 0x002E, 0x0034, 0x0078, 0x002C, 0x0020, 0x0064, 0x0065, 0x0076, 0x0069, 0x0063, 0x0065, 0x0020, 0x0069, 0x0064, 0x0020, 0x003D, 0x0020, 0x0030, 0x0078, 0x0025, 0x002E, 0x0034, 0x0078, 0x005D, 0};
-        pFmt = fmt;
-        break;
-    }
-    case 0x0c: // French
-    {
-        static const wchar_t fmt[] = {0x0041, 0x0074, 0x0074, 0x0065, 0x006E, 0x0074, 0x0069, 0x006F, 0x006E, 0x002C, 0x0020, 0x006C, 0x0061, 0x0020, 0x0063, 0x0061, 0x0072, 0x0074, 0x0065, 0x0020, 0x0076, 0x0069, 0x0064, 0x00E9, 0x006F, 0x0020, 0x0064, 0x00E9, 0x0074, 0x0065, 0x0063, 0x0074, 0x00E9, 0x0065, 0x0020, 0x006E, 0x2019, 0x0065, 0x0073, 0x0074, 0x0020, 0x0070, 0x0061, 0x0073, 0x0020, 0x0073, 0x0075, 0x0070, 0x0070, 0x006F, 0x0072, 0x0074, 0x00E9, 0x0065, 0x0020, 0x0021, 0x0020, 0x0050, 0x006F, 0x0075, 0x0072, 0x0073, 0x0075, 0x0069, 0x0076, 0x0072, 0x0065, 0x0020, 0x006C, 0x2019, 0x0061, 0x0070, 0x0070, 0x006C, 0x0069, 0x0063, 0x0061, 0x0074, 0x0069, 0x006F, 0x006E, 0x0020, 0x0070, 0x006F, 0x0075, 0x0072, 0x0072, 0x0061, 0x0069, 0x0074, 0x0020, 0x0065, 0x006E, 0x0067, 0x0065, 0x006E, 0x0064, 0x0072, 0x0065, 0x0072, 0x0020, 0x0064, 0x0065, 0x0073, 0x0020, 0x0069, 0x006E, 0x0073, 0x0074, 0x0061, 0x0062, 0x0069, 0x006C, 0x0069, 0x0074, 0x00E9, 0x0073, 0x0020, 0x006F, 0x0075, 0x0020, 0x0064, 0x0065, 0x0073, 0x0020, 0x0063, 0x0072, 0x0061, 0x0073, 0x0068, 0x0073, 0x002E, 0x0020, 0x0056, 0x0065, 0x0075, 0x0069, 0x006C, 0x006C, 0x0065, 0x007A, 0x0020, 0x0076, 0x006F, 0x0075, 0x0073, 0x0020, 0x0072, 0x0065, 0x0070, 0x006F, 0x0072, 0x0074, 0x0065, 0x0072, 0x0020, 0x0061, 0x0075, 0x0020, 0x006D, 0x0061, 0x006E, 0x0075, 0x0065, 0x006C, 0x0020, 0x0070, 0x006F, 0x0075, 0x0072, 0x0020, 0x0070, 0x006C, 0x0075, 0x0073, 0x0020, 0x0064, 0x2019, 0x0069, 0x006E, 0x0066, 0x006F, 0x0072, 0x006D, 0x0061, 0x0074, 0x0069, 0x006F, 0x006E, 0x0073, 0x0020, 0x0073, 0x0075, 0x0072, 0x0020, 0x006C, 0x0065, 0x0073, 0x0020, 0x0070, 0x0072, 0x00E9, 0x002D, 0x0072, 0x0065, 0x0071, 0x0075, 0x0069, 0x0073, 0x0020, 0x006D, 0x0061, 0x0074, 0x00E9, 0x0072, 0x0069, 0x0065, 0x006C, 0x002E, 0x000A, 0x000A, 0x0022, 0x0025, 0x0053, 0x0022, 0x0020, 0x005B, 0x0076, 0x0065, 0x006E, 0x0064, 0x006F, 0x0072, 0x0020, 0x0069, 0x0064, 0x0020, 0x003D, 0x0020, 0x0030, 0x0078, 0x0025, 0x002E, 0x0034, 0x0078, 0x002C, 0x0020, 0x0064, 0x0065, 0x0076, 0x0069, 0x0063, 0x0065, 0x0020, 0x0069, 0x0064, 0x0020, 0x003D, 0x0020, 0x0030, 0x0078, 0x0025, 0x002E, 0x0034, 0x0078, 0x005D, 0};
-        pFmt = fmt;
-        break;
-    }
-    case 0x10: // Italian
-    {
-        static const wchar_t fmt[] = {0x00C8, 0x0020, 0x0073, 0x0074, 0x0061, 0x0074, 0x0061, 0x0020, 0x0072, 0x0069, 0x006C, 0x0065, 0x0076, 0x0061, 0x0074, 0x0061, 0x0020, 0x0075, 0x006E, 0x0061, 0x0020, 0x0073, 0x0063, 0x0068, 0x0065, 0x0064, 0x0061, 0x0020, 0x0067, 0x0072, 0x0061, 0x0066, 0x0069, 0x0063, 0x0061, 0x0020, 0x006E, 0x006F, 0x006E, 0x0020, 0x0073, 0x0075, 0x0070, 0x0070, 0x006F, 0x0072, 0x0074, 0x0061, 0x0074, 0x0061, 0x0021, 0x0020, 0x0053, 0x0065, 0x0020, 0x0073, 0x0069, 0x0020, 0x0063, 0x006F, 0x006E, 0x0074, 0x0069, 0x006E, 0x0075, 0x0061, 0x002C, 0x0020, 0x0073, 0x0069, 0x0020, 0x0070, 0x006F, 0x0074, 0x0072, 0x0065, 0x0062, 0x0062, 0x0065, 0x0072, 0x006F, 0x0020, 0x0076, 0x0065, 0x0072, 0x0069, 0x0066, 0x0069, 0x0063, 0x0061, 0x0072, 0x0065, 0x0020, 0x0072, 0x0069, 0x0073, 0x0075, 0x006C, 0x0074, 0x0061, 0x0074, 0x0069, 0x0020, 0x0069, 0x006E, 0x0061, 0x0074, 0x0074, 0x0065, 0x0073, 0x0069, 0x0020, 0x006F, 0x0020, 0x0063, 0x0072, 0x0061, 0x0073, 0x0068, 0x002E, 0x0020, 0x0043, 0x006F, 0x006E, 0x0073, 0x0075, 0x006C, 0x0074, 0x0061, 0x0020, 0x0069, 0x006C, 0x0020, 0x006D, 0x0061, 0x006E, 0x0075, 0x0061, 0x006C, 0x0065, 0x0020, 0x0070, 0x0065, 0x0072, 0x0020, 0x0075, 0x006C, 0x0074, 0x0065, 0x0072, 0x0069, 0x006F, 0x0072, 0x0069, 0x0020, 0x0069, 0x006E, 0x0066, 0x006F, 0x0072, 0x006D, 0x0061, 0x007A, 0x0069, 0x006F, 0x006E, 0x0069, 0x0020, 0x0073, 0x0075, 0x0069, 0x0020, 0x0072, 0x0065, 0x0071, 0x0075, 0x0069, 0x0073, 0x0069, 0x0074, 0x0069, 0x0020, 0x0064, 0x0069, 0x0020, 0x0073, 0x0069, 0x0073, 0x0074, 0x0065, 0x006D, 0x0061, 0x002E, 0x000A, 0x000A, 0x0022, 0x0025, 0x0053, 0x0022, 0x0020, 0x005B, 0x0076, 0x0065, 0x006E, 0x0064, 0x006F, 0x0072, 0x0020, 0x0069, 0x0064, 0x0020, 0x003D, 0x0020, 0x0030, 0x0078, 0x0025, 0x002E, 0x0034, 0x0078, 0x002C, 0x0020, 0x0064, 0x0065, 0x0076, 0x0069, 0x0063, 0x0065, 0x0020, 0x0069, 0x0064, 0x0020, 0x003D, 0x0020, 0x0030, 0x0078, 0x0025, 0x002E, 0x0034, 0x0078, 0x005D, 0};
-        pFmt = fmt;
-        break;
-    }
-    case 0x11: // Japanese
-    {
-        static const wchar_t fmt[] = {0x30B5, 0x30DD, 0x30FC, 0x30C8, 0x3055, 0x308C, 0x3066, 0x3044, 0x306A, 0x3044, 0x30D3, 0x30C7, 0x30AA, 0x30AB, 0x30FC, 0x30C9, 0x304C, 0x691C, 0x51FA, 0x3055, 0x308C, 0x307E, 0x3057, 0x305F, 0xFF01, 0x0020, 0x3053, 0x306E, 0x307E, 0x307E, 0x7D9A, 0x3051, 0x308B, 0x3068, 0x4E88, 0x671F, 0x3057, 0x306A, 0x3044, 0x7D50, 0x679C, 0x3084, 0x30AF, 0x30E9, 0x30C3, 0x30B7, 0x30E5, 0x306E, 0x6050, 0x308C, 0x304C, 0x3042, 0x308A, 0x307E, 0x3059, 0x3002, 0x0020, 0x30DE, 0x30CB, 0x30E5, 0x30A2, 0x30EB, 0x306E, 0x5FC5, 0x8981, 0x52D5, 0x4F5C, 0x74B0, 0x5883, 0x3092, 0x3054, 0x78BA, 0x8A8D, 0x304F, 0x3060, 0x3055, 0x3044, 0x3002, 0x000A, 0x000A, 0x0022, 0x0025, 0x0053, 0x0022, 0x0020, 0x005B, 0x30D9, 0x30F3, 0x30C0, 0x30FC, 0x0020, 0x0069, 0x0064, 0x0020, 0x003D, 0x0020, 0x0030, 0x0078, 0x0025, 0x002E, 0x0034, 0x0078, 0x002C, 0x0020, 0x30C7, 0x30D0, 0x30A4, 0x30B9, 0x0020, 0x0069, 0x0064, 0x0020, 0x003D, 0x0020, 0x0030, 0x0078, 0x0025, 0x002E, 0x0034, 0x0078, 0x005D, 0};
-        pFmt = fmt;
-        break;
-    }
-    case 0x15: // Polish
-    {
-        static const wchar_t fmt[] = {0x0057, 0x0079, 0x006B, 0x0072, 0x0079, 0x0074, 0x006F, 0x0020, 0x006E, 0x0069, 0x0065, 0x006F, 0x0062, 0x0073, 0x0142, 0x0075, 0x0067, 0x0069, 0x0077, 0x0061, 0x006E, 0x0105, 0x0020, 0x006B, 0x0061, 0x0072, 0x0074, 0x0119, 0x0020, 0x0067, 0x0072, 0x0061, 0x0066, 0x0069, 0x0063, 0x007A, 0x006E, 0x0105, 0x0021, 0x0020, 0x0044, 0x0061, 0x006C, 0x0073, 0x007A, 0x0065, 0x0020, 0x006B, 0x006F, 0x0072, 0x007A, 0x0079, 0x0073, 0x0074, 0x0061, 0x006E, 0x0069, 0x0065, 0x0020, 0x007A, 0x0020, 0x0070, 0x0072, 0x006F, 0x0064, 0x0075, 0x006B, 0x0074, 0x0075, 0x0020, 0x006D, 0x006F, 0x017C, 0x0065, 0x0020, 0x0073, 0x0070, 0x006F, 0x0077, 0x006F, 0x0064, 0x006F, 0x0077, 0x0061, 0x0107, 0x0020, 0x006E, 0x0069, 0x0065, 0x0070, 0x006F, 0x017C, 0x0105, 0x0064, 0x0061, 0x006E, 0x0065, 0x0020, 0x007A, 0x0061, 0x0063, 0x0068, 0x006F, 0x0077, 0x0061, 0x006E, 0x0069, 0x0065, 0x0020, 0x006C, 0x0075, 0x0062, 0x0020, 0x0077, 0x0073, 0x0074, 0x0072, 0x007A, 0x0079, 0x006D, 0x0061, 0x006E, 0x0069, 0x0065, 0x0020, 0x0070, 0x0072, 0x006F, 0x0067, 0x0072, 0x0061, 0x006D, 0x0075, 0x002E, 0x0020, 0x0041, 0x0062, 0x0079, 0x0020, 0x0075, 0x007A, 0x0079, 0x0073, 0x006B, 0x0061, 0x0107, 0x0020, 0x0077, 0x0069, 0x0119, 0x0063, 0x0065, 0x006A, 0x0020, 0x0069, 0x006E, 0x0066, 0x006F, 0x0072, 0x006D, 0x0061, 0x0063, 0x006A, 0x0069, 0x002C, 0x0020, 0x0073, 0x006B, 0x006F, 0x006E, 0x0073, 0x0075, 0x006C, 0x0074, 0x0075, 0x006A, 0x0020, 0x0073, 0x0069, 0x0119, 0x0020, 0x007A, 0x0020, 0x0069, 0x006E, 0x0073, 0x0074, 0x0072, 0x0075, 0x006B, 0x0063, 0x006A, 0x0105, 0x0020, 0x006F, 0x0062, 0x0073, 0x0142, 0x0075, 0x0067, 0x0069, 0x002E, 0x000A, 0x000A, 0x0022, 0x0025, 0x0053, 0x0022, 0x0020, 0x005B, 0x0076, 0x0065, 0x006E, 0x0064, 0x006F, 0x0072, 0x0020, 0x0069, 0x0064, 0x0020, 0x003D, 0x0020, 0x0030, 0x0078, 0x0025, 0x002E, 0x0034, 0x0078, 0x002C, 0x0020, 0x0064, 0x0065, 0x0076, 0x0069, 0x0063, 0x0065, 0x0020, 0x0069, 0x0064, 0x0020, 0x003D, 0x0020, 0x0030, 0x0078, 0x0025, 0x002E, 0x0034, 0x0078, 0x005D, 0};
-        pFmt = fmt;
-        break;
-    }
-    case 0x19: // Russian
-    {
-        static const wchar_t fmt[] = {0x0412, 0x0430, 0x0448, 0x0430, 0x0020, 0x0432, 0x0438, 0x0434, 0x0435, 0x043E, 0x0020, 0x043A, 0x0430, 0x0440, 0x0442, 0x0430, 0x0020, 0x043D, 0x0435, 0x0020, 0x043F, 0x043E, 0x0434, 0x0434, 0x0435, 0x0440, 0x0436, 0x0438, 0x0432, 0x0430, 0x0435, 0x0442, 0x0441, 0x044F, 0x0021, 0x0020, 0x042D, 0x0442, 0x043E, 0x0020, 0x043C, 0x043E, 0x0436, 0x0435, 0x0442, 0x0020, 0x043F, 0x0440, 0x0438, 0x0432, 0x0435, 0x0441, 0x0442, 0x0438, 0x0020, 0x043A, 0x0020, 0x043D, 0x0435, 0x043F, 0x0440, 0x0435, 0x0434, 0x0441, 0x043A, 0x0430, 0x0437, 0x0443, 0x0435, 0x043C, 0x043E, 0x043C, 0x0443, 0x0020, 0x043F, 0x043E, 0x0432, 0x0435, 0x0434, 0x0435, 0x043D, 0x0438, 0x044E, 0x0020, 0x0438, 0x0020, 0x0437, 0x0430, 0x0432, 0x0438, 0x0441, 0x0430, 0x043D, 0x0438, 0x044E, 0x0020, 0x0438, 0x0433, 0x0440, 0x044B, 0x002E, 0x0020, 0x0414, 0x043B, 0x044F, 0x0020, 0x043F, 0x043E, 0x043B, 0x0443, 0x0447, 0x0435, 0x043D, 0x0438, 0x044F, 0x0020, 0x0438, 0x043D, 0x0444, 0x043E, 0x0440, 0x043C, 0x0430, 0x0446, 0x0438, 0x0438, 0x0020, 0x043E, 0x0020, 0x0441, 0x0438, 0x0441, 0x0442, 0x0435, 0x043C, 0x043D, 0x044B, 0x0445, 0x0020, 0x0442, 0x0440, 0x0435, 0x0431, 0x043E, 0x0432, 0x0430, 0x043D, 0x0438, 0x044F, 0x0445, 0x0020, 0x043E, 0x0431, 0x0440, 0x0430, 0x0442, 0x0438, 0x0442, 0x0435, 0x0441, 0x044C, 0x0020, 0x043A, 0x0020, 0x0440, 0x0443, 0x043A, 0x043E, 0x0432, 0x043E, 0x0434, 0x0441, 0x0442, 0x0432, 0x0443, 0x0020, 0x043F, 0x043E, 0x043B, 0x044C, 0x0437, 0x043E, 0x0432, 0x0430, 0x0442, 0x0435, 0x043B, 0x044F, 0x002E, 0x000A, 0x000A, 0x0022, 0x0025, 0x0053, 0x0022, 0x0020, 0x005B, 0x0076, 0x0065, 0x006E, 0x0064, 0x006F, 0x0072, 0x0020, 0x0069, 0x0064, 0x0020, 0x003D, 0x0020, 0x0030, 0x0078, 0x0025, 0x002E, 0x0034, 0x0078, 0x002C, 0x0020, 0x0064, 0x0065, 0x0076, 0x0069, 0x0063, 0x0065, 0x0020, 0x0069, 0x0064, 0x0020, 0x003D, 0x0020, 0x0030, 0x0078, 0x0025, 0x002E, 0x0034, 0x0078, 0x005D, 0};
-        pFmt = fmt;
-        break;
-    }
-    case 0x1f: // Turkish
-    {
-        static const wchar_t fmt[] = {0x0044, 0x0065, 0x0073, 0x0074, 0x0065, 0x006B, 0x006C, 0x0065, 0x006E, 0x006D, 0x0065, 0x0079, 0x0065, 0x006E, 0x0020, 0x0062, 0x0069, 0x0072, 0x0020, 0x0065, 0x006B, 0x0072, 0x0061, 0x006E, 0x0020, 0x006B, 0x0061, 0x0072, 0x0074, 0x0131, 0x0020, 0x0061, 0x006C, 0x0067, 0x0131, 0x006C, 0x0061, 0x006E, 0x0064, 0x0131, 0x0021, 0x0020, 0x0044, 0x0065, 0x0076, 0x0061, 0x006D, 0x0020, 0x0065, 0x0074, 0x006D, 0x0065, 0x006B, 0x0020, 0x0062, 0x0065, 0x006B, 0x006C, 0x0065, 0x006E, 0x006D, 0x0065, 0x0064, 0x0069, 0x006B, 0x0020, 0x0073, 0x006F, 0x006E, 0x0075, 0x00E7, 0x006C, 0x0061, 0x0072, 0x0061, 0x0020, 0x0076, 0x0065, 0x0020, 0x00E7, 0x00F6, 0x006B, 0x006D, 0x0065, 0x006C, 0x0065, 0x0072, 0x0065, 0x0020, 0x0079, 0x006F, 0x006C, 0x0020, 0x0061, 0x00E7, 0x0061, 0x0062, 0x0069, 0x006C, 0x0069, 0x0072, 0x002E, 0x0020, 0x0044, 0x006F, 0x006E, 0x0061, 0x006E, 0x0131, 0x006D, 0x0020, 0x0067, 0x0065, 0x0072, 0x0065, 0x006B, 0x006C, 0x0069, 0x006C, 0x0069, 0x006B, 0x006C, 0x0065, 0x0072, 0x0069, 0x0020, 0x0069, 0x00E7, 0x0069, 0x006E, 0x0020, 0x006C, 0x00FC, 0x0074, 0x0066, 0x0065, 0x006E, 0x0020, 0x0072, 0x0065, 0x0068, 0x0062, 0x0065, 0x0072, 0x0069, 0x006E, 0x0069, 0x007A, 0x0065, 0x0020, 0x0062, 0x0061, 0x015F, 0x0076, 0x0075, 0x0072, 0x0075, 0x006E, 0x002E, 0x000A, 0x000A, 0x0022, 0x0025, 0x0053, 0x0022, 0x0020, 0x005B, 0x0076, 0x0065, 0x006E, 0x0064, 0x006F, 0x0072, 0x0020, 0x0069, 0x0064, 0x0020, 0x003D, 0x0020, 0x0030, 0x0078, 0x0025, 0x002E, 0x0034, 0x0078, 0x002C, 0x0020, 0x0064, 0x0065, 0x0076, 0x0069, 0x0063, 0x0065, 0x0020, 0x0069, 0x0064, 0x0020, 0x003D, 0x0020, 0x0030, 0x0078, 0x0025, 0x002E, 0x0034, 0x0078, 0x005D, 0};
-        pFmt = fmt;
-        break;
-    }
-
-    case 0x09: // English
-    default:
-        break;
-    }
-
-    wchar_t msg[1024];
-    msg[0] = L'\0';
-    msg[sizeof(msg) / sizeof(msg[0]) - 1] = L'\0';
-    azsnwprintf(msg, sizeof(msg) / sizeof(msg[0]) - 1, pFmt, gpuName, gpuVendorId, gpuDeviceId);
-
-    return msg;
-}
-#endif
-
-/////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////
 bool CSystem::InitConsole()
 {
-    LOADING_TIME_PROFILE_SECTION(GetISystem());
-
     if (m_env.pConsole)
     {
         m_env.pConsole->Init(this);
@@ -662,7 +545,6 @@ ICVar* CSystem::attachVariable (const char* szVarName, int* pContainer, const ch
 /////////////////////////////////////////////////////////////////////////////////
 bool CSystem::InitFileSystem()
 {
-    LOADING_TIME_PROFILE_SECTION;
     using namespace AzFramework::AssetSystem;
 
     if (m_pUserCallback)
@@ -681,25 +563,6 @@ bool CSystem::InitFileSystem()
     if (m_bEditor)
     {
         m_env.pCryPak->RecordFileOpen(AZ::IO::IArchive::RFOM_EngineStartup);
-    }
-
-    //init crypak
-    if (m_env.pCryPak->Init(""))
-    {
-#if !defined(_RELEASE)
-        const ICmdLineArg* pakalias = m_pCmdLine->FindArg(eCLAT_Pre, "pakalias");
-#else
-        const ICmdLineArg* pakalias = nullptr;
-#endif // !defined(_RELEASE)
-        if (pakalias && strlen(pakalias->GetValue()) > 0)
-        {
-            m_env.pCryPak->ParseAliases(pakalias->GetValue());
-        }
-    }
-    else
-    {
-        AZ_Assert(false, "Failed to initialize CryPak.");
-        return false;
     }
 
     // Now that file systems are init, we will clear any events that have arrived
@@ -748,11 +611,8 @@ void CSystem::ShutdownFileSystem()
 /////////////////////////////////////////////////////////////////////////////////
 bool CSystem::InitFileSystem_LoadEngineFolders(const SSystemInitParams&)
 {
-    LOADING_TIME_PROFILE_SECTION;
-    {
-        LoadConfiguration(m_systemConfigName.c_str());
-        AZ_Printf(AZ_TRACE_SYSTEM_WINDOW, "Loading system configuration from %s...", m_systemConfigName.c_str());
-    }
+    LoadConfiguration(m_systemConfigName.c_str());
+    AZ_Printf(AZ_TRACE_SYSTEM_WINDOW, "Loading system configuration from %s...", m_systemConfigName.c_str());
 
 #if defined(AZ_PLATFORM_ANDROID)
     AZ::Android::Utils::SetLoadFilesToMemory(m_sys_load_files_to_memory->GetString());
@@ -766,7 +626,7 @@ bool CSystem::InitFileSystem_LoadEngineFolders(const SSystemInitParams&)
     auto projectName = AZ::Utils::GetProjectName();
     AZ_Printf(AZ_TRACE_SYSTEM_WINDOW, "Project Name: %s\n", projectName.empty() ? "None specified" : projectName.c_str());
 
-    OpenBasicPaks();
+    OpenPlatformPaks();
 
     // Load game-specific folder.
     LoadConfiguration("game.cfg");
@@ -783,8 +643,6 @@ bool CSystem::InitFileSystem_LoadEngineFolders(const SSystemInitParams&)
 //////////////////////////////////////////////////////////////////////////
 bool CSystem::InitAudioSystem(const SSystemInitParams& initParams)
 {
-    LOADING_TIME_PROFILE_SECTION(GetISystem());
-
     if (!Audio::Gem::AudioSystemGemRequestBus::HasHandlers())
     {
         // AudioSystem Gem has not been enabled for this project.
@@ -826,8 +684,6 @@ bool CSystem::InitAudioSystem(const SSystemInitParams& initParams)
 //////////////////////////////////////////////////////////////////////////
 bool CSystem::InitVTuneProfiler()
 {
-    LOADING_TIME_PROFILE_SECTION(GetISystem());
-
 #ifdef PROFILE_WITH_VTUNE
 
     WIN_HMODULE hModule = LoadDLL("VTuneApi.dll");
@@ -855,7 +711,6 @@ bool CSystem::InitVTuneProfiler()
 //////////////////////////////////////////////////////////////////////////
 void CSystem::InitLocalization()
 {
-    LOADING_TIME_PROFILE_SECTION(GetISystem());
     // Set the localization folder
     ICVar* pCVar = m_env.pConsole != 0 ? m_env.pConsole->GetCVar("sys_localization_folder") : 0;
     if (pCVar)
@@ -877,61 +732,50 @@ void CSystem::InitLocalization()
         languageID = ILocalizationManager::EPlatformIndependentLanguageID::ePILID_English_US;
     }
 
-    string language = m_pLocalizationManager->LangNameFromPILID(languageID);
+    AZStd::string language = m_pLocalizationManager->LangNameFromPILID(languageID);
     m_pLocalizationManager->SetLanguage(language.c_str());
     if (m_pLocalizationManager->GetLocalizationFormat() == 1)
     {
-        string translationsListXML = LOCALIZATION_TRANSLATIONS_LIST_FILE_NAME;
-        m_pLocalizationManager->InitLocalizationData(translationsListXML);
+        AZStd::string translationsListXML = LOCALIZATION_TRANSLATIONS_LIST_FILE_NAME;
+        m_pLocalizationManager->InitLocalizationData(translationsListXML.c_str());
 
         m_pLocalizationManager->LoadAllLocalizationData();
     }
     else
     {
         // if the language value cannot be found, let's default to the english pak
-        OpenLanguagePak(language);
+        OpenLanguagePak(language.c_str());
     }
 
-    pCVar = m_env.pConsole != 0 ? m_env.pConsole->GetCVar("g_languageAudio") : 0;
-    if (pCVar)
+    if (auto console = AZ::Interface<AZ::IConsole>::Get(); console != nullptr)
     {
-        if (strlen(pCVar->GetString()) == 0)
+        AZ::CVarFixedString languageAudio;
+        console->GetCvarValue("g_languageAudio", languageAudio);
+        if (languageAudio.empty())
         {
-            pCVar->Set(language);
+            console->PerformCommand(AZStd::string::format("g_languageAudio %s", language.c_str()).c_str());
         }
         else
         {
-            language = pCVar->GetString();
+            language.assign(languageAudio.data(), languageAudio.size());
         }
     }
-    OpenLanguageAudioPak(language);
+    OpenLanguageAudioPak(language.c_str());
 }
 
-void CSystem::OpenBasicPaks()
+void CSystem::OpenPlatformPaks()
 {
-    static bool bBasicPaksLoaded = false;
-    if (bBasicPaksLoaded)
+    static bool bPlatformPaksLoaded = false;
+    if (bPlatformPaksLoaded)
     {
         return;
     }
-    bBasicPaksLoaded = true;
-
-    LOADING_TIME_PROFILE_SECTION;
-
-    // open pak files
-    constexpr AZStd::string_view paksFolder = "@assets@/*.pak"; // (@assets@ assumed)
-    m_env.pCryPak->OpenPacks(paksFolder);
-
-    InlineInitializationProcessing("CSystem::OpenBasicPaks OpenPacks( paksFolder.c_str() )");
+    bPlatformPaksLoaded = true;
 
     //////////////////////////////////////////////////////////////////////////
     // Open engine packs
     //////////////////////////////////////////////////////////////////////////
 
-    const char* const assetsDir = "@assets@";
-
-    // After game paks to have same search order as with files on disk
-    m_env.pCryPak->OpenPack(assetsDir, "Engine.pak");
 
 #if defined(AZ_RESTRICTED_PLATFORM)
 #define AZ_RESTRICTED_SECTION SYSTEMINIT_CPP_SECTION_15
@@ -939,6 +783,7 @@ void CSystem::OpenBasicPaks()
 #endif
 
 #ifdef AZ_PLATFORM_ANDROID
+    const char* const assetsDir = "@products@";
     // Load Android Obb files if available
     const char* obbStorage = AZ::Android::Utils::GetObbStoragePath();
     AZStd::string mainObbPath = AZStd::move(AZStd::string::format("%s/%s", obbStorage, AZ::Android::Utils::GetObbFileName(true)));
@@ -947,10 +792,7 @@ void CSystem::OpenBasicPaks()
     m_env.pCryPak->OpenPack(assetsDir, patchObbPath.c_str());
 #endif //AZ_PLATFORM_ANDROID
 
-    InlineInitializationProcessing("CSystem::OpenBasicPaks OpenPacks( Engine... )");
-
-    // Load paks required for game init to mem
-    gEnv->pCryPak->LoadPakToMemory("Engine.pak", AZ::IO::IArchive::eInMemoryPakLocale_GPU);
+    InlineInitializationProcessing("CSystem::OpenPlatformPaks OpenPacks( Engine... )");
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -968,10 +810,10 @@ void CSystem::OpenLanguagePak(const char* sLanguage)
     // Initialize languages.
 
     // Omit the trailing slash!
-    string sLocalizationFolder = PathUtil::GetLocalizationFolder();
+    AZStd::string sLocalizationFolder = PathUtil::GetLocalizationFolder();
 
     // load xml pak with full filenames to perform wildcard searches.
-    string sLocalizedPath;
+    AZStd::string sLocalizedPath;
     GetLocalizedPath(sLanguage, sLocalizedPath);
     if (!m_env.pCryPak->OpenPacks({ sLocalizationFolder.c_str(), sLocalizationFolder.size() }, { sLocalizedPath.c_str(), sLocalizedPath.size() }, 0))
     {
@@ -995,20 +837,18 @@ void CSystem::OpenLanguageAudioPak([[maybe_unused]] const char* sLanguage)
 
     // Initialize languages.
 
-    int nPakFlags = 0;
-
     // Omit the trailing slash!
-    string sLocalizationFolder(string().assign(PathUtil::GetLocalizationFolder(), 0, PathUtil::GetLocalizationFolder().size() - 1));
+    AZStd::string sLocalizationFolder(AZStd::string().assign(PathUtil::GetLocalizationFolder(), 0, PathUtil::GetLocalizationFolder().size() - 1));
 
-    if (sLocalizationFolder.compareNoCase("Languages") == 0)
+    if (!AZ::StringFunc::Equal(sLocalizationFolder, "Languages", false))
     {
-        sLocalizationFolder = "@assets@";
+        sLocalizationFolder = "@products@";
     }
 
     // load localized pak with crc32 filenames on consoles to save memory.
-    string sLocalizedPath = "loc.pak";
+    AZStd::string sLocalizedPath = "loc.pak";
 
-    if (!m_env.pCryPak->OpenPacks(sLocalizationFolder.c_str(), sLocalizedPath.c_str(), nPakFlags))
+    if (!m_env.pCryPak->OpenPacks(sLocalizationFolder.c_str(), sLocalizedPath.c_str()))
     {
         // make sure the localized language is found - not really necessary, for TC
         AZ_Error(AZ_TRACE_SYSTEM_WINDOW, false, "Localized language content(%s) not available or modified from the original installation.", sLanguage);
@@ -1016,10 +856,10 @@ void CSystem::OpenLanguageAudioPak([[maybe_unused]] const char* sLanguage)
 }
 
 
-string GetUniqueLogFileName(string logFileName)
+AZStd::string GetUniqueLogFileName(AZStd::string logFileName)
 {
-    string logFileNamePrefix = logFileName;
-    if ((logFileNamePrefix[0] != '@') && (AzFramework::StringFunc::Path::IsRelative(logFileNamePrefix)))
+    AZStd::string logFileNamePrefix = logFileName;
+    if ((logFileNamePrefix[0] != '@') && (AzFramework::StringFunc::Path::IsRelative(logFileNamePrefix.c_str())))
     {
         logFileNamePrefix = "@log@/";
         logFileNamePrefix += logFileName;
@@ -1035,15 +875,15 @@ string GetUniqueLogFileName(string logFileName)
         return logFileNamePrefix;
     }
 
-    string logFileExtension;
+    AZStd::string logFileExtension;
     size_t extensionIndex = logFileName.find_last_of('.');
-    if (extensionIndex != string::npos)
+    if (extensionIndex != AZStd::string::npos)
     {
         logFileExtension = logFileName.substr(extensionIndex, logFileName.length() - extensionIndex);
         logFileNamePrefix = logFileName.substr(0, extensionIndex);
     }
 
-    logFileName.Format("%s(%d)%s", logFileNamePrefix.c_str(), instance, logFileExtension.c_str());
+    logFileName = AZStd::string::format("%s(%d)%s", logFileNamePrefix.c_str(), instance, logFileExtension.c_str()).c_str();
 
     return logFileName;
 }
@@ -1152,8 +992,6 @@ bool CSystem::Init(const SSystemInitParams& startupParams)
         gEnv = &m_env;
     }
 
-    LOADING_TIME_PROFILE_SECTION;
-
     SetSystemGlobalState(ESYSTEM_GLOBAL_STATE_INIT);
     gEnv->mMainThreadId = GetCurrentThreadId();         //Set this ASAP on startup
 
@@ -1184,7 +1022,7 @@ bool CSystem::Init(const SSystemInitParams& startupParams)
     {
         azConsole->LinkDeferredFunctors(AZ::ConsoleFunctorBase::GetDeferredHead());
     }
-    
+
     if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry)
     {
         AZ::SettingsRegistryInterface::FixedValueString assetPlatform;
@@ -1211,7 +1049,7 @@ bool CSystem::Init(const SSystemInitParams& startupParams)
 
         osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
 AZ_PUSH_DISABLE_WARNING(4996, "-Wunknown-warning-option")
-        GetVersionExA(&osvi);
+        GetVersionExW(&osvi);
 AZ_POP_DISABLE_WARNING
 
         bool bIsWindowsXPorLater = osvi.dwMajorVersion > 5 || (osvi.dwMajorVersion == 5 && osvi.dwMinorVersion >= 1);
@@ -1306,7 +1144,7 @@ AZ_POP_DISABLE_WARNING
             }
             else if (startupParams.sLogFileName)    //otherwise see if the startup params has a log file name, if so use it
             {
-                const string sUniqueLogFileName = GetUniqueLogFileName(startupParams.sLogFileName);
+                const AZStd::string sUniqueLogFileName = GetUniqueLogFileName(startupParams.sLogFileName);
                 m_env.pLog->SetFileName(sUniqueLogFileName.c_str(), startupParams.autoBackupLogs);
             }
             else//use the default log name
@@ -1390,9 +1228,6 @@ AZ_POP_DISABLE_WARNING
 
         InlineInitializationProcessing("CSystem::Init Create console");
 
-        // Need to load the engine.pak that includes the config files needed during initialization
-        m_env.pCryPak->OpenPack("@assets@", "Engine.pak");
-
         InitFileSystem_LoadEngineFolders(startupParams);
 
 #if !defined(RELEASE) || defined(RELEASE_LOGGING)
@@ -1406,33 +1241,12 @@ AZ_POP_DISABLE_WARNING
         //Load config files
         //////////////////////////////////////////////////////////////////////////
 
-        int curSpecVal = 0;
-        ICVar* pSysSpecCVar = gEnv->pConsole->GetCVar("r_GraphicsQuality");
-        if (gEnv->pSystem->IsDevMode())
-        {
-            if (pSysSpecCVar && pSysSpecCVar->GetFlags() & VF_WASINCONFIG)
-            {
-                curSpecVal = pSysSpecCVar->GetIVal();
-                pSysSpecCVar->SetFlags(pSysSpecCVar->GetFlags() | VF_SYSSPEC_OVERWRITE);
-            }
-        }
-
         // tools may not interact with @user@
         if (!gEnv->IsInToolMode())
         {
             if (m_pCmdLine->FindArg(eCLAT_Pre, "ResetProfile") == 0)
             {
                 LoadConfiguration("@user@/game.cfg", 0, false);
-            }
-        }
-
-        // If sys spec variable was specified, is not 0, and we are in devmode restore the value from before loading game.cfg
-        // This enables setting of a specific sys_spec outside menu and game.cfg
-        if (gEnv->pSystem->IsDevMode())
-        {
-            if (pSysSpecCVar && curSpecVal && curSpecVal != pSysSpecCVar->GetIVal())
-            {
-                pSysSpecCVar->Set(curSpecVal);
             }
         }
 
@@ -1449,10 +1263,6 @@ AZ_POP_DISABLE_WARNING
             }
 #endif
         }
-
-#if defined(PERFORMANCE_BUILD)
-        LoadConfiguration("performance.cfg");
-#endif
 
         //////////////////////////////////////////////////////////////////////////
         if (g_cvars.sys_asserts == 0)
@@ -1486,7 +1296,7 @@ AZ_POP_DISABLE_WARNING
         //////////////////////////////////////////////////////////////////////////
         // Open basic pak files after intro movie playback started
         //////////////////////////////////////////////////////////////////////////
-        OpenBasicPaks();
+        OpenPlatformPaks();
 
         //////////////////////////////////////////////////////////////////////////
         // AUDIO
@@ -1619,11 +1429,11 @@ AZ_POP_DISABLE_WARNING
         LoadConfiguration("client.cfg", &CVarsClientConfigSink);
     }
 
-    //Connect to the render bus
-    AZ::RenderNotificationsBus::Handler::BusConnect();
-
     // Send out EBus event
     EBUS_EVENT(CrySystemEventBus, OnCrySystemInitialized, *this, startupParams);
+
+    // Execute any deferred commands that uses the CVar commands that were just registered
+    AZ::Interface<AZ::IConsole>::Get()->ExecuteDeferredConsoleCommands();
 
     // Verify that the Maestro Gem initialized the movie system correctly. This can be removed if and when Maestro is not a required Gem
     if (gEnv->IsEditor() && !gEnv->pMovieSystem)
@@ -1640,7 +1450,7 @@ AZ_POP_DISABLE_WARNING
 
     m_bInitializedSuccessfully = true;
 
-    return (true);
+    return true;
 }
 
 
@@ -1654,20 +1464,20 @@ static void LoadConfigurationCmd(IConsoleCmdArgs* pParams)
         return;
     }
 
-    GetISystem()->LoadConfiguration(string("Config/") + pParams->GetArg(1));
+    GetISystem()->LoadConfiguration((AZStd::string("Config/") + pParams->GetArg(1)).c_str());
 }
 
 
 // --------------------------------------------------------------------------------------------------------------------------
 
-static string ConcatPath(const char* szPart1, const char* szPart2)
+static AZStd::string ConcatPath(const char* szPart1, const char* szPart2)
 {
     if (szPart1[0] == 0)
     {
         return szPart2;
     }
 
-    string ret;
+    AZStd::string ret;
 
     ret.reserve(strlen(szPart1) + 1 + strlen(szPart2));
 
@@ -1689,46 +1499,6 @@ void CmdSetAwsLogLevel(IConsoleCmdArgs* pArgs)
         int logLevel = atoi(pArgs->GetArg(1));
         *logVar = logLevel;
         AZ_TracePrintf("AWSLogging", "Log level set to %d", *logVar);
-    }
-}
-
-void CmdDrillToFile(IConsoleCmdArgs* pArgs)
-{
-    if (azstricmp(pArgs->GetArg(0), "DrillerStop") == 0)
-    {
-        EBUS_EVENT(AzFramework::DrillerConsoleCommandBus, StopDrillerSession, AZ::Crc32("DefaultDrillerSession"));
-    }
-    else
-    {
-        if (pArgs->GetArgCount() > 1)
-        {
-            AZ::Debug::DrillerManager::DrillerListType drillersToEnable;
-            for (int iArg = 1; iArg < pArgs->GetArgCount(); ++iArg)
-            {
-                if (azstricmp(pArgs->GetArg(iArg), "Replica") == 0)
-                {
-                    drillersToEnable.push_back();
-                    drillersToEnable.back().id = AZ::Crc32("ReplicaDriller");
-                }
-                else if (azstricmp(pArgs->GetArg(iArg), "Carrier") == 0)
-                {
-                    drillersToEnable.push_back();
-                    drillersToEnable.back().id = AZ::Crc32("CarrierDriller");
-                }
-                else
-                {
-                    CryLogAlways("Driller %s not supported.", pArgs->GetArg(iArg));
-                }
-            }
-            EBUS_EVENT(AzFramework::DrillerConsoleCommandBus, StartDrillerSession, drillersToEnable, AZ::Crc32("DefaultDrillerSession"));
-        }
-        else
-        {
-            CryLogAlways("Syntax: DrillerStart [Driller1] [Driller2] [...]");
-            CryLogAlways("Supported Drillers:");
-            CryLogAlways("    Carrier");
-            CryLogAlways("    Replica");
-        }
     }
 }
 
@@ -1873,19 +1643,6 @@ void CSystem::CreateSystemVars()
             "Entities marked with lower level will not be spawned - 0 means no level.\n"
             "Usage: e_EntitySuppressionLevel [0-infinity]\n"
             "Default is 0 (off)");
-
-#if defined(WIN32) || defined(WIN64)
-    const uint32 nJobSystemDefaultCoreNumber = 8;
-#define AZ_RESTRICTED_SECTION_IMPLEMENTED
-#elif defined(AZ_RESTRICTED_PLATFORM)
-#define AZ_RESTRICTED_SECTION SYSTEMINIT_CPP_SECTION_11
-#include AZ_RESTRICTED_FILE(SystemInit_cpp)
-#endif
-#if defined(AZ_RESTRICTED_SECTION_IMPLEMENTED)
-#undef AZ_RESTRICTED_SECTION_IMPLEMENTED
-#else
-    const uint32 nJobSystemDefaultCoreNumber = 4;
-#endif
 
     m_sys_firstlaunch = REGISTER_INT("sys_firstlaunch", 0, 0,
             "Indicates that the game was run for the first time.");
@@ -2079,7 +1836,6 @@ void CSystem::CreateSystemVars()
 
     //Defines selected language.
     REGISTER_STRING_CB("g_language", "", VF_NULL, "Defines which language pak is loaded", CSystem::OnLanguageCVarChanged);
-    REGISTER_STRING_CB("g_languageAudio", "", VF_NULL, "Will automatically match g_language setting unless specified otherwise", CSystem::OnLanguageAudioCVarChanged);
 
 #if defined(WIN32)
     REGISTER_CVAR2("sys_display_threads", &g_cvars.sys_display_threads, 0, 0, "Displays Thread info");
@@ -2111,9 +1867,6 @@ void CSystem::CreateSystemVars()
     // By default it is now enabled. Modify system.cfg or game.cfg to disable it
     REGISTER_INT("sys_enableCanvasEditor", 1, VF_NULL, "Enables the UI Canvas Editor");
 
-    REGISTER_COMMAND_DEV_ONLY("DrillerStart", CmdDrillToFile, VF_DEV_ONLY, "Start a driller capture.");
-    REGISTER_COMMAND_DEV_ONLY("DrillerStop", CmdDrillToFile, VF_DEV_ONLY, "Stop a driller capture.");
-
     REGISTER_COMMAND("sys_SetLogLevel", CmdSetAwsLogLevel, 0, "Set AWS log level [0 - 6].");
 }
 
@@ -2132,12 +1885,12 @@ void CSystem::CreateAudioVars()
 }
 
 /////////////////////////////////////////////////////////////////////
-void CSystem::AddCVarGroupDirectory(const string& sPath)
+void CSystem::AddCVarGroupDirectory(const AZStd::string& sPath)
 {
     CryLog("creating CVarGroups from directory '%s' ...", sPath.c_str());
     INDENT_LOG_DURING_SCOPE();
 
-    AZ::IO::ArchiveFileIterator handle = gEnv->pCryPak->FindFirst(ConcatPath(sPath, "*.cfg").c_str());
+    AZ::IO::ArchiveFileIterator handle = gEnv->pCryPak->FindFirst(ConcatPath(sPath.c_str(), "*.cfg").c_str());
 
     if (!handle)
     {
@@ -2150,15 +1903,8 @@ void CSystem::AddCVarGroupDirectory(const string& sPath)
         {
             if (handle.m_filename != "." && handle.m_filename != "..")
             {
-                AddCVarGroupDirectory(ConcatPath(sPath, handle.m_filename.data()));
+                AddCVarGroupDirectory(ConcatPath(sPath.c_str(), handle.m_filename.data()));
             }
-        }
-        else
-        {
-            string sFilePath = ConcatPath(sPath, handle.m_filename.data());
-
-            string sCVarName = sFilePath;
-            PathUtil::RemoveExtension(sCVarName);
         }
     } while (handle = gEnv->pCryPak->FindNext(handle));
 

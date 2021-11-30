@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -68,6 +69,8 @@ namespace ImGui
     {
     public:
         AZ_RTTI(IImGuiManager, "{F5A0F08B-F2DA-43B7-8CD2-C6FC71E1A712}");
+
+        virtual ~IImGuiManager() = default;
 
         static const char* GetUniqueName() { return "IImGuiManager"; }
 

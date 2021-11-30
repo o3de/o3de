@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -41,8 +42,6 @@ namespace AZ
 
         AZ_DEFINE_ENUM_BITWISE_OPERATORS(AZ::RHI::IndirectCommandTiers);
 
-        AZ_ASSERT_NO_ALIGNMENT_PADDING_BEGIN
-
         //! Arguments when setting an indirect Vertex Buffer View command.
         struct IndirectBufferViewArguments
         {
@@ -82,8 +81,6 @@ namespace AZ
             /// Arguments when the command is a Vertex Buffer View type.
             IndirectBufferViewArguments m_vertexBufferArgs;
         };
-
-        AZ_ASSERT_NO_ALIGNMENT_PADDING_END
 
         AZ_FORCE_INLINE bool operator==(const IndirectCommandDescriptor& lhs, const IndirectCommandDescriptor& rhs)
         {

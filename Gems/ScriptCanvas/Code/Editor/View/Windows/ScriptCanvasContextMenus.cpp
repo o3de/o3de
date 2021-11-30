@@ -1,10 +1,10 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "precompiled.h"
 
 #include <QVBoxLayout>
 #include <QApplication>
@@ -568,7 +568,7 @@ namespace ScriptCanvasEditor
         // Show the selection dialog
         bool createSlot = false;
         VariablePaletteRequests::SlotSetup selectedSlotSetup;
-        QPoint scenePoint(scenePos.GetX(), scenePos.GetY());
+        QPoint scenePoint(static_cast<int>(scenePos.GetX()), static_cast<int>(scenePos.GetY()));
         VariablePaletteRequestBus::BroadcastResult(createSlot, &VariablePaletteRequests::ShowSlotTypeSelector, slot, scenePoint, selectedSlotSetup);
 
         bool changed = false;

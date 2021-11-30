@@ -1,11 +1,10 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-
-#include "PhysX_precompiled.h"
 
 #include <Source/EditorComponentDescriptors.h>
 
@@ -13,6 +12,7 @@
 #include <Source/EditorColliderComponent.h>
 #include <Source/EditorFixedJointComponent.h>
 #include <Source/EditorForceRegionComponent.h>
+#include <Source/EditorHeightfieldColliderComponent.h>
 #include <Source/EditorHingeJointComponent.h>
 #include <Source/EditorJointComponent.h>
 #include <Source/EditorRigidBodyComponent.h>
@@ -36,6 +36,7 @@ namespace PhysX
             EditorColliderComponent::CreateDescriptor(),
             EditorFixedJointComponent::CreateDescriptor(),
             EditorForceRegionComponent::CreateDescriptor(),
+            EditorHeightfieldColliderComponent::CreateDescriptor(),
             EditorHingeJointComponent::CreateDescriptor(),
             EditorJointComponent::CreateDescriptor(),
             EditorRigidBodyComponent::CreateDescriptor(),

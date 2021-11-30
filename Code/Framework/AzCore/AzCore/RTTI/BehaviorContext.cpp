@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -120,12 +121,12 @@ namespace AZ
         {
             delete attrIt.second;
         }
-        
+
         if (m_overload)
         {
             delete m_overload;
         }
-        
+
         m_attributes.clear();
     }
 
@@ -179,7 +180,7 @@ namespace AZ
         if (GetNumArguments() == overload->GetNumArguments())
         {
             bool anyDifference = false;
-            
+
             for (size_t i(0), sentinel(GetNumArguments()); !anyDifference && i < sentinel; ++i)
             {
                 const BehaviorParameter* thisArg = GetArgument(i);
@@ -272,7 +273,7 @@ namespace AZ
         auto attributes = AZStd::move(m_attributes);
 
         // Actually delete everything
-        for (auto propertyIt : events)
+        for (const auto &propertyIt : events)
         {
             delete propertyIt.second.m_broadcast;
             delete propertyIt.second.m_event;
@@ -518,20 +519,20 @@ namespace AZ
     AZStd::vector<BehaviorMethod*> BehaviorClass::GetOverloads(const AZStd::string& name) const
     {
         AZStd::vector<BehaviorMethod*> overloads;
-        
+
         auto methodIter = m_methods.find(name);
         if (methodIter != m_methods.end())
         {
             overloads = GetOverloadsIncludeMethod(methodIter->second);
-        }        
-        
+        }
+
         return overloads;
     }
 
     AZStd::vector<BehaviorMethod*> BehaviorClass::GetOverloadsIncludeMethod(BehaviorMethod* method) const
     {
         AZStd::vector<BehaviorMethod*> overloads;
-       
+
         auto iter = method;
         while (iter)
         {
@@ -545,7 +546,7 @@ namespace AZ
     AZStd::vector<BehaviorMethod*> BehaviorClass::GetOverloadsExcludeMethod(BehaviorMethod* method) const
     {
         AZStd::vector<BehaviorMethod*> overloads;
-        
+
         auto iter = method->m_overload;
         while (iter)
         {
@@ -971,5 +972,5 @@ namespace AZ
             return enumRttiHelper.GetTypeId();
         }
     }
- 
+
 } // namespace AZ

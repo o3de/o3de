@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -170,7 +171,7 @@ namespace EMotionFX
                 SimulatedJoint* parentJoint = childJoint->FindParentSimulatedJoint();
                 if (parentJoint)
                 {
-                    return createIndex(parentJoint->CalculateChildIndex(), 0, parentJoint);
+                    return createIndex(aznumeric_caster(parentJoint->CalculateChildIndex()), 0, parentJoint);
                 }
                 else
                 {
@@ -376,7 +377,7 @@ namespace EMotionFX
         return QModelIndex();
     }
 
-    void SimulatedObjectModel::AddJointsToSelection(QItemSelection& selection, size_t objectIndex, const AZStd::vector<AZ::u32>& jointIndices)
+    void SimulatedObjectModel::AddJointsToSelection(QItemSelection& selection, size_t objectIndex, const AZStd::vector<size_t>& jointIndices)
     {
         if (!m_actor || !m_actor->GetSimulatedObjectSetup())
         {
@@ -391,12 +392,12 @@ namespace EMotionFX
             return;
         }
 
-        for (AZ::u32 jointIndex : jointIndices)
+        for (const size_t jointIndex : jointIndices)
         {
             SimulatedJoint* joint = object->FindSimulatedJointBySkeletonJointIndex(jointIndex);
             if (!joint)
             {
-                AZ_Warning("EMotionFX", false, "Simulated joint with joint index %d does not exist", jointIndex);
+                AZ_Warning("EMotionFX", false, "Simulated joint with joint index %zu does not exist", jointIndex);
                 continue;
             }
             int row = static_cast<int>(joint->CalculateChildIndex());

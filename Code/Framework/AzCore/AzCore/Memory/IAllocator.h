@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -61,6 +62,8 @@ namespace AZ
         virtual size_type               Capacity() const = 0;
         /// Returns max allocation size if possible. If not returned value is 0
         virtual size_type               GetMaxAllocationSize() const { return 0; }
+        /// Returns the maximum contiguous allocation size of a single allocation
+        virtual size_type               GetMaxContiguousAllocationSize() const { return 0; }
         /**
          * Returns memory allocated by the allocator and available to the user for allocations.
          * IMPORTANT: this is not the overhead memory this is just the memory that is allocated, but not used. Example: the pool allocators

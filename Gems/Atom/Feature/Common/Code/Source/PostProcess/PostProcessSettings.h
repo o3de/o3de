@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -16,6 +17,7 @@
 #include <PostProcess/ExposureControl/ExposureControlSettings.h>
 #include <PostProcess/Ssao/SsaoSettings.h>
 #include <PostProcess/LookModification/LookModificationSettings.h>
+#include <PostProcess/ColorGrading/HDRColorGradingSettings.h>
 #include <ScreenSpace/DeferredFogSettings.h>
 
 namespace AZ
@@ -51,7 +53,7 @@ namespace AZ
 #undef POST_PROCESS_MEMBER
 
             // Auto-gen getter and setter functions for post process members...
-#include <Atom/Feature/ParamMacros/StartParamFunctions.inl>
+#include <Atom/Feature/ParamMacros/StartParamFunctionsOverrideImpl.inl>
 #include <Atom/Feature/PostProcess/PostProcessParams.inl>
 #include <Atom/Feature/ParamMacros/EndParams.inl>
 

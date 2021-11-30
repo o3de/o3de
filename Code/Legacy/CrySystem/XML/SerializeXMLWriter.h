@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -14,11 +15,10 @@
 #include <ISystem.h>
 #include <ITimer.h>
 #include <IXml.h>
-#include "IValidator.h"
 #include "SimpleSerialize.h"
 
 class CSerializeXMLWriterImpl
-    : public CSimpleSerializeImpl<false, eST_SaveGame>
+    : public CSimpleSerializeImpl<false, ESerializationTarget::eST_SaveGame>
 {
 public:
     CSerializeXMLWriterImpl(const XmlNodeRef& nodeRef);
@@ -31,20 +31,11 @@ public:
         return true;
     }
 
-    template <class T_Value, class T_Policy>
-    bool Value(const char* name, T_Value& value, [[maybe_unused]] const T_Policy& policy)
-    {
-        return Value(name, value);
-    }
-
     bool Value(const char* name, CTimeValue value);
-    bool Value(const char* name, XmlNodeRef& value);
 
     void BeginGroup(const char* szName);
     bool BeginOptionalGroup(const char* szName, bool condition);
     void EndGroup();
-
-    void GetMemoryUsage(ICrySizer* pSizer) const;
 
 private:
     //////////////////////////////////////////////////////////////////////////
@@ -76,7 +67,7 @@ private:
         if (strchr(name, ' ') != 0)
         {
             assert(0 && "Spaces in Value name not supported");
-            CryWarning(VALIDATOR_MODULE_SYSTEM, VALIDATOR_WARNING, "!Spaces in Value name not supported: %s in Group %s", name, GetStackInfo());
+            CryWarning(VALIDATOR_MODULE_SYSTEM, VALIDATOR_WARNING, "!Spaces in Value name not supported: %s in Group %s", name, GetStackInfo().c_str());
             return;
         }
         if (GetISystem()->IsDevMode() && CurNode())
@@ -85,7 +76,7 @@ private:
             if (CurNode()->haveAttr(name))
             {
                 assert(0);
-                CryWarning(VALIDATOR_MODULE_SYSTEM, VALIDATOR_WARNING, "!Duplicate tag Value( \"%s\" ) in Group %s", name, GetStackInfo());
+                CryWarning(VALIDATOR_MODULE_SYSTEM, VALIDATOR_WARNING, "!Duplicate tag Value( \"%s\" ) in Group %s", name, GetStackInfo().c_str());
             }
         }
 
@@ -97,10 +88,6 @@ private:
     void AddValue(const char* name, const SSerializeString& value)
     {
         AddValue(name, value.c_str());
-    }
-    void AddValue([[maybe_unused]] const char* name, [[maybe_unused]] const SNetObjectID& value)
-    {
-        assert(false);
     }
     template <class T>
     void AddTypedValue(const char* name, const T& value, const char* type)
@@ -114,8 +101,8 @@ private:
     }
 
     // Used for printing currebnt stack info for warnings.
-    const char* GetStackInfo() const;
-    const char* GetLuaStackInfo() const;
+    AZStd::string GetStackInfo() const;
+    AZStd::string GetLuaStackInfo() const;
 
     //////////////////////////////////////////////////////////////////////////
     // Check For Defaults.
@@ -137,7 +124,7 @@ private:
     bool IsDefaultValue(const Quat& v) const { return v.w == 1.0f && v.v.x == 0 && v.v.y == 0 && v.v.z == 0; };
     bool IsDefaultValue(const CTimeValue& v) const { return v.GetValue() == 0; };
     bool IsDefaultValue(const char* str) const { return !str || !*str; };
-    bool IsDefaultValue(const string& str) const { return str.empty(); };
+    bool IsDefaultValue(const AZStd::string& str) const { return str.empty(); };
     bool IsDefaultValue(const SSerializeString& str) const { return str.empty(); };
     //////////////////////////////////////////////////////////////////////////
 

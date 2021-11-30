@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -15,8 +16,8 @@ namespace MCore
     // convert it into another unit type
     const MCore::Distance& Distance::ConvertTo(EUnitType targetUnitType)
     {
-        mDistance = mDistanceMeters * GetConversionFactorFromMeters(targetUnitType);
-        mUnitType = targetUnitType;
+        m_distance = m_distanceMeters * GetConversionFactorFromMeters(targetUnitType);
+        m_unitType = targetUnitType;
         return *this;
     }
 
@@ -165,7 +166,7 @@ namespace MCore
     // update the distance in meters
     void Distance::UpdateDistanceMeters()
     {
-        mDistanceMeters = mDistance * GetConversionFactorToMeters(mUnitType);
+        m_distanceMeters = m_distance * GetConversionFactorToMeters(m_unitType);
     }
 
 

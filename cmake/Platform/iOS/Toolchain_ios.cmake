@@ -1,6 +1,7 @@
 #
-# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
-# 
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
@@ -12,7 +13,7 @@ set(CMAKE_OSX_ARCHITECTURES arm64)
 
 
 set(LY_IOS_CODE_SIGNING_IDENTITY "iPhone Developer" CACHE STRING "iPhone Developer")
-set(LY_IOS_DEPLOYMENT_TARGET "13.0" CACHE STRING "iOS Deployment Target")
+set(LY_IOS_DEPLOYMENT_TARGET "14.0" CACHE STRING "iOS Deployment Target")
 set(LY_IOS_DEVELOPMENT_TEAM "CF9TGN983S" CACHE STRING "The development team ID")
 
 

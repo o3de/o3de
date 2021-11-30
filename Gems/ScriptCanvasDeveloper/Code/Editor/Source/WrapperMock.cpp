@@ -1,10 +1,10 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "precompiled.h"
 
 #include <qmenu.h>
 
@@ -67,7 +67,6 @@ namespace ScriptCanvasDeveloper
 
             ScriptCanvasEditor::NodeIdPair nodePair;
 
-            const AZ::Vector2 scenePointVec2 = AZ::Vector2(aznumeric_cast<float>(scenePoint.x()), aznumeric_cast<float>(scenePoint.y()));
             if (result == addMock)
             {
                 ScriptCanvasEditor::EditorGraphRequestBus::EventResult(nodePair, scriptCanvasId, &ScriptCanvasEditor::EditorGraphRequests::CreateCustomNode, azrtti_typeid<Mock>(), AZ::Vector2(aznumeric_cast<float>(scenePoint.x()), aznumeric_cast<float>(scenePoint.y())));

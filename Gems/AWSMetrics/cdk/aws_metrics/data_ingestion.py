@@ -1,5 +1,6 @@
 """
-Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+Copyright (c) Contributors to the Open 3D Engine Project.
+For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
@@ -11,9 +12,10 @@ from aws_cdk import (
     aws_kinesis as kinesis
 )
 
-from . import aws_metrics_constants
-
 import json
+
+from . import aws_metrics_constants
+from .aws_utils import resource_name_sanitizer
 
 
 class DataIngestion:
@@ -28,7 +30,8 @@ class DataIngestion:
         self._input_stream = kinesis.Stream(
             self._stack,
             id='InputStream',
-            stream_name=f'{self._stack.stack_name}-InputStream',
+            stream_name=resource_name_sanitizer.sanitize_resource_name(
+                f'{self._stack.stack_name}-InputStream', 'kinesis_stream'),
             shard_count=1
         )
 
@@ -66,14 +69,14 @@ class DataIngestion:
         cfn_rest_api.add_property_deletion_override("BodyS3Location")
         cfn_rest_api.add_property_override("FailOnWarnings", True)
 
-        api_id_output = core.CfnOutput(
+        core.CfnOutput(
             self._stack,
             id='RESTApiId',
             description='Service API Id for the analytics pipeline',
             export_name=f"{application_name}:RestApiId",
             value=self._rest_api.rest_api_id)
 
-        stage_output = core.CfnOutput(
+        core.CfnOutput(
             self._stack,
             id='RESTApiStage',
             description='Stage for the REST API deployment',

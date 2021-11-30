@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -12,6 +13,7 @@
 class CUiAnimViewSequence;
 
 #if !defined(Q_MOC_RUN)
+#include <AzCore/PlatformIncl.h>
 #include <QDialog>
 #include <QScopedPointer>
 #endif
@@ -31,7 +33,7 @@ public:
 private:
     CUiAnimViewSequence* m_pSequence;
 
-    virtual BOOL OnInitDialog();
+    virtual bool OnInitDialog();
     virtual void OnOK();
 
     void MoveScaleKeys();

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -772,7 +773,7 @@ namespace AzQtComponents
         if (numButtons > 0)
         {
             // and finally add the right margins QLineEdit removes to make the buttons fit (it thinks)
-            const int iconSize = style->pixelMetric(QStyle::PM_SmallIconSize, 0, widget);
+            const int iconSize = style->pixelMetric(QStyle::PM_SmallIconSize, nullptr, widget);
             const int delta = iconSize / 4 + iconSize + 6;
             r.setRight(r.right() + delta * numButtons);
         }

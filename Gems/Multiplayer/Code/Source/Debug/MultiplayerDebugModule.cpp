@@ -1,11 +1,11 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
-#include <Source/Multiplayer_precompiled.h>
 #include <Source/Debug/MultiplayerDebugModule.h>
 #include <Source/Debug/MultiplayerDebugSystemComponent.h>
 
@@ -28,4 +28,4 @@ namespace Multiplayer
     }
 }
 
-AZ_DECLARE_MODULE_CLASS(Gem_Multiplayer_Imgui, Multiplayer::MultiplayerDebugModule);
+AZ_DECLARE_MODULE_CLASS(Gem_Multiplayer_Debug, Multiplayer::MultiplayerDebugModule);

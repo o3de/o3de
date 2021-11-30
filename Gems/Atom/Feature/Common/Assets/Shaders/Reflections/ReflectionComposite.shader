@@ -1,5 +1,5 @@
 {
-    "Source" : "ReflectionComposite",
+    "Source" : "ReflectionComposite.azsl",
 
     "RasterState" :
     {
@@ -49,5 +49,14 @@
                 "type": "Fragment"
             }
         ]
-    } 
+    },
+
+    "Supervariants":
+    [
+        {
+            "Name": "NoMSAA",
+            "PlusArguments": "--no-ms",
+            "MinusArguments": ""
+        }
+    ]
 }

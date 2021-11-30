@@ -1,10 +1,10 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "Maestro_precompiled.h"
 
 #if !defined(_RELEASE)
 
@@ -15,8 +15,6 @@
 
 namespace EntityNodeTest
 {
-    // dummy entity id
-    const int ENTITY_ID = 0;
     // consants to set up test key frame, at 1.0 seconds, lasting for 1.0 seconds
     const int   KEY_IDX = 0;
     const float KEY_TIME = 1.0f;
@@ -113,7 +111,6 @@ namespace EntityNodeTest
     TEST_F(CryMovie_CharacterTrackAnimator_Test, CryMovieUnitTest_CharacterTrackAnimator_ComputeAnimKeyNormalizedTime_Loop)
     {
         const float NORMALIZED_CLIP_START = .0f;
-        const float NORMALIZED_CLIP_END = 1.0f;
         const float ERROR_TOLERANCE = 0.0001f;
         ICharacterKey key;
         m_dummyTrack.GetKey(EntityNodeTest::KEY_IDX, &key);

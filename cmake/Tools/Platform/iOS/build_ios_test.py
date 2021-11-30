@@ -1,6 +1,7 @@
 #
-# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
-# 
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
@@ -11,6 +12,7 @@ import pathlib
 import sys
 
 SCHEME_NAME = 'AzTestRunner'
+XCODE_PROJECT_NAME = 'O3DE'
 
 # Resolve the common python module
 ROOT_DEV_PATH = os.path.realpath(os.path.join(os.path.dirname(__file__), '..', '..', '..', '..'))
@@ -26,7 +28,7 @@ def build_ios_test(build_dir, configuration):
     
     xcode_build = common.CommandLineExec('/usr/bin/xcodebuild')
     command_line_arguments = ['build-for-testing',
-                              '-project', 'Lumberyard.xcodeproj',
+                              '-project', f'{XCODE_PROJECT_NAME}.xcodeproj',
                               '-scheme', SCHEME_NAME,
                               '-configuration', configuration,
                               '-allowProvisioningUpdates',
@@ -51,7 +53,7 @@ def main(args):
     parsed_args = parser.parse_args(args)
 
     build_ios_test(build_dir=parsed_args.build_dir,
-                                 configuration=parsed_args.configuration)
+                   configuration=parsed_args.configuration)
     return 0
 
 

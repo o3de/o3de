@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -77,7 +78,7 @@ namespace EMotionFX
         void SetName(const char* name);
 
     protected:
-        uint32                  mNameID;            /**< The material id representing the name. */
+        uint32                  m_nameId;            /**< The material id representing the name. */
 
         /**
          * The constructor.

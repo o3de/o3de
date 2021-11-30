@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -34,6 +35,10 @@ namespace AzToolsFramework
         //! With different uuids to have the same name. But, the chances of collision is reduced by specifying
         //! the entity type.
         virtual AZStd::vector<AZ::Uuid> FindComponentTypeIdsByEntityType(const AZStd::vector<AZStd::string>& componentTypeNames, EntityType entityType) = 0;
+
+        //! Return a list of type ids for components that match the required services filter,
+        //! and don't conflict with any of the incompatible services filter
+        virtual AZStd::vector<AZ::Uuid> FindComponentTypeIdsByService(const AZStd::vector<AZ::ComponentServiceType>& serviceFilter, const AZStd::vector<AZ::ComponentServiceType>& incompatibleServiceFilter) = 0;
 
         //! Finds the component names from their type ids
         virtual AZStd::vector<AZStd::string> FindComponentTypeNames(const AZ::ComponentTypeList& componentTypeIds) = 0;

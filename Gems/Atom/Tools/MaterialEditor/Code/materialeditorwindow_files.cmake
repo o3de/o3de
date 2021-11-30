@@ -1,6 +1,7 @@
 #
-# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
-# 
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
@@ -8,9 +9,6 @@
 set(FILES
     Include/Atom/Window/MaterialEditorWindowModule.h
     Include/Atom/Window/MaterialEditorWindowSettings.h
-    Include/Atom/Window/MaterialEditorWindowNotificationBus.h
-    Include/Atom/Window/MaterialEditorWindowRequestBus.h
-    Include/Atom/Window/MaterialEditorWindowFactoryRequestBus.h
     Source/Window/MaterialEditorBrowserInteractions.h
     Source/Window/MaterialEditorBrowserInteractions.cpp
     Source/Window/MaterialEditorWindow.h
@@ -47,9 +45,6 @@ set(FILES
     Source/Window/ToolBar/ModelPresetComboBox.cpp
     Source/Window/ToolBar/LightingPresetComboBox.h
     Source/Window/ToolBar/LightingPresetComboBox.cpp
-    Source/Window/StatusBar/StatusBarWidget.cpp
-    Source/Window/StatusBar/StatusBarWidget.h
-    Source/Window/StatusBar/StatusBarWidget.ui
     Source/Window/MaterialInspector/MaterialInspector.h
     Source/Window/MaterialInspector/MaterialInspector.cpp
     Source/Window/ViewportSettingsInspector/ViewportSettingsInspector.h

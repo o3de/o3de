@@ -1,0 +1,22 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "LyShineParentTemplate",
+            "PassClass": "LyShinePass",
+            "Slots": [
+                {
+                    "Name": "ColorInputOutput",
+                    "SlotType": "InputOutput"
+                },
+                {
+                    "Name": "DepthInputOutput",
+                    "SlotType": "InputOutput",
+                    "ScopeAttachmentUsage": "DepthStencil"
+                }            
+            ]
+        }
+    }
+}

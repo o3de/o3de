@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -20,9 +21,10 @@
 #include <Atom/RHI/FrameGraphExecuteContext.h>
 #include <Atom/RHI/FrameScheduler.h>
 #include <Atom/RHI/RHISystemInterface.h>
+#include <Atom/RHI/RHIUtils.h>
 #include <Atom/RHI/ScopeProducerFunction.h>
 
-#include <AtomCore/Serialization/Json/JsonUtils.h>
+#include <AzCore/Serialization/Json/JsonUtils.h>
 
 #include <AzCore/std/smart_ptr/make_shared.h>
 
@@ -120,7 +122,7 @@ namespace AZ
 
             // Load shader and srg
             const char* ShaderPath = "shader/decomposemsimage.azshader";
-            m_decomposeShader = LoadShader(ShaderPath);
+            m_decomposeShader = LoadCriticalShader(ShaderPath);
 
             if (m_decomposeShader == nullptr)
             {
@@ -129,10 +131,10 @@ namespace AZ
             }
 
             // Load SRG
-            const Data::Asset<ShaderResourceGroupAsset>& srgAsset = m_decomposeShader->FindShaderResourceGroupAsset(Name{ "ObjectSrg" });
-            if (srgAsset)
+            const auto srgLayout = m_decomposeShader->FindShaderResourceGroupLayout(SrgBindingSlot::Object);
+            if (srgLayout)
             {
-                m_decomposeSrg = ShaderResourceGroup::Create(srgAsset);
+                m_decomposeSrg = ShaderResourceGroup::Create(m_decomposeShader->GetAsset(), m_decomposeShader->GetSupervariantIndex(), srgLayout->GetName());
 
                 if (!m_decomposeSrg)
                 {
@@ -174,6 +176,11 @@ namespace AZ
 
         bool AttachmentReadback::ReadPassAttachment(const PassAttachment* attachment, const AZ::Name& readbackName)
         {
+            if (AZ::RHI::IsNullRenderer())
+            {
+                return false;
+            }
+
             if (!IsReady())
             {
                 AZ_Assert(false, "AttachmentReadback is not ready to readback an attachment");
@@ -301,10 +308,10 @@ namespace AZ
             // The fix is to clear the buffer outside of the callback.
             for (int32_t i = 0; i < RHI::Limits::Device::FrameCountMax; i++)
             {
-                if (m_isReadbackComplete[m_readbackBufferCurrentIndex])
+                if (m_isReadbackComplete[i])
                 {
-                    m_isReadbackComplete[m_readbackBufferCurrentIndex] = false;
-                    m_readbackBufferArray[m_readbackBufferCurrentIndex] = nullptr;
+                    m_isReadbackComplete[i] = false;
+                    m_readbackBufferArray[i] = nullptr;
                 }
             }
             // Loop the triple buffer index and cache the current index to the callback.

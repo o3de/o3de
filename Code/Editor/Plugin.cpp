@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -132,10 +133,10 @@ IClassDesc* CClassFactory::FindClass(const char* pClassName) const
 
     if (!pSubClassName)
     {
-        return NULL;
+        return nullptr;
     }
 
-    QString name = QString(pClassName).left(pSubClassName - pClassName);
+    QString name = QString(pClassName).left(static_cast<int>(pSubClassName - pClassName));
 
     return stl::find_in_map(m_nameToClass, name, (IClassDesc*)nullptr);
 }
@@ -168,7 +169,7 @@ void CClassFactory::UnregisterClass(const char* pClassName)
 {
     IClassDesc* pClassDesc = FindClass(pClassName);
 
-    if (pClassDesc == NULL)
+    if (pClassDesc == nullptr)
     {
         return;
     }

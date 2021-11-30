@@ -1,5 +1,6 @@
 """
-Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+Copyright (c) Contributors to the Open 3D Engine Project.
+For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
@@ -46,13 +47,13 @@ from azpy.constants import ENVAR_DCCSI_DEV_MODE
 # -------------------------------------------------------------------------
 #  global space
 # To Do: update to dynaconf dynamic env and settings?
-_G_DEBUG = env_bool(ENVAR_DCCSI_GDEBUG, False)
+_DCCSI_GDEBUG = env_bool(ENVAR_DCCSI_GDEBUG, False)
 _DCCSI_DEV_MODE = env_bool(ENVAR_DCCSI_DEV_MODE, False)
 
 _MODULENAME = 'azpy.shared.noodely.pathnode'
 
 _log_level = int(20)
-if _G_DEBUG:
+if _DCCSI_GDEBUG:
     _log_level = int(10)
 _LOGGER = azpy.initialize_logger(_MODULENAME,
                                  log_to_file=False,
@@ -77,7 +78,7 @@ class PathNode(Node):
     """doc string"""
 
     # share the debug state
-    _DEBUG = _G_DEBUG
+    _DEBUG = _DCCSI_GDEBUG
 
     # class header
     _message_header = 'noodly, PathNode(): Message'

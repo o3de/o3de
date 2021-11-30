@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -12,6 +13,7 @@
 #include <AzCore/IO/Path/Path.h>
 #include <native/utilities/assetUtils.h>
 #include <AzCore/Console/IConsole.h>
+#include <QDebug>
 
 namespace AssetProcessor
 {
@@ -86,14 +88,12 @@ namespace AssetProcessor
             return;
         }
 
-        QModelIndex newIndicesStart;
-
         AssetTreeItem* parentItem = m_root.get();
         // Use posix path separator for each child item
         AZ::IO::Path currentFullFolderPath(AZ::IO::PosixPathSeparator);
         const AZ::IO::FixedMaxPath filename = fullPath.Filename();
         fullPath.RemoveFilename();
-        AZStd::fixed_string<AZ::IO::MaxPathLength> currentPath;
+        AZ::IO::FixedMaxPathString currentPath;
         for (auto pathIt = fullPath.begin(); pathIt != fullPath.end(); ++pathIt)
         {
             currentPath = pathIt->FixedMaxPathString();
@@ -103,7 +103,8 @@ namespace AssetProcessor
             {
                 if (!modelIsResetting)
                 {
-                    QModelIndex parentIndex = createIndex(parentItem->GetRow(), 0, parentItem);
+                    QModelIndex parentIndex = parentItem == m_root.get() ? QModelIndex() : createIndex(parentItem->GetRow(), 0, parentItem);
+                    Q_ASSERT(checkIndex(parentIndex));
                     beginInsertRows(parentIndex, parentItem->getChildCount(), parentItem->getChildCount());
                 }
                 nextParent = parentItem->CreateChild(SourceAssetTreeItemData::MakeShared(nullptr, nullptr, currentFullFolderPath.Native(), currentPath.c_str(), true));
@@ -119,12 +120,13 @@ namespace AssetProcessor
 
         if (!modelIsResetting)
         {
-            QModelIndex parentIndex = createIndex(parentItem->GetRow(), 0, parentItem);
+            QModelIndex parentIndex = parentItem == m_root.get() ? QModelIndex() : createIndex(parentItem->GetRow(), 0, parentItem);
+            Q_ASSERT(checkIndex(parentIndex));
             beginInsertRows(parentIndex, parentItem->getChildCount(), parentItem->getChildCount());
         }
 
         m_sourceToTreeItem[source.m_sourceName] =
-            parentItem->CreateChild(SourceAssetTreeItemData::MakeShared(&source, &scanFolder, source.m_sourceName, AZStd::fixed_string<AZ::IO::MaxPathLength>(filename.Native()).c_str(), false));
+            parentItem->CreateChild(SourceAssetTreeItemData::MakeShared(&source, &scanFolder, source.m_sourceName, AZ::IO::FixedMaxPathString(filename.Native()).c_str(), false));
         m_sourceIdToTreeItem[source.m_sourceID] = m_sourceToTreeItem[source.m_sourceName];
         if (!modelIsResetting)
         {
@@ -174,7 +176,8 @@ namespace AssetProcessor
             return;
         }
 
-        QModelIndex parentIndex = createIndex(parent->GetRow(), 0, parent);
+        QModelIndex parentIndex = parent == m_root.get() ? QModelIndex() : createIndex(parent->GetRow(), 0, parent);
+        Q_ASSERT(checkIndex(parentIndex));
 
         beginRemoveRows(parentIndex, assetToRemove->GetRow(), assetToRemove->GetRow());
 

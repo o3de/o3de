@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -126,7 +127,7 @@ namespace UnitTest
         AZStd::bitset<32> m_bitset1;
         AZStd::bitset<32> m_bitset2;
     };
-    
+
     TEST_P(BitsetUnsignedLongPairTests, BitwiseANDOperator_MatchesUnsignedLongAND)
     {
         EXPECT_EQ((m_bitset1 & m_bitset2).to_ulong(), m_unsignedLong1 & m_unsignedLong2);
@@ -315,7 +316,7 @@ namespace UnitTest
         {
             for (unsigned long value2 : testCases)
             {
-                testCasePairs.push_back(AZStd::pair<unsigned long, unsigned long>(value1, value2));
+                testCasePairs.emplace_back(value1, value2);
             }
         }
         return testCasePairs;

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -66,7 +67,7 @@ SANDBOX_API void ErrorV(const char* format, va_list argList)
     str += szBuffer;
 
     //CLogFile::WriteLine( str );
-    CryWarning(VALIDATOR_MODULE_EDITOR, VALIDATOR_ERROR, str.toUtf8().data());
+    CryWarning(VALIDATOR_MODULE_EDITOR, VALIDATOR_ERROR, "%s", str.toUtf8().data());
 
     if (!CCryEditApp::instance()->IsInTestMode() && !CCryEditApp::instance()->IsInExportMode() && !CCryEditApp::instance()->IsInLevelLoadTestMode())
     {
@@ -94,7 +95,7 @@ SANDBOX_API void WarningV(const char* format, va_list argList)
     char        szBuffer[MAX_LOGBUFFER_SIZE];
     azvsnprintf(szBuffer, MAX_LOGBUFFER_SIZE, format, argList);
 
-    CryWarning(VALIDATOR_MODULE_EDITOR, VALIDATOR_WARNING, szBuffer);
+    CryWarning(VALIDATOR_MODULE_EDITOR, VALIDATOR_WARNING, "%s", szBuffer);
 
     bool bNoUI = false;
     ICVar* pCVar = gEnv->pConsole->GetCVar("sys_no_crash_dialog");
@@ -178,19 +179,17 @@ void CLogFile::FormatLineV(const char * format, va_list argList)
 
 void CLogFile::AboutSystem()
 {
-    char szBuffer[MAX_LOGBUFFER_SIZE];
 #if defined(AZ_PLATFORM_WINDOWS) || defined(AZ_PLATFORM_LINUX)
     //////////////////////////////////////////////////////////////////////
     // Write the system informations to the log
     //////////////////////////////////////////////////////////////////////
-
-    char szProfileBuffer[128];
-    char szLanguageBuffer[64];
-    //char szCPUModel[64];
+    char szBuffer[MAX_LOGBUFFER_SIZE];
+    //wchar_t szCPUModel[64];
     MEMORYSTATUS MemoryStatus;
 #endif // defined(AZ_PLATFORM_WINDOWS) || defined(AZ_PLATFORM_LINUX)
 
 #if defined(AZ_PLATFORM_WINDOWS)
+    wchar_t szLanguageBufferW[64];
     DEVMODE DisplayConfig;
     OSVERSIONINFO OSVerInfo;
     OSVerInfo.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
@@ -200,11 +199,13 @@ void CLogFile::AboutSystem()
     //////////////////////////////////////////////////////////////////////
 
     // Get system language
-    GetLocaleInfo(LOCALE_SYSTEM_DEFAULT, LOCALE_SENGLANGUAGE,
-        szLanguageBuffer, sizeof(szLanguageBuffer));
+    GetLocaleInfoW(LOCALE_SYSTEM_DEFAULT, LOCALE_SENGLANGUAGE,
+        szLanguageBufferW, sizeof(szLanguageBufferW));
+    AZStd::string szLanguageBuffer;
+    AZStd::to_string(szLanguageBuffer, szLanguageBufferW);
 
     // Format and send OS information line
-    azsnprintf(szBuffer, MAX_LOGBUFFER_SIZE, "Current Language: %s ", szLanguageBuffer);
+    azsnprintf(szBuffer, MAX_LOGBUFFER_SIZE, "Current Language: %s ", szLanguageBuffer.c_str());
     CryLog("%s", szBuffer);
 #else
     QLocale locale;
@@ -285,7 +286,7 @@ AZ_POP_DISABLE_WARNING
             str += "Version Unknown";
         }
     }
-    azsnprintf(szBuffer, MAX_LOGBUFFER_SIZE, " %d.%d", OSVerInfo.dwMajorVersion, OSVerInfo.dwMinorVersion);
+    azsnprintf(szBuffer, MAX_LOGBUFFER_SIZE, " %ld.%ld", OSVerInfo.dwMajorVersion, OSVerInfo.dwMinorVersion);
     str += szBuffer;
 
     //////////////////////////////////////////////////////////////////////
@@ -293,7 +294,9 @@ AZ_POP_DISABLE_WARNING
     //////////////////////////////////////////////////////////////////////
 
     str += " (";
-    GetWindowsDirectory(szBuffer, sizeof(szBuffer));
+    wchar_t szBufferW[MAX_LOGBUFFER_SIZE];
+    GetWindowsDirectoryW(szBufferW, sizeof(szBufferW));
+    AZStd::to_string(szBuffer, MAX_LOGBUFFER_SIZE, szBufferW);
     str += szBuffer;
     str += ")";
     CryLog("%s", str.toUtf8().data());
@@ -334,7 +337,7 @@ AZ_POP_DISABLE_WARNING
     str += " ";
     azstrdate(szBuffer);
     str += szBuffer;
-    azsnprintf(szBuffer, MAX_LOGBUFFER_SIZE, ", system running for %d minutes", GetTickCount() / 60000);
+    azsnprintf(szBuffer, MAX_LOGBUFFER_SIZE, ", system running for %ld minutes", GetTickCount() / 60000);
     str += szBuffer;
     CryLog("%s", str.toUtf8().data());
 #else
@@ -379,13 +382,14 @@ AZ_POP_DISABLE_WARNING
     //////////////////////////////////////////////////////////////////////
 
 #if defined(AZ_PLATFORM_WINDOWS)
-    EnumDisplaySettings(NULL, ENUM_CURRENT_SETTINGS, &DisplayConfig);
-    GetPrivateProfileString("boot.description", "display.drv",
-        "(Unknown graphics card)", szProfileBuffer, sizeof(szProfileBuffer),
-        "system.ini");
-    azsnprintf(szBuffer, MAX_LOGBUFFER_SIZE, "Current display mode is %dx%dx%d, %s",
+    EnumDisplaySettings(nullptr, ENUM_CURRENT_SETTINGS, &DisplayConfig);
+    GetPrivateProfileStringW(L"boot.description", L"display.drv",
+        L"(Unknown graphics card)", szLanguageBufferW, sizeof(szLanguageBufferW),
+        L"system.ini");
+    AZStd::to_string(szLanguageBuffer, szLanguageBufferW);
+    azsnprintf(szBuffer, MAX_LOGBUFFER_SIZE, "Current display mode is %ldx%ldx%ld, %s",
         DisplayConfig.dmPelsWidth, DisplayConfig.dmPelsHeight,
-        DisplayConfig.dmBitsPerPel, szProfileBuffer);
+        DisplayConfig.dmBitsPerPel, szLanguageBuffer.c_str());
     CryLog("%s", szBuffer);
 #else
     auto screen = QGuiApplication::primaryScreen();
@@ -474,7 +478,7 @@ void CLogFile::WriteString(const char* pszString)
 {
     if (gEnv && gEnv->pLog)
     {
-        gEnv->pLog->LogPlus(pszString);
+        gEnv->pLog->LogPlus("%s", pszString);
     }
 }
 
@@ -499,7 +503,7 @@ static inline QString CopyAndRemoveColorCode(const char* sText)
         *d++ = *s++;
     }
 
-    ret.resize(d - ret.data());
+    ret.resize(static_cast<int>(d - ret.data()));
 
     return QString::fromLatin1(ret);
 }
@@ -567,9 +571,6 @@ void CLogFile::OnWriteToConsole(const char* sText, bool bNewLine)
             }
             if (bNewLine)
             {
-                //str = CString("\r\n") + str.TrimLeft();
-                //str = CString("\r\n") + str;
-                //str = CString("\r") + str;
                 str = QString("\r\n") + str;
                 str = str.trimmed();
             }

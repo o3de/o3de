@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -8,6 +9,7 @@
 
 #include <ATLComponents.h>
 
+#include <AzCore/Debug/Profiler.h>
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/std/functional.h>
 #include <AzCore/std/string/string_view.h>
@@ -29,7 +31,6 @@
 
 #include <MathConversion.h>
 #include <IRenderAuxGeom.h>
-#include <IConsole.h>
 
 namespace Audio
 {
@@ -283,10 +284,9 @@ namespace Audio
     ///////////////////////////////////////////////////////////////////////////////////////////////////
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
-    CAudioObjectManager::CAudioObjectManager(CAudioEventManager& refAudioEventManager)
+    CAudioObjectManager::CAudioObjectManager([[maybe_unused]] CAudioEventManager& refAudioEventManager)
         : m_cObjectPool(Audio::CVars::s_AudioObjectPoolSize, AudioObjectIDFactory::s_minValidAudioObjectID)
         , m_fTimeSinceLastVelocityUpdateMS(0.0f)
-        , m_refAudioEventManager(refAudioEventManager)
     #if !defined(AUDIO_RELEASE)
         , m_pDebugNameStore(nullptr)
     #endif // !AUDIO_RELEASE
@@ -304,7 +304,7 @@ namespace Audio
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     void CAudioObjectManager::Update(const float fUpdateIntervalMS, const SATLWorldPosition& rListenerPosition)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Audio);
+        AZ_PROFILE_FUNCTION(Audio);
 
         m_fTimeSinceLastVelocityUpdateMS += fUpdateIntervalMS;
         const bool bUpdateVelocity = m_fTimeSinceLastVelocityUpdateMS > s_fVelocityUpdateIntervalMS;
@@ -317,7 +317,7 @@ namespace Audio
 
             if (pObject->HasActiveEvents())
             {
-                AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::Audio, "Inner Per-Object CAudioObjectManager::Update");
+                AZ_PROFILE_SCOPE(Audio, "Inner Per-Object CAudioObjectManager::Update");
 
                 pObject->Update(fUpdateIntervalMS, rListenerPosition);
 
@@ -936,7 +936,7 @@ namespace Audio
     void CAudioEventListenerManager::NotifyListener(const SAudioRequestInfo* const pResultInfo)
     {
         // This should always be on the main thread!
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Audio);
+        AZ_PROFILE_FUNCTION(Audio);
 
         auto found = AZStd::find_if(m_cListeners.begin(), m_cListeners.end(),
             [pResultInfo](const SAudioEventListener& currentListener)
@@ -977,7 +977,7 @@ namespace Audio
         , m_rPreloadRequests(rPreloadRequests)
         , m_nTriggerImplIDCounter(AUDIO_TRIGGER_IMPL_ID_NUM_RESERVED)
         , m_rFileCacheMgr(rFileCacheMgr)
-        , m_rootPath("@assets@")
+        , m_rootPath("@products@")
     #if !defined(AUDIO_RELEASE)
         , m_pDebugNameStore(nullptr)
     #endif // !AUDIO_RELEASE
@@ -1005,14 +1005,14 @@ namespace Audio
         AZStd::string searchPath;
         AZ::StringFunc::Path::Join(m_rootPath.c_str(), folderPath, searchPath);
 
-        AZStd::vector<AZStd::string> foundFiles = Audio::FindFilesInPath(searchPath, "*.xml");
+        auto foundFiles = Audio::FindFilesInPath(searchPath, "*.xml");
 
         for (const auto& file : foundFiles)
         {
             AZ_Assert(AZ::IO::FileIOBase::GetInstance()->Exists(file.c_str()), "FindFiles found file '%s' but FileIO says it doesn't exist!", file.c_str());
             g_audioLogger.Log(eALT_ALWAYS, "Loading Audio Controls Library: '%s'", file.c_str());
 
-            Audio::ScopedXmlLoader xmlFileLoader(file);
+            Audio::ScopedXmlLoader xmlFileLoader(file.Native());
             if (xmlFileLoader.HasError())
             {
                 continue;
@@ -1053,14 +1053,14 @@ namespace Audio
         AZStd::string searchPath;
         AZ::StringFunc::Path::Join(m_rootPath.c_str(), folderPath, searchPath);
 
-        AZStd::vector<AZStd::string> foundFiles = Audio::FindFilesInPath(searchPath, "*.xml");
+        auto foundFiles = Audio::FindFilesInPath(searchPath, "*.xml");
 
         for (const auto& file : foundFiles)
         {
             AZ_Assert(AZ::IO::FileIOBase::GetInstance()->Exists(file.c_str()), "FindFiles found file '%s' but FileIO says it doesn't exist!", file.c_str());
             g_audioLogger.Log(eALT_ALWAYS, "Loading Audio Preloads Library: '%s'", file.c_str());
 
-            Audio::ScopedXmlLoader xmlFileLoader(file);
+            Audio::ScopedXmlLoader xmlFileLoader(file.Native());
             if (xmlFileLoader.HasError())
             {
                 continue;
@@ -1776,7 +1776,6 @@ namespace Audio
         static float const fItemPlayingColor[4] = { 0.3f, 0.6f, 0.3f, 0.9f };
         static float const fItemLoadingColor[4] = { 0.9f, 0.2f, 0.2f, 0.9f };
         static float const fItemOtherColor[4] = { 0.8f, 0.8f, 0.8f, 0.9f };
-        static float const fNoImplColor[4] = { 1.0f, 0.6f, 0.6f, 0.9f };
 
         rAuxGeom.Draw2dLabel(fPosX, fPosY, 1.6f, fHeaderColor, false, "Audio Events [%zu]", m_cActiveAudioEvents.size());
         fPosX += 20.0f;

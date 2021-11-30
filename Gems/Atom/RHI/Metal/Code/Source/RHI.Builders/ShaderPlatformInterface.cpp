@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -166,7 +167,7 @@ namespace AZ
 
         bool ShaderPlatformInterface::BuildHasDebugInfo(const RHI::ShaderCompilerArguments& shaderCompilerArguments) const
         {
-            return shaderCompilerArguments.m_dxcGenerateDebugInfo;
+            return shaderCompilerArguments.m_generateDebugInfo;
         }
 
         const char* ShaderPlatformInterface::GetAzslHeader(const AssetBuilderSDK::PlatformInfo& platform) const
@@ -190,7 +191,7 @@ namespace AZ
            StageDescriptor& outputDescriptor,
            const RHI::ShaderCompilerArguments& shaderCompilerArguments) const
         {
-            for (auto srgLayout : m_srgLayouts)
+            for ([[maybe_unused]] auto srgLayout : m_srgLayouts)
             {
                 AZ_Assert(srgLayout != nullptr, "Most likely BuildPipelineLayoutDescriptor() was not called!");
             }
@@ -251,9 +252,7 @@ namespace AZ
 
             // Output file
             AZStd::string shaderMSLOutputFile = RHI::BuildFileNameWithExtension(shaderSourceFile, tempFolder, "metal");
-            
-            bool outputFileWriteResult = false;
-            
+
             // Stage profile name parameter
             const AZStd::string shaderModelVersion = "6_2";
             
@@ -281,7 +280,7 @@ namespace AZ
             // Enable half precision types when shader model >= 6.2
             int shaderModelMajor = 0;
             int shaderModelMinor = 0;
-            int numValuesRead = azsscanf(shaderModelVersion.c_str(), "%d_%d", &shaderModelMajor, &shaderModelMinor);
+            [[maybe_unused]] int numValuesRead = azsscanf(shaderModelVersion.c_str(), "%d_%d", &shaderModelMajor, &shaderModelMinor);
             AZ_Assert(numValuesRead == 2, "Unknown shader model version format");
             if (shaderModelMajor >= 6 && shaderModelMinor >= 2)
             {

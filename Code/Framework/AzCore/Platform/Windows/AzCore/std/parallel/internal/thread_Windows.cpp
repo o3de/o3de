@@ -1,12 +1,14 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
 #include <AzCore/PlatformIncl.h>
 #include <AzCore/std/parallel/thread.h>
+#include <AzCore/std/string/conversions.h>
 
 #include <process.h>
 
@@ -14,9 +16,10 @@ namespace AZStd
 {
     namespace Platform
     {
-        void PostThreadRun()
+        unsigned __stdcall PostThreadRun()
         {
             _endthreadex(0);
+            return 0;
         }
 
         HANDLE CreateThread(unsigned stackSize, unsigned (__stdcall* threadRunFunction)(void*), AZStd::Internal::thread_info* ti, unsigned int* id)
@@ -36,17 +39,20 @@ namespace AZStd
             // SetThreadDescription was added in 1607 (aka RS1). Since we can't guarantee the user is running 1607 or later, we need to ask for the function from the kernel.
             using SetThreadDescriptionFunc = HRESULT(WINAPI*)(_In_ HANDLE hThread, _In_ PCWSTR lpThreadDescription);
 
-            auto setThreadDescription = reinterpret_cast<SetThreadDescriptionFunc>(::GetProcAddress(::GetModuleHandle("Kernel32.dll"), "SetThreadDescription"));
-            if (setThreadDescription)
+            HMODULE kernel32Handle = ::GetModuleHandleW(L"Kernel32.dll");
+            if (kernel32Handle)
             {
-                // Convert the thread name to Unicode
-                wchar_t threadNameW[MAX_PATH];
-                size_t numCharsConverted;
-                errno_t wcharResult = mbstowcs_s(&numCharsConverted, threadNameW, threadName, AZ_ARRAY_SIZE(threadNameW) - 1);
-                if (wcharResult == 0)
+                SetThreadDescriptionFunc setThreadDescription = reinterpret_cast<SetThreadDescriptionFunc>(::GetProcAddress(kernel32Handle, "SetThreadDescription"));
+                if (setThreadDescription)
                 {
-                    setThreadDescription(hThread, threadNameW);
-                    return true;
+                    // Convert the thread name to Unicode
+                    AZStd::wstring threadNameW;
+                    AZStd::to_wstring(threadNameW, threadName);
+                    if (!threadNameW.empty())
+                    {
+                        setThreadDescription(hThread, threadNameW.c_str());
+                        return true;
+                    }
                 }
             }
 

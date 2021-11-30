@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -55,10 +56,10 @@ protected:
         }
     }
 
-    virtual int GetSize() { return sizeof(*this); }
-    virtual QString GetDescription() { return "UndoTrackViewSplineCtrl"; };
+    int GetSize() override { return sizeof(*this); }
+    QString GetDescription() override { return "UndoTrackViewSplineCtrl"; };
 
-    virtual void Undo(bool bUndo)
+    void Undo(bool bUndo) override
     {
         CTrackViewSplineCtrl* pCtrl = FindControl(m_pCtrl);
         if (pCtrl)
@@ -102,7 +103,7 @@ protected:
         }
     }
 
-    virtual void Redo()
+    void Redo() override
     {
         const CTrackViewSequenceManager* pSequenceManager = GetIEditor()->GetSequenceManager();
         CTrackViewSequence* sequence = pSequenceManager->GetSequenceByEntityId(m_sequenceEntityId);
@@ -135,7 +136,7 @@ protected:
         sequence->OnKeySelectionChanged();
     }
 
-    virtual bool IsSelectionChanged() const
+    bool IsSelectionChanged() const override
     {
         const CTrackViewSequenceManager* sequenceManager = GetIEditor()->GetSequenceManager();
         CTrackViewSequence* sequence = sequenceManager->GetSequenceByEntityId(m_sequenceEntityId);
@@ -150,19 +151,19 @@ protected:
     }
 
 public:
-    typedef std::list<CTrackViewSplineCtrl*> CTrackViewSplineCtrls;
+    using CTrackViewSplineCtrls = std::list<CTrackViewSplineCtrl*>;
 
     static CTrackViewSplineCtrl* FindControl(CTrackViewSplineCtrl* pCtrl)
     {
         if (!pCtrl)
         {
-            return 0;
+            return nullptr;
         }
 
         auto iter = std::find(s_activeCtrls.begin(), s_activeCtrls.end(), pCtrl);
         if (iter == s_activeCtrls.end())
         {
-            return 0;
+            return nullptr;
         }
 
         return *iter;
@@ -448,7 +449,7 @@ void CTrackViewSplineCtrl::AddSpline(ISplineInterpolator* pSpline, CTrackViewTra
     }
 
     si.pSpline = pSpline;
-    si.pDetailSpline = NULL;
+    si.pDetailSpline = nullptr;
     m_splines.push_back(si);
     m_tracks.push_back(pTrack);
     m_bKeyTimesDirty = true;
@@ -610,7 +611,6 @@ void CTrackViewSplineCtrl::mouseMoveEvent(QMouseEvent* event)
 
     CTrackViewSequenceNotificationContext context(pSequence);
 
-    QPoint cMousePosPrev = m_cMousePos;
     m_cMousePos = point;
 
     if (m_editMode == NothingMode)
@@ -705,7 +705,7 @@ void CTrackViewSplineCtrl::mouseMoveEvent(QMouseEvent* event)
         QString                         tipText;
         bool                            boFoundTheSelectedKey(false);
 
-        for (int splineIndex = 0, endSpline = m_splines.size(); splineIndex < endSpline; ++splineIndex)
+        for (size_t splineIndex = 0, endSpline = m_splines.size(); splineIndex < endSpline; ++splineIndex)
         {
             ISplineInterpolator* pSpline = m_splines[splineIndex].pSpline;
             CTrackViewTrack* pTrack = m_tracks[splineIndex];
@@ -795,7 +795,7 @@ void CTrackViewSplineCtrl::AdjustTCB(float d_tension, float d_continuity, float 
 
     SendNotifyEvent(SPLN_BEFORE_CHANGE);
 
-    for (int splineIndex = 0, splineCount = m_splines.size(); splineIndex < splineCount; ++splineIndex)
+    for (size_t splineIndex = 0, splineCount = m_splines.size(); splineIndex < splineCount; ++splineIndex)
     {
         ISplineInterpolator* pSpline = m_splines[splineIndex].pSpline;
         CTrackViewTrack* pTrack = m_tracks[splineIndex];
@@ -891,11 +891,11 @@ void CTrackViewSplineCtrl::OnUserCommand(UINT cmd)
 
 bool CTrackViewSplineCtrl::IsUnifiedKeyCurrentlySelected() const
 {
-    for (int splineIndex = 0, splineCount = m_splines.size(); splineIndex < splineCount; ++splineIndex)
+    for (size_t splineIndex = 0, splineCount = m_splines.size(); splineIndex < splineCount; ++splineIndex)
     {
         ISplineInterpolator* pSpline = m_splines[splineIndex].pSpline;
 
-        if (pSpline == NULL)
+        if (pSpline == nullptr)
         {
             continue;
         }
@@ -959,7 +959,7 @@ void CTrackViewSplineCtrl::mouseReleaseEvent(QMouseEvent* event)
     if (GetIEditor()->GetAnimation()->GetSequence())
     {
         bool restoreRecordModeToTrue = (m_editMode == TimeMarkerMode && m_stashedRecordModeWhenDraggingTime);
-        
+
         SplineWidget::mouseReleaseEvent(event);
 
         if (restoreRecordModeToTrue)

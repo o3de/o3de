@@ -1,12 +1,11 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
-
-#include <PhysX_precompiled.h>
 
 #include <Pipeline/HeightFieldAssetHandler.h>
 #include <Pipeline/StreamWrapper.h>
@@ -16,6 +15,7 @@
 #include <PhysX/SystemComponentBus.h>
 #include <PhysX/ComponentTypeIds.h>
 #include <Source/Pipeline/HeightFieldAssetHandler.h>
+#include <PxPhysicsAPI.h>
 
 #include <extensions/PxSerialization.h>
 #include <extensions/PxDefaultStreams.h>
@@ -106,7 +106,7 @@ namespace PhysX
             AZStd::shared_ptr<AZ::Data::AssetDataStream> stream,
             [[maybe_unused]] const AZ::Data::AssetFilterCB& assetLoadFilterCB)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Physics);
+            AZ_PROFILE_FUNCTION(Physics);
 
             HeightFieldAsset* physXHeightFieldAsset = asset.GetAs<HeightFieldAsset>();
             if (!physXHeightFieldAsset)
@@ -166,7 +166,7 @@ namespace PhysX
 
         bool HeightFieldAssetHandler::SaveAssetData(const AZ::Data::Asset<AZ::Data::AssetData>& asset, AZ::IO::GenericStream* stream)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Physics);
+            AZ_PROFILE_FUNCTION(Physics);
 
             HeightFieldAsset* physXHeightFieldAsset = asset.GetAs<HeightFieldAsset>();
             if (!physXHeightFieldAsset)

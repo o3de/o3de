@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -13,7 +14,6 @@
 #include <AudioControlsEditorPlugin.h>
 #include <IAudioSystemControl.h>
 #include <IAudioSystemEditor.h>
-#include <IEditor.h>
 #include <ImplementationManager.h>
 
 #include <QDropEvent>
@@ -138,7 +138,7 @@ namespace AudioControls
                 for (int i = 0; i < size; ++i)
                 {
                     QListWidgetItem* listItem = m_connectionList->item(i);
-                    if (listItem && listItem->data(eMDR_ID).toInt() == middlewareControl->GetId())
+                    if (listItem && listItem->data(eMDR_ID).toInt() == static_cast<int>(middlewareControl->GetId()))
                     {
                         m_connectionList->clearSelection();
                         listItem->setSelected(true);

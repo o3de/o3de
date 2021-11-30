@@ -54,7 +54,7 @@
             "PassData": {
                 "$type": "FullscreenTrianglePassData",
                 "ShaderAsset": {
-                    "FilePath": "shaders/skybox/skybox.shader"
+                    "FilePath": "Shaders/SkyBox/SkyBox.shader"
                 },
                 "PipelineViewTag": "MainCamera",
                 "ShaderDataMappings": {

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -14,7 +15,7 @@ namespace AZ
 {
     inline namespace PlatformDefaults
     {
-        static const char* PlatformNames[PlatformId::NumPlatformIds] = { PlatformPC, PlatformAndroid, PlatformIOS, PlatformMac, PlatformProvo, PlatformSalem, PlatformJasper, PlatformServer, PlatformAll, PlatformAllClient };
+        static const char* PlatformNames[PlatformId::NumPlatformIds] = { PlatformPC, PlatformLinux, PlatformAndroid, PlatformIOS, PlatformMac, PlatformProvo, PlatformSalem, PlatformJasper, PlatformServer, PlatformAll, PlatformAllClient };
 
         const char* PlatformIdToPalFolder(AZ::PlatformId platform)
         {
@@ -26,6 +27,8 @@ namespace AZ
             {
             case AZ::PC:
                 return "PC";
+            case AZ::LINUX_ID:
+                return "Linux";
             case AZ::ANDROID_ID:
                 return "Android";
             case AZ::IOS:
@@ -55,9 +58,13 @@ namespace AZ
 
         const char* OSPlatformToDefaultAssetPlatform(AZStd::string_view osPlatform)
         {
-            if (osPlatform == PlatformCodeNameWindows || osPlatform == PlatformCodeNameLinux)
+            if (osPlatform == PlatformCodeNameWindows)
             {
                 return PlatformPC;
+            }
+            if (osPlatform == PlatformCodeNameLinux)
+            {
+                return PlatformLinux;
             }
             else if (osPlatform == PlatformCodeNameMac)
             {
@@ -200,6 +207,8 @@ namespace AZ
             {
             case PlatformId::PC:
                 platformCodes.emplace_back(PlatformCodeNameWindows);
+                break;
+            case PlatformId::LINUX_ID:
                 platformCodes.emplace_back(PlatformCodeNameLinux);
                 break;
             case PlatformId::ANDROID_ID:

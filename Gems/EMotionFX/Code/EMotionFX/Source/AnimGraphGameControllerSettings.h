@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -9,7 +10,7 @@
 
 #include <AzCore/RTTI/ReflectContext.h>
 #include <AzCore/std/string/string.h>
-#include <MCore/Source/Array.h>
+#include <AzCore/std/containers/vector.h>
 #include <EMotionFX/Source/Allocators.h>
 #include <EMotionFX/Source/EMotionFXConfig.h>
 
@@ -47,12 +48,11 @@ namespace EMotionFX
 
         struct EMFX_API ParameterInfo final
         {
-            AZ_RTTI(AnimGraphGameControllerSettings::ParameterInfo, "{C3220DB3-54FA-4719-80F0-CEAE5859C641}");
+            AZ_TYPE_INFO(AnimGraphGameControllerSettings::ParameterInfo, "{C3220DB3-54FA-4719-80F0-CEAE5859C641}");
             AZ_CLASS_ALLOCATOR_DECL
 
             ParameterInfo();
             ParameterInfo(const char* parameterName);
-            virtual ~ParameterInfo() = default;
 
             static void Reflect(AZ::ReflectContext* context);
 
@@ -65,12 +65,11 @@ namespace EMotionFX
 
         struct EMFX_API ButtonInfo final
         {
-            AZ_RTTI(AnimGraphGameControllerSettings::ButtonInfo, "{94027445-C44F-4310-9DF2-1A2F39518578}");
+            AZ_TYPE_INFO(AnimGraphGameControllerSettings::ButtonInfo, "{94027445-C44F-4310-9DF2-1A2F39518578}");
             AZ_CLASS_ALLOCATOR_DECL
 
             ButtonInfo();
             ButtonInfo(AZ::u32 buttonIndex);
-            virtual ~ButtonInfo() = default;
 
             static void Reflect(AZ::ReflectContext* context);
 
@@ -97,24 +96,24 @@ namespace EMotionFX
 
             /**
              * Check if the parameter with the given name is being controlled by the gamepad.
-             * This assumes that the mString member from the ButtonInfo contains the parameter name.
-             * @param[in] stringName The name to compare against the mString member of the button infos.
+             * This assumes that the m_string member from the ButtonInfo contains the parameter name.
+             * @param[in] stringName The name to compare against the m_string member of the button infos.
              * @result True in case a button info with the given string name doesn't have BUTTONMODE_NONE assigned, false in the other case.
              */
             bool CheckIfIsParameterButtonControlled(const char* stringName);
 
             /**
              * Check if any of the button infos that are linked to the given string name is enabled.
-             * This assumes that the mString member from the ButtonInfo contains the parameter name.
-             * @param[in] stringName The name to compare against the mString member of the button infos.
+             * This assumes that the m_string member from the ButtonInfo contains the parameter name.
+             * @param[in] stringName The name to compare against the m_string member of the button infos.
              * @result True in case any of the button infos with the given string name is enabled.
              */
             bool CheckIfIsButtonEnabled(const char* stringName);
 
             /**
              * Set all button infos that are linked to the given string name to the enabled flag.
-             * This assumes that the mString member from the ButtonInfo contains the parameter name.
-             * @param[in] stringName The name to compare against the mString member of the button infos.
+             * This assumes that the m_string member from the ButtonInfo contains the parameter name.
+             * @param[in] stringName The name to compare against the m_string member of the button infos.
              * @param[in] isEnabled True in case the button infos shall be enabled, false if they shall become disabled.
              */
             void SetButtonEnabled(const char* stringName, bool isEnabled);
@@ -154,7 +153,7 @@ namespace EMotionFX
         Preset* GetPreset(size_t index) const;
         size_t GetNumPresets() const;
 
-        uint32 GetActivePresetIndex() const;
+        size_t GetActivePresetIndex() const;
         Preset* GetActivePreset() const;
         void SetActivePreset(Preset* preset);
 
@@ -165,6 +164,6 @@ namespace EMotionFX
 
     private:
         AZStd::vector<Preset*>   m_presets;
-        AZ::u32                  m_activePresetIndex;
+        AZ::u64                  m_activePresetIndex;
     };
 } // namespace EMotionFX

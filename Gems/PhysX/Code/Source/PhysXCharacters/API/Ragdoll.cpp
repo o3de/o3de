@@ -1,11 +1,11 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
-#include <PhysX_precompiled.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzCore/std/parallel/scoped_lock.h>
@@ -16,6 +16,7 @@
 #include <PhysXCharacters/API/CharacterUtils.h>
 #include <PhysX/NativeTypeIdentifiers.h>
 #include <PhysX/PhysXLocks.h>
+#include <PhysX/MathConversion.h>
 #include <Scene/PhysXScene.h>
 
 namespace PhysX
@@ -34,9 +35,6 @@ namespace PhysX
             return nullptr;
         }
     } // namespace Internal
-
-    // PhysX::Ragdoll
-    /*static*/ AZStd::mutex Ragdoll::m_sceneEventMutex;
 
     void Ragdoll::Reflect(AZ::ReflectContext* context)
     {
@@ -108,14 +106,15 @@ namespace PhysX
             })
     {
         m_sceneOwner = sceneHandle;
+        if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
+        {
+            sceneInterface->RegisterSceneSimulationStartHandler(m_sceneOwner, m_sceneStartSimHandler);
+        }
     }
 
     Ragdoll::~Ragdoll()
     {
-        {
-            AZStd::scoped_lock lock(m_sceneEventMutex);
-            m_sceneStartSimHandler.Disconnect();
-        }
+        m_sceneStartSimHandler.Disconnect();
 
         m_nodes.clear(); //the nodes destructor will remove the simulated body from the scene.
     }
@@ -213,13 +212,6 @@ namespace PhysX
             }
         }
 
-        // the handler is also connected in EnableSimulationQueued(),
-        // which will call this function, so if called from that path dont connect here.
-        if (!m_sceneStartSimHandler.IsConnected()) 
-        {
-            AZStd::scoped_lock lock(m_sceneEventMutex);
-            sceneInterface->RegisterSceneSimulationStartHandler(m_sceneOwner, m_sceneStartSimHandler);
-        }
         sceneInterface->EnableSimulationOfBody(m_sceneOwner, m_bodyHandle);
     }
 
@@ -228,12 +220,6 @@ namespace PhysX
         if (m_simulating)
         {
             return;
-        }
-
-        if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
-        {
-            AZStd::scoped_lock lock(m_sceneEventMutex);
-            sceneInterface->RegisterSceneSimulationStartHandler(m_sceneOwner, m_sceneStartSimHandler);
         }
 
         m_queuedInitialState = initialState;
@@ -250,11 +236,6 @@ namespace PhysX
         {
             AZ_Error("PhysX Ragdoll", false, "Unable to Disable Ragdoll, Physics Scene Interface is missing.");
             return;
-        }
-
-        {
-            AZStd::scoped_lock lock(m_sceneEventMutex);
-            m_sceneStartSimHandler.Disconnect();
         }
 
         physx::PxScene* pxScene = Internal::GetPxScene(m_sceneOwner);
@@ -373,8 +354,8 @@ namespace PhysX
         else
         {
             actor->setRigidBodyFlag(physx::PxRigidBodyFlag::eKINEMATIC, false);
-            const AZStd::shared_ptr<Physics::Joint>& joint = m_nodes[nodeIndex]->GetJoint();
-            if (joint)
+
+            if (AzPhysics::Joint* joint = m_nodes[nodeIndex]->GetJoint())
             {
                 if (physx::PxD6Joint* pxJoint = static_cast<physx::PxD6Joint*>(joint->GetNativePointer()))
                 {

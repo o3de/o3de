@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -68,8 +69,7 @@ namespace AZStd
         int             m_priority{ -100000 };
 
         //! The CPU ids (as a bitfield) that this thread will be running on, see \ref AZStd::thread_desc::m_cpuId.
-        //! Windows: This parameter is ignored.
-        //! On other platforms, each bit maps directly to the core numbers [0-n], default is 0
+        //! Each bit maps directly to the core numbers [0-n], default is 0
         int             m_cpuId{ AFFINITY_MASK_ALL };
 
         //! If we can join the thread.
@@ -87,12 +87,6 @@ namespace AZStd
 
         // construct/copy/destroy:
         thread();
-        /**
-         * \note thread_desc is AZStd extension.
-         */
-        template <class F>
-        explicit thread(F&& f, const thread_desc* desc = 0);
-
         ~thread();
 
         thread(thread&& rhs)
@@ -107,6 +101,15 @@ namespace AZStd
             rhs.m_thread = AZStd::thread().m_thread; // set default value
             return *this;
         }
+
+        template<class F, class... Args, typename = AZStd::enable_if_t<!AZStd::is_convertible_v<AZStd::decay_t<F>, thread_desc>>>
+        explicit thread(F&& f, Args&&... args);
+
+        /**
+         * \note thread_desc is AZStd extension.
+         */
+        template<class F, class... Args>
+        thread(const thread_desc& desc, F&& f, Args&&... args);
 
         // Till we fully have RVALUES
         template <class F>
@@ -138,8 +141,8 @@ namespace AZStd
         //thread(AZStd::delegate<void ()> d,const thread_desc* desc = 0);
         
     private:
-        thread(thread&);
-        thread& operator=(thread&);
+        thread(const thread&) = delete;
+        thread& operator=(const thread&) = delete;
 
         native_thread_data_type     m_thread;
     };
@@ -187,7 +190,7 @@ namespace AZStd
                 : m_f(AZStd::move(f)) {}
             thread_info_impl(Internal::thread_move_t<F> f)
                 : m_f(f) {}
-            virtual void execute() { m_f(); }
+            void execute() override { m_f(); }
         private:
             F m_f;
 

@@ -1,11 +1,10 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-
-#include "ComponentEntityEditorPlugin_precompiled.h"
 
 #include "ComponentDataModel.h"
 
@@ -140,7 +139,7 @@ ComponentDataModel::ComponentDataModel(QObject* parent)
                 if (element.m_elementId == AZ::Edit::ClassElements::EditorData)
                 {
                     AZStd::string iconPath;
-                    EBUS_EVENT_RESULT(iconPath, AzToolsFramework::EditorRequests::Bus, GetComponentEditorIcon, classData->m_typeId, nullptr);
+                    AzToolsFramework::EditorRequestBus::BroadcastResult(iconPath, &AzToolsFramework::EditorRequests::GetComponentTypeEditorIcon, classData->m_typeId);
                     if (!iconPath.empty())
                     {
                         m_componentIcons[classData->m_typeId] = QIcon(iconPath.c_str());
@@ -263,7 +262,7 @@ QModelIndex ComponentDataModel::parent([[maybe_unused]] const QModelIndex &child
 
 int ComponentDataModel::rowCount([[maybe_unused]] const QModelIndex &parent /*= QModelIndex()*/) const
 {
-    return m_componentList.size();
+    return static_cast<int>(m_componentList.size());
 }
 
 int ComponentDataModel::columnCount([[maybe_unused]] const QModelIndex &parent /*= QModelIndex()*/) const

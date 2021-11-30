@@ -1,5 +1,6 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
  *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -33,8 +34,6 @@ namespace ExecutionInterpretedAPICpp
 
     constexpr size_t k_StringFastSize = 32;
 
-    constexpr size_t k_MaxNodeableOuts = 64;
-
     constexpr size_t k_UuidSize = 16;
 
     constexpr unsigned char k_Bad = 77;
@@ -46,7 +45,7 @@ namespace ExecutionInterpretedAPICpp
         0, 1, 2, 3, 4, 5, 6, 7, 8, 9, k_Bad,k_Bad,k_Bad,k_Bad,k_Bad,k_Bad,k_Bad, 10, 11, 12, 13, 14, 15
     };
 
-    constexpr unsigned char k_FastValuesIndexSentinel = 'G' - '0';
+    [[maybe_unused]] constexpr unsigned char k_FastValuesIndexSentinel = 'G' - '0';
 
     template<typename T>
     T* GetAs(AZ::BehaviorValueParameter& argument)
@@ -466,12 +465,7 @@ namespace ScriptCanvas
             lua_register(lua, k_UnpackDependencyConstructionArgsFunctionName, &UnpackDependencyConstructionArgs);
             lua_register(lua, k_UnpackDependencyConstructionArgsLeafFunctionName, &UnpackDependencyConstructionArgsLeaf);
 
-#if defined(PERFORMANCE_BUILD)
-            lua_pushboolean(lua, true);
-            lua_setglobal(lua, k_InterpretedConfigurationPerformance);
-            lua_pushboolean(lua, false);
-            lua_setglobal(lua, k_InterpretedConfigurationRelease);
-#elif defined(_RELEASE)
+#if defined(_RELEASE)
             lua_pushboolean(lua, false);
             lua_setglobal(lua, k_InterpretedConfigurationPerformance);
             lua_pushboolean(lua, true);
@@ -482,7 +476,7 @@ namespace ScriptCanvas
             lua_setglobal(lua, k_InterpretedConfigurationPerformance);
             lua_pushboolean(lua, false);
             lua_setglobal(lua, k_InterpretedConfigurationRelease);
-#endif//defined(PERFORMANCE_BUILD) 
+#endif
 
             lua_register(lua, k_GetRandomSwitchControlNumberName, &GetRandomSwitchControlNumber);
 
@@ -507,41 +501,53 @@ namespace ScriptCanvas
             return lua_gettop(lua);
         }
 
-        void InitializeInterpretedStatics(const RuntimeData& runtimeData)
+        void InitializeInterpretedStatics(RuntimeData& runtimeData)
         {
-#if defined(PROFILE) || defined(AZ_DEBUG_BUILD)
-            Execution::InitializeFromLuaStackFunctions(const_cast<Grammar::DebugSymbolMap&>(runtimeData.m_debugMap));
-#endif
-            if (runtimeData.RequiresStaticInitialization())
+            if (!runtimeData.m_areStaticsInitialized)
             {
-                AZ::ScriptLoadResult result{};
-                AZ::ScriptSystemRequestBus::BroadcastResult(result, &AZ::ScriptSystemRequests::LoadAndGetNativeContext, runtimeData.m_script, AZ::k_scriptLoadBinary, AZ::ScriptContextIds::DefaultScriptContextId);
-                AZ_Assert(result.status == AZ::ScriptLoadResult::Status::Initial, "ExecutionStateInterpreted script asset was valid but failed to load.");
-                AZ_Assert(result.lua, "Must have a default script context and a lua_State");
-                AZ_Assert(lua_istable(result.lua, -1), "No run-time execution was available for this script");
+                runtimeData.m_areStaticsInitialized = true;
 
-                auto lua = result.lua;
-                // Lua: table
-                lua_getfield(lua, -1, Grammar::k_InitializeStaticsName);
-                // Lua: table, ?
-                if (lua_isfunction(lua, -1))
+                for (auto& dependency : runtimeData.m_requiredAssets)
                 {
-                    // Lua: table, function
-                    lua_pushvalue(lua, -2);
-                    // Lua: table, function, table
-                    for (auto& clonerSource : runtimeData.m_cloneSources)
-                    {
-                        lua_pushlightuserdata(lua, const_cast<void*>(reinterpret_cast<const void*>(&clonerSource)));
-                    }
-                    // Lua: table, function, table, cloners...
-                    AZ::Internal::LuaSafeCall(lua, aznumeric_caster(runtimeData.m_cloneSources.size() + 1), 0);
-                    // Lua: table
-                    lua_pop(lua, 1);
+                    InitializeInterpretedStatics(dependency.Get()->GetData());
                 }
-                else
+
+#if defined(AZ_PROFILE_BUILD) || defined(AZ_DEBUG_BUILD)
+                Execution::InitializeFromLuaStackFunctions(const_cast<Grammar::DebugSymbolMap&>(runtimeData.m_debugMap));
+#endif
+                AZ_WarningOnce("ScriptCanvas", !runtimeData.m_areStaticsInitialized, "ScriptCanvas runtime data already initalized");
+
+                if (runtimeData.RequiresStaticInitialization())
                 {
+                    AZ::ScriptLoadResult result{};
+                    AZ::ScriptSystemRequestBus::BroadcastResult(result, &AZ::ScriptSystemRequests::LoadAndGetNativeContext, runtimeData.m_script, AZ::k_scriptLoadBinary, AZ::ScriptContextIds::DefaultScriptContextId);
+                    AZ_Assert(result.status == AZ::ScriptLoadResult::Status::Initial, "ExecutionStateInterpreted script asset was valid but failed to load.");
+                    AZ_Assert(result.lua, "Must have a default script context and a lua_State");
+                    AZ_Assert(lua_istable(result.lua, -1), "No run-time execution was available for this script");
+
+                    auto lua = result.lua;
+                    // Lua: table
+                    lua_getfield(lua, -1, Grammar::k_InitializeStaticsName);
                     // Lua: table, ?
-                    lua_pop(lua, 2);
+                    if (lua_isfunction(lua, -1))
+                    {
+                        // Lua: table, function
+                        lua_pushvalue(lua, -2);
+                        // Lua: table, function, table
+                        for (auto& clonerSource : runtimeData.m_cloneSources)
+                        {
+                            lua_pushlightuserdata(lua, const_cast<void*>(reinterpret_cast<const void*>(&clonerSource)));
+                        }
+                        // Lua: table, function, table, cloners...
+                        AZ::Internal::LuaSafeCall(lua, aznumeric_caster(runtimeData.m_cloneSources.size() + 1), 0);
+                        // Lua: table
+                        lua_pop(lua, 1);
+                    }
+                    else
+                    {
+                        // Lua: table, ?
+                        lua_pop(lua, 2);
+                    }
                 }
             }
         }
@@ -550,7 +556,7 @@ namespace ScriptCanvas
         {
             using namespace ExecutionInterpretedAPICpp;
             // Lua: usernodeable, keyCount
-            const int argsCount = lua_gettop(lua);
+            [[maybe_unused]] const int argsCount = lua_gettop(lua);
             AZ_Assert(argsCount == 2, "InitializeNodeableOutKeys: Error in compiled Lua file, not enough arguments");
             AZ_Assert(lua_isuserdata(lua, 1), "InitializeNodeableOutKeys: Error in compiled lua file, 1st argument to SetExecutionOut is not userdata (Nodeable)");
             Nodeable* nodeable = AZ::ScriptValue<Nodeable*>::StackRead(lua, 1);
@@ -698,7 +704,7 @@ namespace ScriptCanvas
             ActivationData data(args.runtimeOverrides, storage);
             ActivationInputRange range = Execution::Context::CreateActivateInputRange(data, args.executionState->GetEntityId());
             PushActivationArgs(lua, range.inputs, range.totalCount);
-            return range.totalCount;
+            return static_cast<int>(range.totalCount);
         }
 
         int UnpackDependencyConstructionArgs(lua_State* lua)

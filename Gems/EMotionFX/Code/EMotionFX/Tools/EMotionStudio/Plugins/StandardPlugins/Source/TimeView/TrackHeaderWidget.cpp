@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -32,18 +33,18 @@ namespace EMStudio
     TrackHeaderWidget::TrackHeaderWidget(TimeViewPlugin* plugin, QWidget* parent)
         : QWidget(parent)
     {
-        mPlugin                     = plugin;
-        mTrackLayout                = nullptr;
-        mTrackWidget                = nullptr;
-        mStackWidget                = nullptr;
-        mNodeNamesCheckBox          = nullptr;
-        mMotionFilesCheckBox        = nullptr;
+        m_plugin                     = plugin;
+        m_trackLayout                = nullptr;
+        m_trackWidget                = nullptr;
+        m_stackWidget                = nullptr;
+        m_nodeNamesCheckBox          = nullptr;
+        m_motionFilesCheckBox        = nullptr;
 
         // create the main layout
-        mMainLayout = new QVBoxLayout();
-        mMainLayout->setMargin(2);
-        mMainLayout->setSpacing(0);
-        mMainLayout->setAlignment(Qt::AlignTop);
+        m_mainLayout = new QVBoxLayout();
+        m_mainLayout->setMargin(2);
+        m_mainLayout->setSpacing(0);
+        m_mainLayout->setAlignment(Qt::AlignTop);
 
         ////////////////////////////////
         // Create the add event button
@@ -64,12 +65,12 @@ namespace EMStudio
 
         mainAddWidget->setFixedSize(175, 40);
         mainAddWidget->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-        mMainLayout->addWidget(mainAddWidget);
-        mAddTrackWidget = mainAddWidget;
+        m_mainLayout->addWidget(mainAddWidget);
+        m_addTrackWidget = mainAddWidget;
         ////////////////////////////////
 
         // recorder settings
-        mStackWidget = new MysticQt::DialogStack();
+        m_stackWidget = new MysticQt::DialogStack();
 
         //-----------
 
@@ -79,51 +80,51 @@ namespace EMStudio
         contentsLayout->setMargin(0);
         contentsWidget->setLayout(contentsLayout);
 
-        mNodeNamesCheckBox = new QCheckBox("Show Node Names");
-        mNodeNamesCheckBox->setChecked(true);
-        mNodeNamesCheckBox->setCheckable(true);
-        AzQtComponents::CheckBox::applyToggleSwitchStyle(mNodeNamesCheckBox);
-        connect(mNodeNamesCheckBox, &QCheckBox::stateChanged, this, &TrackHeaderWidget::OnCheckBox);
-        contentsLayout->addWidget(mNodeNamesCheckBox);
+        m_nodeNamesCheckBox = new QCheckBox("Show Node Names");
+        m_nodeNamesCheckBox->setChecked(true);
+        m_nodeNamesCheckBox->setCheckable(true);
+        AzQtComponents::CheckBox::applyToggleSwitchStyle(m_nodeNamesCheckBox);
+        connect(m_nodeNamesCheckBox, &QCheckBox::stateChanged, this, &TrackHeaderWidget::OnCheckBox);
+        contentsLayout->addWidget(m_nodeNamesCheckBox);
 
-        mMotionFilesCheckBox = new QCheckBox("Show Motion Files");
-        mMotionFilesCheckBox->setChecked(false);
-        mMotionFilesCheckBox->setCheckable(true);
-        AzQtComponents::CheckBox::applyToggleSwitchStyle(mMotionFilesCheckBox);
-        connect(mMotionFilesCheckBox, &QCheckBox::stateChanged, this, &TrackHeaderWidget::OnCheckBox);
-        contentsLayout->addWidget(mMotionFilesCheckBox);
+        m_motionFilesCheckBox = new QCheckBox("Show Motion Files");
+        m_motionFilesCheckBox->setChecked(false);
+        m_motionFilesCheckBox->setCheckable(true);
+        AzQtComponents::CheckBox::applyToggleSwitchStyle(m_motionFilesCheckBox);
+        connect(m_motionFilesCheckBox, &QCheckBox::stateChanged, this, &TrackHeaderWidget::OnCheckBox);
+        contentsLayout->addWidget(m_motionFilesCheckBox);
 
         QHBoxLayout* comboLayout = new QHBoxLayout();
         comboLayout->addWidget(new QLabel("Nodes:"));
-        mNodeContentsComboBox = new QComboBox();
-        mNodeContentsComboBox->setEditable(false);
-        mNodeContentsComboBox->addItem("Global Weights");
-        mNodeContentsComboBox->addItem("Local Weights");
-        mNodeContentsComboBox->addItem("Local Time");
-        mNodeContentsComboBox->setCurrentIndex(0);
-        connect(mNodeContentsComboBox, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, &TrackHeaderWidget::OnComboBoxIndexChanged);
-        comboLayout->addWidget(mNodeContentsComboBox);
+        m_nodeContentsComboBox = new QComboBox();
+        m_nodeContentsComboBox->setEditable(false);
+        m_nodeContentsComboBox->addItem("Global Weights");
+        m_nodeContentsComboBox->addItem("Local Weights");
+        m_nodeContentsComboBox->addItem("Local Time");
+        m_nodeContentsComboBox->setCurrentIndex(0);
+        connect(m_nodeContentsComboBox, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, &TrackHeaderWidget::OnComboBoxIndexChanged);
+        comboLayout->addWidget(m_nodeContentsComboBox);
         contentsLayout->addLayout(comboLayout);
 
         comboLayout = new QHBoxLayout();
         comboLayout->addWidget(new QLabel("Graph:"));
-        mGraphContentsComboBox = new QComboBox();
-        mGraphContentsComboBox->setEditable(false);
-        mGraphContentsComboBox->addItem("Global Weights");
-        mGraphContentsComboBox->addItem("Local Weights");
-        mGraphContentsComboBox->addItem("Local Time");
-        mGraphContentsComboBox->setCurrentIndex(0);
-        connect(mGraphContentsComboBox, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, &TrackHeaderWidget::OnComboBoxIndexChanged);
-        comboLayout->addWidget(mGraphContentsComboBox);
+        m_graphContentsComboBox = new QComboBox();
+        m_graphContentsComboBox->setEditable(false);
+        m_graphContentsComboBox->addItem("Global Weights");
+        m_graphContentsComboBox->addItem("Local Weights");
+        m_graphContentsComboBox->addItem("Local Time");
+        m_graphContentsComboBox->setCurrentIndex(0);
+        connect(m_graphContentsComboBox, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, &TrackHeaderWidget::OnComboBoxIndexChanged);
+        comboLayout->addWidget(m_graphContentsComboBox);
         contentsLayout->addLayout(comboLayout);
 
-        mStackWidget->Add(contentsWidget, "Contents", false, false, true);
+        m_stackWidget->Add(contentsWidget, "Contents", false, false, true);
 
         //-----------
 
-        mMainLayout->addWidget(mStackWidget);
+        m_mainLayout->addWidget(m_stackWidget);
         setFocusPolicy(Qt::StrongFocus);
-        setLayout(mMainLayout);
+        setLayout(m_mainLayout);
 
         ReInit();
     }
@@ -137,119 +138,119 @@ namespace EMStudio
 
     void TrackHeaderWidget::ReInit()
     {
-        mPlugin->SetRedrawFlag();
+        m_plugin->SetRedrawFlag();
 
-        if (mTrackWidget)
+        if (m_trackWidget)
         {
-            mTrackWidget->hide();
-            mMainLayout->removeWidget(mTrackWidget);
-            mTrackWidget->deleteLater(); // TODO: this causes flickering, but normal deletion will make it crash
+            m_trackWidget->hide();
+            m_mainLayout->removeWidget(m_trackWidget);
+            m_trackWidget->deleteLater(); // TODO: this causes flickering, but normal deletion will make it crash
         }
 
-        mTrackWidget = nullptr;
+        m_trackWidget = nullptr;
 
         // If we are in anim graph mode and have a recording, don't init for the motions.
-        if ((mPlugin->GetMode() != TimeViewMode::Motion) &&
-            (EMotionFX::GetRecorder().GetIsRecording() || EMotionFX::GetRecorder().GetRecordTime() > MCore::Math::epsilon || EMotionFX::GetRecorder().GetIsInPlayMode() || !mPlugin->mMotion))
+        if ((m_plugin->GetMode() != TimeViewMode::Motion) &&
+            (EMotionFX::GetRecorder().GetIsRecording() || EMotionFX::GetRecorder().GetRecordTime() > MCore::Math::epsilon || EMotionFX::GetRecorder().GetIsInPlayMode() || !m_plugin->m_motion))
         {
-            mAddTrackWidget->setVisible(false);
+            m_addTrackWidget->setVisible(false);
             setVisible(false);
 
-            if ((mPlugin->GetMode() != TimeViewMode::Motion) &&
+            if ((m_plugin->GetMode() != TimeViewMode::Motion) &&
                 (EMotionFX::GetRecorder().GetIsRecording() || EMotionFX::GetRecorder().GetRecordTime() > MCore::Math::epsilon))
             {
-                mStackWidget->setVisible(true);
+                m_stackWidget->setVisible(true);
             }
             else
             {
-                mStackWidget->setVisible(false);
+                m_stackWidget->setVisible(false);
             }
 
             return;
         }
 
-        mAddTrackWidget->setVisible(true);
+        m_addTrackWidget->setVisible(true);
         setVisible(true);
-        mStackWidget->setVisible(false);
+        m_stackWidget->setVisible(false);
 
-        const uint32 numTracks = mPlugin->mTracks.GetLength();
-        if (numTracks == 0)
+        if (m_plugin->m_tracks.empty())
         {
             return;
         }
 
-        mTrackWidget = new QWidget();
-        mTrackLayout = new QVBoxLayout();
-        mTrackLayout->setMargin(0);
-        mTrackLayout->setSpacing(1);
+        m_trackWidget = new QWidget();
+        m_trackLayout = new QVBoxLayout();
+        m_trackLayout->setMargin(0);
+        m_trackLayout->setSpacing(1);
 
-        for (uint32 i = 0; i < numTracks; ++i)
+        const size_t numTracks = m_plugin->m_tracks.size();
+        for (size_t i = 0; i < numTracks; ++i)
         {
-            TimeTrack* track = mPlugin->mTracks[i];
+            TimeTrack* track = m_plugin->m_tracks[i];
 
             if (track->GetIsVisible() == false)
             {
                 continue;
             }
 
-            HeaderTrackWidget* widget = new HeaderTrackWidget(mTrackWidget, mPlugin, this, track, i);
+            HeaderTrackWidget* widget = new HeaderTrackWidget(m_trackWidget, m_plugin, this, track, i);
 
             connect(widget, &HeaderTrackWidget::TrackNameChanged, this, &TrackHeaderWidget::OnTrackNameChanged);
             connect(widget, &HeaderTrackWidget::EnabledStateChanged, this, &TrackHeaderWidget::OnTrackEnabledStateChanged);
 
-            mTrackLayout->addWidget(widget);
+            m_trackLayout->addWidget(widget);
         }
 
-        mTrackWidget->setLayout(mTrackLayout);
-        mMainLayout->addWidget(mTrackWidget);
+        m_trackWidget->setLayout(m_trackLayout);
+        m_mainLayout->addWidget(m_trackWidget);
     }
 
 
-    HeaderTrackWidget::HeaderTrackWidget(QWidget* parent, TimeViewPlugin* parentPlugin, TrackHeaderWidget* trackHeaderWidget, TimeTrack* timeTrack, uint32 trackIndex)
+    HeaderTrackWidget::HeaderTrackWidget(QWidget* parent, TimeViewPlugin* parentPlugin, TrackHeaderWidget* trackHeaderWidget, TimeTrack* timeTrack, size_t trackIndex)
         : QWidget(parent)
     {
-        mPlugin = parentPlugin;
+        m_plugin = parentPlugin;
 
         QHBoxLayout* mainLayout = new QHBoxLayout();
         mainLayout->setMargin(0);
         mainLayout->setSpacing(0);
 
-        mHeaderTrackWidget  = trackHeaderWidget;
-        mEnabledCheckbox    = new QCheckBox();
-        mNameLabel          = new QLabel(timeTrack->GetName());
-        mNameEdit           = new QLineEdit(timeTrack->GetName());
-        mTrack              = timeTrack;
-        mTrackIndex         = trackIndex;
+        m_headerTrackWidget  = trackHeaderWidget;
+        m_enabledCheckbox    = new QCheckBox();
+        m_nameLabel          = new QLabel(timeTrack->GetName());
+        m_nameEdit           = new QLineEdit(timeTrack->GetName());
+        m_track              = timeTrack;
+        m_trackIndex         = trackIndex;
 
-        mNameEdit->setVisible(false);
-        mNameEdit->setFrame(false);
+        m_nameEdit->setVisible(false);
+        m_nameEdit->setFrame(false);
 
-        mEnabledCheckbox->setFixedWidth(36);
-        AzQtComponents::CheckBox::applyToggleSwitchStyle(mEnabledCheckbox);
+        m_enabledCheckbox->setFixedWidth(36);
+        AzQtComponents::CheckBox::applyToggleSwitchStyle(m_enabledCheckbox);
 
         if (timeTrack->GetIsEnabled())
         {
-            mEnabledCheckbox->setCheckState(Qt::Checked);
+            m_enabledCheckbox->setCheckState(Qt::Checked);
         }
         else
         {
-            mNameEdit->setStyleSheet("background-color: rgb(70, 70, 70);");
-            mEnabledCheckbox->setCheckState(Qt::Unchecked);
+            m_nameEdit->setStyleSheet("background-color: rgb(70, 70, 70);");
+            m_enabledCheckbox->setCheckState(Qt::Unchecked);
         }
 
         if (timeTrack->GetIsDeletable() == false)
         {
-            mNameEdit->setReadOnly(true);
-            mEnabledCheckbox->setEnabled(false);
+            m_nameEdit->setReadOnly(true);
+            m_enabledCheckbox->setEnabled(false);
         }
         else
         {
-            mNameLabel->installEventFilter(this);
+            m_nameLabel->installEventFilter(this);
         }
 
-        connect(mNameEdit, &QLineEdit::editingFinished, this, &HeaderTrackWidget::NameChanged);
-        connect(mNameEdit, &QLineEdit::textEdited, this, &HeaderTrackWidget::NameEdited);
-        connect(mEnabledCheckbox, &QCheckBox::stateChanged, this, &HeaderTrackWidget::EnabledCheckBoxChanged);
+        connect(m_nameEdit, &QLineEdit::editingFinished, this, &HeaderTrackWidget::NameChanged);
+        connect(m_nameEdit, &QLineEdit::textEdited, this, &HeaderTrackWidget::NameEdited);
+        connect(m_enabledCheckbox, &QCheckBox::stateChanged, this, &HeaderTrackWidget::EnabledCheckBoxChanged);
 
         setContextMenuPolicy(Qt::CustomContextMenu);
         connect(this, &QWidget::customContextMenuRequested, this, [this](const QPoint& pos)
@@ -257,19 +258,17 @@ namespace EMStudio
             QMenu m;
             auto action = m.addAction(tr("Remove track"), this, [=]
             {
-                mPlugin->GetTrackDataWidget()->RemoveTrack(mTrackIndex);
+                m_plugin->GetTrackDataWidget()->RemoveTrack(m_trackIndex);
             });
-            action->setEnabled(mTrack->GetIsDeletable());
+            action->setEnabled(m_track->GetIsDeletable());
             m.exec(mapToGlobal(pos));
         });
 
         mainLayout->insertSpacing(0, 4);
-        mainLayout->addWidget(mNameLabel);
-        mainLayout->addWidget(mNameEdit);
-        mainLayout->addWidget(mEnabledCheckbox);
+        mainLayout->addWidget(m_nameLabel);
+        mainLayout->addWidget(m_nameEdit);
+        mainLayout->addWidget(m_enabledCheckbox);
         mainLayout->insertSpacing(5, 2);
-
-        //mainLayout->setAlignment(mEnabledCheckbox, Qt::AlignLeft);
 
         setLayout(mainLayout);
 
@@ -279,12 +278,12 @@ namespace EMStudio
 
     bool HeaderTrackWidget::eventFilter(QObject* object, QEvent* event)
     {
-        if (object == mNameLabel && event->type() == QEvent::MouseButtonDblClick)
+        if (object == m_nameLabel && event->type() == QEvent::MouseButtonDblClick)
         {
-            mNameLabel->setVisible(false);
-            mNameEdit->setVisible(true);
-            mNameEdit->selectAll();
-            mNameEdit->setFocus();
+            m_nameLabel->setVisible(false);
+            m_nameEdit->setVisible(true);
+            m_nameEdit->selectAll();
+            m_nameEdit->setFocus();
         }
         return QWidget::eventFilter(object, event);
     }
@@ -292,28 +291,28 @@ namespace EMStudio
     void HeaderTrackWidget::NameChanged()
     {
         MCORE_ASSERT(sender()->inherits("QLineEdit"));
-        mPlugin->SetRedrawFlag();
+        m_plugin->SetRedrawFlag();
         QLineEdit* widget = qobject_cast<QLineEdit*>(sender());
-        mNameLabel->setVisible(true);
-        mNameEdit->setVisible(false);
+        m_nameLabel->setVisible(true);
+        m_nameEdit->setVisible(false);
         if (ValidateName())
         {
-            mNameLabel->setText(widget->text());
-            emit TrackNameChanged(widget->text(), mTrackIndex);
+            m_nameLabel->setText(widget->text());
+            emit TrackNameChanged(widget->text(), m_trackIndex);
         }
     }
 
     bool HeaderTrackWidget::ValidateName()
     {
-        AZStd::string name = mNameEdit->text().toUtf8().data();
+        AZStd::string name = m_nameEdit->text().toUtf8().data();
 
         bool nameUnique = true;
-        const uint32 numTracks = mPlugin->GetNumTracks();
-        for (uint32 i = 0; i < numTracks; ++i)
+        const size_t numTracks = m_plugin->GetNumTracks();
+        for (size_t i = 0; i < numTracks; ++i)
         {
-            TimeTrack* track = mPlugin->GetTrack(i);
+            TimeTrack* track = m_plugin->GetTrack(i);
 
-            if (mTrack != track)
+            if (m_track != track)
             {
                 if (name == track->GetName())
                 {
@@ -330,21 +329,21 @@ namespace EMStudio
     void HeaderTrackWidget::NameEdited(const QString& text)
     {
         MCORE_UNUSED(text);
-        mPlugin->SetRedrawFlag();
+        m_plugin->SetRedrawFlag();
         if (ValidateName() == false)
         {
-            GetManager()->SetWidgetAsInvalidInput(mNameEdit);
+            GetManager()->SetWidgetAsInvalidInput(m_nameEdit);
         }
         else
         {
-            mNameEdit->setStyleSheet("");
+            m_nameEdit->setStyleSheet("");
         }
     }
 
 
     void HeaderTrackWidget::EnabledCheckBoxChanged(int state)
     {
-        mPlugin->SetRedrawFlag();
+        m_plugin->SetRedrawFlag();
 
         bool enabled = false;
         if (state == Qt::Checked)
@@ -352,16 +351,16 @@ namespace EMStudio
             enabled = true;
         }
 
-        emit EnabledStateChanged(enabled, mTrackIndex);
+        emit EnabledStateChanged(enabled, m_trackIndex);
     }
 
 
     // propagate key events to the plugin and let it handle by a shared function
     void HeaderTrackWidget::keyPressEvent(QKeyEvent* event)
     {
-        if (mPlugin)
+        if (m_plugin)
         {
-            mPlugin->OnKeyPressEvent(event);
+            m_plugin->OnKeyPressEvent(event);
         }
     }
 
@@ -369,9 +368,9 @@ namespace EMStudio
     // propagate key events to the plugin and let it handle by a shared function
     void HeaderTrackWidget::keyReleaseEvent(QKeyEvent* event)
     {
-        if (mPlugin)
+        if (m_plugin)
         {
-            mPlugin->OnKeyReleaseEvent(event);
+            m_plugin->OnKeyReleaseEvent(event);
         }
     }
 
@@ -379,9 +378,9 @@ namespace EMStudio
     // propagate key events to the plugin and let it handle by a shared function
     void TrackHeaderWidget::keyPressEvent(QKeyEvent* event)
     {
-        if (mPlugin)
+        if (m_plugin)
         {
-            mPlugin->OnKeyPressEvent(event);
+            m_plugin->OnKeyPressEvent(event);
         }
     }
 
@@ -389,9 +388,9 @@ namespace EMStudio
     // propagate key events to the plugin and let it handle by a shared function
     void TrackHeaderWidget::keyReleaseEvent(QKeyEvent* event)
     {
-        if (mPlugin)
+        if (m_plugin)
         {
-            mPlugin->OnKeyReleaseEvent(event);
+            m_plugin->OnKeyReleaseEvent(event);
         }
     }
 
@@ -400,16 +399,16 @@ namespace EMStudio
     void TrackHeaderWidget::OnDetailedNodesCheckBox(int state)
     {
         MCORE_UNUSED(state);
-        mPlugin->SetRedrawFlag();
+        m_plugin->SetRedrawFlag();
 
-        RecorderGroup* recorderGroup = mPlugin->GetTimeViewToolBar()->GetRecorderGroup();
+        RecorderGroup* recorderGroup = m_plugin->GetTimeViewToolBar()->GetRecorderGroup();
         if (!recorderGroup->GetDetailedNodes())
         {
-            mPlugin->mTrackDataWidget->mNodeHistoryItemHeight = 20;
+            m_plugin->m_trackDataWidget->m_nodeHistoryItemHeight = 20;
         }
         else
         {
-            mPlugin->mTrackDataWidget->mNodeHistoryItemHeight = 35;
+            m_plugin->m_trackDataWidget->m_nodeHistoryItemHeight = 35;
         }
     }
 
@@ -418,7 +417,7 @@ namespace EMStudio
     void TrackHeaderWidget::OnCheckBox(int state)
     {
         MCORE_UNUSED(state);
-        mPlugin->SetRedrawFlag();
+        m_plugin->SetRedrawFlag();
     }
 
 
@@ -426,6 +425,6 @@ namespace EMStudio
     void TrackHeaderWidget::OnComboBoxIndexChanged(int state)
     {
         MCORE_UNUSED(state);
-        mPlugin->SetRedrawFlag();
+        m_plugin->SetRedrawFlag();
     }
 } // namespace EMStudio

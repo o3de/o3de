@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -23,14 +24,11 @@ namespace O3DE::ProjectManager
         ~EngineSettingsScreen() = default;
 
         ProjectManagerScreen GetScreenEnum() override;
-        QString GetTabText() override;
-        bool IsTab() override;
 
     protected slots:
         void OnTextChanged();
 
     private:
-        FormLineEditWidget* m_engineVersion;
         FormBrowseEditWidget* m_thirdParty;
         FormBrowseEditWidget* m_defaultProjects;
         FormBrowseEditWidget* m_defaultGems;

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -16,12 +17,12 @@
 #include <MorphTargets/MorphTargetDispatchItem.h>
 
 #include <Atom/RPI.Public/Model/ModelLodUtils.h>
+#include <Atom/RPI.Public/Pass/PassFilter.h>
 #include <Atom/RPI.Public/Pass/PassSystemInterface.h>
 #include <Atom/RPI.Public/RPIUtils.h>
 #include <Atom/RPI.Public/Shader/Shader.h>
 #include <Atom/RPI.Public/RenderPipeline.h>
 
-#include <Atom/RHI/CpuProfiler.h>
 #include <Atom/RHI/CommandList.h>
 
 #include <AzCore/Debug/EventTrace.h>
@@ -68,13 +69,12 @@ namespace AZ
 
         void SkinnedMeshFeatureProcessor::Render(const FeatureProcessor::RenderPacket& packet)
         {
-            AZ_PROFILE_FUNCTION(Debug::ProfileCategory::AzRender);
-            AZ_ATOM_PROFILE_FUNCTION("SkinnedMesh", "SkinnedMeshFeatureProcessor: Render");
+            AZ_PROFILE_SCOPE(AzRender, "SkinnedMeshFeatureProcessor: Render");
 
 #if 0 //[GFX_TODO][ATOM-13564] Temporarily disable skinning culling until we figure out how to hook up visibility & lod selection with skinning:
             //Setup the culling workgroup (it will be re-used for each view)
             {
-                AZ_PROFILE_SCOPE(Debug::ProfileCategory::AzRender, "set up skinned culling workgroup");
+                AZ_PROFILE_SCOPE(AzRender, "set up skinned culling workgroup");
                 azsnprintf(m_workgroup.m_name, AZ_ARRAY_SIZE(m_workgroup.m_name), "SkinnedMeshFP workgroup");
                 m_workgroup.m_drawListMask.reset();
                 m_workgroup.m_cullPackets.clear();
@@ -95,13 +95,13 @@ namespace AZ
                         renderProxy.m_instance->m_model->WaitForUpload();
                     }
 
-                    //Note: we are creating pointers to the meshDataInstance cullpacket and lod packet here,
+                    //Note: we are creating pointers to the modelDataInstance cullpacket and lod packet here,
                     //and holding them until the skinnedMeshDispatchItems are dispatched. There is an assumption that the underlying
                     //data will not move during this phase.
-                    MeshDataInstance& meshDataInstance = **renderProxy.m_meshHandle;
-                    m_workgroup.m_cullPackets.push_back(&meshDataInstance.GetCullPacket());
-                    m_workgroup.m_drawListMask |= meshDataInstance.GetCullPacket().m_drawListMask;
-                    m_lodPackets.push_back(&meshDataInstance.GetLodPacket());
+                    ModelDataInstance& modelDataInstance = **renderProxy.m_meshHandle;
+                    m_workgroup.m_cullPackets.push_back(&modelDataInstance.GetCullPacket());
+                    m_workgroup.m_drawListMask |= modelDataInstance.GetCullPacket().m_drawListMask;
+                    m_lodPackets.push_back(&modelDataInstance.GetLodPacket());
                     m_potentiallyVisibleProxies.push_back(&renderProxy);
                 }
             }
@@ -117,11 +117,11 @@ namespace AZ
                     Job* processWorkgroupJob = AZ::CreateJobFunction(
                         [this, cullingSystem, viewPtr](AZ::Job& thisJob)
                         {
-                            AZ_PROFILE_SCOPE_DYNAMIC(Debug::ProfileCategory::AzRender, "skinningMeshFP processWorkgroupJob - View: %s", viewPtr->GetName().GetCStr());
+                            AZ_PROFILE_SCOPE(AzRender, "skinningMeshFP processWorkgroupJob - View: %s", viewPtr->GetName().GetCStr());
 
                             auto dispatchSkinningComputeProgramsCallback = [this](AZStd::shared_ptr<RPI::CullingBatchResults> results) -> void
                             {
-                                AZ_PROFILE_SCOPE(Debug::ProfileCategory::AzRender, "dispatchSkinningComputePrograms");
+                                AZ_PROFILE_SCOPE(AzRender, "dispatchSkinningComputePrograms");
 
                                 //the [1][1] element of a projection matrix stores cot(FovY/2) (equal to 2*nearPlaneDistance/nearPlaneHeight),
                                 //which is used to determine the (vertical) projected size in screen space            
@@ -187,8 +187,8 @@ namespace AZ
                     renderProxy.m_instance->m_model->WaitForUpload();
                 }
 
-                MeshDataInstance& meshDataInstance = **renderProxy.m_meshHandle;
-                const RPI::Cullable& cullable = meshDataInstance.GetCullable();
+                ModelDataInstance& modelDataInstance = **renderProxy.m_meshHandle;
+                const RPI::Cullable& cullable = modelDataInstance.GetCullable();
 
                 for (const RPI::ViewPtr& viewPtr : packet.m_views)
                 {
@@ -242,12 +242,12 @@ namespace AZ
 
         void SkinnedMeshFeatureProcessor::OnRenderPipelineAdded(RPI::RenderPipelinePtr pipeline)
         {
-            InitSkinningAndMorphPass(pipeline->GetRootPass());
+            InitSkinningAndMorphPass(pipeline.get());
         }
 
         void SkinnedMeshFeatureProcessor::OnRenderPipelinePassesChanged(RPI::RenderPipeline* renderPipeline)
         {
-            InitSkinningAndMorphPass(renderPipeline->GetRootPass());
+            InitSkinningAndMorphPass(renderPipeline);
         }
 
         void SkinnedMeshFeatureProcessor::OnBeginPrepareRender()
@@ -290,9 +290,10 @@ namespace AZ
             return false;
         }
 
-        void SkinnedMeshFeatureProcessor::InitSkinningAndMorphPass(const RPI::Ptr<RPI::ParentPass> pipelineRootPass)
+        void SkinnedMeshFeatureProcessor::InitSkinningAndMorphPass(RPI::RenderPipeline* renderPipeline)
         {
-            RPI::Ptr<RPI::Pass> skinningPass = pipelineRootPass->FindPassByNameRecursive(AZ::Name{ "SkinningPass" });
+            RPI::PassFilter skinPassFilter = RPI::PassFilter::CreateWithPassName(AZ::Name{ "SkinningPass" }, renderPipeline);
+            RPI::Ptr<RPI::Pass> skinningPass = RPI::PassSystemInterface::Get()->FindFirstPass(skinPassFilter);
             if (skinningPass)
             {
                 SkinnedMeshComputePass* skinnedMeshComputePass = azdynamic_cast<SkinnedMeshComputePass*>(skinningPass.get());
@@ -311,7 +312,8 @@ namespace AZ
                 }
             }
 
-            RPI::Ptr<RPI::Pass> morphTargetPass = pipelineRootPass->FindPassByNameRecursive(AZ::Name{ "MorphTargetPass" });
+            RPI::PassFilter morphPassFilter = RPI::PassFilter::CreateWithPassName(AZ::Name{ "MorphTargetPass" }, renderPipeline);
+            RPI::Ptr<RPI::Pass> morphTargetPass = RPI::PassSystemInterface::Get()->FindFirstPass(morphPassFilter);
             if (morphTargetPass)
             {
                 MorphTargetComputePass* morphTargetComputePass = azdynamic_cast<MorphTargetComputePass*>(morphTargetPass.get());

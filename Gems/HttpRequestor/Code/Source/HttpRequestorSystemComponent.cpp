@@ -1,10 +1,10 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "HttpRequestor_precompiled.h"
 
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
@@ -63,20 +63,17 @@ namespace HttpRequestor
     
     void HttpRequestorSystemComponent::Reflect(AZ::ReflectContext* context)
     {
-        if (AZ::SerializeContext* serialize = azrtti_cast<AZ::SerializeContext*>(context))
+        if (auto serialize = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serialize->Class<HttpRequestorSystemComponent, AZ::Component>()
-                ->Version(1);
-                ;
-            
+            serialize->Class<HttpRequestorSystemComponent, AZ::Component>()->Version(1);
+
             if (AZ::EditContext* ec = serialize->GetEditContext())
             {
                 ec->Class<HttpRequestorSystemComponent>("HttpRequestor", "Will make HTTP Rest calls")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                        // ->Attribute(AZ::Edit::Attributes::Category, "") Set a category
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System"))
-                        ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ;
+                    // ->Attribute(AZ::Edit::Attributes::Category, "") Set a category
+                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System"))
+                    ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
             }
         }
     }

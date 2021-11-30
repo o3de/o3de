@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -40,9 +41,6 @@ namespace AZ
         HANDLE m_mapHandle;
         HANDLE m_globalMutex;
         int m_lastLockResult;
-
-    private:
-        void ComposeMutexName(char* dest, size_t length, const char* name);
     };
 
     using SharedMemory_Platform = SharedMemory_Windows;

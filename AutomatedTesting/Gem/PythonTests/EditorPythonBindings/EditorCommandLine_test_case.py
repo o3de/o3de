@@ -1,5 +1,6 @@
 """
-Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+Copyright (c) Contributors to the Open 3D Engine Project.
+For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
@@ -18,12 +19,6 @@ engroot = azlmbr.paths.engroot
 if (engroot is not None and len(engroot) is not 0):
     print ('engroot is {}'.format(engroot))
     print ('editor engroot set')
-
-# make sure the @devroot@ exists as a azlmbr.paths property
-devroot = azlmbr.paths.devroot
-if (devroot is not None and len(devroot) != 0):
-    print ('devroot is {}'.format(devroot))
-    print ('editor devroot set')
 
 # resolving a basic path
 path = azlmbr.paths.resolve_path('@engroot@/engineassets/texturemsg/defaultsolids.mtl')

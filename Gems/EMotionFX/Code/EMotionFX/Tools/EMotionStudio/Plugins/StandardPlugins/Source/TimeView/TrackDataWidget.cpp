@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -54,37 +55,37 @@ namespace EMStudio
     TrackDataWidget::TrackDataWidget(TimeViewPlugin* plugin, QWidget* parent)
         : QOpenGLWidget(parent)
         , QOpenGLFunctions()
-        , mBrushBackground(QColor(40, 45, 50), Qt::SolidPattern)
-        , mBrushBackgroundClipped(QColor(40, 40, 40), Qt::SolidPattern)
-        , mBrushBackgroundOutOfRange(QColor(35, 35, 35), Qt::SolidPattern)
-        , mPlugin(plugin)
-        , mMouseLeftClicked(false)
-        , mMouseMidClicked(false)
-        , mMouseRightClicked(false)
-        , mDragging(false)
-        , mResizing(false)
-        , mRectZooming(false)
-        , mIsScrolling(false)
-        , mLastLeftClickedX(0)
-        , mLastMouseMoveX(0)
-        , mLastMouseX(0)
-        , mLastMouseY(0)
-        , mNodeHistoryItemHeight(20)
-        , mEventHistoryTotalHeight(0)
-        , mAllowContextMenu(true)
-        , mDraggingElement(nullptr)
-        , mDragElementTrack(nullptr)
-        , mResizeElement(nullptr)
-        , mGraphStartHeight(0)
-        , mEventsStartHeight(0)
-        , mNodeRectsStartHeight(0)
-        , mSelectStart(0, 0)
-        , mSelectEnd(0, 0)
-        , mRectSelecting(false)
+        , m_brushBackground(QColor(40, 45, 50), Qt::SolidPattern)
+        , m_brushBackgroundClipped(QColor(40, 40, 40), Qt::SolidPattern)
+        , m_brushBackgroundOutOfRange(QColor(35, 35, 35), Qt::SolidPattern)
+        , m_plugin(plugin)
+        , m_mouseLeftClicked(false)
+        , m_mouseMidClicked(false)
+        , m_mouseRightClicked(false)
+        , m_dragging(false)
+        , m_resizing(false)
+        , m_rectZooming(false)
+        , m_isScrolling(false)
+        , m_lastLeftClickedX(0)
+        , m_lastMouseMoveX(0)
+        , m_lastMouseX(0)
+        , m_lastMouseY(0)
+        , m_nodeHistoryItemHeight(20)
+        , m_eventHistoryTotalHeight(0)
+        , m_allowContextMenu(true)
+        , m_draggingElement(nullptr)
+        , m_dragElementTrack(nullptr)
+        , m_resizeElement(nullptr)
+        , m_graphStartHeight(0)
+        , m_eventsStartHeight(0)
+        , m_nodeRectsStartHeight(0)
+        , m_selectStart(0, 0)
+        , m_selectEnd(0, 0)
+        , m_rectSelecting(false)
     {
         setObjectName("TrackDataWidget");
 
-        mDataFont.setPixelSize(13);
+        m_dataFont.setPixelSize(13);
 
         setMouseTracking(true);
         setAcceptDrops(true);
@@ -113,9 +114,9 @@ namespace EMStudio
     {
         MCORE_UNUSED(w);
         MCORE_UNUSED(h);
-        if (mPlugin)
+        if (m_plugin)
         {
-            mPlugin->SetRedrawFlag();
+            m_plugin->SetRedrawFlag();
         }
     }
 
@@ -123,10 +124,10 @@ namespace EMStudio
     // calculate the selection rect
     void TrackDataWidget::CalcSelectRect(QRect& outRect)
     {
-        const int32 startX = MCore::Min<int32>(mSelectStart.x(), mSelectEnd.x());
-        const int32 startY = MCore::Min<int32>(mSelectStart.y(), mSelectEnd.y());
-        const int32 width  = abs(mSelectEnd.x() - mSelectStart.x());
-        const int32 height = abs(mSelectEnd.y() - mSelectStart.y());
+        const int32 startX = MCore::Min<int32>(m_selectStart.x(), m_selectEnd.x());
+        const int32 startY = MCore::Min<int32>(m_selectStart.y(), m_selectEnd.y());
+        const int32 width  = abs(m_selectEnd.x() - m_selectStart.x());
+        const int32 height = abs(m_selectEnd.y() - m_selectStart.y());
 
         outRect = QRect(startX, startY, width, height);
     }
@@ -144,12 +145,12 @@ namespace EMStudio
 
         // draw a background rect
         painter.setPen(Qt::NoPen);
-        painter.setBrush(mBrushBackgroundOutOfRange);
+        painter.setBrush(m_brushBackgroundOutOfRange);
         painter.drawRect(rect);
-        painter.setFont(mDataFont);
+        painter.setFont(m_dataFont);
 
         // if there is a recording show that, otherwise show motion tracks
-        switch (mPlugin->GetMode())
+        switch (m_plugin->GetMode())
         {
             case TimeViewMode::AnimGraph:
             {
@@ -169,18 +170,18 @@ namespace EMStudio
 
         painter.setRenderHint(QPainter::Antialiasing, false);
 
-        mPlugin->RenderElementTimeHandles(painter, geometry().height(), mPlugin->mPenTimeHandles);
+        m_plugin->RenderElementTimeHandles(painter, geometry().height(), m_plugin->m_penTimeHandles);
 
         DrawTimeMarker(painter, rect);
 
         // render selection rect
-        if (mRectSelecting)
+        if (m_rectSelecting)
         {
             painter.resetTransform();
             QRect selectRect;
             CalcSelectRect(selectRect);
 
-            if (mRectZooming)
+            if (m_rectZooming)
             {
                 painter.setBrush(QColor(0, 100, 200, 75));
                 painter.setPen(QColor(0, 100, 255));
@@ -188,7 +189,7 @@ namespace EMStudio
             }
             else
             {
-                if (EMotionFX::GetRecorder().GetRecordTime() < MCore::Math::epsilon && mPlugin->mMotion)
+                if (EMotionFX::GetRecorder().GetRecordTime() < MCore::Math::epsilon && m_plugin->m_motion)
                 {
                     painter.setBrush(QColor(200, 120, 0, 75));
                     painter.setPen(QColor(255, 128, 0));
@@ -198,11 +199,11 @@ namespace EMStudio
         }
     }
 
-    void TrackDataWidget::RemoveTrack(AZ::u32 trackIndex)
+    void TrackDataWidget::RemoveTrack(size_t trackIndex)
     {
-        mPlugin->SetRedrawFlag();
+        m_plugin->SetRedrawFlag();
         CommandSystem::CommandRemoveEventTrack(trackIndex);
-        mPlugin->UnselectAllElements();
+        m_plugin->UnselectAllElements();
         ClearState();
     }
 
@@ -211,8 +212,8 @@ namespace EMStudio
     {
         // draw the current time marker
         float startHeight = 0.0f;
-        const float curTimeX = aznumeric_cast<float>(mPlugin->TimeToPixel(mPlugin->mCurTime));
-        painter.setPen(mPlugin->mPenCurTimeHandle);
+        const float curTimeX = aznumeric_cast<float>(m_plugin->TimeToPixel(m_plugin->m_curTime));
+        painter.setPen(m_plugin->m_penCurTimeHandle);
         painter.drawLine(QPointF(curTimeX, startHeight), QPointF(curTimeX, rect.bottom()));
     }
 
@@ -228,7 +229,7 @@ namespace EMStudio
         QRect motionRect        = rect;
 
         const float animationLength = recorder.GetRecordTime();
-        const double animEndPixel = mPlugin->TimeToPixel(animationLength);
+        const double animEndPixel = m_plugin->TimeToPixel(animationLength);
         backgroundRect.setLeft(aznumeric_cast<int>(animEndPixel));
         motionRect.setRight(aznumeric_cast<int>(animEndPixel));
         motionRect.setTop(0);
@@ -236,9 +237,9 @@ namespace EMStudio
 
         // render the rects
         painter.setPen(Qt::NoPen);
-        painter.setBrush(mBrushBackground);
+        painter.setBrush(m_brushBackground);
         painter.drawRect(motionRect);
-        painter.setBrush(mBrushBackgroundOutOfRange);
+        painter.setBrush(m_brushBackgroundOutOfRange);
         painter.drawRect(backgroundRect);
 
         // find the selected actor instance
@@ -249,8 +250,8 @@ namespace EMStudio
         }
 
         // find the actor instance data for this actor instance
-        const uint32 actorInstanceDataIndex = recorder.FindActorInstanceDataIndex(actorInstance);
-        if (actorInstanceDataIndex == MCORE_INVALIDINDEX32) // it doesn't exist, so we didn't record anything for this actor instance
+        const size_t actorInstanceDataIndex = recorder.FindActorInstanceDataIndex(actorInstance);
+        if (actorInstanceDataIndex == InvalidIndex) // it doesn't exist, so we didn't record anything for this actor instance
         {
             return;
         }
@@ -258,7 +259,7 @@ namespace EMStudio
         // get the actor instance data for the first selected actor instance, and render the node history for that
         const EMotionFX::Recorder::ActorInstanceData* actorInstanceData = &recorder.GetActorInstanceData(actorInstanceDataIndex);
 
-        RecorderGroup* recorderGroup = mPlugin->GetTimeViewToolBar()->GetRecorderGroup();
+        RecorderGroup* recorderGroup = m_plugin->GetTimeViewToolBar()->GetRecorderGroup();
         const bool displayNodeActivity = recorderGroup->GetDisplayNodeActivity();
         const bool displayEvents = recorderGroup->GetDisplayMotionEvents();
         const bool displayRelativeGraph = recorderGroup->GetDisplayRelativeGraph();
@@ -269,31 +270,31 @@ namespace EMStudio
 
         if (displayNodeActivity)
         {
-            mNodeRectsStartHeight = startOffset;
+            m_nodeRectsStartHeight = startOffset;
             PaintRecorderNodeHistory(painter, rect, actorInstanceData);
             isTop = false;
-            startOffset = mNodeHistoryRect.bottom();
-            requiredHeight = mNodeHistoryRect.bottom();
+            startOffset = m_nodeHistoryRect.bottom();
+            requiredHeight = m_nodeHistoryRect.bottom();
         }
 
         if (displayEvents)
         {
             if (isTop == false)
             {
-                mEventsStartHeight = startOffset;
-                mEventsStartHeight += PaintSeparator(painter, mEventsStartHeight, animationLength);
-                mEventsStartHeight += 10;
-                startOffset = mEventsStartHeight;
+                m_eventsStartHeight = startOffset;
+                m_eventsStartHeight += PaintSeparator(painter, m_eventsStartHeight, animationLength);
+                m_eventsStartHeight += 10;
+                startOffset = m_eventsStartHeight;
                 requiredHeight += 11;
             }
             else
             {
                 startOffset += 3;
-                mEventsStartHeight = startOffset;
+                m_eventsStartHeight = startOffset;
                 requiredHeight += 3;
             }
 
-            startOffset += mEventHistoryTotalHeight;
+            startOffset += m_eventHistoryTotalHeight;
             isTop = false;
 
             PaintRecorderEventHistory(painter, rect, actorInstanceData);
@@ -303,15 +304,15 @@ namespace EMStudio
         {
             if (isTop == false)
             {
-                mGraphStartHeight = startOffset + 10;
-                mGraphStartHeight += PaintSeparator(painter, mGraphStartHeight, animationLength);
-                startOffset = mGraphStartHeight;
+                m_graphStartHeight = startOffset + 10;
+                m_graphStartHeight += PaintSeparator(painter, m_graphStartHeight, animationLength);
+                startOffset = m_graphStartHeight;
                 requiredHeight += 11;
             }
             else
             {
                 startOffset += 3;
-                mGraphStartHeight = startOffset;
+                m_graphStartHeight = startOffset;
                 requiredHeight += 3;
             }
 
@@ -340,17 +341,17 @@ namespace EMStudio
         painter.setRenderHint(QPainter::Antialiasing, true);
 
         // get the history items shortcut
-        const MCore::Array<EMotionFX::Recorder::NodeHistoryItem*>& historyItems = actorInstanceData->mNodeHistoryItems;
+        const AZStd::vector<EMotionFX::Recorder::NodeHistoryItem*>& historyItems = actorInstanceData->m_nodeHistoryItems;
         int32 windowWidth = geometry().width();
 
-        RecorderGroup* recorderGroup = mPlugin->GetTimeViewToolBar()->GetRecorderGroup();
+        RecorderGroup* recorderGroup = m_plugin->GetTimeViewToolBar()->GetRecorderGroup();
         const bool useNodeColors = recorderGroup->GetUseNodeTypeColors();
         const bool limitGraphHeight = recorderGroup->GetLimitGraphHeight();
-        const bool showNodeNames = mPlugin->mTrackHeaderWidget->mNodeNamesCheckBox->isChecked();
-        const bool showMotionFiles = mPlugin->mTrackHeaderWidget->mMotionFilesCheckBox->isChecked();
-        const bool interpolate = recorder.GetRecordSettings().mInterpolate;
+        const bool showNodeNames = m_plugin->m_trackHeaderWidget->m_nodeNamesCheckBox->isChecked();
+        const bool showMotionFiles = m_plugin->m_trackHeaderWidget->m_motionFilesCheckBox->isChecked();
+        const bool interpolate = recorder.GetRecordSettings().m_interpolate;
 
-        float graphHeight = aznumeric_cast<float>(geometry().height() - mGraphStartHeight);
+        float graphHeight = aznumeric_cast<float>(geometry().height() - m_graphStartHeight);
         float graphBottom;
         if (limitGraphHeight == false)
         {
@@ -363,30 +364,27 @@ namespace EMStudio
                 graphHeight = 200;
             }
 
-            graphBottom = mGraphStartHeight + graphHeight;
+            graphBottom = m_graphStartHeight + graphHeight;
         }
 
-        const uint32 graphContentsCode = mPlugin->mTrackHeaderWidget->mGraphContentsComboBox->currentIndex();
+        const uint32 graphContentsCode = m_plugin->m_trackHeaderWidget->m_graphContentsComboBox->currentIndex();
 
-        const uint32 numItems = historyItems.GetLength();
-        for (uint32 i = 0; i < numItems; ++i)
+        for (EMotionFX::Recorder::NodeHistoryItem* curItem : historyItems)
         {
-            EMotionFX::Recorder::NodeHistoryItem* curItem = historyItems[i];
+            double startTimePixel   = m_plugin->TimeToPixel(curItem->m_startTime);
+            double endTimePixel     = m_plugin->TimeToPixel(curItem->m_endTime);
 
-            double startTimePixel   = mPlugin->TimeToPixel(curItem->mStartTime);
-            double endTimePixel     = mPlugin->TimeToPixel(curItem->mEndTime);
-
-            const QRect itemRect(QPoint(aznumeric_cast<int>(startTimePixel), mGraphStartHeight), QPoint(aznumeric_cast<int>(endTimePixel), geometry().height()));
+            const QRect itemRect(QPoint(aznumeric_cast<int>(startTimePixel), m_graphStartHeight), QPoint(aznumeric_cast<int>(endTimePixel), geometry().height()));
             if (rect.intersects(itemRect) == false)
             {
                 continue;
             }
 
-            const AZ::Color colorCode = (useNodeColors) ? curItem->mTypeColor : curItem->mColor;
+            const AZ::Color colorCode = (useNodeColors) ? curItem->m_typeColor : curItem->m_color;
             QColor color;
             color.setRgbF(colorCode.GetR(), colorCode.GetG(), colorCode.GetB(), colorCode.GetA());
 
-            if (mPlugin->mNodeHistoryItem != curItem || mIsScrolling || mPlugin->mIsAnimating)
+            if (m_plugin->m_nodeHistoryItem != curItem || m_isScrolling || m_plugin->m_isAnimating)
             {
                 painter.setPen(color);
                 color.setAlpha(64);
@@ -404,20 +402,20 @@ namespace EMStudio
             int32 widthInPixels = aznumeric_cast<int32>(endTimePixel - startTimePixel);
             if (widthInPixels > 0)
             {
-                EMotionFX::KeyTrackLinearDynamic<float, float>* keyTrack = &curItem->mGlobalWeights; // init on global weights
+                EMotionFX::KeyTrackLinearDynamic<float, float>* keyTrack = &curItem->m_globalWeights; // init on global weights
 
                 if (graphContentsCode == 1)
                 {
-                    keyTrack = &curItem->mLocalWeights;
+                    keyTrack = &curItem->m_localWeights;
                 }
                 else
                 if (graphContentsCode == 2)
                 {
-                    keyTrack = &curItem->mPlayTimes;
+                    keyTrack = &curItem->m_playTimes;
                 }
 
-                float lastWeight = keyTrack->GetValueAtTime(0.0f, &curItem->mCachedKey, nullptr, interpolate);
-                const float keyTimeStep = (curItem->mEndTime - curItem->mStartTime) / (float)widthInPixels;
+                float lastWeight = keyTrack->GetValueAtTime(0.0f, &curItem->m_cachedKey, nullptr, interpolate);
+                const float keyTimeStep = (curItem->m_endTime - curItem->m_startTime) / (float)widthInPixels;
 
                 const int32 pixelStepSize = 1;//(widthInPixels / 300.0f) + 1;
 
@@ -437,12 +435,12 @@ namespace EMStudio
                         firstPixel = false;
                     }
 
-                    const float weight = keyTrack->GetValueAtTime(w * keyTimeStep, &curItem->mCachedKey, nullptr, interpolate);
+                    const float weight = keyTrack->GetValueAtTime(w * keyTimeStep, &curItem->m_cachedKey, nullptr, interpolate);
                     const float height = graphBottom - weight * graphHeight;
                     path.lineTo(QPointF(startTimePixel + w + 1, height));
                 }
 
-                const float weight = keyTrack->GetValueAtTime(curItem->mEndTime, &curItem->mCachedKey, nullptr, interpolate);
+                const float weight = keyTrack->GetValueAtTime(curItem->m_endTime, &curItem->m_cachedKey, nullptr, interpolate);
                 const float height = graphBottom - weight * graphHeight;
                 path.lineTo(QPointF(startTimePixel + widthInPixels - 1, height));
                 path.lineTo(QPointF(startTimePixel + widthInPixels, graphBottom + 1));
@@ -451,14 +449,13 @@ namespace EMStudio
         }
 
         // calculate the remapped track list, based on sorted global weight, with the most influencing track on top
-        recorder.ExtractNodeHistoryItems(*actorInstanceData, aznumeric_cast<float>(mPlugin->mCurTime), true, (EMotionFX::Recorder::EValueType)graphContentsCode, &mActiveItems, &mTrackRemap);
+        recorder.ExtractNodeHistoryItems(*actorInstanceData, aznumeric_cast<float>(m_plugin->m_curTime), true, (EMotionFX::Recorder::EValueType)graphContentsCode, &m_activeItems, &m_trackRemap);
 
         // display the values and names
-        uint32 offset = 0;
-        const uint32 numActiveItems = mActiveItems.GetLength();
-        for (uint32 i = 0; i < numActiveItems; ++i)
+        int offset = 0;
+        for (const EMotionFX::Recorder::ExtractedNodeHistoryItem& activeItem : m_activeItems)
         {
-            EMotionFX::Recorder::NodeHistoryItem* curItem = mActiveItems[i].mNodeHistoryItem;
+            EMotionFX::Recorder::NodeHistoryItem* curItem = activeItem.m_nodeHistoryItem;
             if (curItem == nullptr)
             {
                 continue;
@@ -466,39 +463,39 @@ namespace EMStudio
 
             offset += 15;
 
-            mTempString.clear();
+            m_tempString.clear();
             if (showNodeNames)
             {
-                mTempString += curItem->mName.c_str();
+                m_tempString += curItem->m_name.c_str();
             }
 
-            if (showMotionFiles && curItem->mMotionFileName.size() > 0)
+            if (showMotionFiles && !curItem->m_motionFileName.empty())
             {
-                if (!mTempString.empty())
+                if (!m_tempString.empty())
                 {
-                    mTempString += " - ";
+                    m_tempString += " - ";
                 }
 
-                mTempString += curItem->mMotionFileName.c_str();
+                m_tempString += curItem->m_motionFileName.c_str();
             }
 
-            if (!mTempString.empty())
+            if (!m_tempString.empty())
             {
-                mTempString += AZStd::string::format(" = %.4f", mActiveItems[i].mValue);
+                m_tempString += AZStd::string::format(" = %.4f", activeItem.m_value);
             }
             else
             {
-                mTempString = AZStd::string::format("%.4f", mActiveItems[i].mValue);
+                m_tempString = AZStd::string::format("%.4f", activeItem.m_value);
             }
 
-            const AZ::Color colorCode = (useNodeColors) ? mActiveItems[i].mNodeHistoryItem->mTypeColor : mActiveItems[i].mNodeHistoryItem->mColor;
+            const AZ::Color colorCode = (useNodeColors) ? activeItem.m_nodeHistoryItem->m_typeColor : activeItem.m_nodeHistoryItem->m_color;
             QColor color;
             color.setRgbF(colorCode.GetR(), colorCode.GetG(), colorCode.GetB(), colorCode.GetA());
 
             painter.setPen(color);
             painter.setBrush(Qt::NoBrush);
-            painter.setFont(mDataFont);
-            painter.drawText(3, offset + mGraphStartHeight, mTempString.c_str());
+            painter.setFont(m_dataFont);
+            painter.drawText(3, offset + m_graphStartHeight, m_tempString.c_str());
         }
     }
 
@@ -515,10 +512,10 @@ namespace EMStudio
         }
 
         // get the history items shortcut
-        const MCore::Array<EMotionFX::Recorder::EventHistoryItem*>& historyItems = actorInstanceData->mEventHistoryItems;
+        const AZStd::vector<EMotionFX::Recorder::EventHistoryItem*>& historyItems = actorInstanceData->m_eventHistoryItems;
 
         QRect clipRect = rect;
-        clipRect.setRight(aznumeric_cast<int>(mPlugin->TimeToPixel(animationLength)));
+        clipRect.setRight(aznumeric_cast<int>(m_plugin->TimeToPixel(animationLength)));
         painter.setClipRect(clipRect);
         painter.setClipping(true);
 
@@ -527,13 +524,10 @@ namespace EMStudio
         const float tickHeight = 16;
 
         QPointF tickPoints[6];
-        const uint32 numItems = historyItems.GetLength();
-        for (uint32 i = 0; i < numItems; ++i)
+        for (const EMotionFX::Recorder::EventHistoryItem* curItem : historyItems)
         {
-            EMotionFX::Recorder::EventHistoryItem* curItem = historyItems[i];
-
-            float height = aznumeric_cast<float>((curItem->mTrackIndex * 20) + mEventsStartHeight);
-            double startTimePixel   = mPlugin->TimeToPixel(curItem->mStartTime);
+            float height = aznumeric_cast<float>((curItem->m_trackIndex * 20) + m_eventsStartHeight);
+            double startTimePixel   = m_plugin->TimeToPixel(curItem->m_startTime);
 
             const QRect itemRect(QPoint(aznumeric_cast<int>(startTimePixel - tickHalfWidth), aznumeric_cast<int>(height)), QSize(aznumeric_cast<int>(tickHalfWidth * 2), aznumeric_cast<int>(tickHeight)));
             if (rect.intersects(itemRect) == false)
@@ -543,17 +537,17 @@ namespace EMStudio
 
             // try to locate the node based on its unique ID
             QColor borderColor(30, 30, 30);
-            const AZ::Color& colorCode = curItem->mColor;
+            const AZ::Color& colorCode = curItem->m_color;
             QColor color;
             color.setRgbF(colorCode.GetR(), colorCode.GetG(), colorCode.GetB(), colorCode.GetA());
             
-            if (mIsScrolling == false && mPlugin->mIsAnimating == false)
+            if (m_isScrolling == false && m_plugin->m_isAnimating == false)
             {
-                if (mPlugin->mNodeHistoryItem && mPlugin->mNodeHistoryItem->mNodeId == curItem->mEmitterNodeId)
+                if (m_plugin->m_nodeHistoryItem && m_plugin->m_nodeHistoryItem->m_nodeId == curItem->m_emitterNodeId)
                 {
-                    if (curItem->mStartTime >= mPlugin->mNodeHistoryItem->mStartTime && curItem->mStartTime <= mPlugin->mNodeHistoryItem->mEndTime)
+                    if (curItem->m_startTime >= m_plugin->m_nodeHistoryItem->m_startTime && curItem->m_startTime <= m_plugin->m_nodeHistoryItem->m_endTime)
                     {
-                        RecorderGroup* recorderGroup = mPlugin->GetTimeViewToolBar()->GetRecorderGroup();
+                        RecorderGroup* recorderGroup = m_plugin->GetTimeViewToolBar()->GetRecorderGroup();
                         if (recorderGroup->GetDisplayNodeActivity())
                         {
                             borderColor = QColor(255, 128, 0);
@@ -562,7 +556,7 @@ namespace EMStudio
                     }
                 }
 
-                if (mPlugin->mEventHistoryItem == curItem)
+                if (m_plugin->m_eventHistoryItem == curItem)
                 {
                     borderColor = QColor(255, 128, 0);
                     color = borderColor;
@@ -613,67 +607,64 @@ namespace EMStudio
         }
 
         // skip the complete rendering of the node history data when its bounds are not inside view
-        if (!rect.intersects(mNodeHistoryRect))
+        if (!rect.intersects(m_nodeHistoryRect))
         {
             return;
         }
 
         // get the history items shortcut
-        const MCore::Array<EMotionFX::Recorder::NodeHistoryItem*>&  historyItems = actorInstanceData->mNodeHistoryItems;
+        const AZStd::vector<EMotionFX::Recorder::NodeHistoryItem*>&  historyItems = actorInstanceData->m_nodeHistoryItems;
         int32 windowWidth = geometry().width();
 
         // calculate the remapped track list, based on sorted global weight, with the most influencing track on top
-        RecorderGroup* recorderGroup = mPlugin->GetTimeViewToolBar()->GetRecorderGroup();
+        RecorderGroup* recorderGroup = m_plugin->GetTimeViewToolBar()->GetRecorderGroup();
         const bool sorted = recorderGroup->GetSortNodeActivity();
         const bool useNodeColors = recorderGroup->GetUseNodeTypeColors();
 
-        const uint32 graphContentsCode = mPlugin->mTrackHeaderWidget->mNodeContentsComboBox->currentIndex();
-        recorder.ExtractNodeHistoryItems(*actorInstanceData, aznumeric_cast<float>(mPlugin->mCurTime), sorted, (EMotionFX::Recorder::EValueType)graphContentsCode, &mActiveItems, &mTrackRemap);
+        const int graphContentsCode = m_plugin->m_trackHeaderWidget->m_nodeContentsComboBox->currentIndex();
+        recorder.ExtractNodeHistoryItems(*actorInstanceData, aznumeric_cast<float>(m_plugin->m_curTime), sorted, (EMotionFX::Recorder::EValueType)graphContentsCode, &m_activeItems, &m_trackRemap);
 
-        const bool showNodeNames = mPlugin->mTrackHeaderWidget->mNodeNamesCheckBox->isChecked();
-        const bool showMotionFiles = mPlugin->mTrackHeaderWidget->mMotionFilesCheckBox->isChecked();
-        const bool interpolate = recorder.GetRecordSettings().mInterpolate;
+        const bool showNodeNames = m_plugin->m_trackHeaderWidget->m_nodeNamesCheckBox->isChecked();
+        const bool showMotionFiles = m_plugin->m_trackHeaderWidget->m_motionFilesCheckBox->isChecked();
+        const bool interpolate = recorder.GetRecordSettings().m_interpolate;
 
-        const uint32 nodeContentsCode = mPlugin->mTrackHeaderWidget->mNodeContentsComboBox->currentIndex();
+        const int nodeContentsCode = m_plugin->m_trackHeaderWidget->m_nodeContentsComboBox->currentIndex();
 
         // for all history items
         QRectF itemRect;
-        const uint32 numItems = historyItems.GetLength();
-        for (uint32 i = 0; i < numItems; ++i)
+        for (EMotionFX::Recorder::NodeHistoryItem* curItem : historyItems)
         {
-            EMotionFX::Recorder::NodeHistoryItem* curItem = historyItems[i];
-
             // draw the background rect
-            double startTimePixel   = mPlugin->TimeToPixel(curItem->mStartTime);
-            double endTimePixel     = mPlugin->TimeToPixel(curItem->mEndTime);
+            double startTimePixel   = m_plugin->TimeToPixel(curItem->m_startTime);
+            double endTimePixel     = m_plugin->TimeToPixel(curItem->m_endTime);
 
-            const uint32 trackIndex = mTrackRemap[ curItem->mTrackIndex ];
+            const size_t trackIndex = m_trackRemap[ curItem->m_trackIndex ];
 
             itemRect.setLeft(startTimePixel);
             itemRect.setRight(endTimePixel - 1);
-            itemRect.setTop((mNodeRectsStartHeight + (trackIndex * (mNodeHistoryItemHeight + 3)) + 3) /* - mPlugin->mScrollY*/);
-            itemRect.setBottom(itemRect.top() + mNodeHistoryItemHeight);
+            itemRect.setTop((m_nodeRectsStartHeight + (aznumeric_cast<uint32>(trackIndex) * (m_nodeHistoryItemHeight + 3)) + 3));
+            itemRect.setBottom(itemRect.top() + m_nodeHistoryItemHeight);
 
             if (!rect.intersects(itemRect.toRect()))
             {
                 continue;
             }
 
-            const AZ::Color colorCode = (useNodeColors) ? curItem->mTypeColor : curItem->mColor;
+            const AZ::Color colorCode = (useNodeColors) ? curItem->m_typeColor : curItem->m_color;
             QColor color;
             color.setRgbF(colorCode.GetR(), colorCode.GetG(), colorCode.GetB(), colorCode.GetA());
 
             bool matchesEvent = false;
-            if (mIsScrolling == false && mPlugin->mIsAnimating == false)
+            if (m_isScrolling == false && m_plugin->m_isAnimating == false)
             {
-                if (mPlugin->mNodeHistoryItem == curItem)
+                if (m_plugin->m_nodeHistoryItem == curItem)
                 {
                     color = QColor(255, 128, 0);
                 }
 
-                if (mPlugin->mEventEmitterNode && mPlugin->mEventEmitterNode->GetId() == curItem->mNodeId && mPlugin->mEventHistoryItem)
+                if (m_plugin->m_eventEmitterNode && m_plugin->m_eventEmitterNode->GetId() == curItem->m_nodeId && m_plugin->m_eventHistoryItem)
                 {
-                    if (mPlugin->mEventHistoryItem->mStartTime >= curItem->mStartTime && mPlugin->mEventHistoryItem->mStartTime <= curItem->mEndTime)
+                    if (m_plugin->m_eventHistoryItem->m_startTime >= curItem->m_startTime && m_plugin->m_eventHistoryItem->m_startTime <= curItem->m_endTime)
                     {
                         color = QColor(255, 128, 0);
                         matchesEvent = true;
@@ -697,24 +688,24 @@ namespace EMStudio
             int32 widthInPixels = aznumeric_cast<int32>(endTimePixel - startTimePixel);
             if (widthInPixels > 0)
             {
-                EMotionFX::KeyTrackLinearDynamic<float, float>* keyTrack = &curItem->mGlobalWeights; // init on global weights
+                const EMotionFX::KeyTrackLinearDynamic<float, float>* keyTrack = &curItem->m_globalWeights; // init on global weights
                 if (nodeContentsCode == 1)
                 {
-                    keyTrack = &curItem->mLocalWeights;
+                    keyTrack = &curItem->m_localWeights;
                 }
                 else
                 if (nodeContentsCode == 2)
                 {
-                    keyTrack = &curItem->mPlayTimes;
+                    keyTrack = &curItem->m_playTimes;
                 }
 
-                float lastWeight = keyTrack->GetValueAtTime(0.0f, &curItem->mCachedKey, nullptr, interpolate);
-                const float keyTimeStep = (curItem->mEndTime - curItem->mStartTime) / (float)widthInPixels;
+                float lastWeight = keyTrack->GetValueAtTime(0.0f, &curItem->m_cachedKey, nullptr, interpolate);
+                const float keyTimeStep = (curItem->m_endTime - curItem->m_startTime) / (float)widthInPixels;
 
                 const int32 pixelStepSize = 1;//(widthInPixels / 300.0f) + 1;
 
                 path.moveTo(QPointF(startTimePixel - 1, itemRect.bottom() + 1));
-                path.lineTo(QPointF(startTimePixel + 1, itemRect.bottom() - 1 - lastWeight * mNodeHistoryItemHeight));
+                path.lineTo(QPointF(startTimePixel + 1, itemRect.bottom() - 1 - lastWeight * m_nodeHistoryItemHeight));
                 bool firstPixel = true;
                 for (int32 w = 1; w < widthInPixels - 1; w += pixelStepSize)
                 {
@@ -729,13 +720,13 @@ namespace EMStudio
                         firstPixel = false;
                     }
 
-                    const float weight = keyTrack->GetValueAtTime(w * keyTimeStep, &curItem->mCachedKey, nullptr, interpolate);
-                    const float height = aznumeric_cast<float>(itemRect.bottom() - weight * mNodeHistoryItemHeight);
+                    const float weight = keyTrack->GetValueAtTime(w * keyTimeStep, &curItem->m_cachedKey, nullptr, interpolate);
+                    const float height = aznumeric_cast<float>(itemRect.bottom() - weight * m_nodeHistoryItemHeight);
                     path.lineTo(QPointF(startTimePixel + w + 1, height));
                 }
 
-                const float weight = keyTrack->GetValueAtTime(curItem->mEndTime, &curItem->mCachedKey, nullptr, interpolate);
-                const float height = aznumeric_cast<float>(itemRect.bottom() - weight * mNodeHistoryItemHeight);
+                const float weight = keyTrack->GetValueAtTime(curItem->m_endTime, &curItem->m_cachedKey, nullptr, interpolate);
+                const float height = aznumeric_cast<float>(itemRect.bottom() - weight * m_nodeHistoryItemHeight);
                 path.lineTo(QPointF(startTimePixel + widthInPixels - 1, height));
                 path.lineTo(QPointF(startTimePixel + widthInPixels, itemRect.bottom() + 1));
                 painter.drawPath(path);
@@ -746,9 +737,9 @@ namespace EMStudio
             // draw the text
             if (matchesEvent != true)
             {
-                if (mIsScrolling == false && mPlugin->mIsAnimating == false)
+                if (m_isScrolling == false && m_plugin->m_isAnimating == false)
                 {
-                    if (mPlugin->mNodeHistoryItem != curItem)
+                    if (m_plugin->m_nodeHistoryItem != curItem)
                     {
                         painter.setPen(QColor(255, 255, 255, 175));
                     }
@@ -767,25 +758,25 @@ namespace EMStudio
                 painter.setPen(Qt::black);
             }
 
-            mTempString.clear();
+            m_tempString.clear();
             if (showNodeNames)
             {
-                mTempString += curItem->mName.c_str();
+                m_tempString += curItem->m_name.c_str();
             }
 
-            if (showMotionFiles && curItem->mMotionFileName.size() > 0)
+            if (showMotionFiles && !curItem->m_motionFileName.empty())
             {
-                if (!mTempString.empty())
+                if (!m_tempString.empty())
                 {
-                    mTempString += " - ";
+                    m_tempString += " - ";
                 }
 
-                mTempString += curItem->mMotionFileName.c_str();
+                m_tempString += curItem->m_motionFileName.c_str();
             }
 
-            if (!mTempString.empty())
+            if (!m_tempString.empty())
             {
-                painter.drawText(aznumeric_cast<int>(itemRect.left() + 3), aznumeric_cast<int>(itemRect.bottom() - 2), mTempString.c_str());
+                painter.drawText(aznumeric_cast<int>(itemRect.left() + 3), aznumeric_cast<int>(itemRect.bottom() - 2), m_tempString.c_str());
             }
 
             painter.setClipping(false);
@@ -802,17 +793,17 @@ namespace EMStudio
 
         // get the track over which the cursor is positioned
         QPoint localCursorPos = mapFromGlobal(QCursor::pos());
-        TimeTrack* mouseCursorTrack = mPlugin->GetTrackAt(localCursorPos.y());
+        TimeTrack* mouseCursorTrack = m_plugin->GetTrackAt(localCursorPos.y());
         if (localCursorPos.x() < 0 || localCursorPos.x() > width())
         {
             mouseCursorTrack = nullptr;
         }
 
         // handle highlighting
-        const uint32 numTracks = mPlugin->GetNumTracks();
-        for (uint32 i = 0; i < numTracks; ++i)
+        const size_t numTracks = m_plugin->GetNumTracks();
+        for (size_t i = 0; i < numTracks; ++i)
         {
-            TimeTrack* track = mPlugin->GetTrack(i);
+            TimeTrack* track = m_plugin->GetTrack(i);
 
             // set the highlighting flag for the track
             if (track == mouseCursorTrack)
@@ -821,11 +812,11 @@ namespace EMStudio
                 track->SetIsHighlighted(true);
 
                 // get the element over which the cursor is positioned
-                TimeTrackElement* mouseCursorElement = mPlugin->GetElementAt(localCursorPos.x(), localCursorPos.y());
+                TimeTrackElement* mouseCursorElement = m_plugin->GetElementAt(localCursorPos.x(), localCursorPos.y());
 
                 // get the number of elements, iterate through them and disable the highlight flag
-                const uint32 numElements = track->GetNumElements();
-                for (uint32 e = 0; e < numElements; ++e)
+                const size_t numElements = track->GetNumElements();
+                for (size_t e = 0; e < numElements; ++e)
                 {
                     TimeTrackElement* element = track->GetElement(e);
 
@@ -844,8 +835,8 @@ namespace EMStudio
                 track->SetIsHighlighted(false);
 
                 // get the number of elements, iterate through them and disable the highlight flag
-                const uint32 numElements = track->GetNumElements();
-                for (uint32 e = 0; e < numElements; ++e)
+                const size_t numElements = track->GetNumElements();
+                for (size_t e = 0; e < numElements; ++e)
                 {
                     TimeTrackElement* element = track->GetElement(e);
                     element->SetIsHighlighted(false);
@@ -853,7 +844,7 @@ namespace EMStudio
             }
         }
 
-        EMotionFX::Motion* motion = mPlugin->GetMotion();
+        EMotionFX::Motion* motion = m_plugin->GetMotion();
         if (motion)
         {
             // get the motion length
@@ -861,8 +852,8 @@ namespace EMStudio
 
             // get the playback info and read out the clip start/end times
             EMotionFX::PlayBackInfo* playbackInfo = motion->GetDefaultPlayBackInfo();
-            clipStart   = playbackInfo->mClipStartTime;
-            clipEnd     = playbackInfo->mClipEndTime;
+            clipStart   = playbackInfo->m_clipStartTime;
+            clipEnd     = playbackInfo->m_clipEndTime;
 
             // HACK: fix this later
             clipStart = 0.0;
@@ -870,9 +861,9 @@ namespace EMStudio
         }
 
         // calculate the pixel index of where the animation ends and where it gets clipped
-        const double animEndPixel   = mPlugin->TimeToPixel(animationLength);
-        const double clipStartPixel = mPlugin->TimeToPixel(clipStart);
-        const double clipEndPixel   = mPlugin->TimeToPixel(clipEnd);
+        const double animEndPixel   = m_plugin->TimeToPixel(animationLength);
+        const double clipStartPixel = m_plugin->TimeToPixel(clipStart);
+        const double clipEndPixel   = m_plugin->TimeToPixel(clipEnd);
 
         // enable anti aliassing
         //painter.setRenderHint(QPainter::Antialiasing);
@@ -897,13 +888,13 @@ namespace EMStudio
 
         // render the rects
         painter.setPen(Qt::NoPen);
-        painter.setBrush(mBrushBackgroundClipped);
+        painter.setBrush(m_brushBackgroundClipped);
         painter.drawRect(clipStartRect);
-        painter.setBrush(mBrushBackground);
+        painter.setBrush(m_brushBackground);
         painter.drawRect(motionRect);
-        painter.setBrush(mBrushBackgroundClipped);
+        painter.setBrush(m_brushBackgroundClipped);
         painter.drawRect(clipEndRect);
-        painter.setBrush(mBrushBackgroundOutOfRange);
+        painter.setBrush(m_brushBackgroundOutOfRange);
         painter.drawRect(outOfRangeRect);
 
         // render the tracks
@@ -918,39 +909,35 @@ namespace EMStudio
 
         // calculate the start and end time range of the visible area
         double visibleStartTime, visibleEndTime;
-        visibleStartTime = mPlugin->PixelToTime(0); //mPlugin->CalcTime( 0, &visibleStartTime, nullptr, nullptr, nullptr, nullptr );
-        visibleEndTime = mPlugin->PixelToTime(width); //mPlugin->CalcTime( width, &visibleEndTime, nullptr, nullptr, nullptr, nullptr );
+        visibleStartTime = m_plugin->PixelToTime(0);
+        visibleEndTime = m_plugin->PixelToTime(width);
 
         // for all tracks
-        const uint32 numTracks = mPlugin->mTracks.GetLength();
-        for (uint32 i = 0; i < numTracks; ++i)
+        for (TimeTrack* track : m_plugin->m_tracks)
         {
-            TimeTrack* track = mPlugin->mTracks[i];
             track->SetStartY(yOffset);
 
             // path for making the cut elements a bit transparent
-            if (mCutMode)
+            if (m_cutMode)
             {
                 // disable cut mode for all elements on default
-                const uint32 numElements = track->GetNumElements();
-                for (uint32 e = 0; e < numElements; ++e)
+                const size_t numElements = track->GetNumElements();
+                for (size_t e = 0; e < numElements; ++e)
                 {
                     track->GetElement(e)->SetIsCut(false);
                 }
 
                 // get the number of copy elements and check if ours is in
-                const size_t numCopyElements = mCopyElements.size();
-                for (size_t c = 0; c < numCopyElements; ++c)
+                for (const CopyElement& copyElement : m_copyElements)
                 {
                     // get the copy element and make sure we're in the right track
-                    const CopyElement& copyElement = mCopyElements[c];
                     if (copyElement.m_trackName != track->GetName())
                     {
                         continue;
                     }
 
                     // set the cut mode of the elements
-                    for (uint32 e = 0; e < numElements; ++e)
+                    for (size_t e = 0; e < numElements; ++e)
                     {
                         TimeTrackElement* element = track->GetElement(e);
                         if (MCore::Compare<float>::CheckIfIsClose(aznumeric_cast<float>(element->GetStartTime()), copyElement.m_startTime, MCore::Math::epsilon) &&
@@ -971,27 +958,27 @@ namespace EMStudio
         }
 
         // render the element time handles
-        mPlugin->RenderElementTimeHandles(painter, height, mPlugin->mPenTimeHandles);
+        m_plugin->RenderElementTimeHandles(painter, height, m_plugin->m_penTimeHandles);
     }
 
 
     // show the time of the currently dragging element in the time info view
     void TrackDataWidget::ShowElementTimeInfo(TimeTrackElement* element)
     {
-        if (mPlugin->GetTimeInfoWidget() == nullptr)
+        if (m_plugin->GetTimeInfoWidget() == nullptr)
         {
             return;
         }
 
         // enable overwrite mode so that the time info widget will show the custom time rather than the current time of the plugin
-        mPlugin->GetTimeInfoWidget()->SetIsOverwriteMode(true);
+        m_plugin->GetTimeInfoWidget()->SetIsOverwriteMode(true);
 
         // calculate the dimensions
         int32 startX, startY, width, height;
         element->CalcDimensions(&startX, &startY, &width, &height);
 
         // show the times of the element
-        mPlugin->GetTimeInfoWidget()->SetOverwriteTime(mPlugin->PixelToTime(startX), mPlugin->PixelToTime(startX + width));
+        m_plugin->GetTimeInfoWidget()->SetOverwriteTime(m_plugin->PixelToTime(startX), m_plugin->PixelToTime(startX + width));
     }
 
 
@@ -1003,21 +990,21 @@ namespace EMStudio
         }
 
         // if we clicked inside the node history area
-        RecorderGroup* recorderGroup = mPlugin->GetTimeViewToolBar()->GetRecorderGroup();
+        RecorderGroup* recorderGroup = m_plugin->GetTimeViewToolBar()->GetRecorderGroup();
         if (GetIsInsideNodeHistory(event->y()) && recorderGroup->GetDisplayNodeActivity())
         {
             EMotionFX::Recorder::ActorInstanceData* actorInstanceData = FindActorInstanceData();
             EMotionFX::Recorder::NodeHistoryItem* historyItem = FindNodeHistoryItem(actorInstanceData, event->x(), event->y());
             if (historyItem)
             {
-                emit mPlugin->DoubleClickedRecorderNodeHistoryItem(actorInstanceData, historyItem);
+                emit m_plugin->DoubleClickedRecorderNodeHistoryItem(actorInstanceData, historyItem);
             }
         }
     }
 
     void TrackDataWidget::SetPausedTime(float timeValue, bool emitTimeChangeStart)
     {
-        mPlugin->mCurTime = timeValue;
+        m_plugin->m_curTime = timeValue;
         const AZStd::vector<EMotionFX::MotionInstance*>& motionInstances = MotionWindowPlugin::GetSelectedMotionInstances();
         if (motionInstances.size() == 1)
         {
@@ -1027,137 +1014,137 @@ namespace EMStudio
         }
         if (emitTimeChangeStart)
         {
-            emit mPlugin->ManualTimeChangeStart(timeValue);
+            emit m_plugin->ManualTimeChangeStart(timeValue);
         }
-        emit mPlugin->ManualTimeChange(timeValue);
+        emit m_plugin->ManualTimeChange(timeValue);
     }
 
     // when the mouse is moving, while a button is pressed
     void TrackDataWidget::mouseMoveEvent(QMouseEvent* event)
     {
-        mPlugin->SetRedrawFlag();
+        m_plugin->SetRedrawFlag();
 
         QPoint mousePos = event->pos();
 
-        const int32 deltaRelX = event->x() - mLastMouseX;
-        mLastMouseX = event->x();
-        mPlugin->mCurMouseX = event->x();
-        mPlugin->mCurMouseY = event->y();
+        const int32 deltaRelX = event->x() - m_lastMouseX;
+        m_lastMouseX = event->x();
+        m_plugin->m_curMouseX = event->x();
+        m_plugin->m_curMouseY = event->y();
 
-        const int32 deltaRelY = event->y() - mLastMouseY;
-        mLastMouseY = event->y();
+        const int32 deltaRelY = event->y() - m_lastMouseY;
+        m_lastMouseY = event->y();
 
         const bool altPressed = event->modifiers() & Qt::AltModifier;
-        const bool isZooming = mMouseLeftClicked == false && mMouseRightClicked && altPressed;
-        const bool isPanning = mMouseLeftClicked == false && isZooming == false && (mMouseMidClicked || mMouseRightClicked);
+        const bool isZooming = m_mouseLeftClicked == false && m_mouseRightClicked && altPressed;
+        const bool isPanning = m_mouseLeftClicked == false && isZooming == false && (m_mouseMidClicked || m_mouseRightClicked);
 
         if (deltaRelY != 0)
         {
-            mAllowContextMenu = false;
+            m_allowContextMenu = false;
         }
 
         // get the track over which the cursor is positioned
-        TimeTrack* mouseCursorTrack = mPlugin->GetTrackAt(event->y());
+        TimeTrack* mouseCursorTrack = m_plugin->GetTrackAt(event->y());
 
-        if (mMouseRightClicked)
+        if (m_mouseRightClicked)
         {
-            mIsScrolling = true;
+            m_isScrolling = true;
         }
 
         // if the mouse left button is pressed
-        if (mMouseLeftClicked)
+        if (m_mouseLeftClicked)
         {
             if (altPressed)
             {
-                mRectZooming = true;
+                m_rectZooming = true;
             }
             else
             {
-                mRectZooming = false;
+                m_rectZooming = false;
             }
 
             // rect selection: update mouse position
-            if (mRectSelecting)
+            if (m_rectSelecting)
             {
-                mSelectEnd = mousePos;
+                m_selectEnd = mousePos;
             }
 
-            if (mDraggingElement == nullptr && mResizeElement == nullptr && mRectSelecting == false)
+            if (m_draggingElement == nullptr && m_resizeElement == nullptr && m_rectSelecting == false)
             {
                 // update the current time marker
                 int newX = event->x();
                 newX = MCore::Clamp<int>(newX, 0, geometry().width() - 1);
-                mPlugin->mCurTime = mPlugin->PixelToTime(newX);
+                m_plugin->m_curTime = m_plugin->PixelToTime(newX);
 
                 EMotionFX::Recorder& recorder = EMotionFX::GetRecorder();
                 if (recorder.GetRecordTime() > MCore::Math::epsilon)
                 {
                     if (recorder.GetIsInPlayMode())
                     {
-                        recorder.SetCurrentPlayTime(aznumeric_cast<float>(mPlugin->GetCurrentTime()));
+                        recorder.SetCurrentPlayTime(aznumeric_cast<float>(m_plugin->GetCurrentTime()));
                         recorder.SetAutoPlay(false);
-                        emit mPlugin->ManualTimeChange(aznumeric_cast<float>(mPlugin->GetCurrentTime()));
+                        emit m_plugin->ManualTimeChange(aznumeric_cast<float>(m_plugin->GetCurrentTime()));
                     }
                 }
                 else
                 {
-                    SetPausedTime(aznumeric_cast<float>(mPlugin->mCurTime));
+                    SetPausedTime(aznumeric_cast<float>(m_plugin->m_curTime));
                 }
 
-                mIsScrolling = true;
+                m_isScrolling = true;
             }
 
             TimeTrack* dragElementTrack = nullptr;
-            if (mDraggingElement)
+            if (m_draggingElement)
             {
-                dragElementTrack = mDraggingElement->GetTrack();
+                dragElementTrack = m_draggingElement->GetTrack();
             }
 
             // calculate the delta movement
-            const int32 deltaX = event->x() - mLastLeftClickedX;
+            const int32 deltaX = event->x() - m_lastLeftClickedX;
             const int32 movement = abs(deltaX);
             const bool elementTrackChanged = (mouseCursorTrack && dragElementTrack && mouseCursorTrack != dragElementTrack);
-            if ((movement > 1 && !mDragging) || elementTrackChanged)
+            if ((movement > 1 && !m_dragging) || elementTrackChanged)
             {
-                mDragging = true;
+                m_dragging = true;
             }
 
             // handle resizing
-            if (mResizing)
+            if (m_resizing)
             {
-                if (mPlugin->FindTrackByElement(mResizeElement) == nullptr)
+                if (m_plugin->FindTrackByElement(m_resizeElement) == nullptr)
                 {
-                    mResizeElement = nullptr;
+                    m_resizeElement = nullptr;
                 }
 
-                if (mResizeElement)
+                if (m_resizeElement)
                 {
-                    TimeTrack* resizeElementTrack = mResizeElement->GetTrack();
+                    TimeTrack* resizeElementTrack = m_resizeElement->GetTrack();
 
                     // only allow resizing on enabled time tracks
                     if (resizeElementTrack->GetIsEnabled())
                     {
-                        mResizeElement->SetShowTimeHandles(true);
-                        mResizeElement->SetShowToolTip(false);
+                        m_resizeElement->SetShowTimeHandles(true);
+                        m_resizeElement->SetShowToolTip(false);
 
-                        double resizeTime = (deltaRelX / mPlugin->mTimeScale) / mPlugin->mPixelsPerSecond;
-                        mResizeID = mResizeElement->HandleResize(mResizeID, resizeTime, 0.02 / mPlugin->mTimeScale);
+                        double resizeTime = (deltaRelX / m_plugin->m_timeScale) / m_plugin->m_pixelsPerSecond;
+                        m_resizeId = m_resizeElement->HandleResize(m_resizeId, resizeTime, 0.02 / m_plugin->m_timeScale);
 
                         // show the time of the currently resizing element in the time info view
-                        ShowElementTimeInfo(mResizeElement);
+                        ShowElementTimeInfo(m_resizeElement);
 
                         // Move the current time marker along with the event resizing position.
                         float timeValue = 0.0f;
-                        switch (mResizeID)
+                        switch (m_resizeId)
                         {
                             case TimeTrackElement::RESIZEPOINT_START:
                             {
-                                timeValue = aznumeric_cast<float>(mResizeElement->GetStartTime());
+                                timeValue = aznumeric_cast<float>(m_resizeElement->GetStartTime());
                                 break;
                             }
                             case TimeTrackElement::RESIZEPOINT_END:
                             {
-                                timeValue = aznumeric_cast<float>(mResizeElement->GetEndTime());
+                                timeValue = aznumeric_cast<float>(m_resizeElement->GetEndTime());
                                 break;
                             }
                             default:
@@ -1175,7 +1162,7 @@ namespace EMStudio
             }
 
             // if we are not dragging or no element is being dragged, there is nothing to do
-            if (mDragging == false || mDraggingElement == nullptr)
+            if (m_dragging == false || m_draggingElement == nullptr)
             {
                 return;
             }
@@ -1184,79 +1171,79 @@ namespace EMStudio
             if (elementTrackChanged)
             {
                 // if yes we need to remove the dragging element from the old time track
-                dragElementTrack->RemoveElement(mDraggingElement, false);
+                dragElementTrack->RemoveElement(m_draggingElement, false);
 
                 // and add it to the new time track where the cursor now is over
-                mouseCursorTrack->AddElement(mDraggingElement);
-                mDraggingElement->SetTrack(mouseCursorTrack);
+                mouseCursorTrack->AddElement(m_draggingElement);
+                m_draggingElement->SetTrack(mouseCursorTrack);
             }
 
             // show the time of the currently dragging element in the time info view
-            ShowElementTimeInfo(mDraggingElement);
+            ShowElementTimeInfo(m_draggingElement);
 
             // adjust the cursor
             setCursor(Qt::ClosedHandCursor);
-            mDraggingElement->SetShowToolTip(false);
+            m_draggingElement->SetShowToolTip(false);
 
             // show the time handles
-            mDraggingElement->SetShowTimeHandles(true);
+            m_draggingElement->SetShowTimeHandles(true);
 
-            const double snapThreshold = 0.02 / mPlugin->mTimeScale;
+            const double snapThreshold = 0.02 / m_plugin->m_timeScale;
 
             // calculate how many pixels we moved with the mouse
-            const int32 deltaMovement = event->x() - mLastMouseMoveX;
-            mLastMouseMoveX = event->x();
+            const int32 deltaMovement = event->x() - m_lastMouseMoveX;
+            m_lastMouseMoveX = event->x();
 
             // snap the moved amount to a given time value
-            double snappedTime = mDraggingElement->GetStartTime() + ((deltaMovement / mPlugin->mPixelsPerSecond) / mPlugin->mTimeScale);
+            double snappedTime = m_draggingElement->GetStartTime() + ((deltaMovement / m_plugin->m_pixelsPerSecond) / m_plugin->m_timeScale);
 
             bool startSnapped = false;
             if (abs(deltaMovement) < 2 && abs(deltaMovement) > 0) // only snap when moving the mouse very slowly
             {
-                startSnapped = mPlugin->SnapTime(&snappedTime, mDraggingElement, snapThreshold);
+                startSnapped = m_plugin->SnapTime(&snappedTime, m_draggingElement, snapThreshold);
             }
 
             // in case the start time didn't snap to anything
             if (startSnapped == false)
             {
                 // try to snap the end time
-                double snappedEndTime = mDraggingElement->GetEndTime() + ((deltaMovement / mPlugin->mPixelsPerSecond) / mPlugin->mTimeScale);
-                /*bool endSnapped = */ mPlugin->SnapTime(&snappedEndTime, mDraggingElement, snapThreshold);
+                double snappedEndTime = m_draggingElement->GetEndTime() + ((deltaMovement / m_plugin->m_pixelsPerSecond) / m_plugin->m_timeScale);
+                /*bool endSnapped = */ m_plugin->SnapTime(&snappedEndTime, m_draggingElement, snapThreshold);
 
                 // apply the delta movement
-                const double deltaTime = snappedEndTime - mDraggingElement->GetEndTime();
-                mDraggingElement->MoveRelative(deltaTime);
+                const double deltaTime = snappedEndTime - m_draggingElement->GetEndTime();
+                m_draggingElement->MoveRelative(deltaTime);
             }
             else
             {
                 // apply the snapped delta movement
-                const double deltaTime = snappedTime - mDraggingElement->GetStartTime();
-                mDraggingElement->MoveRelative(deltaTime);
+                const double deltaTime = snappedTime - m_draggingElement->GetStartTime();
+                m_draggingElement->MoveRelative(deltaTime);
             }
 
-            dragElementTrack = mDraggingElement->GetTrack();
-            const float timeValue = aznumeric_cast<float>(mDraggingElement->GetStartTime());
+            dragElementTrack = m_draggingElement->GetTrack();
+            const float timeValue = aznumeric_cast<float>(m_draggingElement->GetStartTime());
             SetPausedTime(timeValue);
         }
         else if (isPanning)
         {
             if (EMotionFX::GetRecorder().GetIsRecording() == false)
             {
-                mPlugin->DeltaScrollX(-deltaRelX, false);
+                m_plugin->DeltaScrollX(-deltaRelX, false);
             }
         }
         else if (isZooming)
         {
             if (deltaRelY < 0)
             {
-                setCursor(*(mPlugin->GetZoomOutCursor()));
+                setCursor(*(m_plugin->GetZoomOutCursor()));
             }
             else
             {
-                setCursor(*(mPlugin->GetZoomInCursor()));
+                setCursor(*(m_plugin->GetZoomInCursor()));
             }
 
-            DoMouseYMoveZoom(deltaRelY, mPlugin);
+            DoMouseYMoveZoom(deltaRelY, m_plugin);
         }
         else // no left mouse button is pressed
         {
@@ -1284,10 +1271,10 @@ namespace EMStudio
     void TrackDataWidget::UpdateMouseOverCursor(int32 x, int32 y)
     {
         // disable all tooltips
-        mPlugin->DisableAllToolTips();
+        m_plugin->DisableAllToolTips();
 
         // get the time track and return directly if we are not over a valid track with the cursor
-        TimeTrack* timeTrack = mPlugin->GetTrackAt(y);
+        TimeTrack* timeTrack = m_plugin->GetTrackAt(y);
         if (timeTrack == nullptr)
         {
             setCursor(Qt::ArrowCursor);
@@ -1295,7 +1282,7 @@ namespace EMStudio
         }
 
         // get the element over which the cursor is positioned
-        TimeTrackElement* element = mPlugin->GetElementAt(x, y);
+        TimeTrackElement* element = m_plugin->GetElementAt(x, y);
 
         // in case the cursor is over an element, show tool tips
         if (element)
@@ -1304,7 +1291,7 @@ namespace EMStudio
         }
         else
         {
-            mPlugin->DisableAllToolTips();
+            m_plugin->DisableAllToolTips();
         }
 
         // do not allow any editing in case the track is not enabled
@@ -1315,10 +1302,10 @@ namespace EMStudio
         }
 
         // check if we are hovering over a resize point
-        if (mPlugin->FindResizePoint(x, y, &mResizeElement, &mResizeID))
+        if (m_plugin->FindResizePoint(x, y, &m_resizeElement, &m_resizeId))
         {
             setCursor(Qt::SizeHorCursor);
-            mResizeElement->SetShowToolTip(true);
+            m_resizeElement->SetShowToolTip(true);
         }
         else // if we're not above a resize point
         {
@@ -1337,7 +1324,7 @@ namespace EMStudio
     // when the mouse is pressed
     void TrackDataWidget::mousePressEvent(QMouseEvent* event)
     {
-        mPlugin->SetRedrawFlag();
+        m_plugin->SetRedrawFlag();
 
         QPoint mousePos = event->pos();
 
@@ -1346,35 +1333,35 @@ namespace EMStudio
         const bool altPressed = event->modifiers() & Qt::AltModifier;
 
         // store the last clicked position
-        mLastMouseMoveX     = event->x();
-        mAllowContextMenu   = true;
-        mRectSelecting      = false;
+        m_lastMouseMoveX     = event->x();
+        m_allowContextMenu   = true;
+        m_rectSelecting      = false;
 
         if (event->button() == Qt::RightButton)
         {
-            mMouseRightClicked = true;
+            m_mouseRightClicked = true;
         }
 
         if (event->button() == Qt::MidButton)
         {
-            mMouseMidClicked = true;
+            m_mouseMidClicked = true;
         }
 
         if (event->button() == Qt::LeftButton)
         {
-            mMouseLeftClicked   = true;
+            m_mouseLeftClicked   = true;
 
             EMotionFX::Recorder& recorder = EMotionFX::GetRecorder();
-            if ((mPlugin->mNodeHistoryItem == nullptr) && altPressed == false && (recorder.GetRecordTime() >= MCore::Math::epsilon))
+            if ((m_plugin->m_nodeHistoryItem == nullptr) && altPressed == false && (recorder.GetRecordTime() >= MCore::Math::epsilon))
             {
                 // update the current time marker
                 int newX = event->x();
                 newX = MCore::Clamp<int>(newX, 0, geometry().width() - 1);
-                mPlugin->mCurTime = mPlugin->PixelToTime(newX);
+                m_plugin->m_curTime = m_plugin->PixelToTime(newX);
 
                 if (recorder.GetRecordTime() < MCore::Math::epsilon)
                 {
-                    SetPausedTime(aznumeric_cast<float>(mPlugin->GetCurrentTime()), /*emitTimeChangeStart=*/true);
+                    SetPausedTime(aznumeric_cast<float>(m_plugin->GetCurrentTime()), /*emitTimeChangeStart=*/true);
                 }
                 else
                 {
@@ -1383,34 +1370,34 @@ namespace EMStudio
                         recorder.StartPlayBack();
                     }
 
-                    recorder.SetCurrentPlayTime(aznumeric_cast<float>(mPlugin->GetCurrentTime()));
+                    recorder.SetCurrentPlayTime(aznumeric_cast<float>(m_plugin->GetCurrentTime()));
                     recorder.SetAutoPlay(false);
-                    emit mPlugin->ManualTimeChangeStart(aznumeric_cast<float>(mPlugin->GetCurrentTime()));
-                    emit mPlugin->ManualTimeChange(aznumeric_cast<float>(mPlugin->GetCurrentTime()));
+                    emit m_plugin->ManualTimeChangeStart(aznumeric_cast<float>(m_plugin->GetCurrentTime()));
+                    emit m_plugin->ManualTimeChange(aznumeric_cast<float>(m_plugin->GetCurrentTime()));
                 }
             }
             else // not inside timeline
             {
                 // if we clicked inside the node history area
-                RecorderGroup* recorderGroup = mPlugin->GetTimeViewToolBar()->GetRecorderGroup();
+                RecorderGroup* recorderGroup = m_plugin->GetTimeViewToolBar()->GetRecorderGroup();
                 if (GetIsInsideNodeHistory(event->y()) && recorderGroup->GetDisplayNodeActivity())
                 {
                     EMotionFX::Recorder::ActorInstanceData* actorInstanceData = FindActorInstanceData();
                     EMotionFX::Recorder::NodeHistoryItem* historyItem = FindNodeHistoryItem(actorInstanceData, event->x(), event->y());
                     if (historyItem && altPressed == false)
                     {
-                        emit mPlugin->ClickedRecorderNodeHistoryItem(actorInstanceData, historyItem);
+                        emit m_plugin->ClickedRecorderNodeHistoryItem(actorInstanceData, historyItem);
                     }
                 }
                 {
                     // unselect all elements
                     if (ctrlPressed == false && shiftPressed == false)
                     {
-                        mPlugin->UnselectAllElements();
+                        m_plugin->UnselectAllElements();
                     }
 
                     // find the element we're clicking in
-                    TimeTrackElement* element = mPlugin->GetElementAt(event->x(), event->y());
+                    TimeTrackElement* element = m_plugin->GetElementAt(event->x(), event->y());
                     if (element)
                     {
                         // show the time of the currently dragging element in the time info view
@@ -1420,26 +1407,26 @@ namespace EMStudio
 
                         if (timeTrack->GetIsEnabled())
                         {
-                            mDraggingElement    = element;
-                            mDragElementTrack   = timeTrack;
-                            mDraggingElement->SetShowTimeHandles(true);
+                            m_draggingElement    = element;
+                            m_dragElementTrack   = timeTrack;
+                            m_draggingElement->SetShowTimeHandles(true);
                             setCursor(Qt::ClosedHandCursor);
                         }
                         else
                         {
-                            mDraggingElement    = nullptr;
-                            mDragElementTrack   = nullptr;
+                            m_draggingElement    = nullptr;
+                            m_dragElementTrack   = nullptr;
                         }
 
                         // shift select
                         if (shiftPressed)
                         {
                             // get the element number of the clicked element
-                            const uint32 clickedElementNr = element->GetElementNumber();
+                            const size_t clickedElementNr = element->GetElementNumber();
 
                             // get the element number of the first previously selected element
                             TimeTrackElement* firstSelectedElement = timeTrack->GetFirstSelectedElement();
-                            const uint32 firstSelectedNr = firstSelectedElement ? firstSelectedElement->GetElementNumber() : 0;
+                            const size_t firstSelectedNr = firstSelectedElement ? firstSelectedElement->GetElementNumber() : 0;
 
                             // range select
                             timeTrack->RangeSelectElements(firstSelectedNr, clickedElementNr);
@@ -1456,35 +1443,28 @@ namespace EMStudio
                     }
                     else // no element clicked
                     {
-                        mDraggingElement    = nullptr;
-                        mDragElementTrack   = nullptr;
+                        m_draggingElement    = nullptr;
+                        m_dragElementTrack   = nullptr;
 
                         // rect selection
-                        mRectSelecting  = true;
-                        mSelectStart    = mousePos;
-                        mSelectEnd      = mSelectStart;
+                        m_rectSelecting  = true;
+                        m_selectStart    = mousePos;
+                        m_selectEnd      = m_selectStart;
                         setCursor(Qt::ArrowCursor);
                     }
 
                     // if we're going to resize
-                    if (mResizeElement && mResizeID != MCORE_INVALIDINDEX32)
-                    {
-                        mResizing = true;
-                    }
-                    else
-                    {
-                        mResizing = false;
-                    }
+                    m_resizing = m_resizeElement && m_resizeId != InvalidIndex32;
 
                     // store the last clicked position
-                    mMouseLeftClicked   = true;
-                    mLastLeftClickedX   = event->x();
+                    m_mouseLeftClicked   = true;
+                    m_lastLeftClickedX   = event->x();
                 }
             }
         }
 
-        const bool isZooming = mMouseLeftClicked == false && mMouseRightClicked && altPressed;
-        const bool isPanning = mMouseLeftClicked == false && isZooming == false && (mMouseMidClicked || mMouseRightClicked);
+        const bool isZooming = m_mouseLeftClicked == false && m_mouseRightClicked && altPressed;
+        const bool isPanning = m_mouseLeftClicked == false && isZooming == false && (m_mouseMidClicked || m_mouseRightClicked);
 
         if (isPanning)
         {
@@ -1493,7 +1473,7 @@ namespace EMStudio
 
         if (isZooming)
         {
-            setCursor(*(mPlugin->GetZoomInCursor()));
+            setCursor(*(m_plugin->GetZoomInCursor()));
         }
     }
 
@@ -1501,58 +1481,58 @@ namespace EMStudio
     // when releasing the mouse button
     void TrackDataWidget::mouseReleaseEvent(QMouseEvent* event)
     {
-        mPlugin->SetRedrawFlag();
+        m_plugin->SetRedrawFlag();
 
         setCursor(Qt::ArrowCursor);
 
         // disable overwrite mode in any case when the mouse gets released so that we display the current time from the plugin again
-        if (mPlugin->GetTimeInfoWidget())
+        if (m_plugin->GetTimeInfoWidget())
         {
-            mPlugin->GetTimeInfoWidget()->SetIsOverwriteMode(false);
+            m_plugin->GetTimeInfoWidget()->SetIsOverwriteMode(false);
         }
 
-        mLastMouseMoveX = event->x();
+        m_lastMouseMoveX = event->x();
 
         const bool ctrlPressed = event->modifiers() & Qt::ControlModifier;
         //const bool shiftPressed = event->modifiers() & Qt::ShiftModifier;
 
         if (event->button() == Qt::RightButton)
         {
-            mMouseRightClicked = false;
-            mIsScrolling = false;
+            m_mouseRightClicked = false;
+            m_isScrolling = false;
         }
 
         if (event->button() == Qt::MidButton)
         {
-            mMouseMidClicked = false;
+            m_mouseMidClicked = false;
         }
 
         if (event->button() == Qt::LeftButton)
         {
-            TimeTrack* mouseCursorTrack = mPlugin->GetTrackAt(event->y());
-            const bool elementTrackChanged = (mouseCursorTrack && mDragElementTrack && mouseCursorTrack != mDragElementTrack);
+            TimeTrack* mouseCursorTrack = m_plugin->GetTrackAt(event->y());
+            const bool elementTrackChanged = (mouseCursorTrack && m_dragElementTrack && mouseCursorTrack != m_dragElementTrack);
 
-            if (mDragging && mMouseLeftClicked && mDraggingElement && !mIsScrolling && !mResizing)
+            if (m_dragging && m_mouseLeftClicked && m_draggingElement && !m_isScrolling && !m_resizing)
             {
-                SetPausedTime(aznumeric_cast<float>(mDraggingElement->GetStartTime()));
+                SetPausedTime(aznumeric_cast<float>(m_draggingElement->GetStartTime()));
             }
 
-            if ((mResizing || mDragging) && elementTrackChanged == false && mDraggingElement)
+            if ((m_resizing || m_dragging) && elementTrackChanged == false && m_draggingElement)
             {
-                emit MotionEventChanged(mDraggingElement, mDraggingElement->GetStartTime(), mDraggingElement->GetEndTime());
+                emit MotionEventChanged(m_draggingElement, m_draggingElement->GetStartTime(), m_draggingElement->GetEndTime());
             }
 
-            mMouseLeftClicked = false;
-            mDragging = false;
-            mResizing = false;
-            mIsScrolling = false;
+            m_mouseLeftClicked = false;
+            m_dragging = false;
+            m_resizing = false;
+            m_isScrolling = false;
 
             // rect selection
-            if (mRectSelecting)
+            if (m_rectSelecting)
             {
-                if (mRectZooming)
+                if (m_rectZooming)
                 {
-                    mRectZooming = false;
+                    m_rectZooming = false;
 
                     // calc the selection rect
                     QRect selectRect;
@@ -1561,7 +1541,7 @@ namespace EMStudio
                     // zoom in on the rect
                     if (selectRect.isEmpty() == false)
                     {
-                        mPlugin->ZoomRect(selectRect);
+                        m_plugin->ZoomRect(selectRect);
                     }
                 }
                 else
@@ -1573,8 +1553,6 @@ namespace EMStudio
                     // select things inside it
                     if (selectRect.isEmpty() == false)
                     {
-                        //selectRect = mActiveGraph->GetTransform().inverted().mapRect( selectRect );
-
                         // rect select the elements
                         const bool overwriteSelection = (ctrlPressed == false);
                         SelectElementsInRect(selectRect, overwriteSelection, true, ctrlPressed);
@@ -1583,37 +1561,37 @@ namespace EMStudio
             }
 
             // check if we moved an element to another track
-            if (elementTrackChanged && mDraggingElement)
+            if (elementTrackChanged && m_draggingElement)
             {
                 // lastly fire a signal so that the data can change along with
-                emit ElementTrackChanged(mDraggingElement->GetElementNumber(), aznumeric_cast<float>(mDraggingElement->GetStartTime()), aznumeric_cast<float>(mDraggingElement->GetEndTime()), mDragElementTrack->GetName(), mouseCursorTrack->GetName());
+                emit ElementTrackChanged(m_draggingElement->GetElementNumber(), aznumeric_cast<float>(m_draggingElement->GetStartTime()), aznumeric_cast<float>(m_draggingElement->GetEndTime()), m_dragElementTrack->GetName(), mouseCursorTrack->GetName());
             }
-            mDragElementTrack = nullptr;
+            m_dragElementTrack = nullptr;
 
-            if (mDraggingElement)
+            if (m_draggingElement)
             {
-                mDraggingElement->SetShowTimeHandles(false);
-                mDraggingElement = nullptr;
+                m_draggingElement->SetShowTimeHandles(false);
+                m_draggingElement = nullptr;
             }
 
             // disable rect selection mode again
-            mRectSelecting  = false;
+            m_rectSelecting  = false;
             return;
         }
 
         // disable rect selection mode again
-        mRectSelecting  = false;
+        m_rectSelecting  = false;
 
         UpdateMouseOverCursor(event->x(), event->y());
     }
 
     void TrackDataWidget::ClearState()
     {
-        mDragElementTrack = nullptr;
-        mDraggingElement = nullptr;
-        mDragging = false;
-        mResizing = false;
-        mResizeElement = nullptr;
+        m_dragElementTrack = nullptr;
+        m_draggingElement = nullptr;
+        m_dragging = false;
+        m_resizing = false;
+        m_resizeElement = nullptr;
     }
 
     // the mouse wheel is adjusted
@@ -1657,15 +1635,15 @@ namespace EMStudio
     // handle mouse wheel event
     void TrackDataWidget::wheelEvent(QWheelEvent* event)
     {
-        DoWheelEvent(event, mPlugin);
+        DoWheelEvent(event, m_plugin);
     }
 
 
     // drag & drop support
     void TrackDataWidget::dragEnterEvent(QDragEnterEvent* event)
     {
-        mPlugin->SetRedrawFlag();
-        mOldCurrentTime = mPlugin->GetCurrentTime();
+        m_plugin->SetRedrawFlag();
+        m_oldCurrentTime = m_plugin->GetCurrentTime();
 
         // this is needed to actually reach the drop event function
         event->acceptProposedAction();
@@ -1674,11 +1652,11 @@ namespace EMStudio
 
     void TrackDataWidget::dragMoveEvent(QDragMoveEvent* event)
     {
-        mPlugin->SetRedrawFlag();
+        m_plugin->SetRedrawFlag();
         QPoint mousePos = event->pos();
 
-        double dropTime = mPlugin->PixelToTime(mousePos.x());
-        mPlugin->SetCurrentTime(dropTime);
+        double dropTime = m_plugin->PixelToTime(mousePos.x());
+        m_plugin->SetCurrentTime(dropTime);
 
         SetPausedTime(aznumeric_cast<float>(dropTime));
     }
@@ -1686,26 +1664,26 @@ namespace EMStudio
 
     void TrackDataWidget::dropEvent(QDropEvent* event)
     {
-        mPlugin->SetRedrawFlag();
+        m_plugin->SetRedrawFlag();
         // accept the drop
         event->acceptProposedAction();
 
         // emit drop event
         emit MotionEventPresetsDropped(event->pos());
 
-        mPlugin->SetCurrentTime(mOldCurrentTime);
+        m_plugin->SetCurrentTime(m_oldCurrentTime);
     }
 
 
     // the context menu event
     void TrackDataWidget::contextMenuEvent(QContextMenuEvent* event)
     {
-        if (mIsScrolling || mDragging  || mResizing || !mAllowContextMenu)
+        if (m_isScrolling || m_dragging  || m_resizing || !m_allowContextMenu)
         {
             return;
         }
 
-        mPlugin->SetRedrawFlag();
+        m_plugin->SetRedrawFlag();
 
         if (EMotionFX::GetRecorder().GetRecordTime() > MCore::Math::epsilon)
         {
@@ -1713,34 +1691,34 @@ namespace EMStudio
             return;
         }
 
-        if (mPlugin->mMotion == nullptr)
+        if (m_plugin->m_motion == nullptr)
         {
             return;
         }
 
         QPoint point = event->pos();
-        mContextMenuX = point.x();
-        mContextMenuY = point.y();
+        m_contextMenuX = point.x();
+        m_contextMenuY = point.y();
 
-        TimeTrack* timeTrack = mPlugin->GetTrackAt(mContextMenuY);
+        TimeTrack* timeTrack = m_plugin->GetTrackAt(m_contextMenuY);
 
-        uint32 numElements          = 0;
-        uint32 numSelectedElements  = 0;
+        size_t numElements          = 0;
+        size_t numSelectedElements  = 0;
 
         // calculate the number of selected and total events
-        const uint32 numTracks = mPlugin->GetNumTracks();
-        for (uint32 i = 0; i < numTracks; ++i)
+        const size_t numTracks = m_plugin->GetNumTracks();
+        for (size_t i = 0; i < numTracks; ++i)
         {
             // get the current time view track
-            TimeTrack* track = mPlugin->GetTrack(i);
+            TimeTrack* track = m_plugin->GetTrack(i);
             if (track->GetIsVisible() == false)
             {
                 continue;
             }
 
             // get the number of elements in the track and iterate through them
-            const uint32 numTrackElements = track->GetNumElements();
-            for (uint32 j = 0; j < numTrackElements; ++j)
+            const size_t numTrackElements = track->GetNumElements();
+            for (size_t j = 0; j < numTrackElements; ++j)
             {
                 TimeTrackElement* element = track->GetElement(j);
                 numElements++;
@@ -1755,7 +1733,7 @@ namespace EMStudio
         if (timeTrack)
         {
             numElements = timeTrack->GetNumElements();
-            for (uint32 i = 0; i < numElements; ++i)
+            for (size_t i = 0; i < numElements; ++i)
             {
                 TimeTrackElement* element = timeTrack->GetElement(i);
 
@@ -1771,7 +1749,7 @@ namespace EMStudio
 
         if (timeTrack)
         {
-            TimeTrackElement* element = mPlugin->GetElementAt(mContextMenuX, mContextMenuY);
+            TimeTrackElement* element = m_plugin->GetElementAt(m_contextMenuX, m_contextMenuY);
             if (element == nullptr)
             {
                 QAction* action = menu.addAction("Add motion event");
@@ -1860,9 +1838,9 @@ namespace EMStudio
     // propagate key events to the plugin and let it handle by a shared function
     void TrackDataWidget::keyPressEvent(QKeyEvent* event)
     {
-        if (mPlugin)
+        if (m_plugin)
         {
-            mPlugin->OnKeyPressEvent(event);
+            m_plugin->OnKeyPressEvent(event);
         }
     }
 
@@ -1870,31 +1848,31 @@ namespace EMStudio
     // propagate key events to the plugin and let it handle by a shared function
     void TrackDataWidget::keyReleaseEvent(QKeyEvent* event)
     {
-        if (mPlugin)
+        if (m_plugin)
         {
-            mPlugin->OnKeyReleaseEvent(event);
+            m_plugin->OnKeyReleaseEvent(event);
         }
     }
 
 
     void TrackDataWidget::AddMotionEvent(int32 x, int32 y)
     {
-        mPlugin->AddMotionEvent(x, y);
+        m_plugin->AddMotionEvent(x, y);
     }
 
 
     void TrackDataWidget::RemoveMotionEvent(int32 x, int32 y)
     {
-        mPlugin->SetRedrawFlag();
+        m_plugin->SetRedrawFlag();
         // get the time track on which we dropped the preset
-        TimeTrack* timeTrack = mPlugin->GetTrackAt(y);
+        TimeTrack* timeTrack = m_plugin->GetTrackAt(y);
         if (timeTrack == nullptr)
         {
             return;
         }
 
         // get the time track on which we dropped the preset
-        TimeTrackElement* element = mPlugin->GetElementAt(x, y);
+        TimeTrackElement* element = m_plugin->GetElementAt(x, y);
         if (element == nullptr)
         {
             return;
@@ -1907,33 +1885,33 @@ namespace EMStudio
     // remove selected motion events in track
     void TrackDataWidget::RemoveSelectedMotionEventsInTrack()
     {
-        mPlugin->SetRedrawFlag();
+        m_plugin->SetRedrawFlag();
         // get the track where we are at the moment
-        TimeTrack* timeTrack = mPlugin->GetTrackAt(mLastMouseY);
+        TimeTrack* timeTrack = m_plugin->GetTrackAt(m_lastMouseY);
         if (timeTrack == nullptr)
         {
             return;
         }
 
-        MCore::Array<uint32> eventNumbers;
+        AZStd::vector<size_t> eventNumbers;
 
         // calculate the number of selected events
-        const uint32 numEvents = timeTrack->GetNumElements();
-        for (uint32 i = 0; i < numEvents; ++i)
+        const size_t numEvents = timeTrack->GetNumElements();
+        for (size_t i = 0; i < numEvents; ++i)
         {
             TimeTrackElement* element = timeTrack->GetElement(i);
 
             // increase the counter in case the element is selected
             if (element->GetIsSelected())
             {
-                eventNumbers.Add(i);
+                eventNumbers.emplace_back(i);
             }
         }
 
         // remove the motion events
         CommandSystem::CommandHelperRemoveMotionEvents(timeTrack->GetName(), eventNumbers);
 
-        mPlugin->UnselectAllElements();
+        m_plugin->UnselectAllElements();
         ClearState();
     }
 
@@ -1941,39 +1919,39 @@ namespace EMStudio
     // remove all motion events in track
     void TrackDataWidget::RemoveAllMotionEventsInTrack()
     {
-        mPlugin->SetRedrawFlag();
+        m_plugin->SetRedrawFlag();
 
-        TimeTrack* timeTrack = mPlugin->GetTrackAt(mLastMouseY);
+        TimeTrack* timeTrack = m_plugin->GetTrackAt(m_lastMouseY);
         if (timeTrack == nullptr)
         {
             return;
         }
 
-        MCore::Array<uint32> eventNumbers;
+        AZStd::vector<size_t> eventNumbers;
 
         // construct an array with the event numbers
-        const uint32 numEvents = timeTrack->GetNumElements();
-        for (uint32 i = 0; i < numEvents; ++i)
+        const size_t numEvents = timeTrack->GetNumElements();
+        for (size_t i = 0; i < numEvents; ++i)
         {
-            eventNumbers.Add(i);
+            eventNumbers.emplace_back(i);
         }
 
         // remove the motion events
         CommandSystem::CommandHelperRemoveMotionEvents(timeTrack->GetName(), eventNumbers);
 
-        mPlugin->UnselectAllElements();
+        m_plugin->UnselectAllElements();
         ClearState();
     }
 
     void TrackDataWidget::OnRemoveEventTrack()
     {
-        const TimeTrack* timeTrack = mPlugin->GetTrackAt(mLastMouseY);
+        const TimeTrack* timeTrack = m_plugin->GetTrackAt(m_lastMouseY);
         if (!timeTrack)
         {
             return;
         }
 
-        const AZ::Outcome<AZ::u32> trackIndexOutcome = mPlugin->FindTrackIndex(timeTrack);
+        const AZ::Outcome<size_t> trackIndexOutcome = m_plugin->FindTrackIndex(timeTrack);
         if (trackIndexOutcome.IsSuccess())
         {
             RemoveTrack(trackIndexOutcome.GetValue());
@@ -1983,10 +1961,10 @@ namespace EMStudio
     void TrackDataWidget::FillCopyElements(bool selectedItemsOnly)
     {
         // clear the array before feeding it
-        mCopyElements.clear();
+        m_copyElements.clear();
 
         // get the time track name
-        const TimeTrack* timeTrack = mPlugin->GetTrackAt(mContextMenuY);
+        const TimeTrack* timeTrack = m_plugin->GetTrackAt(m_contextMenuY);
         if (timeTrack == nullptr)
         {
             return;
@@ -1994,7 +1972,7 @@ namespace EMStudio
         const AZStd::string trackName = timeTrack->GetName();
 
         // check if the motion is valid and return failure in case it is not
-        const EMotionFX::Motion* motion = mPlugin->GetMotion();
+        const EMotionFX::Motion* motion = m_plugin->GetMotion();
         if (motion == nullptr)
         {
             return;
@@ -2009,9 +1987,9 @@ namespace EMStudio
         }
 
         // iterate through the elements
-        const uint32 numElements = timeTrack->GetNumElements();
+        const size_t numElements = timeTrack->GetNumElements();
         MCORE_ASSERT(numElements == eventTrack->GetNumEvents());
-        for (uint32 i = 0; i < numElements; ++i)
+        for (size_t i = 0; i < numElements; ++i)
         {
             // get the element and skip all unselected ones
             const TimeTrackElement* element = timeTrack->GetElement(i);
@@ -2024,7 +2002,7 @@ namespace EMStudio
             const EMotionFX::MotionEvent& motionEvent = eventTrack->GetEvent(i);
 
             // create the copy paste element and add it to the array
-            mCopyElements.emplace_back(
+            m_copyElements.emplace_back(
                 motion->GetID(),
                 eventTrack->GetNameString(),
                 motionEvent.GetEventDatas(),
@@ -2038,44 +2016,44 @@ namespace EMStudio
     // cut all events from a track
     void TrackDataWidget::OnCutTrack()
     {
-        mPlugin->SetRedrawFlag();
+        m_plugin->SetRedrawFlag();
 
         FillCopyElements(false);
 
-        mCutMode = true;
+        m_cutMode = true;
     }
 
 
     // copy all events from a track
     void TrackDataWidget::OnCopyTrack()
     {
-        mPlugin->SetRedrawFlag();
+        m_plugin->SetRedrawFlag();
 
         FillCopyElements(false);
 
-        mCutMode = false;
+        m_cutMode = false;
     }
 
 
     // cut motion event
     void TrackDataWidget::OnCutElement()
     {
-        mPlugin->SetRedrawFlag();
+        m_plugin->SetRedrawFlag();
 
         FillCopyElements(true);
 
-        mCutMode = true;
+        m_cutMode = true;
     }
 
 
     // copy motion event
     void TrackDataWidget::OnCopyElement()
     {
-        mPlugin->SetRedrawFlag();
+        m_plugin->SetRedrawFlag();
 
         FillCopyElements(true);
 
-        mCutMode = false;
+        m_cutMode = false;
     }
 
 
@@ -2100,10 +2078,10 @@ namespace EMStudio
     // paste motion events
     void TrackDataWidget::DoPaste(bool useLocation)
     {
-        mPlugin->SetRedrawFlag();
+        m_plugin->SetRedrawFlag();
 
         // get the time track name where we are pasting
-        TimeTrack* timeTrack = mPlugin->GetTrackAt(mContextMenuY);
+        TimeTrack* timeTrack = m_plugin->GetTrackAt(m_contextMenuY);
         if (timeTrack == nullptr)
         {
             return;
@@ -2111,23 +2089,23 @@ namespace EMStudio
         AZStd::string trackName = timeTrack->GetName();
 
         // get the number of elements to copy
-        const size_t numElements = mCopyElements.size();
+        const size_t numElements = m_copyElements.size();
 
         // create the command group
         MCore::CommandGroup commandGroup("Paste motion events");
 
         // find the min and maximum time values of the events to paste
-        auto [minEvent, maxEvent] = AZStd::minmax_element(begin(mCopyElements), end(mCopyElements), [](const CopyElement& left, const CopyElement& right)
+        auto [minEvent, maxEvent] = AZStd::minmax_element(begin(m_copyElements), end(m_copyElements), [](const CopyElement& left, const CopyElement& right)
         {
             return left.m_startTime < right.m_startTime;
         });
 
-        if (mCutMode)
+        if (m_cutMode)
         {
             // iterate through the copy elements from back to front and delete the selected ones
             for (int32 i = static_cast<int32>(numElements) - 1; i >= 0; i--)
             {
-                const CopyElement& copyElement = mCopyElements[i];
+                const CopyElement& copyElement = m_copyElements[i];
 
                 // get the motion to which the original element belongs to
                 EMotionFX::Motion* motion = EMotionFX::GetMotionManager().FindMotionByID(copyElement.m_motionID);
@@ -2145,7 +2123,7 @@ namespace EMStudio
                 }
 
                 // get the number of events and iterate through them
-                size_t eventNr = MCORE_INVALIDINDEX32;
+                size_t eventNr = InvalidIndex;
                 const size_t numEvents = eventTrack->GetNumEvents();
                 for (eventNr = 0; eventNr < numEvents; ++eventNr)
                 {
@@ -2159,20 +2137,18 @@ namespace EMStudio
                 }
 
                 // remove event
-                if (eventNr != MCORE_INVALIDINDEX32)
+                if (eventNr != InvalidIndex)
                 {
-                    CommandSystem::CommandHelperRemoveMotionEvent(copyElement.m_motionID, copyElement.m_trackName.c_str(), static_cast<uint32>(eventNr), &commandGroup);
+                    CommandSystem::CommandHelperRemoveMotionEvent(copyElement.m_motionID, copyElement.m_trackName.c_str(), eventNr, &commandGroup);
                 }
             }
         }
 
-        const float offset = useLocation ? aznumeric_cast<float>(mPlugin->PixelToTime(mContextMenuX, true)) - minEvent->m_startTime : 0.0f;
+        const float offset = useLocation ? aznumeric_cast<float>(m_plugin->PixelToTime(m_contextMenuX, true)) - minEvent->m_startTime : 0.0f;
 
         // iterate through the elements to copy and add the new motion events
-        for (uint32 i = 0; i < numElements; ++i)
+        for (const CopyElement& copyElement : m_copyElements)
         {
-            const CopyElement& copyElement = mCopyElements[i];
-
             float startTime = copyElement.m_startTime + offset;
             float endTime   = copyElement.m_endTime + offset;
 
@@ -2193,16 +2169,16 @@ namespace EMStudio
             MCore::LogError(outResult.c_str());
         }
 
-        if (mCutMode)
+        if (m_cutMode)
         {
-            mCopyElements.clear();
+            m_copyElements.clear();
         }
     }
 
 
     void TrackDataWidget::OnCreatePresetEvent()
     {
-        mPlugin->SetRedrawFlag();
+        m_plugin->SetRedrawFlag();
         EMStudioPlugin* plugin = EMStudio::GetPluginManager()->FindActivePlugin(MotionEventsPlugin::CLASS_ID);
         if (plugin == nullptr)
         {
@@ -2211,13 +2187,13 @@ namespace EMStudio
 
         MotionEventsPlugin* eventsPlugin = static_cast<MotionEventsPlugin*>(plugin);
 
-        QPoint mousePos(mContextMenuX, mContextMenuY);
+        QPoint mousePos(m_contextMenuX, m_contextMenuY);
         eventsPlugin->OnEventPresetDropped(mousePos);
     }
 
     void TrackDataWidget::OnAddTrack()
     {
-        mPlugin->SetRedrawFlag();
+        m_plugin->SetRedrawFlag();
         CommandSystem::CommandAddEventTrack();
     }
 
@@ -2225,11 +2201,11 @@ namespace EMStudio
     void TrackDataWidget::SelectElementsInRect(const QRect& rect, bool overwriteCurSelection, bool select, bool toggleMode)
     {
         // get the number of tracks and iterate through them
-        const uint32 numTracks = mPlugin->GetNumTracks();
-        for (uint32 i = 0; i < numTracks; ++i)
+        const size_t numTracks = m_plugin->GetNumTracks();
+        for (size_t i = 0; i < numTracks; ++i)
         {
             // get the current time track
-            TimeTrack* track = mPlugin->GetTrack(i);
+            TimeTrack* track = m_plugin->GetTrack(i);
             if (track->GetIsVisible() == false)
             {
                 continue;
@@ -2284,7 +2260,7 @@ namespace EMStudio
             else
             {
                 // get the hovered element and track
-                TimeTrackElement*   element = mPlugin->GetElementAt(localPos.x(), localPos.y());
+                TimeTrackElement*   element = m_plugin->GetElementAt(localPos.x(), localPos.y());
                 if (element == nullptr)
                 {
                     return QOpenGLWidget::event(event);
@@ -2313,20 +2289,20 @@ namespace EMStudio
         const EMotionFX::Recorder::ActorInstanceData* actorInstanceData = FindActorInstanceData();
 
         // if we recorded node history
-        mNodeHistoryRect = QRect();
-        if (actorInstanceData && actorInstanceData->mNodeHistoryItems.GetLength() > 0)
+        m_nodeHistoryRect = QRect();
+        if (actorInstanceData && !actorInstanceData->m_nodeHistoryItems.empty())
         {
-            const uint32 height = (recorder.CalcMaxNodeHistoryTrackIndex(*actorInstanceData) + 1) * (mNodeHistoryItemHeight + 3) + mNodeRectsStartHeight;
-            mNodeHistoryRect.setTop(mNodeRectsStartHeight);
-            mNodeHistoryRect.setBottom(height);
-            mNodeHistoryRect.setLeft(0);
-            mNodeHistoryRect.setRight(geometry().width());
+            const int height = aznumeric_caster((recorder.CalcMaxNodeHistoryTrackIndex(*actorInstanceData) + 1) * (m_nodeHistoryItemHeight + 3) + m_nodeRectsStartHeight);
+            m_nodeHistoryRect.setTop(m_nodeRectsStartHeight);
+            m_nodeHistoryRect.setBottom(height);
+            m_nodeHistoryRect.setLeft(0);
+            m_nodeHistoryRect.setRight(geometry().width());
         }
 
-        mEventHistoryTotalHeight = 0;
-        if (actorInstanceData && actorInstanceData->mEventHistoryItems.GetLength() > 0)
+        m_eventHistoryTotalHeight = 0;
+        if (actorInstanceData && !actorInstanceData->m_eventHistoryItems.empty())
         {
-            mEventHistoryTotalHeight = (recorder.CalcMaxEventHistoryTrackIndex(*actorInstanceData) + 1) * 20;
+            m_eventHistoryTotalHeight = aznumeric_caster((recorder.CalcMaxEventHistoryTrackIndex(*actorInstanceData) + 1) * 20);
         }
     }
 
@@ -2344,25 +2320,22 @@ namespace EMStudio
             return nullptr;
         }
 
-        // make sure the mTrackRemap array is up to date
-        RecorderGroup* recorderGroup = mPlugin->GetTimeViewToolBar()->GetRecorderGroup();
+        // make sure the m_trackRemap array is up to date
+        RecorderGroup* recorderGroup = m_plugin->GetTimeViewToolBar()->GetRecorderGroup();
         const bool sorted = recorderGroup->GetSortNodeActivity();
-        const uint32 graphContentsCode = mPlugin->mTrackHeaderWidget->mNodeContentsComboBox->currentIndex();
-        EMotionFX::GetRecorder().ExtractNodeHistoryItems(*actorInstanceData, aznumeric_cast<float>(mPlugin->mCurTime), sorted, (EMotionFX::Recorder::EValueType)graphContentsCode, &mActiveItems, &mTrackRemap);
+        const int graphContentsCode = m_plugin->m_trackHeaderWidget->m_nodeContentsComboBox->currentIndex();
+        EMotionFX::GetRecorder().ExtractNodeHistoryItems(*actorInstanceData, aznumeric_cast<float>(m_plugin->m_curTime), sorted, (EMotionFX::Recorder::EValueType)graphContentsCode, &m_activeItems, &m_trackRemap);
 
 
         // get the history items shortcut
-        const MCore::Array<EMotionFX::Recorder::NodeHistoryItem*>&  historyItems = actorInstanceData->mNodeHistoryItems;
+        const AZStd::vector<EMotionFX::Recorder::NodeHistoryItem*>&  historyItems = actorInstanceData->m_nodeHistoryItems;
 
         QRect rect;
-        const uint32 numItems = historyItems.GetLength();
-        for (uint32 i = 0; i < numItems; ++i)
+        for (EMotionFX::Recorder::NodeHistoryItem* curItem : historyItems)
         {
-            EMotionFX::Recorder::NodeHistoryItem* curItem = historyItems[i];
-
             // draw the background rect
-            double startTimePixel   = mPlugin->TimeToPixel(curItem->mStartTime);
-            double endTimePixel     = mPlugin->TimeToPixel(curItem->mEndTime);
+            double startTimePixel   = m_plugin->TimeToPixel(curItem->m_startTime);
+            double endTimePixel     = m_plugin->TimeToPixel(curItem->m_endTime);
 
             if (startTimePixel > x || endTimePixel < x)
             {
@@ -2371,8 +2344,8 @@ namespace EMStudio
 
             rect.setLeft(aznumeric_cast<int>(startTimePixel));
             rect.setRight(aznumeric_cast<int>(endTimePixel));
-            rect.setTop((mNodeRectsStartHeight + (mTrackRemap[curItem->mTrackIndex] * (mNodeHistoryItemHeight + 3)) + 3));
-            rect.setBottom(rect.top() + mNodeHistoryItemHeight);
+            rect.setTop((m_nodeRectsStartHeight + (aznumeric_cast<uint32>(m_trackRemap[curItem->m_trackIndex]) * (m_nodeHistoryItemHeight + 3)) + 3));
+            rect.setBottom(rect.top() + m_nodeHistoryItemHeight);
 
             if (rect.contains(x, y))
             {
@@ -2397,8 +2370,8 @@ namespace EMStudio
         }
 
         // find the actor instance data for this actor instance
-        const uint32 actorInstanceDataIndex = recorder.FindActorInstanceDataIndex(actorInstance);
-        if (actorInstanceDataIndex == MCORE_INVALIDINDEX32) // it doesn't exist, so we didn't record anything for this actor instance
+        const size_t actorInstanceDataIndex = recorder.FindActorInstanceDataIndex(actorInstance);
+        if (actorInstanceDataIndex == InvalidIndex) // it doesn't exist, so we didn't record anything for this actor instance
         {
             return nullptr;
         }
@@ -2412,8 +2385,8 @@ namespace EMStudio
     void TrackDataWidget::DoRecorderContextMenuEvent(QContextMenuEvent* event)
     {
         QPoint point = event->pos();
-        mContextMenuX = point.x();
-        mContextMenuY = point.y();
+        m_contextMenuX = point.x();
+        m_contextMenuY = point.y();
 
         // create the context menu
         QMenu menu(this);
@@ -2422,10 +2395,10 @@ namespace EMStudio
         // Timeline actions
         //---------------------
         QAction* action = menu.addAction("Zoom To Fit All");
-        connect(action, &QAction::triggered, mPlugin, &TimeViewPlugin::OnZoomAll);
+        connect(action, &QAction::triggered, m_plugin, &TimeViewPlugin::OnZoomAll);
 
         action = menu.addAction("Reset Timeline");
-        connect(action, &QAction::triggered, mPlugin, &TimeViewPlugin::OnResetTimeline);
+        connect(action, &QAction::triggered, m_plugin, &TimeViewPlugin::OnResetTimeline);
 
         //---------------------
         // Right-clicked on a motion item
@@ -2436,7 +2409,7 @@ namespace EMStudio
             menu.addSeparator();
 
             action = menu.addAction("Show Node In Graph");
-            connect(action, &QAction::triggered, mPlugin, &TimeViewPlugin::OnShowNodeHistoryNodeInGraph);
+            connect(action, &QAction::triggered, m_plugin, &TimeViewPlugin::OnShowNodeHistoryNodeInGraph);
         }
 
         // show the menu at the given position
@@ -2450,34 +2423,34 @@ namespace EMStudio
 
         // node name
         outString += AZStd::string::format("<tr><td width=\"150\"><p style=\"color:rgb(200,200,200)\"><b>Node Name:&nbsp;</b></p></td>");
-        outString += AZStd::string::format("<td width=\"400\"><p style=\"color:rgb(115, 115, 115)\">%s</p></td></tr>", item->mName.c_str());
+        outString += AZStd::string::format("<td width=\"400\"><p style=\"color:rgb(115, 115, 115)\">%s</p></td></tr>", item->m_name.c_str());
 
         // build the node path string
-        EMotionFX::ActorInstance* actorInstance = FindActorInstanceData()->mActorInstance;
+        EMotionFX::ActorInstance* actorInstance = FindActorInstanceData()->m_actorInstance;
         EMotionFX::AnimGraphInstance* animGraphInstance = actorInstance->GetAnimGraphInstance();
         if (animGraphInstance)
         {
             EMotionFX::AnimGraph* animGraph = animGraphInstance->GetAnimGraph();
-            EMotionFX::AnimGraphNode* node = animGraph->RecursiveFindNodeById(item->mNodeId);
+            EMotionFX::AnimGraphNode* node = animGraph->RecursiveFindNodeById(item->m_nodeId);
             if (node)
             {
-                MCore::Array<EMotionFX::AnimGraphNode*> nodePath;
+                AZStd::vector<EMotionFX::AnimGraphNode*> nodePath;
                 EMotionFX::AnimGraphNode* curNode = node->GetParentNode();
                 while (curNode)
                 {
-                    nodePath.Insert(0, curNode);
+                    nodePath.emplace(nodePath.begin(), curNode);
                     curNode = curNode->GetParentNode();
                 }
 
                 AZStd::string nodePathString;
                 nodePathString.reserve(256);
-                for (uint32 i = 0; i < nodePath.GetLength(); ++i)
+                for (const EMotionFX::AnimGraphNode* parentNode : nodePath)
                 {
-                    nodePathString += nodePath[i]->GetName();
-                    if (i != nodePath.GetLength() - 1)
+                    if (!nodePathString.empty())
                     {
                         nodePathString += " > ";
                     }
+                    nodePathString += parentNode->GetName();
                 }
 
                 outString += AZStd::string::format("<tr><td><p style=\"color:rgb(200,200,200)\"><b>Node Path:&nbsp;</b></p></td>");
@@ -2492,22 +2465,22 @@ namespace EMStudio
                 if (node->GetNumChildNodes() > 0)
                 {
                     outString += AZStd::string::format("<tr><td><p style=\"color:rgb(200,200,200)\"><b>Child Nodes:&nbsp;</b></p></td>");
-                    outString += AZStd::string::format("<td><p style=\"color:rgb(115, 115, 115)\">%d</p></td></tr>", node->GetNumChildNodes());
+                    outString += AZStd::string::format("<td><p style=\"color:rgb(115, 115, 115)\">%zu</p></td></tr>", node->GetNumChildNodes());
 
                     outString += AZStd::string::format("<tr><td><p style=\"color:rgb(200,200,200)\"><b>Recursive Children:&nbsp;</b></p></td>");
-                    outString += AZStd::string::format("<td><p style=\"color:rgb(115, 115, 115)\">%d</p></td></tr>", node->RecursiveCalcNumNodes());
+                    outString += AZStd::string::format("<td><p style=\"color:rgb(115, 115, 115)\">%zu</p></td></tr>", node->RecursiveCalcNumNodes());
                 }
             }
         }
 
         // motion name
-        if (item->mMotionID != MCORE_INVALIDINDEX32 && item->mMotionFileName.size() > 0)
+        if (item->m_motionId != InvalidIndex32 && !item->m_motionFileName.empty())
         {
             outString += AZStd::string::format("<tr><td><p style=\"color:rgb(200,200,200)\"><b>Motion FileName:&nbsp;</b></p></td>");
-            outString += AZStd::string::format("<td><p style=\"color:rgb(115, 115, 115)\">%s</p></td></tr>", item->mMotionFileName.c_str());
+            outString += AZStd::string::format("<td><p style=\"color:rgb(115, 115, 115)\">%s</p></td></tr>", item->m_motionFileName.c_str());
 
             // show motion info
-            EMotionFX::Motion* motion = EMotionFX::GetMotionManager().FindMotionByID(item->mMotionID);
+            EMotionFX::Motion* motion = EMotionFX::GetMotionManager().FindMotionByID(item->m_motionId);
             if (motion)
             {
                 AZStd::string path;
@@ -2550,18 +2523,14 @@ namespace EMStudio
             return nullptr;
         }
 
-        const MCore::Array<EMotionFX::Recorder::EventHistoryItem*>& historyItems = actorInstanceData->mEventHistoryItems;
+        const AZStd::vector<EMotionFX::Recorder::EventHistoryItem*>& historyItems = actorInstanceData->m_eventHistoryItems;
         const float tickHalfWidth = 7;
         const float tickHeight = 16;
 
-        const uint32 numItems = historyItems.GetLength();
-        for (uint32 i = 0; i < numItems; ++i)
+        for (EMotionFX::Recorder::EventHistoryItem* curItem : historyItems)
         {
-            EMotionFX::Recorder::EventHistoryItem* curItem = historyItems[i];
-
-            float height = aznumeric_cast<float>((curItem->mTrackIndex * 20) + mEventsStartHeight);
-            double startTimePixel   = mPlugin->TimeToPixel(curItem->mStartTime);
-            //double endTimePixel       = mPlugin->TimeToPixel( curItem->mEndTime );
+            float height = aznumeric_caster((curItem->m_trackIndex * 20) + m_eventsStartHeight);
+            double startTimePixel   = m_plugin->TimeToPixel(curItem->m_startTime);
 
             const QRect rect(QPoint(aznumeric_cast<int>(startTimePixel - tickHalfWidth), aznumeric_cast<int>(height)), QSize(aznumeric_cast<int>(tickHalfWidth * 2), aznumeric_cast<int>(tickHeight)));
             if (rect.contains(QPoint(x, y)))
@@ -2579,7 +2548,7 @@ namespace EMStudio
     {
         outString = "<table border=\"0\">";
 
-        const EMotionFX::MotionEvent* motionEvent = item->mEventInfo.mEvent;
+        const EMotionFX::MotionEvent* motionEvent = item->m_eventInfo.m_event;
         for (const EMotionFX::EventDataPtr& eventData : motionEvent->GetEventDatas())
         {
             if (eventData)
@@ -2603,25 +2572,25 @@ namespace EMStudio
         outString += AZStd::string::format("<tr><td><p style=\"color:rgb(200,200,200)\"><b>Event ID:&nbsp;</b></p></td>");
 
         outString += AZStd::string::format("<tr><td><p style=\"color:rgb(200,200,200)\"><b>Local Event Time:&nbsp;</b></p></td>");
-        outString += AZStd::string::format("<td><p style=\"color:rgb(115, 115, 115)\">%.3f seconds</p></td></tr>", item->mEventInfo.mTimeValue);
+        outString += AZStd::string::format("<td><p style=\"color:rgb(115, 115, 115)\">%.3f seconds</p></td></tr>", item->m_eventInfo.m_timeValue);
 
         outString += AZStd::string::format("<tr><td><p style=\"color:rgb(200,200,200)\"><b>Event Trigger Time:&nbsp;</b></p></td>");
-        outString += AZStd::string::format("<td><p style=\"color:rgb(115, 115, 115)\">%.3f seconds</p></td></tr>", item->mStartTime);
+        outString += AZStd::string::format("<td><p style=\"color:rgb(115, 115, 115)\">%.3f seconds</p></td></tr>", item->m_startTime);
 
         outString += AZStd::string::format("<tr><td><p style=\"color:rgb(200,200,200)\"><b>Is Ranged Event:&nbsp;</b></p></td>");
-        outString += AZStd::string::format("<td><p style=\"color:rgb(115, 115, 115)\">%s</p></td></tr>", (item->mIsTickEvent == false) ? "Yes" : "No");
+        outString += AZStd::string::format("<td><p style=\"color:rgb(115, 115, 115)\">%s</p></td></tr>", (item->m_isTickEvent == false) ? "Yes" : "No");
 
-        if (item->mIsTickEvent == false)
+        if (item->m_isTickEvent == false)
         {
             const static AZStd::string eventStartText = "Event Start";
             const static AZStd::string eventActiveText = "Event Active";
             const static AZStd::string eventEndText = "Event End";
             const AZStd::string* outputEventStateText = &eventStartText;
-            if (item->mEventInfo.m_eventState == EMotionFX::EventInfo::EventState::ACTIVE)
+            if (item->m_eventInfo.m_eventState == EMotionFX::EventInfo::EventState::ACTIVE)
             {
                 outputEventStateText = &eventActiveText;
             }
-            else if (item->mEventInfo.m_eventState == EMotionFX::EventInfo::EventState::END)
+            else if (item->m_eventInfo.m_eventState == EMotionFX::EventInfo::EventState::END)
             {
                 outputEventStateText = &eventEndText;
             }
@@ -2630,40 +2599,39 @@ namespace EMStudio
         }
 
         outString += AZStd::string::format("<tr><td><p style=\"color:rgb(200,200,200)\"><b>Global Weight:&nbsp;</b></p></td>");
-        outString += AZStd::string::format("<td><p style=\"color:rgb(115, 115, 115)\">%.3f</p></td></tr>", item->mEventInfo.mGlobalWeight);
+        outString += AZStd::string::format("<td><p style=\"color:rgb(115, 115, 115)\">%.3f</p></td></tr>", item->m_eventInfo.m_globalWeight);
 
         outString += AZStd::string::format("<tr><td><p style=\"color:rgb(200,200,200)\"><b>Local Weight:&nbsp;</b></p></td>");
-        outString += AZStd::string::format("<td><p style=\"color:rgb(115, 115, 115)\">%.3f</p></td></tr>", item->mEventInfo.mLocalWeight);
+        outString += AZStd::string::format("<td><p style=\"color:rgb(115, 115, 115)\">%.3f</p></td></tr>", item->m_eventInfo.m_localWeight);
 
         // build the node path string
-        EMotionFX::ActorInstance* actorInstance = FindActorInstanceData()->mActorInstance;
+        EMotionFX::ActorInstance* actorInstance = FindActorInstanceData()->m_actorInstance;
         EMotionFX::AnimGraphInstance* animGraphInstance = actorInstance->GetAnimGraphInstance();
         if (animGraphInstance)
         {
-            EMotionFX::AnimGraph* animGraph = EMotionFX::GetAnimGraphManager().FindAnimGraphByID(item->mAnimGraphID);//animGraphInstance->GetAnimGraph();
-            EMotionFX::AnimGraphNode* node = animGraph->RecursiveFindNodeById(item->mEmitterNodeId);
+            EMotionFX::AnimGraph* animGraph = EMotionFX::GetAnimGraphManager().FindAnimGraphByID(item->m_animGraphId);//animGraphInstance->GetAnimGraph();
+            EMotionFX::AnimGraphNode* node = animGraph->RecursiveFindNodeById(item->m_emitterNodeId);
             if (node)
             {
                 outString += AZStd::string::format("<tr><td><p style=\"color:rgb(200,200,200)\"><b>Emitted By:&nbsp;</b></p></td>");
                 outString += AZStd::string::format("<td><p style=\"color:rgb(115, 115, 115)\">%s</p></td></tr>", node->GetName());
 
-                MCore::Array<EMotionFX::AnimGraphNode*> nodePath;
+                AZStd::vector<EMotionFX::AnimGraphNode*> nodePath;
                 EMotionFX::AnimGraphNode* curNode = node->GetParentNode();
                 while (curNode)
                 {
-                    nodePath.Insert(0, curNode);
+                    nodePath.emplace(0, curNode);
                     curNode = curNode->GetParentNode();
                 }
 
                 AZStd::string nodePathString;
-                nodePathString.reserve(256);
-                for (uint32 i = 0; i < nodePath.GetLength(); ++i)
+                for (const EMotionFX::AnimGraphNode* parentNode : nodePath)
                 {
-                    nodePathString += nodePath[i]->GetName();
-                    if (i != nodePath.GetLength() - 1)
+                    if (!nodePathString.empty())
                     {
                         nodePathString += " > ";
                     }
+                    nodePathString += parentNode->GetName();
                 }
 
                 outString += AZStd::string::format("<tr><td><p style=\"color:rgb(200,200,200)\"><b>Node Path:&nbsp;</b></p></td>");
@@ -2678,10 +2646,10 @@ namespace EMStudio
                 if (node->GetNumChildNodes() > 0)
                 {
                     outString += AZStd::string::format("<tr><td><p style=\"color:rgb(200,200,200)\"><b>Child Nodes:&nbsp;</b></p></td>");
-                    outString += AZStd::string::format("<td><p style=\"color:rgb(115, 115, 115)\">%d</p></td></tr>", node->GetNumChildNodes());
+                    outString += AZStd::string::format("<td><p style=\"color:rgb(115, 115, 115)\">%zu</p></td></tr>", node->GetNumChildNodes());
 
                     outString += AZStd::string::format("<tr><td><p style=\"color:rgb(200,200,200)\"><b>Recursive Children:&nbsp;</b></p></td>");
-                    outString += AZStd::string::format("<td><p style=\"color:rgb(115, 115, 115)\">%d</p></td></tr>", node->RecursiveCalcNumNodes());
+                    outString += AZStd::string::format("<td><p style=\"color:rgb(115, 115, 115)\">%zu</p></td></tr>", node->RecursiveCalcNumNodes());
                 }
 
                 // show the motion info
@@ -2726,7 +2694,7 @@ namespace EMStudio
     {
         painter.setPen(QColor(60, 70, 80));
         painter.setBrush(Qt::NoBrush);
-        painter.drawLine(QPoint(0, heightOffset), QPoint(aznumeric_cast<int>(mPlugin->TimeToPixel(animationLength)), heightOffset));
+        painter.drawLine(QPoint(0, heightOffset), QPoint(aznumeric_cast<int>(m_plugin->TimeToPixel(animationLength)), heightOffset));
         return 1;
     }
 }   // namespace EMStudio

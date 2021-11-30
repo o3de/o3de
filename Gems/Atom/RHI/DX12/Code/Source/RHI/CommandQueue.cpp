@@ -1,17 +1,17 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "RHI/Atom_RHI_DX12_precompiled.h"
 #include <RHI/CommandQueue.h>
 #include <RHI/Device.h>
 #include <RHI/Fence.h>
 #include <RHI/SwapChain.h>
 #include <RHI/Conversions.h>
-#include <AzCore/Debug/EventTraceDrillerBus.h>
-#include <Atom/RHI.Reflect/CpuTimingStatistics.h>
+
+#include <AzCore/Debug/Timer.h>
 
 namespace AZ
 {
@@ -108,9 +108,9 @@ namespace AZ
 
         void CommandQueue::QueueGpuSignal(Fence& fence)
         {
-            QueueCommand([this, &fence](void* commandQueue)
+            QueueCommand([&fence](void* commandQueue)
             {
-                AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::AzRender, "SignalFence");
+                AZ_PROFILE_SCOPE(RHI, "SignalFence");
                 ID3D12CommandQueue* dx12CommandQueue = static_cast<ID3D12CommandQueue*>(commandQueue);
                 dx12CommandQueue->Signal(fence.Get(), fence.GetPendingValue());
             });
@@ -138,8 +138,8 @@ namespace AZ
 
             QueueCommand([=](void* commandQueue)
             {
-                AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::AzRender, "ExecuteWork");
-                AZ_PROFILE_RHI_VARIABLE(m_lastExecuteDuration);
+                AZ_PROFILE_SCOPE(RHI, "ExecuteWork");
+                AZ::Debug::ScopedTimer executionTimer(m_lastExecuteDuration);
 
                 static const uint32_t CommandListCountMax = 128;
                 ID3D12CommandQueue* dx12CommandQueue = static_cast<ID3D12CommandQueue*>(commandQueue);
@@ -185,7 +185,7 @@ namespace AZ
                     dx12CommandQueue->Signal(fence->Get(), fence->GetPendingValue());
                 }
 
-                AZ_PROFILE_RHI_VARIABLE(m_lastPresentDuration);
+                AZ::Debug::ScopedTimer presentTimer(m_lastPresentDuration);
                 for (RHI::SwapChain* swapChain : request.m_swapChainsToPresent)
                 {
                     swapChain->Present();
@@ -195,7 +195,7 @@ namespace AZ
 
         void CommandQueue::UpdateTileMappings(CommandList& commandList)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzRender);
+            AZ_PROFILE_SCOPE(RHI, "CommandQueue: UpdateTileMappings");
             for (const CommandList::TileMapRequest& request : commandList.GetTileMapRequests())
             {
                 const uint32_t tileCount = request.m_sourceRegionSize.NumTiles;
@@ -229,7 +229,7 @@ namespace AZ
         
         void CommandQueue::WaitForIdle()
         {
-            AZ_PROFILE_FUNCTION_IDLE(AZ::Debug::ProfileCategory::AzRender);
+            AZ_PROFILE_SCOPE(RHI, "CommandQueue: WaitForIdle");
 
             Fence fence;
             fence.Init(m_device.get(), RHI::FenceState::Reset);

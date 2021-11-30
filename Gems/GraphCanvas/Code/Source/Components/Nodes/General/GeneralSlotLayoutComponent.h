@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -157,7 +158,7 @@ namespace GraphCanvas
         ////
 
         // SceneMemberNotificationBus
-        void OnSceneSet(const AZ::EntityId& sceneId);
+        void OnSceneSet(const AZ::EntityId& sceneId) override;
         ////
 
         // SlotLayoutRequestBus
@@ -167,7 +168,7 @@ namespace GraphCanvas
 
         bool IsSlotGroupVisible(SlotGroup group) const override;
         void SetSlotGroupVisible(SlotGroup group, bool visible) override;
-        void ClearSlotGroup(SlotGroup group);
+        void ClearSlotGroup(SlotGroup group) override;
         ////
 
         // StyleNotificationBus

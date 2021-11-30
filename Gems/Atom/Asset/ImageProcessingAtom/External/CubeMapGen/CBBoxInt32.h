@@ -9,6 +9,8 @@
 
 #pragma once
 
+#include <ImageBuilderBaseType.h>
+
 namespace ImageProcessingAtom
 {
     //bounding box class with coords specified as int32

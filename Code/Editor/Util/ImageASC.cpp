@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -23,8 +24,7 @@ bool CImageASC::Save(const QString& fileName, const CFloatImage& image)
     uint32 height = image.GetHeight();
     float* pixels = image.GetData();
 
-    string fileHeader;
-    fileHeader.Format(
+    AZStd::string fileHeader = AZStd::string::format(
         // Number of columns and rows in the data
         "ncols %d\n"
         "nrows %d\n"
@@ -52,12 +52,12 @@ bool CImageASC::Save(const QString& fileName, const CFloatImage& image)
     }
 
     // First print the file header
-    fprintf(file, fileHeader.c_str());
+    fprintf(file, "%s", fileHeader.c_str());
 
     // Then print all the pixels.
-    for (int y = 0; y < height; y++)
+    for (uint32 y = 0; y < height; y++)
     {
-        for (int x = 0; x < width; x++)
+        for (uint32 x = 0; x < width; x++)
         {
             fprintf(file, "%.7f ", pixels[x + y * width]);
         }
@@ -99,40 +99,40 @@ bool CImageASC::Load(const QString& fileName, CFloatImage& image)
 
     // Break all of the values in the file apart into tokens.
 
-    char* nextToken = nullptr;
+    [[maybe_unused]] char* nextToken = nullptr;
     token = azstrtok(str, 0, seps, &nextToken);
 
     // ncols = grid width
     validData = validData && (azstricmp(token, "ncols") == 0);
-    token = azstrtok(NULL, 0, seps, &nextToken);
+    token = azstrtok(nullptr, 0, seps, &nextToken);
     width = atoi(token);
 
     // nrows = grid height
-    token = azstrtok(NULL, 0, seps, &nextToken);
+    token = azstrtok(nullptr, 0, seps, &nextToken);
     validData = validData && (azstricmp(token, "nrows") == 0);
-    token = azstrtok(NULL, 0, seps, &nextToken);
+    token = azstrtok(nullptr, 0, seps, &nextToken);
     height = atoi(token);
 
     // xllcorner = leftmost coordinate.  (Skip, we don't care about it)
-    token = azstrtok(NULL, 0, seps, &nextToken);
+    token = azstrtok(nullptr, 0, seps, &nextToken);
     validData = validData && (azstricmp(token, "xllcorner") == 0);
-    token = azstrtok(NULL, 0, seps, &nextToken);
+    token = azstrtok(nullptr, 0, seps, &nextToken);
 
     // yllcorner = bottommost coordinate.  (Skip, we don't care about it)
-    token = azstrtok(NULL, 0, seps, &nextToken);
+    token = azstrtok(nullptr, 0, seps, &nextToken);
     validData = validData && (azstricmp(token, "yllcorner") == 0);
-    token = azstrtok(NULL, 0, seps, &nextToken);
+    token = azstrtok(nullptr, 0, seps, &nextToken);
 
     // cellsize = size of each grid cell.  (Skip, we don't care about it)
-    token = azstrtok(NULL, 0, seps, &nextToken);
+    token = azstrtok(nullptr, 0, seps, &nextToken);
     validData = validData && (azstricmp(token, "cellsize") == 0);
-    token = azstrtok(NULL, 0, seps, &nextToken);
+    token = azstrtok(nullptr, 0, seps, &nextToken);
 
     // nodata_value = the value used for missing data.  We'll replace these with 0 height.
-    token = azstrtok(NULL, 0, seps, &nextToken);
+    token = azstrtok(nullptr, 0, seps, &nextToken);
     validData = validData && (azstricmp(token, "nodata_value") == 0);
-    token = azstrtok(NULL, 0, seps, &nextToken);
-    nodataValue = atof(token);
+    token = azstrtok(nullptr, 0, seps, &nextToken);
+    nodataValue = static_cast<float>(atof(token));
 
     if (!validData)
     {
@@ -151,13 +151,13 @@ bool CImageASC::Load(const QString& fileName, CFloatImage& image)
     int i = 0;
     float pixelValue;
     float maxPixel = 0.0f;
-    while (token != NULL && i < size)
+    while (token != nullptr && i < size)
     {
-        token = azstrtok(NULL, 0, seps, &nextToken);
-        if (token != NULL)
+        token = azstrtok(nullptr, 0, seps, &nextToken);
+        if (token != nullptr)
         {
             // Negative heights aren't supported, clamp to 0.
-            pixelValue = max(0.0, atof(token));
+            pixelValue = max<float>(0.0f, static_cast<float>(atof(token)));
 
             // If this is a location we specifically don't have data for, set it to 0.
             if (pixelValue == nodataValue)

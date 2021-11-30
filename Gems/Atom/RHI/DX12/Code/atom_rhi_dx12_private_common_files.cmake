@@ -1,12 +1,12 @@
 #
-# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
-# 
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
 
 set(FILES
-    Source/RHI/Atom_RHI_DX12_precompiled.h
     Source/RHI/Buffer.cpp
     Source/RHI/Buffer.h
     Source/RHI/BufferPool.cpp
@@ -95,7 +95,6 @@ set(FILES
     Source/RHI/ShaderResourceGroup.h
     Source/RHI/ShaderResourceGroupPool.cpp
     Source/RHI/ShaderResourceGroupPool.h
-    Source/RHI/SwapChain.cpp
     Source/RHI/SwapChain.h
     Source/RHI/DX12.cpp
     Source/RHI/DX12.h

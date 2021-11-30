@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -55,7 +56,7 @@ namespace UnitTest
         }
 
         void ValidateInstances(
-            const TemplateId& templateId,
+            TemplateId templateId,
             const PrefabDomValue& expectedContent,
             const PrefabDomPath& contentPath,
             bool isContentAnInstance,
@@ -131,7 +132,7 @@ namespace UnitTest
                     PrefabDomUtils::FindPrefabDomValue(valueADom, PrefabDomUtils::LinkIdName);
                 PrefabDomValueConstReference expectedNestedInstanceDomLinkId =
                     PrefabDomUtils::FindPrefabDomValue(valueBDom, PrefabDomUtils::LinkIdName);
-                ComparePrefabDomValues(actualNestedInstanceDomLinkId, actualNestedInstanceDomLinkId);
+                ComparePrefabDomValues(actualNestedInstanceDomLinkId, expectedNestedInstanceDomLinkId);
             }
 
             if (shouldCompareContainerEntities)
@@ -166,13 +167,25 @@ namespace UnitTest
             if (expectedNestedInstanceDomInstances.has_value())
             {
                 ASSERT_TRUE(actualNestedInstanceDomInstances.has_value());
-                for (auto instanceIterator = expectedNestedInstanceDomInstances->get().MemberBegin();
-                     instanceIterator != expectedNestedInstanceDomInstances->get().MemberEnd(); ++instanceIterator)
+                if (expectedNestedInstanceDomInstances->get().IsArray())
                 {
-                    ComparePrefabDoms(
-                        instanceIterator->value,
-                        PrefabDomUtils::FindPrefabDomValue(actualNestedInstanceDomInstances->get(), instanceIterator->name.GetString()),
-                        shouldCompareLinkIds, shouldCompareContainerEntities);
+                    ASSERT_TRUE(actualNestedInstanceDomInstances->get().IsArray());
+                    const size_t expectedArraySize = expectedNestedInstanceDomInstances->get().GetArray().Size();
+                    EXPECT_EQ(0, expectedArraySize);
+                    const size_t actualArraySize = actualNestedInstanceDomInstances->get().GetArray().Size();
+                    EXPECT_EQ(0, actualArraySize);
+                }
+                if (expectedNestedInstanceDomInstances->get().IsObject())
+                {
+                    ASSERT_TRUE(actualNestedInstanceDomInstances->get().IsObject());
+                    for (auto instanceIterator = expectedNestedInstanceDomInstances->get().MemberBegin();
+                        instanceIterator != expectedNestedInstanceDomInstances->get().MemberEnd(); ++instanceIterator)
+                    {
+                        ComparePrefabDoms(
+                            instanceIterator->value,
+                            PrefabDomUtils::FindPrefabDomValue(actualNestedInstanceDomInstances->get(), instanceIterator->name.GetString()),
+                            shouldCompareLinkIds, shouldCompareContainerEntities);
+                    }
                 }
             }
         }
@@ -191,7 +204,7 @@ namespace UnitTest
         }
 
         void ValidateEntitiesOfInstances(
-            const AzToolsFramework::Prefab::TemplateId& templateId,
+            AzToolsFramework::Prefab::TemplateId templateId,
             const AzToolsFramework::Prefab::PrefabDom& expectedPrefabDom,
             const AZStd::vector<EntityAlias>& entityAliases)
         {
@@ -206,7 +219,7 @@ namespace UnitTest
         }
 
         void ValidateNestedInstancesOfInstances(
-            const AzToolsFramework::Prefab::TemplateId& templateId,
+            AzToolsFramework::Prefab::TemplateId templateId,
             const AzToolsFramework::Prefab::PrefabDom& expectedPrefabDom,
             const AZStd::vector<InstanceAlias>& nestedInstanceAliases)
         {

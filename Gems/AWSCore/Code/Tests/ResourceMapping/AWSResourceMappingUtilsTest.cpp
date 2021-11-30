@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -43,19 +44,19 @@ TEST_F(AWSResourceMappingUtilsTest, FormatRESTApiUrl_PassingInvalidRESTApiId_Ret
 {
     auto actualUrl = AWSResourceMappingUtils::FormatRESTApiUrl("", TEST_VALID_RESTAPI_REGION, TEST_VALID_RESTAPI_STAGE);
 
-    EXPECT_TRUE(actualUrl == "");
+    EXPECT_TRUE(actualUrl.empty());
 }
 
 TEST_F(AWSResourceMappingUtilsTest, FormatRESTApiUrl_PassingInvalidRESTApiRegion_ReturnEmptyResult)
 {
     auto actualUrl = AWSResourceMappingUtils::FormatRESTApiUrl(TEST_VALID_RESTAPI_ID, "", TEST_VALID_RESTAPI_STAGE);
 
-    EXPECT_TRUE(actualUrl == "");
+    EXPECT_TRUE(actualUrl.empty());
 }
 
 TEST_F(AWSResourceMappingUtilsTest, FormatRESTApiUrl_PassingInvalidRESTApiStage_ReturnEmptyResult)
 {
     auto actualUrl = AWSResourceMappingUtils::FormatRESTApiUrl(TEST_VALID_RESTAPI_ID, TEST_VALID_RESTAPI_REGION, "");
 
-    EXPECT_TRUE(actualUrl == "");
+    EXPECT_TRUE(actualUrl.empty());
 }

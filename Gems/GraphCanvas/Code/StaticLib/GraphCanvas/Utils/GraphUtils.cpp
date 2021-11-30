@@ -1,10 +1,10 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "precompiled.h"
 
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 #include <AzCore/std/containers/stack.h>
@@ -1898,8 +1898,6 @@ namespace GraphCanvas
             targetConnectionType = ConnectionType::CT_Invalid;
         }
 
-        NodeId nodeId = initializingEndpoint.GetNodeId();
-
         AZStd::vector< SlotId > slotIds;
         NodeRequestBus::EventResult(slotIds, initializingEndpoint.GetNodeId(), &NodeRequests::GetSlotIds);        
 
@@ -2307,7 +2305,6 @@ namespace GraphCanvas
 
                 AZ::EntityId anchorEntity;
                 float minDistance = -1;
-                QPointF offset;
                 AZStd::vector<AZ::EntityId> nearbyEntities;
 
                 FloatingElementAnchor floatingAnchor;
@@ -2425,10 +2422,6 @@ namespace GraphCanvas
             // - Overall Alignment is a bit...non-deterministic right now, and can change for some reason.
             AZStd::queue< OrganizationHelper* > termimnalOrganizationHelpers;
 
-            QPointF minTerminalPointSpot(0,0);
-
-            AZ::Vector2 anchorPoint = CalculateAlignmentAnchorPoint(alignConfig);
-
             // Tail recursed loop.
             while (!nextLayer.empty())
             {
@@ -2486,10 +2479,6 @@ namespace GraphCanvas
             {
                 OrganizationHelper* helper = termimnalOrganizationHelpers.front();
                 termimnalOrganizationHelpers.pop();
-
-                NodeId nodeId = helper->m_nodeId;
-
-                QRectF totalBoundingRect = helper->m_boundingArea;
 
                 OrganizationSpaceAllocationHelper leftAllocation;
                 OrganizationSpaceAllocationHelper rightAllocation;

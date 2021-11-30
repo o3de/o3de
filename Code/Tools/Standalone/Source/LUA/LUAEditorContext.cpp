@@ -1,11 +1,12 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
-#include "StandaloneTools_precompiled.h"
+#include <AzCore/PlatformIncl.h>
 
 #include "LUAEditorContext.h"
 
@@ -949,7 +950,6 @@ namespace LUAEditor
                 newAssetName += ".lua";
             }
 
-            AZ::Data::AssetType assetType = AZ::AzTypeInfo<AZ::ScriptAsset>::Uuid();
             AZ::Data::AssetId catalogAssetId;
             EBUS_EVENT_RESULT(catalogAssetId, AZ::Data::AssetCatalogRequestBus, GetAssetIdByPath, newAssetName.c_str(), AZ::AzTypeInfo<AZ::ScriptAsset>::Uuid(), false);
 
@@ -1020,7 +1020,7 @@ namespace LUAEditor
     {
         AZ_TracePrintf(LUAEditorDebugName, AZStd::string::format("LUAEditor OnSaveDocumentAs" "%s\n", assetId.c_str()).c_str());
 
-        DocumentInfoMap::iterator docInfoIter = m_documentInfoMap.find(assetId);
+        [[maybe_unused]] DocumentInfoMap::iterator docInfoIter = m_documentInfoMap.find(assetId);
         AZ_Assert(docInfoIter != m_documentInfoMap.end(), "LUAEditor OnSaveDocumentAs() : Cant find Document Info.");
 
         OnSaveDocument(assetId, bCloseAfterSave, true);
@@ -2418,7 +2418,7 @@ namespace LUAEditor
                         std::regex errorRegex(".+\\.lua:(\\d+):(.*)");
 
                         AzToolsFramework::Logging::LogLine::ParseLog(logResult.GetValue().c_str(), logResult.GetValue().size(),
-                            [this, &msg, &currentAsset, &errorRegex](AzToolsFramework::Logging::LogLine& logLine)
+                            [this, &currentAsset, &errorRegex](AzToolsFramework::Logging::LogLine& logLine)
                         {
                             if ((logLine.GetLogType() == AzToolsFramework::Logging::LogLine::TYPE_WARNING) || (logLine.GetLogType() == AzToolsFramework::Logging::LogLine::TYPE_ERROR))
                             {

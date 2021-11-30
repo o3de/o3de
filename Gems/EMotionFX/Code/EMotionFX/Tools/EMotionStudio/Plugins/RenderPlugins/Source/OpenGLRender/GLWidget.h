@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -52,7 +53,7 @@ namespace EMStudio
 
         void initializeGL() override;
         void paintGL() override;
-        void resizeGL(int width, int height);
+        void resizeGL(int width, int height) override;
 
     private slots:
         void CloneSelectedActorInstances()                      { CommandSystem::CloneSelectedActorInstances(); }
@@ -63,24 +64,24 @@ namespace EMStudio
         void ResetToBindPose()                                  { CommandSystem::ResetToBindPose(); }
 
     protected:
-        void mouseMoveEvent(QMouseEvent* event)                 { RenderWidget::OnMouseMoveEvent(this, event); }
-        void mousePressEvent(QMouseEvent* event)                { RenderWidget::OnMousePressEvent(this, event); }
-        void mouseReleaseEvent(QMouseEvent* event)              { RenderWidget::OnMouseReleaseEvent(this, event); }
-        void wheelEvent(QWheelEvent* event)                     { RenderWidget::OnWheelEvent(this, event); }
+        void mouseMoveEvent(QMouseEvent* event) override        { RenderWidget::OnMouseMoveEvent(this, event); }
+        void mousePressEvent(QMouseEvent* event) override       { RenderWidget::OnMousePressEvent(this, event); }
+        void mouseReleaseEvent(QMouseEvent* event) override     { RenderWidget::OnMouseReleaseEvent(this, event); }
+        void wheelEvent(QWheelEvent* event) override            { RenderWidget::OnWheelEvent(this, event); }
 
-        void focusInEvent(QFocusEvent* event);
-        void focusOutEvent(QFocusEvent* event);
+        void focusInEvent(QFocusEvent* event) override;
+        void focusOutEvent(QFocusEvent* event) override;
 
-        void Render();
-        void Update()                                           { update(); }
+        void Render() override;
+        void Update() override                                  { update(); }
         void RenderBorder(const MCore::RGBAColor& color);
 
-        RenderGL::GBuffer                       mGBuffer;
-        OpenGLRenderPlugin*                     mParentRenderPlugin;
-        QFont                                   mFont;
-        QFontMetrics*                           mFontMetrics;
-        AZ::Debug::Timer                        mRenderTimer;
-        AZ::Debug::Timer                        mPerfTimer;
+        RenderGL::GBuffer                       m_gBuffer;
+        OpenGLRenderPlugin*                     m_parentRenderPlugin;
+        QFont                                   m_font;
+        QFontMetrics*                           m_fontMetrics;
+        AZ::Debug::Timer                        m_renderTimer;
+        AZ::Debug::Timer                        m_perfTimer;
     };
 } // namespace EMStudio
 

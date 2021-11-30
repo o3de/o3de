@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -72,7 +73,7 @@ namespace LUAEditor
         LUADockWidget* luaDockWidget(){ return m_pLUADockWidget;}
         void SetLuaDockWidget(LUADockWidget* pLUADockWidget){m_pLUADockWidget = pLUADockWidget;}
 
-        virtual void dropEvent(QDropEvent *e);
+        void dropEvent(QDropEvent *e) override;
 
         // point a little arrow at this line.  -1 means remove it.
         void UpdateCurrentExecutingLine(int lineNumber);
@@ -82,9 +83,9 @@ namespace LUAEditor
         
         //////////////////////////////////////////////////////////////////////////
         //Debugger Messages, from the LUAEditor::LUABreakpointTrackerMessages::Bus
-        virtual void BreakpointsUpdate(const LUAEditor::BreakpointMap& uniqueBreakpoints);
-        virtual void BreakpointHit(const LUAEditor::Breakpoint& breakpoint);
-        virtual void BreakpointResume();
+        void BreakpointsUpdate(const LUAEditor::BreakpointMap& uniqueBreakpoints) override;
+        void BreakpointHit(const LUAEditor::Breakpoint& breakpoint) override;
+        void BreakpointResume() override;
 
         void BreakpointToggle(int line);
         
@@ -152,7 +153,7 @@ namespace LUAEditor
         void RegainFocus();
         
     private:
-        virtual void keyPressEvent(QKeyEvent *ev);
+        void keyPressEvent(QKeyEvent *ev) override;
         int CalcDocPosition(int line, int column);
         template<typename Callable> //callabe must take a const QTextCursor& as a parameter
         void UpdateCursor(Callable callable);

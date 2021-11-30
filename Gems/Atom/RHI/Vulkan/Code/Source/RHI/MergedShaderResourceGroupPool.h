@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -37,7 +38,7 @@ namespace AZ
 
             static RHI::Ptr<MergedShaderResourceGroupPool> Create();
 
-            using ShaderResourceGroupList = AZStd::vector<const ShaderResourceGroup*>;
+            using ShaderResourceGroupList = AZStd::fixed_vector<const ShaderResourceGroup*, RHI::Limits::Pipeline::ShaderResourceGroupCountMax>;
             //! Finds or create a new instance of a MergedShaderResourceGroup.
             //! @param shaderResourceGroupList The list of ShaderResourceGroups that are being merged.
             MergedShaderResourceGroup* FindOrCreate(const ShaderResourceGroupList& shaderResourceGroupList);

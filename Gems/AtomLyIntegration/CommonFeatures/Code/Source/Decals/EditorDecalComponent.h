@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -55,7 +56,11 @@ namespace AZ
 
         private:
 
-            AZ::Transform GetTransform() const;
+            // Returns the component transform which includes uniform-scale, rotation and translation
+            AZ::Transform GetWorldTransform() const;
+
+            // Returns the full transform, including both the uniform scale and non-uniform scale along with rotation and translation
+            AZ::Matrix3x4 GetWorldTransformWithNonUniformScale() const;
 
             //! EditorRenderComponentAdapter overrides ...
             u32 OnConfigurationChanged() override;

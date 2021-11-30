@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -269,7 +270,7 @@ namespace AZ
     {
         using Callable = AZStd::conditional_t<AZStd::function_traits<Invocable>::value, AZStd::function<typename AZStd::function_traits<Invocable>::function_type>, Invocable>;
     public:
-        AZ_RTTI((AttributeInvocable<Invocable>, "{60D5804F-9AF4-4EB1-8F5A-62AFB4883F9D}"), AZ::Attribute);
+        AZ_RTTI((AttributeInvocable<Invocable>, "{60D5804F-9AF4-4EB1-8F5A-62AFB4883F9D}", Invocable), AZ::Attribute);
         AZ_CLASS_ALLOCATOR(AttributeInvocable<Invocable>, SystemAllocator, 0);
         template<typename CallableType>
         explicit AttributeInvocable(CallableType&& invocable)

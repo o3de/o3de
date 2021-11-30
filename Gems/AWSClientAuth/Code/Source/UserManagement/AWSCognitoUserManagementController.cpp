@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -228,7 +229,7 @@ namespace AWSClientAuth
         AZ::JobContext* jobContext = nullptr;
         AWSCore::AWSCoreRequestBus::BroadcastResult(jobContext, &AWSCore::AWSCoreRequests::GetDefaultJobContext);
 
-        AZ::Job* enableMFAJob = AZ::CreateJobFunction([this, cognitoIdentityProviderClient, accessToken]()
+        AZ::Job* enableMFAJob = AZ::CreateJobFunction([cognitoIdentityProviderClient, accessToken]()
         {
             Aws::CognitoIdentityProvider::Model::SetUserMFAPreferenceRequest confirmForgotPasswordRequest;
             Aws::CognitoIdentityProvider::Model::SMSMfaSettingsType settings;

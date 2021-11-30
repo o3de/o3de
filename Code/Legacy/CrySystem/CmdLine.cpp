@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -10,7 +11,7 @@
 #include "CmdLine.h"
 
 
-void CCmdLine::PushCommand(const string& sCommand, const string& sParameter)
+void CCmdLine::PushCommand(const AZStd::string& sCommand, const AZStd::string& sParameter)
 {
     if (sCommand.empty())
     {
@@ -46,7 +47,7 @@ CCmdLine::CCmdLine(const char* commandLine)
 
     char* src = (char*)commandLine;
 
-    string command, parameter;
+    AZStd::string command, parameter;
 
     for (;; )
     {
@@ -55,12 +56,12 @@ CCmdLine::CCmdLine(const char* commandLine)
             break;
         }
 
-        string arg = Next(src);
+        AZStd::string arg = Next(src);
 
         if (m_args.empty())
         {
             // this is the filename, convert backslash to forward slash
-            arg.replace('\\', '/');
+            AZ::StringFunc::Replace(arg, '\\', '/');
             m_args.push_back(CCmdLineArg("filename", arg.c_str(), eCLAT_Executable));
         }
         else
@@ -89,7 +90,7 @@ CCmdLine::CCmdLine(const char* commandLine)
                 }
                 else
                 {
-                    parameter += string(" ") + arg;
+                    parameter += AZStd::string(" ") + arg;
                 }
             }
         }
@@ -150,7 +151,7 @@ const ICmdLineArg* CCmdLine::FindArg(const ECmdLineArgType ArgType, const char* 
 }
 
 
-string CCmdLine::Next(char*& src)
+AZStd::string CCmdLine::Next(char*& src)
 {
     char ch = 0;
     char* org = src;
@@ -169,7 +170,7 @@ string CCmdLine::Next(char*& src)
                 ;
             }
 
-            return string(org, src - 1);
+            return AZStd::string(org, src - 1);
 
         case '[':
             org = src;
@@ -177,7 +178,7 @@ string CCmdLine::Next(char*& src)
             {
                 ;
             }
-            return string(org, src - 1);
+            return AZStd::string(org, src - 1);
 
         case ' ':
             ch = *src++;
@@ -189,12 +190,11 @@ string CCmdLine::Next(char*& src)
                 ;
             }
 
-            return string(org, src);
+            return AZStd::string(org, src);
         }
-        ch = *src++;
     }
 
-    return string();
+    return AZStd::string();
 }
 
 

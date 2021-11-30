@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -34,8 +35,7 @@ namespace AWSCore
         this->setDefaultButton(QMessageBox::Save);
         this->button(QMessageBox::Cancel)->hide();
         this->setIcon(QMessageBox::Information);
-        QGridLayout* layout = (QGridLayout*)this->layout();
-        if (layout)
+        if (QGridLayout* layout = static_cast<QGridLayout*>(this->layout()))
         {
             layout->setVerticalSpacing(20);
             layout->setHorizontalSpacing(10);

@@ -1,11 +1,11 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
-#include "AzToolsFramework_precompiled.h"
 #include <AzCore/PlatformIncl.h>
 #include "EditorFrameworkApplication.h"
 
@@ -35,10 +35,8 @@
 #include <AzFramework/Asset/AssetCatalogComponent.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzFramework/TargetManagement/TargetManagementComponent.h>
-#include <AzFramework/Driller/RemoteDrillerInterface.h>
 
 #include <AzCore/Driller/Driller.h>
-#include <AzCore/Debug/ProfilerDriller.h>
 
 #ifdef AZ_PLATFORM_WINDOWS
 #include "shlobj.h"
@@ -50,14 +48,15 @@
 
 AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option") // 'QFileInfo::d_ptr': class 'QSharedDataPointer<QFileInfoPrivate>' needs to have dll-interface to be used by clients of class 'QFileInfo'
 #include <QFileInfo>
-AZ_POP_DISABLE_OVERRIDE_WARNING
+AZ_POP_DISABLE_WARNING
 #include <QSharedMemory>
 #include <QStandardPaths>
+#include <QtWidgets/QApplication>
 
 namespace LegacyFramework
 {
     ApplicationDesc::ApplicationDesc(const char* name, int argc, char** argv)
-        : m_applicationModule(NULL)
+        : m_applicationModule(nullptr)
         , m_enableGridmate(true)
         , m_enablePerforce(true)
         , m_enableGUI(true)
@@ -70,7 +69,7 @@ namespace LegacyFramework
         m_applicationName[0] = 0;
         if (name)
         {
-            azstrcpy(m_applicationName, _MAX_PATH, name);
+            azstrcpy(m_applicationName, AZ_MAX_PATH_LEN, name);
         }
     }
 
@@ -90,7 +89,7 @@ namespace LegacyFramework
         m_enableGUI = other.m_enableGUI;
         m_enableGridmate = other.m_enableGridmate;
         m_enablePerforce = other.m_enablePerforce;
-        azstrcpy(m_applicationName, _MAX_PATH, other.m_applicationName);
+        azstrcpy(m_applicationName, AZ_MAX_PATH_LEN, other.m_applicationName);
         m_enableProjectManager = other.m_enableProjectManager;
         m_shouldRunAssetProcessor = other.m_shouldRunAssetProcessor;
         m_saveUserSettings = other.m_saveUserSettings;
@@ -104,12 +103,12 @@ namespace LegacyFramework
         m_isPrimary = true;
         m_desiredExitCode = 0;
         m_abortRequested = false;
-        m_applicationEntity = NULL;
-        m_ptrSystemEntity = NULL;
+        m_applicationEntity = nullptr;
+        m_ptrSystemEntity = nullptr;
         m_applicationModule[0] = 0;
     }
 
-    HMODULE Application::GetMainModule()
+    void* Application::GetMainModule()
     {
         return m_desc.m_applicationModule;
     }
@@ -238,7 +237,7 @@ namespace LegacyFramework
         {
             m_applicationEntity->Deactivate();
             delete m_applicationEntity;
-            m_applicationEntity = NULL;
+            m_applicationEntity = nullptr;
         }
 
         AZ::SystemTickBus::ExecuteQueuedEvents();
@@ -250,7 +249,7 @@ namespace LegacyFramework
 #endif
 
         delete m_ptrCommandLineParser;
-        m_ptrCommandLineParser = NULL;
+        m_ptrCommandLineParser = nullptr;
 
         CoreMessageBus::Handler::BusDisconnect();
         FrameworkApplicationMessages::Handler::BusDisconnect();
@@ -270,7 +269,7 @@ namespace LegacyFramework
         {
             m_applicationEntity->Deactivate();
             delete m_applicationEntity;
-            m_applicationEntity = NULL;
+            m_applicationEntity = nullptr;
         }
     }
 
@@ -371,7 +370,7 @@ namespace LegacyFramework
 
         applicationFilePath.append("_app.xml");
 
-        AZ_Assert(applicationFilePath.size() <= _MAX_PATH, "Application path longer than expected");
+        AZ_Assert(applicationFilePath.size() <= AZ_MAX_PATH_LEN, "Application path longer than expected");
         qstrcpy(m_applicationFilePath, applicationFilePath.c_str());
 
         // load all application entities, if present:
@@ -484,8 +483,6 @@ namespace LegacyFramework
     void Application::CreateApplicationComponents()
     {
         EnsureComponentCreated(AzFramework::TargetManagementComponent::RTTI_Type());
-        EnsureComponentCreated(AzFramework::DrillerNetworkConsoleComponent::RTTI_Type());
-        EnsureComponentCreated(AzFramework::DrillerNetworkAgentComponent::RTTI_Type());
     }
 
     void Application::CreateSystemComponents()
@@ -506,8 +503,6 @@ namespace LegacyFramework
         ComponentApplication::RegisterCoreComponents();
 
         RegisterComponentDescriptor(AzFramework::TargetManagementComponent::CreateDescriptor());
-        RegisterComponentDescriptor(AzFramework::DrillerNetworkConsoleComponent::CreateDescriptor());
-        RegisterComponentDescriptor(AzFramework::DrillerNetworkAgentComponent::CreateDescriptor());
         RegisterComponentDescriptor(AzToolsFramework::Framework::CreateDescriptor());
     }
 }

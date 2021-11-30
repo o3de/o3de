@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -100,6 +101,12 @@ namespace AZ
 
             //! Sets if shadows should be enabled.
             virtual void SetEnableShadow(bool enabled) = 0;
+            
+            //! Returns the shadow bias.
+            virtual float GetShadowBias() const = 0;
+            
+            //! Sets the shadow bias.
+            virtual void SetShadowBias(float bias) = 0;
 
             //! Returns the maximum width and height of shadowmap.
             virtual ShadowmapSize GetShadowmapMaxSize() const = 0;
@@ -113,38 +120,25 @@ namespace AZ
             //! Sets the filter method of shadows.
             virtual void SetShadowFilterMethod(ShadowFilterMethod method) = 0;
 
-            //! Gets the width of softening boundary between shadowed area and lit area in degrees.
-            virtual float GetSofteningBoundaryWidthAngle() const = 0;
-            
-            //! Sets the width of softening boundary between shadowed area and lit area in degrees.
-            //! 0 disables softening.
-            virtual void SetSofteningBoundaryWidthAngle(float degrees) = 0;
-
-            //! Gets the sample count to predict boundary of shadow.
-            virtual uint32_t GetPredictionSampleCount() const = 0;
-            
-            //! Sets the sample count to predict boundary of shadow. Maximum 16, and should also be 
-            //! less than the filtering sample count.
-            virtual void SetPredictionSampleCount(uint32_t count) = 0;
-
             //! Gets the sample count for filtering of the shadow boundary.
             virtual uint32_t GetFilteringSampleCount() const = 0;
 
             //! Sets the sample count for filtering of the shadow boundary. Maximum 64.
             virtual void SetFilteringSampleCount(uint32_t count) = 0;
             
-            //! Gets the type of Pcf (percentage-closer filtering) to use.
-            virtual PcfMethod GetPcfMethod() const = 0;
-
-            //! Sets the type of Pcf (percentage-closer filtering) to use.
-            virtual void SetPcfMethod(PcfMethod method) = 0;
-
             //! Gets the Esm exponent. Higher values produce a steeper falloff between light and shadow.
             virtual float GetEsmExponent() const = 0;
 
             //! Sets the Esm exponent. Higher values produce a steeper falloff between light and shadow.
             virtual void SetEsmExponent(float exponent) = 0;
 
+            //! Reduces acne by biasing the shadowmap lookup along the geometric normal.
+            //! @return Returns the amount of bias to apply.
+            virtual float GetNormalShadowBias() const = 0;
+
+            //! Reduces acne by biasing the shadowmap lookup along the geometric normal.
+            //! @param normalShadowBias Sets the amount of normal shadow bias to apply.
+            virtual void SetNormalShadowBias(float normalShadowBias) = 0;
         };
 
         //! The EBus for requests to for setting and getting light component properties.

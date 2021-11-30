@@ -1,7 +1,8 @@
 
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -271,7 +272,7 @@ namespace EMotionFX
             // Post create actor
             actor->SetUnitType(MCore::Distance::UNITTYPE_METERS);
             actor->SetFileUnitType(MCore::Distance::UNITTYPE_METERS);
-            actor->PostCreateInit(/*makeGeomLodsCompatibleWithSkeletalLODs=*/false, /*generateOBBs=*/false, /*convertUnitType=*/false);
+            actor->PostCreateInit(/*makeGeomLodsCompatibleWithSkeletalLODs=*/false, /*convertUnitType=*/false);
 
             // Only enable joints that are used for skinning (and their parents).
             // On top of that, enable all joints marked as critical joints.

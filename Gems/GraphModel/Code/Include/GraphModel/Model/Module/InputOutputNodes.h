@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -66,6 +67,7 @@ namespace GraphModel
         //! \param dataType      The type of data represented by this node
         GraphInputNode(GraphModel::GraphPtr graph, DataTypePtr dataType);
 
+        using BaseInputOutputNode::PostLoadSetup;
         void PostLoadSetup(GraphPtr graph, NodeId id) override;
 
         //! Returns the value of the DefaultValue slot, which indicates the default value for this input. This
@@ -94,6 +96,7 @@ namespace GraphModel
         //! \param dataType      The type of data represented by this node
         GraphOutputNode(GraphModel::GraphPtr graph, DataTypePtr dataType);
 
+        using BaseInputOutputNode::PostLoadSetup;
         void PostLoadSetup(GraphPtr graph, NodeId id) override;
 
     protected:

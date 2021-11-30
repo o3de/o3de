@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -41,10 +42,10 @@ public: // types
 
         void UnitClamp()
         {
-            m_left = FClamp(m_left, 0.0f, 1.0f);
-            m_top = FClamp(m_top, 0.0f, 1.0f);
-            m_right = FClamp(m_right, 0.0f, 1.0f);
-            m_bottom = FClamp(m_bottom, 0.0f, 1.0f);
+            m_left = AZStd::clamp(m_left, 0.0f, 1.0f);
+            m_top = AZStd::clamp(m_top, 0.0f, 1.0f);
+            m_right = AZStd::clamp(m_right, 0.0f, 1.0f);
+            m_bottom = AZStd::clamp(m_bottom, 0.0f, 1.0f);
         }
 
         bool operator==(const UVRect& rhs) const

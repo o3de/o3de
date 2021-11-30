@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -68,8 +69,10 @@ namespace UnitTest
 
         MockPrefabFileIOActionValidator mockIOActionValidator;
         mockIOActionValidator.ReadPrefabDom(templateData.m_filePath, templatePrefabDom);
-
+        
+        AZ_TEST_START_TRACE_SUPPRESSION;
         templateData.m_id = m_prefabLoaderInterface->LoadTemplateFromFile(templateData.m_filePath);
+        AZ_TEST_STOP_TRACE_SUPPRESSION(3);
         templateData.m_isLoadedWithErrors = true;
 
         PrefabTestDataUtils::ValidateTemplateLoad(templateData);
@@ -115,7 +118,9 @@ namespace UnitTest
             targetTemplateData.m_filePath, targetTemplatePrefabDom);
 
         // Load target and source Templates and get their Ids.
+        AZ_TEST_START_TRACE_SUPPRESSION;
         targetTemplateData.m_id = m_prefabLoaderInterface->LoadTemplateFromFile(targetTemplateData.m_filePath);
+        AZ_TEST_STOP_TRACE_SUPPRESSION(4);
         sourceTemplateData.m_id = m_prefabSystemComponent->GetTemplateIdFromFilePath(sourceTemplateData.m_filePath);
 
         // Because of cyclical dependency, the two Templates should be loaded with errors.
@@ -144,7 +149,9 @@ namespace UnitTest
         MockPrefabFileIOActionValidator mockIOActionValidator;
         mockIOActionValidator.ReadPrefabDom(templateData.m_filePath, templatePrefabDom);
 
+        AZ_TEST_START_TRACE_SUPPRESSION;
         templateData.m_id = m_prefabLoaderInterface->LoadTemplateFromFile(templateData.m_filePath);
+        AZ_TEST_STOP_TRACE_SUPPRESSION(2);
 
         PrefabTestDataUtils::ValidateTemplateLoad(templateData);
     }
@@ -161,7 +168,9 @@ namespace UnitTest
         MockPrefabFileIOActionValidator mockIOActionValidator;
         mockIOActionValidator.ReadPrefabDom(templateData.m_filePath, templatePrefabDom);
 
+        AZ_TEST_START_TRACE_SUPPRESSION;
         templateData.m_id = m_prefabLoaderInterface->LoadTemplateFromFile(templateData.m_filePath);
+        AZ_TEST_STOP_TRACE_SUPPRESSION(2);
 
         PrefabTestDataUtils::ValidateTemplateLoad(templateData);
     }
@@ -183,7 +192,9 @@ namespace UnitTest
             templateInstanceData.m_source, PrefabTestDomUtils::CreatePrefabDom(),
             AZ::IO::ResultCode::Success, AZ::IO::ResultCode::Error);
 
+        AZ_TEST_START_TRACE_SUPPRESSION;
         templateData.m_id = m_prefabLoaderInterface->LoadTemplateFromFile(templateData.m_filePath);
+        AZ_TEST_STOP_TRACE_SUPPRESSION(3);
 
         PrefabTestDataUtils::ValidateTemplateLoad(templateData);
     }
@@ -279,8 +290,10 @@ namespace UnitTest
 
         MockPrefabFileIOActionValidator mockIOActionValidator;
         mockIOActionValidator.ReadPrefabDom(pathToCorruptedPrefab, corruptedPrefabContent);
-        
+
+        AZ_TEST_START_TRACE_SUPPRESSION;
         TemplateId templateId = m_prefabLoaderInterface->LoadTemplateFromFile(pathToCorruptedPrefab);
+        AZ_TEST_STOP_TRACE_SUPPRESSION(1);
 
         EXPECT_EQ(templateId, AzToolsFramework::Prefab::InvalidTemplateId);
     }
@@ -289,8 +302,10 @@ namespace UnitTest
     {
         PrefabDom emptyPrefabDom = PrefabTestDomUtils::CreatePrefabDom();
         AZStd::string emptyPrefabDomStr = PrefabTestDomUtils::DomToString(emptyPrefabDom);
+        AZ_TEST_START_TRACE_SUPPRESSION;
         EXPECT_EQ(m_prefabLoaderInterface->LoadTemplateFromString(emptyPrefabDomStr, "|?<>"), AzToolsFramework::Prefab::InvalidTemplateId);
         EXPECT_EQ(m_prefabLoaderInterface->LoadTemplateFromString(emptyPrefabDomStr, "notAFile/"), AzToolsFramework::Prefab::InvalidTemplateId);
+        AZ_TEST_STOP_TRACE_SUPPRESSION(2);
     }
 
     TEST_F(PrefabLoadTemplateTest, LoadTemplate_LoadFromString_LoadsEmptyPrefab)
@@ -318,9 +333,11 @@ namespace UnitTest
         );
 
         AZStd::string selfDependentPrefabStr = PrefabTestDomUtils::DomToString(selfDependentPrefab);
+        AZ_TEST_START_TRACE_SUPPRESSION;
         templateData.m_id = m_prefabLoaderInterface->LoadTemplateFromString(
             selfDependentPrefabStr,
             templateData.m_filePath);
+        AZ_TEST_STOP_TRACE_SUPPRESSION_NO_COUNT; // produces different counts in Jenkins vs local
 
         templateData.m_isLoadedWithErrors = true;
 
@@ -330,7 +347,9 @@ namespace UnitTest
     TEST_F(PrefabLoadTemplateTest, LoadTemplate_LoadFromString_CorruptedReturnsInvalidTemplateId)
     {
         AZStd::string corruptPrefab = "{ Corrupted PrefabDom";
+        AZ_TEST_START_TRACE_SUPPRESSION;
         TemplateId templateId = m_prefabLoaderInterface->LoadTemplateFromString(corruptPrefab);
+        AZ_TEST_STOP_TRACE_SUPPRESSION(1);
         EXPECT_EQ(templateId, AzToolsFramework::Prefab::InvalidTemplateId);
     }
 }

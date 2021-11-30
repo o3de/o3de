@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -21,7 +22,7 @@ namespace MysticQt
     // constructor
     MysticQtManager::MysticQtManager()
     {
-        mMainWindow = nullptr;
+        m_mainWindow = nullptr;
     }
 
 
@@ -29,12 +30,11 @@ namespace MysticQt
     MysticQtManager::~MysticQtManager()
     {
         // get the number of icons and destroy them
-        const uint32 numIcons = mIcons.GetLength();
-        for (uint32 i = 0; i < numIcons; ++i)
+        for (IconData* icon : m_icons)
         {
-            delete mIcons[i];
+            delete icon;
         }
-        mIcons.Clear();
+        m_icons.clear();
     }
 
 
@@ -42,34 +42,33 @@ namespace MysticQt
     // constructor
     MysticQtManager::IconData::IconData(const char* filename)
     {
-        mFileName = filename;
-        mIcon = new QIcon(QDir{ QString(GetMysticQt()->GetDataDir().c_str()) }.filePath(filename));
+        m_fileName = filename;
+        m_icon = new QIcon(QDir{ QString(GetMysticQt()->GetDataDir().c_str()) }.filePath(filename));
     }
 
 
     // destructor
     MysticQtManager::IconData::~IconData()
     {
-        delete mIcon;
+        delete m_icon;
     }
 
 
     const QIcon& MysticQtManager::FindIcon(const char* filename)
     {
         // get the number of icons and iterate through them
-        const uint32 numIcons = mIcons.GetLength();
-        for (uint32 i = 0; i < numIcons; ++i)
+        for (IconData* icon : m_icons)
         {
-            if (AzFramework::StringFunc::Equal(mIcons[i]->mFileName.c_str(), filename, false /* no case */))
+            if (AzFramework::StringFunc::Equal(icon->m_fileName.c_str(), filename, false /* no case */))
             {
-                return *(mIcons[i]->mIcon);
+                return *(icon->m_icon);
             }
         }
 
         // we haven't found it
         IconData* iconData = new IconData(filename);
-        mIcons.Add(iconData);
-        return *(iconData->mIcon);
+        m_icons.emplace_back(iconData);
+        return *(iconData->m_icon);
     }
 
 

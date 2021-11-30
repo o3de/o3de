@@ -1,11 +1,11 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
-#include "LmbrCentral_precompiled.h"
 #include "EditorAudioPreloadComponent.h"
 
 #include <AzCore/Serialization/EditContext.h>
@@ -36,13 +36,14 @@ namespace LmbrCentral
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::Category, "Audio")
                         ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/AudioPreload.svg")
+                        ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/AudioPreload.svg")
                         ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
 
                         // Icon todo:
                         //->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/AudioPreload.png")
 
-                        ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/audio-preload/")
+                        ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/audio/preload/")
 
                     ->DataElement("AudioControl", &EditorAudioPreloadComponent::m_defaultPreload, "Preload Name", "The default ATL Preload control to use")
                     ->DataElement(AZ::Edit::UIHandlers::ComboBox, &EditorAudioPreloadComponent::m_loadType, "Load Type", "Automatically when the component activates/deactivates, or Manually at user's request")

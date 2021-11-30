@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -35,8 +36,8 @@ namespace EMStudio
         TimeInfoWidget(TimeViewPlugin* plugin, QWidget* parent = nullptr);
         ~TimeInfoWidget();
 
-        bool GetIsOverwriteMode()                       { return mOverwriteMode; }
-        void SetIsOverwriteMode(bool active)            { mOverwriteMode = active; }
+        bool GetIsOverwriteMode()                       { return m_overwriteMode; }
+        void SetIsOverwriteMode(bool active)            { m_overwriteMode = active; }
         void SetOverwriteTime(double startTime, double endTime);
 
     protected:
@@ -44,18 +45,18 @@ namespace EMStudio
         QSize sizeHint() const;
 
     private:
-        QFont           mFont;
-        QFont           mOverwriteFont;
-        QBrush          mBrushBackground;
-        QPen            mPenText;
-        QPen            mPenTextFocus;
-        AZStd::string   mCurTimeString;
-        AZStd::string   mOverwriteTimeString;
-        TimeViewPlugin* mPlugin;
-        double          mOverwriteStartTime;
-        double          mOverwriteEndTime;
-        bool            mOverwriteMode;
-        bool            mShowOverwriteStartTime = false;
+        QFont           m_font;
+        QFont           m_overwriteFont;
+        QBrush          m_brushBackground;
+        QPen            m_penText;
+        QPen            m_penTextFocus;
+        AZStd::string   m_curTimeString;
+        AZStd::string   m_overwriteTimeString;
+        TimeViewPlugin* m_plugin;
+        double          m_overwriteStartTime;
+        double          m_overwriteEndTime;
+        bool            m_overwriteMode;
+        bool            m_showOverwriteStartTime = false;
 
         void keyPressEvent(QKeyEvent* event);
         void keyReleaseEvent(QKeyEvent* event);

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -130,7 +131,7 @@
 
 -(void) productsRequest:(SKProductsRequest*) request didReceiveResponse:(SKProductsResponse*) response
 {
-    for (NSString* invalidId in response.invalidProductIdentifiers)
+    for ([[maybe_unused]] NSString* invalidId in response.invalidProductIdentifiers)
     {
         AZ_TracePrintf("O3DEInAppPurchases:", "Invalid product ID:", [invalidId cStringUsingEncoding:NSASCIIStringEncoding]);
     }

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -67,7 +68,7 @@ namespace EMotionFX
          * @param scale This must contain the initial scale, and will be modified inside this method as well.
          * @param weight The absolute weight value.
          */
-        virtual void ApplyTransformation(ActorInstance* actorInstance, uint32 nodeIndex, AZ::Vector3& position, AZ::Quaternion& rotation, AZ::Vector3& scale, float weight) = 0;
+        virtual void ApplyTransformation(ActorInstance* actorInstance, size_t nodeIndex, AZ::Vector3& position, AZ::Quaternion& rotation, AZ::Vector3& scale, float weight) = 0;
 
         /**
          * Get the unique ID of this morph target.
@@ -76,7 +77,7 @@ namespace EMotionFX
          * name compares to simple integer compares.
          * @result The unique ID of the morph target.
          */
-        MCORE_INLINE uint32 GetID() const                                   { return mNameID; }
+        MCORE_INLINE uint32 GetID() const                                   { return m_nameId; }
 
         /**
          * Get the unique name of the morph target.
@@ -211,7 +212,7 @@ namespace EMotionFX
          * @param nodeIndex The node number to perform the check on.
          * @result Returns true if the given node will be modified by this morph target, otherwise false is returned.
          */
-        virtual bool Influences(uint32 nodeIndex) const = 0;
+        virtual bool Influences(size_t nodeIndex) const = 0;
 
         /**
          * Calculate the range based weight value from a normalized weight value given by a facial animation key frame.
@@ -258,14 +259,14 @@ namespace EMotionFX
          * Creates an exact clone of this  morph target.
          * @result Returns a pointer to an exact clone of this morph target.
          */
-        virtual MorphTarget* Clone() = 0;
+        virtual MorphTarget* Clone() const = 0;
 
         /**
          * Copy the morph target base class members over to another morph target.
          * This can be used when implementing your own Clone method for your own morph target.
          * @param target The morph target to copy the data from.
          */
-        void CopyBaseClassMemberValues(MorphTarget* target);
+        void CopyBaseClassMemberValues(MorphTarget* target) const;
 
         /**
          * Scale all transform and positional data.
@@ -275,20 +276,15 @@ namespace EMotionFX
         virtual void Scale(float scaleFactor) = 0;
 
     protected:
-        uint32          mNameID;        /**< The unique ID of the morph target, calculated from the name. */
-        float           mRangeMin;      /**< The minimum range of the weight. */
-        float           mRangeMax;      /**< The maximum range of the weight. */
-        EPhonemeSet     mPhonemeSets;   /**< The phoneme sets in case this morph target is used as a phoneme. */
+        uint32          m_nameId;        /**< The unique ID of the morph target, calculated from the name. */
+        float           m_rangeMin;      /**< The minimum range of the weight. */
+        float           m_rangeMax;      /**< The maximum range of the weight. */
+        EPhonemeSet     m_phonemeSets;   /**< The phoneme sets in case this morph target is used as a phoneme. */
 
         /**
          * The constructor.
          * @param name The unique name of the morph target.
          */
         MorphTarget(const char* name);
-
-        /**
-         * The destructor.
-         */
-        virtual ~MorphTarget();
     };
 } // namespace EMotionFX

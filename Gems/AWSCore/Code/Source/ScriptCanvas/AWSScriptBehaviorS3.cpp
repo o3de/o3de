@@ -1,11 +1,13 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
 #include <AzCore/IO/FileIO.h>
+#include <AzCore/IO/SystemFile.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzFramework/StringFunc/StringFunc.h>
@@ -23,49 +25,39 @@
 
 namespace AWSCore
 {
-    AWSScriptBehaviorS3::AWSScriptBehaviorS3()
+    void AWSScriptBehaviorS3::Reflect(AZ::ReflectContext* context)
     {
-    }
-
-    void AWSScriptBehaviorS3::ReflectSerialization(AZ::SerializeContext* serializeContext)
-    {
-        if (serializeContext)
+        if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<AWSScriptBehaviorS3>()
                 ->Version(0);
         }
-    }
 
-    void AWSScriptBehaviorS3::ReflectBehaviors(AZ::BehaviorContext* behaviorContext)
-    {
-        behaviorContext->Class<AWSScriptBehaviorS3>(AWSScriptBehaviorS3Name)
-            ->Attribute(AZ::Script::Attributes::Category, "AWSCore")
-            ->Method("GetObject", &AWSScriptBehaviorS3::GetObject,
-                {{{"Bucket Resource KeyName", "The resource key name of the bucket in resource mapping config file."},
-                  {"Object KeyName", "The object key."},
-                  {"Outfile Name", "Filename where the content will be saved."}}})
-            ->Method("GetObjectRaw", &AWSScriptBehaviorS3::GetObjectRaw,
-                {{{"Bucket Name", "The name of the bucket containing the object."},
-                  {"Object KeyName", "The object key."},
-                  {"Region Name", "The region of the bucket located in."},
-                  {"Outfile Name", "Filename where the content will be saved."}}})
-            ->Method("HeadObject", &AWSScriptBehaviorS3::HeadObject,
-                {{{"Bucket Resource KeyName", "The resource key name of the bucket in resource mapping config file."},
-                  {"Object KeyName", "The object key."}}})
-            ->Method("HeadObjectRaw", &AWSScriptBehaviorS3::HeadObjectRaw,
-                {{{"Bucket Name", "The name of the bucket containing the object."},
-                  {"Object KeyName", "The object key."},
-                  {"Region Name", "The region of the bucket located in."}}})
-            ;
+        if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
+        {
+            behaviorContext->Class<AWSScriptBehaviorS3>(AWSScriptBehaviorS3Name)
+                ->Attribute(AZ::Script::Attributes::Category, "AWSCore")
+                ->Method("GetObject", &AWSScriptBehaviorS3::GetObject,
+                    {{{"Bucket Resource KeyName", "The resource key name of the bucket in resource mapping config file."},
+                      {"Object KeyName", "The object key."},
+                      {"Outfile Name", "Filename where the content will be saved."}}})
+                ->Method("GetObjectRaw", &AWSScriptBehaviorS3::GetObjectRaw,
+                    {{{"Bucket Name", "The name of the bucket containing the object."},
+                      {"Object KeyName", "The object key."},
+                      {"Region Name", "The region of the bucket located in."},
+                      {"Outfile Name", "Filename where the content will be saved."}}})
+                ->Method("HeadObject", &AWSScriptBehaviorS3::HeadObject,
+                    {{{"Bucket Resource KeyName", "The resource key name of the bucket in resource mapping config file."},
+                      {"Object KeyName", "The object key."}}})
+                ->Method("HeadObjectRaw", &AWSScriptBehaviorS3::HeadObjectRaw,
+                    {{{"Bucket Name", "The name of the bucket containing the object."},
+                      {"Object KeyName", "The object key."},
+                      {"Region Name", "The region of the bucket located in."}}});
 
-        behaviorContext->EBus<AWSScriptBehaviorS3NotificationBus>("AWSS3BehaviorNotificationBus")
-            ->Attribute(AZ::Script::Attributes::Category, "AWSCore")
-            ->Handler<AWSScriptBehaviorS3NotificationBusHandler>();
-    }
-
-    void AWSScriptBehaviorS3::ReflectEditParameters(AZ::EditContext* editContext)
-    {
-        AZ_UNUSED(editContext);
+            behaviorContext->EBus<AWSScriptBehaviorS3NotificationBus>("AWSS3BehaviorNotificationBus")
+                ->Attribute(AZ::Script::Attributes::Category, "AWSCore")
+                ->Handler<AWSScriptBehaviorS3NotificationBusHandler>();
+        }
     }
 
     void AWSScriptBehaviorS3::GetObject(
@@ -171,12 +163,16 @@ namespace AWSCore
                 AWSScriptBehaviorS3NotificationBus::Broadcast(notificationFunc, OutputFileIsEmptyErrorMessage);
                 return false;
             }
-            if (!AzFramework::StringFunc::Path::HasDrive(outFile.c_str()))
+
+            char resolvedPath[AZ_MAX_PATH_LEN] = { 0 };
+            if (!AZ::IO::FileIOBase::GetInstance()->ResolvePath(outFile.c_str(), resolvedPath, AZ_MAX_PATH_LEN))
             {
-                AZ_Warning(AWSScriptBehaviorS3Name, false, OutputFileMissFullPathErrorMessage);
-                AWSScriptBehaviorS3NotificationBus::Broadcast(notificationFunc, OutputFileMissFullPathErrorMessage);
+                AZ_Warning(AWSScriptBehaviorS3Name, false, OutputFileFailedToResolveErrorMessage);
+                AWSScriptBehaviorS3NotificationBus::Broadcast(notificationFunc, OutputFileFailedToResolveErrorMessage);
                 return false;
             }
+            outFile = resolvedPath;
+
             if (AZ::IO::FileIOBase::GetInstance()->IsDirectory(outFile.c_str()))
             {
                 AZ_Warning(AWSScriptBehaviorS3Name, false, OutputFileIsDirectoryErrorMessage);

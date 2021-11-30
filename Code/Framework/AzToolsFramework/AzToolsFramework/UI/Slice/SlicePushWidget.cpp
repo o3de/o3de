@@ -1,14 +1,14 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
-#include "AzToolsFramework_precompiled.h"
 
+#include <AzCore/PlatformDef.h>
 AZ_PUSH_DISABLE_WARNING(4244 4251, "-Wunknown-warning-option")
-
 #include <QDialog>
 #include <QDialogButtonBox>
 #include <QHeaderView>
@@ -2525,11 +2525,11 @@ namespace AzToolsFramework
     {
         // This is an approximate measurement of how much this slice proliferates within the currently-loaded level.
         // Down the line we'll actually query the asset DB's dependency tree, summing up instances.
-
+        AZ_UNUSED(levelSlice); // Prevent unused warning in release builds
         AZ_Warning("SlicePush", levelSlice, "SlicePushWidget::CalculateReferenceCount could not find root slice, displayed counts will be inaccurate!");
         size_t instanceCount = 0;
         AZ::Data::AssetBus::EnumerateHandlersId(assetId,
-            [&instanceCount, assetId, levelSlice] (AZ::Data::AssetEvents* handler) -> bool
+            [&instanceCount, assetId] (AZ::Data::AssetEvents* handler) -> bool
             {
                 AZ::SliceComponent* component = azrtti_cast<AZ::SliceComponent*>(handler);
                 if (component)

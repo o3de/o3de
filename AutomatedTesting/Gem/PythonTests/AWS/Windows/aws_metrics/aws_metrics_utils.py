@@ -1,5 +1,6 @@
 """
-Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+Copyright (c) Contributors to the Open 3D Engine Project.
+For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
@@ -12,7 +13,6 @@ import typing
 from datetime import datetime
 from botocore.exceptions import WaiterError
 
-from AWS.common.aws_utils import AwsUtils
 from .aws_metrics_waiters import KinesisAnalyticsApplicationUpdatedWaiter, \
     CloudWatchMetricsDeliveredWaiter, DataLakeMetricsDeliveredWaiter, GlueCrawlerReadyWaiter
 
@@ -28,7 +28,7 @@ class AWSMetricsUtils:
     Provide utils functions for the AWSMetrics gem to interact with the deployed resources.
     """
 
-    def __init__(self, aws_utils: AwsUtils):
+    def __init__(self, aws_utils: pytest.fixture):
         self._aws_util = aws_utils
 
     def start_kinesis_data_analytics_application(self, application_name: str) -> None:
@@ -198,39 +198,31 @@ class AWSMetricsUtils:
 
             assert state == 'SUCCEEDED', f'Failed to run the named query {named_query.get("Name", {})}'
 
-    def empty_s3_bucket(self, bucket_name: str) -> None:
+    def empty_bucket(self, bucket_name: str) -> None:
         """
         Empty the S3 bucket following:
         https://boto3.amazonaws.com/v1/documentation/api/latest/guide/migrations3.html
 
         :param bucket_name: Name of the S3 bucket.
         """
-
         s3 = self._aws_util.resource('s3')
         bucket = s3.Bucket(bucket_name)
 
         for key in bucket.objects.all():
             key.delete()
 
-    def get_analytics_bucket_name(self, stack_name: str) -> str:
+    def delete_table(self, database_name: str, table_name: str) -> None:
         """
-        Get the name of the deployed S3 bucket.
-        :param stack_name: Name of the CloudFormation stack.
-        :return: Name of the deployed S3 bucket.
+        Delete an existing Glue table.
+
+        :param database_name: Name of the Glue database.
+        :param table_name: Name of the table to delete.
         """
-
-        client = self._aws_util.client('cloudformation')
-
-        response = client.describe_stack_resources(
-            StackName=stack_name
+        client = self._aws_util.client('glue')
+        client.delete_table(
+            DatabaseName=database_name,
+            Name=table_name
         )
-        resources = response.get('StackResources', [])
-
-        for resource in resources:
-            if resource.get('ResourceType') == 'AWS::S3::Bucket':
-                return resource.get('PhysicalResourceId', '')
-
-        return ''
 
 
 @pytest.fixture(scope='function')

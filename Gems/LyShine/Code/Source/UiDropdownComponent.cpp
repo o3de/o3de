@@ -1,10 +1,10 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "LyShine_precompiled.h"
 #include "UiDropdownComponent.h"
 
 #include <AzCore/Serialization/SerializeContext.h>
@@ -826,7 +826,8 @@ AZ::Outcome<void, AZStd::string> UiDropdownComponent::ValidatePotentialExpandedP
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-AZ::FailureValue<AZStd::string> FailureMessage(string message) {
+AZ::FailureValue<AZStd::string> FailureMessage(AZStd::string message)
+{
     return AZ::Failure(AZStd::string(message));
 }
 

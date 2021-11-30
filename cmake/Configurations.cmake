@@ -1,11 +1,23 @@
 #
-# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
-# 
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
 
 include_guard(GLOBAL)
+
+# LY_CONFIGURATION_TYPES defines all the configuration types that O3DE supports
+# We dont set CMAKE_CONFIGURATION_TYPES directly because we want to be able to configure which 
+# configuration types are supported in an SDK installation. SDK installations will fill a 
+# CMAKE_CONFIGURATION_TYPES based on the configurations that were generated during the install process.
+# ly_append_configurations_options depends on LY_CONFIGURATION_TYPES being
+# set in order to successfully parse the arguments. Even for non-multi-config
+# generators, it needs to be set.
+set(LY_CONFIGURATION_TYPES "debug;profile;release" CACHE STRING "" FORCE)
+
+include(cmake/ConfigurationTypes.cmake)
 
 #! ly_append_configurations_options: adds options to the different configurations (debug, profile, release, etc)
 #
@@ -19,24 +31,35 @@ include_guard(GLOBAL)
 # \arg:LINK_STATIC_${CONFIGURATION}
 # \arg:LINK_NON_STATIC
 # \arg:LINK_NON_STATIC_${CONFIGURATION}
-# \arg:LINK_EXECUTABLE
-# \arg:LINK_EXECUTABLE_${CONFIGURATION}
+# \arg:LINK_EXE
+# \arg:LINK_EXE_${CONFIGURATION}
+# \arg:LINK_MODULE
+# \arg:LINK_MODULE_${CONFIGURATION}
+# \arg:LINK_SHARED
+# \arg:LINK_SHARED_${CONFIGURATION}
 #
 function(ly_append_configurations_options)
 
     set(options)
     set(oneValueArgs)
-    set(multiValueArgs
+    set(multiArgs
         DEFINES
         COMPILATION
         LINK
         LINK_STATIC
         LINK_NON_STATIC
-        LINK_EXECUTABLE
+        LINK_EXE
+        LINK_MODULE
+        LINK_SHARED
     )
-    foreach(conf IN LISTS CMAKE_CONFIGURATION_TYPES)
-        string(TOUPPER ${conf} UCONF)
-        set(multiValueArgs ${multiValueArgs} DEFINES_${UCONF} COMPILATION_${UCONF} LINK_${UCONF} LINK_STATIC_${UCONF} LINK_NON_STATIC_${UCONF} LINK_EXECUTABLE_${UCONF})
+    foreach(arg IN LISTS multiArgs)
+        list(APPEND multiValueArgs ${arg})
+        # we parse the parameters based on all configuration types so unknown configurations
+        # are not passed as values to other parameters
+        foreach(conf IN LISTS LY_CONFIGURATION_TYPES)
+            string(TOUPPER ${conf} UCONF)
+            list(APPEND multiValueArgs ${arg}_${UCONF})
+        endforeach()
     endforeach()
 
     cmake_parse_arguments(ly_append_configurations_options "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
@@ -44,50 +67,49 @@ function(ly_append_configurations_options)
     if(ly_append_configurations_options_DEFINES)
         add_compile_definitions(${ly_append_configurations_options_DEFINES})
     endif()
+
     if(ly_append_configurations_options_COMPILATION)
         string(REPLACE ";" " " COMPILATION_STR "${ly_append_configurations_options_COMPILATION}")
-        string(APPEND CMAKE_C_FLAGS " " ${COMPILATION_STR})
-        string(APPEND CMAKE_CXX_FLAGS " " ${COMPILATION_STR})
-        set(CMAKE_C_FLAGS ${CMAKE_C_FLAGS} PARENT_SCOPE)
-        set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} PARENT_SCOPE)
+        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${COMPILATION_STR}" PARENT_SCOPE)
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${COMPILATION_STR}" PARENT_SCOPE)
     endif()
+
     if(ly_append_configurations_options_LINK)
         string(REPLACE ";" " " LINK_STR "${ly_append_configurations_options_LINK}")
-        string(APPEND LINK_OPTIONS " " ${LINK_STR})
-        set(LINK_OPTIONS ${LINK_OPTIONS} PARENT_SCOPE)
-
-        # Not defining these issue warnings, TODO: investigate
-        set(CMAKE_STATIC_LINKER_FLAGS ${LINK_OPTIONS} PARENT_SCOPE)
-        set(CMAKE_MODULE_LINKER_FLAGS ${LINK_OPTIONS} PARENT_SCOPE)
-        set(CMAKE_SHARED_LINKER_FLAGS ${LINK_OPTIONS} PARENT_SCOPE)
-        set(CMAKE_EXE_LINKER_FLAGS ${LINK_OPTIONS} PARENT_SCOPE)
+        set(CMAKE_STATIC_LINKER_FLAGS "${CMAKE_STATIC_LINKER_FLAGS} ${LINK_STR}" PARENT_SCOPE)
+        set(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} ${LINK_STR}" PARENT_SCOPE)
+        set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} ${LINK_STR}" PARENT_SCOPE)
+        set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${LINK_OPTIONS}" PARENT_SCOPE)
     endif()
-    if(ly_append_configurations_options_LINK_STATIC)
-        string(REPLACE ";" " " LINK_STATIC_STR "${ly_append_configurations_options_LINK_STATIC}")
-        string(APPEND LINK_STATIC_OPTIONS " " ${LINK_STATIC_STR})
-        set(LINK_STATIC_OPTIONS ${LINK_STATIC_OPTIONS} PARENT_SCOPE)
 
-        set(CMAKE_STATIC_LINKER_FLAGS ${LINK_STATIC_OPTIONS} PARENT_SCOPE)
+    if(ly_append_configurations_options_LINK_STATIC)
+        string(REPLACE ";" " " LINK_STR "${ly_append_configurations_options_LINK_STATIC}")
+        set(CMAKE_STATIC_LINKER_FLAGS "${CMAKE_STATIC_LINKER_FLAGS} ${LINK_STR}" PARENT_SCOPE)
     endif()
 
     if(ly_append_configurations_options_LINK_NON_STATIC)
-        string(REPLACE ";" " " LINK_NON_STATIC_STR "${ly_append_configurations_options_LINK_NON_STATIC}")
-        string(APPEND LINK_NON_STATIC_OPTIONS " " ${LINK_NON_STATIC_STR})
-        set(LINK_NON_STATIC_OPTIONS ${LINK_NON_STATIC_OPTIONS} PARENT_SCOPE)
-
-        set(CMAKE_MODULE_LINKER_FLAGS ${LINK_NON_STATIC_OPTIONS} PARENT_SCOPE)
-        set(CMAKE_SHARED_LINKER_FLAGS ${LINK_NON_STATIC_OPTIONS} PARENT_SCOPE)
-        set(CMAKE_EXE_LINKER_FLAGS ${LINK_NON_STATIC_OPTIONS} PARENT_SCOPE)
+        string(REPLACE ";" " " LINK_STR "${ly_append_configurations_options_LINK_NON_STATIC}")
+        set(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} ${LINK_STR}" PARENT_SCOPE)
+        set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} ${LINK_STR}" PARENT_SCOPE)
+        set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${LINK_STR}" PARENT_SCOPE)
     endif()
 
-    if(ly_append_configurations_options_LINK_EXECUTABLE)
-        string(REPLACE ";" " " LINK_EXECUTABLE_STR "${ly_append_configurations_options_LINK_EXECUTABLE}")
-        string(APPEND LINK_EXECUTABLE_OPTIONS " " ${LINK_EXECUTABLE_STR})
-        set(LINK_EXECUTABLE_OPTIONS ${LINK_EXECUTABLE_OPTIONS} PARENT_SCOPE)
-
-        set(CMAKE_EXE_LINKER_FLAGS ${LINK_EXECUTABLE_OPTIONS} PARENT_SCOPE)
+    if(ly_append_configurations_options_LINK_EXE)
+        string(REPLACE ";" " " LINK_STR "${ly_append_configurations_options_LINK_EXE}")
+        set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${LINK_STR}" PARENT_SCOPE)
     endif()
 
+    if(ly_append_configurations_options_LINK_MODULE)
+        string(REPLACE ";" " " LINK_STR "${ly_append_configurations_options_LINK_MODULE}")
+        set(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} ${LINK_STR}" PARENT_SCOPE)
+    endif()
+
+    if(ly_append_configurations_options_LINK_SHARED)
+        string(REPLACE ";" " " LINK_STR "${ly_append_configurations_options_LINK_SHARED}")
+        set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} ${LINK_STR}" PARENT_SCOPE)
+    endif()
+
+    # We only iterate for the actual configuration types
     foreach(conf IN LISTS CMAKE_CONFIGURATION_TYPES)
 
         string(TOUPPER ${conf} UCONF)
@@ -99,43 +121,33 @@ function(ly_append_configurations_options)
         endif()
         if(ly_append_configurations_options_COMPILATION_${UCONF})
             string(REPLACE ";" " " COMPILATION_STR "${ly_append_configurations_options_COMPILATION_${UCONF}}")
-            string(APPEND CMAKE_C_FLAGS_${UCONF} " " ${COMPILATION_STR})
-            string(APPEND CMAKE_CXX_FLAGS_${UCONF} " " ${COMPILATION_STR})
-            set(CMAKE_C_FLAGS_${UCONF} ${CMAKE_C_FLAGS_${UCONF}} PARENT_SCOPE)
-            set(CMAKE_CXX_FLAGS_${UCONF} ${CMAKE_CXX_FLAGS_${UCONF}} PARENT_SCOPE)
+            set(CMAKE_C_FLAGS_${UCONF} "${CMAKE_C_FLAGS_${UCONF}} ${COMPILATION_STR}" PARENT_SCOPE)
+            set(CMAKE_CXX_FLAGS_${UCONF} "${CMAKE_CXX_FLAGS_${UCONF}} ${COMPILATION_STR}" PARENT_SCOPE)
         endif()
         if(ly_append_configurations_options_LINK_${UCONF})
             string(REPLACE ";" " " LINK_STR "${ly_append_configurations_options_LINK_${UCONF}}")
-            string(APPEND LINK_OPTIONS_${UCONF} " " ${LINK_STR})
-            set(LINK_OPTIONS_${UCONF} ${LINK_OPTIONS_${UCONF}} PARENT_SCOPE)
-
-            set(CMAKE_STATIC_LINKER_FLAGS_${UCONF} ${LINK_OPTIONS_${UCONF}} PARENT_SCOPE)
-            set(CMAKE_MODULE_LINKER_FLAGS_${UCONF} ${LINK_OPTIONS_${UCONF}} PARENT_SCOPE)
-            set(CMAKE_SHARED_LINKER_FLAGS_${UCONF} ${LINK_OPTIONS_${UCONF}} PARENT_SCOPE)
-            set(CMAKE_EXE_LINKER_FLAGS_${UCONF} ${LINK_OPTIONS_${UCONF}} PARENT_SCOPE)
+            set(CMAKE_STATIC_LINKER_FLAGS_${UCONF} "${CMAKE_STATIC_LINKER_FLAGS_${UCONF}} ${LINK_STR}" PARENT_SCOPE)
+            set(CMAKE_MODULE_LINKER_FLAGS_${UCONF} "${CMAKE_MODULE_LINKER_FLAGS_${UCONF}} ${LINK_STR}" PARENT_SCOPE)
+            set(CMAKE_SHARED_LINKER_FLAGS_${UCONF} "${CMAKE_SHARED_LINKER_FLAGS_${UCONF}} ${LINK_STR}" PARENT_SCOPE)
+            set(CMAKE_EXE_LINKER_FLAGS_${UCONF} "${CMAKE_EXE_LINKER_FLAGS_${UCONF}} ${LINK_STR}" PARENT_SCOPE)
         endif()
         if(ly_append_configurations_options_LINK_STATIC_${UCONF})
-            string(REPLACE ";" " " LINK_STATIC_STR "${ly_append_configurations_options_LINK_STATIC_${UCONF}}")
-            string(APPEND LINK_STATIC_OPTIONS_${UCONF} " " ${LINK_STATIC_STR})
-            set(LINK_STATIC_OPTIONS_${UCONF} ${LINK_STATIC_OPTIONS_${UCONF}} PARENT_SCOPE)
-
-            set(CMAKE_STATIC_LINKER_FLAGS_${UCONF} ${LINK_STATIC_OPTIONS_${UCONF}} PARENT_SCOPE)
+            string(REPLACE ";" " " LINK_STR "${ly_append_configurations_options_LINK_STATIC_${UCONF}}")
+            set(CMAKE_STATIC_LINKER_FLAGS_${UCONF} "${CMAKE_STATIC_LINKER_FLAGS_${UCONF}} ${LINK_STR}" PARENT_SCOPE)
         endif()
         if(ly_append_configurations_options_LINK_NON_STATIC_${UCONF})
-            string(REPLACE ";" " " LINK_NON_STATIC_STR "${ly_append_configurations_options_LINK_NON_STATIC_${UCONF}}")
-            string(APPEND LINK_NON_STATIC_OPTIONS_${UCONF} " " ${LINK_NON_STATIC_STR})
-            set(LINK_NON_STATIC_OPTIONS_${UCONF} ${LINK_NON_STATIC_OPTIONS_${UCONF}} PARENT_SCOPE)
-
-            set(CMAKE_MODULE_LINKER_FLAGS_${UCONF} ${LINK_NON_STATIC_OPTIONS_${UCONF}} PARENT_SCOPE)
-            set(CMAKE_SHARED_LINKER_FLAGS_${UCONF} ${LINK_NON_STATIC_OPTIONS_${UCONF}} PARENT_SCOPE)
-            set(CMAKE_EXE_LINKER_FLAGS_${UCONF} ${LINK_NON_STATIC_OPTIONS_${UCONF}} PARENT_SCOPE)
+            string(REPLACE ";" " " LINK_STR "${ly_append_configurations_options_LINK_NON_STATIC_${UCONF}}")
+            set(CMAKE_MODULE_LINKER_FLAGS_${UCONF} "${CMAKE_MODULE_LINKER_FLAGS_${UCONF}} ${LINK_STR}" PARENT_SCOPE)
+            set(CMAKE_SHARED_LINKER_FLAGS_${UCONF} "${CMAKE_SHARED_LINKER_FLAGS_${UCONF}} ${LINK_STR}" PARENT_SCOPE)
+            set(CMAKE_EXE_LINKER_FLAGS_${UCONF} "${CMAKE_EXE_LINKER_FLAGS_${UCONF}} ${LINK_STR}" PARENT_SCOPE)
         endif()
-        if(ly_append_configurations_options_LINK_EXECUTABLE_${UCONF})
-            string(REPLACE ";" " " LINK_EXECUTABLE_STR "${ly_append_configurations_options_LINK_EXECUTABLE_${UCONF}}")
-            string(APPEND LINK_EXECUTABLE_OPTIONS_${UCONF} " " ${LINK_EXECUTABLE_STR})
-            set(LINK_EXECUTABLE_OPTIONS_${UCONF} ${LINK_EXECUTABLE_OPTIONS_${UCONF}} PARENT_SCOPE)
-
-            set(CMAKE_EXE_LINKER_FLAGS_${UCONF} ${LINK_EXECUTABLE_OPTIONS_${UCONF}} PARENT_SCOPE)
+        if(ly_append_configurations_options_LINK_EXE_${UCONF})
+            string(REPLACE ";" " " LINK_STR "${ly_append_configurations_options_LINK_EXE_${UCONF}}")
+            set(CMAKE_EXE_LINKER_FLAGS_${UCONF} "${CMAKE_EXE_LINKER_FLAGS_${UCONF}} ${LINK_STR}" PARENT_SCOPE)
+        endif()
+        if(ly_append_configurations_options_LINK_MODULE_${UCONF})
+            string(REPLACE ";" " " LINK_STR "${ly_append_configurations_options_LINK_MODULE_${UCONF}}")
+            set(CMAKE_MODULE_LINKER_FLAGS_${UCONF} "${CMAKE_MODULE_LINKER_FLAGS_${UCONF}} ${LINK_STR}" PARENT_SCOPE)
         endif()
     endforeach()
 
@@ -144,11 +156,6 @@ endfunction()
 # Set the C++ standard that is being targeted to C++17
 set(CMAKE_CXX_STANDARD 17 CACHE STRING "C++ Standard to target")
 ly_set(CMAKE_CXX_STANDARD_REQUIRED ON)
-
-# ly_append_configurations_options depends on CMAKE_CONFIGURATION_TYPES being
-# set in order to successfully parse the arguments. Even for non-multi-config
-# generators, it needs to be set.
-set(CMAKE_CONFIGURATION_TYPES "debug;profile;release" CACHE STRING "" FORCE)
 
 get_property(_isMultiConfig GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
 if(NOT _isMultiConfig)

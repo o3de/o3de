@@ -1,11 +1,13 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
 #include <AzCore/RTTI/BehaviorContext.h>
+#include <AzCore/Asset/AssetSerializer.h>
 
 #include <Atom/RPI.Public/Scene.h>
 
@@ -47,12 +49,12 @@ namespace AZ
 
         void LookModificationComponentController::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
         {
-            provided.push_back(AZ_CRC("LookModificationService", 0x207b7539));
+            provided.push_back(AZ_CRC_CE("LookModificationService"));
         }
 
         void LookModificationComponentController::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
         {
-            incompatible.push_back(AZ_CRC("LookModificationService", 0x207b7539));
+            incompatible.push_back(AZ_CRC("LookModificationService"));
         }
 
         void LookModificationComponentController::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)

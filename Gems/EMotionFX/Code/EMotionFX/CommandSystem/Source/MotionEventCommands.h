@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -54,13 +55,13 @@ namespace CommandSystem
 
     private:
         AZStd::string m_eventTrackName;
-        AZStd::optional<uint32> m_eventTrackIndex;
+        AZStd::optional<size_t> m_eventTrackIndex;
         AZStd::optional<bool> m_isEnabled;
     };
 
     MCORE_DEFINECOMMAND_START(CommandRemoveMotionEventTrack, "Remove motion event track", true)
-    size_t          mOldTrackIndex;
-    bool            mOldEnabled;
+    size_t          m_oldTrackIndex;
+    bool            m_oldEnabled;
     MCORE_DEFINECOMMAND_END
 
     class DEFINECOMMAND_API CommandAdjustMotionEventTrack
@@ -150,12 +151,12 @@ namespace CommandSystem
         AZStd::optional<EMotionFX::EventDataSet> m_eventDatas;
         float m_startTime = 0.0f;
         float m_endTime = 0.0f;
-        size_t mMotionEventNr;
+        size_t m_motionEventNr;
     };
 
         MCORE_DEFINECOMMAND_START(CommandRemoveMotionEvent, "Remove motion event", true)
-    float           mOldStartTime;
-    float           mOldEndTime;
+    float           m_oldStartTime;
+    float           m_oldEndTime;
     EMotionFX::EventDataSet m_oldEventDatas;
     MCORE_DEFINECOMMAND_END
 
@@ -214,13 +215,13 @@ namespace CommandSystem
     // Command helpers
     //////////////////////////////////////////////////////////////////////////////////////////////////////////
     void COMMANDSYSTEM_API CommandAddEventTrack();
-    void COMMANDSYSTEM_API CommandRemoveEventTrack(uint32 trackIndex);
-    void COMMANDSYSTEM_API CommandRemoveEventTrack(EMotionFX::Motion* motion, uint32 trackIndex);
-    void COMMANDSYSTEM_API CommandRenameEventTrack(uint32 trackIndex, const char* newName);
-    void COMMANDSYSTEM_API CommandEnableEventTrack(uint32 trackIndex, bool isEnabled);
+    void COMMANDSYSTEM_API CommandRemoveEventTrack(size_t trackIndex);
+    void COMMANDSYSTEM_API CommandRemoveEventTrack(EMotionFX::Motion* motion, size_t trackIndex);
+    void COMMANDSYSTEM_API CommandRenameEventTrack(size_t trackIndex, const char* newName);
+    void COMMANDSYSTEM_API CommandEnableEventTrack(size_t trackIndex, bool isEnabled);
     void COMMANDSYSTEM_API CommandHelperAddMotionEvent(const char* trackName, float startTime, float endTime, const EMotionFX::EventDataSet& eventDatas = EMotionFX::EventDataSet {}, MCore::CommandGroup* commandGroup = nullptr);
-    void COMMANDSYSTEM_API CommandHelperRemoveMotionEvent(const char* trackName, uint32 eventNr, MCore::CommandGroup* commandGroup = nullptr);
-    void COMMANDSYSTEM_API CommandHelperRemoveMotionEvent(uint32 motionID, const char* trackName, uint32 eventNr, MCore::CommandGroup* commandGroup = nullptr);
-    void COMMANDSYSTEM_API CommandHelperRemoveMotionEvents(const char* trackName, const MCore::Array<uint32>& eventNumbers, MCore::CommandGroup* commandGroup = nullptr);
-    void COMMANDSYSTEM_API CommandHelperMotionEventTrackChanged(uint32 eventNr, float startTime, float endTime, const char* oldTrackName, const char* newTrackName);
+    void COMMANDSYSTEM_API CommandHelperRemoveMotionEvent(const char* trackName, size_t eventNr, MCore::CommandGroup* commandGroup = nullptr);
+    void COMMANDSYSTEM_API CommandHelperRemoveMotionEvent(uint32 motionID, const char* trackName, size_t eventNr, MCore::CommandGroup* commandGroup = nullptr);
+    void COMMANDSYSTEM_API CommandHelperRemoveMotionEvents(const char* trackName, const AZStd::vector<size_t>& eventNumbers, MCore::CommandGroup* commandGroup = nullptr);
+    void COMMANDSYSTEM_API CommandHelperMotionEventTrackChanged(size_t eventNr, float startTime, float endTime, const char* oldTrackName, const char* newTrackName);
 } // namespace CommandSystem

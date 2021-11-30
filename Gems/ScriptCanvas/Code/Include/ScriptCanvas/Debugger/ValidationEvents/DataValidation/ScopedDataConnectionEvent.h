@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -58,17 +59,17 @@ namespace ScriptCanvas
                 , targetNode.GetNodeName().data()));
         }
 
-        bool CanAutoFix() const
+        bool CanAutoFix() const override
         {
             return false;
         }
         
-        AZStd::string GetIdentifier() const
+        AZStd::string GetIdentifier() const override
         {
             return DataValidationIds::ScopedDataConnectionId;
         }
         
-        AZ::Crc32 GetIdCrc() const
+        AZ::Crc32 GetIdCrc() const override
         {
             return DataValidationIds::ScopedDataConnectionCrc;
         }
@@ -78,7 +79,7 @@ namespace ScriptCanvas
             return m_connectionId;
         }
 
-        AZStd::string_view GetTooltip() const
+        AZStd::string_view GetTooltip() const override
         {
             return "Out of Scope Data Connection";
         }

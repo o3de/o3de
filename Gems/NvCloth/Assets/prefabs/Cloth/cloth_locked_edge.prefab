@@ -22,8 +22,7 @@
             "Component_[4272963378099646759]": {
                 "$type": "{27F1E1A1-8D9D-4C3B-BD3A-AFB9762449C0} TransformComponent",
                 "Id": 4272963378099646759,
-                "Parent Entity": "",
-                "Cached World Transform Parent": ""
+                "Parent Entity": ""
             },
             "Component_[4848458548047175816]": {
                 "$type": "EditorVisibilityComponent",
@@ -96,6 +95,68 @@
                         }
                     ]
                 },
+                "Component_[14970093767651057273]": {
+                    "$type": "EditorMaterialComponent",
+                    "Id": 14970093767651057273,
+                    "Controller": {
+                        "Configuration": {
+                            "materials": [
+                                {
+                                    "Key": {
+                                        "materialSlotStableId": 902256226
+                                    },
+                                    "Value": {
+                                        "MaterialAsset": {
+                                            "assetId": {
+                                                "guid": "{FF25E0FE-B695-5084-AE1E-65F095AA5C3F}"
+                                            },
+                                            "assetHint": "objects/cloth/environment/cloth_locked_edge.azmaterial"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "materialSlots": [
+                        {
+                            "id": {
+                                "materialSlotStableId": 902256226
+                            },
+                            "materialAsset": {
+                                "assetId": {
+                                    "guid": "{FF25E0FE-B695-5084-AE1E-65F095AA5C3F}"
+                                },
+                                "assetHint": "objects/cloth/environment/cloth_locked_edge.azmaterial"
+                            },
+                            "defaultMaterialAsset": {
+                                "assetId": {
+                                    "guid": "{9DCAD62C-7A35-5D7D-8276-870D646CD5E2}",
+                                    "subId": 902256226
+                                },
+                                "loadBehavior": "PreLoad",
+                                "assetHint": "objects/cloth/environment/cloth_locked_edge_lambert1_3614897150141879906.azmaterial"
+                            }
+                        }
+                    ],
+                    "materialSlotsByLod": [
+                        [
+                            {
+                                "id": {
+                                    "lodIndex": 0,
+                                    "materialSlotStableId": 902256226
+                                },
+                                "defaultMaterialAsset": {
+                                    "assetId": {
+                                        "guid": "{9DCAD62C-7A35-5D7D-8276-870D646CD5E2}",
+                                        "subId": 902256226
+                                    },
+                                    "loadBehavior": "PreLoad",
+                                    "assetHint": "objects/cloth/environment/cloth_locked_edge_lambert1_3614897150141879906.azmaterial"
+                                }
+                            }
+                        ]
+                    ]
+                },
                 "Component_[14983280478781449966]": {
                     "$type": "SelectionComponent",
                     "Id": 14983280478781449966
@@ -104,7 +165,7 @@
                     "$type": "EditorClothComponent",
                     "Id": 16595775512479337011,
                     "Configuration": {
-                        "Mesh Node": "pPlane1",
+                        "Mesh Node": "pPlane1_1",
                         "Damping": [
                             0.0,
                             0.0,
@@ -137,63 +198,7 @@
                 "Component_[4215669181198357248]": {
                     "$type": "{27F1E1A1-8D9D-4C3B-BD3A-AFB9762449C0} TransformComponent",
                     "Id": 4215669181198357248,
-                    "Parent Entity": "ContainerEntity",
-                    "Cached World Transform Parent": "ContainerEntity"
-                },
-                "Component_[4580390205455331350]": {
-                    "$type": "EditorMaterialComponent",
-                    "Id": 4580390205455331350,
-                    "Controller": {
-                        "Configuration": {
-                            "materials": [
-                                {
-                                    "Key": {
-                                        "materialAssetId": {
-                                            "guid": "{9DCAD62C-7A35-5D7D-8276-870D646CD5E2}",
-                                            "subId": 902256226
-                                        }
-                                    },
-                                    "Value": {
-                                        "MaterialAsset": {
-                                            "assetId": {
-                                                "guid": "{FF25E0FE-B695-5084-AE1E-65F095AA5C3F}"
-                                            },
-                                            "assetHint": "objects/cloth/environment/cloth_locked_edge.azmaterial"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "materialSlots": [
-                        {
-                            "id": {
-                                "materialAssetId": {
-                                    "guid": "{9DCAD62C-7A35-5D7D-8276-870D646CD5E2}",
-                                    "subId": 902256226
-                                }
-                            },
-                            "materialAsset": {
-                                "assetId": {
-                                    "guid": "{FF25E0FE-B695-5084-AE1E-65F095AA5C3F}"
-                                },
-                                "assetHint": "objects/cloth/environment/cloth_locked_edge.azmaterial"
-                            }
-                        }
-                    ],
-                    "materialSlotsByLod": [
-                        [
-                            {
-                                "id": {
-                                    "lodIndex": 0,
-                                    "materialAssetId": {
-                                        "guid": "{9DCAD62C-7A35-5D7D-8276-870D646CD5E2}",
-                                        "subId": 902256226
-                                    }
-                                }
-                            }
-                        ]
-                    ]
+                    "Parent Entity": "ContainerEntity"
                 },
                 "Component_[5652509070289279796]": {
                     "$type": "EditorOnlyEntityComponent",
@@ -215,8 +220,7 @@
                     "$type": "EditorEntitySortComponent",
                     "Id": 9694796263300215788
                 }
-            },
-            "IsDependencyReady": true
+            }
         }
     }
 }

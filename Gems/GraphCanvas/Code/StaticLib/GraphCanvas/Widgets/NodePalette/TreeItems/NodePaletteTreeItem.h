@@ -1,16 +1,13 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 #pragma once
 
 #include <AzCore/PlatformIncl.h>
-
-AZ_PUSH_DISABLE_WARNING(4244 4251 4800, "-Wunknown-warning-option")
-#include <QIcon>
-AZ_POP_DISABLE_WARNING
 
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/std/string/string.h>
@@ -94,7 +91,7 @@ namespace GraphCanvas
         const EditorId& GetEditorId() const;
 
         // Child Overrides
-        virtual bool LessThan(const GraphCanvasTreeItem* graphItem) const;
+        bool LessThan(const GraphCanvasTreeItem* graphItem) const override;
         virtual QVariant OnData(const QModelIndex& index, int role) const;
         virtual Qt::ItemFlags OnFlags() const;
 
@@ -112,7 +109,6 @@ namespace GraphCanvas
     private:
 
         // Error Display
-        QIcon m_errorIcon;
         QString m_errorString;
 
         AZStd::string m_styleOverride;

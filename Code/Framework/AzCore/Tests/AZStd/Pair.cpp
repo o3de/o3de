@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -67,7 +68,6 @@ namespace UnitTest
         static constexpr size_t max_expected_size = MaxExpectedSize;
     };
 
-    constexpr size_t pairSize = sizeof(AZStd::compressed_pair<CompressedPairInternal::EmptyStruct, int32_t>);
     using CompressedPairTestConfigs = ::testing::Types<
         CompressedPairTestConfig<CompressedPairInternal::EmptyStruct, CompressedPairInternal::FinalEmptyStruct, 1>
         , CompressedPairTestConfig<CompressedPairInternal::EmptyStruct, int32_t, 4>

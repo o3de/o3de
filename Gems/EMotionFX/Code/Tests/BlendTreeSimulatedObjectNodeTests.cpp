@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -46,7 +47,7 @@ namespace EMotionFX
             ASSERT_EQ(jointNames.size(), 3);
             for (size_t i= 0; i < 3; ++i)
             {
-                AZ::u32 jointIndex = InvalidIndex32;
+                size_t jointIndex = InvalidIndex;
                 const Node* node = skeleton->FindNodeAndIndexByName(jointNames[i].c_str(), jointIndex);
                 ASSERT_NE(node, nullptr);
                 m_jointIndices[i] = jointIndex;
@@ -115,7 +116,7 @@ namespace EMotionFX
         FloatSliderParameter* m_weightParameter = nullptr;
         BlendTreeSimulatedObjectNode* m_simNode = nullptr;
         BlendTreeParameterNode* m_parameterNode = nullptr;
-        AZ::u32 m_jointIndices[3] { InvalidIndex32, InvalidIndex32, InvalidIndex32 };
+        size_t m_jointIndices[3] { InvalidIndex, InvalidIndex, InvalidIndex };
     };
 
     TEST_F(BlendTreeSimulatedObjectNodeFixture, TransformsCheck)
@@ -134,10 +135,10 @@ namespace EMotionFX
 
             for (size_t joint = 0; joint < 3; ++joint)
             {
-                const AZ::Vector3& jointPos = currentPose.GetWorldSpaceTransform(m_jointIndices[joint]).mPosition;
-                const AZ::Vector3& jointBindPos = bindPose.GetWorldSpaceTransform(m_jointIndices[joint]).mPosition;
+                const AZ::Vector3& jointPos = currentPose.GetWorldSpaceTransform(m_jointIndices[joint]).m_position;
+                const AZ::Vector3& jointBindPos = bindPose.GetWorldSpaceTransform(m_jointIndices[joint]).m_position;
                 ASSERT_TRUE((jointPos - jointBindPos).GetLength() <= 0.01f);   // Make sure we didn't move too far from the bind pose.
-                ASSERT_TRUE(AZ::IsClose(currentPose.GetWorldSpaceTransform(m_jointIndices[joint]).mRotation.GetLength(), 1.0f, 0.001f));   // Make sure we have a unit quaternion.
+                ASSERT_TRUE(AZ::IsClose(currentPose.GetWorldSpaceTransform(m_jointIndices[joint]).m_rotation.GetLength(), 1.0f, 0.001f));   // Make sure we have a unit quaternion.
             }
         }
     }

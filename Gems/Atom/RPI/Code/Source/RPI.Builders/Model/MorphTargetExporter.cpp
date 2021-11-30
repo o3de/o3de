@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -69,11 +70,9 @@ namespace AZ::RPI
     {
         const Containers::SceneGraph& sceneGraph = scene.GetGraph();
 
-#if defined(AZ_ENABLE_TRACING)
         const auto baseMeshIt = AZStd::find(sceneGraph.GetContentStorage().cbegin(), sceneGraph.GetContentStorage().cend(), sourceMesh.m_meshData);
         const Containers::SceneGraph::NodeIndex baseMeshIndex = sceneGraph.ConvertToNodeIndex(baseMeshIt);
         const AZStd::string_view baseMeshName{sceneGraph.GetNodeName(baseMeshIndex).GetName(), sceneGraph.GetNodeName(baseMeshIndex).GetNameLength()};
-#endif
 
         // Get the blend shapes for the given mesh
         AZStd::unordered_map<AZStd::string, SourceBlendShapeInfo> blendShapeInfos = GetBlendShapeInfos(scene, sourceMesh.m_meshData.get());
@@ -89,10 +88,8 @@ namespace AZ::RPI
                 AZ_Assert(blendShapeData, "Node is expected to be a blend shape.");
                 if (blendShapeData)
                 {
-#if defined(AZ_ENABLE_TRACING)
                     const Containers::SceneGraph::NodeIndex morphMeshParentIndex = sceneGraph.GetNodeParent(sceneNodeIndex);
                     const AZStd::string_view sourceMeshName{sceneGraph.GetNodeName(morphMeshParentIndex).GetName(), sceneGraph.GetNodeName(morphMeshParentIndex).GetNameLength()};
-#endif
 
                     AZ_Assert(AZ::StringFunc::Equal(baseMeshName, sourceMeshName, /*bCaseSensitive=*/true),
                         "Scene graph mesh node (%.*s) has a different name than the product mesh (%.*s).",
@@ -109,8 +106,8 @@ namespace AZ::RPI
     {
         AZ::Aabb meshAabb = AZ::Aabb::CreateNull();
 
-        const size_t numVertices = mesh.m_meshData->GetVertexCount();
-        for (size_t i = 0; i < numVertices; ++i)
+        const unsigned int numVertices = static_cast<unsigned int>(mesh.m_meshData->GetVertexCount());
+        for (unsigned int i = 0; i < numVertices; ++i)
         {
             meshAabb.AddPoint(mesh.m_meshData->GetPosition(i));
         }
@@ -148,8 +145,6 @@ namespace AZ::RPI
         const float tolerance = CalcPositionDeltaTolerance(sourceMesh);
         AZ::Aabb deltaPositionAabb = AZ::Aabb::CreateNull();
 
-        const uint32_t numFaces = blendShapeData->GetFaceCount();
-
         AZStd::vector<PackedCompressedMorphTargetDelta>& packedCompressedMorphTargetVertexData = productMesh.m_morphTargetVertexData;
 
         MorphTargetMetaAsset::MorphTarget metaData;
@@ -158,12 +153,17 @@ namespace AZ::RPI
 
         // Determine the vertex index range for the morph target.
         const uint32_t numVertices = blendShapeData->GetVertexCount();
-        AZ_Assert(blendShapeData->GetVertexCount() == sourceMesh.m_meshData->GetVertexCount(),
-            "Blend shape (%s) contains more/less vertices (%d) than the neutral mesh (%d).",
-            blendShapeName.c_str(), numVertices, sourceMesh.m_meshData->GetVertexCount());
+        if (blendShapeData->GetVertexCount() != sourceMesh.m_meshData->GetVertexCount())
+        {
+            AZ_Error(ModelAssetBuilderComponent::s_builderName, false,
+                "Skipping blend shape (%s) as it contains more/less vertices (%d) than the neutral mesh (%d). "
+                "The blend shape is most likely influencing multiple meshes, which is currently not supported.",
+                blendShapeName.c_str(), numVertices, sourceMesh.m_meshData->GetVertexCount());
+            return;
+        }
 
         // The start index is after any previously added deltas
-        metaData.m_startIndex = aznumeric_caster<uint32_t>(packedCompressedMorphTargetVertexData.size());
+        metaData.m_startIndex = aznumeric_cast<uint32_t>(packedCompressedMorphTargetVertexData.size());
 
 
         // Multiply normal by inverse transpose to avoid incorrect values produced by non-uniformly scaled transforms.

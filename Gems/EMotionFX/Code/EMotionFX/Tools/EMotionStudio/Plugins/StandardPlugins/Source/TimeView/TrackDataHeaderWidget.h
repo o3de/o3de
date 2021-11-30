@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -9,7 +10,7 @@
 
 #if !defined(Q_MOC_RUN)
 #include <MCore/Source/StandardHeaders.h>
-#include <MCore/Source/Array.h>
+#include <AzCore/std/containers/vector.h>
 #include "../StandardPluginsConfig.h"
 #include <EMotionFX/CommandSystem/Source/MotionEventCommands.h>
 #include <EMotionFX/Source/Recorder.h>
@@ -56,26 +57,26 @@ namespace EMStudio
         void keyReleaseEvent(QKeyEvent* event) override;
 
     private:
-        QBrush              mBrushBackgroundOutOfRange;
-        TimeViewPlugin*     mPlugin;
-        bool                mMouseLeftClicked;
-        bool                mMouseMidClicked;
-        bool                mMouseRightClicked;
-        bool                mIsScrolling;
-        int32               mLastMouseX;
-        int32               mLastMouseY;
-        bool                mAllowContextMenu;
+        QBrush              m_brushBackgroundOutOfRange;
+        TimeViewPlugin*     m_plugin;
+        bool                m_mouseLeftClicked;
+        bool                m_mouseMidClicked;
+        bool                m_mouseRightClicked;
+        bool                m_isScrolling;
+        int32               m_lastMouseX;
+        int32               m_lastMouseY;
+        bool                m_allowContextMenu;
 
-        QPixmap             mTimeHandleTop;
+        QPixmap             m_timeHandleTop;
 
-        QFont               mTimeLineFont;
-        QFont               mDataFont;
-        AZStd::string       mTimeString;
-        QLinearGradient     mHeaderGradientActive;
-        QLinearGradient     mHeaderGradientInactive;
-        QLinearGradient     mHeaderGradientActiveFocus;
-        QLinearGradient     mHeaderGradientInactiveFocus;
-        QPen                mPenMainTimeStepLinesActive;
+        QFont               m_timeLineFont;
+        QFont               m_dataFont;
+        AZStd::string       m_timeString;
+        QLinearGradient     m_headerGradientActive;
+        QLinearGradient     m_headerGradientInactive;
+        QLinearGradient     m_headerGradientActiveFocus;
+        QLinearGradient     m_headerGradientInactiveFocus;
+        QPen                m_penMainTimeStepLinesActive;
 
         void UpdateMouseOverCursor();
         void DrawTimeLine(QPainter& painter, const QRect& rect);

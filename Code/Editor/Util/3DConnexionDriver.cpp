@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -33,12 +34,12 @@ bool C3DConnexionDriver::InitDevice()
     // Find the Raw Devices
     UINT nDevices;
     // Get Number of devices attached
-    if (GetRawInputDeviceList(NULL, &nDevices, sizeof(RAWINPUTDEVICELIST)) != 0)
+    if (GetRawInputDeviceList(nullptr, &nDevices, sizeof(RAWINPUTDEVICELIST)) != 0)
     {
         return false;
     }
     // Create list large enough to hold all RAWINPUTDEVICE structs
-    if ((m_pRawInputDeviceList = (PRAWINPUTDEVICELIST)malloc(sizeof(RAWINPUTDEVICELIST) * nDevices)) == NULL)
+    if ((m_pRawInputDeviceList = (PRAWINPUTDEVICELIST)malloc(sizeof(RAWINPUTDEVICELIST) * nDevices)) == nullptr)
     {
         return false;
     }
@@ -57,36 +58,26 @@ bool C3DConnexionDriver::InitDevice()
         //Doc says RIM_TYPEHID: Data comes from an HID that is not a keyboard or a mouse.
         if (m_pRawInputDeviceList[i].dwType == RIM_TYPEHID)
         {
-            UINT nchars = 300;
-            TCHAR deviceName[300];
-            if (GetRawInputDeviceInfo(m_pRawInputDeviceList[i].hDevice,
-                    RIDI_DEVICENAME, deviceName, &nchars) >= 0)
-            {
-                //_RPT3(_CRT_WARN, "Device[%d]: handle=0x%x name = %S\n", i, g_pRawInputDeviceList[i].hDevice, deviceName);
-            }
-
             RID_DEVICE_INFO dinfo;
             UINT sizeofdinfo = sizeof(dinfo);
             dinfo.cbSize = sizeofdinfo;
-            if (GetRawInputDeviceInfo(m_pRawInputDeviceList[i].hDevice,
-                    RIDI_DEVICEINFO, &dinfo, &sizeofdinfo) >= 0)
+            GetRawInputDeviceInfo(m_pRawInputDeviceList[i].hDevice,
+                RIDI_DEVICEINFO, &dinfo, &sizeofdinfo);
+            if (dinfo.dwType == RIM_TYPEHID)
             {
-                if (dinfo.dwType == RIM_TYPEHID)
+                RID_DEVICE_INFO_HID* phidInfo = &dinfo.hid;
+                // Add this one to the list of interesting devices?
+                // Actually only have to do this once to get input from all usage 1, usagePage 8 devices
+                // This just keeps out the other usages.
+                // You might want to put up a list for users to select amongst the different devices.
+                // In particular, to assign separate functionality to the different devices.
+                if (phidInfo->usUsagePage == 1 && phidInfo->usUsage == 8)
                 {
-                    RID_DEVICE_INFO_HID* phidInfo = &dinfo.hid;
-                    // Add this one to the list of interesting devices?
-                    // Actually only have to do this once to get input from all usage 1, usagePage 8 devices
-                    // This just keeps out the other usages.
-                    // You might want to put up a list for users to select amongst the different devices.
-                    // In particular, to assign separate functionality to the different devices.
-                    if (phidInfo->usUsagePage == 1 && phidInfo->usUsage == 8)
-                    {
-                        m_pRawInputDevices[m_nUsagePage1Usage8Devices].usUsagePage = phidInfo->usUsagePage;
-                        m_pRawInputDevices[m_nUsagePage1Usage8Devices].usUsage     = phidInfo->usUsage;
-                        m_pRawInputDevices[m_nUsagePage1Usage8Devices].dwFlags     = 0;
-                        m_pRawInputDevices[m_nUsagePage1Usage8Devices].hwndTarget  = NULL;
-                        m_nUsagePage1Usage8Devices++;
-                    }
+                    m_pRawInputDevices[m_nUsagePage1Usage8Devices].usUsagePage = phidInfo->usUsagePage;
+                    m_pRawInputDevices[m_nUsagePage1Usage8Devices].usUsage     = phidInfo->usUsage;
+                    m_pRawInputDevices[m_nUsagePage1Usage8Devices].dwFlags     = 0;
+                    m_pRawInputDevices[m_nUsagePage1Usage8Devices].hwndTarget  = nullptr;
+                    m_nUsagePage1Usage8Devices++;
                 }
             }
         }
@@ -125,8 +116,8 @@ bool C3DConnexionDriver::GetInputMessageData(LPARAM lParam, S3DConnexionMessage&
     {
         if (event->header.dwType == RIM_TYPEHID)
         {
-            static BOOL bGotTranslation = FALSE,
-                        bGotRotation    = FALSE;
+            static bool bGotTranslation = false,
+                        bGotRotation    = false;
             static int all6DOFs[6] = {0};
             LPRAWHID pRawHid = &event->data.hid;
 

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -64,7 +65,7 @@ namespace AZ
             m_featureProcessorInterface = RPI::Scene::GetFeatureProcessorForEntity<SkyBoxFeatureProcessorInterface>(entityId);
 
             // only activate if there is no other skybox activate
-            if (!m_featureProcessorInterface->IsEnabled())
+            if (m_featureProcessorInterface && !m_featureProcessorInterface->IsEnabled())
             {
                 m_featureProcessorInterface->SetSkyboxMode(SkyBoxMode::Cubemap);
                 m_featureProcessorInterface->Enable(true);
@@ -195,8 +196,6 @@ namespace AZ
                 }
                 else
                 {
-                    // If this asset didn't load or isn't a cubemap, release it.
-                    m_configuration.m_cubemapAsset.Release();
                     m_featureProcessorInterface->SetCubemap(nullptr);
                 }
             }

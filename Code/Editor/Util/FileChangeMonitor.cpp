@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -15,7 +16,7 @@
 #include <QTimer>
 
 
-CFileChangeMonitor* CFileChangeMonitor::s_pFileMonitorInstance = NULL;
+CFileChangeMonitor* CFileChangeMonitor::s_pFileMonitorInstance = nullptr;
 
 //////////////////////////////////////////////////////////////////////////
 CFileChangeMonitor::CFileChangeMonitor(QObject* parent)
@@ -33,7 +34,7 @@ CFileChangeMonitor::~CFileChangeMonitor()
 
         if (pListener)
         {
-            pListener->SetMonitor(NULL);
+            pListener->SetMonitor(nullptr);
         }
     }
 
@@ -142,7 +143,7 @@ void CFileChangeMonitor::Unsubscribe(CFileChangeMonitorListener* pListener)
 {
     assert(pListener);
     m_listeners.erase(pListener);
-    pListener->SetMonitor(NULL);
+    pListener->SetMonitor(nullptr);
 }
 
 void CFileChangeMonitor::OnDirectoryChange(const QString &path)

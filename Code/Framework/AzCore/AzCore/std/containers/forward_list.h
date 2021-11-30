@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -285,7 +286,7 @@ namespace AZStd
         }
 
         AZ_FORCE_INLINE size_type   size() const            { return m_numElements; }
-        AZ_FORCE_INLINE size_type   max_size() const        { return m_allocator.max_size() / sizeof(node_type); }
+        AZ_FORCE_INLINE size_type   max_size() const        { return AZStd::allocator_traits<allocator_type>::max_size(m_allocator) / sizeof(node_type); }
         AZ_FORCE_INLINE bool    empty() const               { return (m_numElements == 0); }
 
         AZ_FORCE_INLINE iterator begin()                    { return iterator(AZSTD_CHECKED_ITERATOR(iterator_impl, m_head.m_next)); }

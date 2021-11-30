@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -27,24 +28,6 @@ struct IInitializeUIInfo;
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Math/Vector3.h>
 
-namespace AzToolsFramework
-{
-    //! Operates the Editor's camera
-    class IEditorCameraController
-    {
-    public:
-        AZ_RTTI(IEditorCameraController, "{AEF60D3E-10A1-4161-9379-F68C69A5959C}");
-
-        IEditorCameraController() = default;
-        IEditorCameraController(IEditorCameraController&&) = delete;
-        IEditorCameraController& operator=(IEditorCameraController&&) = delete;
-        virtual ~IEditorCameraController() = default;
-
-        virtual void SetCurrentViewPosition([[maybe_unused]] const AZ::Vector3& position) {}
-        virtual void SetCurrentViewRotation([[maybe_unused]] const AZ::Vector3& rotation) {}
-    };
-}
-
 class ThreadedOnErrorHandler : public QObject
 {
     Q_OBJECT
@@ -63,7 +46,6 @@ AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
 //! This class serves as a high-level wrapper for CryEngine game.
 class SANDBOX_API CGameEngine
     : public IEditorNotifyListener
-    , private AzToolsFramework::IEditorCameraController
 {
 AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
 public:
@@ -134,11 +116,11 @@ public:
 
     //! mutex used by other threads to lock up the PAK modification,
     //! so only one thread can modify the PAK at once
-    static CryMutex& GetPakModifyMutex()
+    static AZStd::recursive_mutex& GetPakModifyMutex()
     {
         //! mutex used to halt copy process while the export to game
         //! or other pak operation is done in the main thread
-        static CryMutex s_pakModifyMutex;
+        static AZStd::recursive_mutex s_pakModifyMutex;
         return s_pakModifyMutex;
     }
 
@@ -148,11 +130,6 @@ public:
     }
 
 private:
-    AZ_PUSH_DISABLE_WARNING(4273, "-Wunknown-warning-option")
-    void SetCurrentViewPosition(const AZ::Vector3& position) override;
-    void SetCurrentViewRotation(const AZ::Vector3& rotation) override;
-    AZ_POP_DISABLE_OVERRIDE_WARNING
-
     void SetGameMode(bool inGame);
     void SwitchToInGame();
     void SwitchToInEditor();

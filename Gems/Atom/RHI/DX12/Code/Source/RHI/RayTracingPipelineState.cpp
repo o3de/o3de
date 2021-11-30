@@ -1,10 +1,10 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "RHI/Atom_RHI_DX12_precompiled.h"
 #include <RHI/RayTracingPipelineState.h>
 #include <Atom/RHI.Reflect/SamplerState.h>
 #include <Atom/RHI.Reflect/DX12/ShaderStageFunction.h>
@@ -28,11 +28,11 @@ namespace AZ
         }
 #endif
 
-        RHI::ResultCode RayTracingPipelineState::InitInternal(RHI::Device& deviceBase, [[maybe_unused]]const RHI::RayTracingPipelineStateDescriptor* descriptor)
+        RHI::ResultCode RayTracingPipelineState::InitInternal([[maybe_unused]]RHI::Device& deviceBase, [[maybe_unused]]const RHI::RayTracingPipelineStateDescriptor* descriptor)
         {
+#ifdef AZ_DX12_DXR_SUPPORT
             Device& device = static_cast<Device&>(deviceBase);
 
-#ifdef AZ_DX12_DXR_SUPPORT
             size_t dxilLibraryCount = descriptor->GetShaderLibraries().size();
             size_t hitGroupCount = descriptor->GetHitGroups().size();
        
@@ -84,15 +84,15 @@ namespace AZ
             for (const RHI::RayTracingHitGroup& hitGroup : descriptor->GetHitGroups())
             {
                 AZStd::wstring hitGroupNameWstring;
-                AZStd::to_wstring(hitGroupNameWstring, hitGroup.m_hitGroupName.GetStringView().data(), hitGroup.m_hitGroupName.GetStringView().size());
+                AZStd::to_wstring(hitGroupNameWstring, hitGroup.m_hitGroupName.GetStringView());
                 hitGroupNameWstrings.push_back(hitGroupNameWstring);
 
                 AZStd::wstring closestHitShaderNameWstring;
-                AZStd::to_wstring(closestHitShaderNameWstring, hitGroup.m_closestHitShaderName.GetStringView().data(), hitGroup.m_closestHitShaderName.GetStringView().size());
+                AZStd::to_wstring(closestHitShaderNameWstring, hitGroup.m_closestHitShaderName.GetStringView());
                 closestHitShaderNameWstrings.push_back(closestHitShaderNameWstring);
 
                 AZStd::wstring anyHitShaderNameWstring;
-                AZStd::to_wstring(anyHitShaderNameWstring, hitGroup.m_anyHitShaderName.GetStringView().data(), hitGroup.m_anyHitShaderName.GetStringView().size());
+                AZStd::to_wstring(anyHitShaderNameWstring, hitGroup.m_anyHitShaderName.GetStringView());
                 anyHitShaderNameWstrings.push_back(anyHitShaderNameWstring);
 
                 D3D12_HIT_GROUP_DESC hitGroupDesc = {};

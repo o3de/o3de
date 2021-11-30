@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -32,7 +33,10 @@ namespace AZ
             //! Asset ID of LUT
             Data::Asset<RPI::AnyAsset> m_assetId;
             //! Shaper preset type
-            ShaperPresetType m_shaperPreset = AZ::Render::ShaperPresetType::Log2_48_nits;
+            ShaperPresetType m_shaperPreset = AZ::Render::ShaperPresetType::Log2_48Nits;
+            //! When shaper preset is custom, these values set min and max exposure.
+            float m_customMinExposure = -6.5;
+            float m_customMaxExposure = 6.5;
             HashValue64 GetHash(HashValue64 seed) const;
         };
 

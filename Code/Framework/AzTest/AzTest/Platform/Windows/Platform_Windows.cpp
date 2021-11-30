@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -8,6 +9,7 @@
 #include <string>
 #include <iostream>
 #include <AzTest/Platform.h>
+#include <AzCore/std/string/conversions.h>
 
 //-------------------------------------------------------------------------------------------------
 class ModuleHandle
@@ -150,7 +152,7 @@ namespace AZ
             va_start(mark, format);
             azvsnprintf(message, MAX_PRINT_MSG, format, mark);
             va_end(mark);
-            OutputDebugString(message);
+            AZ::Debug::Platform::OutputToDebugger(nullptr, message);
         }
 
         AZ::EnvironmentInstance Platform::GetTestRunnerEnvironment()

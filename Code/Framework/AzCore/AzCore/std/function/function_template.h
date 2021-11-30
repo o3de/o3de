@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -8,12 +9,9 @@
 
 #include <AzCore/std/function/function_base.h>
 #include <AzCore/std/function/invoke.h>
+#include <AzCore/std/typetraits/is_integral.h>
 #include <AzCore/std/typetraits/remove_cvref.h>
-
-#if defined(AZ_COMPILER_MSVC)
-#   pragma warning( push )
-#   pragma warning( disable : 4127 ) // "conditional expression is constant"
-#endif
+#include <AzCore/std/allocator.h>
 
 namespace AZStd
 {
@@ -361,7 +359,7 @@ namespace AZStd
                     {
                         functor.obj_ref.obj_ptr = (void*)&f.get();
                         functor.obj_ref.is_const_qualified = is_const<FunctionObj>::value;
-                        functor.obj_ref.is_volatile_qualified = is_volatile<FunctionObj>::value;
+                        functor.obj_ref.is_volatile_qualified = AZStd::is_volatile<FunctionObj>::value;
                         return true;
                     }
                     else
@@ -533,7 +531,7 @@ namespace AZStd
             //! A static vtable is used to avoid the need to dynamically allocate a vtable
             //! whose purpose is to contain a function ptr that can the manage the function buffer
             //! i.e performs the copy, move and destruction operations for the function buffer
-            //! as well as to validate if a the stored function can be type_cast to the type supplied in 
+            //! as well as to validate if a the stored function can be type_cast to the type supplied in
             //! std::function::target
             //! The vtable other purpose is to store a function ptr that is used to wrap the invocation of the underlying function
             static vtable_type stored_vtable = get_invoker::template create_vtable<decay_t<Functor>>();
@@ -558,7 +556,7 @@ namespace AZStd
             //! A static vtable is used to avoid the need to dynamically allocate a vtable
             //! whose purpose is to contain a function ptr that can the manage the function buffer
             //! i.e performs the copy, move and destruction operations for the function buffer
-            //! as well as to validate if a the stored function can be type_cast to the type supplied in 
+            //! as well as to validate if a the stored function can be type_cast to the type supplied in
             //! std::function::target
             //! The vtable other purpose is to store a function ptr that is used to wrap the invocation of the underlying function
             static vtable_type stored_vtable = get_invoker::template create_vtable<decay_t<Functor>>();
@@ -635,7 +633,7 @@ namespace AZStd
         {}
 
         function(nullptr_t)
-            : base_type() {}
+            : base_type(nullptr) {}
         function(const self_type& f)
             : base_type(static_cast<const base_type&>(f)){}
         function(const base_type& f)
@@ -680,13 +678,9 @@ namespace AZStd
             return *this;
         }
 
-        R operator()(Args... args) const 
+        R operator()(Args... args) const
         {
             return base_type::operator()(AZStd::forward<Args>(args)...);
         }
     };
 } // end namespace AZStd
-
-#if defined(AZ_COMPILER_MSVC)
-#   pragma warning( pop )
-#endif

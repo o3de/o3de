@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -27,7 +28,7 @@ bool CMailer::SendMail(const char* subject,
     GetCurrentDirectoryW(sizeof(dir), dir);
 
     // Load MAPI dll
-    HMODULE hMAPILib = LoadLibraryA("MAPI32.DLL");
+    HMODULE hMAPILib = LoadLibraryW(L"MAPI32.DLL");
     LPMAPISENDMAIL lpfnMAPISendMail = (LPMAPISENDMAIL) GetProcAddress(hMAPILib, "MAPISendMail");
 
     int numRecipients  = (int)_recipients.size();
@@ -50,8 +51,8 @@ bool CMailer::SendMail(const char* subject,
         attachments[i].flFlags      = 0;
         attachments[i].nPosition    = (ULONG)-1;
         attachments[i].lpszPathName = (char*)(const char*)_attachments[k];
-        attachments[i].lpszFileName = NULL;
-        attachments[i].lpFileType   = NULL;
+        attachments[i].lpszFileName = nullptr;
+        attachments[i].lpFileType   = nullptr;
         i++;
     }
     int numAttachments = i;
@@ -59,11 +60,11 @@ bool CMailer::SendMail(const char* subject,
     // Handle Recipients
     MapiRecipDesc* recipients = new MapiRecipDesc[numRecipients];
 
-    std::vector<string> addresses;
+    std::vector<AZStd::string> addresses;
     addresses.resize(numRecipients);
     for (i = 0; i < numRecipients; i++)
     {
-        addresses[i] = string("SMTP:") + _recipients[i];
+        addresses[i] = AZStd::string("SMTP:") + _recipients[i];
     }
 
     for (i = 0; i < numRecipients; i++)
@@ -73,14 +74,14 @@ bool CMailer::SendMail(const char* subject,
         recipients[i].lpszName     = (char*)(const char*)_recipients[i];
         recipients[i].lpszAddress  = (char*)addresses[i].c_str();
         recipients[i].ulEIDSize    = 0;
-        recipients[i].lpEntryID    = NULL;
+        recipients[i].lpEntryID    = nullptr;
     }
 
     MapiMessage message;
     memset(&message, 0, sizeof(message));
     message.lpszSubject = (char*)(const char*)subject;
     message.lpszNoteText = (char*)(const char*)messageBody;
-    message.lpszMessageType = NULL;
+    message.lpszMessageType = nullptr;
 
     message.nRecipCount = numRecipients;
     message.lpRecips = recipients;

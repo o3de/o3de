@@ -1,11 +1,10 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-
-#include <PhysX_precompiled.h>
 
 #include "ColliderRotationMode.h"
 #include <PhysX/EditorColliderComponentRequestBus.h>
@@ -22,7 +21,7 @@ namespace PhysX
     ColliderRotationMode::ColliderRotationMode()
         : m_rotationManipulators(AZ::Transform::Identity())
     {
-
+        m_rotationManipulators.SetCircleBoundWidth(AzToolsFramework::ManipulatorCicleBoundWidth());
     }
 
     void ColliderRotationMode::Setup(const AZ::EntityComponentIdPair& idPair)

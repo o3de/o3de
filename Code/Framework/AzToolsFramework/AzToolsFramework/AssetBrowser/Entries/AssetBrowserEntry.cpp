@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -41,6 +42,7 @@ namespace AzToolsFramework
         const char* AssetBrowserEntry::m_columnNames[] =
         {
             "Name",
+            "Path",
             "Source ID",
             "Fingerprint",
             "Guid",
@@ -123,6 +125,8 @@ namespace AzToolsFramework
                 return QString::fromUtf8(m_name.c_str());
             case Column::DisplayName:
                 return m_displayName;
+            case Column::Path:
+                return m_displayPath;
             default:
                 return QVariant();
             }

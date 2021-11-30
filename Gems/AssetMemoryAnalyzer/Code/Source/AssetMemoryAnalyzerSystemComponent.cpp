@@ -1,10 +1,12 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "AssetMemoryAnalyzer_precompiled.h"
+
+#include <time.h>
 
 #include <AzCore/Debug/AssetTrackingTypesImpl.h>
 #include <AzCore/IO/SystemFile.h> // For AZ_MAX_PATH_LEN
@@ -28,17 +30,16 @@ namespace AssetMemoryAnalyzer
 
             if (customFilename)
             {
-                azsnprintf(sharedBuffer, sizeof(sharedBuffer), "@log@/%s", customFilename);
+                azsnprintf(sharedBuffer, AZ_ARRAY_SIZE(sharedBuffer), "@log@/%s", customFilename);
             }
             else
             {
-                char timestampBuffer[64];
                 time_t ltime;
                 time(&ltime);
                 struct tm timeInfo;
                 AZ_TRAIT_CTIME_LOCALTIME(&timeInfo, &ltime);
-                strftime(timestampBuffer, sizeof(timestampBuffer), "@log@/assetmem-%Y-%m-%d-%H-%M-%S.%%s", &timeInfo);
-                azsnprintf(sharedBuffer, sizeof(sharedBuffer), timestampBuffer, extension);
+                strftime(sharedBuffer, AZ_ARRAY_SIZE(sharedBuffer), "@log@/assetmem-%Y-%m-%d-%H-%M-%S.", &timeInfo);
+                azstrcat(sharedBuffer, AZ_ARRAY_SIZE(sharedBuffer), extension);
             }
 
             return sharedBuffer;

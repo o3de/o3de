@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -13,9 +14,9 @@
 #include <AzFramework/Components/TransformComponent.h>
 #include <AzFramework/Components/NonUniformScaleComponent.h>
 #include <AzFramework/Components/AzFrameworkConfigurationSystemComponent.h>
-#include <AzFramework/Driller/RemoteDrillerInterface.h>
 #include <AzFramework/Entity/GameEntityContextComponent.h>
 #include <AzFramework/FileTag/FileTagComponent.h>
+#include <AzFramework/Input/Contexts/InputContextComponent.h>
 #include <AzFramework/Input/System/InputSystemComponent.h>
 #include <AzFramework/Render/GameIntersectorComponent.h>
 #include <AzFramework/Scene/SceneSystemComponent.h>
@@ -25,6 +26,8 @@
 #include <AzFramework/StreamingInstall/StreamingInstall.h>
 #include <AzFramework/TargetManagement/TargetManagementComponent.h>
 #include <AzFramework/Visibility/OctreeSystemComponent.h>
+
+AZ_DEFINE_BUDGET(AzFramework);
 
 namespace AzFramework
 {
@@ -45,7 +48,7 @@ namespace AzFramework
             AzFramework::CreateScriptDebugAgentFactory(),
             AzFramework::AssetSystem::AssetSystemComponent::CreateDescriptor(),
             AzFramework::InputSystemComponent::CreateDescriptor(),
-            AzFramework::DrillerNetworkAgentComponent::CreateDescriptor(),
+            AzFramework::InputContextComponent::CreateDescriptor(),
 
     #if !defined(AZCORE_EXCLUDE_LUA)
             AzFramework::ScriptComponent::CreateDescriptor(),

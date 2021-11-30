@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -59,37 +60,37 @@ namespace MCommon
          * Set the pitch angle in degrees. Looking up and down is limited to 90°. (0=Straight Ahead, +Up, -Down)
          * @param The pitch angle in degrees, range[-90.0°, 90.0°].
          */
-        MCORE_INLINE void SetPitch(float pitch)                     { mPitch = pitch; }
+        MCORE_INLINE void SetPitch(float pitch)                     { m_pitch = pitch; }
 
         /**
          * Set the yaw angle in degrees. Vertical rotation. (0=East, +North, -South).
          * @param yaw The yaw angle in degrees.
          */
-        MCORE_INLINE void SetYaw(float yaw)                         { mYaw = yaw; }
+        MCORE_INLINE void SetYaw(float yaw)                         { m_yaw = yaw; }
 
         /**
          * Set the roll angle in degrees. Rotation around the direction axis (0=Straight, +Clockwise, -CCW).
          * @param roll The roll angle in degrees.
          */
-        MCORE_INLINE void SetRoll(float roll)                       { mRoll = roll; }
+        MCORE_INLINE void SetRoll(float roll)                       { m_roll = roll; }
 
         /**
          * Get the pitch angle in degrees. Looking up and down is limited to 90°. (0=Straight Ahead, +Up, -Down)
          * @return The pitch angle in degrees, range[-90.0°, 90.0°].
          */
-        MCORE_INLINE float GetPitch() const                         { return mPitch; }
+        MCORE_INLINE float GetPitch() const                         { return m_pitch; }
 
         /**
          * Get the yaw angle in degrees. Vertical rotation. (0=East, +North, -South).
          * @return The yaw angle in degrees.
          */
-        MCORE_INLINE float GetYaw() const                           { return mYaw; }
+        MCORE_INLINE float GetYaw() const                           { return m_yaw; }
 
         /**
          * Get the roll angle in degrees. Rotation around the direction axis (0=Straight, +Clockwise, -CCW).
          * @return The roll angle in degrees.
          */
-        MCORE_INLINE float GetRoll() const                          { return mRoll; }
+        MCORE_INLINE float GetRoll() const                          { return m_roll; }
 
         /**
          * Update the camera transformation.
@@ -118,9 +119,9 @@ namespace MCommon
         void Reset(float flightTime = 0.0f);
 
     private:
-        float mPitch;               /**< Up and down. (0=straight ahead, +up, -down) */
-        float mYaw;                 /**< Steering. (0=east, +north, -south) */
-        float mRoll;                /**< Rotation around axis of screen. (0=straight, +clockwise, -CCW) */
+        float m_pitch;               /**< Up and down. (0=straight ahead, +up, -down) */
+        float m_yaw;                 /**< Steering. (0=east, +north, -south) */
+        float m_roll;                /**< Rotation around axis of screen. (0=straight, +clockwise, -CCW) */
     };
 } // namespace MCommon
 

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -9,7 +10,7 @@
 
 #include <AzCore/Debug/Trace.h>
 #include <AzCore/Memory/Memory.h>
-#include <MCore/Source/Array.h>
+#include <AzCore/std/containers/vector.h>
 #include <MCore/Source/Config.h>
 #include <MCore/Source/MultiThreadManager.h>
 #include <EMotionFX/Source/BaseObject.h>
@@ -43,13 +44,13 @@ namespace EMotionFX
          * @param[in] index The index of the motion. The index must be in range [0, GetNumMotions()-1].
          * @return A pointer to the given motion set.
          */
-        MCORE_INLINE Motion* GetMotion(uint32 index) const                                                      { return mMotions[index]; }
+        MCORE_INLINE Motion* GetMotion(size_t index) const                                                      { return m_motions[index]; }
 
         /**
          * Get the number of motions in the motion manager.
          * @return The number of registered motions.
          */
-        MCORE_INLINE uint32 GetNumMotions() const                                                               { return mMotions.GetLength(); }
+        MCORE_INLINE size_t GetNumMotions() const                                                               { return m_motions.size(); }
 
         /**
          * Remove the motion with the given name from the motion manager.
@@ -118,7 +119,7 @@ namespace EMotionFX
          * @param[in] isTool Set when calling this function from the tools environment (default).
          * @return The index of the motion with the given name. MCORE_INVALIDINDEX32 in case the motion has not been found.
          */
-        uint32 FindMotionIndexByName(const char* motionName, bool isTool = true) const;
+        size_t FindMotionIndexByName(const char* motionName, bool isTool = true) const;
 
         /**
          * Find the motion index by file name.
@@ -126,21 +127,21 @@ namespace EMotionFX
          * @param[in] isTool Set when calling this function from the tools environment (default).
          * @return The index of the motion with the given name. MCORE_INVALIDINDEX32 in case the motion has not been found.
          */
-        uint32 FindMotionIndexByFileName(const char* fileName, bool isTool = true) const;
+        size_t FindMotionIndexByFileName(const char* fileName, bool isTool = true) const;
 
         /**
          * Find the motion index by id.
          * @param[in] id The id of the motion.
          * @return The index of the motion with the given id. MCORE_INVALIDINDEX32 in case the motion has not been found.
          */
-        uint32 FindMotionIndexByID(uint32 id) const;
+        size_t FindMotionIndexByID(uint32 id) const;
 
         /**
          * Find the index for the given motion.
          * @param[in] motion A pointer to the motion to search.
          * @return The index of the motion. MCORE_INVALIDINDEX32 in case the motion has not been found.
          */
-        uint32 FindMotionIndex(Motion* motion) const;
+        size_t FindMotionIndex(Motion* motion) const;
 
         /**
          * Add a motion set to the motion manager.
@@ -153,27 +154,27 @@ namespace EMotionFX
          * @param[in] index The index of the motion set. The index must be in range [0, GetNumMotionSets()-1].
          * @return A pointer to the given motion set.
          */
-        MCORE_INLINE MotionSet* GetMotionSet(uint32 index) const                                                { return mMotionSets[index]; }
+        MCORE_INLINE MotionSet* GetMotionSet(size_t index) const                                                { return m_motionSets[index]; }
 
         /**
          * Get the number of motion sets in the motion manager.
          * @return The number of registered motion sets.
          */
-        MCORE_INLINE uint32 GetNumMotionSets() const                                                            { return mMotionSets.GetLength(); }
+        MCORE_INLINE size_t GetNumMotionSets() const                                                            { return m_motionSets.size(); }
 
         /**
          * Calculate the number of root motion sets.
          * This will iterate over all motion sets, check if they have a parent and sum all the root ones.
          * @return The number of root motion sets.
          */
-        uint32 CalcNumRootMotionSets() const;
+        size_t CalcNumRootMotionSets() const;
 
         /**
          * Find the root motion set with the given index.
          * @param[in] index The index of the root motion set. The index must be in range [0, CalcNumRootMotionSets()-1].
          * @return A pointer to the given motion set.
          */
-        MotionSet* FindRootMotionSet(uint32 index);
+        MotionSet* FindRootMotionSet(size_t index);
 
         /**
          * Find motion set by name.
@@ -204,21 +205,21 @@ namespace EMotionFX
          * @param[in] isTool Set when calling this function from the tools environment (default).
          * @return The index of the motion set with the given name. MCORE_INVALIDINDEX32 in case the motion has not been found.
          */
-        uint32 FindMotionSetIndexByName(const char* name, bool isTool = true) const;
+        size_t FindMotionSetIndexByName(const char* name, bool isTool = true) const;
 
         /**
          * Find motion set index by id.
          * @param[in] id The id of the motion set.
          * @return The index of the motion set with the given id. MCORE_INVALIDINDEX32 in case the motion has not been found.
          */
-        uint32 FindMotionSetIndexByID(uint32 id) const;
+        size_t FindMotionSetIndexByID(uint32 id) const;
 
         /**
          * Find motion set index for the given motion set.
          * @param[in] motionSet A pointer to the motion set to search.
          * @return The index for the given motion set. MCORE_INVALIDINDEX32 in case the motion has not been found.
          */
-        uint32 FindMotionSetIndex(MotionSet* motionSet) const;
+        size_t FindMotionSetIndex(MotionSet* motionSet) const;
 
         bool RemoveMotionSetByName(const char* motionName, bool delFromMemory = true, bool isTool = true);
         bool RemoveMotionSetByID(uint32 id, bool delFromMemory = true);
@@ -232,10 +233,10 @@ namespace EMotionFX
         const MotionDataFactory& GetMotionDataFactory() const;
 
     private:
-        MCore::Array<Motion*>       mMotions;               /**< The array of motions. */
-        MCore::Array<MotionSet*>    mMotionSets;            /**< The array of motion sets. */
-        MCore::Mutex                mLock;                  /**< Motion lock. */
-        MCore::Mutex                mSetLock;               /**< The motion set multithread lock. */
+        AZStd::vector<Motion*>       m_motions;               /**< The array of motions. */
+        AZStd::vector<MotionSet*>    m_motionSets;            /**< The array of motion sets. */
+        MCore::Mutex                m_lock;                  /**< Motion lock. */
+        MCore::Mutex                m_setLock;               /**< The motion set multithread lock. */
         MotionDataFactory*          m_motionDataFactory = nullptr; /**< The motion data factory. */
 
         //void RecursiveResetMotionNodes(AnimGraphNode* animGraphNode, Motion* motion);
@@ -248,9 +249,9 @@ namespace EMotionFX
          *                      When set to false, it will not be deleted from memory, but only removed from the array of motions.
          * @return True in case the motion has been removed successfully. False in case the motion has not been found or the removal failed.
          */
-        bool RemoveMotionWithoutLock(uint32 index, bool delFromMemory = true);
+        bool RemoveMotionWithoutLock(size_t index, bool delFromMemory = true);
 
-        bool RemoveMotionSetWithoutLock(uint32 index, bool delFromMemory = true);
+        bool RemoveMotionSetWithoutLock(size_t index, bool delFromMemory = true);
 
         MotionManager();
         ~MotionManager() override;

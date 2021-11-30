@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -696,14 +697,12 @@ namespace EditorPythonBindings
         class TypeConverterDictionary final
             : public PythonMarshalComponent::TypeConverter
         {
-            AZ::GenericClassInfo* m_genericClassInfo = nullptr;
             const AZ::SerializeContext::ClassData* m_classData = nullptr;
             const AZ::TypeId m_typeId = {};
 
         public:
-            TypeConverterDictionary(AZ::GenericClassInfo* genericClassInfo, const AZ::SerializeContext::ClassData* classData, const AZ::TypeId& typeId)
-                : m_genericClassInfo(genericClassInfo)
-                , m_classData(classData)
+            TypeConverterDictionary([[maybe_unused]] AZ::GenericClassInfo* genericClassInfo, const AZ::SerializeContext::ClassData* classData, const AZ::TypeId& typeId)
+                : m_classData(classData)
                 , m_typeId(typeId)
             {
             }
@@ -794,7 +793,7 @@ namespace EditorPythonBindings
                     }
                 }
 
-                AZ_Warning("python", PyDict_Size(pyObj.ptr()) == mapDataContainer->Size(mapInstance.m_address), "Python Dict size:%d does not match the size of the unordered_map:%d", pos, mapDataContainer->Size(mapInstance.m_address));
+                AZ_Warning("python", static_cast<size_t>(PyDict_Size(pyObj.ptr())) == mapDataContainer->Size(mapInstance.m_address), "Python Dict size:%d does not match the size of the unordered_map:%d", pos, mapDataContainer->Size(mapInstance.m_address));
                 outValue.m_value = mapInstance.m_address;
                 outValue.m_typeId = mapInstance.m_typeId;
                 outValue.m_traits = traits;
@@ -1375,7 +1374,6 @@ namespace EditorPythonBindings
         class TypeConverterPair final
             : public PythonMarshalComponent::TypeConverter
         {
-            AZ::GenericClassInfo* m_genericClassInfo = nullptr;
             const AZ::SerializeContext::ClassData* m_classData = nullptr;
             const AZ::TypeId m_typeId = {};
 
@@ -1402,9 +1400,8 @@ namespace EditorPythonBindings
             }
 
         public:
-            TypeConverterPair(AZ::GenericClassInfo* genericClassInfo, const AZ::SerializeContext::ClassData* classData, const AZ::TypeId& typeId)
-                : m_genericClassInfo(genericClassInfo)
-                , m_classData(classData)
+            TypeConverterPair([[maybe_unused]] AZ::GenericClassInfo* genericClassInfo, const AZ::SerializeContext::ClassData* classData, const AZ::TypeId& typeId)
+                : m_classData(classData)
                 , m_typeId(typeId)
             {
             }

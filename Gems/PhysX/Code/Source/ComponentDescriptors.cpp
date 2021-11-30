@@ -1,11 +1,10 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-
-#include "PhysX_precompiled.h"
 
 #include <ComponentDescriptors.h>
 #include <Source/SystemComponent.h>
@@ -13,6 +12,7 @@
 #include <Source/BaseColliderComponent.h>
 #include <Source/MeshColliderComponent.h>
 #include <Source/BoxColliderComponent.h>
+#include <Source/HeightfieldColliderComponent.h>
 #include <Source/SphereColliderComponent.h>
 #include <Source/CapsuleColliderComponent.h>
 #include <Source/ShapeColliderComponent.h>
@@ -37,6 +37,7 @@ namespace PhysX
             BaseColliderComponent::CreateDescriptor(),
             MeshColliderComponent::CreateDescriptor(),
             BoxColliderComponent::CreateDescriptor(),
+            HeightfieldColliderComponent::CreateDescriptor(),
             SphereColliderComponent::CreateDescriptor(),
             CapsuleColliderComponent::CreateDescriptor(),
             ShapeColliderComponent::CreateDescriptor(),

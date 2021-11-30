@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -83,9 +84,9 @@ public:
     }
 };
 
-TEST_F(ScriptCanvasTestFixture, ProveError)
+TEST_F(ScriptCanvasTestFixture, EntityIdInputForOnGraphStart)
 {
-    EXPECT_TRUE(false);
+    RunUnitTestGraph("LY_SC_UnitTest_EntityIdInputForOnGraphStart");
 }
 
 TEST_F(ScriptCanvasTestFixture, ParseErrorOnKnownNull)
@@ -364,11 +365,6 @@ TEST_F(ScriptCanvasTestFixture, InterpretedCycleDetectSimple)
 TEST_F(ScriptCanvasTestFixture, InterpretedMultipleOutDataFlowParseError)
 {
     ExpectParseError("LY_SC_UnitTest_MultipleOutDataFlowParseError");
-}
-
-TEST_F(ScriptCanvasTestFixture, InterpretedSimultaneousDataInputError)
-{
-    ExpectParseError("LY_SC_UnitTest_SimultaneousDataInputError");
 }
 
 TEST_F(ScriptCanvasTestFixture, InterpretedAnyAsTailNoOp)
@@ -783,7 +779,7 @@ TEST_F(ScriptCanvasTestFixture, InterpretedPrintConnectedInput)
 
 TEST_F(ScriptCanvasTestFixture, InterpretedPrintFormatEmptyValue)
 {
-    RunUnitTestGraph("LY_SC_UnitTest_PrintFormatEmptyValue", ExecutionMode::Interpreted);
+    ExpectParseError("LY_SC_UnitTest_PrintFormatEmptyValue");
 }
 
 TEST_F(ScriptCanvasTestFixture, InterpretedProperties)
@@ -823,7 +819,7 @@ TEST_F(ScriptCanvasTestFixture, InterpretedStringFormat)
 
 TEST_F(ScriptCanvasTestFixture, InterpretedStringFormatEmptyValue)
 {
-    RunUnitTestGraph("LY_SC_UnitTest_StringFormatEmptyValue", ExecutionMode::Interpreted);
+    ExpectParseError("LY_SC_UnitTest_StringFormatEmptyValue");
 }
 
 TEST_F(ScriptCanvasTestFixture, InterpretedStringFormatWithRepeatedValueName)

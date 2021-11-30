@@ -1,10 +1,10 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <precompiled.h>
 
 #include <AzCore/Serialization/Utils.h>
 #include <AzCore/ScriptCanvas/ScriptCanvasOnDemandNames.h>
@@ -226,7 +226,6 @@ namespace ScriptCanvasEditor
             auto dataTypeIter = m_containerDataTypeSets.find(workingCrc);
             if (dataTypeIter == m_containerDataTypeSets.end())
             {
-                // No idea wtf do here we've managed to put ourselves into an invalid state
                 AZ_Error("ScriptCanvas", false, "Unknown partial type found in Container Creation. Aborting.");
                 close();
                 break;

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -220,7 +221,6 @@ namespace AssetBundler
     //! Please note that the game project could be in a different location to the engine therefore we need the assetRoot param.
     AzFramework::PlatformFlags GetEnabledPlatformFlags(
         AZStd::string_view enginePath,
-        AZStd::string_view assetRoot,
         AZStd::string_view projectPath);
 
     QJsonObject ReadJson(const AZStd::string& filePath);

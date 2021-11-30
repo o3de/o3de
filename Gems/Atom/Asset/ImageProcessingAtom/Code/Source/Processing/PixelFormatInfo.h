@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -13,6 +14,8 @@
 
 #include <AzCore/std/containers/map.h>
 #include <AzCore/std/string/string.h>
+
+#include <ImageBuilderBaseType.h>
 
 namespace ImageProcessingAtom
 {
@@ -49,7 +52,7 @@ namespace ImageProcessingAtom
 
                 Result = ((intValue + 0x0FFFU + ((intValue >> 13U) & 1U)) >> 13U) & 0x7FFFU;
             }
-            h = (Result | Sign);
+            h = static_cast<AZ::u16>(Result | Sign);
         }
 
         operator float() const
@@ -79,7 +82,7 @@ namespace ImageProcessingAtom
             }
             else                        // The value is zero
             {
-                Exponent = -112;
+                Exponent = static_cast<AZ::u32>(-112);
             }
 
             Result = ((h & 0x8000) << 16) | // Sign
@@ -116,7 +119,6 @@ namespace ImageProcessingAtom
         bool        bSquarePow2;    // whether the pixel format requires image size be square and power of 2.
         DXGI_FORMAT d3d10Format;    // the mapping d3d10 pixel format
         ESampleType eSampleType;    // the data type used to present pixel
-        const char* szLegacyName;   // name used for cryEngine
         const char* szName;         // name for showing in editors
         const char* szDescription;  // description for showing in editors
         bool        bCompressed;    // if it's a compressed format
@@ -170,10 +172,6 @@ namespace ImageProcessingAtom
         bool IsFormatSigned(EPixelFormat fmt);
         bool IsFormatFloatingPoint(EPixelFormat fmt, bool bFullPrecision);
 
-        //find the pixel format for name used by Cry's RC.ini
-        //returns ePixelFormat_Unknown if the name was not found in registed format list
-        EPixelFormat FindPixelFormatByLegacyName(const char* name);
-
         //find pixel format by its name
         EPixelFormat FindPixelFormatByName(const char* name);
 
@@ -205,9 +203,6 @@ namespace ImageProcessingAtom
 
         //pixel format name to pixel format enum
         AZStd::map<AZStd::string, EPixelFormat>  m_pixelFormatNameMap;
-
-        // some formats from cryEngine were removed. using this name-pixelFormat mapping to look for new format
-        AZStd::map<AZStd::string, EPixelFormat>  m_removedLegacyFormats;
     };
 
     template <class TInteger>

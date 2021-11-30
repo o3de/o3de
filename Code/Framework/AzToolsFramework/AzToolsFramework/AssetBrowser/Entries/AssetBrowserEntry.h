@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -64,6 +65,7 @@ namespace AzToolsFramework
             enum class Column
             {
                 Name,
+                Path,
                 SourceID,
                 Fingerprint,
                 Guid,
@@ -131,6 +133,7 @@ namespace AzToolsFramework
         protected:
             AZStd::string m_name;
             QString m_displayName;
+            QString m_displayPath;
             AZ::IO::Path m_relativePath;
             AZ::IO::Path m_fullPath;
             AZStd::vector<AssetBrowserEntry*> m_children;

@@ -1,12 +1,12 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
 
-#include "Maestro_precompiled.h"
 #include "TrackEventTrack.h"
 
 #include <AzCore/Serialization/SerializeContext.h>
@@ -143,11 +143,11 @@ void CTrackEventTrack::GetKeyInfo(int key, const char*& description, float& dura
     CheckValid();
     description = 0;
     duration = 0;
-    cry_strcpy(desc, m_keys[key].event.c_str());
+    azstrcpy(desc, AZ_ARRAY_SIZE(desc), m_keys[key].event.c_str());
     if (!m_keys[key].eventValue.empty())
     {
-        cry_strcat(desc, ", ");
-        cry_strcat(desc, m_keys[key].eventValue.c_str());
+        azstrcat(desc, AZ_ARRAY_SIZE(desc), ", ");
+        azstrcat(desc, AZ_ARRAY_SIZE(desc), m_keys[key].eventValue.c_str());
     }
 
     description = desc;

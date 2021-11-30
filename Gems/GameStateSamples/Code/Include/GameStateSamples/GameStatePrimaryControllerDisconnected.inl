@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -82,7 +83,7 @@ namespace GameStateSamples
             return;
         }
 
-        string localizedMessage;
+        AZStd::string localizedMessage;
         const char* localizationKey = AZ_TRAIT_GAMESTATESAMPLES_PRIMARY_CONTROLLER_DISCONNECTED_LOC_KEY;
         bool wasLocalized = false;
         LocalizationManagerRequestBus::BroadcastResult(wasLocalized,

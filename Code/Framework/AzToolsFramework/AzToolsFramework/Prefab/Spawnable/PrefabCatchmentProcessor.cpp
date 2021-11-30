@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -64,16 +65,24 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
             AzFramework::Spawnable::EntityList& entities = spawnable->GetEntities();
             for (auto it = entities.begin(); it != entities.end(); )
             {
-                (*it)->InvalidateDependencies();
-                AZ::Entity::DependencySortOutcome evaluation = (*it)->EvaluateDependenciesGetDetails();
-                if (evaluation.IsSuccess())
+                if (*it)
                 {
-                    ++it;
+                    (*it)->InvalidateDependencies();
+                    AZ::Entity::DependencySortOutcome evaluation = (*it)->EvaluateDependenciesGetDetails();
+                    if (evaluation.IsSuccess())
+                    {
+                        ++it;
+                    }
+                    else
+                    {
+                        AZ_Error(
+                            "Prefabs", false, "Entity '%s' %s cannot be activated for the following reason: %s", (*it)->GetName().c_str(),
+                            (*it)->GetId().ToString().c_str(), evaluation.GetError().m_message.c_str());
+                        it = entities.erase(it);
+                    }
                 }
                 else
                 {
-                    AZ_Error("Prefabs", false, "Entity '%s' %s cannot be activated for the following reason: %s",
-                        (*it)->GetName().c_str(), (*it)->GetId().ToString().c_str(), evaluation.GetError().m_message.c_str());
                     it = entities.erase(it);
                 }
             }

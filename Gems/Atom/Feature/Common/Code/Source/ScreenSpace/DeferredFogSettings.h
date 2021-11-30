@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -55,7 +56,7 @@ namespace AZ
             ~DeferredFogSettings() = default;
 
             // DeferredFogSettingsInterface overrides...
-            void OnSettingsChanged();
+            void OnSettingsChanged() override;
             bool GetSettingsNeedUpdate()
             {
                 return m_needUpdate;
@@ -65,35 +66,35 @@ namespace AZ
                 m_needUpdate = needUpdate;
             }
 
-            void SetEnabled(bool value);
-            virtual bool GetEnabled() const override
+            void SetEnabled(bool value) override;
+            bool GetEnabled() const override
             {
                 return m_enabled;
             }
 
-            virtual void SetInitialized(bool isInitialized) override
+            void SetInitialized(bool isInitialized) override
             {
                 m_isInitialized = isInitialized;
             }
-            virtual bool IsInitialized() override
+            bool IsInitialized() override
             {
                 return m_isInitialized;
             }
 
-            virtual void SetUseNoiseTextureShaderOption(bool value) override
+            void SetUseNoiseTextureShaderOption(bool value) override
             {
                 m_useNoiseTextureShaderOption = value;
             }
-            virtual bool GetUseNoiseTextureShaderOption() override
+            bool GetUseNoiseTextureShaderOption() override
             {
                 return m_useNoiseTextureShaderOption;
             }
 
-            virtual void SetEnableFogLayerShaderOption(bool value) override
+            void SetEnableFogLayerShaderOption(bool value) override
             {
                 m_enableFogLayerShaderOption = value;
             }
-            virtual bool GetEnableFogLayerShaderOption() override
+            bool GetEnableFogLayerShaderOption() override
             {
                 return m_enableFogLayerShaderOption;
             }

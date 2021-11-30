@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -173,12 +174,6 @@ namespace AssetProcessor
         static const char* CREATEINDEX_TYPEOFDEPENDENCY_SOURCEDEPENDENCY = "AssetProcessor::CreateIndexTypeOfDependency_SourceDependency";
         static const char* CREATEINDEX_TYPEOFDEPENDENCY_SOURCEDEPENDENCY_STATEMENT = 
             "CREATE INDEX IF NOT EXISTS TypeOfDependency_SourceDependency ON SourceDependency (TypeOfDependency);";
-        
-        static const char* CREATEINDEX_SCANFOLDERS_SOURCES = "AssetProcesser::CreateIndexScanFoldersSources";
-        static const char* CREATEINDEX_SCANFOLDERS_SOURCES_STATEMENT =
-            "CREATE INDEX IF NOT EXISTS ScanFolders_Sources ON Sources (ScanFolderPK);";
-        static const char* DROPINDEX_SCANFOLDERS_SOURCES_STATEMENT =
-            "DROP INDEX IF EXISTS ScanFolders_Sources_idx;";
 
         static const char* CREATEINDEX_SCANFOLDERS_SOURCES_SCANFOLDER = "AssetProcesser::CreateIndexScanFoldersSourcesScanFolder";
         static const char* CREATEINDEX_SCANFOLDERS_SOURCES_SCANFOLDER_STATEMENT =
@@ -187,20 +182,14 @@ namespace AssetProcessor
         static const char* CREATEINDEX_SOURCES_JOBS = "AssetProcesser::CreateIndexSourcesJobs";
         static const char* CREATEINDEX_SOURCES_JOBS_STATEMENT =
             "CREATE INDEX IF NOT EXISTS Sources_Jobs ON Jobs (SourcePK);";
-        static const char* DROPINDEX_SOURCES_JOBS_STATEMENT =
-            "DROP INDEX IF EXISTS Sources_Jobs_idx;";
 
         static const char* CREATEINDEX_JOBS_PRODUCTS = "AssetProcesser::CreateIndexJobsProducts";
         static const char* CREATEINDEX_JOBS_PRODUCTS_STATEMENT =
             "CREATE INDEX IF NOT EXISTS Jobs_Products ON Products (JobPK);";
-        static const char* DROPINDEX_JOBS_PRODUCTS_STATEMENT =
-            "DROP INDEX IF EXISTS Jobs_Products_idx;";
 
         static const char* CREATEINDEX_SOURCE_NAME = "AssetProcessor::CreateIndexSourceName";
         static const char* CREATEINDEX_SOURCE_NAME_STATEMENT =
             "CREATE INDEX IF NOT EXISTS Sources_SourceName ON Sources (SourceName);";
-        static const char* DROPINDEX_SOURCE_NAME_STATEMENT =
-            "DROP INDEX IF EXISTS Sources_SourceName_idx;";
 
         static const char* CREATEINDEX_SOURCE_GUID = "AssetProcessor::CreateIndexSourceGuid";
         static const char* CREATEINDEX_SOURCE_GUID_STATEMENT =
@@ -209,8 +198,6 @@ namespace AssetProcessor
         static const char* CREATEINDEX_PRODUCT_NAME = "AssetProcessor::CreateIndexProductName";
         static const char* CREATEINDEX_PRODUCT_NAME_STATEMENT =
             "CREATE INDEX IF NOT EXISTS Products_ProductName ON Products (ProductName);";
-        static const char* DROPINDEX_PRODUCT_NAME_STATEMENT =
-            "DROP INDEX IF EXISTS Products_ProductName_idx;";
 
         static const char* CREATEINDEX_PRODUCT_SUBID = "AssetProcessor::CreateIndexProductSubID";
         static const char* CREATEINDEX_PRODUCT_SUBID_STATEMENT =
@@ -771,6 +758,14 @@ namespace AssetProcessor
             "FileID = :fileid;";
         static const auto s_DeleteFileQuery = MakeSqlQuery(DELETE_FILE, DELETE_FILE_STATEMENT, LOG_NAME,
             SqlParam<AZ::s64>(":fileid"));
+
+        static const char* CREATEINDEX_SOURCEDEPENDENCY_SOURCE = "AssetProcesser::CreateIndexSourceSourceDependency";
+        static const char* CREATEINDEX_SOURCEDEPENDENCY_SOURCE_STATEMENT =
+            "CREATE INDEX IF NOT EXISTS Source_SourceDependency ON SourceDependency (Source);";
+
+        static const char* DROPINDEX_BUILDERGUID_SOURCE_SOURCEDEPENDENCY = "AssetProcesser::DropIndexBuilderGuid_Source_SourceDependency";
+        static const char* DROPINDEX_BUILDERGUID_SOURCE_SOURCEDEPENDENCY_STATEMENT =
+            "DROP INDEX IF EXISTS BuilderGuid_Source_SourceDependency;";
     }
 
     AssetDatabaseConnection::AssetDatabaseConnection()
@@ -1046,6 +1041,15 @@ namespace AssetProcessor
         // sqlite doesn't not support altering a table to remove a column
         // This is fine as the extra OutputPrefix column will not be queried
 
+        if (foundVersion == AssetDatabase::DatabaseVersion::RemoveOutputPrefixFromScanFolders)
+        {
+            if (m_databaseConnection->ExecuteOneOffStatement(DROPINDEX_BUILDERGUID_SOURCE_SOURCEDEPENDENCY) && m_databaseConnection->ExecuteOneOffStatement(CREATEINDEX_SOURCEDEPENDENCY_SOURCE))
+            {
+                foundVersion = AssetDatabase::DatabaseVersion::AddedSourceIndexForSourceDependencyTable;
+                AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Upgraded Asset Database to version %i (AddedSourceIndexForSourceDependencyTable)\n", foundVersion)
+            }
+        }
+
         if (foundVersion == CurrentDatabaseVersion())
         {
             dropAllTables = false;
@@ -1318,6 +1322,12 @@ namespace AssetProcessor
 
         m_databaseConnection->AddStatement(CREATEINDEX_SCANFOLDERS_FILES, CREATEINDEX_SCANFOLDERS_FILES_STATEMENT);
         m_createStatements.push_back(CREATEINDEX_SCANFOLDERS_FILES);
+
+        m_databaseConnection->AddStatement(CREATEINDEX_SOURCEDEPENDENCY_SOURCE, CREATEINDEX_SOURCEDEPENDENCY_SOURCE_STATEMENT);
+        m_createStatements.push_back(CREATEINDEX_SOURCEDEPENDENCY_SOURCE);
+
+        m_databaseConnection->AddStatement(DROPINDEX_BUILDERGUID_SOURCE_SOURCEDEPENDENCY, DROPINDEX_BUILDERGUID_SOURCE_SOURCEDEPENDENCY_STATEMENT);
+        m_createStatements.push_back(DROPINDEX_BUILDERGUID_SOURCE_SOURCEDEPENDENCY);
 
         m_databaseConnection->AddStatement(DELETE_AUTO_SUCCEED_JOBS, DELETE_AUTO_SUCCEED_JOBS_STATEMENT);
     }

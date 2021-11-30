@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -16,9 +17,8 @@
 // Editor
 #include "Include/IPlugin.h"
 
-
-typedef IPlugin* (* TPfnCreatePluginInstance)(PLUGIN_INIT_PARAM* pInitParam);
-typedef void (* TPfnQueryPluginSettings)(SPluginSettings&);
+using TPfnCreatePluginInstance = IPlugin* (*)(PLUGIN_INIT_PARAM* pInitParam);
+using TPfnQueryPluginSettings = void (*)(SPluginSettings&);
 
 CPluginManager::CPluginManager()
 {
@@ -125,8 +125,8 @@ namespace
 
 bool CPluginManager::LoadPlugins(const char* pPathWithMask)
 {
-    QString strPath = QtUtil::ToQString(PathUtil::GetPath(pPathWithMask));
-    QString strMask = QString::fromUtf8(PathUtil::GetFile(pPathWithMask));
+    QString strPath = PathUtil::GetPath(pPathWithMask).c_str();
+    QString strMask = PathUtil::GetFile(pPathWithMask);
 
     CLogFile::WriteLine("[Plugin Manager] Loading plugins...");
 
@@ -154,7 +154,7 @@ bool CPluginManager::LoadPlugins(const char* pPathWithMask)
         }
 #endif
     }
-    if (plugins.size() == 0)
+    if (plugins.empty())
     {
         CLogFile::FormatLine("[Plugin Manager] Cannot find any plugins in plugin directory '%s'", strPath.toUtf8().data());
         return false;
@@ -209,7 +209,7 @@ bool CPluginManager::LoadPlugins(const char* pPathWithMask)
             continue;
         }
 
-        IPlugin* pPlugin = NULL;
+        IPlugin* pPlugin = nullptr;
         PLUGIN_INIT_PARAM sInitParam =
         {
             GetIEditor(),
@@ -262,23 +262,23 @@ void CPluginManager::RegisterPlugin(QLibrary* dllHandle, IPlugin* pPlugin)
     entry.hLibrary = dllHandle;
     entry.pPlugin = pPlugin;
     m_plugins.push_back(entry);
-    m_uuidPluginMap[m_currentUUID] = pPlugin;
+    m_uuidPluginMap[static_cast<unsigned char>(m_currentUUID)] = pPlugin;
     ++m_currentUUID;
 }
 
 IPlugin* CPluginManager::GetPluginByGUID(const char* pGUID)
 {
-    for (auto it = m_plugins.begin(); it != m_plugins.end(); ++it)
+    for (const SPluginEntry& pluginEntry : m_plugins)
     {
-        const char* pPluginGuid = it->pPlugin->GetPluginGUID();
+        const char* pPluginGuid = pluginEntry.pPlugin->GetPluginGUID();
 
         if (pPluginGuid && !strcmp(pPluginGuid, pGUID))
         {
-            return it->pPlugin;
+            return pluginEntry.pPlugin;
         }
     }
 
-    return NULL;
+    return nullptr;
 }
 
 IPlugin* CPluginManager::GetPluginByUIID(uint8 iUserInterfaceID)
@@ -289,7 +289,7 @@ IPlugin* CPluginManager::GetPluginByUIID(uint8 iUserInterfaceID)
 
     if (it == m_uuidPluginMap.end())
     {
-        return NULL;
+        return nullptr;
     }
 
     return (*it).second;
@@ -301,7 +301,7 @@ IUIEvent* CPluginManager::GetEventByIDAndPluginID(uint8 aPluginID, uint8 aEventI
     // specified by its ID and the user interface ID of the plugin which
     // created the UI element
 
-    IPlugin* pPlugin = NULL;
+    IPlugin* pPlugin = nullptr;
     TEventHandlerIt eventIt;
     TPluginEventIt pluginIt;
 
@@ -309,21 +309,21 @@ IUIEvent* CPluginManager::GetEventByIDAndPluginID(uint8 aPluginID, uint8 aEventI
 
     if (!pPlugin)
     {
-        return NULL;
+        return nullptr;
     }
 
     pluginIt = m_pluginEventMap.find(pPlugin);
 
     if (pluginIt == m_pluginEventMap.end())
     {
-        return NULL;
+        return nullptr;
     }
 
     eventIt = (*pluginIt).second.find(aEventID);
 
     if (eventIt == (*pluginIt).second.end())
     {
-        return NULL;
+        return nullptr;
     }
 
     return (*eventIt).second;
@@ -331,14 +331,11 @@ IUIEvent* CPluginManager::GetEventByIDAndPluginID(uint8 aPluginID, uint8 aEventI
 
 bool CPluginManager::CanAllPluginsExitNow()
 {
-    for (auto it = m_plugins.begin(); it != m_plugins.end(); ++it)
+    for (const SPluginEntry& pluginEntry : m_plugins)
     {
-        if (it->pPlugin)
+        if (pluginEntry.pPlugin && !pluginEntry.pPlugin->CanExitNow())
         {
-            if (!it->pPlugin->CanExitNow())
-            {
-                return false;
-            }
+            return false;
         }
     }
 

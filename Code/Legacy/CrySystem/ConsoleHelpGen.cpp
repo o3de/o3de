@@ -1,24 +1,25 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
+#if defined(WIN32) || defined(WIN64)
 
 #include "CrySystem_precompiled.h"
 
-#if defined(WIN32) || defined(WIN64)
-
 #include "ConsoleHelpGen.h"
 #include "System.h"
+#include <AzCore/Utils/Utils.h>
 
 
 
 // remove bad characters, toupper, not very fast
-string CConsoleHelpGen::FixAnchorName(const char* szName)
+AZStd::string CConsoleHelpGen::FixAnchorName(const char* szName)
 {
-    string ret;
+    AZStd::string ret;
 
     const char* p = szName;
 
@@ -44,9 +45,9 @@ string CConsoleHelpGen::FixAnchorName(const char* szName)
     return ret;
 }
 
-string CConsoleHelpGen::GetCleanPrefix(const char* p)
+AZStd::string CConsoleHelpGen::GetCleanPrefix(const char* p)
 {
-    string sRet;
+    AZStd::string sRet;
 
     while (*p != '_' && *p != 0)
     {
@@ -57,9 +58,9 @@ string CConsoleHelpGen::GetCleanPrefix(const char* p)
 }
 
 
-string CConsoleHelpGen::SplitPrefixString_Part1(const char* p)
+AZStd::string CConsoleHelpGen::SplitPrefixString_Part1(const char* p)
 {
-    string sRet;
+    AZStd::string sRet;
 
     while (*p != 10 && *p != 13 && *p != 0)
     {
@@ -131,7 +132,7 @@ void CConsoleHelpGen::LogVersion(FILE* f) const
     char s[1024];
 
     {
-        GetModuleFileName(NULL, s, sizeof(s));
+        AZ::Utils::GetExecutablePath(s, 1024);
 
         char fdir[_MAX_PATH];
         char fdrive[_MAX_PATH];
@@ -139,7 +140,7 @@ void CConsoleHelpGen::LogVersion(FILE* f) const
         char fext[_MAX_PATH];
         _splitpath_s(s, fdrive, fdir, file, fext);
 
-        KeyValue(f, "Executable", (string(file) + fext).c_str());
+        KeyValue(f, "Executable", (AZStd::string(file) + fext).c_str());
     }
 
     {
@@ -272,11 +273,11 @@ void CConsoleHelpGen::SingleLinePrefix(FILE* f, const char* szPrefix, const char
     }
     else if (m_eWorkMode == eWM_Confluence)
     {
-        string sPrefix;
+        AZStd::string sPrefix;
 
         if (*szPrefix)
         {
-            sPrefix = string(szPrefix) + "_";
+            sPrefix = AZStd::string(szPrefix) + "_";
         }
 
         //      fprintf(f,"| %s | [%s|%s] |\n",sPrefix.c_str(),szPrefixDesc,szLink);        // e.g. "" "CL_" "CC_" "I_" "T_"
@@ -405,7 +406,7 @@ void CConsoleHelpGen::InsertConsoleCommands(std::set<const char*, string_nocase_
     {
         const CConsoleCommand& cmd = itrCmd->second;
 
-        if (_strnicmp(cmd.m_sName, szLocalPrefix, strlen(szLocalPrefix)) == 0)
+        if (_strnicmp(cmd.m_sName.c_str(), szLocalPrefix, strlen(szLocalPrefix)) == 0)
         {
             setCmdAndVars.insert(cmd.m_sName.c_str());
         }
@@ -414,7 +415,7 @@ void CConsoleHelpGen::InsertConsoleCommands(std::set<const char*, string_nocase_
 
 
 
-void CConsoleHelpGen::InsertConsoleVars(std::set<const char*, string_nocase_lt>& setCmdAndVars, std::map<string, const char*> mapPrefix) const
+void CConsoleHelpGen::InsertConsoleVars(std::set<const char*, string_nocase_lt>& setCmdAndVars, std::map<AZStd::string, const char*> mapPrefix) const
 {
     CXConsole::ConsoleVariablesMap::const_iterator itrVar, itrVarEnd = m_rParent.m_mapVariables.end();
 
@@ -424,11 +425,11 @@ void CConsoleHelpGen::InsertConsoleVars(std::set<const char*, string_nocase_lt>&
         bool bInsert = true;
 
         {
-            std::map<string, const char*>::const_iterator it2, end = mapPrefix.end();
+            std::map<AZStd::string, const char*>::const_iterator it2, end = mapPrefix.end();
 
             for (it2 = mapPrefix.begin(); it2 != end; ++it2)
             {
-                if (it2->first != "___" && _strnicmp(var->GetName(), it2->first, it2->first.size()) == 0)
+                if (it2->first != "___" && _strnicmp(var->GetName(), it2->first.c_str(), it2->first.size()) == 0)
                 {
                     bInsert = false;
                     break;
@@ -445,7 +446,7 @@ void CConsoleHelpGen::InsertConsoleVars(std::set<const char*, string_nocase_lt>&
 
 
 
-void CConsoleHelpGen::InsertConsoleCommands(std::set<const char*, string_nocase_lt>& setCmdAndVars, std::map<string, const char*> mapPrefix) const
+void CConsoleHelpGen::InsertConsoleCommands(std::set<const char*, string_nocase_lt>& setCmdAndVars, std::map<AZStd::string, const char*> mapPrefix) const
 {
     CXConsole::ConsoleCommandsMap::const_iterator itrCmd, itrCmdEnd = m_rParent.m_mapCommands.end();
 
@@ -455,11 +456,11 @@ void CConsoleHelpGen::InsertConsoleCommands(std::set<const char*, string_nocase_
         bool bInsert = true;
 
         {
-            std::map<string, const char*>::const_iterator it2, end = mapPrefix.end();
+            std::map<AZStd::string, const char*>::const_iterator it2, end = mapPrefix.end();
 
             for (it2 = mapPrefix.begin(); it2 != end; ++it2)
             {
-                if (it2->first != "___" && _strnicmp(cmd.m_sName, it2->first, it2->first.size()) == 0)
+                if (it2->first != "___" && _strnicmp(cmd.m_sName.c_str(), it2->first.c_str(), it2->first.size()) == 0)
                 {
                     bInsert = false;
                     break;
@@ -479,7 +480,7 @@ void CConsoleHelpGen::CreateSingleEntryFile(const char* szName) const
     assert(m_eWorkMode == eWM_Confluence);    // only needed for confluence
 
     FILE* f3 = nullptr;
-    azfopen(&f3, (string(GetFolderName()) + GetFileExtension() + "/" + FixAnchorName(szName)).c_str(), "w");
+    azfopen(&f3, (AZStd::string(GetFolderName()) + GetFileExtension() + "/" + FixAnchorName(szName)).c_str(), "w");
 
     if (!f3)
     {
@@ -581,7 +582,7 @@ void CConsoleHelpGen::IncludeSingleEntry(FILE* f, const char* szName) const
         {
             fprintf(f, "<pre>\n");
 
-            string sHelp = szHelp;
+            AZStd::string sHelp = szHelp;
 
             // currently not required as the {noformat} is used
             //          sHelp.replace("[","\\[");       sHelp.replace("]","\\]");
@@ -603,7 +604,7 @@ void CConsoleHelpGen::IncludeSingleEntry(FILE* f, const char* szName) const
 
 void CConsoleHelpGen::Work()
 {
-    //  string sEngineFolder = string("@user@/")+GetFolderName();
+    //  AZStd::string sEngineFolder = AZStd::string("@user@/")+GetFolderName();
     //  gEnv->pCryPak->RemoveDir(sEngineFolder.c_str());            // todo: check if that works
     //  gEnv->pFileIO->CreatePath(sEngineFolder.c_str());
 
@@ -652,7 +653,7 @@ void CConsoleHelpGen::CreateMainPages()
 {
     gEnv->pFileIO->CreatePath(GetFolderName());
 
-    std::map<string, const char*> mapPrefix;
+    std::map<AZStd::string, const char*> mapPrefix;
 
     // order here doesn't matter, after the name some help can be added (after the first return)
     mapPrefix[     "AI_"] = "Artificial Intelligence";
@@ -700,7 +701,7 @@ void CConsoleHelpGen::CreateMainPages()
     mapPrefix[     "___"] = "Remaining";            // key defined to get it sorted in the end
 
     FILE* f1 = nullptr;
-    azfopen(&f1, (string(GetFolderName()) + "/index" + GetFileExtension()).c_str(), "w");
+    azfopen(&f1, (AZStd::string(GetFolderName()) + "/index" + GetFileExtension()).c_str(), "w");
     if (!f1)
     {
         return;
@@ -728,17 +729,17 @@ void CConsoleHelpGen::CreateMainPages()
 
     // show all registered Prefix with one line
     {
-        std::map<string, const char*>::const_iterator it, end = mapPrefix.end();
+        std::map<AZStd::string, const char*>::const_iterator it, end = mapPrefix.end();
 
         StartH3(f1, "Registered Prefixes");
 
         for (it = mapPrefix.begin(); it != end; ++it)
         {
             const char* szLocalPrefix = it->first.c_str();      // can be 0 for remaining ones
-            string sCleanPrefix = GetCleanPrefix(szLocalPrefix);
-            string sPrefixName = SplitPrefixString_Part1(it->second);
+            AZStd::string sCleanPrefix = GetCleanPrefix(szLocalPrefix);
+            AZStd::string sPrefixName = SplitPrefixString_Part1(it->second);
 
-            SingleLinePrefix(f1, sCleanPrefix.c_str(), sPrefixName.c_str(), (string("CONSOLEPREFIX") + FixAnchorName(sCleanPrefix.c_str()) + GetFileExtension()).c_str());
+            SingleLinePrefix(f1, sCleanPrefix.c_str(), sPrefixName.c_str(), (AZStd::string("CONSOLEPREFIX") + FixAnchorName(sCleanPrefix.c_str()) + GetFileExtension()).c_str());
             //          fprintf(f1,"   * [[CONSOLEPREFIX%s][%s_ %s]]\n",FixAnchorName(sCleanPrefix.c_str()).c_str(),sCleanPrefix.c_str(),sPrefixName.c_str());
         }
 
@@ -749,15 +750,15 @@ void CConsoleHelpGen::CreateMainPages()
 
 
     {
-        std::map<string, const char*>::const_iterator it, it2, end = mapPrefix.end();
+        std::map<AZStd::string, const char*>::const_iterator it, it2, end = mapPrefix.end();
 
         StartH3(f1, "Console Commands and Variables Sorted by Prefix");
 
         for (it = mapPrefix.begin(); it != end; ++it)
         {
             const char* szLocalPrefix = it->first.c_str();      // can be 0 for remaining ones
-            string sCleanPrefix = GetCleanPrefix(szLocalPrefix);
-            string sPrefixName = SplitPrefixString_Part1(it->second);
+            AZStd::string sCleanPrefix = GetCleanPrefix(szLocalPrefix);
+            AZStd::string sPrefixName = SplitPrefixString_Part1(it->second);
 
             std::set<const char*, string_nocase_lt> setCmdAndVars;      // to get console variables and commands sorted together
 
@@ -776,11 +777,11 @@ void CConsoleHelpGen::CreateMainPages()
 
             // -------------------------------
 
-            string sSubName = string("CONSOLEPREFIX") + sCleanPrefix;
+            AZStd::string sSubName = AZStd::string("CONSOLEPREFIX") + sCleanPrefix;
 
             StartPrefix(f1, sCleanPrefix.c_str(), sPrefixName.c_str(), (sSubName + GetFileExtension()).c_str());
 
-            string sFileOut = string(GetFolderName()) + "/" + sSubName + GetFileExtension();
+            AZStd::string sFileOut = AZStd::string(GetFolderName()) + "/" + sSubName + GetFileExtension();
             FILE* f2 = nullptr;
             azfopen(&f2, sFileOut.c_str(), "w");
             if (!f2)
@@ -791,7 +792,7 @@ void CConsoleHelpGen::CreateMainPages()
 
             // headline
             {
-                string sHeadline;
+                AZStd::string sHeadline;
 
                 if (sCleanPrefix.empty())
                 {
@@ -799,7 +800,7 @@ void CConsoleHelpGen::CreateMainPages()
                 }
                 else
                 {
-                    sHeadline = string("Console Commands and Variables with Prefix ") + sCleanPrefix + "_";
+                    sHeadline = AZStd::string("Console Commands and Variables with Prefix ") + sCleanPrefix + "_";
                 }
 
                 StartH1(f2, sHeadline.c_str());
@@ -820,7 +821,7 @@ void CConsoleHelpGen::CreateMainPages()
                 for (itI = setCmdAndVars.begin(); itI != endI; ++itI)
                 {
                     SingleLineEntry_InGlobal(f1, *itI, (sSubName + GetFileExtension() + "#Anchor" + FixAnchorName(*itI)).c_str());
-                    SingleLineEntry_InGroup(f2, *itI, (string("#Anchor") + FixAnchorName(*itI)).c_str());
+                    SingleLineEntry_InGroup(f2, *itI, (AZStd::string("#Anchor") + FixAnchorName(*itI)).c_str());
                 }
 
                 EndH3(f2);
@@ -841,7 +842,7 @@ void CConsoleHelpGen::CreateMainPages()
                         }
                         bFirst = false;
 
-                        Anchor(f2, (string("Anchor") + FixAnchorName(*itI)).c_str());      // anchor
+                        Anchor(f2, (AZStd::string("Anchor") + FixAnchorName(*itI)).c_str());      // anchor
 
                         IncludeSingleEntry(f2, *itI);
                     }

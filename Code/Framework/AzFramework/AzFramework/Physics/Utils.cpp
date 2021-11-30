@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -9,12 +10,14 @@
 #include "Utils.h"
 #include "Material.h"
 #include "Shape.h"
+
+#include <AzCore/RTTI/BehaviorContext.h>
+#include <AzCore/Serialization/EditContext.h>
 #include <AzFramework/Physics/AnimationConfiguration.h>
 #include <AzFramework/Physics/CharacterBus.h>
 #include <AzFramework/Physics/Character.h>
 #include <AzFramework/Physics/Ragdoll.h>
 #include <AzFramework/Physics/ShapeConfiguration.h>
-#include <AzCore/Serialization/EditContext.h>
 #include <AzFramework/Physics/CollisionBus.h>
 #include <AzFramework/Physics/Components/SimulatedBodyComponentBus.h>
 #include <AzFramework/Physics/WindBus.h>
@@ -29,6 +32,7 @@
 #include <AzFramework/Physics/Configuration/SceneConfiguration.h>
 #include <AzFramework/Physics/Configuration/SimulatedBodyConfiguration.h>
 #include <AzFramework/Physics/SimulatedBodies/RigidBody.h>
+#include <AzFramework/Physics/Common/PhysicsJoint.h>
 
 namespace Physics
 {
@@ -103,6 +107,7 @@ namespace Physics
             PhysicsAssetShapeConfiguration::Reflect(context);
             NativeShapeConfiguration::Reflect(context);
             CookedMeshShapeConfiguration::Reflect(context);
+            HeightfieldShapeConfiguration::Reflect(context);
             AzPhysics::SystemInterface::Reflect(context);
             AzPhysics::Scene::Reflect(context);
             AzPhysics::CollisionLayer::Reflect(context);
@@ -117,9 +122,9 @@ namespace Physics
             DefaultMaterialConfiguration::Reflect(context);
             MaterialLibraryAsset::Reflect(context);
             MaterialInfoReflectionWrapper::Reflect(context);
-            JointLimitConfiguration::Reflect(context);
             AzPhysics::SimulatedBodyConfiguration::Reflect(context);
             AzPhysics::RigidBodyConfiguration::Reflect(context);
+            AzPhysics::JointConfiguration::Reflect(context);
             RagdollNodeConfiguration::Reflect(context);
             RagdollConfiguration::Reflect(context);
             CharacterColliderNodeConfiguration::Reflect(context);
@@ -127,6 +132,7 @@ namespace Physics
             AnimationConfiguration::Reflect(context);
             CharacterConfiguration::Reflect(context);
             AzPhysics::SimulatedBody::Reflect(context);
+            AzPhysics::Joint::Reflect(context);
             ReflectSimulatedBodyComponentRequestsBus(context);
             CollisionFilteringRequests::Reflect(context);
             AzPhysics::SceneQuery::ReflectSceneQueryObjects(context);

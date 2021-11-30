@@ -1,11 +1,14 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
 #pragma once
+
+#include <Multiplayer/IMultiplayer.h>
 
 #include <IEditor.h>
 
@@ -44,6 +47,9 @@ namespace Multiplayer
         MultiplayerEditorSystemComponent();
         ~MultiplayerEditorSystemComponent() override = default;
 
+        //! Called once the editor receives the server's accept packet
+        void OnServerAcceptanceReceived();
+
         //! AZ::Component overrides.
         //! @{
         void Activate() override;
@@ -70,5 +76,7 @@ namespace Multiplayer
         IEditor* m_editor = nullptr;
         AzFramework::ProcessWatcher* m_serverProcess = nullptr;
         AzNetworking::ConnectionId m_editorConnId;
+
+        ServerAcceptanceReceivedEvent::Handler m_serverAcceptanceReceivedHandler;
     };
 }

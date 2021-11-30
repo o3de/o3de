@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -29,7 +30,7 @@ namespace MCore
         // find the last letter index from the right
         size_t lastIndex = AZStd::string::npos;
         const size_t numCharacters = prefixString.size();
-        for (size_t i = numCharacters - 1; i >= 0; --i)
+        for (int i = static_cast<int>(numCharacters) - 1; i >= 0; --i)
         {
             if (!AZStd::is_digit(prefixString[i]))
             {
@@ -45,7 +46,7 @@ namespace MCore
         AzFramework::StringFunc::TrimWhiteSpace(nameWithoutLastDigits, false /* leading */, true /* trailing */);
 
         // generate the unique name
-        uint32 nameIndex = 0;
+        size_t nameIndex = 0;
         AZStd::string uniqueName = nameWithoutLastDigits + "0";
         while (validationFunction(uniqueName) == false)
         {

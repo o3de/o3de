@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -34,9 +35,9 @@ namespace EMStudio
 
         void Reset();
 
-        void SetFilename(const char* filename)                              { mFilename = filename; mDirtyFlag = true; }
-        const AZStd::string& GetFilenameString() const                      { return mFilename; }
-        const char* GetFilename() const                                     { return mFilename.c_str(); }
+        void SetFilename(const char* filename)                              { m_filename = filename; m_dirtyFlag = true; }
+        const AZStd::string& GetFilenameString() const                      { return m_filename; }
+        const char* GetFilename() const                                     { return m_filename.c_str(); }
 
         /**
          * Set the dirty flag which indicates whether the user has made changes to the motion. This indicator should be set to true
@@ -56,7 +57,7 @@ namespace EMStudio
         void AddFile(AZStd::string* inOutCommands, const char* command, const AZStd::string& filename, const char* additionalParameters = nullptr) const;
         bool SaveToFile(const char* filename) const;
 
-        AZStd::string   mFilename;
-        bool            mDirtyFlag;
+        AZStd::string   m_filename;
+        bool            m_dirtyFlag;
     };
 } // namespace EMStudio

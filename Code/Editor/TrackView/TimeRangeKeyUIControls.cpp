@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -26,7 +27,7 @@ public:
     CSmartVariable<float> mv_timeScale;
     CSmartVariable<bool> mv_bLoop;
 
-    virtual void OnCreateVars()
+    void OnCreateVars() override
     {
         AddVariable(mv_table, "Key Properties");
         AddVariable(mv_table, mv_startTime, "Start Time");
@@ -35,14 +36,14 @@ public:
         AddVariable(mv_table, mv_bLoop, "Loop");
         mv_timeScale->SetLimits(0.001f, 100.f);
     }
-    bool SupportTrackType(const CAnimParamType& paramType, [[maybe_unused]] EAnimCurveType trackType, [[maybe_unused]] AnimValueType valueType) const
+    bool SupportTrackType(const CAnimParamType& paramType, [[maybe_unused]] EAnimCurveType trackType, [[maybe_unused]] AnimValueType valueType) const override
     {
         return paramType == AnimParamType::TimeRanges;
     }
-    virtual bool OnKeySelectionChange(CTrackViewKeyBundle& selectedKeys);
-    virtual void OnUIChange(IVariable* pVar, CTrackViewKeyBundle& selectedKeys);
+    bool OnKeySelectionChange(CTrackViewKeyBundle& selectedKeys) override;
+    void OnUIChange(IVariable* pVar, CTrackViewKeyBundle& selectedKeys) override;
 
-    virtual unsigned int GetPriority() const { return 1; }
+    unsigned int GetPriority() const override { return 1; }
 
     static const GUID& GetClassID()
     {

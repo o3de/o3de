@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -22,7 +23,9 @@ namespace O3DE::ProjectManager
         Projects,
         UpdateProject,
         UpdateProjectSettings,
-        EngineSettings
+        Engine,
+        EngineSettings,
+        GemRepos
     };
 
     static QHash<QString, ProjectManagerScreen> s_ProjectManagerStringNames = {
@@ -33,7 +36,9 @@ namespace O3DE::ProjectManager
         { "Projects", ProjectManagerScreen::Projects},
         { "UpdateProject", ProjectManagerScreen::UpdateProject},
         { "UpdateProjectSettings", ProjectManagerScreen::UpdateProjectSettings},
-        { "EngineSettings", ProjectManagerScreen::EngineSettings}
+        { "Engine", ProjectManagerScreen::Engine},
+        { "EngineSettings", ProjectManagerScreen::EngineSettings},
+        { "GemRepos", ProjectManagerScreen::GemRepos}
     };
 
     // need to define qHash for ProjectManagerScreen when using scoped enums

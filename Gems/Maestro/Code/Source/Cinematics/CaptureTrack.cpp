@@ -1,12 +1,12 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
 
-#include "Maestro_precompiled.h"
 #include <AzCore/Serialization/SerializeContext.h>
 
 #include "CaptureTrack.h"
@@ -52,7 +52,7 @@ void CCaptureTrack::GetKeyInfo(int key, const char*& description, float& duratio
     char prefix[64] = "Frame";
     if (!m_keys[key].prefix.empty())
     {
-        cry_strcpy(prefix, m_keys[key].prefix.c_str());
+        azstrcpy(prefix, AZ_ARRAY_SIZE(prefix), m_keys[key].prefix.c_str());
     }
     description = buffer;
     if (!m_keys[key].folder.empty())

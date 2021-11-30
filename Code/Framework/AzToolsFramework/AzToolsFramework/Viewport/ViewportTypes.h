@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -18,6 +19,7 @@
 namespace AZ
 {
     class ReflectContext;
+    class SerializeContext;
 }
 
 namespace AzToolsFramework
@@ -210,9 +212,10 @@ namespace AzToolsFramework
             static void Reflect(AZ::SerializeContext& context);
 
             //! Constructor to create a default MouseInteractionEvent
-            MouseInteractionEvent(MouseInteraction mouseInteraction, const MouseEvent mouseEvent)
+            MouseInteractionEvent(MouseInteraction mouseInteraction, const MouseEvent mouseEvent, const bool captured)
                 : m_mouseInteraction(std::move(mouseInteraction))
                 , m_mouseEvent(mouseEvent)
+                , m_captured(captured)
             {
             }
 
@@ -226,6 +229,7 @@ namespace AzToolsFramework
 
             MouseInteraction m_mouseInteraction; //!< Mouse state.
             MouseEvent m_mouseEvent; //!< Mouse event.
+            bool m_captured = false; //!< Is the mouse cursor being captured during the event.
 
             //! Special friend function to return the mouse wheel delta (scroll amount)
             //! if the event was of type MouseEvent::Wheel.

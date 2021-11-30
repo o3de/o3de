@@ -1,12 +1,12 @@
 #
-# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
-# 
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
 
 set(FILES
-    Editor/precompiled.h
     Editor/ScriptCanvasEditorGem.cpp
     Editor/Settings.h
     Editor/Settings.cpp
@@ -21,6 +21,8 @@ set(FILES
     Editor/Assets/ScriptCanvasAssetHelpers.h
     Editor/Assets/ScriptCanvasAssetHelpers.cpp
     Editor/Assets/ScriptCanvasAssetTrackerDefinitions.h
+    Editor/Include/ScriptCanvas/Assets/ScriptCanvasBaseAssetData.h
+    Editor/Include/ScriptCanvas/Assets/ScriptCanvasBaseAssetData.cpp
     Editor/Include/ScriptCanvas/Assets/ScriptCanvasAsset.h
     Editor/Assets/ScriptCanvasAsset.cpp
     Editor/Include/ScriptCanvas/Assets/ScriptCanvasAssetBus.h
@@ -257,15 +259,24 @@ set(FILES
     Editor/View/Windows/ScriptCanvasContextMenus.cpp
     Editor/View/Windows/ScriptCanvasContextMenus.h
     Editor/View/Windows/ScriptCanvasEditorResources.qrc
-    Editor/View/Windows/Tools/UpgradeTool/UpgradeHelper.h
+    Editor/View/Windows/Tools/UpgradeTool/Controller.cpp
+    Editor/View/Windows/Tools/UpgradeTool/Controller.h
+    Editor/View/Windows/Tools/UpgradeTool/FileSaver.cpp
+    Editor/View/Windows/Tools/UpgradeTool/FileSaver.h
+    Editor/View/Windows/Tools/UpgradeTool/LogTraits.h
+    Editor/View/Windows/Tools/UpgradeTool/Model.cpp
+    Editor/View/Windows/Tools/UpgradeTool/Model.h
+    Editor/View/Windows/Tools/UpgradeTool/Modifier.cpp
+    Editor/View/Windows/Tools/UpgradeTool/Modifier.h
+    Editor/View/Windows/Tools/UpgradeTool/ModelTraits.h
+    Editor/View/Windows/Tools/UpgradeTool/Scanner.cpp
+    Editor/View/Windows/Tools/UpgradeTool/Scanner.h
     Editor/View/Windows/Tools/UpgradeTool/UpgradeHelper.cpp
+    Editor/View/Windows/Tools/UpgradeTool/UpgradeHelper.h
     Editor/View/Windows/Tools/UpgradeTool/UpgradeHelper.ui
-    Editor/View/Windows/Tools/UpgradeTool/UpgradeTool.cpp
-    Editor/View/Windows/Tools/UpgradeTool/UpgradeTool.h
-    Editor/View/Windows/Tools/UpgradeTool/UpgradeTool.ui
-    Editor/View/Windows/Tools/UpgradeTool/VersionExplorer.h
-    Editor/View/Windows/Tools/UpgradeTool/VersionExplorer.cpp
-    Editor/View/Windows/Tools/UpgradeTool/VersionExplorer.ui
+    Editor/View/Windows/Tools/UpgradeTool/VersionExplorerLog.cpp
+    Editor/View/Windows/Tools/UpgradeTool/VersionExplorerLog.h
+    Editor/View/Windows/Tools/UpgradeTool/View.ui
     Editor/Framework/ScriptCanvasGraphUtilities.inl
     Editor/Framework/ScriptCanvasGraphUtilities.h
     Editor/Framework/ScriptCanvasTraceUtilities.h

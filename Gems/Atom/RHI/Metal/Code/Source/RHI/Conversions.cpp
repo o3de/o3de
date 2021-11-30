@@ -1,10 +1,10 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "Atom_RHI_Metal_precompiled.h"
 
 #include <Atom/RHI.Reflect/ImageDescriptor.h>
 #include <Atom/RHI.Reflect/Bits.h>
@@ -17,8 +17,6 @@ namespace AZ
 {
     namespace Metal
     {
-        static const int INVALID_OFFSET = 0xFFFFFFFF;
-        
         namespace Platform
         {
             MTLPixelFormat ConvertPixelFormat(RHI::Format format);
@@ -780,7 +778,25 @@ namespace AZ
             };
             return table[static_cast<uint32_t>(func)];
         }
-        
+
+#if AZ_TRAIT_ATOM_METAL_SAMPLER_BORDERCOLOR_SUPPORT
+    MTLSamplerBorderColor ConvertBorderColor(RHI::BorderColor color)
+    {
+        switch (color)
+        {
+            case RHI::BorderColor::OpaqueBlack:
+                return MTLSamplerBorderColorOpaqueBlack;
+            case RHI::BorderColor::TransparentBlack:
+                return MTLSamplerBorderColorTransparentBlack;
+            case RHI::BorderColor::OpaqueWhite:
+                return MTLSamplerBorderColorOpaqueWhite;
+            default:
+                AZ_Assert(false, "Unsupported Border Color");
+        }
+        return MTLSamplerBorderColorOpaqueBlack;
+    }
+#endif
+
         void ConvertSamplerState(const RHI::SamplerState& state, MTLSamplerDescriptor* samplerDesc)
         {
             samplerDesc.sAddressMode = ConvertAddressMode(state.m_addressU);
@@ -948,24 +964,7 @@ namespace AZ
                     return false;
             }
         }
-    
-#if AZ_TRAIT_ATOM_METAL_SAMPLER_BORDERCOLOR_SUPPORT
-        MTLSamplerBorderColor ConvertBorderColor(RHI::BorderColor color)
-        {
-            switch (color)
-            {
-                case RHI::BorderColor::OpaqueBlack:
-                    return MTLSamplerBorderColorOpaqueBlack;
-                case RHI::BorderColor::TransparentBlack:
-                    return MTLSamplerBorderColorTransparentBlack;
-                case RHI::BorderColor::OpaqueWhite:
-                    return MTLSamplerBorderColorOpaqueWhite;
-                default:
-                    AZ_Assert(false, "Unsupported Border Color");
-            }
-            return MTLSamplerBorderColorOpaqueBlack;            
-        }
-#endif
+
         void ConvertImageArgumentDescriptor(MTLArgumentDescriptor* imgArgDescriptor, const RHI::ShaderInputImageDescriptor& shaderInputImage)
         {
             imgArgDescriptor.dataType = MTLDataTypeTexture;

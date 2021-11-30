@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -74,7 +75,7 @@ namespace AZ
             address = AZ_OS_MALLOC(byteSize, alignment);
         }
 
-        if (address == 0 && byteSize > 0)
+        if (address == nullptr && byteSize > 0)
         {
             AZ_Printf("Memory", "======================================================\n");
             AZ_Printf("Memory", "OSAllocator run out of system memory!\nWe can't track the debug allocator, since it's used for tracking and pipes trought the OS... here are the other allocator status:\n");

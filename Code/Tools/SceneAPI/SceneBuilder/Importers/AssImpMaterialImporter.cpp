@@ -1,10 +1,12 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
+#include <API/EditorAssetSystemAPI.h>
 #include <SceneAPI/SceneBuilder/Importers/AssImpMaterialImporter.h>
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/Serialization/SerializeContext.h>
@@ -54,9 +56,9 @@ namespace AZ
                 Events::ProcessingResultCombiner combinedMaterialImportResults;
 
                 AZStd::unordered_map<int, AZStd::shared_ptr<SceneData::GraphData::MaterialData>> materialMap;
-                for (int idx = 0; idx < context.m_sourceNode.m_assImpNode->mNumMeshes; ++idx)
+                for (unsigned int idx = 0; idx < context.m_sourceNode.GetAssImpNode()->mNumMeshes; ++idx)
                 {
-                    int meshIndex = context.m_sourceNode.m_assImpNode->mMeshes[idx];
+                    int meshIndex = context.m_sourceNode.GetAssImpNode()->mMeshes[idx];
                     const aiMesh* assImpMesh = context.m_sourceScene.GetAssImpScene()->mMeshes[meshIndex];
                     AZ_Assert(assImpMesh, "Asset Importer Mesh should not be null.");
                     int materialIndex = assImpMesh->mMaterialIndex;
@@ -195,11 +197,18 @@ namespace AZ
                     return texturePathRelativeToScene;
                 }
 
+                bool ok;
+                AZStd::string relativePath, rootPath;
+                AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
+                    ok, &AzToolsFramework::AssetSystemRequestBus::Events::GenerateRelativeSourcePath,
+                    texturePathRelativeToScene.c_str(), relativePath, rootPath);
+
                 // The engine only supports relative paths to scan folders.
-                // Scene files may have paths to textures, relative to the scene file. Check for those, first.
-                if (AZ::IO::FileIOBase::GetInstance()->Exists(texturePathRelativeToScene.c_str()))
+                // Scene files may have paths to textures, relative to the scene file.
+                // Try to use a scanfolder relative path instead
+                if (ok)
                 {
-                    return texturePathRelativeToScene;
+                    return relativePath;
                 }
 
 

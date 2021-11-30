@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -36,80 +37,80 @@ namespace EMStudio
         TimeTrack(TimeViewPlugin* plugin);
         ~TimeTrack();
 
-        void SetHeight(uint32 height)                       { mHeight = height; }
-        MCORE_INLINE uint32 GetHeight() const               { return mHeight; }
+        void SetHeight(uint32 height)                       { m_height = height; }
+        MCORE_INLINE uint32 GetHeight() const               { return m_height; }
 
         void RenderHeader(QPainter& painter, uint32 width, int32 startY);
 
         // @param startTime The time in seconds of the left border of the visible area in the widget.
         void RenderData(QPainter& painter, uint32 width, int32 startY, double startTime, double endTime, double animationLength, double clipStartTime, double clipEndTime);
 
-        MCORE_INLINE uint32 GetNumElements() const                      { return static_cast<uint32>(mElements.size()); }
-        MCORE_INLINE TimeTrackElement* GetElement(uint32 index) const   { return mElements[static_cast<uint32>(index)]; }
-        void AddElement(TimeTrackElement* elem)                         { elem->SetTrack(this); mElements.push_back(elem); }
+        MCORE_INLINE size_t GetNumElements() const                      { return m_elements.size(); }
+        MCORE_INLINE TimeTrackElement* GetElement(size_t index) const   { return m_elements[index]; }
+        void AddElement(TimeTrackElement* elem)                         { elem->SetTrack(this); m_elements.push_back(elem); }
         void RemoveElement(TimeTrackElement* elem, bool delFromMem = true)
         {
-            mElements.erase(AZStd::remove(mElements.begin(), mElements.end(), elem), mElements.end());
+            m_elements.erase(AZStd::remove(m_elements.begin(), m_elements.end(), elem), m_elements.end());
             if (delFromMem)
             {
                 delete elem;
             }
         }
-        void RemoveElement(uint32 index, bool delFromMem = true)
+        void RemoveElement(size_t index, bool delFromMem = true)
         {
             if (delFromMem)
             {
-                delete mElements[index];
+                delete m_elements[index];
             }
-            mElements.erase(mElements.begin() + index);
+            m_elements.erase(m_elements.begin() + index);
         }
         void RemoveAllElements(bool delFromMem = true);
         void SetElementCount(size_t count)
         {
-            mElements.resize(count);
+            m_elements.resize(count);
         }
 
-        uint32 CalcNumSelectedElements() const;
+        size_t CalcNumSelectedElements() const;
         TimeTrackElement* GetFirstSelectedElement() const;
-        void RangeSelectElements(uint32 elementStartNr, uint32 elementEndNr);
+        void RangeSelectElements(size_t elementStartNr, size_t elementEndNr);
         void SelectElementsInRect(const QRect& rect, bool overwriteCurSelection, bool select, bool toggleMode);
 
-        MCORE_INLINE TimeViewPlugin* GetPlugin()            { return mPlugin; }
-        MCORE_INLINE void SetStartY(uint32 y)               { mStartY = y; }
-        MCORE_INLINE uint32 GetStartY() const               { return mStartY; }
-        bool GetIsInside(uint32 y)                          { return (y >= mStartY) && (y <= (mStartY + mHeight)); }
+        MCORE_INLINE TimeViewPlugin* GetPlugin()            { return m_plugin; }
+        MCORE_INLINE void SetStartY(uint32 y)               { m_startY = y; }
+        MCORE_INLINE uint32 GetStartY() const               { return m_startY; }
+        bool GetIsInside(uint32 y) const                    { return (y >= m_startY) && (y <= (m_startY + m_height)); }
 
-        void SetName(const char* name)                      { mName = name; }
-        const char* GetName() const                         { return mName.c_str(); }
+        void SetName(const char* name)                      { m_name = name; }
+        const char* GetName() const                         { return m_name.c_str(); }
 
-        bool GetIsEnabled() const                           { return mEnabled; }
-        void SetIsEnabled(bool enabled)                     { mEnabled = enabled; }
+        bool GetIsEnabled() const                           { return m_enabled; }
+        void SetIsEnabled(bool enabled)                     { m_enabled = enabled; }
 
-        bool GetIsDeletable() const                         { return mDeletable; }
-        void SetIsDeletable(bool isDeletable)               { mDeletable = isDeletable; }
+        bool GetIsDeletable() const                         { return m_deletable; }
+        void SetIsDeletable(bool isDeletable)               { m_deletable = isDeletable; }
 
-        bool GetIsVisible() const                           { return mVisible; }
-        void SetIsVisible(bool visible)                     { mVisible = visible; }
+        bool GetIsVisible() const                           { return m_visible; }
+        void SetIsVisible(bool visible)                     { m_visible = visible; }
 
-        MCORE_INLINE bool GetIsHighlighted() const          { return mIsHighlighted; }
-        MCORE_INLINE void SetIsHighlighted(bool enabled)    { mIsHighlighted = enabled; }
+        MCORE_INLINE bool GetIsHighlighted() const          { return m_isHighlighted; }
+        MCORE_INLINE void SetIsHighlighted(bool enabled)    { m_isHighlighted = enabled; }
 
-        TimeTrackElement* GetElementAt(int32 x, int32 y);
+        TimeTrackElement* GetElementAt(int32 x, int32 y) const;
 
     protected:
-        AZStd::string                       mName;
-        uint32                              mHeight;
-        uint32                              mStartY;
-        QFont                               mFont;
-        QBrush                              mBrushHeaderBG;
-        QColor                              mBrushDataBG;
-        QColor                              mBrushDataDisabledBG;
-        QPen                                mPenText;
-        TimeViewPlugin*                     mPlugin;
-        AZStd::vector<TimeTrackElement*>    mElements;
-        bool                                mEnabled;
-        bool                                mVisible;
-        bool                                mDeletable;
-        bool                                mIsHighlighted;
+        AZStd::string                       m_name;
+        uint32                              m_height;
+        uint32                              m_startY;
+        QFont                               m_font;
+        QBrush                              m_brushHeaderBg;
+        QColor                              m_brushDataBg;
+        QColor                              m_brushDataDisabledBg;
+        QPen                                m_penText;
+        TimeViewPlugin*                     m_plugin;
+        AZStd::vector<TimeTrackElement*>    m_elements;
+        bool                                m_enabled;
+        bool                                m_visible;
+        bool                                m_deletable;
+        bool                                m_isHighlighted;
     };
 }   // namespace EMStudio

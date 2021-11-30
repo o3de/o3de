@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -25,7 +26,7 @@ namespace EMotionFX
 
         using WeightedMaskEntry = AZStd::pair<AZStd::string, float>;
 
-        enum
+        enum : uint16
         {
             INPUTPORT_POSE_A    = 0,
             INPUTPORT_POSE_B    = 1,
@@ -33,7 +34,7 @@ namespace EMotionFX
             OUTPUTPORT_POSE     = 0
         };
 
-        enum
+        enum : uint16
         {
             PORTID_INPUT_POSE_A = 0,
             PORTID_INPUT_POSE_B = 1,
@@ -53,8 +54,8 @@ namespace EMotionFX
             void Update() override;
 
         public:
-            AZStd::vector<uint32>   mMask;
-            AnimGraphNode*          mSyncTrackNode;
+            AZStd::vector<size_t>   m_mask;
+            AnimGraphNode*          m_syncTrackNode;
         };
 
         BlendTreeBlend2NodeBase();

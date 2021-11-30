@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -55,19 +56,6 @@ namespace AWSCore
         return configFilePath;
     }
 
-    AZStd::string AWSCoreConfiguration::GetResourceMappingConfigFolderPath() const
-    {
-        if (m_sourceProjectFolder.empty())
-        {
-            AZ_Warning(AWSCoreConfigurationName, false, ProjectSourceFolderNotFoundErrorMessage);
-            return "";
-        }
-        AZStd::string configFolderPath = AZStd::string::format(
-            "%s/%s", m_sourceProjectFolder.c_str(), AWSCoreResourceMappingConfigFolderName);
-        AzFramework::StringFunc::Path::Normalize(configFolderPath);
-        return configFolderPath;
-    }
-
     void AWSCoreConfiguration::InitConfig()
     {
         InitSourceProjectFolderPath();
@@ -76,7 +64,7 @@ namespace AWSCore
 
     void AWSCoreConfiguration::InitSourceProjectFolderPath()
     {
-        auto sourceProjectFolder = AZ::IO::FileIOBase::GetInstance()->GetAlias("@devassets@");
+        auto sourceProjectFolder = AZ::IO::FileIOBase::GetInstance()->GetAlias("@projectroot@");
         if (!sourceProjectFolder)
         {
             AZ_Error(AWSCoreConfigurationName, false, ProjectSourceFolderNotFoundErrorMessage);

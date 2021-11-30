@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -15,12 +16,14 @@
 #include <AzToolsFramework/AssetBundle/AssetBundleComponent.h>
 #include <AzToolsFramework/Component/EditorComponentAPIComponent.h>
 #include <AzToolsFramework/Component/EditorLevelComponentAPIComponent.h>
+#include <AzToolsFramework/ContainerEntity/ContainerEntitySystemComponent.h>
 #include <AzToolsFramework/Entity/EditorEntityActionComponent.h>
 #include <AzToolsFramework/Entity/EditorEntityContextComponent.h>
 #include <AzToolsFramework/Entity/EditorEntityFixupComponent.h>
 #include <AzToolsFramework/Entity/EditorEntityModelComponent.h>
 #include <AzToolsFramework/Entity/EditorEntitySearchComponent.h>
 #include <AzToolsFramework/Entity/EditorEntitySortComponent.h>
+#include <AzToolsFramework/FocusMode/FocusModeSystemComponent.h>
 #include <AzToolsFramework/PropertyTreeEditor/PropertyTreeEditorComponent.h>
 #include <AzToolsFramework/Render/EditorIntersectorComponent.h>
 #include <AzToolsFramework/Slice/SliceDependencyBrowserComponent.h>
@@ -50,6 +53,9 @@
 #include <AzToolsFramework/Thumbnails/ThumbnailerNullComponent.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserComponent.h>
 #include <AzToolsFramework/ViewportSelection/EditorInteractionSystemComponent.h>
+#include <AzToolsFramework/Entity/EntityUtilityComponent.h>
+
+AZ_DEFINE_BUDGET(AzToolsFramework);
 
 namespace AzToolsFramework
 {
@@ -66,6 +72,9 @@ namespace AzToolsFramework
             Components::EditorSelectionAccentSystemComponent::CreateDescriptor(),
             EditorEntityContextComponent::CreateDescriptor(),
             EditorEntityFixupComponent::CreateDescriptor(),
+            EntityUtilityComponent::CreateDescriptor(),
+            ContainerEntitySystemComponent::CreateDescriptor(),
+            FocusModeSystemComponent::CreateDescriptor(),
             SliceMetadataEntityContextComponent::CreateDescriptor(),
             SliceRequestComponent::CreateDescriptor(),
             Prefab::PrefabSystemComponent::CreateDescriptor(),

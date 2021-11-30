@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -19,16 +20,16 @@ namespace EMStudio
     AttachmentsPlugin::AttachmentsPlugin()
         : EMStudio::DockWidgetPlugin()
     {
-        mDialogStack                        = nullptr;
-        mSelectCallback                     = nullptr;
-        mUnselectCallback                   = nullptr;
-        mClearSelectionCallback             = nullptr;
-        mAddAttachmentCallback              = nullptr;
-        mAddDeformableAttachmentCallback    = nullptr;
-        mRemoveAttachmentCallback           = nullptr;
-        mClearAttachmentsCallback           = nullptr;
-        mAdjustActorCallback                = nullptr;
-        mAttachmentNodesWindow              = nullptr;
+        m_dialogStack                        = nullptr;
+        m_selectCallback                     = nullptr;
+        m_unselectCallback                   = nullptr;
+        m_clearSelectionCallback             = nullptr;
+        m_addAttachmentCallback              = nullptr;
+        m_addDeformableAttachmentCallback    = nullptr;
+        m_removeAttachmentCallback           = nullptr;
+        m_clearAttachmentsCallback           = nullptr;
+        m_adjustActorCallback                = nullptr;
+        m_attachmentNodesWindow              = nullptr;
     }
 
 
@@ -36,23 +37,23 @@ namespace EMStudio
     AttachmentsPlugin::~AttachmentsPlugin()
     {
         // unregister the command callbacks and get rid of the memory
-        GetCommandManager()->RemoveCommandCallback(mSelectCallback, false);
-        GetCommandManager()->RemoveCommandCallback(mUnselectCallback, false);
-        GetCommandManager()->RemoveCommandCallback(mClearSelectionCallback, false);
-        GetCommandManager()->RemoveCommandCallback(mAddAttachmentCallback, false);
-        GetCommandManager()->RemoveCommandCallback(mAddDeformableAttachmentCallback, false);
-        GetCommandManager()->RemoveCommandCallback(mRemoveAttachmentCallback, false);
-        GetCommandManager()->RemoveCommandCallback(mClearAttachmentsCallback, false);
-        GetCommandManager()->RemoveCommandCallback(mAdjustActorCallback, false);
+        GetCommandManager()->RemoveCommandCallback(m_selectCallback, false);
+        GetCommandManager()->RemoveCommandCallback(m_unselectCallback, false);
+        GetCommandManager()->RemoveCommandCallback(m_clearSelectionCallback, false);
+        GetCommandManager()->RemoveCommandCallback(m_addAttachmentCallback, false);
+        GetCommandManager()->RemoveCommandCallback(m_addDeformableAttachmentCallback, false);
+        GetCommandManager()->RemoveCommandCallback(m_removeAttachmentCallback, false);
+        GetCommandManager()->RemoveCommandCallback(m_clearAttachmentsCallback, false);
+        GetCommandManager()->RemoveCommandCallback(m_adjustActorCallback, false);
 
-        delete mSelectCallback;
-        delete mUnselectCallback;
-        delete mClearSelectionCallback;
-        delete mAddAttachmentCallback;
-        delete mAddDeformableAttachmentCallback;
-        delete mRemoveAttachmentCallback;
-        delete mClearAttachmentsCallback;
-        delete mAdjustActorCallback;
+        delete m_selectCallback;
+        delete m_unselectCallback;
+        delete m_clearSelectionCallback;
+        delete m_addAttachmentCallback;
+        delete m_addDeformableAttachmentCallback;
+        delete m_removeAttachmentCallback;
+        delete m_clearAttachmentsCallback;
+        delete m_adjustActorCallback;
     }
 
 
@@ -69,52 +70,52 @@ namespace EMStudio
         //LogInfo("Initializing attachments window.");
 
         // create the dialog stack
-        assert(mDialogStack == nullptr);
-        mDialogStack = new MysticQt::DialogStack(mDock);
-        mDock->setWidget(mDialogStack);
+        assert(m_dialogStack == nullptr);
+        m_dialogStack = new MysticQt::DialogStack(m_dock);
+        m_dock->setWidget(m_dialogStack);
 
         // create the attachments window
-        mAttachmentsWindow = new AttachmentsWindow(mDialogStack);
-        mAttachmentsWindow->Init();
-        mDialogStack->Add(mAttachmentsWindow, "Selected Actor Instance", false, true, true, false);
+        m_attachmentsWindow = new AttachmentsWindow(m_dialogStack);
+        m_attachmentsWindow->Init();
+        m_dialogStack->Add(m_attachmentsWindow, "Selected Actor Instance", false, true, true, false);
 
         // create the attachment hierarchy window
-        mAttachmentsHierarchyWindow = new AttachmentsHierarchyWindow(mDialogStack);
-        mAttachmentsHierarchyWindow->Init();
-        mDialogStack->Add(mAttachmentsHierarchyWindow, "Hierarchy", false, true, true, false);
+        m_attachmentsHierarchyWindow = new AttachmentsHierarchyWindow(m_dialogStack);
+        m_attachmentsHierarchyWindow->Init();
+        m_dialogStack->Add(m_attachmentsHierarchyWindow, "Hierarchy", false, true, true, false);
 
         // create the attachment nodes window
-        mAttachmentNodesWindow = new AttachmentNodesWindow(mDialogStack);
-        mDialogStack->Add(mAttachmentNodesWindow, "Attachment Nodes", false, true);
+        m_attachmentNodesWindow = new AttachmentNodesWindow(m_dialogStack);
+        m_dialogStack->Add(m_attachmentNodesWindow, "Attachment Nodes", false, true);
 
         // create and register the command callbacks only (only execute this code once for all plugins)
-        mSelectCallback                     = new CommandSelectCallback(false);
-        mUnselectCallback                   = new CommandUnselectCallback(false);
-        mClearSelectionCallback             = new CommandClearSelectionCallback(false);
+        m_selectCallback                     = new CommandSelectCallback(false);
+        m_unselectCallback                   = new CommandUnselectCallback(false);
+        m_clearSelectionCallback             = new CommandClearSelectionCallback(false);
 
-        mAddAttachmentCallback              = new CommandAddAttachmentCallback(false);
-        mAddDeformableAttachmentCallback    = new CommandAddDeformableAttachmentCallback(false);
-        mRemoveAttachmentCallback           = new CommandRemoveAttachmentCallback(false);
-        mClearAttachmentsCallback           = new CommandClearAttachmentsCallback(false);
-        mAdjustActorCallback                = new CommandAdjustActorCallback(false);
-        mRemoveActorInstanceCallback        = new CommandRemoveActorInstanceCallback(false);
+        m_addAttachmentCallback              = new CommandAddAttachmentCallback(false);
+        m_addDeformableAttachmentCallback    = new CommandAddDeformableAttachmentCallback(false);
+        m_removeAttachmentCallback           = new CommandRemoveAttachmentCallback(false);
+        m_clearAttachmentsCallback           = new CommandClearAttachmentsCallback(false);
+        m_adjustActorCallback                = new CommandAdjustActorCallback(false);
+        m_removeActorInstanceCallback        = new CommandRemoveActorInstanceCallback(false);
 
-        GetCommandManager()->RegisterCommandCallback("Select", mSelectCallback);
-        GetCommandManager()->RegisterCommandCallback("Unselect", mUnselectCallback);
-        GetCommandManager()->RegisterCommandCallback("ClearSelection", mClearSelectionCallback);
+        GetCommandManager()->RegisterCommandCallback("Select", m_selectCallback);
+        GetCommandManager()->RegisterCommandCallback("Unselect", m_unselectCallback);
+        GetCommandManager()->RegisterCommandCallback("ClearSelection", m_clearSelectionCallback);
 
-        GetCommandManager()->RegisterCommandCallback("AddAttachment", mAddAttachmentCallback);
-        GetCommandManager()->RegisterCommandCallback("AddDeformableAttachment", mAddDeformableAttachmentCallback);
-        GetCommandManager()->RegisterCommandCallback("RemoveAttachment", mRemoveAttachmentCallback);
-        GetCommandManager()->RegisterCommandCallback("ClearAttachments", mClearAttachmentsCallback);
-        GetCommandManager()->RegisterCommandCallback("AdjustActor", mAdjustActorCallback);
-        GetCommandManager()->RegisterCommandCallback("RemoveActorInstance", mRemoveActorInstanceCallback);
+        GetCommandManager()->RegisterCommandCallback("AddAttachment", m_addAttachmentCallback);
+        GetCommandManager()->RegisterCommandCallback("AddDeformableAttachment", m_addDeformableAttachmentCallback);
+        GetCommandManager()->RegisterCommandCallback("RemoveAttachment", m_removeAttachmentCallback);
+        GetCommandManager()->RegisterCommandCallback("ClearAttachments", m_clearAttachmentsCallback);
+        GetCommandManager()->RegisterCommandCallback("AdjustActor", m_adjustActorCallback);
+        GetCommandManager()->RegisterCommandCallback("RemoveActorInstance", m_removeActorInstanceCallback);
 
         // reinit the dialog
         ReInit();
 
         // connect the window activation signal to refresh if reactivated
-        connect(mDock, &QDockWidget::visibilityChanged, this, &AttachmentsPlugin::WindowReInit);
+        connect(m_dock, &QDockWidget::visibilityChanged, this, &AttachmentsPlugin::WindowReInit);
 
         return true;
     }
@@ -123,8 +124,8 @@ namespace EMStudio
     // function to reinit the window
     void AttachmentsPlugin::ReInit()
     {
-        mAttachmentsWindow->ReInit();
-        mAttachmentsHierarchyWindow->ReInit();
+        m_attachmentsWindow->ReInit();
+        m_attachmentsHierarchyWindow->ReInit();
 
         // get the current actor
         const CommandSystem::SelectionList& selection       = GetCommandManager()->GetCurrentSelection();
@@ -138,7 +139,7 @@ namespace EMStudio
         }
 
         // set the actor of the attachment nodes window
-        mAttachmentNodesWindow->SetActor(actor);
+        m_attachmentNodesWindow->SetActor(actor);
     }
 
 

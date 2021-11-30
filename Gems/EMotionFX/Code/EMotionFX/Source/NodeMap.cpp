@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -26,7 +27,7 @@ namespace EMotionFX
     NodeMap::NodeMap()
         : BaseObject()
     {
-        mSourceActor            = nullptr;
+        m_sourceActor            = nullptr;
     }
 
 
@@ -38,38 +39,38 @@ namespace EMotionFX
 
 
     // preallocate space
-    void NodeMap::Reserve(uint32 numEntries)
+    void NodeMap::Reserve(size_t numEntries)
     {
-        mEntries.Reserve(numEntries);
+        m_entries.reserve(numEntries);
     }
 
 
     // resize the entries array
-    void NodeMap::Resize(uint32 numEntries)
+    void NodeMap::Resize(size_t numEntries)
     {
-        mEntries.Resize(numEntries);
+        m_entries.resize(numEntries);
     }
 
 
     // modify the first name of a given entry
-    void NodeMap::SetFirstName(uint32 entryIndex, const char* name)
+    void NodeMap::SetFirstName(size_t entryIndex, const char* name)
     {
-        mEntries[entryIndex].mFirstNameID = MCore::GetStringIdPool().GenerateIdForString(name);
+        m_entries[entryIndex].m_firstNameId = MCore::GetStringIdPool().GenerateIdForString(name);
     }
 
 
     // modify the second name
-    void NodeMap::SetSecondName(uint32 entryIndex, const char* name)
+    void NodeMap::SetSecondName(size_t entryIndex, const char* name)
     {
-        mEntries[entryIndex].mSecondNameID = MCore::GetStringIdPool().GenerateIdForString(name);
+        m_entries[entryIndex].m_secondNameId = MCore::GetStringIdPool().GenerateIdForString(name);
     }
 
 
     // modify a given entry
-    void NodeMap::SetEntry(uint32 entryIndex, const char* firstName, const char* secondName)
+    void NodeMap::SetEntry(size_t entryIndex, const char* firstName, const char* secondName)
     {
-        mEntries[entryIndex].mFirstNameID = MCore::GetStringIdPool().GenerateIdForString(firstName);
-        mEntries[entryIndex].mSecondNameID = MCore::GetStringIdPool().GenerateIdForString(secondName);
+        m_entries[entryIndex].m_firstNameId = MCore::GetStringIdPool().GenerateIdForString(firstName);
+        m_entries[entryIndex].m_secondNameId = MCore::GetStringIdPool().GenerateIdForString(secondName);
     }
 
 
@@ -77,8 +78,8 @@ namespace EMotionFX
     void NodeMap::SetEntry(const char* firstName, const char* secondName, bool addIfNotExists)
     {
         // check if there is already an entry for this name
-        const uint32 entryIndex = FindEntryIndexByName(firstName);
-        if (entryIndex == MCORE_INVALIDINDEX32)
+        const size_t entryIndex = FindEntryIndexByName(firstName);
+        if (entryIndex == InvalidIndex)
         {
             // if there is no such entry yet, and we also don't want to add a new one, then there is nothing to do
             if (addIfNotExists == false)
@@ -100,62 +101,62 @@ namespace EMotionFX
     void NodeMap::AddEntry(const char* firstName, const char* secondName)
     {
         MCORE_ASSERT(GetHasEntry(firstName) == false);  // prevent duplicates
-        mEntries.AddEmpty();
-        SetEntry(mEntries.GetLength() - 1, firstName, secondName);
+        m_entries.emplace_back();
+        SetEntry(m_entries.size() - 1, firstName, secondName);
     }
 
 
     // remove a given entry by its index
-    void NodeMap::RemoveEntryByIndex(uint32 entryIndex)
+    void NodeMap::RemoveEntryByIndex(size_t entryIndex)
     {
-        mEntries.Remove(entryIndex);
+        m_entries.erase(AZStd::next(begin(m_entries), entryIndex));
     }
 
 
     // remove a given entry by its name
     void NodeMap::RemoveEntryByName(const char* firstName)
     {
-        const uint32 entryIndex = FindEntryIndexByName(firstName);
-        if (entryIndex == MCORE_INVALIDINDEX32)
+        const size_t entryIndex = FindEntryIndexByName(firstName);
+        if (entryIndex == InvalidIndex)
         {
             return;
         }
 
-        mEntries.Remove(entryIndex);
+        m_entries.erase(AZStd::next(begin(m_entries), entryIndex));
     }
 
 
     // remove a given entry by its name ID
     void NodeMap::RemoveEntryByNameID(uint32 firstNameID)
     {
-        const uint32 entryIndex = FindEntryIndexByNameID(firstNameID);
-        if (entryIndex == MCORE_INVALIDINDEX32)
+        const size_t entryIndex = FindEntryIndexByNameID(firstNameID);
+        if (entryIndex == InvalidIndex)
         {
             return;
         }
 
-        mEntries.Remove(entryIndex);
+        m_entries.erase(AZStd::next(begin(m_entries), entryIndex));
     }
 
 
     // set the filename
     void NodeMap::SetFileName(const char* fileName)
     {
-        mFileName = fileName;
+        m_fileName = fileName;
     }
 
 
     // get the filename
     const char* NodeMap::GetFileName() const
     {
-        return mFileName.c_str();
+        return m_fileName.c_str();
     }
 
 
     // get the filename
     const AZStd::string& NodeMap::GetFileNameString() const
     {
-        return mFileName;
+        return m_fileName;
     }
 
 
@@ -207,18 +208,18 @@ namespace EMotionFX
     uint32 NodeMap::CalcFileChunkSize() const
     {
         // add the node map info header
-        uint32 numBytes = sizeof(FileFormat::NodeMapChunk);
+        size_t numBytes = sizeof(FileFormat::NodeMapChunk);
 
         // for all entries
-        const uint32 numEntries = mEntries.GetLength();
-        for (uint32 i = 0; i < numEntries; ++i)
+        const size_t numEntries = m_entries.size();
+        for (size_t i = 0; i < numEntries; ++i)
         {
             numBytes += CalcFileStringSize(GetFirstNameString(i));
             numBytes += CalcFileStringSize(GetSecondNameString(i));
         }
 
         // return the number of bytes
-        return numBytes;
+        return aznumeric_caster(numBytes);
     }
 
 
@@ -235,13 +236,13 @@ namespace EMotionFX
 
         // try to write the file header
         FileFormat::NodeMap_Header header{};
-        header.mFourCC[0] = 'N';
-        header.mFourCC[1] = 'O';
-        header.mFourCC[2] = 'M';
-        header.mFourCC[3] = 'P';
-        header.mHiVersion   = 1;
-        header.mLoVersion   = 0;
-        header.mEndianType  = (uint8)targetEndianType;
+        header.m_fourCc[0] = 'N';
+        header.m_fourCc[1] = 'O';
+        header.m_fourCc[2] = 'M';
+        header.m_fourCc[3] = 'P';
+        header.m_hiVersion   = 1;
+        header.m_loVersion   = 0;
+        header.m_endianType  = (uint8)targetEndianType;
         if (f.Write(&header, sizeof(FileFormat::NodeMap_Header)) == 0)
         {
             MCore::LogError("NodeMap::Save() - Cannot write the header to file '%s', is the file maybe in use by another application?", fileName);
@@ -250,12 +251,12 @@ namespace EMotionFX
 
         // write the chunk header
         FileFormat::FileChunk chunkHeader{};
-        chunkHeader.mChunkID        = FileFormat::CHUNK_NODEMAP;
-        chunkHeader.mVersion        = 1;
-        chunkHeader.mSizeInBytes    = CalcFileChunkSize();// calculate the chunk size
-        MCore::Endian::ConvertUnsignedInt32To(&chunkHeader.mChunkID,       targetEndianType);
-        MCore::Endian::ConvertUnsignedInt32To(&chunkHeader.mSizeInBytes,   targetEndianType);
-        MCore::Endian::ConvertUnsignedInt32To(&chunkHeader.mVersion,       targetEndianType);
+        chunkHeader.m_chunkId        = FileFormat::CHUNK_NODEMAP;
+        chunkHeader.m_version        = 1;
+        chunkHeader.m_sizeInBytes    = CalcFileChunkSize();// calculate the chunk size
+        MCore::Endian::ConvertUnsignedInt32To(&chunkHeader.m_chunkId,       targetEndianType);
+        MCore::Endian::ConvertUnsignedInt32To(&chunkHeader.m_sizeInBytes,   targetEndianType);
+        MCore::Endian::ConvertUnsignedInt32To(&chunkHeader.m_version,       targetEndianType);
         if (f.Write(&chunkHeader, sizeof(FileFormat::FileChunk)) == 0)
         {
             MCore::LogError("NodeMap::Save() - Cannot write the chunk header to file '%s', is the file maybe in use by another application?", fileName);
@@ -264,8 +265,8 @@ namespace EMotionFX
 
         // the main info
         FileFormat::NodeMapChunk nodeMapChunk{};
-        nodeMapChunk.mNumEntries = mEntries.GetLength();
-        MCore::Endian::ConvertUnsignedInt32To(&nodeMapChunk.mNumEntries, targetEndianType);
+        nodeMapChunk.m_numEntries = aznumeric_caster(m_entries.size());
+        MCore::Endian::ConvertUnsignedInt32To(&nodeMapChunk.m_numEntries, targetEndianType);
         if (f.Write(&nodeMapChunk, sizeof(FileFormat::NodeMapChunk)) == 0)
         {
             MCore::LogError("NodeMap::Save() - Cannot write the node map chunk to file '%s', is the file maybe in use by another application?", fileName);
@@ -281,7 +282,7 @@ namespace EMotionFX
         }
 
         // for all entries
-        const uint32 numEntries = mEntries.GetLength();
+        const uint32 numEntries = aznumeric_caster(m_entries.size());
         for (uint32 i = 0; i < numEntries; ++i)
         {
             if (WriteFileString(&f, GetFirstNameString(i), targetEndianType) == false)
@@ -307,97 +308,86 @@ namespace EMotionFX
     // update the source actor pointer
     void NodeMap::SetSourceActor(Actor* actor)
     {
-        mSourceActor = actor;
+        m_sourceActor = actor;
     }
 
 
     // get the source actor pointer
     Actor* NodeMap::GetSourceActor() const
     {
-        return mSourceActor;
+        return m_sourceActor;
     }
 
 
     // get the number of entries
-    uint32 NodeMap::GetNumEntries() const
+    size_t NodeMap::GetNumEntries() const
     {
-        return mEntries.GetLength();
+        return m_entries.size();
     }
 
 
     // get the first name as char pointer
-    const char* NodeMap::GetFirstName(uint32 entryIndex) const
+    const char* NodeMap::GetFirstName(size_t entryIndex) const
     {
-        return MCore::GetStringIdPool().GetName(mEntries[entryIndex].mFirstNameID).c_str();
+        return MCore::GetStringIdPool().GetName(m_entries[entryIndex].m_firstNameId).c_str();
     }
 
 
     // get the second node name as char pointer
-    const char* NodeMap::GetSecondName(uint32 entryIndex) const
+    const char* NodeMap::GetSecondName(size_t entryIndex) const
     {
-        return MCore::GetStringIdPool().GetName(mEntries[entryIndex].mSecondNameID).c_str();
+        return MCore::GetStringIdPool().GetName(m_entries[entryIndex].m_secondNameId).c_str();
     }
 
 
     // get the first node name as string
-    const AZStd::string& NodeMap::GetFirstNameString(uint32 entryIndex) const
+    const AZStd::string& NodeMap::GetFirstNameString(size_t entryIndex) const
     {
-        return MCore::GetStringIdPool().GetName(mEntries[entryIndex].mFirstNameID);
+        return MCore::GetStringIdPool().GetName(m_entries[entryIndex].m_firstNameId);
     }
 
 
     // get the second node name as string
-    const AZStd::string& NodeMap::GetSecondNameString(uint32 entryIndex) const
+    const AZStd::string& NodeMap::GetSecondNameString(size_t entryIndex) const
     {
-        return MCore::GetStringIdPool().GetName(mEntries[entryIndex].mSecondNameID);
+        return MCore::GetStringIdPool().GetName(m_entries[entryIndex].m_secondNameId);
     }
 
 
     // check if we already have an entry for this name
     bool NodeMap::GetHasEntry(const char* firstName) const
     {
-        return (FindEntryIndexByName(firstName) != MCORE_INVALIDINDEX32);
+        return (FindEntryIndexByName(firstName) != InvalidIndex);
     }
 
 
     // find an entry index by its name
-    uint32 NodeMap::FindEntryIndexByName(const char* firstName) const
+    size_t NodeMap::FindEntryIndexByName(const char* firstName) const
     {
-        const uint32 numEntries = mEntries.GetLength();
-        for (uint32 i = 0; i < numEntries; ++i)
+        const auto foundEntry = AZStd::find_if(begin(m_entries), end(m_entries), [firstName](const MapEntry& entry)
         {
-            const AZStd::string& firstNameEntry = GetFirstName(i);
-            if (firstNameEntry == firstName)
-            {
-                return i;
-            }
-        }
-
-        return MCORE_INVALIDINDEX32;
+            return MCore::GetStringIdPool().GetName(entry.m_firstNameId) == firstName;
+        });
+        return foundEntry != end(m_entries) ? AZStd::distance(begin(m_entries), foundEntry) : InvalidIndex;
     }
 
 
     // find an entry index by its name ID
-    uint32 NodeMap::FindEntryIndexByNameID(uint32 firstNameID) const
+    size_t NodeMap::FindEntryIndexByNameID(uint32 firstNameID) const
     {
-        const uint32 numEntries = mEntries.GetLength();
-        for (uint32 i = 0; i < numEntries; ++i)
+        const auto foundEntry = AZStd::find_if(begin(m_entries), end(m_entries), [firstNameID](const MapEntry& entry)
         {
-            if (mEntries[i].mFirstNameID == firstNameID)
-            {
-                return i;
-            }
-        }
-
-        return MCORE_INVALIDINDEX32;
+            return entry.m_firstNameId == firstNameID;
+        });
+        return foundEntry != end(m_entries) ? AZStd::distance(begin(m_entries), foundEntry) : InvalidIndex;
     }
 
 
     // find the second name for a given first name
     const char* NodeMap::FindSecondName(const char* firstName) const
     {
-        const uint32 entryIndex = FindEntryIndexByName(firstName);
-        if (entryIndex == MCORE_INVALIDINDEX32)
+        const size_t entryIndex = FindEntryIndexByName(firstName);
+        if (entryIndex == InvalidIndex)
         {
             return nullptr;
         }
@@ -409,8 +399,8 @@ namespace EMotionFX
     // find the second name based on a first given name
     void NodeMap::FindSecondName(const char* firstName, AZStd::string* outString)
     {
-        const uint32 entryIndex = FindEntryIndexByName(firstName);
-        if (entryIndex == MCORE_INVALIDINDEX32)
+        const size_t entryIndex = FindEntryIndexByName(firstName);
+        if (entryIndex == InvalidIndex)
         {
             outString->clear();
             return;

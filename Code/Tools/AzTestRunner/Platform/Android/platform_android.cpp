@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -63,7 +64,7 @@ namespace AzTestRunner
     {
         static char cwd_buffer[AZ_MAX_PATH_LEN] = { '\0' };
 
-        AZ::Utils::ExecutablePathResult result = AZ::Utils::GetExecutableDirectory(cwd_buffer, AZ_ARRAY_SIZE(cwd_buffer));
+        [[maybe_unused]] AZ::Utils::ExecutablePathResult result = AZ::Utils::GetExecutableDirectory(cwd_buffer, AZ_ARRAY_SIZE(cwd_buffer));
         AZ_Assert(result == AZ::Utils::ExecutablePathResult::Success, "Error retrieving executable path");
 
         return static_cast<const char*>(cwd_buffer);
@@ -277,7 +278,7 @@ static void *thread_logger_func(void*)
                 --readSize;
             }
             logBuffer[readSize] = '\0';
-            ((void) __android_log_print(ANDROID_LOG_INFO, s_logTag, logBuffer));
+            ((void) __android_log_print(ANDROID_LOG_INFO, s_logTag, "%s", logBuffer));
         }
     }
     return 0;

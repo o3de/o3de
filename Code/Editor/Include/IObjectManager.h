@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -9,6 +10,12 @@
 #ifndef CRYINCLUDE_EDITOR_INCLUDE_IOBJECTMANAGER_H
 #define CRYINCLUDE_EDITOR_INCLUDE_IOBJECTMANAGER_H
 #pragma once
+
+#include <AzCore/PlatformIncl.h>
+#include <AzCore/Math/Guid.h>
+#include <CryCommon/platform.h>
+#include <CryCommon/Cry_Geo.h>
+#include <set>
 
 // forward declarations.
 class CEntityObject;
@@ -23,6 +30,8 @@ class CViewport;
 struct HitContext;
 enum class ImageRotationDegrees;
 struct IStatObj;
+class CBaseObject;
+class XmlNodeRef;
 
 #include "ObjectEvent.h"
 
@@ -80,7 +89,6 @@ public:
     //! Get array of objects, managed by manager (not contain sub objects of groups).
     //! @param layer if 0 get objects for all layers, or layer to get objects from.
     virtual void GetObjects(CBaseObjectsArray& objects) const = 0;
-    virtual void GetObjects(DynArray<CBaseObject*>& objects) const = 0;
 
     //! Get array of objects that pass the filter.
     //! @param filter The filter functor, return true if you want to get the certain obj, return false if want to skip it.

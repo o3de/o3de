@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -46,7 +47,7 @@
 
 namespace EMStudio
 {
-    int ParameterWindow::m_contextMenuWidth = 100;
+    int ParameterWindow::s_contextMenuWidth = 100;
 
     // constructor
     ParameterCreateRenameWindow::ParameterCreateRenameWindow(const char* windowTitle, const char* topText, const char* defaultName, const char* oldName, const AZStd::vector<AZStd::string>& invalidNames, QWidget* parent)
@@ -55,8 +56,8 @@ namespace EMStudio
         setObjectName("EMFX.ParameterCreateRenameDialog");
 
         // store values
-        mOldName = oldName;
-        mInvalidNames = invalidNames;
+        m_oldName = oldName;
+        m_invalidNames = invalidNames;
 
         // update title of the about dialog
         setWindowTitle(windowTitle);
@@ -74,27 +75,27 @@ namespace EMStudio
         }
 
         // add the line edit
-        mLineEdit = new QLineEdit(defaultName);
-        connect(mLineEdit, &QLineEdit::textChanged, this, &ParameterCreateRenameWindow::NameEditChanged);
-        mLineEdit->selectAll();
+        m_lineEdit = new QLineEdit(defaultName);
+        connect(m_lineEdit, &QLineEdit::textChanged, this, &ParameterCreateRenameWindow::NameEditChanged);
+        m_lineEdit->selectAll();
 
         // create the button layout
         QHBoxLayout* buttonLayout = new QHBoxLayout();
-        mOKButton       = new QPushButton("OK");
-        mCancelButton   = new QPushButton("Cancel");
-        buttonLayout->addWidget(mOKButton);
-        buttonLayout->addWidget(mCancelButton);
+        m_okButton       = new QPushButton("OK");
+        m_cancelButton   = new QPushButton("Cancel");
+        buttonLayout->addWidget(m_okButton);
+        buttonLayout->addWidget(m_cancelButton);
 
         // set the layout
-        layout->addWidget(mLineEdit);
+        layout->addWidget(m_lineEdit);
         layout->addLayout(buttonLayout);
         setLayout(layout);
 
         // connect the buttons
-        connect(mOKButton, &QPushButton::clicked, this, &ParameterCreateRenameWindow::accept);
-        connect(mCancelButton, &QPushButton::clicked, this, &ParameterCreateRenameWindow::reject);
+        connect(m_okButton, &QPushButton::clicked, this, &ParameterCreateRenameWindow::accept);
+        connect(m_cancelButton, &QPushButton::clicked, this, &ParameterCreateRenameWindow::reject);
 
-        mOKButton->setDefault(true);
+        m_okButton->setDefault(true);
     }
 
     // check for duplicate names upon editing
@@ -103,44 +104,44 @@ namespace EMStudio
         const AZStd::string convertedNewName = text.toUtf8().data();
         if (text.isEmpty())
         {
-            mOKButton->setEnabled(false);
-            GetManager()->SetWidgetAsInvalidInput(mLineEdit);
+            m_okButton->setEnabled(false);
+            GetManager()->SetWidgetAsInvalidInput(m_lineEdit);
         }
-        else if (mOldName == convertedNewName)
+        else if (m_oldName == convertedNewName)
         {
-            mOKButton->setEnabled(true);
-            mLineEdit->setStyleSheet("");
+            m_okButton->setEnabled(true);
+            m_lineEdit->setStyleSheet("");
         }
         else
         {
             // Check if the name has invalid characters.
             if (!EMotionFX::Parameter::IsNameValid(convertedNewName, nullptr))
             {
-                mOKButton->setEnabled(false);
-                GetManager()->SetWidgetAsInvalidInput(mLineEdit);
+                m_okButton->setEnabled(false);
+                GetManager()->SetWidgetAsInvalidInput(m_lineEdit);
                 return;
             }
 
             // Is there a parameter with the given name already?
-            if (AZStd::find(mInvalidNames.begin(), mInvalidNames.end(), convertedNewName) != mInvalidNames.end())
+            if (AZStd::find(m_invalidNames.begin(), m_invalidNames.end(), convertedNewName) != m_invalidNames.end())
             {
-                mOKButton->setEnabled(false);
-                GetManager()->SetWidgetAsInvalidInput(mLineEdit);
+                m_okButton->setEnabled(false);
+                GetManager()->SetWidgetAsInvalidInput(m_lineEdit);
                 return;
             }
 
             // no duplicate name found
-            mOKButton->setEnabled(true);
-            mLineEdit->setStyleSheet("");
+            m_okButton->setEnabled(true);
+            m_lineEdit->setStyleSheet("");
         }
     }
 
     ParameterWindow::ParameterWindow(AnimGraphPlugin* plugin)
         : QWidget()
     {
-        mPlugin = plugin;
-        mEnsureVisibility = false;
-        mLockSelection = false;
+        m_plugin = plugin;
+        m_ensureVisibility = false;
+        m_lockSelection = false;
 
         // add the add button
         QToolBar* toolBar = new QToolBar(this);
@@ -181,55 +182,55 @@ namespace EMStudio
         toolBar->addWidget(m_searchWidget);
 
         // create the parameter tree widget
-        mTreeWidget = new ParameterWindowTreeWidget();
-        mTreeWidget->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
-        mTreeWidget->setObjectName("AnimGraphParamWindow");
-        mTreeWidget->header()->setVisible(false);
+        m_treeWidget = new ParameterWindowTreeWidget();
+        m_treeWidget->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
+        m_treeWidget->setObjectName("AnimGraphParamWindow");
+        m_treeWidget->header()->setVisible(false);
 
         // adjust selection mode and enable some other helpful things
-        mTreeWidget->setSelectionBehavior(QAbstractItemView::SelectRows);
-        mTreeWidget->setSelectionMode(QAbstractItemView::ExtendedSelection);
-        mTreeWidget->setExpandsOnDoubleClick(true);
-        mTreeWidget->setColumnCount(3);
-        mTreeWidget->setUniformRowHeights(true);
-        mTreeWidget->setIndentation(10);
-        mTreeWidget->header()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
-        mTreeWidget->header()->setSectionResizeMode(1, QHeaderView::ResizeToContents);
-        mTreeWidget->header()->setSectionResizeMode(2, QHeaderView::Stretch);
+        m_treeWidget->setSelectionBehavior(QAbstractItemView::SelectRows);
+        m_treeWidget->setSelectionMode(QAbstractItemView::ExtendedSelection);
+        m_treeWidget->setExpandsOnDoubleClick(true);
+        m_treeWidget->setColumnCount(3);
+        m_treeWidget->setUniformRowHeights(true);
+        m_treeWidget->setIndentation(10);
+        m_treeWidget->header()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
+        m_treeWidget->header()->setSectionResizeMode(1, QHeaderView::ResizeToContents);
+        m_treeWidget->header()->setSectionResizeMode(2, QHeaderView::Stretch);
 
         // enable drag and drop
-        mTreeWidget->setDragEnabled(true);
-        mTreeWidget->setDragDropMode(QAbstractItemView::InternalMove);
+        m_treeWidget->setDragEnabled(true);
+        m_treeWidget->setDragDropMode(QAbstractItemView::InternalMove);
 
         // connect the tree widget
-        connect(mTreeWidget, &QTreeWidget::itemSelectionChanged, this, &ParameterWindow::OnSelectionChanged);
-        connect(mTreeWidget, &QTreeWidget::itemCollapsed, this, &ParameterWindow::OnGroupCollapsed);
-        connect(mTreeWidget, &QTreeWidget::itemExpanded, this, &ParameterWindow::OnGroupExpanded);
-        connect(mTreeWidget, &ParameterWindowTreeWidget::ParameterMoved, this, &ParameterWindow::OnMoveParameterTo);
-        connect(mTreeWidget, &ParameterWindowTreeWidget::DragEnded, this, [this]()
+        connect(m_treeWidget, &QTreeWidget::itemSelectionChanged, this, &ParameterWindow::OnSelectionChanged);
+        connect(m_treeWidget, &QTreeWidget::itemCollapsed, this, &ParameterWindow::OnGroupCollapsed);
+        connect(m_treeWidget, &QTreeWidget::itemExpanded, this, &ParameterWindow::OnGroupExpanded);
+        connect(m_treeWidget, &ParameterWindowTreeWidget::ParameterMoved, this, &ParameterWindow::OnMoveParameterTo);
+        connect(m_treeWidget, &ParameterWindowTreeWidget::DragEnded, this, [this]()
         {
             Reinit(/*forceReinit*/true);
         });
 
         // create and fill the vertical layout
-        mVerticalLayout = new QVBoxLayout();
-        mVerticalLayout->setObjectName("StyledWidget");
-        mVerticalLayout->setSpacing(2);
-        mVerticalLayout->setMargin(0);
-        mVerticalLayout->setAlignment(Qt::AlignTop);
-        mVerticalLayout->addWidget(toolBar);
-        mVerticalLayout->addWidget(mTreeWidget);
+        m_verticalLayout = new QVBoxLayout();
+        m_verticalLayout->setObjectName("StyledWidget");
+        m_verticalLayout->setSpacing(2);
+        m_verticalLayout->setMargin(0);
+        m_verticalLayout->setAlignment(Qt::AlignTop);
+        m_verticalLayout->addWidget(toolBar);
+        m_verticalLayout->addWidget(m_treeWidget);
 
         // set the object name
         setObjectName("StyledWidget");
 
-        setLayout(mVerticalLayout);
+        setLayout(m_verticalLayout);
 
         // set the focus policy
         setFocusPolicy(Qt::ClickFocus);
 
         // Force reinitialize in case e.g. a parameter got added or removed.
-        connect(&mPlugin->GetAnimGraphModel(), &AnimGraphModel::ParametersChanged, [this](EMotionFX::AnimGraph* animGraph)
+        connect(&m_plugin->GetAnimGraphModel(), &AnimGraphModel::ParametersChanged, [this](EMotionFX::AnimGraph* animGraph)
         {
             if (animGraph == m_animGraph)
             {
@@ -237,7 +238,7 @@ namespace EMStudio
             }
         });
 
-        connect(&mPlugin->GetAnimGraphModel(), &AnimGraphModel::FocusChanged, this, &ParameterWindow::OnFocusChanged);
+        connect(&m_plugin->GetAnimGraphModel(), &AnimGraphModel::FocusChanged, this, &ParameterWindow::OnFocusChanged);
 
         // Trigger actions are processed from EMotionFX worker threads, which
         // are not allowed to update the UI. Use a QueuedConnection to force
@@ -266,7 +267,7 @@ namespace EMStudio
         // get access to the game controller and check if it is valid
         bool isGameControllerValid = false;
 #if AZ_TRAIT_EMOTIONFX_HAS_GAME_CONTROLLER
-        GameControllerWindow* gameControllerWindow = mPlugin->GetGameControllerWindow();
+        GameControllerWindow* gameControllerWindow = m_plugin->GetGameControllerWindow();
         if (gameControllerWindow)
         {
             isGameControllerValid = gameControllerWindow->GetIsGameControllerValid();
@@ -317,7 +318,7 @@ namespace EMStudio
         bool isGameControllerValid = false;
 
 #if AZ_TRAIT_EMOTIONFX_HAS_GAME_CONTROLLER
-        GameControllerWindow* gameControllerWindow = mPlugin->GetGameControllerWindow();
+        GameControllerWindow* gameControllerWindow = m_plugin->GetGameControllerWindow();
         if (gameControllerWindow)
         {
             isGameControllerValid = gameControllerWindow->GetIsGameControllerValid();
@@ -342,9 +343,9 @@ namespace EMStudio
     void ParameterWindow::AddParameterToInterface(EMotionFX::AnimGraph* animGraph, const EMotionFX::Parameter* parameter, QTreeWidgetItem* parentWidgetItem)
     {
         // Only filter value parameters
-        if (!mFilterString.empty()
+        if (!m_filterString.empty()
             && azrtti_typeid(parameter) != azrtti_typeid<EMotionFX::GroupParameter>()
-            && AzFramework::StringFunc::Find(parameter->GetName().c_str(), mFilterString.c_str()) == AZStd::string::npos)
+            && AzFramework::StringFunc::Find(parameter->GetName().c_str(), m_filterString.c_str()) == AZStd::string::npos)
         {
             return;
         }
@@ -359,10 +360,10 @@ namespace EMStudio
         if (GetIsParameterSelected(parameter->GetName()))
         {
             widgetItem->setSelected(true);
-            if (mEnsureVisibility)
+            if (m_ensureVisibility)
             {
-                mTreeWidget->scrollToItem(widgetItem);
-                mEnsureVisibility = false;
+                m_treeWidget->scrollToItem(widgetItem);
+                m_ensureVisibility = false;
             }
         }
 
@@ -404,7 +405,7 @@ namespace EMStudio
                 AZ_Error("EMotionFX", false, "Can't get serialize context from component application.");
                 return;
             }
-            parameterWidget.m_propertyEditor = aznew AzToolsFramework::ReflectedPropertyEditor(mTreeWidget);
+            parameterWidget.m_propertyEditor = aznew AzToolsFramework::ReflectedPropertyEditor(m_treeWidget);
             parameterWidget.m_propertyEditor->SetSizeHintOffset(QSize(0, 0));
             parameterWidget.m_propertyEditor->SetAutoResizeLabels(false);
             parameterWidget.m_propertyEditor->SetLeafIndentation(0);
@@ -418,7 +419,7 @@ namespace EMStudio
             parameterWidget.m_propertyEditor->ExpandAll();
             parameterWidget.m_propertyEditor->InvalidateAll();
 
-            mTreeWidget->setItemWidget(widgetItem, 2, parameterWidget.m_propertyEditor);
+            m_treeWidget->setItemWidget(widgetItem, 2, parameterWidget.m_propertyEditor);
 
             // create the gizmo widget in case the parameter is currently not being controlled by the gamepad
             QWidget* gizmoWidget = nullptr;
@@ -444,8 +445,8 @@ namespace EMStudio
             }
             if (gizmoWidget)
             {
-                mTreeWidget->setItemWidget(widgetItem, 1, gizmoWidget);
-                mTreeWidget->setColumnWidth(1, 20);
+                m_treeWidget->setItemWidget(widgetItem, 1, gizmoWidget);
+                m_treeWidget->setColumnWidth(1, 20);
             }
 
             auto insertIt = m_parameterWidgets.emplace(parameter, AZStd::move(parameterWidget));
@@ -519,7 +520,7 @@ namespace EMStudio
             QAction* editAction = menu->addAction("Edit");
             connect(editAction, &QAction::triggered, this, &ParameterWindow::OnEditButton);
         }
-        if (!mSelectedParameterNames.empty())
+        if (!m_selectedParameterNames.empty())
         {
             menu->addSeparator();
 
@@ -560,7 +561,7 @@ namespace EMStudio
                     && AZStd::find(groupParametersInCurrentParameter.begin(),
                         groupParametersInCurrentParameter.end(),
                         groupParameter) == groupParametersInCurrentParameter.end()
-                    && AZStd::find(mSelectedParameterNames.begin(), mSelectedParameterNames.end(), groupParameter->GetName()) == mSelectedParameterNames.end())
+                    && AZStd::find(m_selectedParameterNames.begin(), m_selectedParameterNames.end(), groupParameter->GetName()) == m_selectedParameterNames.end())
                 {
                     QAction* groupAction = groupMenu->addAction(groupParameter->GetName().c_str());
                     groupAction->setCheckable(true);
@@ -585,7 +586,7 @@ namespace EMStudio
         menu->addSeparator();
 
         // remove action
-        if (!mSelectedParameterNames.empty())
+        if (!m_selectedParameterNames.empty())
         {
             QAction* removeAction = menu->addAction("Remove");
             connect(removeAction, &QAction::triggered, this, &ParameterWindow::OnRemoveSelected);
@@ -650,7 +651,6 @@ namespace EMStudio
     // enable/disable recording/playback mode
     void ParameterWindow::OnRecorderStateChanged()
     {
-        const bool readOnly = (EMotionFX::GetRecorder().GetIsInPlayMode()); // disable when in playback mode, enable otherwise
         if (m_animGraph)
         {
             // update parameter values
@@ -675,29 +675,29 @@ namespace EMStudio
 
     void ParameterWindow::Reinit(bool forceReinit)
     {
-        mLockSelection = true;
+        m_lockSelection = true;
 
         // Early out in case we're already showing the parameters from the focused anim graph.
-        if (!forceReinit && m_animGraph == mPlugin->GetAnimGraphModel().GetFocusedAnimGraph())
+        if (!forceReinit && m_animGraph == m_plugin->GetAnimGraphModel().GetFocusedAnimGraph())
         {
             UpdateAttributesForParameterWidgets();
             UpdateInterface();
-            mLockSelection = false;
+            m_lockSelection = false;
             return;
         }
 
-        m_animGraph = mPlugin->GetAnimGraphModel().GetFocusedAnimGraph();
-        qobject_cast<ParameterWindowTreeWidget*>(mTreeWidget)->SetAnimGraph(m_animGraph);
+        m_animGraph = m_plugin->GetAnimGraphModel().GetFocusedAnimGraph();
+        qobject_cast<ParameterWindowTreeWidget*>(m_treeWidget)->SetAnimGraph(m_animGraph);
 
         // First clear the parameter widgets array and then the actual tree widget.
         // Don't change the order here as the tree widget clear call calls an on selection changed which uses the parameter widget array.
         m_parameterWidgets.clear();
-        mTreeWidget->clear();
+        m_treeWidget->clear();
 
         if (!m_animGraph)
         {
             UpdateInterface();
-            mLockSelection = false;
+            m_lockSelection = false;
             return;
         }
 
@@ -705,10 +705,10 @@ namespace EMStudio
         const EMotionFX::ParameterVector& childParameters = m_animGraph->GetChildParameters();
         for (const EMotionFX::Parameter* parameter : childParameters)
         {
-            AddParameterToInterface(m_animGraph, parameter, mTreeWidget->invisibleRootItem());
+            AddParameterToInterface(m_animGraph, parameter, m_treeWidget->invisibleRootItem());
         }
 
-        mLockSelection = false;
+        m_lockSelection = false;
 
         UpdateAttributesForParameterWidgets();
         UpdateInterface();
@@ -717,11 +717,11 @@ namespace EMStudio
 
     void ParameterWindow::SingleSelectGroupParameter(const char* groupName, bool ensureVisibility, bool updateInterface)
     {
-        mSelectedParameterNames.clear();
+        m_selectedParameterNames.clear();
 
-        mSelectedParameterNames.push_back(groupName);
+        m_selectedParameterNames.push_back(groupName);
 
-        mEnsureVisibility = ensureVisibility;
+        m_ensureVisibility = ensureVisibility;
 
         if (updateInterface)
         {
@@ -731,10 +731,10 @@ namespace EMStudio
 
     void ParameterWindow::SelectParameters(const AZStd::vector<AZStd::string>& parameterNames, bool updateInterface)
     {
-        mTreeWidget->clearSelection();
+        m_treeWidget->clearSelection();
         for (const AZStd::string& parameterName : parameterNames)
         {
-            const QList<QTreeWidgetItem*> foundItems = mTreeWidget->findItems(parameterName.c_str(), Qt::MatchFixedString);
+            const QList<QTreeWidgetItem*> foundItems = m_treeWidget->findItems(parameterName.c_str(), Qt::MatchFixedString);
             for (QTreeWidgetItem* foundItem : foundItems)
             {
                 foundItem->setSelected(true);
@@ -752,7 +752,7 @@ namespace EMStudio
 
     void ParameterWindow::OnTextFilterChanged(const QString& text)
     {
-        mFilterString = text.toUtf8().data();
+        m_filterString = text.toUtf8().data();
         Reinit(/*forceReinit=*/true);
     }
 
@@ -828,7 +828,7 @@ namespace EMStudio
 
         // disable the remove and edit buttton if we dont have any parameter selected
         m_editAction->setEnabled(true);
-        if (mSelectedParameterNames.empty())
+        if (m_selectedParameterNames.empty())
         {
             m_editAction->setEnabled(false);
         }
@@ -837,7 +837,7 @@ namespace EMStudio
         bool moveUpPossible, moveDownPossible;
         CanMove(&moveUpPossible, &moveDownPossible);
 
-        bool isAnimGraphActive = mPlugin->IsAnimGraphActive(m_animGraph);
+        bool isAnimGraphActive = m_plugin->IsAnimGraphActive(m_animGraph);
 
         // Make the parameter widgets read-only in case they are either controlled by the gamepad or the anim graph is not running on an actor instance.
         for (const auto& iterator : m_parameterWidgets)
@@ -864,14 +864,14 @@ namespace EMStudio
         AZStd::vector<MCore::Attribute*> result;
 
         const CommandSystem::SelectionList& selectionList = GetCommandManager()->GetCurrentSelection();
-        const uint32 numActorInstances = selectionList.GetNumSelectedActorInstances();
-        for (uint32 i = 0; i < numActorInstances; ++i)
+        const size_t numActorInstances = selectionList.GetNumSelectedActorInstances();
+        for (size_t i = 0; i < numActorInstances; ++i)
         {
             const EMotionFX::ActorInstance* actorInstance = selectionList.GetActorInstance(i);
             const EMotionFX::AnimGraphInstance* animGraphInstance = actorInstance->GetAnimGraphInstance();
             if (animGraphInstance && animGraphInstance->GetAnimGraph() == m_animGraph)
             {
-                result.emplace_back(animGraphInstance->GetParameterValue(static_cast<uint32>(parameterIndex)));
+                result.emplace_back(animGraphInstance->GetParameterValue(parameterIndex));
             }
         }
 
@@ -911,7 +911,7 @@ namespace EMStudio
             return;
         }
 
-        ParameterCreateEditDialog* createEditParameterDialog = new ParameterCreateEditDialog(mPlugin, this);
+        ParameterCreateEditDialog* createEditParameterDialog = new ParameterCreateEditDialog(m_plugin, this);
         createEditParameterDialog->Init();
 
         EMStudio::ParameterCreateEditDialog::connect(createEditParameterDialog, &QDialog::finished, [=](int resultCode)
@@ -929,7 +929,7 @@ namespace EMStudio
                 // Construct the create parameter command and add it to the command group.
                 const AZStd::unique_ptr<EMotionFX::Parameter>& parameter = createEditParameterDialog->GetParameter();
 
-                CommandSystem::ConstructCreateParameterCommand(commandString, m_animGraph, parameter.get(), MCORE_INVALIDINDEX32);
+                CommandSystem::ConstructCreateParameterCommand(commandString, m_animGraph, parameter.get());
                 commandGroup.AddCommandString(commandString);
 
                 const EMotionFX::GroupParameter* parentGroup = nullptr;
@@ -987,7 +987,7 @@ namespace EMStudio
         const AZStd::string oldName = parameter->GetName();
 
         // create and init the dialog
-        ParameterCreateEditDialog* dialog = new ParameterCreateEditDialog(mPlugin, this, parameter);
+        ParameterCreateEditDialog* dialog = new ParameterCreateEditDialog(m_plugin, this, parameter);
         dialog->Init();
         // We cannot use exec here as we need to access it from the tests
         EMStudio::ParameterCreateEditDialog::connect(dialog, &QDialog::finished, [=](int resultCode)
@@ -1022,7 +1022,7 @@ namespace EMStudio
                         EMotionFX::AnimGraphNode::Port newPort;
                         if (const EMotionFX::ValueParameter* valueParameter = azrtti_cast<EMotionFX::ValueParameter*>(editedParameter.get()))
                         {
-                            newPort.mCompatibleTypes[0] = valueParameter->GetType();
+                            newPort.m_compatibleTypes[0] = valueParameter->GetType();
                         }
 
                         // Get the list of all parameter nodes
@@ -1032,7 +1032,7 @@ namespace EMStudio
                         {
                             // Get the list of connections from the port whose type is
                             // being changed
-                            const uint32 sourcePortIndex = parameterNode->FindOutputPortIndex(parameter->GetName().c_str());
+                            const size_t sourcePortIndex = parameterNode->FindOutputPortIndex(parameter->GetName().c_str());
 
                             AZStd::vector<AZStd::pair<EMotionFX::BlendTreeConnection*, EMotionFX::AnimGraphNode*>> outgoingConnectionsFromThisPort;
                             parameterNode->CollectOutgoingConnections(outgoingConnectionsFromThisPort, sourcePortIndex);
@@ -1106,13 +1106,13 @@ namespace EMStudio
     void ParameterWindow::UpdateSelectionArrays()
     {
         // only update the selection in case it is not locked
-        if (mLockSelection)
+        if (m_lockSelection)
         {
             return;
         }
 
         // clear the selection
-        mSelectedParameterNames.clear();
+        m_selectedParameterNames.clear();
 
         if (!m_animGraph)
         {
@@ -1120,14 +1120,14 @@ namespace EMStudio
         }
 
         // make sure we only have exactly one selected item
-        QList<QTreeWidgetItem*> selectedItems = mTreeWidget->selectedItems();
+        QList<QTreeWidgetItem*> selectedItems = m_treeWidget->selectedItems();
         int32 numSelectedItems = selectedItems.count();
 
         for (int32 i = 0; i < numSelectedItems; ++i)
         {
             // get the selected item
             QTreeWidgetItem* selectedItem = selectedItems[i];
-            mSelectedParameterNames.emplace_back(selectedItem->data(0, Qt::UserRole).toString().toUtf8().data());
+            m_selectedParameterNames.emplace_back(selectedItem->data(0, Qt::UserRole).toString().toUtf8().data());
         }
     }
 
@@ -1135,7 +1135,7 @@ namespace EMStudio
     // get the index of the selected parameter
     const EMotionFX::Parameter* ParameterWindow::GetSingleSelectedParameter() const
     {
-        if (mSelectedParameterNames.size() != 1)
+        if (m_selectedParameterNames.size() != 1)
         {
             return nullptr;
         }
@@ -1146,7 +1146,7 @@ namespace EMStudio
         }
 
         // find and return the index of the parameter in the anim graph
-        return m_animGraph->FindParameterByName(mSelectedParameterNames[0]);
+        return m_animGraph->FindParameterByName(m_selectedParameterNames[0]);
     }
 
 
@@ -1166,8 +1166,8 @@ namespace EMStudio
             }
             const EMotionFX::GroupParameterVector groupParameters = m_animGraph->RecursivelyGetGroupParameters();
             const size_t logNumGroups = groupParameters.size();
-            MCore::LogInfo("Group parameters: (%i)", logNumGroups);
-            for (uint32 g = 0; g < logNumGroups; ++g)
+            MCore::LogInfo("Group parameters: (%zu)", logNumGroups);
+            for (size_t g = 0; g < logNumGroups; ++g)
             {
                 const EMotionFX::GroupParameter* groupParam = groupParameters[g];
                 MCore::LogInfo("Group parameter #%i: Name='%s'", g, groupParam->GetName().c_str());
@@ -1191,7 +1191,7 @@ namespace EMStudio
         AZStd::vector<AZStd::string> selectedValueParameters;
 
         // get the number of selected parameters and iterate through them
-        for (const AZStd::string& selectedParameter : mSelectedParameterNames)
+        for (const AZStd::string& selectedParameter : m_selectedParameterNames)
         {
             const EMotionFX::Parameter* parameter = m_animGraph->FindParameterByName(selectedParameter);
             if (!parameter)
@@ -1210,7 +1210,7 @@ namespace EMStudio
                 for (const EMotionFX::Parameter* parameter2 : parametersInGroup)
                 {
                     const AZStd::string& parameterName = parameter2->GetName();
-                    if (AZStd::find(mSelectedParameterNames.begin(), mSelectedParameterNames.end(), parameterName) == mSelectedParameterNames.end())
+                    if (AZStd::find(m_selectedParameterNames.begin(), m_selectedParameterNames.end(), parameterName) == m_selectedParameterNames.end())
                     {
                         paramsOfSelectedGroup.push_back(parameterName);
                     }
@@ -1293,7 +1293,7 @@ namespace EMStudio
 
     int ParameterWindow::GetTopLevelItemCount() const
     {
-        return mTreeWidget->topLevelItemCount();
+        return m_treeWidget->topLevelItemCount();
     }
 
     // move parameter under a specific parent, at a determined index
@@ -1344,7 +1344,7 @@ namespace EMStudio
         }
 
         // get the number of selected parameters and return directly in case there aren't any selected
-        const size_t numSelectedParameters = mSelectedParameterNames.size();
+        const size_t numSelectedParameters = m_selectedParameterNames.size();
         if (numSelectedParameters == 0)
         {
             return;
@@ -1363,7 +1363,7 @@ namespace EMStudio
         const EMotionFX::GroupParameter* groupParameter = m_animGraph->FindGroupParameterByName(groupParameterName);
 
         AZStd::string parameterNames;
-        AZ::StringFunc::Join(parameterNames, begin(mSelectedParameterNames), end(mSelectedParameterNames), ";");
+        AZ::StringFunc::Join(parameterNames, begin(m_selectedParameterNames), end(m_selectedParameterNames), ";");
         if (groupParameter)
         {
             commandString = AZStd::string::format(R"(AnimGraphAdjustGroupParameter -animGraphID %d -name "%s" -parameterNames "%s" -action "add")",
@@ -1425,7 +1425,7 @@ namespace EMStudio
         const AZ::Outcome<size_t> valueParameterIndex = m_animGraph->FindValueParameterIndex(valueParameter);
         if (valueParameterIndex.IsSuccess())
         {
-            MCore::Attribute* instanceValue = animGraphInstance->GetParameterValue(static_cast<uint32>(valueParameterIndex.GetValue()));
+            MCore::Attribute* instanceValue = animGraphInstance->GetParameterValue(valueParameterIndex.GetValue());
             valueParameter->SetDefaultValueFromAttribute(instanceValue);
 
             m_animGraph->SetDirtyFlag(true);
@@ -1461,9 +1461,14 @@ namespace EMStudio
 
         // show the create window
         auto createWindow = new ParameterCreateRenameWindow("Create Group", "Please enter the group name:", uniqueGroupName.c_str(), "", invalidNames, this);
-        connect(createWindow, &QDialog::finished, this, [this, createWindow]()
+        connect(createWindow, &QDialog::finished, this, [this, createWindow](int resultCode)
         {
             createWindow->deleteLater();
+
+            if (resultCode == QDialog::Rejected)
+            {
+                return;
+            }
 
             AZStd::string command = AZStd::string::format("AnimGraphAddGroupParameter -animGraphID %i -name \"%s\"", m_animGraph->GetID(), createWindow->GetName().c_str());
             const EMotionFX::GroupParameter* parentGroup = nullptr;

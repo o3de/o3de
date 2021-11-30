@@ -24,6 +24,9 @@
                 "Platform pc": {
                     "tags": "tools,renderer,dx12,vulkan,null"
                 },
+                "Platform linux": {
+                    "tags": "tools,renderer,vulkan,null"
+                },
                 "Platform android": {
                     "tags": "android,mobile,renderer,vulkan"
                 },
@@ -103,7 +106,7 @@
                 // "exclude": "mac"
                 // }
 
-                "ScanFolder Game": {
+                "ScanFolder Project/Assets": {
                     "watch": "@PROJECTROOT@",
                     "display": "@PROJECTNAME@",
                     "recursive": 1,
@@ -126,6 +129,11 @@
                     "order": 30000,
                     "include": "tools,renderer"
                 },
+                "ScanFolder Engine/Registry": {
+                    "watch": "@ENGINEROOT@/Registry",
+                    "recursive": 1,
+                    "order": 40000
+                },
 
                 // Excludes files that match the pattern or glob 
                 // if you use a pattern, remember to escape your backslashes (\\)
@@ -141,9 +149,6 @@
                 // note that $ has meaning to regex, so we escape it.
                 "Exclude TempFiles": {
                     "pattern": ".*\\\\/\\\\$tmp[0-9]*_.*"
-                },
-                "Exclude AlembicCompressionTemplates": {
-                    "pattern": ".*\\\\/Presets\\\\/GeomCache\\\\/.*"
                 },
                 "Exclude TmpAnimationCompression": {
                     "pattern": ".*\\\\/Editor\\\\/Tmp\\\\/AnimationCompression\\\\/.*"
@@ -171,6 +176,9 @@
                 },
                 "Exclude Build": {
                     "pattern": ".*/[Bb]uild/.*"
+                },
+                "Exclude Install": {
+                    "pattern": ".*/[Ii]nstall/.*"
                 },
                 "Exclude UserSettings": {
                     "pattern": ".*/UserSettings.xml"
@@ -472,17 +480,11 @@
                     "params": "copy",
                     "productAssetType": "{F3BE5CAB-85B7-44B7-9495-863863F6B267}"
                 },
-                // Precompiled shader srg
-                "RC azsrg": {
-                    "glob": "*.azsrg",
-                    "params": "copy",
-                    "productAssetType": "{F8C9F4AE-3F6A-45AD-B4FB-0CA415FCC2E1}"
-                },
                 // Precompiled shader variant
                 "RC azshadervariant": {
                     "glob": "*.azshadervariant",
                     "params": "copy",
-                    "productAssetType": "{9F4D654B-4439-4C61-8DCD-F1C7C5560768}"
+                    "productAssetType": "{51BED815-36D8-410E-90F0-1FA9FF765FBA}"
                 }
             }
         }

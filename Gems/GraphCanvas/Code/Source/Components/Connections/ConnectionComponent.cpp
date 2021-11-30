@@ -1,10 +1,10 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "precompiled.h"
 
 #include <qcursor.h>
 #include <qgraphicsscene.h>
@@ -12,6 +12,8 @@
 #include <QToolTip>
 
 #include <AzCore/Serialization/EditContext.h>
+
+#include <AzQtComponents/Components/ToastNotification.h>
 
 #include <Components/Connections/ConnectionComponent.h>
 
@@ -1117,10 +1119,8 @@ namespace GraphCanvas
                 QPointF globalConnectionPoint = ConversionUtils::AZToQPoint(globalConnectionVector);
 
                 QPointF anchorPoint(0.0f, 0.0f);
-
-                ToastConfiguration toastConfiguration(ToastType::Error, "Unable to connect to slot", m_validationResult.m_failureReason);
-
-                toastConfiguration.SetCloseOnClick(false);
+                AzQtComponents::ToastConfiguration toastConfiguration(AzQtComponents::ToastType::Error, "Unable to connect to slot", m_validationResult.m_failureReason.c_str());
+                toastConfiguration.m_closeOnClick = false;
 
                 m_toastId = viewHandler->ShowToastAtPoint(globalConnectionPoint.toPoint(), anchorPoint, toastConfiguration);
             }

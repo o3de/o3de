@@ -1,11 +1,10 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-
-#include "ComponentEntityEditorPlugin_precompiled.h"
 
 #include "ComponentPaletteWindow.h"
 #include "ComponentDataModel.h"
@@ -26,6 +25,7 @@
 #include <AzToolsFramework/API/ViewPaneOptions.h>
 
 #include <QLabel>
+#include <QKeyEvent>
 
 ComponentPaletteWindow::ComponentPaletteWindow(QWidget* parent)
     : QMainWindow(parent)
@@ -42,7 +42,7 @@ void ComponentPaletteWindow::Init()
     layout->setContentsMargins(0, 0, 0, 0);
     layout->setSpacing(0);
 
-    QHBoxLayout* gridLayout = new QHBoxLayout(NULL);
+    QHBoxLayout* gridLayout = new QHBoxLayout(nullptr);
     gridLayout->setSizeConstraint(QLayout::SetMaximumSize);
     gridLayout->setContentsMargins(0, 0, 0, 0);
     gridLayout->setSpacing(0);

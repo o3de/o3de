@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -65,6 +66,6 @@ namespace GraphModel
     using ModuleGraphManagerPtr = AZStd::shared_ptr<ModuleGraphManager>;
     using ConstModuleGraphManagerPtr = AZStd::shared_ptr<const ModuleGraphManager>;
 
-    static const AZ::u32 DefaultWrappedNodeLayoutOrder = -1;
+    static const AZ::u32 DefaultWrappedNodeLayoutOrder = std::numeric_limits<AZ::u32>::max();
 
 } // namespace GraphModel

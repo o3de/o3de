@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -12,6 +13,7 @@
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Public/View.h>
 #include <Atom/RPI.Reflect/System/RenderPipelineDescriptor.h>
+#include <PostProcess/PostProcessFeatureProcessor.h>
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Math/MatrixUtils.h>
 #include <AzCore/Name/Name.h>
@@ -46,18 +48,42 @@ namespace TrackView
         AZ::Name viewName = AZ::Name("MainCamera");
         m_view = AZ::RPI::View::CreateView(viewName, AZ::RPI::View::UsageCamera);
         m_renderPipeline->SetDefaultView(m_view);
+        m_targetView = scene.GetDefaultRenderPipeline()->GetDefaultView();
+        if (AZ::Render::PostProcessFeatureProcessor* fp = scene.GetFeatureProcessor<AZ::Render::PostProcessFeatureProcessor>())
+        {
+            // This will be set again to mimic the active camera in UpdateView
+            fp->SetViewAlias(m_view, m_targetView);
+        }
     }
 
     void AtomOutputFrameCapture::DestroyPipeline(AZ::RPI::Scene& scene)
     {
+        if (AZ::Render::PostProcessFeatureProcessor* fp = scene.GetFeatureProcessor<AZ::Render::PostProcessFeatureProcessor>())
+        {
+            // Remove view alias introduced in CreatePipeline and UpdateView
+            fp->RemoveViewAlias(m_view);
+        }
         scene.RemoveRenderPipeline(m_renderPipeline->GetId());
         m_passHierarchy.clear();
         m_renderPipeline.reset();
         m_view.reset();
+        m_targetView.reset();
     }
 
-    void AtomOutputFrameCapture::UpdateView(const AZ::Matrix3x4& cameraTransform, const AZ::Matrix4x4& cameraProjection)
+    void AtomOutputFrameCapture::UpdateView(const AZ::Matrix3x4& cameraTransform, const AZ::Matrix4x4& cameraProjection, const AZ::RPI::ViewPtr targetView)
     {
+        if (targetView && targetView != m_targetView)
+        {
+            if (AZ::RPI::Scene* scene = SceneFromGameEntityContext())
+            {
+                if (AZ::Render::PostProcessFeatureProcessor* fp = scene->GetFeatureProcessor<AZ::Render::PostProcessFeatureProcessor>())
+                {
+                    fp->SetViewAlias(m_view, targetView);
+                    m_targetView = targetView;
+                }
+            }
+        }
+
         m_view->SetCameraTransform(cameraTransform);
         m_view->SetViewToClipMatrix(cameraProjection);
     }

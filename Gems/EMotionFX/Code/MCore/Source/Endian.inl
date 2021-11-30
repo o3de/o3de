@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -23,6 +24,17 @@ MCORE_INLINE void Endian::ConvertUnsignedInt32(uint32* value, uint32 count)
     {
         uint32 arg = *value;
         *value = (arg & 0xFF000000) >> 24 | (arg & 0x00FF0000) >> 8 | (arg & 0x0000FF00) << 8 | (arg & 0x000000FF) << 24;
+        value++;
+    }
+}
+
+MCORE_INLINE void Endian::ConvertUnsignedInt64(uint64* value, uint32 count)
+{
+    for (uint32 i = 0; i < count; ++i)
+    {
+        uint64 arg = *value;
+        *value = (arg >> 56) + ((arg >> 40) & 0xFF00) + ((arg >> 24) & 0xFF0000) + ((arg >> 8) & 0xFF000000)
+            + ((arg & 0xFF000000) << 8) + ((arg & 0xFF0000) << 24) + ((arg & 0xFF00) << 40) + (arg << 56);
         value++;
     }
 }
@@ -165,6 +177,20 @@ MCORE_INLINE void Endian::ConvertUnsignedInt32(uint32* value, Endian::EEndianTyp
         ;
     }
     ;
+}
+
+MCORE_INLINE void Endian::ConvertUnsignedInt64(uint64* value, Endian::EEndianType sourceEndianType, uint32 count)
+{
+    // convert into the new endian, depending on the platform we are running on
+    switch (sourceEndianType)
+    {
+    case ENDIAN_LITTLE:
+        MCORE_FROM_LITTLE_ENDIAN64((uint8*)value, count);
+        break;
+    case ENDIAN_BIG:
+        MCORE_FROM_BIG_ENDIAN64   ((uint8*)value, count);
+        break;
+    }
 }
 
 
@@ -361,6 +387,19 @@ MCORE_INLINE void Endian::ConvertUnsignedInt32(uint32* value, EEndianType source
 
     // perform conversion
     ConvertUnsignedInt32(value, count);
+}
+
+// convert an uint64 into another endian type
+MCORE_INLINE void Endian::ConvertUnsignedInt64(uint64* value, EEndianType sourceEndianType, EEndianType targetEndianType, uint32 count)
+{
+    // if we don't need to convert anything
+    if (sourceEndianType == targetEndianType)
+    {
+        return;
+    }
+
+    // perform conversion
+    ConvertUnsignedInt64(value, count);
 }
 
 

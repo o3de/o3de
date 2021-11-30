@@ -1,6 +1,0 @@
-<download name="C4925579_Material_AddModifyDeleteOnTerrain" type="Map">
- <index src="filelist.xml" dest="filelist.xml"/>
- <files>
-  <file src="level.pak" dest="level.pak" size="10047" md5="02b8d2488fe4b6a96284de74ce404e2e"/>
- </files>
-</download>

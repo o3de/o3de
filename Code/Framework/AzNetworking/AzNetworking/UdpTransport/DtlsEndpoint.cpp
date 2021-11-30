@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -83,7 +84,7 @@ namespace AzNetworking
         if (dtlsData.GetSize() > 0)
         {
             const uint8_t* encryptedData = dtlsData.GetBuffer();
-            const uint32_t encryptedSize = dtlsData.GetSize();
+            const uint32_t encryptedSize = static_cast<uint32_t>(dtlsData.GetSize());
             BIO_write(m_readBio, encryptedData, encryptedSize);
         }
         DtlsEndpoint::HandshakeState prevState = m_state;
@@ -195,7 +196,7 @@ namespace AzNetworking
         // Need to do this... connection negotiation may have left data in the write bio that we need to send out
         if (BIO_ctrl_pending(m_writeBio) > 0)
         {
-            const uint32_t maxBufferSize = outHandshakeData.GetCapacity();
+            const uint32_t maxBufferSize = static_cast<uint32_t>(outHandshakeData.GetCapacity());
             outHandshakeData.Resize(maxBufferSize);
             const int32_t dataSize = BIO_read(m_writeBio, outHandshakeData.GetBuffer(), maxBufferSize);
             outHandshakeData.Resize(dataSize);

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -18,8 +19,10 @@ namespace AzNetworking
     {
         DatarateAtom() = default;
 
+        AZ::TimeMs m_timeAccumulatorMs = AZ::TimeMs{ 0 };
         uint32_t m_bytesTransmitted = 0;
-        AZ::TimeMs m_timeAccumulatorMs = AZ::TimeMs{0};
+        uint32_t m_packetsSent = 0;
+        uint32_t m_packetsLost = 0;
     };
 
     //! @class DatarateMetrics
@@ -39,19 +42,26 @@ namespace AzNetworking
         //! @param currentTimeMs current process time in milliseconds
         void LogPacket(uint32_t byteCount, AZ::TimeMs currentTimeMs);
 
+        //! Invoked whenever a packet has determined to be lost.
+        void LogPacketLost();
+
         //! Retrieve a sample of the datarate being incurred by this connection in bytes per second.
         //! @return datarate for traffic sent to or from the connection in bytes per second
         float GetBytesPerSecond() const;
+
+        //! Returns the estimated packet loss rate as a percentage of packets.
+        //! @return the estimated percentage loss rate
+        float GetLossRatePercent() const;
 
     private:
 
         //! Used internally to swap buffers used for metric gathering.
         void SwapBuffers();
 
-        static constexpr AZ::TimeMs MaxSampleTimeMs = AZ::TimeMs{500};
+        static constexpr AZ::TimeMs MaxSampleTimeMs = AZ::TimeMs{ 2000 };
 
-        AZ::TimeMs       m_maxSampleTimeMs = MaxSampleTimeMs;
-        AZ::TimeMs       m_lastLoggedTimeMs = MaxSampleTimeMs;
+        AZ::TimeMs   m_maxSampleTimeMs = MaxSampleTimeMs;
+        AZ::TimeMs   m_lastLoggedTimeMs = MaxSampleTimeMs;
         uint32_t     m_activeAtom = 0;
         DatarateAtom m_atoms[2];
     };
@@ -68,7 +78,7 @@ namespace AzNetworking
         ConnectionPacketEntry(PacketId packetId, AZ::TimeMs sendTimeMs);
 
         PacketId m_packetId = InvalidPacketId;
-        AZ::TimeMs   m_sendTimeMs = AZ::TimeMs{0};
+        AZ::TimeMs m_sendTimeMs = AZ::TimeMs{0};
     };
 
     //! @class ConnectionComputeRtt
@@ -99,8 +109,8 @@ namespace AzNetworking
 
     private:
 
-        static constexpr uint32_t MaxTrackableEntries = 4;
-        static constexpr float InitialRoundTripTime = 0.1f;  //< Start off with a 100 millisecond estimate for Rtt
+        static constexpr uint32_t MaxTrackableEntries = 8;
+        static constexpr float InitialRoundTripTime = 0.1f; //< Start off with a 100 millisecond estimate for Rtt
 
         float m_roundTripTime = InitialRoundTripTime;
         ConnectionPacketEntry m_entries[MaxTrackableEntries];
@@ -115,6 +125,11 @@ namespace AzNetworking
 
         //! Resets all internal metrics to defaults.
         void Reset();
+
+        void LogPacketSent(uint32_t byteCount, AZ::TimeMs currentTimeMs);
+        void LogPacketRecv(uint32_t byteCount, AZ::TimeMs currentTimeMs);
+        void LogPacketLost();
+        void LogPacketAcked();
 
         uint32_t m_packetsSent  = 0;
         uint32_t m_packetsRecv  = 0;

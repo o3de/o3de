@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -146,29 +147,6 @@ namespace AZ
         {
             ChildPassIndex index = FindChildPassIndex(passName);
             return index.IsValid() ? m_children[index.GetIndex()] : Ptr<Pass>(nullptr);
-        }
-
-        Ptr<Pass> ParentPass::FindPassByNameRecursive(const Name& passName) const
-        {
-            for (const Ptr<Pass>& child : m_children)
-            {
-                if (child->GetName() == passName)
-                {
-                    return child.get();
-                }
-
-                ParentPass* asParent = child->AsParent();
-                if (asParent)
-                {
-                    auto pass = asParent->FindPassByNameRecursive(passName);
-                    if (pass)
-                    {
-                        return pass;
-                    }
-                }
-            }
-
-            return nullptr;
         }
 
         const Pass* ParentPass::FindPass(RHI::DrawListTag drawListTag) const

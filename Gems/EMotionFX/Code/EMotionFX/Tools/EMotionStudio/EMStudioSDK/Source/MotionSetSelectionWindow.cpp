@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -25,29 +26,29 @@ namespace EMStudio
 
         QVBoxLayout* layout = new QVBoxLayout();
 
-        mHierarchyWidget = new MotionSetHierarchyWidget(this, useSingleSelection, selectionList);
+        m_hierarchyWidget = new MotionSetHierarchyWidget(this, useSingleSelection, selectionList);
 
         // create the ok and cancel buttons
         QHBoxLayout* buttonLayout = new QHBoxLayout();
-        mOKButton       = new QPushButton("OK");
-        mOKButton->setObjectName("EMFX.MotionSetSelectionWindow.Ok");
-        mCancelButton   = new QPushButton("Cancel");
-        mCancelButton->setObjectName("EMFX.MotionSetSelectionWindow.Cancel");
-        buttonLayout->addWidget(mOKButton);
-        buttonLayout->addWidget(mCancelButton);
+        m_okButton       = new QPushButton("OK");
+        m_okButton->setObjectName("EMFX.MotionSetSelectionWindow.Ok");
+        m_cancelButton   = new QPushButton("Cancel");
+        m_cancelButton->setObjectName("EMFX.MotionSetSelectionWindow.Cancel");
+        buttonLayout->addWidget(m_okButton);
+        buttonLayout->addWidget(m_cancelButton);
 
-        layout->addWidget(mHierarchyWidget);
+        layout->addWidget(m_hierarchyWidget);
         layout->addLayout(buttonLayout);
         setLayout(layout);
 
-        connect(mOKButton, &QPushButton::clicked, this, &MotionSetSelectionWindow::accept);
-        connect(mCancelButton, &QPushButton::clicked, this, &MotionSetSelectionWindow::reject);
+        connect(m_okButton, &QPushButton::clicked, this, &MotionSetSelectionWindow::accept);
+        connect(m_cancelButton, &QPushButton::clicked, this, &MotionSetSelectionWindow::reject);
         connect(this, &MotionSetSelectionWindow::accepted, this, &MotionSetSelectionWindow::OnAccept);
-        connect(mHierarchyWidget, &MotionSetHierarchyWidget::SelectionChanged, this, &MotionSetSelectionWindow::OnSelectionChanged);
+        connect(m_hierarchyWidget, &MotionSetHierarchyWidget::SelectionChanged, this, &MotionSetSelectionWindow::OnSelectionChanged);
 
         // set the selection mode
-        mHierarchyWidget->SetSelectionMode(useSingleSelection);
-        mUseSingleSelection = useSingleSelection;
+        m_hierarchyWidget->SetSelectionMode(useSingleSelection);
+        m_useSingleSelection = useSingleSelection;
     }
 
 
@@ -58,7 +59,7 @@ namespace EMStudio
 
     void MotionSetSelectionWindow::Select(const AZStd::vector<MotionSetSelectionItem>& selectedItems)
     {
-        mHierarchyWidget->Select(selectedItems);
+        m_hierarchyWidget->Select(selectedItems);
     }
 
 
@@ -84,9 +85,9 @@ namespace EMStudio
 
     void MotionSetSelectionWindow::OnAccept()
     {
-        if (mUseSingleSelection == false)
+        if (m_useSingleSelection == false)
         {
-            mHierarchyWidget->FireSelectionDoneSignal();
+            m_hierarchyWidget->FireSelectionDoneSignal();
         }
     }
 } // namespace EMStudio

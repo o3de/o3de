@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -97,8 +98,8 @@ namespace AZ
             if (Validation::IsEnabled())
             {
                 // The frame attachment has tight control over lifecycle here.
-                const bool isAttach = (!m_frameAttachment && frameAttachment);
-                const bool isDetach = (m_frameAttachment && !frameAttachment);
+                [[maybe_unused]] const bool isAttach = (!m_frameAttachment && frameAttachment);
+                [[maybe_unused]] const bool isDetach = (m_frameAttachment && !frameAttachment);
                 AZ_Assert(isAttach || isDetach, "The frame attachment for resource '%s' was not assigned properly.");
             }
 

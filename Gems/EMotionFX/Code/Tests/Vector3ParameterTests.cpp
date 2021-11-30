@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -70,7 +71,7 @@ namespace EMotionFX
         void ParamSetValue(const AZStd::string& paramName, const inputType& value)
         {
             const AZ::Outcome<size_t> parameterIndex = m_animGraphInstance->FindParameterIndex(paramName);
-            MCore::Attribute* param = m_animGraphInstance->GetParameterValue(static_cast<AZ::u32>(parameterIndex.GetValue()));
+            MCore::Attribute* param = m_animGraphInstance->GetParameterValue(parameterIndex.GetValue());
             paramType* typeParam = static_cast<paramType*>(param);
             typeParam->SetValue(value);
         }
@@ -96,7 +97,7 @@ namespace EMotionFX
     TEST_P(Vector3ParameterFixture, ParameterOutputsCorrectVector3Floats)
     {
         // Parameter node needs to connect to another node, otherwise it will not be updated
-        m_twoLinkIKNode->AddConnection(m_paramNode, m_paramNode->FindOutputPortIndex("vec3Test"), BlendTreeTwoLinkIKNode::PORTID_INPUT_GOALPOS);
+        m_twoLinkIKNode->AddConnection(m_paramNode, aznumeric_caster(m_paramNode->FindOutputPortIndex("vec3Test")), BlendTreeTwoLinkIKNode::PORTID_INPUT_GOALPOS);
         GetEMotionFX().Update(1.0f / 60.0f);
 
         // Check correct output for vector3 parameter.
@@ -110,7 +111,7 @@ namespace EMotionFX
 
     TEST_P(Vector3ParameterFixture, Vec3SetValueOutputsCorrectVector3Floats)
     {
-        m_twoLinkIKNode->AddConnection(m_paramNode, m_paramNode->FindOutputPortIndex("vec3Test"), BlendTreeTwoLinkIKNode::PORTID_INPUT_GOALPOS);
+        m_twoLinkIKNode->AddConnection(m_paramNode, aznumeric_caster(m_paramNode->FindOutputPortIndex("vec3Test")), BlendTreeTwoLinkIKNode::PORTID_INPUT_GOALPOS);
         GetEMotionFX().Update(1.0f / 60.0f);
 
         // Shuffle the vector3 parameter values to check changing vector3 values will be processed correctly.

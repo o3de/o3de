@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -58,7 +59,7 @@ namespace AZ
 
         void StorageDrive::PrepareRequest(FileRequest* request)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzCore);
+            AZ_PROFILE_FUNCTION(AzCore);
             AZ_Assert(request, "PrepareRequest was provided a null request.");
 
             if (AZStd::holds_alternative<FileRequest::ReadRequestData>(request->GetCommand()))
@@ -253,7 +254,7 @@ namespace AZ
 
         void StorageDrive::ReadFile(FileRequest* request)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzCore);
+            AZ_PROFILE_FUNCTION(AzCore);
 
             auto data = AZStd::get_if<FileRequest::ReadData>(&request->GetCommand());
             AZ_Assert(data, "FileRequest queued on StorageDrive to be read didn't contain read data.");
@@ -340,7 +341,7 @@ namespace AZ
 
         void StorageDrive::FileExistsRequest(FileRequest* request)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzCore);
+            AZ_PROFILE_FUNCTION(AzCore);
             TIMED_AVERAGE_WINDOW_SCOPE(m_getFileExistsTimeAverage);
 
             auto& fileExists = AZStd::get<FileRequest::FileExistsCheckData>(request->GetCommand());
@@ -358,7 +359,7 @@ namespace AZ
 
         void StorageDrive::FileMetaDataRetrievalRequest(FileRequest* request)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzCore);
+            AZ_PROFILE_FUNCTION(AzCore);
             TIMED_AVERAGE_WINDOW_SCOPE(m_getFileMetaDataTimeAverage);
 
             auto& command = AZStd::get<FileRequest::FileMetaDataRetrievalData>(request->GetCommand());

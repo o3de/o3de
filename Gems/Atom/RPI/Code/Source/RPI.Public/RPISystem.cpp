@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -34,6 +35,9 @@
 #include <AzCore/Interface/Interface.h>
 
 #include <AzFramework/Asset/AssetSystemBus.h>
+
+AZ_DEFINE_BUDGET(AzRender);
+AZ_DEFINE_BUDGET(RPI);
 
 // This will cause the RPI System to print out global state (like the current pass hierarchy) when an assert is hit
 // This is useful for rendering engineers debugging a crash in the RPI/RHI layers
@@ -108,8 +112,9 @@ namespace AZ
         void RPISystem::Shutdown()
         {
             m_viewportContextManager.Shutdown();
-            m_viewSrgAsset.Reset();
-            m_sceneSrgAsset.Reset();
+            m_viewSrgLayout = nullptr;
+            m_sceneSrgLayout = nullptr;
+            m_commonShaderAssetForSrgs.Reset();
 
 #if AZ_RPI_PRINT_GLOBAL_STATE_ON_ASSERT
             Debug::TraceMessageBus::Handler::BusDisconnect();
@@ -154,6 +159,11 @@ namespace AZ
                     AZ_Assert(false, "Scene was already registered");
                     return;
                 }
+                else if (!scene->GetName().IsEmpty() && scene->GetName() == sceneItem->GetName())
+                {
+                    // only report a warning if there is a scene with duplicated name
+                    AZ_Warning("RPISystem", false, "There is a registered scene with same name [%s]", scene->GetName().GetCStr());
+                }
             }
 
             m_scenes.push_back(scene);
@@ -172,27 +182,41 @@ namespace AZ
             AZ_Assert(false, "Can't unregister scene which wasn't registered");
         }
 
-        ScenePtr RPISystem::GetScene(const SceneId& sceneId) const
+        Scene* RPISystem::GetScene(const SceneId& sceneId) const
         {
             for (const auto& scene : m_scenes)
             {
                 if (scene->GetId() == sceneId)
+                {
+                    return scene.get();
+                }
+            }
+            return nullptr;
+        }
+
+        Scene* RPISystem::GetSceneByName(const AZ::Name& name) const
+        {
+            for (const auto& scene : m_scenes)
+            {
+                if (scene->GetName() == name)
+                {
+                    return scene.get();
+                }
+            }
+            return nullptr;
+        }
+        
+        ScenePtr RPISystem::GetDefaultScene() const
+        {
+            for (const auto& scene : m_scenes)
+            {
+                if (scene->GetName() == AZ::Name("Main"))
                 {
                     return scene;
                 }
             }
             return nullptr;
         }
-
-        ScenePtr RPISystem::GetDefaultScene() const
-        {
-            if (m_scenes.size() > 0)
-            {
-                return m_scenes[0];
-            }
-            return nullptr;
-        }
-
 
         RenderPipelinePtr RPISystem::GetRenderPipelineForWindow(AzFramework::NativeWindowHandle windowHandle)
         {
@@ -208,21 +232,27 @@ namespace AZ
             return nullptr;
         }
 
-        Data::Asset<ShaderResourceGroupAsset> RPISystem::GetSceneSrgAsset() const
+        Data::Asset<ShaderAsset> RPISystem::GetCommonShaderAssetForSrgs() const
         {
             AZ_Assert(m_systemAssetsInitialized, "InitializeSystemAssets() should be called once when asset catalog loaded'");
-            return m_sceneSrgAsset;
+            return m_commonShaderAssetForSrgs;
         }
 
-        Data::Asset<ShaderResourceGroupAsset> RPISystem::GetViewSrgAsset() const
+        RHI::Ptr<RHI::ShaderResourceGroupLayout> RPISystem::GetSceneSrgLayout() const
         {
             AZ_Assert(m_systemAssetsInitialized, "InitializeSystemAssets() should be called once when asset catalog loaded'");
-            return m_viewSrgAsset;
+            return m_sceneSrgLayout;
+        }
+
+        RHI::Ptr<RHI::ShaderResourceGroupLayout> RPISystem::GetViewSrgLayout() const
+        {
+            AZ_Assert(m_systemAssetsInitialized, "InitializeSystemAssets() should be called once when asset catalog loaded'");
+            return m_viewSrgLayout;
         }
 
         void RPISystem::OnSystemTick()
         {
-            AZ_ATOM_PROFILE_FUNCTION("RPI", "RPISystem: OnSystemTick");
+            AZ_PROFILE_SCOPE(RPI, "RPISystem: OnSystemTick");
 
             // Image system update is using system tick but not game tick so it can stream images in background even game is pausing
             m_imageSystem.Update();
@@ -234,25 +264,27 @@ namespace AZ
             {
                 return;
             }
-            AZ_ATOM_PROFILE_FUNCTION("RPI", "RPISystem: SimulationTick");
+            AZ_PROFILE_SCOPE(RPI, "RPISystem: SimulationTick");
 
             AssetInitBus::Broadcast(&AssetInitBus::Events::PostLoadInit);
 
-            // Update tick time info
-            FillTickTimeInfo();
+            m_currentSimulationTime = GetCurrentTime();
 
             for (auto& scene : m_scenes)
             {
-                scene->Simulate(m_tickTime, m_simulationJobPolicy);
+                scene->Simulate(m_simulationJobPolicy, m_currentSimulationTime);
             }
         }
 
-        void RPISystem::FillTickTimeInfo()
+        float RPISystem::GetCurrentTime()
         {
-            AZ::TickRequestBus::BroadcastResult(m_tickTime.m_gameDeltaTime, &AZ::TickRequestBus::Events::GetTickDeltaTime);
-            ScriptTimePoint currentTime;
-            AZ::TickRequestBus::BroadcastResult(currentTime, &AZ::TickRequestBus::Events::GetTimeAtCurrentTick);
-            m_tickTime.m_currentGameTime = static_cast<float>(currentTime.GetMilliseconds());
+            ScriptTimePoint timeAtCurrentTick;
+            AZ::TickRequestBus::BroadcastResult(timeAtCurrentTick, &AZ::TickRequestBus::Events::GetTimeAtCurrentTick);
+
+            // We subtract the start time to maximize precision of the time value, since we will be converting it to a float.
+            double currentTime = timeAtCurrentTick.GetSeconds() - m_startTime.GetSeconds();
+
+            return aznumeric_cast<float>(currentTime);
         }
 
         void RPISystem::RenderTick()
@@ -262,8 +294,7 @@ namespace AZ
                 return;
             }
 
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzRender);
-            AZ_ATOM_PROFILE_FUNCTION("RPI", "RPISystem: RenderTick");
+            AZ_PROFILE_SCOPE(RPI, "RPISystem: RenderTick");
 
             // Query system update is to increment the frame count
             m_querySystem.Update();
@@ -272,7 +303,7 @@ namespace AZ
             // [GFX TODO] We may parallel scenes' prepare render.
             for (auto& scenePtr : m_scenes)
             {
-                scenePtr->PrepareRender(m_tickTime, m_prepareRenderJobPolicy);
+                scenePtr->PrepareRender(m_prepareRenderJobPolicy, m_currentSimulationTime);
             }
 
             m_rhiSystem.FrameUpdate(
@@ -282,7 +313,7 @@ namespace AZ
                     // scope producers only can be added to the frame when frame started which cleans up previous scope producers.
                     m_passSystem.FrameUpdate(frameGraphBuilder);
 
-                    // Update View Srgs
+                    // Update Scene and View Srgs
                     for (auto& scenePtr : m_scenes)
                     {
                         scenePtr->UpdateSrgs();
@@ -290,7 +321,7 @@ namespace AZ
                 });
 
             {
-                AZ_ATOM_PROFILE_TIME_GROUP_REGION("RPI", "RPISystem: FrameEnd");
+                AZ_PROFILE_SCOPE(RPI, "RPISystem: FrameEnd");
                 m_dynamicDraw.FrameEnd();
                 m_passSystem.FrameEnd();
 
@@ -341,31 +372,27 @@ namespace AZ
                 return;
             }
 
-            //[GFX TODO][ATOM-5867] - Move file loading code within RHI to reduce coupling with RPI
-            AZStd::string platformLimitsFilePath = AZStd::string::format("config/platform/%s/%s/platformlimits.azasset", AZ_TRAIT_OS_PLATFORM_NAME, GetRenderApiName().GetCStr());
-            AZStd::to_lower(platformLimitsFilePath.begin(), platformLimitsFilePath.end());
-            
-            Data::Asset<AnyAsset> platformLimitsAsset;
-            platformLimitsAsset = RPI::AssetUtils::LoadCriticalAsset<AnyAsset>(platformLimitsFilePath.c_str(), RPI::AssetUtils::TraceLevel::None);
-            // Only read the m_platformLimits if the platformLimitsAsset is ready.
-            // The platformLimitsAsset may not exist for null renderer which is allowed
-            if (platformLimitsAsset.IsReady())
-            {
-                m_descriptor.m_rhiSystemDescriptor.m_platformLimits = RPI::GetDataFromAnyAsset<RHI::PlatformLimits>(platformLimitsAsset);
-            }
-
-            m_viewSrgAsset = AssetUtils::LoadCriticalAsset<ShaderResourceGroupAsset>( m_descriptor.m_viewSrgAssetPath.c_str());
-            if (!m_viewSrgAsset.IsReady())
+            m_commonShaderAssetForSrgs = AssetUtils::LoadCriticalAsset<ShaderAsset>( m_descriptor.m_commonSrgsShaderAssetPath.c_str());
+            if (!m_commonShaderAssetForSrgs.IsReady())
             {
                 return;
             }
-            m_sceneSrgAsset = AssetUtils::LoadCriticalAsset<ShaderResourceGroupAsset>(m_descriptor.m_sceneSrgAssetPath.c_str());
-            if (!m_sceneSrgAsset.IsReady())
+            m_sceneSrgLayout = m_commonShaderAssetForSrgs->FindShaderResourceGroupLayout(SrgBindingSlot::Scene);
+            if (!m_sceneSrgLayout)
             {
+                AZ_Error("RPISystem", false, "Failed to find SceneSrg by slot=<%u> from shader asset at path <%s>", SrgBindingSlot::Scene,
+                    m_descriptor.m_commonSrgsShaderAssetPath.c_str());
+                return;
+            }
+            m_viewSrgLayout = m_commonShaderAssetForSrgs->FindShaderResourceGroupLayout(SrgBindingSlot::View);
+            if (!m_viewSrgLayout)
+            {
+                AZ_Error("RPISystem", false, "Failed to find ViewSrg by slot=<%u> from shader asset at path <%s>", SrgBindingSlot::View,
+                    m_descriptor.m_commonSrgsShaderAssetPath.c_str());
                 return;
             }
 
-            m_rhiSystem.Init(m_descriptor.m_rhiSystemDescriptor);
+            m_rhiSystem.Init();
             m_imageSystem.Init(m_descriptor.m_imageSystemDescriptor);
             m_bufferSystem.Init();
             m_dynamicDraw.Init(m_descriptor.m_dynamicDrawSystemDescriptor);
@@ -389,7 +416,7 @@ namespace AZ
             }
 
             //Init rhi/image/buffer systems to match InitializeSystemAssets
-            m_rhiSystem.Init(m_descriptor.m_rhiSystemDescriptor);
+            m_rhiSystem.Init();
             m_imageSystem.Init(m_descriptor.m_imageSystemDescriptor);
             m_bufferSystem.Init();
 

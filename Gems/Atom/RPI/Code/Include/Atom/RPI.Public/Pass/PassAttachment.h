@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -8,6 +9,8 @@
 
 #include <AtomCore/Instance/Instance.h>
 #include <AtomCore/Instance/InstanceData.h>
+
+#include <Atom/RHI.Reflect/ShaderInputNameIndex.h>
 
 #include <Atom/RPI.Reflect/Pass/PassAttachmentReflect.h>
 
@@ -144,7 +147,11 @@ namespace AZ
 
             //! Name of the SRG member this binds to (see PassSlot::m_shaderInputName for more details)
             Name m_shaderInputName = Name("AutoBind");
-            
+
+            //! Name index of the SRG constant to which, if specified, we automatically calculate
+            //! and bind the image dimensions (if this binding is of type image)
+            RHI::ShaderInputNameIndex m_shaderImageDimensionsNameIndex;
+
             //! Whether binding is an input, output or inputOutput
             PassSlotType m_slotType = PassSlotType::Uninitialized;
 

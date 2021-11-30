@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -312,6 +313,7 @@ namespace ScriptCanvas
                 }
 
                 PopulateNodeType();
+                m_warnOnMissingFunction = true;
             }
 
             bool Method::InitializeOverloaded([[maybe_unused]] const NamespacePath& namespaces, AZStd::string_view className, AZStd::string_view methodName)
@@ -650,8 +652,13 @@ namespace ScriptCanvas
                 return {};
             }
 
-            bool Method::GetBehaviorContextClassMethod(const AZStd::string&, const AZ::BehaviorClass*& outClass, const AZ::BehaviorMethod*& outMethod, EventType& outType) const
+            bool Method::GetBehaviorContextClassMethod(const AZ::BehaviorClass*& outClass, const AZ::BehaviorMethod*& outMethod, EventType& outType) const
             {
+                if (m_lookupName.empty() && m_className.empty())
+                {
+                    return false;
+                }
+
                 AZStd::string prettyClassName;
                 AZStd::string methodName = m_lookupName;
 
@@ -679,6 +686,13 @@ namespace ScriptCanvas
                             outType = eventType;
                             return true;
                         }
+                        
+                        AZ_Warning("Script Canvas"
+                            , !m_warnOnMissingFunction
+                            , "Could not find event: %s, in bus: %s, anywhere in BehaviorContext"
+                            , methodName.c_str()
+                            , m_className.c_str());
+                        return false;
                     }
                     break;
 
@@ -691,6 +705,12 @@ namespace ScriptCanvas
                             outType = EventType::Count;
                             return true;
                         }
+
+                        AZ_Warning("Script Canvas"
+                            , !m_warnOnMissingFunction
+                            , "Could not find free method: %s anywhere in BehaviorContext"
+                            , methodName.c_str());
+                        return false;
                     }
                     break;
 
@@ -707,14 +727,26 @@ namespace ScriptCanvas
                             outType = EventType::Count;
                             return true;
                         }
+
+                        AZ_Warning("Script Canvas"
+                            , !m_warnOnMissingFunction
+                            , "Could not find method or property: %s in class %s: , anywhere in BehaviorContext"
+                            , methodName.c_str()
+                            , m_className.c_str());
+                        return false;
                     }
                     break;
 
-                    default:
-                        AZ_Warning("Script Canvas", !m_warnOnMissingFunction, "unsupported method type in method");
+                    default:    
                         break;
                     }
                 }
+
+                AZ_Warning("Script Canvas"
+                    , !m_warnOnMissingFunction
+                    , "Could not find overloaded method: %s, class or event name: %s, anywhere in BehaviorContext"
+                    , methodName.c_str()
+                    , m_className.c_str());
 
                 return false;
             }
@@ -722,15 +754,14 @@ namespace ScriptCanvas
             AZStd::tuple<const AZ::BehaviorMethod*, MethodType, EventType, const AZ::BehaviorClass*> Method::LookupMethod() const
             {
                 using TupleType = AZStd::tuple<const AZ::BehaviorMethod*, MethodType, EventType, const AZ::BehaviorClass*>;
-                AZStd::string methodName = m_lookupName;
-
+                
                 AZStd::string prettyClassName;
 
                 const AZ::BehaviorClass* bcClass{};
                 const AZ::BehaviorMethod* method{};
                 EventType eventType;
 
-                if (GetBehaviorContextClassMethod(m_lookupName, bcClass, method, eventType))
+                if (GetBehaviorContextClassMethod(bcClass, method, eventType))
                 {
                     return TupleType{ method, m_methodType, eventType, bcClass };
                 }
@@ -738,33 +769,50 @@ namespace ScriptCanvas
                 return TupleType{ nullptr, MethodType::Count, EventType::Count, nullptr };
             }
 
-            void Method::OnWriteEnd()
+            void Method::OnDeserialize()
             {
                 AZStd::lock_guard<AZStd::recursive_mutex> lock(m_mutex);
 
-                const AZ::BehaviorClass* bcClass{};
-                const AZ::BehaviorMethod* method{};
-                EventType eventType;
+                if (!m_lookupName.empty() || !m_className.empty())
+                {
+                    m_warnOnMissingFunction = true;
+                    const AZ::BehaviorClass* bcClass{};
+                    const AZ::BehaviorMethod* method{};
+                    EventType eventType;
 
-                if (GetBehaviorContextClassMethod(m_lookupName, bcClass, method, eventType))
-                {
-                    m_eventType = eventType;
-                    ConfigureMethod(*method, bcClass);
-                }
-                else
-                {
-                    if (!m_method)
+                    if (GetBehaviorContextClassMethod(bcClass, method, eventType))
                     {
-                        AZ_Warning("ScriptCanvas", !m_warnOnMissingFunction, "method node failed to deserialize properly");
+                        m_eventType = eventType;
+                        ConfigureMethod(*method, bcClass);
+                    }
+                    else
+                    {
+                        if (!m_method)
+                        {
+                            AZ_Warning("ScriptCanvas", !m_warnOnMissingFunction, "method node failed to deserialize properly");
+                        }
                     }
 
+                    if (m_resultSlotIDs.empty())
+                    {
+                        m_resultSlotIDs.emplace_back(SlotId{});
+                    }
                 }
 
-                if (m_resultSlotIDs.empty())
-                {
-                    m_resultSlotIDs.emplace_back(SlotId{});
-                }
+                Node::OnDeserialize();
             }
+
+#if defined(OBJECT_STREAM_EDITOR_ASSET_LOADING_SUPPORT_ENABLED)////
+            void Method::OnWriteEnd()
+            {
+                if (m_lookupName.empty() && m_className.empty())
+                {
+                    return;
+                }
+
+                OnDeserialize();
+            }
+#endif//defined(OBJECT_STREAM_EDITOR_ASSET_LOADING_SUPPORT_ENABLED)
 
             bool Method::BranchesOnResult() const
             {
@@ -828,7 +876,9 @@ namespace ScriptCanvas
                 {
                     serializeContext->Class<Method, Node>()
                         ->Version(MethodCPP::eVersion::Current, &MethodCPP::MethodVersionConverter)
+#if defined(OBJECT_STREAM_EDITOR_ASSET_LOADING_SUPPORT_ENABLED)////
                         ->EventHandler<SerializeContextOnWriteEndHandler<Method>>()
+#endif//defined(OBJECT_STREAM_EDITOR_ASSET_LOADING_SUPPORT_ENABLED)
                         ->Field("methodType", &Method::m_methodType)
                         ->Field("methodName", &Method::m_lookupName)
                         ->Field("className", &Method::m_className)

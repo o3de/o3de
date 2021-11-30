@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -32,11 +33,11 @@ namespace SubgraphInterfaceCpp
         Current
     };
 
-    const size_t k_maxTabs = 20;
+    [[maybe_unused]] const size_t k_maxTabs = 20;
 
     AZ_INLINE const char* GetTabs(size_t tabs)
     {
-        AZ_Assert(tabs >= 0 && tabs <= k_maxTabs, "invalid argument to GetTabs");
+        AZ_Assert(tabs <= k_maxTabs, "invalid argument to GetTabs");
 
         static const char* const k_tabs[] =
         {
@@ -508,7 +509,8 @@ namespace ScriptCanvas
 
         bool SubgraphInterface::HasAnyFunctionality() const
         {
-            return IsActiveDefaultObject() || HasPublicFunctionality();
+            // \todo restore default object addition when ndoes can define an variable, as well
+            return /*IsActiveDefaultObject() || */ HasPublicFunctionality();
         }
 
         bool SubgraphInterface::HasBranches() const
@@ -801,12 +803,6 @@ namespace ScriptCanvas
         {
             m_namespacePath = namespacePath;
         }
-
-        void SubgraphInterface::TakeNamespacePath(NamespacePath&& namespacePath)
-        {
-            m_namespacePath = AZStd::move(namespacePath);
-        }
-
 
         AZStd::string SubgraphInterface::ToExecutionString() const
         {

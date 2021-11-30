@@ -1,22 +1,19 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 #pragma once
 
 #include <AzCore/base.h>
-#include <AzCore/std/containers/vector.h>
-#include <AzCore/std/containers/map.h>
-#include <AzCore/std/utils.h>
-#include <AzCore/std/string/osstring.h>
+#include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/parallel/mutex.h>
 #include <AzCore/std/parallel/atomic.h>
-#include <AzCore/std/parallel/lock.h>
 #include <AzCore/IO/FileIO.h>
-#include <AzCore/Memory/OSAllocator.h>
 #include <AzCore/RTTI/RTTI.h>
+#include <AzCore/Memory/Memory.h>
 
 // This header file and CPP handles the platform specific implementation of code as defined by the FileIOBase interface class.
 // In order to make your code portable and functional with both this and the RemoteFileIO class, use the interface to access
@@ -32,7 +29,7 @@ namespace AZ
         {
         public:
             AZ_RTTI(LocalFileIO, "{87A8D32B-F695-4105-9A4D-D99BE15DFD50}", FileIOBase);
-            AZ_CLASS_ALLOCATOR(LocalFileIO, OSAllocator, 0);
+            AZ_CLASS_ALLOCATOR(LocalFileIO, SystemAllocator, 0);
 
             LocalFileIO();
             ~LocalFileIO();
@@ -64,6 +61,8 @@ namespace AZ
             void SetAlias(const char* alias, const char* path) override;
             void ClearAlias(const char* alias) override;
             const char* GetAlias(const char* alias) const override;
+            void SetDeprecatedAlias(AZStd::string_view oldAlias, AZStd::string_view newAlias) override;
+
             AZStd::optional<AZ::u64> ConvertToAlias(char* inOutBuffer, AZ::u64 bufferLength) const override;
             bool ConvertToAlias(AZ::IO::FixedMaxPath& convertedPath, const AZ::IO::PathView& path) const override;
             using FileIOBase::ConvertToAlias;
@@ -74,28 +73,26 @@ namespace AZ
 
             bool GetFilename(HandleType fileHandle, char* filename, AZ::u64 filenameSize) const override;
             bool ConvertToAbsolutePath(const char* path, char* absolutePath, AZ::u64 maxLength) const;
-            
-        private:
-            typedef AZStd::pair<AZ::OSString, AZ::OSString> AliasType;
 
+        private:
             SystemFile* GetFilePointerFromHandle(HandleType fileHandle);
 
             HandleType GetNextHandle();
 
             AZStd::optional<AZ::u64> ConvertToAliasBuffer(char* outBuffer, AZ::u64 outBufferLength, AZStd::string_view inBuffer) const;
             bool ResolveAliases(const char* path, char* resolvedPath, AZ::u64 resolvedPathSize) const;
-            bool IsAbsolutePath(const char* path) const;
 
             bool LowerIfBeginsWith(char* inOutBuffer, AZ::u64 bufferLen, const char* alias) const;
 
         private:
-            static AZ::OSString RemoveTrailingSlash(const AZ::OSString& pathStr);
-            static AZ::OSString CheckForTrailingSlash(const AZ::OSString& pathStr);
+            static AZStd::string RemoveTrailingSlash(const AZStd::string& pathStr);
+            static AZStd::string CheckForTrailingSlash(const AZStd::string& pathStr);
 
             mutable AZStd::recursive_mutex m_openFileGuard;
             AZStd::atomic<HandleType> m_nextHandle;
-            AZStd::map<HandleType, SystemFile, AZStd::less<HandleType>, AZ::OSStdAllocator> m_openFiles;
-            AZStd::vector<AliasType, AZ::OSStdAllocator> m_aliases;
+            AZStd::unordered_map<HandleType, SystemFile> m_openFiles;
+            AZStd::unordered_map<AZStd::string, AZStd::string> m_aliases;
+            AZStd::unordered_map<AZStd::string, AZStd::string> m_deprecatedAliases;
 
             void CheckInvalidWrite(const char* path);
         };

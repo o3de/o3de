@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -17,14 +18,14 @@ namespace EMotionFX
     {
     public:
         AZ_TYPE_INFO(SimulatedObject, "{8CF0F474-69DC-4DE3-AF19-002F19DA27DB}");
-        MOCK_CONST_METHOD1(FindSimulatedJointBySkeletonJointIndex, SimulatedJoint*(AZ::u32));
+        MOCK_CONST_METHOD1(FindSimulatedJointBySkeletonJointIndex, SimulatedJoint*(size_t));
 
-        MOCK_METHOD1(AddSimulatedJointAndChildren, void(AZ::u32));
-        MOCK_METHOD1(AddSimulatedJoint, SimulatedJoint*(AZ::u32));
-        MOCK_METHOD1(AddSimulatedJoints, void(AZStd::vector<AZ::u32> joints));
+        MOCK_METHOD1(AddSimulatedJointAndChildren, void(size_t));
+        MOCK_METHOD1(AddSimulatedJoint, SimulatedJoint*(size_t));
+        MOCK_METHOD1(AddSimulatedJoints, void(AZStd::vector<size_t> joints));
 
-        MOCK_METHOD2(RemoveSimulatedJoint, void(AZ::u32, bool));
-        MOCK_METHOD1(RemoveSimulatedJoint, void(AZ::u32));
+        MOCK_METHOD2(RemoveSimulatedJoint, void(size_t, bool));
+        MOCK_METHOD1(RemoveSimulatedJoint, void(size_t));
 
         MOCK_CONST_METHOD0(GetNumSimulatedJoints, size_t());
         MOCK_CONST_METHOD1(SetSimulatedJoints, void(const AZStd::vector<SimulatedJoint*>& joints));

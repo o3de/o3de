@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -113,7 +114,7 @@ namespace AZ
                     }
                 }
 
-                if (shaderCompilerArguments.m_dxcDisableOptimizations)
+                if (shaderCompilerArguments.m_disableOptimizations)
                 {
                     // When optimizations are disabled (-Od), all resources declared in the source file are available to all stages
                     // (when enabled only the resources which are referenced in a stage are bound to the stage)
@@ -194,7 +195,7 @@ namespace AZ
 
         bool ShaderPlatformInterface::BuildHasDebugInfo(const RHI::ShaderCompilerArguments& shaderCompilerArguments) const
         {
-            return shaderCompilerArguments.m_dxcGenerateDebugInfo;
+            return shaderCompilerArguments.m_generateDebugInfo;
         }
 
         const char* ShaderPlatformInterface::GetAzslHeader(const AssetBuilderSDK::PlatformInfo& platform) const
@@ -254,6 +255,11 @@ namespace AZ
 
             // Compilation parameters
             AZStd::string params = shaderCompilerArguments.MakeAdditionalDxcCommandLineString();
+            if (BuildHasDebugInfo(shaderCompilerArguments))
+            {
+                params += " -Zi";  // Generate debug information
+                params += " -Zss"; // Compute Shader Hash considering source information
+            }
 
             // Enable half precision types when shader model >= 6.2
             int shaderModelMajor = 0;
@@ -280,12 +286,11 @@ namespace AZ
             AZStd::string symbolDatabaseFileCliArgument{" "};  // when not debug: still insert a space between 5.dxil and 7.hlsl-in
             if (BuildHasDebugInfo(shaderCompilerArguments))
             {
-                // prepare .ldd filename:
+                // prepare .pdb filename:
                 AZStd::string md5hex = RHI::ByteToHexString(md5);
                 AZStd::string symbolDatabaseFilePath = dxcInputFile.c_str();  // mutate from source
-                AZStd::string lldFileName = md5hex    // lld is like pdb but it's the default symbol database extension in dxc
-                                          + "-" + profileIt->second;   // concatenate the shader profile to disambiguate vs/ps...
-                AzFramework::StringFunc::Path::ReplaceFullName(symbolDatabaseFilePath, lldFileName.c_str(), "lld");
+                AZStd::string pdbFileName = md5hex + "-" + profileIt->second;   // concatenate the shader profile to disambiguate vs/ps...
+                AzFramework::StringFunc::Path::ReplaceFullName(symbolDatabaseFilePath, pdbFileName.c_str(), "pdb");
                 // it is possible that another activated platform/profile, already exported that file. (since it's hashed on the source file)
                 // dxc returns an error in such case. we get less surprising effets by just not mentionning an -Fd argument
                 if (AZ::IO::SystemFile::Exists(symbolDatabaseFilePath.c_str()))

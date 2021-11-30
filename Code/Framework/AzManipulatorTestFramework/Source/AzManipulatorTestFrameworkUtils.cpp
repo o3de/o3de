@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -90,12 +91,12 @@ namespace AzManipulatorTestFramework
     AzToolsFramework::ViewportInteraction::MousePick BuildMousePick(
         const AzFramework::ScreenPoint& screenPoint, const AzFramework::CameraState& cameraState)
     {
-        const auto screenToWorld = AzFramework::ScreenToWorld(screenPoint, cameraState);
+        const auto nearPlaneWorldPosition = AzFramework::ScreenToWorld(screenPoint, cameraState);
 
         AzToolsFramework::ViewportInteraction::MousePick mousePick;
         mousePick.m_screenCoordinates = screenPoint;
-        mousePick.m_rayOrigin = screenToWorld;
-        mousePick.m_rayDirection = (screenToWorld - cameraState.m_position).GetNormalized();
+        mousePick.m_rayOrigin = nearPlaneWorldPosition;
+        mousePick.m_rayDirection = (nearPlaneWorldPosition - cameraState.m_position).GetNormalized();
 
         return mousePick;
     }
@@ -121,7 +122,7 @@ namespace AzManipulatorTestFramework
 
     MouseInteractionEvent CreateMouseInteractionEvent(const MouseInteraction& mouseInteraction, MouseEvent event)
     {
-        return MouseInteractionEvent(mouseInteraction, event);
+        return MouseInteractionEvent(mouseInteraction, event, /*captured=*/false);
     }
 
     void DispatchMouseInteractionEvent(const MouseInteractionEvent& event)

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -37,7 +38,7 @@ namespace AZ
             float m_cosInnerConeAngle = 0.0f; // cosine of inner cone angle
             float m_cosOuterConeAngle = 0.0f; // cosine of outer cone angle
             float m_bulbPositionOffset = 0.0f; // Distance from the light disk surface to the tip of the cone of the light. m_bulbRadius * tanf(pi/2 - m_outerConeAngle).
-            uint16_t m_shadowIndex = -1; // index for ProjectedShadowData. A value of 0xFFFF indicates an illegal index.
+            uint16_t m_shadowIndex = std::numeric_limits<uint16_t>::max(); // index for ProjectedShadowData. A value of 0xFFFF indicates an illegal index.
             uint16_t m_padding; // Explicit padding.
         };
 
@@ -83,18 +84,16 @@ namespace AZ
 
             //! Sets if shadows are enabled
             virtual void SetShadowsEnabled(LightHandle handle, bool enabled) = 0;
+            //! Sets the shadow bias
+            virtual void SetShadowBias(LightHandle handle, float bias) = 0;
+            //! Sets the normal shadow bias
+            virtual void SetNormalShadowBias(LightHandle handle, float bias) = 0;
             //! Sets the shadowmap size (width and height) of the light.
             virtual void SetShadowmapMaxResolution(LightHandle handle, ShadowmapSize shadowmapSize) = 0;
             //! Specifies filter method of shadows.
             virtual void SetShadowFilterMethod(LightHandle handle, ShadowFilterMethod method) = 0;
-            //! Specifies the width of boundary between shadowed area and lit area in radians. The degree ofshadowed gradually changes on the boundary. 0 disables softening.
-            virtual void SetSofteningBoundaryWidthAngle(LightHandle handle, float boundaryWidthRadians) = 0;
-            //! Sets sample count to predict boundary of shadow (up to 16). It will be clamped to be less than or equal to the filtering sample count.
-            virtual void SetPredictionSampleCount(LightHandle handle, uint16_t count) = 0;
             //! Sets sample count for filtering of shadow boundary (up to 64)
             virtual void SetFilteringSampleCount(LightHandle handle, uint16_t count) = 0;
-            //! Sets the shadowmap Pcf (percentage closer filtering) method.
-            virtual void SetPcfMethod(LightHandle handle, PcfMethod method) = 0;
             //! Sets the Esm exponent to use. Higher values produce a steeper falloff in the border areas between light and shadow.
             virtual void SetEsmExponent(LightHandle handle, float exponent) = 0;
 

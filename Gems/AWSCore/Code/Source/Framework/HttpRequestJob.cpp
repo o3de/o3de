@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -41,7 +42,7 @@ namespace AWSCore
 
         // This will run the code fed to the macro, and then assign 0 to a static int (note the ,0 at the end)
 #define AWS_CORE_ONCE_PASTE(x) (x)
-#define AWS_CORE_ONCE(x) static int AZ_JOIN(init, __LINE__)((AWS_CORE_ONCE_PASTE(x), 0))
+#define AWS_CORE_ONCE(x) [[maybe_unused]] static int AZ_JOIN(init, __LINE__)((AWS_CORE_ONCE_PASTE(x), 0))
 
 #define AWS_CORE_HTTP_METHOD_ENTRY(x)   { HttpRequestJob::HttpMethod::HTTP_##x, HttpMethodInfo{ Aws::Http::HttpMethod::HTTP_##x, #x } }
 

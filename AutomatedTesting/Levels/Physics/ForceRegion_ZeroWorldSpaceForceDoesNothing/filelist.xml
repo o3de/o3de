@@ -1,0 +1,6 @@
+<download name="ForceRegion_ZeroWorldSpaceForceDoesNothing" type="Map">
+ <index src="filelist.xml" dest="filelist.xml"/>
+ <files>
+  <file src="level.pak" dest="level.pak" size="8630" md5="d8b07c18d13bd8cb71a6d77217ca1c07"/>
+ </files>
+</download>

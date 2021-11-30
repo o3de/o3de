@@ -1,18 +1,30 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
 #pragma once
+#include <AzCore/PlatformDef.h>
+#include <AzCore/std/typetraits/aligned_storage.h>
+#include <AzCore/std/typetraits/is_integral.h>
+#include <AzCore/std/typetraits/conditional.h>
+#include <AzCore/std/typetraits/static_storage.h>
+#include <AzCore/std/function/function_template.h>
+
+#include <list>
+#include <vector>
+#include <set>
+#include <map>
 
 template <class T>
 class StaticInstanceSpecialization
 {
 };
 
-// Specializations for std::vector and std::map which allows us to modify the 
+// Specializations for std::vector and std::map which allows us to modify the
 // least amount of legacy code by mirroring the std APIs that are in use
 // These are not intended to be complete, just enough to shim existing legacy code
 template <typename U, class A>
@@ -29,7 +41,7 @@ public:
     using size_type = typename Container::size_type;
 
     template <class Integral>
-    AZ_FORCE_INLINE 
+    AZ_FORCE_INLINE
     typename AZStd::enable_if<AZStd::is_integral<Integral>::value, reference>::type
     operator[](Integral index)
     {
@@ -321,7 +333,7 @@ public:
     using size_type = typename Container::size_type;
 
     using pair_iter_bool = std::pair<iterator, bool>;
-    
+
 
     AZ_FORCE_INLINE iterator begin()
     {
@@ -359,7 +371,7 @@ public:
     }
 
     template <class K2>
-    AZ_FORCE_INLINE 
+    AZ_FORCE_INLINE
     typename AZStd::enable_if<AZStd::is_constructible<key_type, K2>::value, mapped_type&>::type
     operator[](const K2& keylike)
     {

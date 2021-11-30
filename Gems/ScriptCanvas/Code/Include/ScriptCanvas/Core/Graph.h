@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -108,11 +109,11 @@ namespace ScriptCanvas
         //! NOTE: There can be multiple Graph components on the same entity so calling FindComponent may not not return this GraphComponent
         AZ::Entity* GetGraphEntity() const override { return GetEntity(); }
 
-        Graph* GetGraph() { return this; }
+        Graph* GetGraph() override { return this; }
 
         GraphData* GetGraphData() override { return &m_graphData; }
         const GraphData* GetGraphDataConst() const override { return &m_graphData; }
-        const VariableData* GetVariableDataConst() const { return const_cast<Graph*>(this)->GetVariableData(); }
+        const VariableData* GetVariableDataConst() const override { return const_cast<Graph*>(this)->GetVariableData(); }
 
         bool AddGraphData(const GraphData&) override;
         void RemoveGraphData(const GraphData&) override;
@@ -130,7 +131,7 @@ namespace ScriptCanvas
         ///////////////////////////////////////////////////////////
 
         // StatusRequestBus
-        void ValidateGraph(ValidationResults& validationEvents);
+        void ValidateGraph(ValidationResults& validationEvents) override;
         void ReportValidationResults(ValidationResults&) override { }
         ////
 

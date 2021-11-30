@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -88,10 +89,22 @@ namespace Multiplayer
         //! @param deltaTime    amount of time to integrate the provided inputs over
         virtual void ProcessInput(NetworkInput& networkInput, float deltaTime) = 0;
 
+        //! Similar to ProcessInput, do not call directly.
+        //! This only needs to be overridden in components which allow NetworkInput to be processed by script.
+        //! @param networkInput input structure to process
+        //! @param deltaTime    amount of time to integrate the provided inputs over
+        virtual void ProcessInputFromScript([[maybe_unused]] NetworkInput& networkInput, [[maybe_unused]] float deltaTime){}
+
         //! Only valid on a client, should never be invoked on the server.
         //! @param networkInput input structure to process
         //! @param deltaTime    amount of time to integrate the provided inputs over
         virtual void CreateInput(NetworkInput& networkInput, float deltaTime) = 0;
+
+        //! Similar to CreateInput, should never be invoked on the server.
+        //! This only needs to be overridden in components which allow NetworkInput creation to be handled by scripts.
+        //! @param networkInput input structure to process
+        //! @param deltaTime    amount of time to integrate the provided inputs over
+        virtual void CreateInputFromScript([[maybe_unused]]NetworkInput& networkInput, [[maybe_unused]] float deltaTime) {}
 
         template <typename ComponentType>
         const ComponentType* FindComponent() const;

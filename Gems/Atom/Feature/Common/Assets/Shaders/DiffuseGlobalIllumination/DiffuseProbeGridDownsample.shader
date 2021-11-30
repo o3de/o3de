@@ -1,5 +1,5 @@
 {
-    "Source" : "DiffuseProbeGridDownsample",
+    "Source" : "DiffuseProbeGridDownsample.azsl",
 
     "RasterState" :
     {
@@ -30,5 +30,14 @@
                 "type": "Fragment"
             }
         ]
-    }
+    },
+
+    "Supervariants":
+    [
+        {
+            "Name": "NoMSAA",
+            "PlusArguments": "--no-ms",
+            "MinusArguments": ""
+        }
+    ]
 }

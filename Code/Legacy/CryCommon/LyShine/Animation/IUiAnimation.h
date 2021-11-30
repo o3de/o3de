@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -9,9 +10,6 @@
 #include <Range.h>
 #include <AnimKey.h>
 #include <ITimer.h>
-#include <IPhysics.h>
-#include <VectorSet.h>
-#include <CryName.h>
 #include <LyShine/ILyShine.h>
 #include <AzCore/Math/Vector2.h>
 #include <AzCore/Math/Vector3.h>
@@ -119,7 +117,7 @@ public:
     CUiAnimParamType()
         : m_type(eUiAnimParamType_Invalid) {}
 
-    CUiAnimParamType(const string& name)
+    CUiAnimParamType(const AZStd::string& name)
     {
         *this = name;
     }
@@ -135,17 +133,12 @@ public:
         m_type = (EUiAnimParamType)type;
     }
 
-    void operator =(const string& name)
-    {
-        m_type = eUiAnimParamType_ByString;
-        m_name = name;
-    }
-
     void operator =(const AZStd::string& name)
     {
         m_type = eUiAnimParamType_ByString;
         m_name = name.c_str();
     }
+
     // Convert to enum. This needs to be explicit,
     // otherwise operator== will be ambiguous
     EUiAnimParamType GetType() const { return m_type; }
@@ -195,7 +188,7 @@ public:
 
 private:
     EUiAnimParamType m_type;
-    CCryName m_name;
+    AZStd::string m_name;
 };
 
 // The data required to identify a specific parameter/property on an AZ component on an AZ entity
@@ -446,7 +439,7 @@ struct IUiAnimTrack
     virtual int GetSubTrackCount() const = 0;
     // Retrieve pointer the specfied sub track.
     virtual IUiAnimTrack* GetSubTrack(int nIndex) const = 0;
-    virtual const char* GetSubTrackName(int nIndex) const = 0;
+    virtual AZStd::string GetSubTrackName(int nIndex) const = 0;
     virtual void SetSubTrackName(int nIndex, const char* name) = 0;
     //////////////////////////////////////////////////////////////////////////
 
@@ -638,7 +631,7 @@ public:
     virtual void SetName(const char* name) = 0;
 
     //! Get node name.
-    virtual const char* GetName() = 0;
+    virtual AZStd::string GetName() = 0;
 
     // Get Type of this node.
     virtual EUiAnimNodeType GetType() const = 0;
@@ -714,13 +707,13 @@ public:
     //      Returns name of supported parameter of this animation node or NULL if not available
     // Arguments:
     //          paramType - parameter id
-    virtual const char* GetParamName(const CUiAnimParamType& paramType) const = 0;
+    virtual AZStd::string GetParamName(const CUiAnimParamType& paramType) const = 0;
 
     // Description:
     //      Returns name of supported parameter of this animation node or NULL if not available
     // Arguments:
     //          paramType - parameter id
-    virtual const char* GetParamNameForTrack(const CUiAnimParamType& paramType, [[maybe_unused]] const IUiAnimTrack* track) const { return GetParamName(paramType); }
+    virtual AZStd::string GetParamNameForTrack(const CUiAnimParamType& paramType, [[maybe_unused]] const IUiAnimTrack* track) const { return GetParamName(paramType); }
 
     // Description:
     //      Returns the params value type
@@ -1300,7 +1293,7 @@ inline void SUiAnimContext::Serialize(IUiAnimationSystem* animationSystem, XmlNo
     {
         if (pSequence)
         {
-            string fullname = pSequence->GetName();
+            AZStd::string fullname = pSequence->GetName();
             xmlNode->setAttr("sequence", fullname.c_str());
         }
         xmlNode->setAttr("dt", dt);

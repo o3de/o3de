@@ -1,12 +1,14 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
 #pragma once
 
+#include <AzCore/std/math.h>
 #include <AzCore/Math/Transform.h>
 #include <AzCore/Math/Vector3.h>
 
@@ -53,10 +55,18 @@ namespace AzToolsFramework
     //! @note A movement of more than half size (in either direction) will cause a snap by size.
     AZ::Vector3 CalculateSnappedAmount(const AZ::Vector3& unsnappedPosition, const AZ::Vector3& axis, float size);
 
+    //! Overload of CalculateSnappedOffset taking multiple axes.
+    AZ::Vector3 CalculateSnappedOffset(
+        const AZ::Vector3& unsnappedPosition, const AZ::Vector3* snapAxes, size_t snapAxesCount, float size);
+
+    //! Return the final snapped position according to size (unsnappedPosition + CalculateSnappedOffset).
+    AZ::Vector3 CalculateSnappedPosition(
+        const AZ::Vector3& unsnappedPosition, const AZ::Vector3* snapAxes, size_t snapAxesCount, float size);
+
     //! For a given point on the terrain, calculate the closest xy position snapped to the grid
     //! (z position is aligned to terrain height, not snapped to z grid)
     AZ::Vector3 CalculateSnappedTerrainPosition(
-        const AZ::Vector3& worldSurfacePosition, const AZ::Transform& worldFromLocal, int viewportId, float gridSize);
+        const AZ::Vector3& worldSurfacePosition, const AZ::Transform& worldFromLocal, int viewportId, float size);
 
     //! Wrapper for grid snapping and grid size bus calls.
     GridSnapParameters GridSnapSettings(int viewportId);
@@ -79,8 +89,8 @@ namespace AzToolsFramework
     //! @param exponent Precision to use when rounding.
     inline float Round(const float value, const float exponent)
     {
-        const float precision = std::pow(10.0f, exponent);
-        return roundf(value * precision) / precision;
+        const float precision = AZStd::pow(10.0f, exponent);
+        return AZStd::round(value * precision) / precision;
     }
 
     //! Round to 3 significant digits (3 digits common usage).
@@ -111,7 +121,7 @@ namespace AzToolsFramework
     //! when dealing with values far from the origin.
     inline AZ::Vector3 NonUniformScaleReciprocal(const AZ::Vector3& nonUniformScale)
     {
-        AZ::Vector3 scaleReciprocal = nonUniformScale.GetReciprocal();
+        const AZ::Vector3 scaleReciprocal = nonUniformScale.GetReciprocal();
         return AZ::Vector3(Round3(scaleReciprocal.GetX()), Round3(scaleReciprocal.GetY()), Round3(scaleReciprocal.GetZ()));
     }
 } // namespace AzToolsFramework

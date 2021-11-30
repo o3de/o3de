@@ -1,10 +1,10 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "Atom_RHI_Metal_precompiled.h"
 
 #include <Atom/RHI/MemoryStatisticsBuilder.h>
 #include <AzCore/Casting/lossy_cast.h>
@@ -50,7 +50,6 @@ namespace AZ
         RHI::ResultCode StreamingImagePool::InitImageInternal(const RHI::StreamingImageInitRequest& request)
         {
             Image& image = static_cast<Image&>(*request.m_image);
-            auto& device = static_cast<Device&>(GetDevice());
 
             MemoryView memoryView = GetDevice().CreateImageCommitted(image.GetDescriptor());
             if (!memoryView.IsValid())

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -11,28 +12,21 @@
 
 namespace AWSCore
 {
-
     /// Provides configuration needed by service jobs.
     class IServiceJobConfig
         : public virtual IHttpRequestJobConfig
     {
     };
 
-#ifdef _MSC_VER
-#pragma warning( push )
-#pragma warning( disable: 4250 )
     // warning C4250: 'AWSCore::ServiceJobConfig' : inherits 'AWSCore::AwsApiJobConfig::AWSCore::AwsApiJobConfig::GetJobContext' via dominance
     // Thanks to http://stackoverflow.com/questions/11965596/diamond-inheritance-scenario-compiles-fine-in-g-but-produces-warnings-errors for the explanation
     // This is the expected and desired behavior. The warning is superfluous.
-
-#endif
-
-/// Provides service job configuration using settings properties.
+    AZ_PUSH_DISABLE_WARNING(4250, "-Wunknown-warning-option")
+    /// Provides service job configuration using settings properties.
     class ServiceJobConfig
         : public HttpRequestJobConfig
         , public virtual IServiceJobConfig
     {
-
     public:
 
         AZ_CLASS_ALLOCATOR(ServiceJobConfig, AZ::SystemAllocator, 0);
@@ -58,13 +52,7 @@ namespace AWSCore
         }
 
         void ApplySettings() override;
-
-    private:
-
     };
-
-#ifdef _MSC_VER 
-#pragma warning( pop ) // C4250
-#endif
+    AZ_POP_DISABLE_WARNING
 
 } // namespace AWSCore

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -132,7 +133,7 @@ public:                                                                         
      * @param numBytes The number of bytes to fill.
      * @result The address as specified in the first parameter.
      */
-    MCORE_INLINE void* MemSet(void* address, const uint32 value, size_t numBytes)
+    MCORE_INLINE void* MemSet(void* address, const int value, size_t numBytes)
     {
         return memset(address, value, numBytes);
     }

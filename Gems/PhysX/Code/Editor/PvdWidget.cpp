@@ -1,11 +1,11 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
-#include <PhysX_precompiled.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzToolsFramework/UI/PropertyEditor/ReflectedPropertyEditor.hxx>
 #include <AzToolsFramework/UI/PropertyEditor/InstanceDataHierarchy.h>
@@ -19,7 +19,7 @@ namespace PhysX
     namespace Editor
     {
         static const char* const s_pvdDocumentationLink = "Learn more about the <a href=%0>PhysX Visual Debugger (PVD).</a>";
-        static const char* const s_pvdDocumentationAddress = "configuration/debugger";
+        static const char* const s_pvdDocumentationAddress = "configuring/configuration-debugger";
 
         PvdWidget::PvdWidget(QWidget* parent)
             : QWidget(parent)

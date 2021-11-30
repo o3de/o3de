@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -50,70 +51,70 @@ namespace EMotionFX
         void Init(AnimGraphInstance* animGraphInstance, AnimGraphNode* node);
         void Init(AnimGraphNodeData* nodeData);
 
-        MCORE_INLINE AnimGraphNode* GetNode() const                            { return reinterpret_cast<AnimGraphNode*>(mObject); }
-        MCORE_INLINE void SetNode(AnimGraphNode* node)                         { mObject = reinterpret_cast<AnimGraphObject*>(node); }
+        AnimGraphNode* GetNode() const                            { return reinterpret_cast<AnimGraphNode*>(m_object); }
+        void SetNode(AnimGraphNode* node)                         { m_object = reinterpret_cast<AnimGraphObject*>(node); }
 
-        MCORE_INLINE void SetSyncIndex(uint32 syncIndex)                        { mSyncIndex = syncIndex; }
-        MCORE_INLINE uint32 GetSyncIndex() const                                { return mSyncIndex; }
+        void SetSyncIndex(size_t syncIndex)                        { m_syncIndex = syncIndex; }
+        size_t GetSyncIndex() const                                { return m_syncIndex; }
 
-        MCORE_INLINE void SetCurrentPlayTime(float absoluteTime)                { mCurrentTime = absoluteTime; }
-        MCORE_INLINE float GetCurrentPlayTime() const                           { return mCurrentTime; }
+        void SetCurrentPlayTime(float absoluteTime)                { m_currentTime = absoluteTime; }
+        float GetCurrentPlayTime() const                           { return m_currentTime; }
 
-        MCORE_INLINE void SetPlaySpeed(float speed)                             { mPlaySpeed = speed; }
-        MCORE_INLINE float GetPlaySpeed() const                                 { return mPlaySpeed; }
+        void SetPlaySpeed(float speed)                             { m_playSpeed = speed; }
+        float GetPlaySpeed() const                                 { return m_playSpeed; }
 
-        MCORE_INLINE void SetDuration(float durationInSeconds)                  { mDuration = durationInSeconds; }
-        MCORE_INLINE float GetDuration() const                                  { return mDuration; }
+        void SetDuration(float durationInSeconds)                  { m_duration = durationInSeconds; }
+        float GetDuration() const                                  { return m_duration; }
 
-        MCORE_INLINE void SetPreSyncTime(float timeInSeconds)                   { mPreSyncTime = timeInSeconds; }
-        MCORE_INLINE float GetPreSyncTime() const                               { return mPreSyncTime; }
+        void SetPreSyncTime(float timeInSeconds)                   { m_preSyncTime = timeInSeconds; }
+        float GetPreSyncTime() const                               { return m_preSyncTime; }
 
-        MCORE_INLINE void SetGlobalWeight(float weight)                         { mGlobalWeight = weight; }
-        MCORE_INLINE float GetGlobalWeight() const                              { return mGlobalWeight; }
+        void SetGlobalWeight(float weight)                         { m_globalWeight = weight; }
+        float GetGlobalWeight() const                              { return m_globalWeight; }
 
-        MCORE_INLINE void SetLocalWeight(float weight)                          { mLocalWeight = weight; }
-        MCORE_INLINE float GetLocalWeight() const                               { return mLocalWeight; }
+        void SetLocalWeight(float weight)                          { m_localWeight = weight; }
+        float GetLocalWeight() const                               { return m_localWeight; }
 
-        MCORE_INLINE uint8 GetInheritFlags() const                              { return mInheritFlags; }
+        uint8 GetInheritFlags() const                              { return m_inheritFlags; }
 
-        MCORE_INLINE bool GetIsBackwardPlaying() const                          { return (mInheritFlags & INHERITFLAGS_BACKWARD) != 0; }
-        MCORE_INLINE void SetBackwardFlag()                                     { mInheritFlags |= INHERITFLAGS_BACKWARD; }
-        MCORE_INLINE void ClearInheritFlags()                                   { mInheritFlags = 0; }
+        bool GetIsBackwardPlaying() const                          { return (m_inheritFlags & INHERITFLAGS_BACKWARD) != 0; }
+        void SetBackwardFlag()                                     { m_inheritFlags |= INHERITFLAGS_BACKWARD; }
+        void ClearInheritFlags()                                   { m_inheritFlags = 0; }
 
-        MCORE_INLINE uint8 GetPoseRefCount() const                              { return mPoseRefCount; }
-        MCORE_INLINE void IncreasePoseRefCount()                                { mPoseRefCount++; }
-        MCORE_INLINE void DecreasePoseRefCount()                                { mPoseRefCount--; }
-        MCORE_INLINE void SetPoseRefCount(uint8 refCount)                       { mPoseRefCount = refCount; }
+        uint8 GetPoseRefCount() const                              { return m_poseRefCount; }
+        void IncreasePoseRefCount()                                { m_poseRefCount++; }
+        void DecreasePoseRefCount()                                { m_poseRefCount--; }
+        void SetPoseRefCount(uint8 refCount)                       { m_poseRefCount = refCount; }
 
-        MCORE_INLINE uint8 GetRefDataRefCount() const                           { return mRefDataRefCount; }
-        MCORE_INLINE void IncreaseRefDataRefCount()                             { mRefDataRefCount++; }
-        MCORE_INLINE void DecreaseRefDataRefCount()                             { mRefDataRefCount--; }
-        MCORE_INLINE void SetRefDataRefCount(uint8 refCount)                    { mRefDataRefCount = refCount; }
+        uint8 GetRefDataRefCount() const                           { return m_refDataRefCount; }
+        void IncreaseRefDataRefCount()                             { m_refDataRefCount++; }
+        void DecreaseRefDataRefCount()                             { m_refDataRefCount--; }
+        void SetRefDataRefCount(uint8 refCount)                    { m_refDataRefCount = refCount; }
 
-        MCORE_INLINE void SetRefCountedData(AnimGraphRefCountedData* data)     { mRefCountedData = data; }
-        MCORE_INLINE AnimGraphRefCountedData* GetRefCountedData() const        { return mRefCountedData; }
+        void SetRefCountedData(AnimGraphRefCountedData* data)     { m_refCountedData = data; }
+        AnimGraphRefCountedData* GetRefCountedData() const        { return m_refCountedData; }
 
-        MCORE_INLINE const AnimGraphSyncTrack* GetSyncTrack() const            { return mSyncTrack; }
-        MCORE_INLINE AnimGraphSyncTrack* GetSyncTrack()                        { return mSyncTrack; }
-        MCORE_INLINE void SetSyncTrack(AnimGraphSyncTrack* syncTrack)          { mSyncTrack = syncTrack; }
+        const AnimGraphSyncTrack* GetSyncTrack() const            { return m_syncTrack; }
+        AnimGraphSyncTrack* GetSyncTrack()                        { return m_syncTrack; }
+        void SetSyncTrack(AnimGraphSyncTrack* syncTrack)          { m_syncTrack = syncTrack; }
 
         bool GetIsMirrorMotion() const { return m_isMirrorMotion; }
         void SetIsMirrorMotion(bool newValue) { m_isMirrorMotion = newValue; }
 
     protected:
-        float       mDuration;
-        float       mCurrentTime;
-        float       mPlaySpeed;
-        float       mPreSyncTime;
-        float       mGlobalWeight;
-        float       mLocalWeight;
-        uint32      mSyncIndex;             /**< The last used sync track index. */
-        uint8       mPoseRefCount;
-        uint8       mRefDataRefCount;
-        uint8       mInheritFlags;
+        float       m_duration;
+        float       m_currentTime;
+        float       m_playSpeed;
+        float       m_preSyncTime;
+        float       m_globalWeight;
+        float       m_localWeight;
+        size_t      m_syncIndex;             /**< The last used sync track index. */
+        uint8       m_poseRefCount;
+        uint8       m_refDataRefCount;
+        uint8       m_inheritFlags;
         bool        m_isMirrorMotion;
-        AnimGraphRefCountedData*   mRefCountedData;
-        AnimGraphSyncTrack*        mSyncTrack;
+        AnimGraphRefCountedData*   m_refCountedData;
+        AnimGraphSyncTrack*        m_syncTrack;
 
         void Delete() override;
     };

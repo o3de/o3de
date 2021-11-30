@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -96,7 +97,7 @@ void CGameResourcesExporter::Save(const QString& outputDirectory)
         {
             // Save this file in target folder.
             QString trgFilename = Path::Make(outputDirectory, srcFilename);
-            int fsize = file.GetLength();
+            int fsize = static_cast<int>(file.GetLength());
             if (fsize > data.GetSize())
             {
                 data.Allocate(fsize + 16);
@@ -122,23 +123,6 @@ void CGameResourcesExporter::Save(const QString& outputDirectory)
     m_files.clear();
 }
 
-#if defined(WIN64) || defined(APPLE) || defined(AZ_PLATFORM_LINUX)
-template <class Container1, class Container2>
-void Append(Container1& a, const Container2& b)
-{
-    a.reserve (a.size() + b.size());
-    for (auto it = b.begin(); it != b.end(); ++it)
-    {
-        a.insert(a.end(), *it);
-    }
-}
-#else
-template <class Container1, class Container2>
-void Append(Container1& a, const Container2& b)
-{
-    a.insert (a.end(), b.begin(), b.end());
-}
-#endif
 //////////////////////////////////////////////////////////////////////////
 //
 // Go through all editor objects and gathers files from thier properties.
@@ -149,5 +133,5 @@ void CGameResourcesExporter::GetFilesFromObjects()
     CUsedResources rs;
     GetIEditor()->GetObjectManager()->GatherUsedResources(rs);
 
-    Append(m_files, rs.files);
+    AZStd::copy(rs.files.begin(), rs.files.end(), AZStd::back_inserter(m_files));
 }

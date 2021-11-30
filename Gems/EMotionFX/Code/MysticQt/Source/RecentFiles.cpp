@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -26,7 +27,7 @@ namespace MysticQt
         ToolTipMenu(const QString title, QWidget* parent)
             : QMenu(title, parent)
         {
-            mParent = parent;
+            m_parent = parent;
         }
 
         bool event(QEvent* e) override
@@ -39,7 +40,7 @@ namespace MysticQt
                 QAction* action = activeAction();
                 if (action)
                 {
-                    QToolTip::showText(helpEvent->globalPos(), action->toolTip(), mParent);
+                    QToolTip::showText(helpEvent->globalPos(), action->toolTip(), m_parent);
                 }
             }
             else
@@ -51,7 +52,7 @@ namespace MysticQt
         }
 
     private:
-        QWidget* mParent;
+        QWidget* m_parent;
     };
 
 

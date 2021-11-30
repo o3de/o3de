@@ -1,11 +1,11 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
-#include "SurfaceData_precompiled.h"
 #include <SurfaceData/SurfaceTag.h>
 
 #include <AzCore/RTTI/BehaviorContext.h>
@@ -88,7 +88,7 @@ namespace SurfaceData
 
     AZStd::vector<AZStd::pair<AZ::u32, AZStd::string>> SurfaceTag::GetRegisteredTags()
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
+        AZ_PROFILE_FUNCTION(Entity);
 
         SurfaceTagNameSet labels;
         SurfaceDataTagProviderRequestBus::Broadcast(&SurfaceDataTagProviderRequestBus::Events::GetRegisteredSurfaceTagNames, labels);
@@ -134,7 +134,7 @@ namespace SurfaceData
 
     AZStd::vector<AZStd::pair<AZ::u32, AZStd::string>> SurfaceTag::BuildSelectableTagList() const
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
+        AZ_PROFILE_FUNCTION(Entity);
 
         AZStd::vector<AZStd::pair<AZ::u32, AZStd::string>> selectableTags = GetRegisteredTags();
 
@@ -152,7 +152,7 @@ namespace SurfaceData
 
     AZStd::string SurfaceTag::GetDisplayName() const
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
+        AZ_PROFILE_FUNCTION(Entity);
 
         AZStd::string name;
         FindDisplayName(GetRegisteredTags(), name);

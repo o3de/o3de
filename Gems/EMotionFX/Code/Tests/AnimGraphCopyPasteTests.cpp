@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -158,7 +159,7 @@ namespace EMotionFX
                     (azrtti_typeid<>(conditionPrototype) != azrtti_typeid<AnimGraphTransitionCondition>()))
                 {
                     AZ::TypeId type = azrtti_typeid<>(conditionPrototype);
-                    OutputDebugString(AZStd::string::format("Condition: Name=%s, Type=%s\n", conditionPrototype->GetPaletteName(), type.ToString<AZStd::string>().c_str()).c_str());
+                    AZ::Debug::Platform::OutputToDebugger(nullptr, AZStd::string::format("Condition: Name=%s, Type=%s\n", conditionPrototype->GetPaletteName(), type.ToString<AZStd::string>().c_str()).c_str());
                     result.emplace_back(azrtti_typeid<>(conditionPrototype));
                 }
             }
@@ -183,7 +184,6 @@ namespace EMotionFX
         void VerifyAfterOperation()
         {
             const AZStd::vector<AZ::TypeId> conditionTypeIds = GetConditionTypeIds();
-            const size_t numConditionTypes = conditionTypeIds.size();
             const bool cutMode = GetParam();
             if (cutMode)
             {
@@ -418,7 +418,6 @@ namespace EMotionFX
         AZStd::string result;
         MCore::CommandGroup commandGroup;
         const bool cutMode = GetParam();
-        const AnimGraphConnectionId oldtransitionId = m_transition->GetId();
 
         // Add transition actions to the node.
         AnimGraphParameterAction* action1 = aznew AnimGraphParameterAction();

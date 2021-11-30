@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -33,6 +34,6 @@ namespace MCore
          */
         static bool SaveToFileSecured(const char* filename, const AZStd::function<bool()>& saveFunction, CommandManager* commandManager = nullptr);
 
-        static StaticString     mSecureSavePath;        /**< The folder path used to keep a backup in SaveToFileSecured. */
+        static StaticString     s_secureSavePath;        /**< The folder path used to keep a backup in SaveToFileSecured. */
     };
 } // namespace MCore

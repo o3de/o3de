@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -10,7 +11,7 @@
 // include required headers
 #include "EMotionFXConfig.h"
 #include "AnimGraphRefCountedData.h"
-#include <MCore/Source/Array.h>
+#include <AzCore/std/containers/vector.h>
 
 
 namespace EMotionFX
@@ -28,20 +29,20 @@ namespace EMotionFX
         AnimGraphRefCountedDataPool();
         ~AnimGraphRefCountedDataPool();
 
-        void Resize(uint32 numItems);
+        void Resize(size_t numItems);
 
         AnimGraphRefCountedData* RequestNew();
         void Free(AnimGraphRefCountedData* item);
 
-        MCORE_INLINE uint32 GetNumFreeItems() const             { return mFreeItems.GetLength(); }
-        MCORE_INLINE uint32 GetNumItems() const                 { return mItems.GetLength(); }
-        MCORE_INLINE uint32 GetNumUsedItems() const             { return (mItems.GetLength() - mFreeItems.GetLength()); }
-        MCORE_INLINE uint32 GetNumMaxUsedItems() const          { return mMaxUsed; }
-        MCORE_INLINE void ResetMaxUsedItems()                   { mMaxUsed = 0; }
+        MCORE_INLINE size_t GetNumFreeItems() const             { return m_freeItems.size(); }
+        MCORE_INLINE size_t GetNumItems() const                 { return m_items.size(); }
+        MCORE_INLINE size_t GetNumUsedItems() const             { return m_items.size() - m_freeItems.size(); }
+        MCORE_INLINE size_t GetNumMaxUsedItems() const          { return m_maxUsed; }
+        MCORE_INLINE void ResetMaxUsedItems()                   { m_maxUsed = 0; }
 
     private:
-        MCore::Array<AnimGraphRefCountedData*> mItems;
-        MCore::Array<AnimGraphRefCountedData*> mFreeItems;
-        uint32                                  mMaxUsed;
+        AZStd::vector<AnimGraphRefCountedData*> m_items;
+        AZStd::vector<AnimGraphRefCountedData*> m_freeItems;
+        size_t                                  m_maxUsed;
     };
 }   // namespace EMotionFX

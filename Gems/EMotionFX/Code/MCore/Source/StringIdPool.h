@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -49,14 +50,7 @@ namespace MCore
         * @param id The unique id to search for the name.
         * @return The name of the given object.
         */
-        const AZStd::string& GetName(uint32 id);
-
-        /**
-         * Return the name of the given id.
-         * @param id The unique id to search for the name.
-         * @return The name of the given object.
-         */
-        const AZStd::string& GetStringById(AZ::u32 id);
+        const AZStd::string& GetName(AZ::u32 id);
 
         /**
          * Reserve space for a given amount of strings.
@@ -72,9 +66,9 @@ namespace MCore
 
     private:
 
-        AZStd::vector<AZStd::string*>                   mStrings;
-        AZStd::unordered_map<AZStd::string, AZ::u32>    mStringToIndex;         /**< The string to index table, where the index maps into mNames array and is directly the ID. */
-        Mutex                                           mMutex;                 /**< The multithread lock. */
+        AZStd::vector<AZStd::string*>                   m_strings;
+        AZStd::unordered_map<AZStd::string, AZ::u32>    m_stringToIndex;         /**< The string to index table, where the index maps into m_names array and is directly the ID. */
+        Mutex                                           m_mutex;                 /**< The multithread lock. */
 
         StringIdPool();
         ~StringIdPool();
@@ -83,17 +77,15 @@ namespace MCore
     /**
      * The StringIdPoolIndex is a helper class to aid with serialization of
      * class members that store indexes into the StringIdPool. Members of this
-     * type will serialize to a string, and deserialize to a uint32, while
+     * type will serialize to a string, and deserialize to a AZ::u32, while
      * allowing the StringIdPool to deduplicate the strings.
      */
     struct StringIdPoolIndex
     {
-        AZ::u32 m_index;
+        AZ::u32 m_index{};
 
-        StringIdPoolIndex() : m_index(0) {}
-        StringIdPoolIndex(uint32 index) : m_index(index) {}
-        operator uint32() const { return m_index; }
-        bool operator==(uint32 rhs) const { return m_index == rhs; }
+        operator AZ::u32() const { return m_index; }
+        bool operator==(AZ::u32 rhs) const { return m_index == rhs; }
 
         static void Reflect(AZ::ReflectContext* context);
     };
@@ -103,4 +95,4 @@ namespace MCore
 namespace AZ
 {
     AZ_TYPE_INFO_SPECIALIZE(MCore::StringIdPoolIndex, "{C374F051-8323-49DB-A1BD-C6B6CF0333C0}")
-}
+} // namespace AZ

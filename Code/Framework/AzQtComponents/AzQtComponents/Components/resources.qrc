@@ -370,6 +370,7 @@
     <file>img/UI20/toolbar/Redo.svg</file>
     <file>img/UI20/toolbar/remove_link.svg</file>
     <file>img/UI20/toolbar/Reset_physics_state.svg</file>
+	<file>img/UI20/toolbar/RestoreMode.svg</file>
     <file>img/UI20/toolbar/Save.svg</file>
     <file>img/UI20/toolbar/Scale.svg</file>
     <file>img/UI20/toolbar/Select.svg</file>
@@ -377,9 +378,10 @@
     <file>img/UI20/toolbar/Select_terrain.svg</file>
     <file>img/UI20/toolbar/Simulate_Physics.svg</file>
     <file>img/UI20/toolbar/Simulate_Physics_on_selected_objects.svg</file>
+	<file>img/UI20/toolbar/SketchMode.svg</file>
     <file>img/UI20/toolbar/Terrain.svg</file>
     <file>img/UI20/toolbar/Terrain_Texture.svg</file>
-    <file>img/UI20/toolbar/Translate.svg</file>
+    <file>img/UI20/toolbar/Rotate.svg</file>
     <file>img/UI20/toolbar/undo.svg</file>
     <file>img/UI20/toolbar/Unlocked.svg</file>
     <file>img/UI20/toolbar/Vertex_snapping.svg</file>
@@ -388,6 +390,14 @@
     <file>img/UI20/toolbar/Y_axis.svg</file>
     <file>img/UI20/toolbar/Z_axis.svg</file>
     <file>img/UI20/toolbar/XY2_copy.svg</file>
+    <file>img/UI20/toolbar/joints/Damping.svg</file>
+    <file>img/UI20/toolbar/joints/MaxForce.svg</file>
+    <file>img/UI20/toolbar/joints/MaxTorque.svg</file>
+    <file>img/UI20/toolbar/joints/SnapPosition.svg</file>
+    <file>img/UI20/toolbar/joints/SnapRotation.svg</file>
+    <file>img/UI20/toolbar/joints/Stiffness.svg</file>
+    <file>img/UI20/toolbar/joints/SwingLimits.svg</file>
+    <file>img/UI20/toolbar/joints/TwistLimits.svg</file>
     <file>img/triangle0.png</file>
     <file>img/triangle0_highlighted.png</file>
     <file>img/line.png</file>
@@ -422,7 +432,6 @@
     <file>img/UI20/Cards/menu_ico.png</file>
     <file>img/UI20/Cards/error_icon.png</file>
     <file>img/UI20/Cards/warning.png</file>
-    <file>img/UI20/Cards/warning.svg</file>
     <file>img/UI20/Cards/search.png</file>
     <file>img/UI20/Cards/close.png</file>
     <file>img/UI20/Cards/error-conclict-state.svg</file>

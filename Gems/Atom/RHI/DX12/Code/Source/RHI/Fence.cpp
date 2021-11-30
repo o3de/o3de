@@ -1,10 +1,10 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "RHI/Atom_RHI_DX12_precompiled.h"
 #include <RHI/Fence.h>
 #include <RHI/Device.h>
 
@@ -13,9 +13,13 @@ namespace AZ
     namespace DX12
     {
         FenceEvent::FenceEvent(const char* name)
-            : m_EventHandle(CreateEvent(nullptr, false, false, name))
+            : m_EventHandle(nullptr)
             , m_name(name)
-        {}
+        {
+            AZStd::wstring nameW;
+            AZStd::to_wstring(nameW, name);
+            m_EventHandle = CreateEvent(nullptr, false, false, nameW.c_str());
+        }
 
         FenceEvent::~FenceEvent()
         {
@@ -56,7 +60,7 @@ namespace AZ
         {
             if (fenceValue > GetCompletedValue())
             {
-                AZ_PROFILE_SCOPE_IDLE_DYNAMIC(AZ::Debug::ProfileCategory::AzRender, "Fence Wait: %s", fenceEvent.GetName());
+                AZ_PROFILE_SCOPE(RHI, "Fence Wait: %s", fenceEvent.GetName());
                 m_fence->SetEventOnCompletion(fenceValue, fenceEvent.m_EventHandle);
                 WaitForSingleObject(fenceEvent.m_EventHandle, INFINITE);
             }

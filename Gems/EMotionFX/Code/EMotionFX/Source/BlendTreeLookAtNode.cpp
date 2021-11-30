@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -33,13 +34,13 @@ namespace EMotionFX
 
     void BlendTreeLookAtNode::UniqueData::Update()
     {
-        BlendTreeLookAtNode* lookAtNode = azdynamic_cast<BlendTreeLookAtNode*>(mObject);
+        BlendTreeLookAtNode* lookAtNode = azdynamic_cast<BlendTreeLookAtNode*>(m_object);
         AZ_Assert(lookAtNode, "Unique data linked to incorrect node type.");
 
-        const ActorInstance* actorInstance = mAnimGraphInstance->GetActorInstance();
+        const ActorInstance* actorInstance = m_animGraphInstance->GetActorInstance();
         const Actor* actor = actorInstance->GetActor();
 
-        mNodeIndex = InvalidIndex32;
+        m_nodeIndex = InvalidIndex;
         SetHasError(true);
 
         const AZStd::string& targetJointName = lookAtNode->GetTargetNodeName();
@@ -48,7 +49,7 @@ namespace EMotionFX
             const Node* targetNode = actor->GetSkeleton()->FindNodeByName(targetJointName);
             if (targetNode)
             {
-                mNodeIndex = targetNode->GetNodeIndex();
+                m_nodeIndex = targetNode->GetNodeIndex();
                 SetHasError(false);
             }
         }
@@ -111,7 +112,7 @@ namespace EMotionFX
         AnimGraphPose* outputPose;
 
         // make sure we have at least an input pose, otherwise output the bind pose
-        if (GetInputPort(INPUTPORT_POSE).mConnection == nullptr)
+        if (GetInputPort(INPUTPORT_POSE).m_connection == nullptr)
         {
             RequestPoses(animGraphInstance);
             outputPose = GetOutputPose(animGraphInstance, OUTPUTPORT_POSE)->GetValue();
@@ -122,7 +123,7 @@ namespace EMotionFX
 
         // get the weight
         float weight = 1.0f;
-        if (GetInputPort(INPUTPORT_WEIGHT).mConnection)
+        if (GetInputPort(INPUTPORT_WEIGHT).m_connection)
         {
             OutputIncomingNode(animGraphInstance, GetInputNode(INPUTPORT_WEIGHT));
             weight = GetInputNumberAsFloat(animGraphInstance, INPUTPORT_WEIGHT);
@@ -130,7 +131,7 @@ namespace EMotionFX
         }
 
         // if the weight is near zero, we can skip all calculations and act like a pass-trough node
-        if (weight < MCore::Math::epsilon || mDisabled)
+        if (weight < MCore::Math::epsilon || m_disabled)
         {
             OutputIncomingNode(animGraphInstance, GetInputNode(INPUTPORT_POSE));
             RequestPoses(animGraphInstance);
@@ -138,7 +139,7 @@ namespace EMotionFX
             const AnimGraphPose* inputPose = GetInputPose(animGraphInstance, INPUTPORT_POSE)->GetValue();
             *outputPose = *inputPose;
             UniqueData* uniqueData = static_cast<UniqueData*>(FindOrCreateUniqueNodeData(animGraphInstance));
-            uniqueData->mFirstUpdate = true;
+            uniqueData->m_firstUpdate = true;
             return;
         }
 
@@ -176,7 +177,7 @@ namespace EMotionFX
         ActorInstance* actorInstance = animGraphInstance->GetActorInstance();
 
         // get a shortcut to the local transform object
-        const uint32 nodeIndex = uniqueData->mNodeIndex;
+        const size_t nodeIndex = uniqueData->m_nodeIndex;
 
         Pose& outTransformPose = outputPose->GetPose();
         Transform globalTransform = outTransformPose.GetWorldSpaceTransform(nodeIndex);
@@ -184,7 +185,7 @@ namespace EMotionFX
         Skeleton* skeleton = actorInstance->GetActor()->GetSkeleton();
 
         // Prevent invalid float values inside the LookAt matrix construction when both position and goal are the same
-        const AZ::Vector3 diff = globalTransform.mPosition - goal;
+        const AZ::Vector3 diff = globalTransform.m_position - goal;
         if (diff.GetLengthSq() < AZ::Constants::FloatEpsilon)
         {
             goal += AZ::Vector3(0.0f, 0.000001f, 0.0f);
@@ -193,7 +194,7 @@ namespace EMotionFX
         // calculate the lookat transform
         // TODO: a quaternion lookat function would be nicer, so that there are no matrix operations involved
         AZ::Matrix4x4 lookAt;
-        MCore::LookAt(lookAt, globalTransform.mPosition, goal, AZ::Vector3(0.0f, 0.0f, 1.0f));
+        MCore::LookAt(lookAt, globalTransform.m_position, goal, AZ::Vector3(0.0f, 0.0f, 1.0f));
         AZ::Quaternion destRotation = AZ::Quaternion::CreateFromMatrix4x4(lookAt.GetTranspose());
 
         // apply the post rotation
@@ -202,13 +203,13 @@ namespace EMotionFX
         if (m_limitsEnabled)
         {
             // calculate the delta between the bind pose rotation and current target rotation and constraint that to our limits
-            const uint32 parentIndex = skeleton->GetNode(nodeIndex)->GetParentIndex();
+            const size_t parentIndex = skeleton->GetNode(nodeIndex)->GetParentIndex();
             AZ::Quaternion parentRotationGlobal;
             AZ::Quaternion bindRotationLocal;
-            if (parentIndex != MCORE_INVALIDINDEX32)
+            if (parentIndex != InvalidIndex)
             {
-                parentRotationGlobal = inputPose->GetPose().GetWorldSpaceTransform(parentIndex).mRotation;
-                bindRotationLocal = actorInstance->GetTransformData()->GetBindPose()->GetLocalSpaceTransform(parentIndex).mRotation;
+                parentRotationGlobal = inputPose->GetPose().GetWorldSpaceTransform(parentIndex).m_rotation;
+                bindRotationLocal = actorInstance->GetTransformData()->GetBindPose()->GetLocalSpaceTransform(parentIndex).m_rotation;
             }
             else
             {
@@ -227,47 +228,47 @@ namespace EMotionFX
             constraint.SetMinTwistAngle(0.0f);
             constraint.SetMaxTwistAngle(0.0f);
             constraint.SetTwistAxis(m_twistAxis);
-            constraint.GetTransform().mRotation = (deltaRotLocal * m_constraintRotation.GetConjugate());
+            constraint.GetTransform().m_rotation = (deltaRotLocal * m_constraintRotation.GetConjugate());
             constraint.Execute();
 
             if (GetEMotionFX().GetIsInEditorMode() && GetCanVisualize(animGraphInstance))
             {
                 AZ::Transform offset = AZ::Transform::CreateFromQuaternion(m_postRotation.GetInverseFull() * bindRotationLocal * m_constraintRotation * parentRotationGlobal);
-                offset.SetTranslation(globalTransform.mPosition);
+                offset.SetTranslation(globalTransform.m_position);
                 constraint.DebugDraw(actorInstance, offset, GetVisualizeColor(), 0.5f);
             }
 
             // convert back into world space
-            destRotation = (bindRotationLocal * (constraint.GetTransform().mRotation * m_constraintRotation)) * parentRotationGlobal;
+            destRotation = (bindRotationLocal * (constraint.GetTransform().m_rotation * m_constraintRotation)) * parentRotationGlobal;
         }
 
         // init the rotation quaternion to the initial rotation
-        if (uniqueData->mFirstUpdate)
+        if (uniqueData->m_firstUpdate)
         {
-            uniqueData->mRotationQuat = destRotation;
-            uniqueData->mFirstUpdate = false;
+            uniqueData->m_rotationQuat = destRotation;
+            uniqueData->m_firstUpdate = false;
         }
 
         // interpolate between the current rotation and the destination rotation
         if (m_smoothing)
         {
-            const float speed = m_followSpeed * uniqueData->mTimeDelta * 10.0f;
+            const float speed = m_followSpeed * uniqueData->m_timeDelta * 10.0f;
             if (speed < 1.0f)
             {
-                uniqueData->mRotationQuat = uniqueData->mRotationQuat.Slerp(destRotation, speed);
+                uniqueData->m_rotationQuat = uniqueData->m_rotationQuat.Slerp(destRotation, speed);
             }
             else
             {
-                uniqueData->mRotationQuat = destRotation;
+                uniqueData->m_rotationQuat = destRotation;
             }
         }
         else
         {
-            uniqueData->mRotationQuat = destRotation;
+            uniqueData->m_rotationQuat = destRotation;
         }
 
-        uniqueData->mRotationQuat.Normalize();
-        globalTransform.mRotation = uniqueData->mRotationQuat;
+        uniqueData->m_rotationQuat.Normalize();
+        globalTransform.m_rotation = uniqueData->m_rotationQuat;
 
         // only blend when needed
         if (weight < 0.999f)
@@ -293,11 +294,11 @@ namespace EMotionFX
             DebugDraw& debugDraw = GetDebugDraw();
             DebugDraw::ActorInstanceData* drawData = debugDraw.GetActorInstanceData(animGraphInstance->GetActorInstance());
             drawData->Lock();
-            drawData->DrawLine(goal - AZ::Vector3(s, 0, 0), goal + AZ::Vector3(s, 0, 0), mVisualizeColor);
-            drawData->DrawLine(goal - AZ::Vector3(0, s, 0), goal + AZ::Vector3(0, s, 0), mVisualizeColor);
-            drawData->DrawLine(goal - AZ::Vector3(0, 0, s), goal + AZ::Vector3(0, 0, s), mVisualizeColor);
-            drawData->DrawLine(globalTransform.mPosition, goal, mVisualizeColor);
-            drawData->DrawLine(globalTransform.mPosition, globalTransform.mPosition + MCore::CalcUpAxis(globalTransform.mRotation) * s * 50.0f, AZ::Color(0.0f, 0.0f, 1.0f, 1.0f));
+            drawData->DrawLine(goal - AZ::Vector3(s, 0, 0), goal + AZ::Vector3(s, 0, 0), m_visualizeColor);
+            drawData->DrawLine(goal - AZ::Vector3(0, s, 0), goal + AZ::Vector3(0, s, 0), m_visualizeColor);
+            drawData->DrawLine(goal - AZ::Vector3(0, 0, s), goal + AZ::Vector3(0, 0, s), m_visualizeColor);
+            drawData->DrawLine(globalTransform.m_position, goal, m_visualizeColor);
+            drawData->DrawLine(globalTransform.m_position, globalTransform.m_position + MCore::CalcUpAxis(globalTransform.m_rotation) * s * 50.0f, AZ::Color(0.0f, 0.0f, 1.0f, 1.0f));
             drawData->Unlock();
         }
     }
@@ -334,7 +335,7 @@ namespace EMotionFX
             uniqueData->Clear();
         }
 
-        uniqueData->mTimeDelta = timePassedInSeconds;
+        uniqueData->m_timeDelta = timePassedInSeconds;
     }
 
     AZ::Crc32 BlendTreeLookAtNode::GetLimitWidgetsVisibility() const

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -32,7 +33,7 @@ namespace EMotionFX
 
         m_motion = motion;
         m_actorInstance = actorInstance;
-        m_id = MCore::GetIDGenerator().GenerateID();
+        m_id = aznumeric_caster(MCore::GetIDGenerator().GenerateID());
 
         SetDeleteOnZeroWeight(true);
         SetCanOverwrite(true);
@@ -73,30 +74,30 @@ namespace EMotionFX
 
     void MotionInstance::InitFromPlayBackInfo(const PlayBackInfo& info, bool resetCurrentPlaytime)
     {
-        SetFadeTime             (info.mBlendOutTime);
-        SetMixMode              (info.mMix);
-        SetMaxLoops             (info.mNumLoops);
-        SetBlendMode            (info.mBlendMode);
-        SetPlaySpeed            (info.mPlaySpeed);
-        SetWeight               (info.mTargetWeight, info.mBlendInTime);
-        SetPriorityLevel        (info.mPriorityLevel);
-        SetPlayMode             (info.mPlayMode);
-        SetRetargetingEnabled   (info.mRetarget);
-        SetMotionExtractionEnabled(info.mMotionExtractionEnabled);
-        SetFreezeAtLastFrame    (info.mFreezeAtLastFrame);
-        SetMotionEventsEnabled  (info.mEnableMotionEvents);
-        SetMaxPlayTime          (info.mMaxPlayTime);
-        SetEventWeightThreshold (info.mEventWeightThreshold);
-        SetBlendOutBeforeEnded  (info.mBlendOutBeforeEnded);
-        SetCanOverwrite         (info.mCanOverwrite);
-        SetDeleteOnZeroWeight   (info.mDeleteOnZeroWeight);
-        SetMirrorMotion         (info.mMirrorMotion);
-        SetFreezeAtTime         (info.mFreezeAtTime);
-        SetIsInPlace            (info.mInPlace);
+        SetFadeTime             (info.m_blendOutTime);
+        SetMixMode              (info.m_mix);
+        SetMaxLoops             (info.m_numLoops);
+        SetBlendMode            (info.m_blendMode);
+        SetPlaySpeed            (info.m_playSpeed);
+        SetWeight               (info.m_targetWeight, info.m_blendInTime);
+        SetPriorityLevel        (info.m_priorityLevel);
+        SetPlayMode             (info.m_playMode);
+        SetRetargetingEnabled   (info.m_retarget);
+        SetMotionExtractionEnabled(info.m_motionExtractionEnabled);
+        SetFreezeAtLastFrame    (info.m_freezeAtLastFrame);
+        SetMotionEventsEnabled  (info.m_enableMotionEvents);
+        SetMaxPlayTime          (info.m_maxPlayTime);
+        SetEventWeightThreshold (info.m_eventWeightThreshold);
+        SetBlendOutBeforeEnded  (info.m_blendOutBeforeEnded);
+        SetCanOverwrite         (info.m_canOverwrite);
+        SetDeleteOnZeroWeight   (info.m_deleteOnZeroWeight);
+        SetMirrorMotion         (info.m_mirrorMotion);
+        SetFreezeAtTime         (info.m_freezeAtTime);
+        SetIsInPlace            (info.m_inPlace);
 
         if (resetCurrentPlaytime)
         {
-            m_currentTime = (info.mPlayMode == PLAYMODE_BACKWARD) ? GetDuration() : 0.0f;
+            m_currentTime = (info.m_playMode == PLAYMODE_BACKWARD) ? GetDuration() : 0.0f;
             m_lastCurTime = m_currentTime;
             m_timeDiffToEnd = GetDuration();
         }
@@ -362,14 +363,14 @@ namespace EMotionFX
         const float currentTimePreUpdate = m_currentTime;
         UpdateTime(timePassed);
 
-        // If UpdateTime() did not advance mCurrentTime we can skip over ProcessEvents().
+        // If UpdateTime() did not advance m_currentTime we can skip over ProcessEvents().
         if (!AZ::IsClose(m_lastCurTime, m_currentTime, AZ::Constants::FloatEpsilon))
         {
             // if we are blending towards the destination motion or layer.
-            // Do this after UpdateTime(timePassed) and use (mCurrentTime - mLastCurTime)
+            // Do this after UpdateTime(timePassed) and use (m_currentTime - m_lastCurTime)
             // as the elapsed time. This will function for Updates that use SetCurrentTime(time, false)
             // like Simple Motion component does with Track View. This will also work for motions that
-            // have mPlaySpeed that is not 1.0f.
+            // have m_playSpeed that is not 1.0f.
             if (GetIsBlending())
             {
                 const float duration = GetDuration();
@@ -818,7 +819,7 @@ namespace EMotionFX
     }
 
     // calculate a world space transformation for a given node by sampling the motion at a given time
-    void MotionInstance::CalcGlobalTransform(const MCore::Array<AZ::u32>& hierarchyPath, float timeValue, Transform* outTransform) const
+    void MotionInstance::CalcGlobalTransform(const AZStd::vector<size_t>& hierarchyPath, float timeValue, Transform* outTransform) const
     {
         Actor*      actor = m_actorInstance->GetActor();
         Skeleton*   skeleton = actor->GetSkeleton();
@@ -828,10 +829,10 @@ namespace EMotionFX
         outTransform->Identity();
 
         // iterate from root towards the node (so backwards in the array)
-        for (int32 i = hierarchyPath.GetLength() - 1; i >= 0; --i)
+        for (auto iter = rbegin(hierarchyPath); iter != rend(hierarchyPath); ++iter)
         {
             // get the current node index
-            const AZ::u32 nodeIndex = hierarchyPath[i];
+            const size_t nodeIndex = *iter;
             m_motion->CalcNodeTransform(this, &subMotionTransform, actor, skeleton->GetNode(nodeIndex), timeValue, GetRetargetingEnabled());
 
             // multiply parent transform with the current node's transform
@@ -853,9 +854,9 @@ namespace EMotionFX
         m_motion->CalcNodeTransform(this, &oldNodeTransform, actor, rootNode, oldTime, GetRetargetingEnabled());
 
         // calculate the relative transforms
-        outTransform->mPosition = curNodeTransform.mPosition - oldNodeTransform.mPosition;
-        outTransform->mRotation = curNodeTransform.mRotation * oldNodeTransform.mRotation.GetConjugate();
-        outTransform->mRotation.Normalize();
+        outTransform->m_position = curNodeTransform.m_position - oldNodeTransform.m_position;
+        outTransform->m_rotation = curNodeTransform.m_rotation * oldNodeTransform.m_rotation.GetConjugate();
+        outTransform->m_rotation.Normalize();
     }
 
     // extract the motion delta transform
@@ -878,7 +879,7 @@ namespace EMotionFX
         }
 
         // get the motion extraction node index
-        const AZ::u32 motionExtractionNodeIndex = motionExtractNode->GetNodeIndex();
+        const size_t motionExtractionNodeIndex = motionExtractNode->GetNodeIndex();
 
         // get the current and previous time value from the motion instance
         float curTimeValue = GetCurrentTime();
@@ -915,8 +916,8 @@ namespace EMotionFX
                 }
 
                 // add the relative transform to the final values
-                trajectoryDelta.mPosition += relativeTrajectoryTransform.mPosition;
-                trajectoryDelta.mRotation  = relativeTrajectoryTransform.mRotation * trajectoryDelta.mRotation;
+                trajectoryDelta.m_position += relativeTrajectoryTransform.m_position;
+                trajectoryDelta.m_rotation  = relativeTrajectoryTransform.m_rotation * trajectoryDelta.m_rotation;
             }
 
             // calculate the relative movement
@@ -924,8 +925,8 @@ namespace EMotionFX
             CalcRelativeTransform(motionExtractNode, curTimeValue, oldTimeValue, &relativeTrajectoryTransform);
 
             // add the relative transform to the final values
-            trajectoryDelta.mPosition += relativeTrajectoryTransform.mPosition;
-            trajectoryDelta.mRotation  = relativeTrajectoryTransform.mRotation * trajectoryDelta.mRotation;
+            trajectoryDelta.m_position += relativeTrajectoryTransform.m_position;
+            trajectoryDelta.m_rotation  = relativeTrajectoryTransform.m_rotation * trajectoryDelta.m_rotation;
         } // if not paused
 
 
@@ -940,8 +941,8 @@ namespace EMotionFX
         // Calculate the difference between the first frame of the motion and the bind pose transform.
         TransformData* transformData = m_actorInstance->GetTransformData();
         const Pose* bindPose = transformData->GetBindPose();
-        AZ::Quaternion permBindPoseRotDiff = firstFrameTransform.mRotation * bindPose->GetLocalSpaceTransform(motionExtractionNodeIndex).mRotation.GetConjugate();
-        AZ::Vector3 permBindPosePosDiff = bindPose->GetLocalSpaceTransform(motionExtractionNodeIndex).mPosition - firstFrameTransform.mPosition;
+        AZ::Quaternion permBindPoseRotDiff = firstFrameTransform.m_rotation * bindPose->GetLocalSpaceTransform(motionExtractionNodeIndex).m_rotation.GetConjugate();
+        AZ::Vector3 permBindPosePosDiff = bindPose->GetLocalSpaceTransform(motionExtractionNodeIndex).m_position - firstFrameTransform.m_position;
         permBindPoseRotDiff.SetX(0.0f);
         permBindPoseRotDiff.SetY(0.0f);
         permBindPoseRotDiff.Normalize();
@@ -963,22 +964,22 @@ namespace EMotionFX
         // Capture rotation around the up axis only.
         trajectoryDelta.ApplyMotionExtractionFlags(m_motion->GetMotionExtractionFlags());
 
-        AZ::Quaternion removeRot = currentFrameTransform.mRotation * firstFrameTransform.mRotation.GetConjugate();
+        AZ::Quaternion removeRot = currentFrameTransform.m_rotation * firstFrameTransform.m_rotation.GetConjugate();
         removeRot.SetX(0.0f);
         removeRot.SetY(0.0f);
         removeRot.Normalize();
 
-        AZ::Quaternion rotation = removeRot.GetConjugate() * trajectoryDelta.mRotation * permBindPoseRotDiff.GetConjugate();
+        AZ::Quaternion rotation = removeRot.GetConjugate() * trajectoryDelta.m_rotation * permBindPoseRotDiff.GetConjugate();
         rotation.SetX(0.0f);
         rotation.SetY(0.0f);
         rotation.Normalize();
 
-        AZ::Vector3 rotatedPos = rotation.TransformVector(trajectoryDelta.mPosition - bindPosePosDiff);
+        AZ::Vector3 rotatedPos = rotation.TransformVector(trajectoryDelta.m_position - bindPosePosDiff);
 
         // Calculate the real trajectory delta, taking into account the actor instance rotation.
-        outTrajectoryDelta.mPosition = m_actorInstance->GetLocalSpaceTransform().mRotation.TransformVector(rotatedPos);
-        outTrajectoryDelta.mRotation = trajectoryDelta.mRotation * bindPoseRotDiff;
-        outTrajectoryDelta.mRotation.Normalize();
+        outTrajectoryDelta.m_position = m_actorInstance->GetLocalSpaceTransform().m_rotation.TransformVector(rotatedPos);
+        outTrajectoryDelta.m_rotation = trajectoryDelta.m_rotation * bindPoseRotDiff;
+        outTrajectoryDelta.m_rotation.Normalize();
 
         if (m_boolFlags & MotionInstance::BOOL_ISFIRSTREPOSUPDATE)
         {

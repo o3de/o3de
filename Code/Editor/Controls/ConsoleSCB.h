@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -158,6 +159,7 @@ private:
 class CConsoleSCB
     : public QWidget
     , private AzToolsFramework::EditorPreferencesNotificationBus::Handler
+    , public IEditorNotifyListener
 {
     Q_OBJECT
 public:
@@ -186,8 +188,9 @@ private Q_SLOTS:
     void findNext();
 
 private:
+    void OnEditorNotifyEvent(EEditorNotifyEvent event) override;
+
     QScopedPointer<Ui::Console> ui;
-    int m_richEditTextLength;
 
     Lines m_lines;
     static Lines s_pendingLines;

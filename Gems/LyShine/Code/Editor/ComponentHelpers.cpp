@@ -1,11 +1,10 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "UiCanvasEditor_precompiled.h"
-
 #include "EditorCommon.h"
 #include "UiEditorInternalBus.h"
 #include <AzCore/Component/ComponentBus.h>
@@ -765,7 +764,7 @@ namespace ComponentHelpers
                 QObject::connect(action,
                     &QAction::triggered,
                     hierarchy,
-                    [serializeContext, hierarchy, componentClass, items]([[maybe_unused]] bool checked)
+                    [hierarchy, componentClass, items]([[maybe_unused]] bool checked)
                 {
                     EBUS_EVENT(UiEditorInternalNotificationBus, OnBeginUndoableEntitiesChange);
 

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -22,14 +23,14 @@ class CGizmoManager
     : public IGizmoManager
 {
 public:
-    void AddGizmo(CGizmo* gizmo);
-    void RemoveGizmo(CGizmo* gizmo);
+    void AddGizmo(CGizmo* gizmo) override;
+    void RemoveGizmo(CGizmo* gizmo) override;
 
     int GetGizmoCount() const override;
     CGizmo* GetGizmoByIndex(int nIndex) const override;
 
-    void Display(DisplayContext& dc);
-    bool HitTest(HitContext& hc);
+    void Display(DisplayContext& dc) override;
+    bool HitTest(HitContext& hc) override;
 
     void DeleteAllTransformManipulators();
 

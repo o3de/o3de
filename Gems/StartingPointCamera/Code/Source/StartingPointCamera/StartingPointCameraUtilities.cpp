@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -25,38 +26,32 @@ namespace Camera
         return "";
     }
 
-    //////////////////////////////////////////////////////////////////////////
-    /// This methods will 0 out a vector component and re-normalize it
-    //////////////////////////////////////////////////////////////////////////
-    void MaskComponentFromNormalizedVector(AZ::Vector3& v, VectorComponentType vectorComponentType)
+    void MaskComponentFromNormalizedVector(AZ::Vector3& v, bool ignoreX, bool ignoreY, bool ignoreZ)
     {
-        switch (vectorComponentType)
-        {
-        case X_Component:
+
+        if (ignoreX)
         {
             v.SetX(0.f);
-            break;
         }
-        case Y_Component:
+
+        if (ignoreY)
         {
             v.SetY(0.f);
-            break;
         }
-        case Z_Component:
+
+        if (ignoreZ)
         {
             v.SetZ(0.f);
-            break;
         }
-        default:
-            AZ_Assert(false, "MaskComponentFromNormalizedVector: VectorComponentType - unexpected value");
-            break;
+
+        if (v.IsZero())
+        {
+            AZ_Warning("StartingPointCameraUtilities", false, "MaskComponentFromNormalizedVector: trying to normalize zero vector.")
+            return;
         }
         v.Normalize();
     }
 
-    //////////////////////////////////////////////////////////////////////////
-    /// This will calculate the requested Euler angle from a given AZ::Quaternion
-    //////////////////////////////////////////////////////////////////////////
     float GetEulerAngleFromTransform(const AZ::Transform& rotation, EulerAngleType eulerAngleType)
     {
         AZ::Vector3 angles = rotation.GetEulerDegrees();
@@ -69,14 +64,11 @@ namespace Camera
         case Yaw:
             return angles.GetZ();
         default:
-            AZ_Warning("", false, "GetEulerAngleFromRotation: eulerAngleType - value not supported");
+            AZ_Warning("StartingPointCameraUtilities", false, "GetEulerAngleFromRotation: eulerAngleType - value not supported");
             return 0.f;
         }
     }
 
-    //////////////////////////////////////////////////////////////////////////
-    /// This will calculate an AZ::Transform based on an Euler angle
-    //////////////////////////////////////////////////////////////////////////
     AZ::Transform CreateRotationFromEulerAngle(EulerAngleType rotationType, float radians)
     {
         switch (rotationType)
@@ -88,14 +80,11 @@ namespace Camera
         case Yaw:
             return AZ::Transform::CreateRotationZ(radians);
         default:
-            AZ_Warning("", false, "CreateRotationFromEulerAngle: rotationType - value not supported");
+            AZ_Warning("StartingPointCameraUtilities", false, "CreateRotationFromEulerAngle: rotationType - value not supported");
             return AZ::Transform::Identity();
         }
     }
 
-    //////////////////////////////////////////////////////////////////////////
-    /// Creates the Quaternion representing the rotation looking down the vector
-    //////////////////////////////////////////////////////////////////////////
     AZ::Quaternion CreateQuaternionFromViewVector(const AZ::Vector3 lookVector)
     {
         float twoDimensionLength = AZ::Vector2(lookVector.GetX(), lookVector.GetY()).GetLength();

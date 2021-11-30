@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -40,26 +41,6 @@ namespace AZ
             }
         }
 
-        void ShaderAssetCreator::AddShaderResourceGroupAsset(const Data::Asset<ShaderResourceGroupAsset>& shaderResourceGroupAsset)
-        {
-            if (!shaderResourceGroupAsset)
-            {
-                ReportError("ShaderResourceGroupAsset '%s' is not loaded.", shaderResourceGroupAsset.GetId().ToString<AZStd::string>().c_str());
-                return;
-            }
-
-            if (ValidateIsReady())
-            {
-                auto& shaderResourceGroupAssets = m_asset->m_shaderResourceGroupAssets;
-
-                const auto findIt = AZStd::find(shaderResourceGroupAssets.begin(), shaderResourceGroupAssets.end(), shaderResourceGroupAsset);
-                if (findIt == shaderResourceGroupAssets.end())
-                {
-                    shaderResourceGroupAssets.push_back(shaderResourceGroupAsset);
-                }
-            }
-        }
-
         void ShaderAssetCreator::SetShaderOptionGroupLayout(const Ptr<ShaderOptionGroupLayout>& shaderOptionGroupLayout)
         {
             if (ValidateIsReady())
@@ -79,28 +60,177 @@ namespace AZ
             }
         }
 
-        void ShaderAssetCreator::SetRootShaderVariantAsset(Data::Asset<ShaderVariantAsset> shaderVariantAsset)
+        void ShaderAssetCreator::BeginSupervariant(const Name& name)
         {
-            if (ValidateIsReady())
+            if (!ValidateIsReady())
             {
-                m_asset->GetCurrentShaderApiData().m_rootShaderVariantAsset = shaderVariantAsset;
+                return;
+            }
+
+            if (m_currentSupervariant)
+            {
+                ReportError("Call EndSupervariant() before calling BeginSupervariant again.");
+                return;
+            }
+
+            if (m_asset->m_currentAPITypeIndex == ShaderAsset::InvalidAPITypeIndex)
+            {
+                ReportError("Can not begin supervariant with name [%s] because this function must be called between BeginAPI()/EndAPI()", name.GetCStr());
+                return;
+            }
+
+            if (m_asset->m_perAPIShaderData.empty())
+            {
+                ReportError("Can not add supervariant with name [%s] because there's no per API shader data", name.GetCStr());
+                return;
+            }
+
+            ShaderAsset::ShaderApiDataContainer& perAPIShaderData = m_asset->m_perAPIShaderData[m_asset->m_perAPIShaderData.size() - 1];
+            if (perAPIShaderData.m_supervariants.empty())
+            {
+                if (!name.IsEmpty())
+                {
+                    ReportError("The first supervariant must be nameless. Name [%s] is invalid", name.GetCStr());
+                    return;
+                }
+            }
+            else
+            {
+                if (name.IsEmpty())
+                {
+                    ReportError(
+                        "Only the first supervariant can be nameless. So far there are %zu supervariants",
+                        perAPIShaderData.m_supervariants.size());
+                    return;
+                }
+            }
+
+            perAPIShaderData.m_supervariants.push_back({});
+            m_currentSupervariant = &perAPIShaderData.m_supervariants[perAPIShaderData.m_supervariants.size() - 1];
+            m_currentSupervariant->m_name = name;
+        }
+
+        void ShaderAssetCreator::SetSrgLayoutList(const ShaderResourceGroupLayoutList& srgLayoutList)
+        {
+            if (!ValidateIsReady())
+            {
+                return;
+            }
+
+            if (!m_currentSupervariant)
+            {
+                ReportError("BeginSupervariant() should be called first before calling %s", __FUNCTION__);
+                return;
+            }
+
+            m_currentSupervariant->m_srgLayoutList = srgLayoutList;
+            for (auto srgLayout : m_currentSupervariant->m_srgLayoutList)
+            {
+                if (!srgLayout->Finalize())
+                {
+                    ReportError(
+                        "The current supervariant [%s], failed to finalize SRG Layout [%s]", m_currentSupervariant->m_name.GetCStr(),
+                        srgLayout->GetName().GetCStr());
+                    return;
+                }
             }
         }
 
+        //! [Required] Assigns the pipeline layout descriptor shared by all variants in the shader. Shader variants
+        //! embedded in a single shader asset are required to use the same pipeline layout. It is not necessary to call
+        //! Finalize() on the pipeline layout prior to assignment, but still permitted.
+        void ShaderAssetCreator::SetPipelineLayout(RHI::Ptr<RHI::PipelineLayoutDescriptor> pipelineLayoutDescriptor)
+        {
+            if (!ValidateIsReady())
+            {
+                return;
+            }
+            if (!m_currentSupervariant)
+            {
+                ReportError("BeginSupervariant() should be called first before calling %s", __FUNCTION__);
+                return;
+            }
+            m_currentSupervariant->m_pipelineLayoutDescriptor = pipelineLayoutDescriptor;
+        }
+
+        //! Assigns the contract for inputs required by the shader.
+        void ShaderAssetCreator::SetInputContract(const ShaderInputContract& contract)
+        {
+            if (!ValidateIsReady())
+            {
+                return;
+            }
+            if (!m_currentSupervariant)
+            {
+                ReportError("BeginSupervariant() should be called first before calling %s", __FUNCTION__);
+                return;
+            }
+            m_currentSupervariant->m_inputContract = contract;
+        }
+
+        //! Assigns the contract for outputs required by the shader.
+        void ShaderAssetCreator::SetOutputContract(const ShaderOutputContract& contract)
+        {
+            if (!ValidateIsReady())
+            {
+                return;
+            }
+            if (!m_currentSupervariant)
+            {
+                ReportError("BeginSupervariant() should be called first before calling %s", __FUNCTION__);
+                return;
+            }
+            m_currentSupervariant->m_outputContract = contract;
+        }
+
+        //! Assigns the render states for the draw pipeline. Ignored for non-draw pipelines.
+        void ShaderAssetCreator::SetRenderStates(const RHI::RenderStates& renderStates)
+        {
+            if (!ValidateIsReady())
+            {
+                return;
+            }
+            if (!m_currentSupervariant)
+            {
+                ReportError("BeginSupervariant() should be called first before calling %s", __FUNCTION__);
+                return;
+            }
+            m_currentSupervariant->m_renderStates = renderStates;
+        }
+
+        //! [Optional] Not all shaders have attributes before functions. Some attributes do not exist for all RHI::APIType either.
         void ShaderAssetCreator::SetShaderStageAttributeMapList(const RHI::ShaderStageAttributeMapList& shaderStageAttributeMapList)
         {
-            if (ValidateIsReady())
+            if (!ValidateIsReady())
             {
-                m_asset->GetCurrentShaderApiData().m_attributeMaps = shaderStageAttributeMapList;
+                return;
             }
+            if (!m_currentSupervariant)
+            {
+                ReportError("BeginSupervariant() should be called first before calling %s", __FUNCTION__);
+                return;
+            }
+            m_currentSupervariant->m_attributeMaps = shaderStageAttributeMapList;
         }
 
-        void ShaderAssetCreator::SetPipelineLayout(const Ptr<RHI::PipelineLayoutDescriptor>& pipelineLayoutDescriptor)
+        //! [Required] There's always a root variant for each supervariant.
+        void ShaderAssetCreator::SetRootShaderVariantAsset(Data::Asset<ShaderVariantAsset> shaderVariantAsset)
         {
-            if (ValidateIsReady())
+            if (!ValidateIsReady())
             {
-                m_asset->GetCurrentShaderApiData().m_pipelineLayoutDescriptor = pipelineLayoutDescriptor;
+                return;
             }
+            if (!m_currentSupervariant)
+            {
+                ReportError("BeginSupervariant() should be called first before calling %s", __FUNCTION__);
+                return;
+            }
+            if (!shaderVariantAsset)
+            {
+                ReportError("Invalid root variant");
+                return;
+            }
+            m_currentSupervariant->m_rootShaderVariantAsset = shaderVariantAsset;
         }
 
         static RHI::PipelineStateType GetPipelineStateType(const Data::Asset<ShaderVariantAsset>& shaderVariantAsset)
@@ -122,62 +252,37 @@ namespace AZ
                 return RHI::PipelineStateType::RayTracing;
             }
 
-            // For practical purposes We should never get to this point because  a Data::Asset<ShaderVariantAsset> is always validated.
-            AZ_Assert(false, "Invalid Shader Variant Asset. Couldn't deduce the pipeline state type.");
             return RHI::PipelineStateType::Count;
         }
 
-        bool ShaderAssetCreator::EndAPI()
+        bool ShaderAssetCreator::EndSupervariant()
         {
             if (!ValidateIsReady())
             {
                 return false;
             }
 
-            // Shared resources by all RHI API versions
-            auto shaderOptionGroupLayout = m_asset->m_shaderOptionGroupLayout;
-            auto& shaderResourceGroupAssets = m_asset->m_shaderResourceGroupAssets;
-
-            // RHI API specific resources
-            auto& pipelineLayoutDescriptor = m_asset->GetCurrentShaderApiData().m_pipelineLayoutDescriptor;
-            auto& rootShaderVariantAsset = m_asset->GetCurrentShaderApiData().m_rootShaderVariantAsset;
-            if (!rootShaderVariantAsset)
+            if (!m_currentSupervariant)
             {
-                ReportError("Invalid root variant");
+                ReportError("Can not end a supervariant that has not started");
                 return false;
             }
 
-            if (pipelineLayoutDescriptor)
+            if (!m_currentSupervariant->m_rootShaderVariantAsset.IsReady())
             {
-                if (!pipelineLayoutDescriptor->IsFinalized())
+                ReportError(
+                    "The current supervariant [%s], is missing the root ShaderVariantAsset", m_currentSupervariant->m_name.GetCStr());
+                return false;
+            }
+
+            // Supervariant specific resources
+            if (m_currentSupervariant->m_pipelineLayoutDescriptor)
+            {
+                if (!m_currentSupervariant->m_pipelineLayoutDescriptor->IsFinalized())
                 {
-                    if (pipelineLayoutDescriptor->Finalize() != RHI::ResultCode::Success)
+                    if (m_currentSupervariant->m_pipelineLayoutDescriptor->Finalize() != RHI::ResultCode::Success)
                     {
                         ReportError("Failed to finalize pipeline layout descriptor.");
-                        return false;
-                    }
-                }
-
-                // Validate that the SRG layouts match between the local SRG assets and the pipeline layout.
-
-                if (pipelineLayoutDescriptor->GetShaderResourceGroupLayoutCount() != shaderResourceGroupAssets.size())
-                {
-                    ReportError(
-                        "Number of shader resource group layouts specified in pipeline layout does not match the "
-                        "number of shader resource group assets added to ShaderAssetCreator.");
-                    return false;
-                }
-
-                for (size_t i = 0; i < shaderResourceGroupAssets.size(); ++i)
-                {
-                    const RHI::ShaderResourceGroupLayout* layoutForAsset = shaderResourceGroupAssets[i]->GetLayout(m_asset->GetCurrentShaderApiData().m_APIType);
-                    const RHI::ShaderResourceGroupLayout* layoutForPipeline = pipelineLayoutDescriptor->GetShaderResourceGroupLayout(i);
-
-                    if (layoutForAsset->GetHash() != layoutForPipeline->GetHash())
-                    {
-                        ReportError(
-                            "ShaderResourceGroupAsset '%s' at index '%d' does not match ShaderResourceGroupLayout specified in PipelineLayoutDescriptor",
-                            shaderResourceGroupAssets[i]->GetName().GetCStr(), i);
                         return false;
                     }
                 }
@@ -188,13 +293,66 @@ namespace AZ
                 return false;
             }
 
-            if (!shaderOptionGroupLayout)
+            const ShaderInputContract& shaderInputContract = m_currentSupervariant->m_inputContract;
+            // Validate that each stream ID appears only once.
+            for (const auto& channel : shaderInputContract.m_streamChannels)
             {
-                ReportError("ShaderOptionGroupLayout not specified.");
+                int count = 0;
+
+                for (const auto& searchChannel : shaderInputContract.m_streamChannels)
+                {
+                    if (channel.m_semantic == searchChannel.m_semantic)
+                    {
+                        ++count;
+                    }
+                }
+
+                if (count > 1)
+                {
+                    ReportError(
+                        "Input stream channel [%s] appears multiple times. For supervariant with name [%s]",
+                        channel.m_semantic.ToString().c_str(), m_currentSupervariant->m_name.GetCStr());
+                    return false;
+                }
+            }
+
+            auto pipelineStateType = GetPipelineStateType(m_currentSupervariant->m_rootShaderVariantAsset);
+            if (pipelineStateType == RHI::PipelineStateType::Count)
+            {
+                ReportError("Invalid pipelineStateType for supervariant [%s]", m_currentSupervariant->m_name.GetCStr());
                 return false;
             }
 
-            m_asset->m_pipelineStateType = GetPipelineStateType(rootShaderVariantAsset);
+
+            if (m_currentSupervariant->m_name.IsEmpty())
+            {
+                m_asset->m_pipelineStateType = pipelineStateType;
+            }
+            else
+            {
+                if (m_asset->m_pipelineStateType != pipelineStateType)
+                {
+                    ReportError("All supervariants must be of the same pipelineStateType. Current pipelineStateType is [%d], but for supervariant [%s] the pipelineStateType is [%d]",
+                        m_asset->m_pipelineStateType, m_currentSupervariant->m_name.GetCStr(), pipelineStateType);
+                    return false;
+                }
+            }
+
+            m_currentSupervariant = nullptr;
+            return true;
+        }
+
+        bool ShaderAssetCreator::EndAPI()
+        {
+            if (!ValidateIsReady())
+            {
+                return false;
+            }
+            if (m_currentSupervariant)
+            {
+                ReportError("EndSupervariant() must be called before calling EndAPI()");
+                return false;
+            }
             
             m_asset->m_currentAPITypeIndex = ShaderAsset::InvalidAPITypeIndex;
             return true;
@@ -224,27 +382,18 @@ namespace AZ
             return EndCommon(shaderAsset);
         }
 
-        void ShaderAssetCreator::Clone(const Data::AssetId& assetId,
-                                       const ShaderAsset* sourceShaderAsset,
-                                       const ShaderResourceGroupAssets& srgAssets,
-                                       const ShaderRootVariantAssets& rootVariantAssets)
+        void ShaderAssetCreator::Clone(const Data::AssetId& assetId, const ShaderAsset& sourceShaderAsset, [[maybe_unused]] const ShaderRootVariantAssets& rootVariantAssets)
         {
             BeginCommon(assetId);
 
-            m_asset->m_name = sourceShaderAsset->m_name;
-            m_asset->m_pipelineStateType = sourceShaderAsset->m_pipelineStateType;
-
-            // copy Srg assets
-            AZ_Assert(srgAssets.size() == sourceShaderAsset->m_shaderResourceGroupAssets.size(), "incorrect number of Srg assets passed to Clone()");
-            for (const auto& srgAsset : srgAssets)
-            {
-                m_asset->m_shaderResourceGroupAssets.push_back(srgAsset);
-            }
-
-            m_asset->m_shaderOptionGroupLayout = sourceShaderAsset->m_shaderOptionGroupLayout;
+            m_asset->m_name = sourceShaderAsset.m_name;
+            m_asset->m_pipelineStateType = sourceShaderAsset.m_pipelineStateType;
+            m_asset->m_drawListName = sourceShaderAsset.m_drawListName;
+            m_asset->m_shaderOptionGroupLayout = sourceShaderAsset.m_shaderOptionGroupLayout;
+            m_asset->m_shaderAssetBuildTimestamp = sourceShaderAsset.m_shaderAssetBuildTimestamp;
 
             // copy root variant assets
-            for (auto& perAPIShaderData : sourceShaderAsset->m_perAPIShaderData)
+            for (auto& perAPIShaderData : sourceShaderAsset.m_perAPIShaderData)
             {
                 // find the matching ShaderVariantAsset
                 AZ::Data::Asset<ShaderVariantAsset> foundVariantAsset;
@@ -256,17 +405,25 @@ namespace AZ
                         break;
                     }
                 }
-
+            
                 if (!foundVariantAsset)
                 {
                     ReportWarning("Failed to find variant asset for API [%d]", perAPIShaderData.m_APIType);
                 }
-
+            
                 m_asset->m_perAPIShaderData.push_back(perAPIShaderData);
-                m_asset->m_perAPIShaderData.back().m_rootShaderVariantAsset = foundVariantAsset;
+                if (m_asset->m_perAPIShaderData.back().m_supervariants.empty())
+                {
+                    ReportWarning("Attempting to clone a shader asset that has no supervariants for API [%d]", perAPIShaderData.m_APIType);
+                }
+                else
+                {
+                    // currently we only support one supervariant when cloning
+                    // [GFX TODO][ATOM-15740] Support multiple supervariants in ShaderAssetCreator::Clone
+                    m_asset->m_perAPIShaderData.back().m_supervariants[0].m_rootShaderVariantAsset = foundVariantAsset;
+                }
             }
 
-            m_asset->m_drawListName = sourceShaderAsset->m_drawListName;
         }
     } // namespace RPI
 } // namespace AZ

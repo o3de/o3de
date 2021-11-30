@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -9,6 +10,7 @@
 #define __EMSTUDIO_LOGWINDOWPLUGIN_H
 
 #if !defined(Q_MOC_RUN)
+#include <MCore/Source/LogManager.h>
 #include "../StandardPluginsConfig.h"
 #include "../../../../EMStudioSDK/Source/DockWidgetPlugin.h"
 #endif
@@ -59,8 +61,8 @@ namespace EMStudio
     private:
         void AddFilter(const QString& name, MCore::LogCallback::ELogLevel level, bool enabled);
 
-        LogWindowCallback* mLogCallback;
-        AzQtComponents::FilteredSearchWidget* mSearchWidget;
+        LogWindowCallback* m_logCallback;
+        AzQtComponents::FilteredSearchWidget* m_searchWidget;
     };
 }   // namespace EMStudio
 

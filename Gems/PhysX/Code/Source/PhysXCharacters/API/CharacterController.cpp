@@ -1,12 +1,13 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
-#include <PhysX_precompiled.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzFramework/Physics/CollisionBus.h>
 #include <AzFramework/Physics/PhysicsScene.h>
 #include <AzFramework/Physics/Shape.h>
@@ -16,6 +17,8 @@
 #include <PhysX/Utils.h>
 #include <PhysX/NativeTypeIdentifiers.h>
 #include <PhysX/PhysXLocks.h>
+#include <PhysX/Debug/PhysXDebugConfiguration.h>
+#include <PhysX/MathConversion.h>
 #include <PhysXCharacters/API/CharacterController.h>
 #include <Source/Collision.h>
 #include <Source/Shape.h>
@@ -39,16 +42,16 @@ namespace PhysX
                     "PhysX Character Controller Configuration", "PhysX Character Controller Configuration")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->DataElement(AZ::Edit::UIHandlers::ComboBox, &CharacterControllerConfiguration::m_slopeBehaviour,
-                        "Slope Behaviour", "Behaviour of the controller on surfaces above the maximum slope")
+                        "Slope Behavior", "Behavior of the controller on surfaces that exceed the Maximum Slope Angle.")
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
                     ->EnumAttribute(SlopeBehaviour::PreventClimbing, "Prevent Climbing")
                     ->EnumAttribute(SlopeBehaviour::ForceSliding, "Force Sliding")
                     ->DataElement(AZ::Edit::UIHandlers::Default, &CharacterControllerConfiguration::m_contactOffset,
-                        "Contact Offset", "Extra distance outside the controller used for smoother contact resolution")
+                        "Contact Offset", "Distance from the controller boundary where contact with surfaces can be resolved.")
                     ->Attribute(AZ::Edit::Attributes::Min, 0.01f)
                     ->Attribute(AZ::Edit::Attributes::Step, 0.01f)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &CharacterControllerConfiguration::m_scaleCoefficient,
-                        "Scale", "Scalar coefficient used to scale the controller, usually slightly smaller than 1")
+                        "Scale", "Scales the controller. Usually less than 1.0 to ensure visual contact between the character and surface.")
                     ->Attribute(AZ::Edit::Attributes::Min, 0.01f)
                     ->Attribute(AZ::Edit::Attributes::Step, 0.01f)
                     ;

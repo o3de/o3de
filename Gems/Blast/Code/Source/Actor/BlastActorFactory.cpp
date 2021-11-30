@@ -1,10 +1,10 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "StdAfx.h"
 
 #include <Actor/BlastActorFactory.h>
 
@@ -43,8 +43,6 @@ namespace Blast
         const Nv::Blast::ExtPxChunk* pxChunks = blastFamily.GetPxAsset().getChunks();
         const NvBlastChunk* chunks = tkAsset->getChunks();
         const uint32_t pxChunkCount = blastFamily.GetPxAsset().getChunkCount();
-        const uint32_t chunkCount = tkAsset->getChunkCount();
-        const uint32_t nodeCount = tkActor.getGraphNodeCount();
 
         AZ_Assert(pxChunks, "ExtPxAsset asset has a null chunk array.");
         AZ_Assert(chunks, "TkActor's asset has a null chunk array.");
@@ -183,8 +181,6 @@ namespace Blast
     bool BlastActorFactoryImpl::VisibleChunksHasStaticActor(
         const BlastFamily& blastFamily, const AZStd::vector<uint32_t>& chunkIndices) const
     {
-        const uint32_t chunkCount = blastFamily.GetPxAsset().getChunkCount();
-
         const Nv::Blast::ExtPxChunk* pxChunks = blastFamily.GetPxAsset().getChunks();
         if (!pxChunks)
         {

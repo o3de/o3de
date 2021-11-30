@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -13,13 +14,11 @@
 #define CRYINCLUDE_EDITOR_UTIL_EDITORUTILS_H
 #pragma once
 
-
+#include <CryCommon/platform.h>
 #include <IXml.h>
 #include "Util/FileUtil.h"
 #include <Cry_Color.h>
-
-//! Typedef for quaternion.
-//typedef CryQuat Quat;
+#include <CryCommon/ISystem.h>
 
 #include <QColor>
 #include <QDataStream>
@@ -358,7 +357,7 @@ inline QString TokenizeString(const QString& s, LPCSTR pszTokens, int& iStart)
 
     QByteArray str = s.toUtf8();
 
-    if (pszTokens == NULL)
+    if (pszTokens == nullptr)
     {
         return str;
     }
@@ -471,7 +470,7 @@ inline const char* strstri(const char* pString, const char* pSubstring)
         }
     }
 
-    return NULL;
+    return nullptr;
 }
 
 
@@ -541,7 +540,7 @@ public:
         // There is a bug in QT with writing files larger than 32MB. It separates
         // the write into 32MB blocks, but doesn't write the last block correctly.
         // To deal with this, we'll separate into blocks here so QT doesn't have to.
-        
+
         // QT bug in qfileengine_win.cpp line 434. Block size is calculated once and always
         // used as the amount of data to write, but for the last block, unless there is exactly
         // block size left to write, the actual remaining amount needs to be written, not the
@@ -657,14 +656,14 @@ inline CArchive& operator>>(CArchive& ar, QString& str)
             str = QString::fromUtf16(reinterpret_cast<ushort*>(raw), aznumeric_cast<int>(length));
         }
     }
-    
+
     return ar;
 }
 
 inline CArchive& operator<<(CArchive& ar, const QString& str)
 {
     // This is written to mimic how MFC archiving worked, which was to
-    // write markers to indicate the size of the length - 
+    // write markers to indicate the size of the length -
     // so a length that will fit into 8 bits takes 8 bits.
     // A length that requires more than 8 bits, puts an 8 bit marker (0xff)
     // to indicate that the length is greater, then 16 bits for the length.
@@ -692,7 +691,7 @@ inline CArchive& operator<<(CArchive& ar, const QString& str)
         ar << static_cast<quint16>(0xffff);
         ar << static_cast<quint32>(length);
     }
-   
+
     ar.device()->write(data);
 
     return ar;

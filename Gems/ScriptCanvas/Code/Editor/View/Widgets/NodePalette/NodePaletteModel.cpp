@@ -1,10 +1,10 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "precompiled.h"
 
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/RTTI/BehaviorContextUtilities.h>
@@ -87,16 +87,6 @@ namespace
         return AZ::FindAttribute(attribute, method->m_attributes) != nullptr; // warning C4800: 'AZ::Attribute *': forcing value to bool 'true' or 'false' (performance warning)
     }
 
-    bool HasAttribute(const AZ::BehaviorClass* behaviorClass, AZ::Crc32 attributeCrc)
-    {
-        AZ::Attribute* attribute = AZ::FindAttribute(attributeCrc, behaviorClass->m_attributes);
-        if (attribute)
-        {
-            return true;
-        }
-        return false;
-    }
-
     // Checks for and returns the Category attribute from an AZ::AttributeArray
     AZStd::string GetCategoryPath(const AZ::AttributeArray& attributes, const AZ::BehaviorContext& behaviorContext)
     {
@@ -150,21 +140,10 @@ namespace
         // If the reflected method returns an AZ::Event, reflect it to the SerializeContext
         if (AZ::MethodReturnsAzEventByReferenceOrPointer(method))
         {
-            AZ::SerializeContext* serializeContext{};
-            AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationRequests::GetSerializeContext);
             const AZ::BehaviorParameter* resultParameter = method.GetResult();
-            AZ::SerializeContext::ClassData classData;
-            classData.m_name = resultParameter->m_name;
-            classData.m_typeId = resultParameter->m_typeId;
-            classData.m_azRtti = resultParameter->m_azRtti;
-
-            auto EventPlaceholderAnyCreator = [](AZ::SerializeContext*) -> AZStd::any
-            {
-                return AZStd::make_any<AZStd::monostate>();
-            };
-            serializeContext->RegisterType(resultParameter->m_typeId, AZStd::move(classData), EventPlaceholderAnyCreator);
-
+            ScriptCanvas::ReflectEventTypeOnDemand(resultParameter->m_typeId, resultParameter->m_name, resultParameter->m_azRtti);
         }
+
         nodePaletteModel.RegisterClassNode(categoryPath, behaviorClass ? behaviorClass->m_name : "", name, &method, &behaviorContext, propertyStatus, isOverloaded);
     }
 
@@ -187,19 +166,8 @@ namespace
         // If the reflected method returns an AZ::Event, reflect it to the SerializeContext
         if (AZ::MethodReturnsAzEventByReferenceOrPointer(behaviorMethod))
         {
-            AZ::SerializeContext* serializeContext{};
-            AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationRequests::GetSerializeContext);
             const AZ::BehaviorParameter* resultParameter = behaviorMethod.GetResult();
-            AZ::SerializeContext::ClassData classData;
-            classData.m_name = resultParameter->m_name;
-            classData.m_typeId = resultParameter->m_typeId;
-            classData.m_azRtti = resultParameter->m_azRtti;
-
-            auto EventPlaceholderAnyCreator = [](AZ::SerializeContext*) -> AZStd::any
-            {
-                return AZStd::make_any<AZStd::monostate>();
-            };
-            serializeContext->RegisterType(resultParameter->m_typeId, AZStd::move(classData), EventPlaceholderAnyCreator);
+            ScriptCanvas::ReflectEventTypeOnDemand(resultParameter->m_typeId, resultParameter->m_name, resultParameter->m_azRtti);
 
         }
         nodePaletteModel.RegisterMethodNode(behaviorContext, behaviorMethod);
@@ -861,12 +829,12 @@ namespace ScriptCanvasEditor
     NodePaletteModel::NodePaletteModel()
         : m_paletteId(AZ::Entity::MakeId())
     {
-        UpgradeNotifications::Bus::Handler::BusConnect();
+        UpgradeNotificationsBus::Handler::BusConnect();
     }
 
     NodePaletteModel::~NodePaletteModel()
     {
-        UpgradeNotifications::Bus::Handler::BusDisconnect();
+        UpgradeNotificationsBus::Handler::BusDisconnect();
 
         DisconnectLambdas();
 
@@ -913,6 +881,7 @@ namespace ScriptCanvasEditor
 
     void NodePaletteModel::RepopulateModel()
     {
+        AZ_PROFILE_FUNCTION(ScriptCanvas);
         ClearRegistry();
 
         PopulateNodePaletteModel((*this));
@@ -1354,7 +1323,7 @@ namespace ScriptCanvasEditor
 
             if (seperator == AZStd::string_view::npos)
             {
-                categoryTrail = nullptr;
+                categoryTrail = {};
             }
             else
             {

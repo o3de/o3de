@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -9,26 +10,24 @@
 #include <AzCore/PlatformIncl.h>
 #include "LogManager.h"
 
-#include <iostream>
-
 namespace MCore
 {
     // static mutex
-    Mutex LogManager::mGlobalMutex;
+    Mutex LogManager::s_globalMutex;
 
     //--------------------------------------------------------------------------------------------
 
     // constructor
     LogCallback::LogCallback()
     {
-        mLogLevels = LOGLEVEL_DEFAULT;
+        m_logLevels = LOGLEVEL_DEFAULT;
     }
 
 
     // set the log levels this callback will accept and pass through
     void LogCallback::SetLogLevels(ELogLevel logLevels)
     {
-        mLogLevels = logLevels;
+        m_logLevels = logLevels;
         GetLogManager().InitLogLevels();
     }
 
@@ -59,8 +58,6 @@ namespace MCore
     // constructor
     LogManager::LogManager()
     {
-        mLogCallbacks.SetMemoryCategory(MCORE_MEMCATEGORY_LOGMANAGER);
-
         // initialize the enabled log levels
         InitLogLevels();
     }
@@ -78,10 +75,10 @@ namespace MCore
     void LogManager::AddLogCallback(LogCallback* callback)
     {
         MCORE_ASSERT(callback);
-        LockGuard lock(mMutex);
+        LockGuard lock(m_mutex);
 
         // add the callback to the stack
-        mLogCallbacks.Add(callback);
+        m_logCallbacks.emplace_back(callback);
 
         // collect the enabled log levels
         InitLogLevels();
@@ -89,16 +86,16 @@ namespace MCore
 
 
     // remove a specific log callback from the stack
-    void LogManager::RemoveLogCallback(uint32 index)
+    void LogManager::RemoveLogCallback(size_t index)
     {
-        MCORE_ASSERT(mLogCallbacks.GetIsValidIndex(index));
-        LockGuard lock(mMutex);
+        MCORE_ASSERT(index < m_logCallbacks.size());
+        LockGuard lock(m_mutex);
 
         // delete it from memory
-        delete mLogCallbacks[index];
+        delete m_logCallbacks[index];
 
         // remove the callback from the stack
-        mLogCallbacks.Remove(index);
+        m_logCallbacks.erase(AZStd::next(begin(m_logCallbacks), index));
 
         // collect the enabled log levels
         InitLogLevels();
@@ -107,27 +104,18 @@ namespace MCore
     // remove all given log callbacks by type
     void LogManager::RemoveAllByType(uint32 type)
     {
-        LockGuard lock(mMutex);
+        LockGuard lock(m_mutex);
 
-        // iterate through all log callbacks
-        for (uint32 i = 0; i < mLogCallbacks.GetLength(); )
+        // Put all the callbacks of the type to be removed at the end of the vector
+        m_logCallbacks.erase(AZStd::remove_if(begin(m_logCallbacks), end(m_logCallbacks), [type](const LogCallback* callback)
         {
-            LogCallback* callback = mLogCallbacks[i];
-
-            // check if we are dealing with a log file
             if (callback->GetType() == type)
             {
-                // get rid of the callback instance
                 delete callback;
-
-                // remove the callback from the stack
-                mLogCallbacks.Remove(i);
+                return true;
             }
-            else
-            {
-                i++;
-            }
-        }
+            return false;
+        }));
 
         // collect the enabled log levels
         InitLogLevels();
@@ -137,16 +125,15 @@ namespace MCore
     // remove all log callbacks from the stack
     void LogManager::ClearLogCallbacks()
     {
-        LockGuard lock(mMutex);
+        LockGuard lock(m_mutex);
 
         // get rid of the callbacks
-        const uint32 num = mLogCallbacks.GetLength();
-        for (uint32 i = 0; i < num; ++i)
+        for (auto* logCallback : m_logCallbacks)
         {
-            delete mLogCallbacks[i];
+            delete logCallback;
         }
 
-        mLogCallbacks.Clear(true);
+        m_logCallbacks.clear();
 
         // collect the enabled log levels
         InitLogLevels();
@@ -154,15 +141,15 @@ namespace MCore
 
 
     // retrieve a pointer to the given log callback
-    LogCallback* LogManager::GetLogCallback(uint32 index)
+    LogCallback* LogManager::GetLogCallback(size_t index)
     {
-        return mLogCallbacks[index];
+        return m_logCallbacks[index];
     }
 
     // return number of log callbacks in the stack
-    uint32 LogManager::GetNumLogCallbacks() const
+    size_t LogManager::GetNumLogCallbacks() const
     {
-        return mLogCallbacks.GetLength();
+        return m_logCallbacks.size();
     }
 
     // collect all enabled log levels
@@ -172,13 +159,12 @@ namespace MCore
         int32 logLevels = LogCallback::LOGLEVEL_NONE;
 
         // enable all log levels that are enabled by any of the callbacks
-        const uint32 num = mLogCallbacks.GetLength();
-        for (uint32 i = 0; i < num; ++i)
+        for (auto* logCallback : m_logCallbacks)
         {
-            logLevels |= (int32)mLogCallbacks[i]->GetLogLevels();
+            logLevels |= (int32)logCallback->GetLogLevels();
         }
 
-        mLogLevels = (LogCallback::ELogLevel)logLevels;
+        m_logLevels = (LogCallback::ELogLevel)logLevels;
     }
 
 
@@ -186,54 +172,51 @@ namespace MCore
     void LogManager::SetLogLevels(LogCallback::ELogLevel logLevels)
     {
         // iterate through all log callbacks and set it to the given log levels
-        const uint32 num = mLogCallbacks.GetLength();
-        for (uint32 i = 0; i < num; ++i)
+        for (auto* logCallback : m_logCallbacks)
         {
-            mLogCallbacks[i]->SetLogLevels(logLevels);
+            logCallback->SetLogLevels(logLevels);
         }
 
         // force set the log manager's log levels to the given one as well
-        mLogLevels = logLevels;
+        m_logLevels = logLevels;
     }
 
 
     // the main logging method
     void LogManager::LogMessage(const char* message, LogCallback::ELogLevel logLevel)
     {
-        LockGuard lock(mMutex);
+        LockGuard lock(m_mutex);
 
         // iterate through all callbacks
-        const uint32 num = mLogCallbacks.GetLength();
-        for (uint32 i = 0; i < num; ++i)
+        for (auto* logCallback : m_logCallbacks)
         {
-            if (mLogCallbacks[i]->GetLogLevels() & logLevel)
+            if (logCallback->GetLogLevels() & logLevel)
             {
-                mLogCallbacks[i]->Log(message, logLevel);
+                logCallback->Log(message, logLevel);
             }
         }
     }
 
 
     // find the index of a given callback
-    uint32 LogManager::FindLogCallback(LogCallback* callback) const
+    size_t LogManager::FindLogCallback(LogCallback* callback) const
     {
         // iterate through all callbacks
-        const uint32 num = mLogCallbacks.GetLength();
-        for (uint32 i = 0; i < num; ++i)
+        for (size_t i = 0; i < m_logCallbacks.size(); ++i)
         {
-            if (mLogCallbacks[i] == callback)
+            if (m_logCallbacks[i] == callback)
             {
                 return i;
             }
         }
 
-        return MCORE_INVALIDINDEX32;
+        return InvalidIndex;
     }
 
 
     void LogFatalError(const char* what, ...)
     {
-        LockGuard lock(LogManager::mGlobalMutex);
+        LockGuard lock(LogManager::s_globalMutex);
 
         // skip the va list construction in case that the message won't be logged by any of the callbacks
         if (GetLogManager().GetLogLevels() & LogCallback::LOGLEVEL_FATAL)
@@ -253,7 +236,7 @@ namespace MCore
 
     void LogError(const char* what, ...)
     {
-        LockGuard lock(LogManager::mGlobalMutex);
+        LockGuard lock(LogManager::s_globalMutex);
 
         // skip the va list construction in case that the message won't be logged by any of the callbacks
         if (GetLogManager().GetLogLevels() & LogCallback::LOGLEVEL_ERROR)
@@ -273,7 +256,7 @@ namespace MCore
 
     void LogWarning(const char* what, ...)
     {
-        LockGuard lock(LogManager::mGlobalMutex);
+        LockGuard lock(LogManager::s_globalMutex);
 
         // skip the va list construction in case that the message won't be logged by any of the callbacks
         if (GetLogManager().GetLogLevels() & LogCallback::LOGLEVEL_WARNING)
@@ -293,7 +276,7 @@ namespace MCore
 
     void LogInfo(const char* what, ...)
     {
-        LockGuard lock(LogManager::mGlobalMutex);
+        LockGuard lock(LogManager::s_globalMutex);
 
         // skip the va list construction in case that the message won't be logged by any of the callbacks
         if (GetLogManager().GetLogLevels() & LogCallback::LOGLEVEL_INFO)
@@ -313,7 +296,7 @@ namespace MCore
 
     void LogDetailedInfo(const char* what, ...)
     {
-        LockGuard lock(LogManager::mGlobalMutex);
+        LockGuard lock(LogManager::s_globalMutex);
 
         // skip the va list construction in case that the message won't be logged by any of the callbacks
         if (GetLogManager().GetLogLevels() & LogCallback::LOGLEVEL_DETAILEDINFO)
@@ -333,7 +316,7 @@ namespace MCore
 
     void LogDebug(const char* what, ...)
     {
-        LockGuard lock(LogManager::mGlobalMutex);
+        LockGuard lock(LogManager::s_globalMutex);
 
         // skip the va list construction in case that the message won't be logged by any of the callbacks
         if (GetLogManager().GetLogLevels() & LogCallback::LOGLEVEL_DEBUG)
@@ -352,7 +335,7 @@ namespace MCore
 
     void LogDebugMsg(const char* msg)
     {
-        LockGuard lock(LogManager::mGlobalMutex);
+        LockGuard lock(LogManager::s_globalMutex);
 
         // skip the va list construction in case that the message won't be logged by any of the callbacks
         if (GetLogManager().GetLogLevels() & LogCallback::LOGLEVEL_DEBUG)

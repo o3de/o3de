@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -19,11 +20,16 @@ namespace AZ
 {
     namespace Render
     {
+        class ModelReloaderSystem;
+
         class CommonSystemComponent
             : public AZ::Component
         {
         public:
             AZ_COMPONENT(CommonSystemComponent, "{BFB8FE2B-C952-4D0C-8E32-4FE7C7A97757}");
+
+            CommonSystemComponent();
+            ~CommonSystemComponent();
 
             static void Reflect(AZ::ReflectContext* context);
 
@@ -42,6 +48,8 @@ namespace AZ
             void LoadPassTemplateMappings();
 
             RPI::PassSystemInterface::OnReadyLoadTemplatesEvent::Handler m_loadTemplatesHandler;
+
+            AZStd::unique_ptr<ModelReloaderSystem> m_modelReloaderSystem;
 
 #if AZ_TRAIT_LUXCORE_SUPPORTED
             // LuxCore

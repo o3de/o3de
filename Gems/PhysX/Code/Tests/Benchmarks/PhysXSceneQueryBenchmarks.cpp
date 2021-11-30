@@ -1,11 +1,10 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-
-#include <PhysX_precompiled.h>
 
 #ifdef HAVE_BENCHMARK
 #include <vector>
@@ -48,14 +47,12 @@ namespace PhysX::Benchmarks
         , public PhysX::GenericPhysicsFixture
         
     {
-    public:
-
         //! Spawns box entities in unique locations in 1/8 of sphere with all non-negative dimensions between radii[2, max radius].
         //! Accepts 2 parameters from \state.
         //!
         //! \state.range(0) - number of box entities to spawn
         //! \state.range(1) - max radius
-        void SetUp(const ::benchmark::State& state) override
+        void internalSetUp(const ::benchmark::State& state)
         {
             PhysX::GenericPhysicsFixture::SetUpInternal();
 
@@ -101,11 +98,30 @@ namespace PhysX::Benchmarks
             }
         }
 
-        void TearDown([[maybe_unused]] const ::benchmark::State& state) override
+        void internalTearDown()
         {
             m_boxes.clear();
             m_entities.clear();
             PhysX::GenericPhysicsFixture::TearDownInternal();
+        }
+
+    public:
+        void SetUp(const benchmark::State& state) override
+        {
+            internalSetUp(state);
+        }
+        void SetUp(benchmark::State& state) override
+        {
+            internalSetUp(state);
+        }
+
+        void TearDown(const benchmark::State&) override
+        {
+            internalTearDown();
+        }
+        void TearDown(benchmark::State&) override
+        {
+            internalTearDown();
         }
 
     protected:

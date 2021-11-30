@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -13,25 +14,23 @@
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/std/algorithm.h>
 #include <AzCore/std/tuple.h>
-
+#include <ScriptCanvas/CodeGen/NodeableCodegen.h>
 #include <ScriptCanvas/Core/Contracts/TypeContract.h>
 #include <ScriptCanvas/Core/Core.h>
 #include <ScriptCanvas/Core/DatumBus.h>
 #include <ScriptCanvas/Core/Endpoint.h>
-#include <ScriptCanvas/Core/SubgraphInterface.h>
 #include <ScriptCanvas/Core/ExecutionNotificationsBus.h>
 #include <ScriptCanvas/Core/GraphBus.h>
 #include <ScriptCanvas/Core/NodeBus.h>
+#include <ScriptCanvas/Core/SerializationListener.h>
 #include <ScriptCanvas/Core/Slot.h>
+#include <ScriptCanvas/Core/SubgraphInterface.h>
 #include <ScriptCanvas/Debugger/StatusBus.h>
+#include <ScriptCanvas/Debugger/ValidationEvents/ValidationEvent.h>
 #include <ScriptCanvas/Execution/ErrorBus.h>
 #include <ScriptCanvas/Execution/ExecutionBus.h>
-#include <ScriptCanvas/Variable/GraphVariable.h>
 #include <ScriptCanvas/Grammar/Primitives.h>
-#include <ScriptCanvas/Debugger/ValidationEvents/ValidationEvent.h>
-
-#include <ScriptCanvas/CodeGen/NodeableCodegen.h>
-
+#include <ScriptCanvas/Variable/GraphVariable.h>
 
 #define SCRIPT_CANVAS_CALL_ON_INDEX_SEQUENCE(lambdaInterior)\
     int dummy[]{ 0, ( lambdaInterior , 0)... };\
@@ -64,19 +63,20 @@ namespace ScriptCanvas
 
     struct BehaviorContextMethodHelper;
 
+#if defined(OBJECT_STREAM_EDITOR_ASSET_LOADING_SUPPORT_ENABLED)////
     template<typename t_Class>
     class SerializeContextReadWriteHandler : public AZ::SerializeContext::IEventHandler
     {
     public:
         /// Called right before we start reading from the instance pointed by classPtr.
-        void OnReadBegin(void* objectPtr)
+        void OnReadBegin(void* objectPtr) override
         {
             t_Class* deserializedObject = reinterpret_cast<t_Class*>(objectPtr);
             deserializedObject->OnReadBegin();
         }
 
         /// Called after we are done reading from the instance pointed by classPtr.
-        void OnReadEnd(void* objectPtr)
+        void OnReadEnd(void* objectPtr) override
         {
             t_Class* deserializedObject = reinterpret_cast<t_Class*>(objectPtr);
             deserializedObject->OnReadEnd();
@@ -127,6 +127,7 @@ namespace ScriptCanvas
             deserializedObject->OnWriteEnd();
         }
     };
+#endif//defined(OBJECT_STREAM_EDITOR_ASSET_LOADING_SUPPORT_ENABLED)
 
     // List of slots that will be create visual only slots on the nodes.
     // Useful for special configurations or editor only concepts.
@@ -177,8 +178,8 @@ namespace ScriptCanvas
         NodePropertyInterface() = default;
 
     public:
-
         AZ_RTTI(NodePropertyInterface, "{265A2163-D3AE-4C4E-BDCC-37BA0084BF88}");
+        virtual ~NodePropertyInterface() = default;
 
         virtual Data::Type GetDataType() = 0;
 
@@ -216,14 +217,14 @@ namespace ScriptCanvas
         AZ_RTTI((TypedNodePropertyInterface<DataType>, "{24248937-86FB-406C-8DD5-023B10BD0B60}", DataType), NodePropertyInterface);
 
         TypedNodePropertyInterface() = default;
-        ~TypedNodePropertyInterface() = default;
+        virtual ~TypedNodePropertyInterface() = default;
 
         void SetPropertyReference(DataType* dataReference)
         {
             m_dataType = dataReference;
         }
 
-        virtual Data::Type GetDataType() override
+        Data::Type GetDataType() override
         {
             return Data::FromAZType(azrtti_typeid<DataType>());
         }
@@ -282,7 +283,7 @@ namespace ScriptCanvas
         AZ_RTTI((TypedComboBoxNodePropertyInterface<DataType>, "{24248937-86FB-406C-8DD5-023B10BD0B60}", DataType), TypedNodePropertyInterface<DataType>, ComboBoxPropertyInterface);
 
         TypedComboBoxNodePropertyInterface() = default;
-        ~TypedComboBoxNodePropertyInterface() = default;
+        virtual ~TypedComboBoxNodePropertyInterface() = default;
 
         // TypedNodePropertyInterface
         void ResetToDefault() override
@@ -309,7 +310,7 @@ namespace ScriptCanvas
         }
 
         // ComboBoxPropertyInterface
-        int GetSelectedIndex() const
+        int GetSelectedIndex() const override
         {
             int counter = -1;
 
@@ -327,7 +328,7 @@ namespace ScriptCanvas
             return counter;
         }
 
-        void SetSelectedIndex(int index)
+        void SetSelectedIndex(int index) override
         {
             if (index >= 0 || index < m_displaySet.size())
             {
@@ -353,6 +354,7 @@ namespace ScriptCanvas
     {
     public:
         AZ_RTTI(EnumComboBoxNodePropertyInterface, "{7D46B998-9E05-401A-AC92-37A90BAF8F60}", TypedComboBoxNodePropertyInterface<int32_t>);
+        virtual ~EnumComboBoxNodePropertyInterface() = default;
 
         // No way of identifying Enum types properly yet. Going to fake a BCO object type for now.
         static const AZ::Uuid k_EnumUUID;
@@ -400,6 +402,7 @@ namespace ScriptCanvas
         , public DatumNotificationBus::Handler
         , public NodeRequestBus::Handler
         , public EndpointNotificationBus::MultiHandler
+        , public SerializationListener
     {
         friend class Graph;
         friend class RuntimeComponent;
@@ -471,7 +474,7 @@ namespace ScriptCanvas
 
     public:
 
-        AZ_COMPONENT(Node, "{52B454AE-FA7E-4FE9-87D3-A1CAB235C691}");
+        AZ_COMPONENT(Node, "{52B454AE-FA7E-4FE9-87D3-A1CAB235C691}", SerializationListener);
         static void Reflect(AZ::ReflectContext* reflection);
 
         Node();
@@ -510,13 +513,13 @@ namespace ScriptCanvas
 
 
         //! Node internal initialization, for custom init, use OnInit
-        void Init() override final;
+        void Init() final;
 
         //! Node internal activation and housekeeping, for custom activation configuration use OnActivate
-        void Activate() override final;
+        void Activate() final;
 
         //! Node internal deactivation and housekeeping, for custom deactivation configuration use OnDeactivate
-        void Deactivate() override final;
+        void Deactivate() final;
 
         void PostActivate();
 
@@ -588,7 +591,7 @@ namespace ScriptCanvas
         NodeDisabledFlag GetNodeDisabledFlag() const;
         void SetNodeDisabledFlag(NodeDisabledFlag disabledFlag);
 
-        bool RemoveVariableReferences(const AZStd::unordered_set< ScriptCanvas::VariableId >& variableIds);
+        bool RemoveVariableReferences(const AZStd::unordered_set< ScriptCanvas::VariableId >& variableIds) override;
         ////
 
         Slot* GetSlotByName(AZStd::string_view slotName) const;
@@ -820,6 +823,7 @@ namespace ScriptCanvas
         //////////////////////////////////////////////////////////////////////////
 
     protected:
+        void OnDeserialize() override;
 
         virtual void OnReconfigurationBegin() {}
         virtual void OnReconfigurationEnd() {}

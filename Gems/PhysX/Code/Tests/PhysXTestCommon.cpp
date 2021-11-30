@@ -1,11 +1,10 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <PhysX_precompiled.h>
-
 #include <Tests/PhysXTestCommon.h>
 
 #include <AzFramework/Physics/SimulatedBodies/RigidBody.h>
@@ -250,6 +249,36 @@ namespace PhysX
             if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
             {
                 return sceneInterface->AddSimulatedBody(scene, &staticRigidBodyConfiguration);
+            }
+            return AzPhysics::InvalidSimulatedBodyHandle;
+        }
+
+        AzPhysics::SimulatedBodyHandle AddKinematicTriangleMeshCubeToScene(AzPhysics::SceneHandle scene, float halfExtent, AzPhysics::MassComputeFlags massComputeFlags)
+        {
+            // Generate input data
+            VertexIndexData cubeMeshData = GenerateCubeMeshData(halfExtent);
+            AZStd::vector<AZ::u8> cookedData;
+            bool cookingResult = false;
+            Physics::SystemRequestBus::BroadcastResult(cookingResult, &Physics::SystemRequests::CookTriangleMeshToMemory,
+                cubeMeshData.first.data(), static_cast<AZ::u32>(cubeMeshData.first.size()),
+                cubeMeshData.second.data(), static_cast<AZ::u32>(cubeMeshData.second.size()),
+                cookedData);
+            AZ_Assert(cookingResult, "Failed to cook the cube mesh.");
+
+            // Setup shape & collider configurations
+            auto shapeConfig = AZStd::make_shared<Physics::CookedMeshShapeConfiguration>();
+            shapeConfig->SetCookedMeshData(cookedData.data(), cookedData.size(),
+                Physics::CookedMeshShapeConfiguration::MeshType::TriangleMesh);
+
+            AzPhysics::RigidBodyConfiguration rigidBodyConfiguration;
+            rigidBodyConfiguration.m_kinematic = true;
+            rigidBodyConfiguration.SetMassComputeFlags(massComputeFlags);
+            rigidBodyConfiguration.m_colliderAndShapeData = AzPhysics::ShapeColliderPair(
+                AZStd::make_shared<Physics::ColliderConfiguration>(), shapeConfig);
+
+            if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
+            {
+                return sceneInterface->AddSimulatedBody(scene, &rigidBodyConfiguration);
             }
             return AzPhysics::InvalidSimulatedBodyHandle;
         }

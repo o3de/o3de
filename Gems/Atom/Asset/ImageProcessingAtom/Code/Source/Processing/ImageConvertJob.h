@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -20,16 +21,8 @@ namespace ImageProcessingAtom
     class ImageConvertOutput
     {
     public:
-        enum OutputImageType
-        {
-            Base = 0,   // Might contains alpha or not
-            Alpha,      // Separate alpha image
-            Preview,    // Combine base image with alpha if any, format RGBA8
-            Count
-        };
-
-        IImageObjectPtr GetOutputImage(OutputImageType type) const;
-        void SetOutputImage(IImageObjectPtr image, OutputImageType type);
+        IImageObjectPtr GetOutputImage() const;
+        void SetOutputImage(IImageObjectPtr image);
         void SetReady(bool ready);
         bool IsReady() const;
         float GetProgress() const;
@@ -37,7 +30,7 @@ namespace ImageProcessingAtom
         void Reset();
 
     private:
-        IImageObjectPtr m_outputImage[OutputImageType::Count];
+        IImageObjectPtr m_outputImage;
         bool m_outputReady = false;
         float m_progress = 0.0f;
     };
@@ -67,7 +60,6 @@ namespace ImageProcessingAtom
         static const int m_previewProcessStep = 2;
 
         AZStd::unique_ptr<ImageConvertProcess> m_process;
-        bool m_isPreview;
         AZStd::atomic_bool m_isCancelled;
         ImageConvertOutput* m_output;
     };

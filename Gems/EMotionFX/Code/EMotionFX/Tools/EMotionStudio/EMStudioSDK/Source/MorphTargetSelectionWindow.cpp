@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -20,30 +21,30 @@ namespace EMStudio
 
         QVBoxLayout* layout = new QVBoxLayout();
 
-        mListWidget = new QListWidget();
-        mListWidget->setAlternatingRowColors(true);
+        m_listWidget = new QListWidget();
+        m_listWidget->setAlternatingRowColors(true);
         if (multiSelect)
         {
-            mListWidget->setSelectionMode(QListWidget::ExtendedSelection);
+            m_listWidget->setSelectionMode(QListWidget::ExtendedSelection);
         }
         else
         {
-            mListWidget->setSelectionMode(QAbstractItemView::SelectionMode::SingleSelection);
+            m_listWidget->setSelectionMode(QAbstractItemView::SelectionMode::SingleSelection);
         }
 
         QHBoxLayout* buttonLayout = new QHBoxLayout();
-        mOKButton       = new QPushButton("OK");
-        mCancelButton   = new QPushButton("Cancel");
-        buttonLayout->addWidget(mOKButton);
-        buttonLayout->addWidget(mCancelButton);
+        m_okButton       = new QPushButton("OK");
+        m_cancelButton   = new QPushButton("Cancel");
+        buttonLayout->addWidget(m_okButton);
+        buttonLayout->addWidget(m_cancelButton);
 
-        layout->addWidget(mListWidget);
+        layout->addWidget(m_listWidget);
         layout->addLayout(buttonLayout);
         setLayout(layout);
 
-        connect(mOKButton, &QPushButton::clicked, this, &MorphTargetSelectionWindow::accept);
-        connect(mCancelButton, &QPushButton::clicked, this, &MorphTargetSelectionWindow::reject);
-        connect(mListWidget, &QListWidget::itemSelectionChanged, this, &MorphTargetSelectionWindow::OnSelectionChanged);
+        connect(m_okButton, &QPushButton::clicked, this, &MorphTargetSelectionWindow::accept);
+        connect(m_cancelButton, &QPushButton::clicked, this, &MorphTargetSelectionWindow::reject);
+        connect(m_listWidget, &QListWidget::itemSelectionChanged, this, &MorphTargetSelectionWindow::OnSelectionChanged);
     }
 
 
@@ -54,25 +55,25 @@ namespace EMStudio
 
     const AZStd::vector<uint32>& MorphTargetSelectionWindow::GetMorphTargetIDs() const
     {
-        return mSelection;
+        return m_selection;
     }
 
 
     void MorphTargetSelectionWindow::OnSelectionChanged()
     {
-        mSelection.clear();
+        m_selection.clear();
 
-        const int numItems = mListWidget->count();
-        mSelection.reserve(numItems);
+        const int numItems = m_listWidget->count();
+        m_selection.reserve(numItems);
         for (int i = 0; i < numItems; ++i)
         {
-            QListWidgetItem* item = mListWidget->item(i);
+            QListWidgetItem* item = m_listWidget->item(i);
             if (!item->isSelected())
             {
                 continue;
             }
 
-            mSelection.emplace_back(item->data(Qt::UserRole).toInt());
+            m_selection.emplace_back(item->data(Qt::UserRole).toInt());
         }
     }
 
@@ -84,13 +85,13 @@ namespace EMStudio
             return;
         }
 
-        mListWidget->blockSignals(true);
-        mListWidget->clear();
+        m_listWidget->blockSignals(true);
+        m_listWidget->clear();
 
-        mSelection = selection;
+        m_selection = selection;
 
-        const uint32 numMorphTargets = morphSetup->GetNumMorphTargets();
-        for (uint32 i = 0; i < numMorphTargets; ++i)
+        const size_t numMorphTargets = morphSetup->GetNumMorphTargets();
+        for (size_t i = 0; i < numMorphTargets; ++i)
         {
             EMotionFX::MorphTarget* morphTarget = morphSetup->GetMorphTarget(i);
             const uint32 morphTargetID = morphTarget->GetID();
@@ -99,16 +100,16 @@ namespace EMStudio
             item->setText(morphTarget->GetName());
             item->setData(Qt::UserRole, morphTargetID);
 
-            mListWidget->addItem(item);
+            m_listWidget->addItem(item);
 
-            if (AZStd::find(mSelection.begin(), mSelection.end(), morphTargetID) != mSelection.end())
+            if (AZStd::find(m_selection.begin(), m_selection.end(), morphTargetID) != m_selection.end())
             {
                 item->setSelected(true);
             }
         }
 
-        mListWidget->blockSignals(false);
-        mSelection = selection;
+        m_listWidget->blockSignals(false);
+        m_selection = selection;
     }
 } // namespace EMStudio
 

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -27,8 +28,8 @@ CObjectArchive::CObjectArchive(IObjectManager* objMan, XmlNodeRef xmlRoot, bool 
     m_nFlags = 0;
     node = xmlRoot;
     m_pCurrentErrorReport = GetIEditor()->GetErrorReport();
-    m_pGeometryPak = NULL;
-    m_pCurrentObject = NULL;
+    m_pGeometryPak = nullptr;
+    m_pCurrentObject = nullptr;
     m_bNeedResolveObjects = false;
     m_bProgressBarEnabled = true;
 }
@@ -125,7 +126,7 @@ void CObjectArchive::ResolveObjects()
         //////////////////////////////////////////////////////////////////////////
         // Serialize All Objects from XML.
         //////////////////////////////////////////////////////////////////////////
-        int numObj = m_loadedObjects.size();
+        int numObj = static_cast<int>(m_loadedObjects.size());
         for (i = 0; i < numObj; i++)
         {
             if (m_bProgressBarEnabled)
@@ -142,9 +143,9 @@ void CObjectArchive::ResolveObjects()
             m_pCurrentErrorReport->SetCurrentValidatorObject(nullptr);
 
             // Objects can be added to the list here (from Groups).
-            numObj = m_loadedObjects.size();
+            numObj = static_cast<int>(m_loadedObjects.size());
         }
-        m_pCurrentErrorReport->SetCurrentValidatorObject(NULL);
+        m_pCurrentErrorReport->SetCurrentValidatorObject(nullptr);
         //////////////////////////////////////////////////////////////////////////
         GetIEditor()->ResumeUndo();
     }
@@ -220,7 +221,7 @@ void CObjectArchive::ResolveObjects()
         //////////////////////////////////////////////////////////////////////////
         // Serialize All Objects from XML.
         //////////////////////////////////////////////////////////////////////////
-        int numObj = m_loadedObjects.size();
+        int numObj = static_cast<int>(m_loadedObjects.size());
         for (i = 0; i < numObj; i++)
         {
             if (m_bProgressBarEnabled)
@@ -237,7 +238,7 @@ void CObjectArchive::ResolveObjects()
             // might generate unrelated errors
             m_pCurrentErrorReport->SetCurrentValidatorObject(nullptr);
         }
-        m_pCurrentErrorReport->SetCurrentValidatorObject(NULL);
+        m_pCurrentErrorReport->SetCurrentValidatorObject(nullptr);
         //////////////////////////////////////////////////////////////////////////
     }
 
@@ -245,7 +246,7 @@ void CObjectArchive::ResolveObjects()
     // Call PostLoad on all these objects.
     //////////////////////////////////////////////////////////////////////////
     {
-        int numObj = m_loadedObjects.size();
+        int numObj = static_cast<int>(m_loadedObjects.size());
         for (i = 0; i < numObj; i++)
         {
             SLoadedObjectInfo& obj = m_loadedObjects[i];
@@ -256,7 +257,7 @@ void CObjectArchive::ResolveObjects()
     }
 
     m_bNeedResolveObjects = false;
-    m_pCurrentErrorReport->SetCurrentValidatorObject(NULL);
+    m_pCurrentErrorReport->SetCurrentValidatorObject(nullptr);
     m_sequenceIdRemap.clear();
     m_pendingIds.clear();
 }
@@ -313,7 +314,7 @@ void CObjectArchive::LoadObjects(XmlNodeRef& rootObjectsNode)
     for (int i = 0; i < numObjects; i++)
     {
         XmlNodeRef objNode = rootObjectsNode->getChild(i);
-        LoadObject(objNode, NULL);
+        LoadObject(objNode, nullptr);
     }
 }
 
@@ -400,7 +401,7 @@ void CObjectArchive::AddSequenceIdMapping(uint32 oldId, uint32 newId)
 {
     assert(oldId != newId);
     assert(GetIEditor()->GetMovieSystem()->FindSequenceById(oldId) || stl::find(m_pendingIds, oldId));
-    assert(GetIEditor()->GetMovieSystem()->FindSequenceById(newId) == NULL);
+    assert(GetIEditor()->GetMovieSystem()->FindSequenceById(newId) == nullptr);
     assert(stl::find(m_pendingIds, newId) == false);
     m_sequenceIdRemap[oldId] = newId;
     m_pendingIds.push_back(newId);

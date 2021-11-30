@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -49,6 +50,8 @@ namespace AZ
             virtual bool IsCubeMapReferenced(const AZStd::string& relativePath) = 0;
             virtual bool IsValidProbeHandle(const ReflectionProbeHandle& probe) const = 0;
             virtual void ShowProbeVisualization(const ReflectionProbeHandle& probe, bool showVisualization) = 0;
+            virtual void SetRenderExposure(const ReflectionProbeHandle& probe, float renderExposure) = 0;
+            virtual void SetBakeExposure(const ReflectionProbeHandle& probe, float bakeExposure) = 0;
         };
     } // namespace Render
 } // namespace AZ

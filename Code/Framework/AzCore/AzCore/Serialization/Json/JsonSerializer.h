@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -25,6 +26,11 @@ namespace AZ
             No,
             Yes
         };
+        enum class UseTypeSerializer : bool
+        {
+            No,
+            Yes
+        };
         enum class ResolvePointerResult
         {
             FullyProcessed,
@@ -40,16 +46,18 @@ namespace AZ
         JsonSerializer(JsonSerializer&& rhs) = delete;
 
         static JsonSerializationResult::ResultCode Store(rapidjson::Value& output, const void* object, const void* defaultObject,
-            const Uuid& typeId, JsonSerializerContext& context);
+            const Uuid& typeId, UseTypeSerializer useCustom, JsonSerializerContext& context);
 
         static JsonSerializationResult::ResultCode StoreFromPointer(rapidjson::Value& output, const void* object, const void* defaultObject,
-            const Uuid& typeId, JsonSerializerContext& context);
+            const Uuid& typeId, UseTypeSerializer custom, JsonSerializerContext& context);
 
         static JsonSerializationResult::ResultCode StoreWithClassData(rapidjson::Value& node, const void* object, const void* defaultObject,
-            const SerializeContext::ClassData& classData, StoreTypeId storeTypeId, JsonSerializerContext& context);
+            const SerializeContext::ClassData& classData, StoreTypeId storeTypeId, UseTypeSerializer custom,
+            JsonSerializerContext& context);
 
         static JsonSerializationResult::ResultCode StoreWithClassDataFromPointer(rapidjson::Value& output, const void* object,
-            const void* defaultObject, const SerializeContext::ClassData& classData, JsonSerializerContext& context);
+            const void* defaultObject, const SerializeContext::ClassData& classData, UseTypeSerializer custom,
+            JsonSerializerContext& context);
 
         static JsonSerializationResult::ResultCode StoreWithClassElement(rapidjson::Value& parentNode, const void* object,
             const void* defaultObject, const SerializeContext::ClassElement& classElement, JsonSerializerContext& context);

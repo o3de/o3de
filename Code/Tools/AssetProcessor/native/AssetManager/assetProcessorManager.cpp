@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -55,15 +56,8 @@ namespace AssetProcessor
         // cache this up front.  Note that it can fail here, and will retry later.
         InitializeCacheRoot();
 
-        m_absoluteDevFolderPath[0] = 0;
-        m_absoluteDevGameFolderPath[0] = 0;
-
         QDir assetRoot;
-        if (AssetUtilities::ComputeAssetRoot(assetRoot))
-        {
-            azstrcpy(m_absoluteDevFolderPath, AZ_MAX_PATH_LEN, assetRoot.absolutePath().toUtf8().constData());
-            azstrcpy(m_absoluteDevGameFolderPath, AZ_MAX_PATH_LEN, AssetUtilities::ComputeProjectPath().toUtf8().constData());
-        }
+        AssetUtilities::ComputeAssetRoot(assetRoot);
 
         using namespace AZStd::placeholders;
 
@@ -3071,6 +3065,7 @@ namespace AssetProcessor
 
         QElapsedTimer elapsedTimer;
         elapsedTimer.start();
+
         for (auto jobIter = m_jobsToProcess.begin(); jobIter != m_jobsToProcess.end();)
         {
             JobDetails& job = *jobIter;
@@ -3081,7 +3076,7 @@ namespace AssetProcessor
                 jobIter = m_jobsToProcess.erase(jobIter);
                 m_numOfJobsToAnalyze--;
 
-                // Update the remaining job status occasionally 
+                // Update the remaining job status occasionally
                 if (elapsedTimer.elapsed() >= MILLISECONDS_BETWEEN_PROCESS_JOBS_STATUS_UPDATE)
                 {
                     Q_EMIT NumRemainingJobsChanged(m_activeFiles.size() + m_filesToExamine.size() + m_numOfJobsToAnalyze);
@@ -3101,7 +3096,8 @@ namespace AssetProcessor
                 // Process the first job if no jobs were analyzed.
                 auto jobIter = m_jobsToProcess.begin();
                 JobDetails& job = *jobIter;
-                AZ_Warning(AssetProcessor::DebugChannel, false, " Cyclic job dependency detected. Processing job (%s, %s, %s, %s) to unblock.", 
+                AZ_Warning(
+                    AssetProcessor::DebugChannel, false, " Cyclic job dependency detected. Processing job (%s, %s, %s, %s) to unblock.",
                     job.m_jobEntry.m_databaseSourceName.toUtf8().data(), job.m_jobEntry.m_jobKey.toUtf8().data(),
                     job.m_jobEntry.m_platformInfo.m_identifier.c_str(), job.m_jobEntry.m_builderGuid.ToString<AZStd::string>().c_str());
                 ProcessJob(job);
@@ -3577,19 +3573,61 @@ namespace AssetProcessor
                     QString knownPathBeforeWildcard = encodedFileData.left(slashBeforeWildcardIndex + 1); // include the slash
                     QString relativeSearch = encodedFileData.mid(slashBeforeWildcardIndex + 1); // skip the slash
 
-                    for (int i = 0; i < m_platformConfig->GetScanFolderCount(); ++i)
+                    // Absolute path, just check the 1 scan folder
+                    if (AZ::IO::PathView(encodedFileData.toUtf8().constData()).IsAbsolute())
                     {
-                        const ScanFolderInfo* scanFolderInfo = &m_platformConfig->GetScanFolderAt(i);
-
-                        if (!scanFolderInfo->RecurseSubFolders() && encodedFileData.contains("/"))
+                        QString scanFolderName;
+                        if (!m_platformConfig->ConvertToRelativePath(encodedFileData, resultDatabaseSourceName, scanFolderName))
                         {
-                            continue;
+                            AZ_Warning(
+                                AssetProcessor::ConsoleChannel, false,
+                                "'%s' does not appear to be in any input folder.  Use relative paths instead.",
+                                sourceDependency.m_sourceFileDependencyPath.c_str());
                         }
 
-                        QDir rooted(scanFolderInfo->ScanPath());
-                        QString absolutePath = rooted.absoluteFilePath(knownPathBeforeWildcard);
+                        auto scanFolderInfo = m_platformConfig->GetScanFolderByPath(scanFolderName);
 
-                        resolvedDependencyList.append(m_platformConfig->FindWildcardMatches(absolutePath, relativeSearch, false, scanFolderInfo->RecurseSubFolders()));
+                        // Make an absolute path that is ScanFolderPath + Part of search path before the wildcard
+                        QDir rooted(scanFolderName);
+                        QString scanFolderAndKnownSubPath = rooted.absoluteFilePath(knownPathBeforeWildcard);
+
+                        resolvedDependencyList.append(m_platformConfig->FindWildcardMatches(
+                            scanFolderAndKnownSubPath, relativeSearch, false, scanFolderInfo->RecurseSubFolders()));
+                    }
+                    else // Relative path, check every scan folder
+                    {
+                        for (int i = 0; i < m_platformConfig->GetScanFolderCount(); ++i)
+                        {
+                            const ScanFolderInfo* scanFolderInfo = &m_platformConfig->GetScanFolderAt(i);
+
+                            if (!scanFolderInfo->RecurseSubFolders() && encodedFileData.contains("/"))
+                            {
+                                continue;
+                            }
+
+                            QDir rooted(scanFolderInfo->ScanPath());
+                            QString absolutePath = rooted.absoluteFilePath(knownPathBeforeWildcard);
+
+                            resolvedDependencyList.append(m_platformConfig->FindWildcardMatches(
+                                absolutePath, relativeSearch, false, scanFolderInfo->RecurseSubFolders()));
+                        }
+                    }
+
+                    // Convert to relative paths
+                    for (auto dependencyItr = resolvedDependencyList.begin(); dependencyItr != resolvedDependencyList.end();) 
+                    {
+                        QString relativePath, scanFolder;
+                        if (m_platformConfig->ConvertToRelativePath(*dependencyItr, relativePath, scanFolder))
+                        {
+                            *dependencyItr = relativePath;
+                            ++dependencyItr;
+                        }
+                        else
+                        {
+                            AZ_Warning("AssetProcessor", false, "Failed to get relative path for wildcard dependency file %s.  Is the file within a scan folder?",
+                                dependencyItr->toUtf8().constData());
+                            dependencyItr = resolvedDependencyList.erase(dependencyItr);
+                        }
                     }
 
                     resultDatabaseSourceName = encodedFileData.replace('\\', '/');

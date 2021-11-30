@@ -1,11 +1,14 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
+#include <AzCore/std/numeric.h>
 #include <MCore/Source/Config.h>
+#include <MCore/Source/LogManager.h>
 #include "GLSLShader.h"
 #include "GraphicsManager.h"
 #include <QFile>
@@ -17,44 +20,39 @@ namespace RenderGL
     // constructor
     GLSLShader::ShaderParameter::ShaderParameter(const char* name, GLint loc, bool isAttrib)
     {
-        mName           = name;
-        mType           = 0;
-        mSize           = 0;
-        mLocation       = loc;
-        mIsAttribute    = isAttrib;
-        mTextureUnit    = MCORE_INVALIDINDEX32;
+        m_name           = name;
+        m_type           = 0;
+        m_size           = 0;
+        m_location       = loc;
+        m_isAttribute    = isAttrib;
+        m_textureUnit    = MCORE_INVALIDINDEX32;
     }
 
 
     // constructor
     GLSLShader::GLSLShader()
     {
-        mProgram      = 0;
-        mVertexShader = 0;
-        mPixelShader  = 0;
-        mTextureUnit  = 0;
-
-        mUniforms.SetMemoryCategory(MEMCATEGORY_RENDERING);
-        mAttributes.SetMemoryCategory(MEMCATEGORY_RENDERING);
-        mActivatedAttribs.SetMemoryCategory(MEMCATEGORY_RENDERING);
-        mActivatedTextures.SetMemoryCategory(MEMCATEGORY_RENDERING);
+        m_program      = 0;
+        m_vertexShader = 0;
+        m_pixelShader  = 0;
+        m_textureUnit  = 0;
 
         // pre-alloc data for uniforms and attributes
-        mUniforms.Reserve(10);
-        mAttributes.Reserve(10);
-        mActivatedAttribs.Reserve(10);
-        mActivatedTextures.Reserve(10);
+        m_uniforms.reserve(10);
+        m_attributes.reserve(10);
+        m_activatedAttribs.reserve(10);
+        m_activatedTextures.reserve(10);
     }
 
 
     // destructor
     GLSLShader::~GLSLShader()
     {
-        glDetachShader(mProgram, mVertexShader);
-        glDetachShader(mProgram, mPixelShader);
-        glDeleteShader(mVertexShader);
-        glDeleteShader(mPixelShader);
-        glDeleteShader(mProgram);
+        glDetachShader(m_program, m_vertexShader);
+        glDetachShader(m_program, m_pixelShader);
+        glDeleteShader(m_vertexShader);
+        glDeleteShader(m_pixelShader);
+        glDeleteShader(m_program);
     }
 
 
@@ -68,36 +66,32 @@ namespace RenderGL
     // Deactivate
     void GLSLShader::Deactivate()
     {
-        const uint32 numAttribs = mActivatedAttribs.GetLength();
-        for (uint32 i = 0; i < numAttribs; ++i)
+        for (const size_t index : m_activatedAttribs)
         {
-            const uint32 index = mActivatedAttribs[i];
-            glDisableVertexAttribArray(mAttributes[index].mLocation);
+            glDisableVertexAttribArray(m_attributes[index].m_location);
         }
 
-        const uint32 numTextures = mActivatedTextures.GetLength();
-        for (uint32 i = 0; i < numTextures; ++i)
+        for (const size_t index : m_activatedTextures)
         {
-            const uint32 index = mActivatedTextures[i];
-            assert(mUniforms[index].mType == GL_SAMPLER_2D);
-            glActiveTexture(GL_TEXTURE0 + mUniforms[index].mTextureUnit);
+            assert(m_uniforms[index].m_type == GL_SAMPLER_2D);
+            glActiveTexture(GL_TEXTURE0 + m_uniforms[index].m_textureUnit);
             glBindTexture(GL_TEXTURE_2D, 0);
         }
 
-        mActivatedAttribs.Clear(false);
-        mActivatedTextures.Clear(false);
+        m_activatedAttribs.clear();
+        m_activatedTextures.clear();
     }
 
     bool GLSLShader::Validate()
     {
         int success = 0;
-        glValidateProgram(mProgram);
-        glGetProgramiv(mProgram, GL_VALIDATE_STATUS, &success);
+        glValidateProgram(m_program);
+        glGetProgramiv(m_program, GL_VALIDATE_STATUS, &success);
 
         if (success == 0)
         {
-            MCore::LogInfo("Failed to validate program '%s'", mFileName.c_str());
-            InfoLog(mProgram, &QOpenGLExtraFunctions::glGetProgramInfoLog);
+            MCore::LogInfo("Failed to validate program '%s'", m_fileName.c_str());
+            InfoLog(m_program, &QOpenGLExtraFunctions::glGetProgramInfoLog);
             return false;
         }
         return true;
@@ -120,17 +114,16 @@ namespace RenderGL
             return false;
         }
 
-        mFileName = filename;
+        m_fileName = filename;
 
         AZStd::string text;
         text.reserve(4096);
         text = "#version 120\n";
 
         // build define string
-        const uint32 numDefines = mDefines.GetLength();
-        for (uint32 n = 0; n < numDefines; ++n)
+        for (const AZStd::string& define : m_defines)
         {
-            text += AZStd::string::format("#define %s\n", mDefines[n].c_str());
+            text += AZStd::string::format("#define %s\n", define.c_str());
         }
 
         // read file into a big string
@@ -178,27 +171,23 @@ namespace RenderGL
             AZStd::invoke(func, static_cast<QOpenGLExtraFunctions*>(this), object, logLen, &logWritten, text.data());
 
             // if there are any defines, print that out too
-            if (mDefines.GetLength() > 0)
+            if (!m_defines.empty())
             {
                 AZStd::string dStr;
-                const uint32 numDefines = mDefines.GetLength();
-                for (uint32 n = 0; n < numDefines; ++n)
+                for (const AZStd::string& define : m_defines)
                 {
-                    if (n < numDefines - 1)
+                    if (!dStr.empty())
                     {
-                        dStr += mDefines[n] + " ";
+                        dStr.append(" ");
                     }
-                    else
-                    {
-                        dStr += mDefines[n];
-                    }
+                    dStr.append(define);
                 }
 
-                MCore::LogDetailedInfo("[GLSL] Compiling shader '%s', with defines %s", mFileName.c_str(), dStr.c_str());
+                MCore::LogDetailedInfo("[GLSL] Compiling shader '%s', with defines %s", m_fileName.c_str(), dStr.c_str());
             }
             else
             {
-                MCore::LogDetailedInfo("[GLSL] Compiling shader '%s'", mFileName.c_str());
+                MCore::LogDetailedInfo("[GLSL] Compiling shader '%s'", m_fileName.c_str());
             }
 
             MCore::LogDetailedInfo(text.c_str());
@@ -207,7 +196,7 @@ namespace RenderGL
 
 
     // Init
-    bool GLSLShader::Init(AZ::IO::PathView vertexFileName, AZ::IO::PathView pixelFileName, MCore::Array<AZStd::string>& defines)
+    bool GLSLShader::Init(AZ::IO::PathView vertexFileName, AZ::IO::PathView pixelFileName, AZStd::vector<AZStd::string>& defines)
     {
         initializeOpenGLFunctions();
         /*const char* args[] = { "unroll all",
@@ -215,44 +204,44 @@ namespace RenderGL
                                "O3",
                                nullptr };*/
 
-        mDefines = defines;
+        m_defines = defines;
 
         glUseProgram(0);
 
         // compile shaders
-        if (!vertexFileName.empty() && CompileShader(GL_VERTEX_SHADER, &mVertexShader, vertexFileName) == false)
+        if (!vertexFileName.empty() && CompileShader(GL_VERTEX_SHADER, &m_vertexShader, vertexFileName) == false)
         {
             return false;
         }
 
-        if (!pixelFileName.empty() && CompileShader(GL_FRAGMENT_SHADER, &mPixelShader, pixelFileName) == false)
+        if (!pixelFileName.empty() && CompileShader(GL_FRAGMENT_SHADER, &m_pixelShader, pixelFileName) == false)
         {
             return false;
         }
 
         // create program
-        mProgram = glCreateProgram();
+        m_program = glCreateProgram();
         if (!vertexFileName.empty())
         {
-            glAttachShader(mProgram, mVertexShader);
+            glAttachShader(m_program, m_vertexShader);
         }
 
         if (!pixelFileName.empty())
         {
-            glAttachShader(mProgram, mPixelShader);
+            glAttachShader(m_program, m_pixelShader);
         }
 
         // link
-        glLinkProgram(mProgram);
+        glLinkProgram(m_program);
 
         // check for linking errors
         GLint success = 0;
-        glGetProgramiv(mProgram, GL_LINK_STATUS, &success);
+        glGetProgramiv(m_program, GL_LINK_STATUS, &success);
 
         if (!success)
         {
             MCore::LogInfo("[OpenGL] Failed to link shaders '%.*s' and '%.*s' ", AZ_STRING_ARG(vertexFileName.Native()), AZ_STRING_ARG(pixelFileName.Native()));
-            InfoLog(mProgram, &QOpenGLExtraFunctions::glGetProgramInfoLog);
+            InfoLog(m_program, &QOpenGLExtraFunctions::glGetProgramInfoLog);
             return false;
         }
 
@@ -263,119 +252,111 @@ namespace RenderGL
     // FindAttribute
     GLSLShader::ShaderParameter* GLSLShader::FindAttribute(const char* name)
     {
-        const uint32 index = FindAttributeIndex(name);
-        if (index == MCORE_INVALIDINDEX32)
+        const size_t index = FindAttributeIndex(name);
+        if (index == InvalidIndex)
         {
             return nullptr;
         }
 
-        return &mAttributes[index];
+        return &m_attributes[index];
     }
 
 
     // FindAttributeIndex
-    uint32 GLSLShader::FindAttributeIndex(const char* name)
+    size_t GLSLShader::FindAttributeIndex(const char* name)
     {
-        const uint32 numAttribs = mAttributes.GetLength();
-        for (uint32 i = 0; i < numAttribs; ++i)
+        const auto foundAttribute = AZStd::find_if(begin(m_attributes), end(m_attributes), [name](const auto& attribute)
         {
-            if (AzFramework::StringFunc::Equal(mAttributes[i].mName.c_str(), name, false /* no case */))
-            {
+            return AzFramework::StringFunc::Equal(attribute.m_name.c_str(), name, false /* no case */) &&
                 // if we don't have a valid parameter location, an attribute by this name doesn't exist
                 // we just cached the fact that it doesn't exist, instead of failing glGetAttribLocation every time
-                if (mAttributes[i].mLocation >= 0)
-                {
-                    return i;
-                }
-
-                return MCORE_INVALIDINDEX32;
-            }
+                attribute.m_location >= 0;
+        });
+        if (foundAttribute != end(m_attributes))
+        {
+            return AZStd::distance(begin(m_attributes), foundAttribute);
         }
 
         // the parameter wasn't cached, try to retrieve it
-        const GLint loc = glGetAttribLocation(mProgram, name);
-        mAttributes.Add(ShaderParameter(name, loc, true));
+        const GLint loc = glGetAttribLocation(m_program, name);
+        m_attributes.emplace_back(name, loc, true);
 
         if (loc < 0)
         {
-            return MCORE_INVALIDINDEX32;
+            return InvalidIndex;
         }
 
-        return mAttributes.GetLength() - 1;
+        return m_attributes.size() - 1;
     }
 
 
     // FindAttributeLocation
-    uint32 GLSLShader::FindAttributeLocation(const char* name)
+    size_t GLSLShader::FindAttributeLocation(const char* name)
     {
         ShaderParameter* p = FindAttribute(name);
         if (p == nullptr)
         {
-            return MCORE_INVALIDINDEX32;
+            return InvalidIndex;
         }
 
-        return p->mLocation;
+        return p->m_location;
     }
 
 
     // FindUniform
     GLSLShader::ShaderParameter* GLSLShader::FindUniform(const char* name)
     {
-        const uint32 index = FindUniformIndex(name);
-        if (index == MCORE_INVALIDINDEX32)
+        const size_t index = FindUniformIndex(name);
+        if (index == InvalidIndex)
         {
             return nullptr;
         }
 
-        return &mUniforms[index];
+        return &m_uniforms[index];
     }
 
 
     // FindUniformIndex
-    uint32 GLSLShader::FindUniformIndex(const char* name)
+    size_t GLSLShader::FindUniformIndex(const char* name)
     {
-        const uint32 numUniforms = mUniforms.GetLength();
-        for (uint32 i = 0; i < numUniforms; ++i)
+        const auto foundUniform = AZStd::find_if(begin(m_uniforms), end(m_uniforms), [name](const auto& uniform)
         {
-            if (AzFramework::StringFunc::Equal(mUniforms[i].mName.c_str(), name, false /* no case */))
-            {
-                if (mUniforms[i].mLocation >= 0)
-                {
-                    return i;
-                }
-
-                return MCORE_INVALIDINDEX32;
-            }
+            return AzFramework::StringFunc::Equal(uniform.m_name.c_str(), name, false /* no case */) &&
+                uniform.m_location >= 0;
+        });
+        if (foundUniform != end(m_uniforms))
+        {
+            return AZStd::distance(begin(m_uniforms), foundUniform);
         }
 
         // the parameter wasn't cached, try to retrieve it
-        const GLint loc = glGetUniformLocation(mProgram, name);
-        mUniforms.Add(ShaderParameter(name, loc, false));
+        const GLint loc = glGetUniformLocation(m_program, name);
+        m_uniforms.emplace_back(name, loc, false);
 
         if (loc < 0)
         {
-            return MCORE_INVALIDINDEX32;
+            return InvalidIndex;
         }
 
-        return mUniforms.GetLength() - 1;
+        return m_uniforms.size() - 1;
     }
 
 
     // SetAttribute
     void GLSLShader::SetAttribute(const char* name, uint32 dim, uint32 type, uint32 stride, size_t offset)
     {
-        const uint32 index = FindAttributeIndex(name);
-        if (index == MCORE_INVALIDINDEX32)
+        const size_t index = FindAttributeIndex(name);
+        if (index == InvalidIndex)
         {
             return;
         }
 
-        ShaderParameter* param = &mAttributes[index];
+        ShaderParameter* param = &m_attributes[index];
 
-        glEnableVertexAttribArray(param->mLocation);
-        glVertexAttribPointer(param->mLocation, dim, type, GL_FALSE, stride, (GLvoid*)offset);
+        glEnableVertexAttribArray(param->m_location);
+        glVertexAttribPointer(param->m_location, dim, type, GL_FALSE, stride, (GLvoid*)offset);
 
-        mActivatedAttribs.Add(index);
+        m_activatedAttribs.emplace_back(index);
     }
 
 
@@ -388,7 +369,7 @@ namespace RenderGL
             return;
         }
 
-        glUniform1f(param->mLocation, value);
+        glUniform1f(param->m_location, value);
     }
 
 
@@ -401,7 +382,7 @@ namespace RenderGL
             return;
         }
 
-        glUniform1f(param->mLocation, (float)value);
+        glUniform1f(param->m_location, (float)value);
     }
 
 
@@ -414,7 +395,7 @@ namespace RenderGL
             return;
         }
 
-        glUniform4fv(param->mLocation, 1, (float*)&color);
+        glUniform4fv(param->m_location, 1, (float*)&color);
     }
 
 
@@ -427,7 +408,7 @@ namespace RenderGL
             return;
         }
 
-        glUniform2fv(param->mLocation, 1, (float*)&vector);
+        glUniform2fv(param->m_location, 1, (float*)&vector);
     }
 
 
@@ -440,7 +421,7 @@ namespace RenderGL
             return;
         }
 
-        glUniform3fv(param->mLocation, 1, (float*)&vector);
+        glUniform3fv(param->m_location, 1, (float*)&vector);
     }
 
 
@@ -453,7 +434,7 @@ namespace RenderGL
             return;
         }
 
-        glUniform4fv(param->mLocation, 1, (float*)&vector);
+        glUniform4fv(param->m_location, 1, (float*)&vector);
     }
 
 
@@ -473,7 +454,7 @@ namespace RenderGL
             return;
         }
 
-        glUniformMatrix4fv(param->mLocation, 1, !transpose, (float*)&matrix);
+        glUniformMatrix4fv(param->m_location, 1, !transpose, (float*)&matrix);
     }
 
 
@@ -486,7 +467,7 @@ namespace RenderGL
             return;
         }
 
-        glUniformMatrix4fv(param->mLocation, count, GL_FALSE, (float*)matrices);
+        glUniformMatrix4fv(param->m_location, count, GL_FALSE, (float*)matrices);
     }
 
 
@@ -499,26 +480,26 @@ namespace RenderGL
         }
 
         // update the value
-        glUniform1fv(param->mLocation, numFloats, values);
+        glUniform1fv(param->m_location, numFloats, values);
     }
 
 
     // SetUniform
     void GLSLShader::SetUniform(const char* name, Texture* texture)
     {
-        const uint32 index = FindUniformIndex(name);
-        if (index == MCORE_INVALIDINDEX32)
+        const size_t index = FindUniformIndex(name);
+        if (index == InvalidIndex)
         {
             return;
         }
 
-        mUniforms[index].mType = GL_SAMPLER_2D; // why is this being set here?
+        m_uniforms[index].m_type = GL_SAMPLER_2D; // why is this being set here?
 
         // if the texture doesn't have a sampler unit assigned, give it one
-        if (mUniforms[index].mTextureUnit == MCORE_INVALIDINDEX32)
+        if (m_uniforms[index].m_textureUnit == MCORE_INVALIDINDEX32)
         {
-            mUniforms[index].mTextureUnit = mTextureUnit;
-            mTextureUnit++;
+            m_uniforms[index].m_textureUnit = m_textureUnit;
+            m_textureUnit++;
         }
 
         if (texture == nullptr)
@@ -526,30 +507,30 @@ namespace RenderGL
             texture = GetGraphicsManager()->GetTextureCache()->GetWhiteTexture();
         }
 
-        glActiveTexture(GL_TEXTURE0 + mUniforms[index].mTextureUnit);
+        glActiveTexture(GL_TEXTURE0 + m_uniforms[index].m_textureUnit);
         glBindTexture(GL_TEXTURE_2D, texture->GetID());
-        glUniform1i(mUniforms[index].mLocation, mUniforms[index].mTextureUnit);
+        glUniform1i(m_uniforms[index].m_location, m_uniforms[index].m_textureUnit);
 
-        mActivatedTextures.Add(index);
+        m_activatedTextures.emplace_back(index);
     }
 
 
     // link a texture to a given uniform
     void GLSLShader::SetUniformTextureID(const char* name, uint32 textureID)
     {
-        const uint32 index = FindUniformIndex(name);
-        if (index == MCORE_INVALIDINDEX32)
+        const size_t index = FindUniformIndex(name);
+        if (index == InvalidIndex)
         {
             return;
         }
 
-        mUniforms[index].mType = GL_SAMPLER_2D; // why is this being set here?
+        m_uniforms[index].m_type = GL_SAMPLER_2D; // why is this being set here?
 
         // if the texture doesn't have a sampler unit assigned, give it one
-        if (mUniforms[index].mTextureUnit == MCORE_INVALIDINDEX32)
+        if (m_uniforms[index].m_textureUnit == MCORE_INVALIDINDEX32)
         {
-            mUniforms[index].mTextureUnit = mTextureUnit;
-            mTextureUnit++;
+            m_uniforms[index].m_textureUnit = m_textureUnit;
+            m_textureUnit++;
         }
 
         if (textureID == MCORE_INVALIDINDEX32)
@@ -557,29 +538,21 @@ namespace RenderGL
             textureID = GetGraphicsManager()->GetTextureCache()->GetWhiteTexture()->GetID();
         }
 
-        glActiveTexture(GL_TEXTURE0 + mUniforms[index].mTextureUnit);
+        glActiveTexture(GL_TEXTURE0 + m_uniforms[index].m_textureUnit);
         glBindTexture(GL_TEXTURE_2D, textureID);
-        glUniform1i(mUniforms[index].mLocation, mUniforms[index].mTextureUnit);
+        glUniform1i(m_uniforms[index].m_location, m_uniforms[index].m_textureUnit);
 
-        mActivatedTextures.Add(index);
+        m_activatedTextures.emplace_back(index);
     }
 
 
     // check if the given attribute string is defined in the shader
-    bool GLSLShader::CheckIfIsDefined(const char* attributeName)
+    bool GLSLShader::CheckIfIsDefined(const char* attributeName) const
     {
         // get the number of defines and iterate through them
-        const uint32 numDefines = mDefines.GetLength();
-        for (uint32 i = 0; i < numDefines; ++i)
+        return AZStd::any_of(begin(m_defines), end(m_defines), [attributeName](const AZStd::string& define)
         {
-            // compare the given attribute with the current define and return if they are equal
-            if (AzFramework::StringFunc::Equal(mDefines[i].c_str(), attributeName, false /* no case */))
-            {
-                return true;
-            }
-        }
-
-        // we haven't found the attribute, return failure
-        return false;
+            return AzFramework::StringFunc::Equal(define.c_str(), attributeName, false /* no case */);
+        });
     }
 }

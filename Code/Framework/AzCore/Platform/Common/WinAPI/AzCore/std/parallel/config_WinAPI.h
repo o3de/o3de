@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -70,27 +71,11 @@ extern "C"
     using LPSECURITY_ATTRIBUTES = SECURITY_ATTRIBUTES*;
 
     // Semaphore
-    AZ_DLL_IMPORT HANDLE _stdcall CreateSemaphoreA(LPSECURITY_ATTRIBUTES lpSemaphoreAttributes, LONG lInitialCount, LONG lMaximumCount, LPCSTR lpName);
     AZ_DLL_IMPORT HANDLE _stdcall CreateSemaphoreW(LPSECURITY_ATTRIBUTES lpSemaphoreAttributes, LONG lInitialCount, LONG lMaximumCount, LPCWSTR lpName);
     AZ_DLL_IMPORT BOOL _stdcall ReleaseSemaphore(HANDLE hSemaphore, LONG lReleaseCount, LPLONG lpPreviousCount);
-    #ifndef CreateSemaphore
-        #ifdef UNICODE
-            #define CreateSemaphore CreateSemaphoreW
-        #else
-            #define CreateSemaphore CreateSemaphoreA
-        #endif
-    #endif
 
     // Event
-    AZ_DLL_IMPORT HANDLE _stdcall CreateEventA(LPSECURITY_ATTRIBUTES lpEventAttributes, BOOL bManualReset, BOOL bInitialState, LPCSTR lpName);
     AZ_DLL_IMPORT HANDLE _stdcall CreateEventW(LPSECURITY_ATTRIBUTES lpEventAttributes, BOOL bManualReset, BOOL bInitialState, LPCWSTR lpName);
-    #ifndef CreateEvent
-       #ifdef UNICODE
-           #define CreateEvent CreateEventW
-       #else
-           #define CreateEvent CreateEventA
-       #endif
-    #endif
     AZ_DLL_IMPORT BOOL _stdcall SetEvent(HANDLE);
 }
 

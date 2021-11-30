@@ -1,5 +1,6 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
  *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -11,6 +12,7 @@
 #include <ScriptCanvas/Assets/ScriptCanvasAsset.h>
 #include <ScriptCanvas/Components/EditorGraphVariableManagerComponent.h>
 #include <ScriptCanvas/Grammar/AbstractCodeModel.h>
+#include <AzCore/Asset/AssetSerializer.h>
 
 namespace ScriptCanvasBuilderCpp
 {
@@ -29,29 +31,43 @@ namespace ScriptCanvasBuilder
     {
         m_source.Reset();
         m_variables.clear();
+        m_overrides.clear();
+        m_overridesUnused.clear();
         m_entityIds.clear();
         m_dependencies.clear();
     }
 
     void BuildVariableOverrides::CopyPreviousOverriddenValues(const BuildVariableOverrides& source)
     {
-        for (auto& overriddenValue : m_overrides)
+        auto copyPreviousIfFound = [](ScriptCanvas::GraphVariable& overriddenValue, const AZStd::vector<ScriptCanvas::GraphVariable>& source)
         {
-            auto iter = AZStd::find_if(source.m_overrides.begin(), source.m_overrides.end(), [&overriddenValue](const auto& candidate) { return candidate.GetVariableId() == overriddenValue.GetVariableId(); });
-
-            if (iter != source.m_overrides.end())
+            if (auto iter = AZStd::find_if(source.begin(), source.end(), [&overriddenValue](const auto& candidate) { return candidate.GetVariableId() == overriddenValue.GetVariableId(); });
+            iter != source.end())
             {
                 overriddenValue.DeepCopy(*iter);
                 overriddenValue.SetScriptInputControlVisibility(AZ::Edit::PropertyVisibility::Hide);
                 overriddenValue.SetAllowSignalOnChange(false);
-                // check that a name update is not necessary anymore
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        };
+
+        for (auto& overriddenValue : m_overrides)
+        {
+            if (!copyPreviousIfFound(overriddenValue, source.m_overrides))
+            {
+                // the variable in question may have been previously unused, and is now used, so copy the previous value over
+                copyPreviousIfFound(overriddenValue, source.m_overridesUnused);
             }
         }
 
         //////////////////////////////////////////////////////////////////////////
         // #functions2 provide an identifier for the node/variable in the source that caused the dependency. the root will not have one.
         // the above will provide the data to handle the cases where only certain dependency nodes were removed
-        // until then we do a sanity check, if any part of the depenecies were altered, assume no overrides are valid.
+        // until then we do a sanity check, if any part of the dependencies were altered, assume no overrides are valid.
         if (m_dependencies.size() != source.m_dependencies.size())
         {
             return;
@@ -84,31 +100,41 @@ namespace ScriptCanvasBuilder
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(reflectContext))
         {
             serializeContext->Class<BuildVariableOverrides>()
-                ->Version(0)
+                ->Version(1)
                 ->Field("source", &BuildVariableOverrides::m_source)
                 ->Field("variables", &BuildVariableOverrides::m_variables)
                 ->Field("entityId", &BuildVariableOverrides::m_entityIds)
                 ->Field("overrides", &BuildVariableOverrides::m_overrides)
+                ->Field("overridesUnused", &BuildVariableOverrides::m_overridesUnused)
                 ->Field("dependencies", &BuildVariableOverrides::m_dependencies)
                 ;
 
             if (auto editContext = serializeContext->GetEditContext())
             {
-                editContext->Class< BuildVariableOverrides>("Variables", "Variables exposed by the attached Script Canvas Graph")
-                    ->ClassElement(AZ::Edit::ClassElements::Group, "Variable Fields")
-                    ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+                editContext->Class<BuildVariableOverrides>("Variables", "Variables exposed by the attached Script Canvas Graph")
                     ->DataElement(AZ::Edit::UIHandlers::Default, &BuildVariableOverrides::m_overrides, "Variables", "Array of Variables within Script Canvas Graph")
-                    ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
+                        ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+                        ->Attribute(AZ::Edit::Attributes::ContainerCanBeModified, false)
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &BuildVariableOverrides::m_overridesUnused, "Unused Variables", "Unused variables within Script Canvas Graph, when used they keep the values set here")
+                        ->Attribute(AZ::Edit::Attributes::ContainerCanBeModified, false)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &BuildVariableOverrides::m_dependencies, "Dependencies", "Variables in Dependencies of the Script Canvas Graph")
-                    ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
+                        ->Attribute(AZ::Edit::Attributes::ContainerCanBeModified, false)
                     ;
             }
         }
     }
 
     // use this to initialize the new data, and make sure they have a editor graph variable for proper editor display
-    void BuildVariableOverrides::PopulateFromParsedResults(const ScriptCanvas::Grammar::ParsedRuntimeInputs& inputs, const ScriptCanvas::VariableData& variables)
+    void BuildVariableOverrides::PopulateFromParsedResults(ScriptCanvas::Grammar::AbstractCodeModelConstPtr abstractCodeModel, const ScriptCanvas::VariableData& variables)
     {
+        if (!abstractCodeModel)
+        {
+            AZ_Error("ScriptCanvasBuider", false, "null abstract code model");
+            return;
+        }
+
+        const ScriptCanvas::Grammar::ParsedRuntimeInputs& inputs = abstractCodeModel->GetRuntimeInputs();
+
         for (auto& variable : inputs.m_variables)
         {
             auto graphVariable = variables.FindVariable(variable.first);
@@ -136,21 +162,34 @@ namespace ScriptCanvasBuilder
 
             if (!ScriptCanvas::Grammar::IsParserGeneratedId(entityId.first))
             {
-                auto graphEntityId = variables.FindVariable(entityId.first);
-                if (!graphEntityId)
+                if (auto graphEntityId = variables.FindVariable(entityId.first); graphEntityId && graphEntityId->IsComponentProperty())
                 {
-                    AZ_Error("ScriptCanvasBuilder", false, "Missing EntityId from graph data that was just parsed");
-                    continue;
-                }
-
-                // copy to override list for editor display
-                if (graphEntityId->IsComponentProperty())
-                {
+                    // copy to override list for editor display
                     m_overrides.push_back(*graphEntityId);
                     auto& overrideValue = m_overrides.back();
                     overrideValue.SetScriptInputControlVisibility(AZ::Edit::PropertyVisibility::Hide);
                     overrideValue.SetAllowSignalOnChange(false);
                 }
+            }
+        }
+
+        for (auto& variable : abstractCodeModel->GetVariablesUnused())
+        {
+            auto graphVariable = variables.FindVariable(variable->m_sourceVariableId);
+            if (!graphVariable)
+            {
+                AZ_Error("ScriptCanvasBuilder", false, "Missing Variable from graph data that was just parsed");
+                continue;
+            }
+
+            if (graphVariable->IsComponentProperty())
+            {
+                // copy to override unused list for editor display
+                m_overridesUnused.push_back(*graphVariable);
+                auto& overrideValue = m_overridesUnused.back();
+                overrideValue.DeepCopy(*graphVariable);
+                overrideValue.SetScriptInputControlVisibility(AZ::Edit::PropertyVisibility::Hide);
+                overrideValue.SetAllowSignalOnChange(false);
             }
         }
     }
@@ -351,7 +390,7 @@ namespace ScriptCanvasBuilder
 
         BuildVariableOverrides result;
         result.m_source = editorAssetTree.m_asset;
-        result.PopulateFromParsedResults(parseOutcome.GetValue()->GetRuntimeInputs(), *variableData);
+        result.PopulateFromParsedResults(parseOutcome.GetValue(), *variableData);
 
         // recurse...
         for (auto& dependentAsset : editorAssetTree.m_dependencies)
@@ -361,7 +400,7 @@ namespace ScriptCanvasBuilder
             if (!parseDependentOutcome.IsSuccess())
             {
                 return AZ::Failure(AZStd::string::format
-                ("ParseEditorAssetTree failed to parse dependent graph from %s-%s: %s"
+                    ( "ParseEditorAssetTree failed to parse dependent graph from %s-%s: %s"
                     , dependentAsset.m_asset.GetId().ToString<AZStd::string>().c_str()
                     , dependentAsset.m_asset.GetHint().c_str()
                     , parseDependentOutcome.GetError().c_str()));

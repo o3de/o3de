@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -13,6 +14,7 @@
 #include <Atom/RPI.Public/Shader/Shader.h>
 #include <Atom/RPI.Public/Model/ModelLod.h>
 #include <Atom/RPI.Public/Buffer/Buffer.h>
+#include <Atom/RPI.Public/RPIUtils.h>
 
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/BufferView.h>
@@ -76,19 +78,14 @@ namespace AZ
             RHI::PipelineStateDescriptorForDispatch pipelineStateDescriptor;
             shaderVariant.ConfigurePipelineState(pipelineStateDescriptor);
 
-            auto perInstanceSrgAsset = m_skinningShader->FindShaderResourceGroupAsset(AZ::Name{ "InstanceSrg" });
-            if (!perInstanceSrgAsset.GetId().IsValid())
+            auto perInstanceSrgLayout = m_skinningShader->FindShaderResourceGroupLayout(AZ::Name{ "InstanceSrg" });
+            if (!perInstanceSrgLayout)
             {
-                AZ_Error("SkinnedMeshDispatchItem", false, "Failed to get shader resource group asset");
-                return false;
-            }
-            else if (!perInstanceSrgAsset.IsReady())
-            {
-                AZ_Error("SkinnedMeshDispatchItem", false, "Shader resource group asset is not loaded");
+                AZ_Error("SkinnedMeshDispatchItem", false, "Failed to get shader resource group layout");
                 return false;
             }
 
-            m_instanceSrg = RPI::ShaderResourceGroup::Create(perInstanceSrgAsset);
+            m_instanceSrg = RPI::ShaderResourceGroup::Create(m_skinningShader->GetAsset(), m_skinningShader->GetSupervariantIndex(), perInstanceSrgLayout->GetName());
             if (!m_instanceSrg)
             {
                 AZ_Error("SkinnedMeshDispatchItem", false, "Failed to create shader resource group for skinned mesh");
@@ -203,17 +200,14 @@ namespace AZ
             m_instanceSrg->Compile();
             m_dispatchItem.m_uniqueShaderResourceGroup = m_instanceSrg->GetRHIShaderResourceGroup();
             m_dispatchItem.m_pipelineState = m_skinningShader->AcquirePipelineState(pipelineStateDescriptor);
-            
-            const auto& numThreads = m_skinningShader->GetAsset()->GetAttribute(RHI::ShaderStage::Compute, AZ::Name{ "numthreads" });
-            auto& arguments = m_dispatchItem.m_arguments.m_direct;
-            if (numThreads)
-            {
-                const auto& args = *numThreads;
-                arguments.m_threadsPerGroupX = args[0].type() == azrtti_typeid<int>() ? AZStd::any_cast<int>(args[0]) : 1;
-                arguments.m_threadsPerGroupY = args[1].type() == azrtti_typeid<int>() ? AZStd::any_cast<int>(args[1]) : 1;
-                arguments.m_threadsPerGroupZ = args[2].type() == azrtti_typeid<int>() ? AZStd::any_cast<int>(args[2]) : 1;
-            }
 
+            auto& arguments = m_dispatchItem.m_arguments.m_direct;
+            const auto outcome = RPI::GetComputeShaderNumThreads(m_skinningShader->GetAsset(), arguments);
+            if (!outcome.IsSuccess())
+            {
+                AZ_Error("SkinnedMeshInputBuffers", false, outcome.GetError().c_str());
+            }
+ 
             arguments.m_totalNumberOfThreadsX = xThreads;
             arguments.m_totalNumberOfThreadsY = yThreads;
             arguments.m_totalNumberOfThreadsZ = 1;

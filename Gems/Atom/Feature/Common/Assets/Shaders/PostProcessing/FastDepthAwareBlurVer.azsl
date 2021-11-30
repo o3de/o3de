@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -54,7 +55,7 @@ int GetLdsIndex(int2 ldsPosition)
 
 // --- Common file start ---
 
-// #include <Atom/Features/PostProcessing/FastDepthAwareBlurCommon.azsli>
+// include <Atom/Features/PostProcessing/FastDepthAwareBlurCommon.azsli> ('#' symbol before 'include' was removed on purpose to avoid parsing this azsli file during ShaderAssetBuilder::CreateJobs)
 // This include fails with the asset processor when generating the .shader for this file
 // Everything below this is copy pasted from FastDepthAwareBlurCommon.azsli up until the
 // "Common file end" marker below

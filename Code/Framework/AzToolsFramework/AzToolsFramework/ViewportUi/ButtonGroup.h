@@ -1,12 +1,14 @@
-#pragma once
-
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
+#pragma once
+
+#include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzToolsFramework/ViewportUi/ViewportUiRequestBus.h>
 
 namespace AzToolsFramework::ViewportUi::Internal
@@ -23,6 +25,7 @@ namespace AzToolsFramework::ViewportUi::Internal
         ~ButtonGroup() = default;
 
         void SetHighlightedButton(ButtonId buttonId);
+        void ClearHighlightedButton();
 
         void SetViewportUiElementId(ViewportUiElementId id);
         ViewportUiElementId GetViewportUiElementId() const;
@@ -38,5 +41,6 @@ namespace AzToolsFramework::ViewportUi::Internal
         AZ::Event<ButtonId> m_buttonTriggeredEvent;
         ViewportUiElementId m_viewportUiId;
         AZStd::unordered_map<ButtonId, AZStd::unique_ptr<Button>> m_buttons;
+        ButtonId m_highlightedButtonId = InvalidButtonId;
     };
 } // namespace AzToolsFramework::ViewportUi::Internal

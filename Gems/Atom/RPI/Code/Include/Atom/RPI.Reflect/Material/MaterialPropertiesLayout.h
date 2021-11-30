@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -34,7 +35,7 @@ namespace AZ
             AZ_DISABLE_COPY_MOVE(MaterialPropertiesLayout);
 
             size_t GetPropertyCount() const;
-            MaterialPropertyIndex FindPropertyIndex(const Name& propertyName) const;
+            MaterialPropertyIndex FindPropertyIndex(const Name& propertyId) const;
             const MaterialPropertyDescriptor* GetPropertyDescriptor(MaterialPropertyIndex index) const;
 
         private:

@@ -1,10 +1,10 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "UiCanvasEditor_precompiled.h"
 #include "EditorCommon.h"
 
 #include "PropertyHandlerOffset.h"
@@ -106,10 +106,8 @@ void PropertyHandlerOffset::WriteGUIValuesIntoProperty(size_t index, AzQtCompone
     EBUS_EVENT_ID(id, UiTransform2dBus, SetOffsets, newInternalOffset);
 }
 
-bool PropertyHandlerOffset::ReadValuesIntoGUI(size_t index, AzQtComponents::VectorInput* GUI, const UiTransform2dInterface::Offsets& instance, AzToolsFramework::InstanceDataNode* node)
+bool PropertyHandlerOffset::ReadValuesIntoGUI([[maybe_unused]] size_t index, AzQtComponents::VectorInput* GUI, const UiTransform2dInterface::Offsets& instance, AzToolsFramework::InstanceDataNode* node)
 {
-    (int)index;
-
     // IMPORTANT: We DON'T need to do validation of data here because that's
     // done for us BEFORE we get here. We DO need to set the labels here.
 

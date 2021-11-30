@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -18,7 +19,7 @@ const char* CWipFeatureManager::kWipFeaturesFilename = "@user@\\Editor\\UI\\WipF
 #else
 const char* CWipFeatureManager::kWipFeaturesFilename = "@user@/Editor/UI/WipFeatures.xml";
 #endif
-CWipFeatureManager* CWipFeatureManager::s_pInstance = NULL;
+CWipFeatureManager* CWipFeatureManager::s_pInstance = nullptr;
 
 static void WipFeatureVarChange(ICVar* pVar)
 {
@@ -161,7 +162,7 @@ void CWipFeatureManager::Shutdown()
 {
     CWipFeatureManager::Instance()->Save();
     delete s_pInstance;
-    s_pInstance = NULL;
+    s_pInstance = nullptr;
 }
 
 bool CWipFeatureManager::Load(const char* pFilename, bool bClearExisting)
@@ -188,7 +189,7 @@ bool CWipFeatureManager::Load(const char* pFilename, bool bClearExisting)
     for (size_t i = 0, iCount = root->getChildCount(); i < iCount; ++i)
     {
         SWipFeatureInfo wf;
-        XmlNodeRef node = root->getChild(i);
+        XmlNodeRef node = root->getChild(static_cast<int>(i));
         XmlString str;
 
         node->getAttr("id", wf.m_id);
@@ -349,7 +350,7 @@ void CWipFeatureManager::ShowFeature(int aFeatureId, bool bShow)
 
     if (m_features[aFeatureId].m_pfnUpdateFeature)
     {
-        m_features[aFeatureId].m_pfnUpdateFeature(aFeatureId, &bShow, NULL, NULL, NULL);
+        m_features[aFeatureId].m_pfnUpdateFeature(aFeatureId, &bShow, nullptr, nullptr, nullptr);
     }
 }
 
@@ -359,7 +360,7 @@ void CWipFeatureManager::EnableFeature(int aFeatureId, bool bEnable)
 
     if (m_features[aFeatureId].m_pfnUpdateFeature)
     {
-        m_features[aFeatureId].m_pfnUpdateFeature(aFeatureId, NULL, &bEnable, NULL, NULL);
+        m_features[aFeatureId].m_pfnUpdateFeature(aFeatureId, nullptr, &bEnable, nullptr, nullptr);
     }
 }
 
@@ -369,7 +370,7 @@ void CWipFeatureManager::SetFeatureSafeMode(int aFeatureId, bool bSafeMode)
 
     if (m_features[aFeatureId].m_pfnUpdateFeature)
     {
-        m_features[aFeatureId].m_pfnUpdateFeature(aFeatureId, NULL, NULL, &bSafeMode, NULL);
+        m_features[aFeatureId].m_pfnUpdateFeature(aFeatureId, nullptr, nullptr, &bSafeMode, nullptr);
     }
 }
 
@@ -379,7 +380,7 @@ void CWipFeatureManager::SetFeatureParams(int aFeatureId, const char* pParams)
 
     if (m_features[aFeatureId].m_pfnUpdateFeature)
     {
-        m_features[aFeatureId].m_pfnUpdateFeature(aFeatureId, NULL, NULL, NULL, pParams);
+        m_features[aFeatureId].m_pfnUpdateFeature(aFeatureId, nullptr, nullptr, nullptr, pParams);
     }
 }
 
@@ -391,7 +392,7 @@ void CWipFeatureManager::ShowAllFeatures(bool bShow)
 
         if (iter->second.m_pfnUpdateFeature)
         {
-            iter->second.m_pfnUpdateFeature(iter->first, &bShow, NULL, NULL, NULL);
+            iter->second.m_pfnUpdateFeature(iter->first, &bShow, nullptr, nullptr, nullptr);
         }
     }
 }
@@ -404,7 +405,7 @@ void CWipFeatureManager::EnableAllFeatures(bool bEnable)
 
         if (iter->second.m_pfnUpdateFeature)
         {
-            iter->second.m_pfnUpdateFeature(iter->first, NULL, &bEnable, NULL, NULL);
+            iter->second.m_pfnUpdateFeature(iter->first, nullptr, &bEnable, nullptr, nullptr);
         }
     }
 }
@@ -417,7 +418,7 @@ void CWipFeatureManager::SetAllFeaturesSafeMode(bool bSafeMode)
 
         if (iter->second.m_pfnUpdateFeature)
         {
-            iter->second.m_pfnUpdateFeature(iter->first, NULL, NULL, &bSafeMode, NULL);
+            iter->second.m_pfnUpdateFeature(iter->first, nullptr, nullptr, &bSafeMode, nullptr);
         }
     }
 }
@@ -430,7 +431,7 @@ void CWipFeatureManager::SetAllFeaturesParams(const char* pParams)
 
         if (iter->second.m_pfnUpdateFeature)
         {
-            iter->second.m_pfnUpdateFeature(iter->first, NULL, NULL, NULL, pParams);
+            iter->second.m_pfnUpdateFeature(iter->first, nullptr, nullptr, nullptr, pParams);
         }
     }
 }
@@ -445,7 +446,7 @@ void CWipFeatureManager::SetFeatureUpdateCallback(int aFeatureId, TWipFeatureUpd
     m_features[aFeatureId].m_pfnUpdateFeature = pfnUpdate;
 }
 
-std::map<int, CWipFeatureManager::SWipFeatureInfo>&  CWipFeatureManager::GetFeatures()
+AZStd::map<int, CWipFeatureManager::SWipFeatureInfo>&  CWipFeatureManager::GetFeatures()
 {
     return m_features;
 }

@@ -1,11 +1,15 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
 #include <SceneAPI/SceneCore/Events/ExportProductList.h>
+#include <AzCore/RTTI/BehaviorContext.h>
+#include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/std/limits.h>
 
 namespace AZ
 {
@@ -47,6 +51,45 @@ namespace AZ
                 m_legacyPathDependencies = rhs.m_legacyPathDependencies;
                 m_productDependencies = rhs.m_productDependencies;
                 return *this;
+            }
+
+            void ExportProductList::Reflect(ReflectContext* context)
+            {
+                if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+                {
+                    serializeContext->Class<ExportProduct>()->Version(1);
+                    serializeContext->Class<ExportProductList>()->Version(1);
+                }
+
+                if (auto* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
+                {
+                    behaviorContext->Class<ExportProduct>("ExportProduct")
+                        ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
+                        ->Attribute(AZ::Script::Attributes::Module, "scene")
+                        ->Property("filename", BehaviorValueProperty(&ExportProduct::m_filename))
+                        ->Property("sourceId", BehaviorValueProperty(&ExportProduct::m_id))
+                        ->Property("assetType", BehaviorValueProperty(&ExportProduct::m_assetType))
+                        ->Property("productDependencies", BehaviorValueProperty(&ExportProduct::m_productDependencies))
+                        ->Property("subId",
+                            [](ExportProduct* self) { return self->m_subId.has_value() ? self->m_subId.value() : 0; },
+                            [](ExportProduct* self, u32 subId) { self->m_subId = AZStd::optional<u32>(subId); });
+
+                    behaviorContext->Class<ExportProductList>("ExportProductList")
+                        ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
+                        ->Attribute(AZ::Script::Attributes::Module, "scene")
+                        ->Method("AddProduct", [](ExportProductList& self, ExportProduct& product)
+                        {
+                            self.AddProduct(
+                                product.m_filename,
+                                product.m_id,
+                                product.m_assetType,
+                                product.m_lod,
+                                product.m_subId,
+                                product.m_dependencyFlags);
+                        })
+                        ->Method("GetProducts", &ExportProductList::GetProducts)
+                        ->Method("AddDependencyToProduct", &ExportProductList::AddDependencyToProduct);
+                }
             }
 
             ExportProduct& ExportProductList::AddProduct(const AZStd::string& filename, Uuid id, Data::AssetType assetType, AZStd::optional<u8> lod, AZStd::optional<u32> subId,

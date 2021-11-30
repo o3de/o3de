@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -10,7 +11,7 @@
 // include the required headers
 #include "EMotionFXConfig.h"
 #include "BaseObject.h"
-#include <MCore/Source/Array.h>
+#include <AzCore/std/containers/vector.h>
 
 
 namespace EMotionFX
@@ -40,9 +41,9 @@ namespace EMotionFX
              * The constructor.
              */
             MorphTarget()
-                : mID(MCORE_INVALIDINDEX32)
-                , mWeight(0.0f)
-                , mIsInManualMode(false) {}
+                : m_id(MCORE_INVALIDINDEX32)
+                , m_weight(0.0f)
+                , m_isInManualMode(false) {}
 
             /**
              * The destructor.
@@ -54,13 +55,13 @@ namespace EMotionFX
              * This ID links the MorphTarget class with this local morph target class.
              * @result The ID of this morph target.
              */
-            MCORE_INLINE uint32 GetID() const                       { return mID; }
+            MCORE_INLINE uint32 GetID() const                       { return m_id; }
 
             /**
              * Get the weight value of the morph target.
              * @result The weight value.
              */
-            float GetWeight() const                                 { return mWeight; }
+            float GetWeight() const                                 { return m_weight; }
 
             /**
              * Check if we are in manual mode or not.
@@ -68,20 +69,20 @@ namespace EMotionFX
              * then the motion system will overwrite the weight values.
              * @result Returns true when we are in manual mode, otherwise false is returned.
              */
-            bool GetIsInManualMode() const                          { return mIsInManualMode; }
+            bool GetIsInManualMode() const                          { return m_isInManualMode; }
 
             /**
              * Set the ID of this morph target.
              * This ID links the MorphTarget class with this local morph target class.
              * @param id The ID to use.
              */
-            void SetID(uint32 id)                                   { mID = id; }
+            void SetID(uint32 id)                                   { m_id = id; }
 
             /**
              * Set the weight value of the morph target.
              * @param weight The weight value.
              */
-            void SetWeight(float weight)                            { mWeight = weight; }
+            void SetWeight(float weight)                            { m_weight = weight; }
 
             /**
              * Enable or disable manual mode.
@@ -89,12 +90,12 @@ namespace EMotionFX
              * then the motion system will overwrite the weight values.
              * @param enabled Set to true if you wish to enable manual mode on this morph target. Otherwise set to false.
              */
-            void SetManualMode(bool enabled)                        { mIsInManualMode = enabled; }
+            void SetManualMode(bool enabled)                        { m_isInManualMode = enabled; }
 
         private:
-            uint32  mID;                    /**< The ID, which is based on the weight. */
-            float   mWeight;                /**< The weight for this morph target. */
-            bool    mIsInManualMode;        /**< The flag if we are in manual weight update mode or not. */
+            uint32  m_id;                    /**< The ID, which is based on the weight. */
+            float   m_weight;                /**< The weight for this morph target. */
+            bool    m_isInManualMode;        /**< The flag if we are in manual weight update mode or not. */
         };
 
 
@@ -122,23 +123,23 @@ namespace EMotionFX
          * This should always be equal to the number of morph targets in the highest detail.
          * @result The number of morph targets.
          */
-        MCORE_INLINE uint32 GetNumMorphTargets() const                      { return mMorphTargets.GetLength(); }
+        MCORE_INLINE size_t GetNumMorphTargets() const                      { return m_morphTargets.size(); }
 
         /**
          * Get a specific morph target.
          * @param nr The morph target number, which must be in range of [0..GetNumMorphTargets()-1].
          * @result A pointer to the morph target inside this class.
          */
-        MCORE_INLINE MorphTarget* GetMorphTarget(uint32 nr)                 { return &mMorphTargets[nr]; }
+        MCORE_INLINE MorphTarget* GetMorphTarget(size_t nr)                 { return &m_morphTargets[nr]; }
 
-        MCORE_INLINE const MorphTarget* GetMorphTarget(uint32 nr) const     { return &mMorphTargets[nr]; }
+        MCORE_INLINE const MorphTarget* GetMorphTarget(size_t nr) const     { return &m_morphTargets[nr]; }
 
         /**
          * Find a given morph target number by its ID.
          * @param id The ID value to search for.
-         * @result Returns the morph target number in range of [0..GetNumMorphTargets()-1], or MCORE_INVALIDINDEX32 when not found.
+         * @result Returns the morph target number in range of [0..GetNumMorphTargets()-1], or InvalidIndex when not found.
          */
-        uint32 FindMorphTargetIndexByID(uint32 id) const;
+        size_t FindMorphTargetIndexByID(uint32 id) const;
 
         /**
          * Find the morph target by its ID.
@@ -148,7 +149,7 @@ namespace EMotionFX
         MorphTarget* FindMorphTargetByID(uint32 id);
 
     private:
-        MCore::Array<MorphTarget>   mMorphTargets;  /**< The unique morph target information. */
+        AZStd::vector<MorphTarget>   m_morphTargets;  /**< The unique morph target information. */
 
         /**
          * The default constructor.

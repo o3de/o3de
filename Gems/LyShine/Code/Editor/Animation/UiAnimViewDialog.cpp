@@ -1,12 +1,11 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
-
-#include "UiCanvasEditor_precompiled.h"
 
 //----- UI_ANIMATION_REVISIT - this is required to compile since something we include still uses MFC
 
@@ -16,7 +15,7 @@
 // ----- End UI_ANIMATION_REVISIT
 
 #include "EditorDefs.h"
-#include "Resource.h"
+#include "Editor/Resource.h"
 
 #include "UiAnimViewDialog.h"
 
@@ -71,24 +70,12 @@
 //////////////////////////////////////////////////////////////////////////
 namespace
 {
-    const char* s_kUiAnimViewLayoutSection = "UiAnimViewLayout";
-    const char* s_kUiAnimViewSection = "DockingPaneLayouts\\UiAnimView";
-    const char* s_kSplitterEntry = "Splitter";
-    const char* s_kVersionEntry = "UiAnimViewLayoutVersion";
-
     const char* s_kUiAnimViewSettingsSection = "UiAnimView";
     const char* s_kSnappingModeEntry = "SnappingMode";
     const char* s_kFrameSnappingFPSEntry = "FrameSnappingFPS";
     const char* s_kTickDisplayModeEntry = "TickDisplayMode";
-    const char* s_kDefaultTracksEntry = "DefaultTracks";
-
-    const char* s_kRebarVersionEntry = "UiAnimViewReBarVersion";
-    const char* s_kRebarBandEntryPrefix = "ReBarBand";
 
     const char* s_kNoSequenceComboBoxEntry = "--- No Sequence ---";
-
-    const int TRACKVIEW_LAYOUT_VERSION = 0x0001; // Bump this up on every substantial pane layout change
-    const int TRACKVIEW_REBAR_VERSION = 0x0002; // Bump this up on every substantial rebar change
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -270,6 +257,7 @@ BOOL CUiAnimViewDialog::OnInitDialog()
     m_wndSplitter->addWidget(m_wndDopeSheet);
     m_wndSplitter->setStretchFactor(0, 1);
     m_wndSplitter->setStretchFactor(1, 10);
+    m_wndSplitter->setChildrenCollapsible(false);
     l->addWidget(m_wndSplitter);
     w->setLayout(l);
     setCentralWidget(w);
@@ -295,6 +283,11 @@ BOOL CUiAnimViewDialog::OnInitDialog()
     // Close/hide by default to avoid the pane to show up as a standalone, white window when not displayed in a layout.
     m_wndCurveEditorDock->setVisible(false);
     m_wndCurveEditorDock->setEnabled(false);
+
+    // In order to prevent the track editor view from collapsing and becoming invisible, we use the
+    // minimum size of the curve editor for the track editor as well. Since both editors use the same
+    // view widget in the UI animation editor when not in 'Both' mode, the sizes can be identical.
+    m_wndDopeSheet->setMinimumSize(m_wndCurveEditor->minimumSizeHint());
 
     InitSequences();
 
@@ -990,10 +983,10 @@ void CUiAnimViewDialog::ReloadSequencesComboBox()
         CUiAnimViewSequenceManager* pSequenceManager = CUiAnimViewSequenceManager::GetSequenceManager();
         const unsigned int numSequences = pSequenceManager->GetCount();
 
-        for (int k = 0; k < numSequences; ++k)
+        for (unsigned int k = 0; k < numSequences; ++k)
         {
             CUiAnimViewSequence* pSequence = pSequenceManager->GetSequenceByIndex(k);
-            QString fullname = QtUtil::ToQString(pSequence->GetName());
+            QString fullname = QString::fromUtf8(pSequence->GetName().c_str());
             m_sequencesComboBox->addItem(fullname);
         }
     }
@@ -1133,7 +1126,7 @@ void CUiAnimViewDialog::OnSequenceChanged(CUiAnimViewSequence* pSequence)
 
     if (pSequence)
     {
-        m_currentSequenceName = QtUtil::ToQString(pSequence->GetName());
+        m_currentSequenceName = QString::fromUtf8(pSequence->GetName().c_str());
 
         pSequence->Reset(true);
         SaveZoomScrollSettings();
@@ -1471,7 +1464,7 @@ void CUiAnimViewDialog::OnSnapFPS()
     if (ok)
     {
         m_wndDopeSheet->SetSnapFPS(fps);
-        m_wndCurveEditor->SetFPS(fps);
+        m_wndCurveEditor->SetFPS(static_cast<float>(fps));
 
         SetCursorPosText(m_animationContext->GetTime());
     }
@@ -1542,7 +1535,7 @@ void CUiAnimViewDialog::ReadMiscSettings()
 
     if (settings.contains(s_kFrameSnappingFPSEntry))
     {
-        float fps = settings.value(s_kFrameSnappingFPSEntry).toDouble();
+        float fps = settings.value(s_kFrameSnappingFPSEntry).toFloat();
         m_wndDopeSheet->SetSnapFPS(FloatToIntRet(fps));
         m_wndCurveEditor->SetFPS(fps);
     }
@@ -1734,7 +1727,7 @@ void CUiAnimViewDialog::OnNodeRenamed(CUiAnimViewNode* pNode, const char* pOldNa
     {
         if (m_currentSequenceName == QString(pOldName))
         {
-            m_currentSequenceName = QtUtil::ToQString(pNode->GetName());
+            m_currentSequenceName = QString::fromUtf8(pNode->GetName().c_str());
         }
 
         ReloadSequencesComboBox();

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -30,8 +31,6 @@ static const int g_closeButtonOffset = g_closeButtonWidth + AzQtComponents::Dock
 static const QColor g_tabIndicatorUnderlayColor(Qt::black);
 // Constant for the opacity of our tab indicator underlay
 static const qreal g_tabIndicatorUnderlayOpacity = 0.75;
-// Constant for the duration of our tab animations (in milliseconds)
-static const int g_tabAnimationDurationMS = 250;
 
 
 namespace AzQtComponents
@@ -148,7 +147,7 @@ namespace AzQtComponents
         TabBar::tabLayoutChange();
 
         // Only the active tab's close button should be shown
-        const ButtonPosition closeSide = (ButtonPosition)style()->styleHint(QStyle::SH_TabBar_CloseButtonPosition, 0, this);
+        const ButtonPosition closeSide = (ButtonPosition)style()->styleHint(QStyle::SH_TabBar_CloseButtonPosition, nullptr, this);
         const int numTabs = count();
         const int activeTabIndex = currentIndex();
         for (int i = 0; i < numTabs; ++i)
@@ -191,7 +190,7 @@ namespace AzQtComponents
             }
         });
 
-        const ButtonPosition closeSide = (ButtonPosition) style()->styleHint(QStyle::SH_TabBar_CloseButtonPosition, 0, this);
+        const ButtonPosition closeSide = (ButtonPosition) style()->styleHint(QStyle::SH_TabBar_CloseButtonPosition, nullptr, this);
         setTabButton(index, closeSide, closeButton);
     }
 

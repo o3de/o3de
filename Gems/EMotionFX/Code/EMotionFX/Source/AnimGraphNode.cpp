@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -49,17 +50,17 @@ namespace EMotionFX
     AnimGraphNode::AnimGraphNode()
         : AnimGraphObject(nullptr)
         , m_id(AnimGraphNodeId::Create())
-        , mNodeIndex(MCORE_INVALIDINDEX32)
-        , mDisabled(false)
-        , mParentNode(nullptr)
-        , mCustomData(nullptr)
-        , mVisEnabled(false)
-        , mIsCollapsed(false)
-        , mPosX(0)
-        , mPosY(0)
+        , m_nodeIndex(InvalidIndex)
+        , m_disabled(false)
+        , m_parentNode(nullptr)
+        , m_customData(nullptr)
+        , m_visEnabled(false)
+        , m_isCollapsed(false)
+        , m_posX(0)
+        , m_posY(0)
     {
         const AZ::u32 col = MCore::GenerateColor();
-        mVisualizeColor = AZ::Color(
+        m_visualizeColor = AZ::Color(
             MCore::ExtractRed(col)/255.0f,
             MCore::ExtractGreen(col)/255.0f,
             MCore::ExtractBlue(col)/255.0f,
@@ -80,21 +81,21 @@ namespace EMotionFX
         RemoveAllConnections();
         RemoveAllChildNodes();
 
-        if (mAnimGraph)
+        if (m_animGraph)
         {
-            mAnimGraph->RemoveObject(this);
+            m_animGraph->RemoveObject(this);
         }
     }
 
 
     void AnimGraphNode::RecursiveReinit()
     {
-        for (BlendTreeConnection* connection : mConnections)
+        for (BlendTreeConnection* connection : m_connections)
         {
             connection->Reinit();
         }
 
-        for (AnimGraphNode* childNode : mChildNodes)
+        for (AnimGraphNode* childNode : m_childNodes)
         {
             childNode->RecursiveReinit();
         }
@@ -112,13 +113,13 @@ namespace EMotionFX
         }
 
         // Initialize connections.
-        for (BlendTreeConnection* connection : mConnections)
+        for (BlendTreeConnection* connection : m_connections)
         {
             connection->InitAfterLoading(animGraph);
         }
 
         // Initialize child nodes.
-        for (AnimGraphNode* childNode : mChildNodes)
+        for (AnimGraphNode* childNode : m_childNodes)
         {
             // Sync the child node's parent.
             childNode->SetParentNode(this);
@@ -139,7 +140,7 @@ namespace EMotionFX
     {
         for (AnimGraphTriggerAction* action : m_actionSetup.GetActions())
         {
-            action->InitAfterLoading(mAnimGraph);
+            action->InitAfterLoading(m_animGraph);
         }
     }
 
@@ -147,35 +148,27 @@ namespace EMotionFX
     // copy base settings to the other node
     void AnimGraphNode::CopyBaseNodeTo(AnimGraphNode* node) const
     {
-        //CopyBaseObjectTo( node );
-
-        // now copy the node related things
-        // the parent
-        //if (mParentNode)
-        //node->mParentNode = node->GetAnimGraph()->RecursiveFindNodeByID( mParentNode->GetID() );
-
-        // copy the easy values
         node->m_name            = m_name;
         node->m_id              = m_id;
-        node->mNodeInfo         = mNodeInfo;
-        node->mCustomData       = mCustomData;
-        node->mDisabled         = mDisabled;
-        node->mPosX             = mPosX;
-        node->mPosY             = mPosY;
-        node->mVisualizeColor   = mVisualizeColor;
-        node->mVisEnabled       = mVisEnabled;
-        node->mIsCollapsed      = mIsCollapsed;
+        node->m_nodeInfo         = m_nodeInfo;
+        node->m_customData       = m_customData;
+        node->m_disabled         = m_disabled;
+        node->m_posX             = m_posX;
+        node->m_posY             = m_posY;
+        node->m_visualizeColor   = m_visualizeColor;
+        node->m_visEnabled       = m_visEnabled;
+        node->m_isCollapsed      = m_isCollapsed;
     }
 
 
     void AnimGraphNode::RemoveAllConnections()
     {
-        for (BlendTreeConnection* connection : mConnections)
+        for (BlendTreeConnection* connection : m_connections)
         {
             delete connection;
         }
 
-        mConnections.clear();
+        m_connections.clear();
     }
 
 
@@ -183,12 +176,12 @@ namespace EMotionFX
     BlendTreeConnection* AnimGraphNode::AddConnection(AnimGraphNode* sourceNode, uint16 sourcePort, uint16 targetPort)
     {
         // make sure the source and target ports are in range
-        if (targetPort < mInputPorts.size() && sourcePort < sourceNode->mOutputPorts.size())
+        if (targetPort < m_inputPorts.size() && sourcePort < sourceNode->m_outputPorts.size())
         {
             BlendTreeConnection* connection = aznew BlendTreeConnection(sourceNode, sourcePort, targetPort);
-            mConnections.push_back(connection);
-            mInputPorts[targetPort].mConnection = connection;
-            sourceNode->mOutputPorts[sourcePort].mConnection = connection;
+            m_connections.push_back(connection);
+            m_inputPorts[targetPort].m_connection = connection;
+            sourceNode->m_outputPorts[sourcePort].m_connection = connection;
             return connection;
         }
         return nullptr;
@@ -198,7 +191,7 @@ namespace EMotionFX
     BlendTreeConnection* AnimGraphNode::AddUnitializedConnection(AnimGraphNode* sourceNode, uint16 sourcePort, uint16 targetPort)
     {
         BlendTreeConnection* connection = aznew BlendTreeConnection(sourceNode, sourcePort, targetPort);
-        mConnections.push_back(connection);
+        m_connections.push_back(connection);
         return connection;
     }
 
@@ -206,7 +199,7 @@ namespace EMotionFX
     // validate the connections
     bool AnimGraphNode::ValidateConnections() const
     {
-        for (const BlendTreeConnection* connection : mConnections)
+        for (const BlendTreeConnection* connection : m_connections)
         {
             if (!connection->GetIsValid())
             {
@@ -221,7 +214,7 @@ namespace EMotionFX
     // check if the given input port is connected
     bool AnimGraphNode::CheckIfIsInputPortConnected(uint16 inputPort) const
     {
-        for (const BlendTreeConnection* connection : mConnections)
+        for (const BlendTreeConnection* connection : m_connections)
         {
             if (connection->GetTargetPort() == inputPort)
             {
@@ -239,42 +232,42 @@ namespace EMotionFX
     {
         if (delFromMem)
         {
-            for (AnimGraphNode* childNode : mChildNodes)
+            for (AnimGraphNode* childNode : m_childNodes)
             {
                 delete childNode;
             }
         }
 
-        mChildNodes.clear();
+        m_childNodes.clear();
 
         // trigger that we removed nodes
-        GetEventManager().OnRemovedChildNode(mAnimGraph, this);
+        GetEventManager().OnRemovedChildNode(m_animGraph, this);
 
         // TODO: remove the nodes from the node groups of the anim graph as well here
     }
 
 
     // remove a given node
-    void AnimGraphNode::RemoveChildNode(uint32 index, bool delFromMem)
+    void AnimGraphNode::RemoveChildNode(size_t index, bool delFromMem)
     {
         // remove the node from its node group
-        AnimGraphNodeGroup* nodeGroup = mAnimGraph->FindNodeGroupForNode(mChildNodes[index]);
+        AnimGraphNodeGroup* nodeGroup = m_animGraph->FindNodeGroupForNode(m_childNodes[index]);
         if (nodeGroup)
         {
-            nodeGroup->RemoveNodeById(mChildNodes[index]->GetId());
+            nodeGroup->RemoveNodeById(m_childNodes[index]->GetId());
         }
 
         // delete the node from memory
         if (delFromMem)
         {
-            delete mChildNodes[index];
+            delete m_childNodes[index];
         }
 
         // delete the node from the child array
-        mChildNodes.erase(mChildNodes.begin() + index);
+        m_childNodes.erase(m_childNodes.begin() + index);
 
         // trigger callbacks
-        GetEventManager().OnRemovedChildNode(mAnimGraph, this);
+        GetEventManager().OnRemovedChildNode(m_animGraph, this);
     }
 
 
@@ -282,11 +275,11 @@ namespace EMotionFX
     void AnimGraphNode::RemoveChildNodeByPointer(AnimGraphNode* node, bool delFromMem)
     {
         // find the index of the given node in the child node array and remove it in case the index is valid
-        const auto iterator = AZStd::find(mChildNodes.begin(), mChildNodes.end(), node);
+        const auto iterator = AZStd::find(m_childNodes.begin(), m_childNodes.end(), node);
 
-        if (iterator != mChildNodes.end())
+        if (iterator != m_childNodes.end())
         {
-            const uint32 index = static_cast<uint32>(iterator - mChildNodes.begin());
+            const size_t index = AZStd::distance(m_childNodes.begin(), iterator);
             RemoveChildNode(index, delFromMem);
         }
     }
@@ -299,7 +292,7 @@ namespace EMotionFX
             return const_cast<AnimGraphNode*>(this);
         }
 
-        for (const AnimGraphNode* childNode : mChildNodes)
+        for (const AnimGraphNode* childNode : m_childNodes)
         {
             AnimGraphNode* result = childNode->RecursiveFindNodeByName(nodeName);
             if (result)
@@ -319,7 +312,7 @@ namespace EMotionFX
             return false;
         }
 
-        for (const AnimGraphNode* childNode : mChildNodes)
+        for (const AnimGraphNode* childNode : m_childNodes)
         {
             if (!childNode->RecursiveIsNodeNameUnique(newNameCandidate, forNode))
             {
@@ -338,7 +331,7 @@ namespace EMotionFX
             return const_cast<AnimGraphNode*>(this);
         }
 
-        for (const AnimGraphNode* childNode : mChildNodes)
+        for (const AnimGraphNode* childNode : m_childNodes)
         {
             AnimGraphNode* result = childNode->RecursiveFindNodeById(nodeId);
             if (result)
@@ -354,7 +347,7 @@ namespace EMotionFX
     // find a child node by name
     AnimGraphNode* AnimGraphNode::FindChildNode(const char* name) const
     {
-        for (AnimGraphNode* childNode : mChildNodes)
+        for (AnimGraphNode* childNode : m_childNodes)
         {
             // compare the node name with the parameter and return a pointer to the node in case they are equal
             if (AzFramework::StringFunc::Equal(childNode->GetName(), name, true /* case sensitive */))
@@ -370,7 +363,7 @@ namespace EMotionFX
 
     AnimGraphNode* AnimGraphNode::FindChildNodeById(AnimGraphNodeId childId) const
     {
-        for (AnimGraphNode* childNode : mChildNodes)
+        for (AnimGraphNode* childNode : m_childNodes)
         {
             if (childNode->GetId() == childId)
             {
@@ -383,92 +376,65 @@ namespace EMotionFX
 
 
     // find a child node index by name
-    uint32 AnimGraphNode::FindChildNodeIndex(const char* name) const
+    size_t AnimGraphNode::FindChildNodeIndex(const char* name) const
     {
-        const size_t numChildNodes = mChildNodes.size();
-        for (size_t i = 0; i < numChildNodes; ++i)
+        const auto foundChildNode = AZStd::find_if(begin(m_childNodes), end(m_childNodes), [name](const AnimGraphNode* childNode)
         {
-            // compare the node name with the parameter and return the relative child node index in case they are equal
-            if (AzFramework::StringFunc::Equal(mChildNodes[i]->GetNameString().c_str(), name, true /* case sensitive */))
-            {
-                return static_cast<uint32>(i);
-            }
-        }
-
-        // failure, return invalid index
-        return MCORE_INVALIDINDEX32;
+            return childNode->GetNameString() == name;
+        });
+        return foundChildNode != end(m_childNodes) ? AZStd::distance(begin(m_childNodes), foundChildNode) : InvalidIndex;
     }
 
 
     // find a child node index
-    uint32 AnimGraphNode::FindChildNodeIndex(AnimGraphNode* node) const
+    size_t AnimGraphNode::FindChildNodeIndex(AnimGraphNode* node) const
     {
-        const auto iterator = AZStd::find(mChildNodes.begin(), mChildNodes.end(), node);
-        if (iterator == mChildNodes.end())
-        {
-            return MCORE_INVALIDINDEX32;
-        }
-
-        const size_t index = iterator - mChildNodes.begin();
-        return static_cast<uint32>(index);
+        const auto foundChildNode = AZStd::find(m_childNodes.begin(), m_childNodes.end(), node);
+        return foundChildNode != end(m_childNodes) ? AZStd::distance(begin(m_childNodes), foundChildNode) : InvalidIndex;
     }
 
 
     AnimGraphNode* AnimGraphNode::FindFirstChildNodeOfType(const AZ::TypeId& nodeType) const
     {
-        for (AnimGraphNode* childNode : mChildNodes)
+        const auto foundChild = AZStd::find_if(begin(m_childNodes), end(m_childNodes), [nodeType](const AnimGraphNode* childNode)
         {
-            if (azrtti_typeid(childNode) == nodeType)
-            {
-                return childNode;
-            }
-        }
-
-        return nullptr;
+            return azrtti_typeid(childNode) == nodeType;
+        });
+        return foundChild != end(m_childNodes) ? *foundChild : nullptr;
     }
 
 
     bool AnimGraphNode::HasChildNodeOfType(const AZ::TypeId& nodeType) const
     {
-        for (const AnimGraphNode* childNode : mChildNodes)
+        return AZStd::any_of(begin(m_childNodes), end(m_childNodes), [nodeType](const AnimGraphNode* childNode)
         {
-            if (azrtti_typeid(childNode) == nodeType)
-            {
-                return true;
-            }
-        }
-
-        return false;
+            return azrtti_typeid(childNode) == nodeType;
+        });
     }
 
 
     // does this node has a specific incoming connection?
     bool AnimGraphNode::GetHasConnection(AnimGraphNode* sourceNode, uint16 sourcePort, uint16 targetPort) const
     {
-        for (const BlendTreeConnection* connection : mConnections)
+        return AZStd::any_of(begin(m_connections), end(m_connections), [sourceNode, sourcePort, targetPort](const BlendTreeConnection* connection)
         {
-            if (connection->GetSourceNode() == sourceNode && connection->GetSourcePort() == sourcePort && connection->GetTargetPort() == targetPort)
-            {
-                return true;
-            }
-        }
-
-        return false;
+            return connection->GetSourceNode() == sourceNode && connection->GetSourcePort() == sourcePort && connection->GetTargetPort() == targetPort;
+        });
     }
 
     // remove a given connection
     void AnimGraphNode::RemoveConnection(BlendTreeConnection* connection, bool delFromMem)
     {
-        mInputPorts[connection->GetTargetPort()].mConnection = nullptr;
+        m_inputPorts[connection->GetTargetPort()].m_connection = nullptr;
 
         AnimGraphNode* sourceNode = connection->GetSourceNode();
         if (sourceNode)
         {
-            sourceNode->mOutputPorts[connection->GetSourcePort()].mConnection = nullptr;
+            sourceNode->m_outputPorts[connection->GetSourcePort()].m_connection = nullptr;
         }
 
         // Remove object by value.
-        mConnections.erase(AZStd::remove(mConnections.begin(), mConnections.end(), connection), mConnections.end());
+        m_connections.erase(AZStd::remove(m_connections.begin(), m_connections.end(), connection), m_connections.end());
         if (delFromMem)
         {
             delete connection;
@@ -480,7 +446,7 @@ namespace EMotionFX
     void AnimGraphNode::RemoveConnection(AnimGraphNode* sourceNode, uint16 sourcePort, uint16 targetPort)
     {
         // for all input connections
-        for (BlendTreeConnection* connection : mConnections)
+        for (BlendTreeConnection* connection : m_connections)
         {
             if (connection->GetSourceNode() == sourceNode && connection->GetSourcePort() == sourcePort && connection->GetTargetPort() == targetPort)
             {
@@ -493,25 +459,25 @@ namespace EMotionFX
 
     bool AnimGraphNode::RemoveConnectionById(AnimGraphConnectionId connectionId, bool delFromMem)
     {
-        const size_t numConnections = mConnections.size();
+        const size_t numConnections = m_connections.size();
         for (size_t i = 0; i < numConnections; ++i)
         {
-            if (mConnections[i]->GetId() == connectionId)
+            if (m_connections[i]->GetId() == connectionId)
             {
-                mInputPorts[mConnections[i]->GetTargetPort()].mConnection = nullptr;
+                m_inputPorts[m_connections[i]->GetTargetPort()].m_connection = nullptr;
 
-                AnimGraphNode* sourceNode = mConnections[i]->GetSourceNode();
+                AnimGraphNode* sourceNode = m_connections[i]->GetSourceNode();
                 if (sourceNode)
                 {
-                    sourceNode->mOutputPorts[mConnections[i]->GetSourcePort()].mConnection = nullptr;
+                    sourceNode->m_outputPorts[m_connections[i]->GetSourcePort()].m_connection = nullptr;
                 }
 
                 if (delFromMem)
                 {
-                    delete mConnections[i];
+                    delete m_connections[i];
                 }
 
-                mConnections.erase(mConnections.begin() + i);
+                m_connections.erase(m_connections.begin() + i);
             }
         }
 
@@ -522,7 +488,7 @@ namespace EMotionFX
     // find a given connection
     BlendTreeConnection* AnimGraphNode::FindConnection(const AnimGraphNode* sourceNode, uint16 sourcePort, uint16 targetPort) const
     {
-        for (BlendTreeConnection* connection : mConnections)
+        for (BlendTreeConnection* connection : m_connections)
         {
             if (connection->GetSourceNode() == sourceNode && connection->GetSourcePort() == sourcePort && connection->GetTargetPort() == targetPort)
             {
@@ -536,92 +502,80 @@ namespace EMotionFX
 
 
     // initialize the input ports
-    void AnimGraphNode::InitInputPorts(uint32 numPorts)
+    void AnimGraphNode::InitInputPorts(size_t numPorts)
     {
-        mInputPorts.resize(numPorts);
+        m_inputPorts.resize(numPorts);
     }
 
 
     // initialize the output ports
-    void AnimGraphNode::InitOutputPorts(uint32 numPorts)
+    void AnimGraphNode::InitOutputPorts(size_t numPorts)
     {
-        mOutputPorts.resize(numPorts);
+        m_outputPorts.resize(numPorts);
     }
 
 
     // find a given output port number
-    uint32 AnimGraphNode::FindOutputPortIndex(const AZStd::string& name) const
+    size_t AnimGraphNode::FindOutputPortIndex(const AZStd::string& name) const
     {
-        const size_t numPorts = mOutputPorts.size();
-        for (size_t i = 0; i < numPorts; ++i)
+        const auto foundPort = AZStd::find_if(begin(m_outputPorts), end(m_outputPorts), [&name](const Port& port)
         {
-            // if the port name is equal to the name we are searching for, return the index
-            if (mOutputPorts[i].GetNameString() == name)
-            {
-                return static_cast<uint32>(i);
-            }
-        }
-
-        return MCORE_INVALIDINDEX32;
+            return port.GetNameString() == name;
+        });
+        return foundPort != end(m_outputPorts) ? AZStd::distance(begin(m_outputPorts), foundPort) : InvalidIndex;
     }
 
 
     // find a given input port number
-    uint32 AnimGraphNode::FindInputPortIndex(const AZStd::string& name) const
+    size_t AnimGraphNode::FindInputPortIndex(const AZStd::string& name) const
     {
-        const size_t numPorts = mInputPorts.size();
-        for (size_t i = 0; i < numPorts; ++i)
+        const auto foundPort = AZStd::find_if(begin(m_inputPorts), end(m_inputPorts), [&name](const Port& port)
         {
-            // if the port name is equal to the name we are searching for, return the index
-            if (mInputPorts[i].GetNameString() == name)
-            {
-                return static_cast<uint32>(i);
-            }
-        }
-
-        return MCORE_INVALIDINDEX32;
+            return port.GetNameString() == name;
+        });
+        return foundPort != end(m_inputPorts) ? AZStd::distance(begin(m_inputPorts), foundPort) : InvalidIndex;
     }
 
 
     // add an output port and return its index
-    uint32 AnimGraphNode::AddOutputPort()
+    size_t AnimGraphNode::AddOutputPort()
     {
-        const size_t currentSize = mOutputPorts.size();
-        mOutputPorts.emplace_back();
-        return static_cast<uint32>(currentSize);
+        const size_t currentSize = m_outputPorts.size();
+        m_outputPorts.emplace_back();
+        return currentSize;
     }
 
 
     // add an input port, and return its index
-    uint32 AnimGraphNode::AddInputPort()
+    size_t AnimGraphNode::AddInputPort()
     {
-        const size_t currentSize = mInputPorts.size();
-        mInputPorts.emplace_back();
+        const size_t currentSize = m_inputPorts.size();
+        m_inputPorts.emplace_back();
         return static_cast<uint32>(currentSize);
     }
 
 
     // setup a port name
-    void AnimGraphNode::SetInputPortName(uint32 portIndex, const char* name)
+    void AnimGraphNode::SetInputPortName(size_t portIndex, const char* name)
     {
-        MCORE_ASSERT(portIndex < mInputPorts.size());
-        mInputPorts[portIndex].mNameID = MCore::GetStringIdPool().GenerateIdForString(name);
+        MCORE_ASSERT(portIndex < m_inputPorts.size());
+        m_inputPorts[portIndex].m_nameId = MCore::GetStringIdPool().GenerateIdForString(name);
     }
 
 
     // setup a port name
-    void AnimGraphNode::SetOutputPortName(uint32 portIndex, const char* name)
+    void AnimGraphNode::SetOutputPortName(size_t portIndex, const char* name)
     {
-        MCORE_ASSERT(portIndex < mOutputPorts.size());
-        mOutputPorts[portIndex].mNameID = MCore::GetStringIdPool().GenerateIdForString(name);
+        MCORE_ASSERT(portIndex < m_outputPorts.size());
+        m_outputPorts[portIndex].m_nameId = MCore::GetStringIdPool().GenerateIdForString(name);
     }
 
 
     // get the total number of children
-    uint32 AnimGraphNode::RecursiveCalcNumNodes() const
+    size_t AnimGraphNode::RecursiveCalcNumNodes() const
     {
-        uint32 result = 0;
-        for (const AnimGraphNode* childNode : mChildNodes)
+        size_t result = 0;
+        for (const AnimGraphNode* childNode : m_childNodes)
         {
             childNode->RecursiveCountChildNodes(result);
         }
@@ -631,12 +585,12 @@ namespace EMotionFX
 
 
     // recursively count the number of nodes down the hierarchy
-    void AnimGraphNode::RecursiveCountChildNodes(uint32& numNodes) const
+    void AnimGraphNode::RecursiveCountChildNodes(size_t& numNodes) const
     {
         // increase the counter
         numNodes++;
 
-        for (const AnimGraphNode* childNode : mChildNodes)
+        for (const AnimGraphNode* childNode : m_childNodes)
         {
             childNode->RecursiveCountChildNodes(numNodes);
         }
@@ -644,21 +598,21 @@ namespace EMotionFX
 
 
     // recursively calculate the number of node connections
-    uint32 AnimGraphNode::RecursiveCalcNumNodeConnections() const
+    size_t AnimGraphNode::RecursiveCalcNumNodeConnections() const
     {
-        uint32 result = 0;
+        size_t result = 0;
         RecursiveCountNodeConnections(result);
         return result;
     }
 
 
     // recursively calculate the number of node connections
-    void AnimGraphNode::RecursiveCountNodeConnections(uint32& numConnections) const
+    void AnimGraphNode::RecursiveCountNodeConnections(size_t& numConnections) const
     {
         // add the connections to our counter
         numConnections += GetNumConnections();
 
-        for (const AnimGraphNode* childNode : mChildNodes)
+        for (const AnimGraphNode* childNode : m_childNodes)
         {
             childNode->RecursiveCountNodeConnections(numConnections);
         }
@@ -666,137 +620,132 @@ namespace EMotionFX
 
 
     // setup an output port to output a given local pose
-    void AnimGraphNode::SetupOutputPortAsPose(const char* name, uint32 outputPortNr, uint32 portID)
+    void AnimGraphNode::SetupOutputPortAsPose(const char* name, size_t outputPortNr, uint32 portID)
     {
         // check if we already registered this port ID
-        const uint32 duplicatePort = FindOutputPortByID(portID);
-        if (duplicatePort != MCORE_INVALIDINDEX32)
+        const size_t duplicatePort = FindOutputPortByID(portID);
+        if (duplicatePort != InvalidIndex)
         {
-            MCore::LogError("EMotionFX::AnimGraphNode::SetOutputPortAsPose() - There is already a port with the same ID (portID=%d existingPort='%s' newPort='%s' node='%s')", portID, mOutputPorts[duplicatePort].GetName(), name, RTTI_GetTypeName());
+            MCore::LogError("EMotionFX::AnimGraphNode::SetOutputPortAsPose() - There is already a port with the same ID (portID=%d existingPort='%s' newPort='%s' node='%s')", portID, m_outputPorts[duplicatePort].GetName(), name, RTTI_GetTypeName());
         }
 
         SetOutputPortName(outputPortNr, name);
-        mOutputPorts[outputPortNr].Clear();
-        mOutputPorts[outputPortNr].mCompatibleTypes[0] = AttributePose::TYPE_ID;    // setup the compatible types of this port
-        mOutputPorts[outputPortNr].mPortID = portID;
+        m_outputPorts[outputPortNr].Clear();
+        m_outputPorts[outputPortNr].m_compatibleTypes[0] = AttributePose::TYPE_ID;    // setup the compatible types of this port
+        m_outputPorts[outputPortNr].m_portId = portID;
     }
 
 
     // setup an output port to output a given motion instance
-    void AnimGraphNode::SetupOutputPortAsMotionInstance(const char* name, uint32 outputPortNr, uint32 portID)
+    void AnimGraphNode::SetupOutputPortAsMotionInstance(const char* name, size_t outputPortNr, uint32 portID)
     {
         // check if we already registered this port ID
-        const uint32 duplicatePort = FindOutputPortByID(portID);
-        if (duplicatePort != MCORE_INVALIDINDEX32)
+        const size_t duplicatePort = FindOutputPortByID(portID);
+        if (duplicatePort != InvalidIndex)
         {
-            MCore::LogError("EMotionFX::AnimGraphNode::SetOutputPortAsMotionInstance() - There is already a port with the same ID (portID=%d existingPort='%s' newPort='%s' node='%s')", portID, mOutputPorts[duplicatePort].GetName(), name, RTTI_GetTypeName());
+            MCore::LogError("EMotionFX::AnimGraphNode::SetOutputPortAsMotionInstance() - There is already a port with the same ID (portID=%d existingPort='%s' newPort='%s' node='%s')", portID, m_outputPorts[duplicatePort].GetName(), name, RTTI_GetTypeName());
         }
 
         SetOutputPortName(outputPortNr, name);
-        mOutputPorts[outputPortNr].Clear();
-        mOutputPorts[outputPortNr].mCompatibleTypes[0] = AttributeMotionInstance::TYPE_ID;  // setup the compatible types of this port
-        mOutputPorts[outputPortNr].mPortID = portID;
+        m_outputPorts[outputPortNr].Clear();
+        m_outputPorts[outputPortNr].m_compatibleTypes[0] = AttributeMotionInstance::TYPE_ID;  // setup the compatible types of this port
+        m_outputPorts[outputPortNr].m_portId = portID;
     }
 
 
     // setup an output port
-    void AnimGraphNode::SetupOutputPort(const char* name, uint32 outputPortNr, uint32 attributeTypeID, uint32 portID)
+    void AnimGraphNode::SetupOutputPort(const char* name, size_t outputPortNr, uint32 attributeTypeID, uint32 portID)
     {
         // check if we already registered this port ID
-        const uint32 duplicatePort = FindOutputPortByID(portID);
-        if (duplicatePort != MCORE_INVALIDINDEX32)
+        const size_t duplicatePort = FindOutputPortByID(portID);
+        if (duplicatePort != InvalidIndex)
         {
-            MCore::LogError("EMotionFX::AnimGraphNode::SetOutputPort() - There is already a port with the same ID (portID=%d existingPort='%s' newPort='%s' name='%s')", portID, mOutputPorts[duplicatePort].GetName(), name, RTTI_GetTypeName());
+            MCore::LogError("EMotionFX::AnimGraphNode::SetOutputPort() - There is already a port with the same ID (portID=%d existingPort='%s' newPort='%s' name='%s')", portID, m_outputPorts[duplicatePort].GetName(), name, RTTI_GetTypeName());
         }
 
         SetOutputPortName(outputPortNr, name);
-        mOutputPorts[outputPortNr].Clear();
-        mOutputPorts[outputPortNr].mCompatibleTypes[0] = attributeTypeID;
-        mOutputPorts[outputPortNr].mPortID = portID;
+        m_outputPorts[outputPortNr].Clear();
+        m_outputPorts[outputPortNr].m_compatibleTypes[0] = attributeTypeID;
+        m_outputPorts[outputPortNr].m_portId = portID;
     }
 
-    void AnimGraphNode::SetupInputPortAsVector3(const char* name, uint32 inputPortNr, uint32 portID)
+    void AnimGraphNode::SetupInputPortAsVector3(const char* name, size_t inputPortNr, uint32 portID)
     {
         SetupInputPort(name, inputPortNr, AZStd::vector<uint32>{MCore::AttributeVector3::TYPE_ID, MCore::AttributeVector2::TYPE_ID, MCore::AttributeVector4::TYPE_ID}, portID);
     }
 
-    void AnimGraphNode::SetupInputPortAsVector2(const char* name, uint32 inputPortNr, uint32 portID)
+    void AnimGraphNode::SetupInputPortAsVector2(const char* name, size_t inputPortNr, uint32 portID)
     {
         SetupInputPort(name, inputPortNr, AZStd::vector<uint32>{MCore::AttributeVector2::TYPE_ID, MCore::AttributeVector3::TYPE_ID}, portID);
     }
 
-    void AnimGraphNode::SetupInputPortAsVector4(const char* name, uint32 inputPortNr, uint32 portID)
+    void AnimGraphNode::SetupInputPortAsVector4(const char* name, size_t inputPortNr, uint32 portID)
     {
         SetupInputPort(name, inputPortNr, AZStd::vector<uint32>{MCore::AttributeVector4::TYPE_ID, MCore::AttributeVector3::TYPE_ID}, portID);
     }
 
-    void AnimGraphNode::SetupInputPort(const char* name, uint32 inputPortNr, const AZStd::vector<uint32>& attributeTypeIDs, uint32 portID)
+    void AnimGraphNode::SetupInputPort(const char* name, size_t inputPortNr, const AZStd::vector<uint32>& attributeTypeIDs, uint32 portID)
     {
         // Check if we already registered this port ID
-        const uint32 duplicatePort = FindInputPortByID(portID);
-        if (duplicatePort != MCORE_INVALIDINDEX32)
+        const size_t duplicatePort = FindInputPortByID(portID);
+        if (duplicatePort != InvalidIndex)
         {
-            MCore::LogError("EMotionFX::AnimGraphNode::SetInputPortAsNumber() - There is already a port with the same ID (portID=%d existingPort='%s' newPort='%s' node='%s')", portID, MCore::GetStringIdPool().GetName(mInputPorts[duplicatePort].mNameID).c_str(), name, RTTI_GetTypeName());
+            MCore::LogError("EMotionFX::AnimGraphNode::SetInputPortAsNumber() - There is already a port with the same ID (portID=%d existingPort='%s' newPort='%s' node='%s')", portID, MCore::GetStringIdPool().GetName(m_inputPorts[duplicatePort].m_nameId).c_str(), name, RTTI_GetTypeName());
         }
 
         SetInputPortName(inputPortNr, name);
-        mInputPorts[inputPortNr].Clear();
-        mInputPorts[inputPortNr].mPortID = portID;
-        mInputPorts[inputPortNr].SetCompatibleTypes(attributeTypeIDs);
+        m_inputPorts[inputPortNr].Clear();
+        m_inputPorts[inputPortNr].m_portId = portID;
+        m_inputPorts[inputPortNr].SetCompatibleTypes(attributeTypeIDs);
     }
 
     // setup an input port as a number (float/int/bool)
-    void AnimGraphNode::SetupInputPortAsNumber(const char* name, uint32 inputPortNr, uint32 portID)
+    void AnimGraphNode::SetupInputPortAsNumber(const char* name, size_t inputPortNr, uint32 portID)
     {
         // check if we already registered this port ID
-        const uint32 duplicatePort = FindInputPortByID(portID);
-        if (duplicatePort != MCORE_INVALIDINDEX32)
+        const size_t duplicatePort = FindInputPortByID(portID);
+        if (duplicatePort != InvalidIndex)
         {
-            MCore::LogError("EMotionFX::AnimGraphNode::SetInputPortAsNumber() - There is already a port with the same ID (portID=%d existingPort='%s' newPort='%s' node='%s')", portID, mInputPorts[duplicatePort].GetName(), name, RTTI_GetTypeName());
+            MCore::LogError("EMotionFX::AnimGraphNode::SetInputPortAsNumber() - There is already a port with the same ID (portID=%d existingPort='%s' newPort='%s' node='%s')", portID, m_inputPorts[duplicatePort].GetName(), name, RTTI_GetTypeName());
         }
 
         SetInputPortName(inputPortNr, name);
-        mInputPorts[inputPortNr].Clear();
-        mInputPorts[inputPortNr].mCompatibleTypes[0] = MCore::AttributeFloat::TYPE_ID;
-        //mInputPorts[inputPortNr].mCompatibleTypes[1] = MCore::AttributeInt32::TYPE_ID;
-        //mInputPorts[inputPortNr].mCompatibleTypes[2] = MCore::AttributeBool::TYPE_ID;;
-        mInputPorts[inputPortNr].mPortID = portID;
+        m_inputPorts[inputPortNr].Clear();
+        m_inputPorts[inputPortNr].m_compatibleTypes[0] = MCore::AttributeFloat::TYPE_ID;
+        m_inputPorts[inputPortNr].m_portId = portID;
     }
 
-    void AnimGraphNode::SetupInputPortAsBool(const char* name, uint32 inputPortNr, uint32 portID)
+    void AnimGraphNode::SetupInputPortAsBool(const char* name, size_t inputPortNr, uint32 portID)
     {
         // check if we already registered this port ID
-        const uint32 duplicatePort = FindInputPortByID(portID);
-        if (duplicatePort != MCORE_INVALIDINDEX32)
+        const size_t duplicatePort = FindInputPortByID(portID);
+        if (duplicatePort != InvalidIndex)
         {
-            MCore::LogError("EMotionFX::AnimGraphNode::SetInputPortAsBool() - There is already a port with the same ID (portID=%d existingPort='%s' newPort='%s' node='%s')", portID, mInputPorts[duplicatePort].GetName(), name, RTTI_GetTypeName());
+            MCore::LogError("EMotionFX::AnimGraphNode::SetInputPortAsBool() - There is already a port with the same ID (portID=%d existingPort='%s' newPort='%s' node='%s')", portID, m_inputPorts[duplicatePort].GetName(), name, RTTI_GetTypeName());
         }
 
         SetInputPortName(inputPortNr, name);
-        mInputPorts[inputPortNr].Clear();
-        mInputPorts[inputPortNr].mCompatibleTypes[0] = MCore::AttributeBool::TYPE_ID;
-        mInputPorts[inputPortNr].mCompatibleTypes[1] = MCore::AttributeFloat::TYPE_ID;;
-        mInputPorts[inputPortNr].mCompatibleTypes[2] = MCore::AttributeInt32::TYPE_ID;
-        mInputPorts[inputPortNr].mPortID = portID;
+        m_inputPorts[inputPortNr].Clear();
+        m_inputPorts[inputPortNr].m_compatibleTypes[0] = MCore::AttributeBool::TYPE_ID;
+        m_inputPorts[inputPortNr].m_compatibleTypes[1] = MCore::AttributeFloat::TYPE_ID;;
+        m_inputPorts[inputPortNr].m_compatibleTypes[2] = MCore::AttributeInt32::TYPE_ID;
+        m_inputPorts[inputPortNr].m_portId = portID;
     }
 
     // setup a given input port in a generic way
-    void AnimGraphNode::SetupInputPort(const char* name, uint32 inputPortNr, uint32 attributeTypeID, uint32 portID)
+    void AnimGraphNode::SetupInputPort(const char* name, size_t inputPortNr, uint32 attributeTypeID, uint32 portID)
     {
         // check if we already registered this port ID
-        const uint32 duplicatePort = FindInputPortByID(portID);
-        if (duplicatePort != MCORE_INVALIDINDEX32)
+        const size_t duplicatePort = FindInputPortByID(portID);
+        if (duplicatePort != InvalidIndex)
         {
-            MCore::LogError("EMotionFX::AnimGraphNode::SetInputPort() - There is already a port with the same ID (portID=%d existingPort='%s' newPort='%s' node='%s')", portID, mInputPorts[duplicatePort].GetName(), name, RTTI_GetTypeName());
+            MCore::LogError("EMotionFX::AnimGraphNode::SetInputPort() - There is already a port with the same ID (portID=%d existingPort='%s' newPort='%s' node='%s')", portID, m_inputPorts[duplicatePort].GetName(), name, RTTI_GetTypeName());
         }
 
         SetInputPortName(inputPortNr, name);
-        mInputPorts[inputPortNr].Clear();
-        mInputPorts[inputPortNr].mCompatibleTypes[0] = attributeTypeID;
-        mInputPorts[inputPortNr].mPortID = portID;
-
-        // make sure we were able to create the attribute
-        //MCORE_ASSERT( mInputPorts[inputPortNr].mValue );
+        m_inputPorts[inputPortNr].Clear();
+        m_inputPorts[inputPortNr].m_compatibleTypes[0] = attributeTypeID;
+        m_inputPorts[inputPortNr].m_portId = portID;
     }
 
 
@@ -804,7 +753,7 @@ namespace EMotionFX
     {
         ResetUniqueData(animGraphInstance);
 
-        for (AnimGraphNode* childNode : mChildNodes)
+        for (AnimGraphNode* childNode : m_childNodes)
         {
             childNode->RecursiveResetUniqueDatas(animGraphInstance);
         }
@@ -826,19 +775,19 @@ namespace EMotionFX
     {
         InvalidateUniqueData(animGraphInstance);
 
-        for (AnimGraphNode* childNode : mChildNodes)
+        for (AnimGraphNode* childNode : m_childNodes)
         {
             childNode->RecursiveInvalidateUniqueDatas(animGraphInstance);
         }
     }
 
     // get the input value for a given port
-    const MCore::Attribute* AnimGraphNode::GetInputValue(AnimGraphInstance* animGraphInstance, uint32 inputPort) const
+    const MCore::Attribute* AnimGraphNode::GetInputValue(AnimGraphInstance* animGraphInstance, size_t inputPort) const
     {
         MCORE_UNUSED(animGraphInstance);
 
         // get the connection that is plugged into the port
-        BlendTreeConnection* connection = mInputPorts[inputPort].mConnection;
+        BlendTreeConnection* connection = m_inputPorts[inputPort].m_connection;
         MCORE_ASSERT(connection); // make sure there is a connection plugged in, otherwise we can't read the value
 
         // get the value from the output port of the source node
@@ -850,17 +799,17 @@ namespace EMotionFX
     void AnimGraphNode::RecursiveResetFlags(AnimGraphInstance* animGraphInstance, uint32 flagsToReset)
     {
         // reset the flag in this node
-        animGraphInstance->DisableObjectFlags(mObjectIndex, flagsToReset);
+        animGraphInstance->DisableObjectFlags(m_objectIndex, flagsToReset);
 
         if (GetEMotionFX().GetIsInEditorMode())
         {
             // reset all connections
-            for (BlendTreeConnection* connection : mConnections)
+            for (BlendTreeConnection* connection : m_connections)
             {
                 connection->SetIsVisited(false);
             }
         }
-        for (AnimGraphNode* childNode : mChildNodes)
+        for (AnimGraphNode* childNode : m_childNodes)
         {
             childNode->RecursiveResetFlags(animGraphInstance, flagsToReset);
         }
@@ -960,8 +909,8 @@ namespace EMotionFX
             syncMode, weight, outLeaderFactor, outFollowerFactor, outPlaySpeed);
     }
 
-    void AnimGraphNode::CalcSyncFactors(float leaderPlaySpeed, const AnimGraphSyncTrack* leaderSyncTrack, uint32 leaderSyncTrackIndex, float leaderDuration,
-        float followerPlaySpeed, const AnimGraphSyncTrack* followerSyncTrack, uint32 followerSyncTrackIndex, float followerDuration,
+    void AnimGraphNode::CalcSyncFactors(float leaderPlaySpeed, const AnimGraphSyncTrack* leaderSyncTrack, size_t leaderSyncTrackIndex, float leaderDuration,
+        float followerPlaySpeed, const AnimGraphSyncTrack* followerSyncTrack, size_t followerSyncTrackIndex, float followerDuration,
         ESyncMode syncMode, float weight, float* outLeaderFactor, float* outFollowerFactor, float* outPlaySpeed)
     {
         // exit if we don't want to sync or we have no leader node to sync to
@@ -985,7 +934,7 @@ namespace EMotionFX
             if (leaderSyncTrack && followerSyncTrack && leaderSyncTrack->GetNumEvents() > 0 && followerSyncTrack->GetNumEvents() > 0)
             {
                 // if the sync indices are invalid, act like no syncing
-                if (leaderSyncTrackIndex == MCORE_INVALIDINDEX32 || followerSyncTrackIndex == MCORE_INVALIDINDEX32)
+                if (leaderSyncTrackIndex == InvalidIndex || followerSyncTrackIndex == InvalidIndex)
                 {
                     *outLeaderFactor = 1.0f;
                     *outFollowerFactor = 1.0f;
@@ -994,13 +943,13 @@ namespace EMotionFX
 
                 // get the segment lengths
                 // TODO: handle motion clip start and end
-                uint32 leaderSyncIndexNext = leaderSyncTrackIndex + 1;
+                size_t leaderSyncIndexNext = leaderSyncTrackIndex + 1;
                 if (leaderSyncIndexNext >= leaderSyncTrack->GetNumEvents())
                 {
                     leaderSyncIndexNext = 0;
                 }
 
-                uint32 followerSyncIndexNext = followerSyncTrackIndex + 1;
+                size_t followerSyncIndexNext = followerSyncTrackIndex + 1;
                 if (followerSyncIndexNext >= followerSyncTrack->GetNumEvents())
                 {
                     followerSyncIndexNext = 0;
@@ -1031,10 +980,10 @@ namespace EMotionFX
         OnChangeMotionSet(animGraphInstance, newMotionSet);
 
         // get the number of child nodes, iterate through them and recursively call this function
-        const uint32 numChildNodes = GetNumChildNodes();
-        for (uint32 i = 0; i < numChildNodes; ++i)
+        const size_t numChildNodes = GetNumChildNodes();
+        for (size_t i = 0; i < numChildNodes; ++i)
         {
-            mChildNodes[i]->RecursiveOnChangeMotionSet(animGraphInstance, newMotionSet);
+            m_childNodes[i]->RecursiveOnChangeMotionSet(animGraphInstance, newMotionSet);
         }
     }
 
@@ -1085,7 +1034,7 @@ namespace EMotionFX
                 startEventIndex = 0;
             }
 
-            if (startEventIndex == MCORE_INVALIDINDEX32)
+            if (startEventIndex == InvalidIndex)
             {
                 startEventIndex = syncTrackB->GetNumEvents() - 1;
             }
@@ -1117,8 +1066,8 @@ namespace EMotionFX
         }
 
         // update the sync indices
-        uniqueDataA->SetSyncIndex(static_cast<uint32>(firstIndexA));
-        uniqueDataB->SetSyncIndex(static_cast<uint32>(secondIndexA));
+        uniqueDataA->SetSyncIndex(firstIndexA);
+        uniqueDataB->SetSyncIndex(secondIndexA);
 
         // calculate the segment lengths
         const float firstSegmentLength  = syncTrackA->CalcSegmentLength(firstIndexA, firstIndexB);
@@ -1193,22 +1142,22 @@ namespace EMotionFX
 
 
     // check if the given node is the parent or the parent of the parent etc. of the node
-    bool AnimGraphNode::RecursiveIsParentNode(AnimGraphNode* node) const
+    bool AnimGraphNode::RecursiveIsParentNode(const AnimGraphNode* node) const
     {
         // if we're dealing with a root node we can directly return failure
-        if (!mParentNode)
+        if (!m_parentNode)
         {
             return false;
         }
 
         // check if the parent is the node and return success in that case
-        if (mParentNode == node)
+        if (m_parentNode == node)
         {
             return true;
         }
 
         // check if the parent's parent is the node we're searching for
-        return mParentNode->RecursiveIsParentNode(node);
+        return m_parentNode->RecursiveIsParentNode(node);
     }
 
 
@@ -1216,22 +1165,15 @@ namespace EMotionFX
     bool AnimGraphNode::RecursiveIsChildNode(AnimGraphNode* node) const
     {
         // check if the given node is a child node of the current node
-        if (FindChildNodeIndex(node) != MCORE_INVALIDINDEX32)
+        if (FindChildNodeIndex(node) != InvalidIndex)
         {
             return true;
         }
 
-        // get the number of child nodes, iterate through them and compare if the node is a child of the child nodes of this node
-        for (const AnimGraphNode* childNode : mChildNodes)
+        return AZStd::any_of(begin(m_childNodes), end(m_childNodes), [node](const AnimGraphNode* childNode)
         {
-            if (childNode->RecursiveIsChildNode(node))
-            {
-                return true;
-            }
-        }
-
-        // failure, the node isn't a child or a child of a child node
-        return false;
+            return childNode->RecursiveIsChildNode(node);
+        });
     }
 
 
@@ -1249,17 +1191,17 @@ namespace EMotionFX
         SyncVisualObject();
 
         // in case the parent node is valid check the error status of the parent by checking all children recursively and set that value
-        if (mParentNode)
+        if (m_parentNode)
         {
-            AnimGraphObjectData* parentUniqueData = mParentNode->FindOrCreateUniqueNodeData(uniqueData->GetAnimGraphInstance());
+            AnimGraphObjectData* parentUniqueData = m_parentNode->FindOrCreateUniqueNodeData(uniqueData->GetAnimGraphInstance());
             if (hasError)
             {
-                mParentNode->SetHasError(parentUniqueData, true);
+                m_parentNode->SetHasError(parentUniqueData, true);
             }
-            else if (!mParentNode->HierarchicalHasError(parentUniqueData, true))
+            else if (!m_parentNode->HierarchicalHasError(parentUniqueData, true))
             {
                 // In case we are clearing this error, we need to check if this node siblings have errors to clear the parent.
-                mParentNode->SetHasError(parentUniqueData, false);
+                m_parentNode->SetHasError(parentUniqueData, false);
             }
         }
     }
@@ -1271,7 +1213,7 @@ namespace EMotionFX
             return true;
         }
 
-        for (const AnimGraphNode* childNode : mChildNodes)
+        for (const AnimGraphNode* childNode : m_childNodes)
         {
             AnimGraphObjectData* childUniqueData = childNode->FindOrCreateUniqueNodeData(uniqueData->GetAnimGraphInstance());
             if (childUniqueData->GetHasError())
@@ -1286,21 +1228,21 @@ namespace EMotionFX
 
 
     // collect child nodes of the given type
-    void AnimGraphNode::CollectChildNodesOfType(const AZ::TypeId& nodeType, MCore::Array<AnimGraphNode*>* outNodes) const
+    void AnimGraphNode::CollectChildNodesOfType(const AZ::TypeId& nodeType, AZStd::vector<AnimGraphNode*>* outNodes) const
     {
-        for (AnimGraphNode* childNode : mChildNodes)
+        for (AnimGraphNode* childNode : m_childNodes)
         {
             // check the current node type and add it to the output array in case they are the same
             if (azrtti_typeid(childNode) == nodeType)
             {
-                outNodes->Add(childNode);
+                outNodes->emplace_back(childNode);
             }
         }
     }
 
     void AnimGraphNode::CollectChildNodesOfType(const AZ::TypeId& nodeType, AZStd::vector<AnimGraphNode*>& outNodes) const
     {
-        for (AnimGraphNode* childNode : mChildNodes)
+        for (AnimGraphNode* childNode : m_childNodes)
         {
             if (azrtti_typeid(childNode) == nodeType)
             {
@@ -1317,13 +1259,13 @@ namespace EMotionFX
             outNodes->emplace_back(const_cast<AnimGraphNode*>(this));
         }
 
-        for (const AnimGraphNode* childNode : mChildNodes)
+        for (const AnimGraphNode* childNode : m_childNodes)
         {
             childNode->RecursiveCollectNodesOfType(nodeType, outNodes);
         }
     }
 
-    void AnimGraphNode::RecursiveCollectTransitionConditionsOfType(const AZ::TypeId& conditionType, MCore::Array<AnimGraphTransitionCondition*>* outConditions) const
+    void AnimGraphNode::RecursiveCollectTransitionConditionsOfType(const AZ::TypeId& conditionType, AZStd::vector<AnimGraphTransitionCondition*>* outConditions) const
     {
         // check if the current node is a state machine
         if (azrtti_typeid(this) == azrtti_typeid<AnimGraphStateMachine>())
@@ -1345,13 +1287,13 @@ namespace EMotionFX
                     AnimGraphTransitionCondition* condition = transition->GetCondition(j);
                     if (azrtti_typeid(condition) == conditionType)
                     {
-                        outConditions->Add(condition);
+                        outConditions->emplace_back(condition);
                     }
                 }
             }
         }
 
-        for (const AnimGraphNode* childNode : mChildNodes)
+        for (const AnimGraphNode* childNode : m_childNodes)
         {
             childNode->RecursiveCollectTransitionConditionsOfType(conditionType, outConditions);
         }
@@ -1365,7 +1307,7 @@ namespace EMotionFX
             outObjects.emplace_back(const_cast<AnimGraphNode*>(this));
         }
 
-        for (const AnimGraphNode* childNode : mChildNodes)
+        for (const AnimGraphNode* childNode : m_childNodes)
         {
             childNode->RecursiveCollectObjectsOfType(objectType, outObjects);
         }
@@ -1373,7 +1315,7 @@ namespace EMotionFX
     
     void AnimGraphNode::RecursiveCollectObjectsAffectedBy(AnimGraph* animGraph, AZStd::vector<AnimGraphObject*>& outObjects) const 
     {
-        for (const AnimGraphNode* childNode : mChildNodes)
+        for (const AnimGraphNode* childNode : m_childNodes)
         {
             childNode->RecursiveCollectObjectsAffectedBy(animGraph, outObjects);
         }
@@ -1424,60 +1366,44 @@ namespace EMotionFX
     // find the input port, based on the port name
     AnimGraphNode::Port* AnimGraphNode::FindInputPortByName(const AZStd::string& portName)
     {
-        for (Port& port : mInputPorts)
+        const auto foundPort = AZStd::find_if(begin(m_inputPorts), end(m_inputPorts), [&portName](const Port& port)
         {
-            if (port.GetNameString() == portName)
-            {
-                return &port;
-            }
-        }
-        return nullptr;
+            return port.GetNameString() == portName;
+        });
+        return foundPort != end(m_inputPorts) ? foundPort : nullptr;
     }
 
 
     // find the output port, based on the port name
     AnimGraphNode::Port* AnimGraphNode::FindOutputPortByName(const AZStd::string& portName)
     {
-        for (Port& port : mOutputPorts)
+        const auto foundPort = AZStd::find_if(begin(m_outputPorts), end(m_outputPorts), [&portName](const Port& port)
         {
-            if (port.GetNameString() == portName)
-            {
-                return &port;
-            }
-        }
-        return nullptr;
+            return port.GetNameString() == portName;
+        });
+        return foundPort != end(m_outputPorts) ? foundPort : nullptr;
     }
 
 
     // find the input port index, based on the port id
-    uint32 AnimGraphNode::FindInputPortByID(uint32 portID) const
+    size_t AnimGraphNode::FindInputPortByID(uint32 portID) const
     {
-        const size_t numPorts = mInputPorts.size();
-        for (size_t i = 0; i < numPorts; ++i)
+        const auto foundPort = AZStd::find_if(begin(m_inputPorts), end(m_inputPorts), [portID](const Port& port)
         {
-            if (mInputPorts[i].mPortID == portID)
-            {
-                return static_cast<uint32>(i);
-            }
-        }
-
-        return MCORE_INVALIDINDEX32;
+            return port.m_portId == portID;
+        });
+        return foundPort != end(m_inputPorts) ? AZStd::distance(begin(m_inputPorts), foundPort) : InvalidIndex;
     }
 
 
     // find the output port index, based on the port id
-    uint32 AnimGraphNode::FindOutputPortByID(uint32 portID) const
+    size_t AnimGraphNode::FindOutputPortByID(uint32 portID) const
     {
-        const size_t numPorts = mOutputPorts.size();
-        for (size_t i = 0; i < numPorts; ++i)
+        const auto foundPort = AZStd::find_if(begin(m_outputPorts), end(m_outputPorts), [portID](const Port& port)
         {
-            if (mOutputPorts[i].mPortID == portID)
-            {
-                return static_cast<uint32>(i);
-            }
-        }
-
-        return MCORE_INVALIDINDEX32;
+            return port.m_portId == portID;
+        });
+        return foundPort != end(m_outputPorts) ? AZStd::distance(begin(m_outputPorts), foundPort) : InvalidIndex;
     }
 
 
@@ -1495,12 +1421,12 @@ namespace EMotionFX
         outConnections.clear();
 
         // if we don't have a parent node we cannot proceed
-        if (!mParentNode)
+        if (!m_parentNode)
         {
             return;
         }
 
-        for (AnimGraphNode* childNode : mParentNode->GetChildNodes())
+        for (AnimGraphNode* childNode : m_parentNode->GetChildNodes())
         {
             // Skip this child if the child is this node
             if (childNode == this)
@@ -1520,16 +1446,16 @@ namespace EMotionFX
     }
 
 
-    void AnimGraphNode::CollectOutgoingConnections(AZStd::vector<AZStd::pair<BlendTreeConnection*, AnimGraphNode*> >& outConnections, const uint32 portIndex) const
+    void AnimGraphNode::CollectOutgoingConnections(AZStd::vector<AZStd::pair<BlendTreeConnection*, AnimGraphNode*> >& outConnections, const size_t portIndex) const
     {
         outConnections.clear();
 
-        if (!mParentNode)
+        if (!m_parentNode)
         {
             return;
         }
 
-        for (AnimGraphNode* childNode : mParentNode->GetChildNodes())
+        for (AnimGraphNode* childNode : m_parentNode->GetChildNodes())
         {
             // Skip this child if the child is this node
             if (childNode == this)
@@ -1552,8 +1478,8 @@ namespace EMotionFX
     BlendTreeConnection* AnimGraphNode::FindConnection(uint16 port) const
     {
         // get the number of connections and iterate through them
-        const uint32 numConnections = GetNumConnections();
-        for (uint32 i = 0; i < numConnections; ++i)
+        const size_t numConnections = GetNumConnections();
+        for (size_t i = 0; i < numConnections; ++i)
         {
             // get the current connection and check if the connection is connected to the given port
             BlendTreeConnection* connection = GetConnection(i);
@@ -1570,7 +1496,7 @@ namespace EMotionFX
 
     BlendTreeConnection* AnimGraphNode::FindConnectionById(AnimGraphConnectionId connectionId) const
     {
-        for (BlendTreeConnection* connection : mConnections)
+        for (BlendTreeConnection* connection : m_connections)
         {
             if (connection->GetId() == connectionId)
             {
@@ -1584,15 +1510,15 @@ namespace EMotionFX
 
     bool AnimGraphNode::HasConnectionAtInputPort(AZ::u32 inputPortNr) const
     {
-        const Port& inputPort = mInputPorts[inputPortNr];
-        return inputPort.mConnection != nullptr;
+        const Port& inputPort = m_inputPorts[inputPortNr];
+        return inputPort.m_connection != nullptr;
     }
 
 
     // callback that gets called before a node gets removed
     void AnimGraphNode::OnRemoveNode(AnimGraph* animGraph, AnimGraphNode* nodeToRemove)
     {
-        for (AnimGraphNode* childNode : mChildNodes)
+        for (AnimGraphNode* childNode : m_childNodes)
         {
             childNode->OnRemoveNode(animGraph, nodeToRemove);
         }
@@ -1600,11 +1526,11 @@ namespace EMotionFX
 
 
     // collect internal objects
-    void AnimGraphNode::RecursiveCollectObjects(MCore::Array<AnimGraphObject*>& outObjects) const
+    void AnimGraphNode::RecursiveCollectObjects(AZStd::vector<AnimGraphObject*>& outObjects) const
     {
-        outObjects.Add(const_cast<AnimGraphNode*>(this));
+        outObjects.emplace_back(const_cast<AnimGraphNode*>(this));
 
-        for (const AnimGraphNode* childNode : mChildNodes)
+        for (const AnimGraphNode* childNode : m_childNodes)
         {
             childNode->RecursiveCollectObjects(outObjects);
         }
@@ -1614,15 +1540,12 @@ namespace EMotionFX
     // topdown update
     void AnimGraphNode::TopDownUpdate(AnimGraphInstance* animGraphInstance, float timePassedInSeconds)
     {
-        //if (mDisabled)
-        //return;
-
         // get the unique data
         AnimGraphNodeData* uniqueData = FindOrCreateUniqueNodeData(animGraphInstance);
         HierarchicalSyncAllInputNodes(animGraphInstance, uniqueData);
 
         // top down update all incoming connections
-        for (BlendTreeConnection* connection : mConnections)
+        for (BlendTreeConnection* connection : m_connections)
         {
             connection->GetSourceNode()->PerformTopDownUpdate(animGraphInstance, timePassedInSeconds);
         }
@@ -1643,11 +1566,11 @@ namespace EMotionFX
 
         // iterate over all incoming connections
         bool syncTrackFound = false;
-        size_t connectionIndex = MCORE_INVALIDINDEX32;
-        const size_t numConnections = mConnections.size();
+        size_t connectionIndex = InvalidIndex;
+        const size_t numConnections = m_connections.size();
         for (size_t i = 0; i < numConnections; ++i)
         {
-            const BlendTreeConnection* connection = mConnections[i];
+            const BlendTreeConnection* connection = m_connections[i];
             AnimGraphNode* sourceNode = connection->GetSourceNode();
 
             // update the node
@@ -1661,15 +1584,15 @@ namespace EMotionFX
             }
         }
 
-        if (connectionIndex != MCORE_INVALIDINDEX32)
+        if (connectionIndex != InvalidIndex)
         {
-            uniqueData->Init(animGraphInstance, mConnections[connectionIndex]->GetSourceNode());
+            uniqueData->Init(animGraphInstance, m_connections[connectionIndex]->GetSourceNode());
         }
 
         // set the current sync track to the first input connection
-        if (!syncTrackFound && numConnections > 0 && mConnections[0]->GetSourceNode()->GetHasOutputPose()) // just pick the first connection's sync track
+        if (!syncTrackFound && numConnections > 0 && m_connections[0]->GetSourceNode()->GetHasOutputPose()) // just pick the first connection's sync track
         {
-            uniqueData->Init(animGraphInstance, mConnections[0]->GetSourceNode());
+            uniqueData->Init(animGraphInstance, m_connections[0]->GetSourceNode());
         }
     }
 
@@ -1677,7 +1600,7 @@ namespace EMotionFX
     // output all incoming nodes
     void AnimGraphNode::OutputAllIncomingNodes(AnimGraphInstance* animGraphInstance)
     {
-        for (const BlendTreeConnection* connection : mConnections)
+        for (const BlendTreeConnection* connection : m_connections)
         {
             OutputIncomingNode(animGraphInstance, connection->GetSourceNode());
         }
@@ -1698,7 +1621,7 @@ namespace EMotionFX
     // update all incoming nodes
     void AnimGraphNode::UpdateAllIncomingNodes(AnimGraphInstance* animGraphInstance, float timePassedInSeconds)
     {
-        for (const BlendTreeConnection* connection : mConnections)
+        for (const BlendTreeConnection* connection : m_connections)
         {
             AnimGraphNode* sourceNode = connection->GetSourceNode();
             sourceNode->PerformUpdate(animGraphInstance, timePassedInSeconds);
@@ -1711,7 +1634,7 @@ namespace EMotionFX
     {
         if (GetEMotionFX().GetIsInEditorMode())
         {
-            for (BlendTreeConnection* connection : mConnections)
+            for (BlendTreeConnection* connection : m_connections)
             {
                 if (connection->GetSourceNode() == sourceNode)
                 {
@@ -1736,7 +1659,7 @@ namespace EMotionFX
         // mark any connection originating from this node as visited
         if (GetEMotionFX().GetIsInEditorMode())
         {
-            for (BlendTreeConnection* connection : mConnections)
+            for (BlendTreeConnection* connection : m_connections)
             {
                 if (connection->GetSourceNode() == nodeToOutput)
                 {
@@ -1751,12 +1674,12 @@ namespace EMotionFX
     {
         // Post process all incoming nodes.
         bool poseFound = false;
-        size_t connectionIndex = MCORE_INVALIDINDEX32;
+        size_t connectionIndex = InvalidIndex;
         AZ::u16 minTargetPortIndex = MCORE_INVALIDINDEX16;
-        const size_t numConnections = mConnections.size();
+        const size_t numConnections = m_connections.size();
         for (size_t i = 0; i < numConnections; ++i)
         {
-            const BlendTreeConnection* connection = mConnections[i];
+            const BlendTreeConnection* connection = m_connections[i];
             AnimGraphNode* sourceNode = connection->GetSourceNode();
 
             // update the node
@@ -1770,7 +1693,7 @@ namespace EMotionFX
 
             // Find the first connection that plugs into a port that can take a pose.
             const AZ::u16 targetPortIndex = connection->GetTargetPort();
-            if (mInputPorts[targetPortIndex].mCompatibleTypes[0] == AttributePose::TYPE_ID)
+            if (m_inputPorts[targetPortIndex].m_compatibleTypes[0] == AttributePose::TYPE_ID)
             {
                 poseFound = true;
                 if (targetPortIndex < minTargetPortIndex)
@@ -1785,9 +1708,9 @@ namespace EMotionFX
         RequestRefDatas(animGraphInstance);
 
         AnimGraphNodeData* uniqueData = FindOrCreateUniqueNodeData(animGraphInstance);
-        if (poseFound && connectionIndex != MCORE_INVALIDINDEX32)
+        if (poseFound && connectionIndex != InvalidIndex)
         {
-            const BlendTreeConnection* connection = mConnections[connectionIndex];
+            const BlendTreeConnection* connection = m_connections[connectionIndex];
             AnimGraphNode* sourceNode = connection->GetSourceNode();
 
             AnimGraphRefCountedData* data = uniqueData->GetRefCountedData();
@@ -1801,10 +1724,10 @@ namespace EMotionFX
             }
         }
         else
-        if (poseFound == false && numConnections > 0 && mConnections[0]->GetSourceNode()->GetHasOutputPose())
+        if (poseFound == false && numConnections > 0 && m_connections[0]->GetSourceNode()->GetHasOutputPose())
         {
             AnimGraphRefCountedData* data = uniqueData->GetRefCountedData();
-            AnimGraphNode* sourceNode = mConnections[0]->GetSourceNode();
+            AnimGraphNode* sourceNode = m_connections[0]->GetSourceNode();
             AnimGraphRefCountedData* sourceData = sourceNode->FindOrCreateUniqueNodeData(animGraphInstance)->GetRefCountedData();
             data->SetEventBuffer(sourceData->GetEventBuffer());
             data->SetTrajectoryDelta(sourceData->GetTrajectoryDelta());
@@ -1825,10 +1748,10 @@ namespace EMotionFX
     void AnimGraphNode::RecursiveSetUniqueDataFlag(AnimGraphInstance* animGraphInstance, uint32 flag, bool enabled)
     {
         // set the flag
-        animGraphInstance->SetObjectFlags(mObjectIndex, flag, enabled);
+        animGraphInstance->SetObjectFlags(m_objectIndex, flag, enabled);
 
         // recurse downwards
-        for (BlendTreeConnection* connection : mConnections)
+        for (BlendTreeConnection* connection : m_connections)
         {
             connection->GetSourceNode()->RecursiveSetUniqueDataFlag(animGraphInstance, flag, enabled);
         }
@@ -1893,8 +1816,8 @@ namespace EMotionFX
         {
             AnimGraphRefCountedData* refDataNodeB = nodeB ? nodeB->FindOrCreateUniqueNodeData(animGraphInstance)->GetRefCountedData() : nullptr;
 
-            const uint32 numEventsA = refDataNodeA ? refDataNodeA->GetEventBuffer().GetNumEvents() : 0;
-            const uint32 numEventsB = refDataNodeB ? refDataNodeB->GetEventBuffer().GetNumEvents() : 0;
+            const size_t numEventsA = refDataNodeA ? refDataNodeA->GetEventBuffer().GetNumEvents() : 0;
+            const size_t numEventsB = refDataNodeB ? refDataNodeB->GetEventBuffer().GetNumEvents() : 0;
 
             // resize to the right number of events already
             AnimGraphEventBuffer& eventBuffer = refData->GetEventBuffer();
@@ -1904,7 +1827,7 @@ namespace EMotionFX
             if (refDataNodeA)
             {
                 const AnimGraphEventBuffer& eventBufferA = refDataNodeA->GetEventBuffer();
-                for (uint32 i = 0; i < numEventsA; ++i)
+                for (size_t i = 0; i < numEventsA; ++i)
                 {
                     eventBuffer.SetEvent(i, eventBufferA.GetEvent(i));
                 }
@@ -1913,7 +1836,7 @@ namespace EMotionFX
             if (refDataNodeB)
             {
                 const AnimGraphEventBuffer& eventBufferB = refDataNodeB->GetEventBuffer();
-                for (uint32 i = 0; i < numEventsB; ++i)
+                for (size_t i = 0; i < numEventsB; ++i)
                 {
                     eventBuffer.SetEvent(numEventsA + i, eventBufferB.GetEvent(i));
                 }
@@ -1979,7 +1902,7 @@ namespace EMotionFX
     void AnimGraphNode::HierarchicalSyncAllInputNodes(AnimGraphInstance* animGraphInstance, AnimGraphNodeData* uniqueDataOfThisNode)
     {
         // for all connections
-        for (const BlendTreeConnection* connection : mConnections)
+        for (const BlendTreeConnection* connection : m_connections)
         {
             AnimGraphNode* inputNode = connection->GetSourceNode();
             HierarchicalSyncInputNode(animGraphInstance, inputNode, uniqueDataOfThisNode);
@@ -1992,14 +1915,14 @@ namespace EMotionFX
         // check and add this node
         if (azrtti_typeid(this) == nodeType || nodeType.IsNull())
         {
-            if (animGraphInstance->GetIsOutputReady(mObjectIndex)) // if we processed this node
+            if (animGraphInstance->GetIsOutputReady(m_objectIndex)) // if we processed this node
             {
                 outNodes->emplace_back(const_cast<AnimGraphNode*>(this));
             }
         }
 
         // process all child nodes (but only active ones)
-        for (const AnimGraphNode* childNode : mChildNodes)
+        for (const AnimGraphNode* childNode : m_childNodes)
         {
             if (animGraphInstance->GetIsOutputReady(childNode->GetObjectIndex()))
             {
@@ -2014,14 +1937,14 @@ namespace EMotionFX
         // Check and add this node
         if (GetNeedsNetTimeSync())
         {
-            if (animGraphInstance->GetIsOutputReady(mObjectIndex)) // if we processed this node
+            if (animGraphInstance->GetIsOutputReady(m_objectIndex)) // if we processed this node
             {
                 outNodes->emplace_back(const_cast<AnimGraphNode*>(this));
             }
         }
 
         // Process all child nodes (but only active ones)
-        for (const AnimGraphNode* childNode : mChildNodes)
+        for (const AnimGraphNode* childNode : m_childNodes)
         {
             if (animGraphInstance->GetIsOutputReady(childNode->GetObjectIndex()))
             {
@@ -2033,7 +1956,7 @@ namespace EMotionFX
 
     bool AnimGraphNode::RecursiveDetectCycles(AZStd::unordered_set<const AnimGraphNode*>& nodes) const
     {
-        for (const AnimGraphNode* childNode : mChildNodes)
+        for (const AnimGraphNode* childNode : m_childNodes)
         {
             if (nodes.find(childNode) != nodes.end())
             {
@@ -2069,12 +1992,12 @@ namespace EMotionFX
 
         const uint32 threadIndex = animGraphInstance->GetActorInstance()->GetThreadIndex();
         AnimGraphPosePool& posePool = GetEMotionFX().GetThreadData(threadIndex)->GetPosePool();
-        const size_t numOutputs = mOutputPorts.size();
+        const size_t numOutputs = m_outputPorts.size();
         for (size_t i = 0; i < numOutputs; ++i)
         {
-            if (mOutputPorts[i].mCompatibleTypes[0] == AttributePose::TYPE_ID)
+            if (m_outputPorts[i].m_compatibleTypes[0] == AttributePose::TYPE_ID)
             {
-                MCore::Attribute* attribute = GetOutputAttribute(animGraphInstance, static_cast<uint32>(i));
+                MCore::Attribute* attribute = GetOutputAttribute(animGraphInstance, i);
                 MCORE_ASSERT(attribute->GetType() == AttributePose::TYPE_ID);
 
                 AttributePose* poseAttribute = static_cast<AttributePose*>(attribute);
@@ -2097,12 +2020,12 @@ namespace EMotionFX
 
         AnimGraphPosePool& posePool = GetEMotionFX().GetThreadData(threadIndex)->GetPosePool();
 
-        const size_t numOutputs = mOutputPorts.size();
+        const size_t numOutputs = m_outputPorts.size();
         for (size_t i = 0; i < numOutputs; ++i)
         {
-            if (mOutputPorts[i].mCompatibleTypes[0] == AttributePose::TYPE_ID)
+            if (m_outputPorts[i].m_compatibleTypes[0] == AttributePose::TYPE_ID)
             {
-                MCore::Attribute* attribute = GetOutputAttribute(animGraphInstance, static_cast<uint32>(i));
+                MCore::Attribute* attribute = GetOutputAttribute(animGraphInstance, i);
                 MCORE_ASSERT(attribute->GetType() == AttributePose::TYPE_ID);
 
                 AnimGraphPose* pose = posePool.RequestPose(actorInstance);
@@ -2116,9 +2039,9 @@ namespace EMotionFX
     // free all poses from all incoming nodes
     void AnimGraphNode::FreeIncomingPoses(AnimGraphInstance* animGraphInstance)
     {
-        for (const Port& inputPort : mInputPorts)
+        for (const Port& inputPort : m_inputPorts)
         {
-            const BlendTreeConnection* connection = inputPort.mConnection;
+            const BlendTreeConnection* connection = inputPort.m_connection;
             if (connection)
             {
                 AnimGraphNode* sourceNode = connection->GetSourceNode();
@@ -2131,9 +2054,9 @@ namespace EMotionFX
     // free all poses from all incoming nodes
     void AnimGraphNode::FreeIncomingRefDatas(AnimGraphInstance* animGraphInstance)
     {
-        for (const Port& port : mInputPorts)
+        for (const Port& port : m_inputPorts)
         {
-            const BlendTreeConnection* connection = port.mConnection;
+            const BlendTreeConnection* connection = port.m_connection;
             if (connection)
             {
                 AnimGraphNode* sourceNode = connection->GetSourceNode();
@@ -2186,13 +2109,13 @@ namespace EMotionFX
     void AnimGraphNode::PerformTopDownUpdate(AnimGraphInstance* animGraphInstance, float timePassedInSeconds)
     {
         // check if we already did update
-        if (animGraphInstance->GetIsTopDownUpdateReady(mObjectIndex))
+        if (animGraphInstance->GetIsTopDownUpdateReady(m_objectIndex))
         {
             return;
         }
 
         // mark as done
-        animGraphInstance->EnableObjectFlags(mObjectIndex, AnimGraphInstance::OBJECTFLAGS_TOPDOWNUPDATE_READY);
+        animGraphInstance->EnableObjectFlags(m_objectIndex, AnimGraphInstance::OBJECTFLAGS_TOPDOWNUPDATE_READY);
 
         TopDownUpdate(animGraphInstance, timePassedInSeconds);
     }
@@ -2202,13 +2125,13 @@ namespace EMotionFX
     void AnimGraphNode::PerformPostUpdate(AnimGraphInstance* animGraphInstance, float timePassedInSeconds)
     {
         // check if we already did update
-        if (animGraphInstance->GetIsPostUpdateReady(mObjectIndex))
+        if (animGraphInstance->GetIsPostUpdateReady(m_objectIndex))
         {
             return;
         }
 
         // mark as done
-        animGraphInstance->EnableObjectFlags(mObjectIndex, AnimGraphInstance::OBJECTFLAGS_POSTUPDATE_READY);
+        animGraphInstance->EnableObjectFlags(m_objectIndex, AnimGraphInstance::OBJECTFLAGS_POSTUPDATE_READY);
 
         // perform the actual post update
         PostUpdate(animGraphInstance, timePassedInSeconds);
@@ -2222,13 +2145,13 @@ namespace EMotionFX
     void AnimGraphNode::PerformUpdate(AnimGraphInstance* animGraphInstance, float timePassedInSeconds)
     {
         // check if we already did update
-        if (animGraphInstance->GetIsUpdateReady(mObjectIndex))
+        if (animGraphInstance->GetIsUpdateReady(m_objectIndex))
         {
             return;
         }
 
         // mark as done
-        animGraphInstance->EnableObjectFlags(mObjectIndex, AnimGraphInstance::OBJECTFLAGS_UPDATE_READY);
+        animGraphInstance->EnableObjectFlags(m_objectIndex, AnimGraphInstance::OBJECTFLAGS_UPDATE_READY);
 
         // increase ref count for incoming nodes
         IncreaseInputRefCounts(animGraphInstance);
@@ -2243,13 +2166,13 @@ namespace EMotionFX
     void AnimGraphNode::PerformOutput(AnimGraphInstance* animGraphInstance)
     {
         // check if we already did output
-        if (animGraphInstance->GetIsOutputReady(mObjectIndex))
+        if (animGraphInstance->GetIsOutputReady(m_objectIndex))
         {
             return;
         }
 
         // mark as done
-        animGraphInstance->EnableObjectFlags(mObjectIndex, AnimGraphInstance::OBJECTFLAGS_OUTPUT_READY);
+        animGraphInstance->EnableObjectFlags(m_objectIndex, AnimGraphInstance::OBJECTFLAGS_OUTPUT_READY);
 
         // perform the output
         Output(animGraphInstance);
@@ -2263,9 +2186,9 @@ namespace EMotionFX
     // increase input ref counts
     void AnimGraphNode::IncreaseInputRefDataRefCounts(AnimGraphInstance* animGraphInstance)
     {
-        for (const Port& port : mInputPorts)
+        for (const Port& port : m_inputPorts)
         {
-            const BlendTreeConnection* connection = port.mConnection;
+            const BlendTreeConnection* connection = port.m_connection;
             if (connection)
             {
                 AnimGraphNode* sourceNode = connection->GetSourceNode();
@@ -2278,9 +2201,9 @@ namespace EMotionFX
     // increase input ref counts
     void AnimGraphNode::IncreaseInputRefCounts(AnimGraphInstance* animGraphInstance)
     {
-        for (const Port& port : mInputPorts)
+        for (const Port& port : m_inputPorts)
         {
-            const BlendTreeConnection* connection = port.mConnection;
+            const BlendTreeConnection* connection = port.m_connection;
             if (connection)
             {
                 AnimGraphNode* sourceNode = connection->GetSourceNode();
@@ -2293,7 +2216,7 @@ namespace EMotionFX
     void AnimGraphNode::RelinkPortConnections()
     {
         // After deserializing, nodes hold an array of incoming connections. Each node port caches a pointer to its connection object which we need to link.
-        for (BlendTreeConnection* connection : mConnections)
+        for (BlendTreeConnection* connection : m_connections)
         {
             AnimGraphNode* sourceNode = connection->GetSourceNode();
             const AZ::u16 targetPortNr = connection->GetTargetPort();
@@ -2301,9 +2224,9 @@ namespace EMotionFX
 
             if (sourceNode)
             {
-                if (sourcePortNr < sourceNode->mOutputPorts.size())
+                if (sourcePortNr < sourceNode->m_outputPorts.size())
                 {
-                    sourceNode->GetOutputPort(sourcePortNr).mConnection = connection;
+                    sourceNode->GetOutputPort(sourcePortNr).m_connection = connection;
                 }
                 else
                 {
@@ -2311,9 +2234,9 @@ namespace EMotionFX
                 }
             }
 
-            if (targetPortNr < mInputPorts.size())
+            if (targetPortNr < m_inputPorts.size())
             {
-                mInputPorts[targetPortNr].mConnection = connection;
+                m_inputPorts[targetPortNr].m_connection = connection;
             }
             else
             {
@@ -2326,7 +2249,7 @@ namespace EMotionFX
     // do we have a child of a given type?
     bool AnimGraphNode::CheckIfHasChildOfType(const AZ::TypeId& nodeType) const
     {
-        for (const AnimGraphNode* childNode : mChildNodes)
+        for (const AnimGraphNode* childNode : m_childNodes)
         {
             if (azrtti_typeid(childNode) == nodeType)
             {
@@ -2341,7 +2264,7 @@ namespace EMotionFX
     // check if we can visualize
     bool AnimGraphNode::GetCanVisualize(AnimGraphInstance* animGraphInstance) const
     {
-        return (mVisEnabled && animGraphInstance->GetVisualizationEnabled() && EMotionFX::GetRecorder().GetIsInPlayMode() == false);
+        return (m_visEnabled && animGraphInstance->GetVisualizationEnabled() && EMotionFX::GetRecorder().GetIsInPlayMode() == false);
     }
 
 
@@ -2349,33 +2272,33 @@ namespace EMotionFX
     void AnimGraphNode::RemoveInternalAttributesForAllInstances()
     {
         // for all output ports
-        for (Port& port : mOutputPorts)
+        for (Port& port : m_outputPorts)
         {
-            const uint32 internalAttributeIndex = port.mAttributeIndex;
-            if (internalAttributeIndex != MCORE_INVALIDINDEX32)
+            const size_t internalAttributeIndex = port.m_attributeIndex;
+            if (internalAttributeIndex != InvalidIndex)
             {
-                const size_t numInstances = mAnimGraph->GetNumAnimGraphInstances();
+                const size_t numInstances = m_animGraph->GetNumAnimGraphInstances();
                 for (size_t i = 0; i < numInstances; ++i)
                 {
-                    AnimGraphInstance* animGraphInstance = mAnimGraph->GetAnimGraphInstance(i);
+                    AnimGraphInstance* animGraphInstance = m_animGraph->GetAnimGraphInstance(i);
                     animGraphInstance->RemoveInternalAttribute(internalAttributeIndex);
                 }
 
-                mAnimGraph->DecreaseInternalAttributeIndices(internalAttributeIndex);
-                port.mAttributeIndex = MCORE_INVALIDINDEX32;
+                m_animGraph->DecreaseInternalAttributeIndices(internalAttributeIndex);
+                port.m_attributeIndex = InvalidIndex;
             }
         }
     }
 
 
     // decrease values higher than a given param value
-    void AnimGraphNode::DecreaseInternalAttributeIndices(uint32 decreaseEverythingHigherThan)
+    void AnimGraphNode::DecreaseInternalAttributeIndices(size_t decreaseEverythingHigherThan)
     {
-        for (Port& port : mOutputPorts)
+        for (Port& port : m_outputPorts)
         {
-            if (port.mAttributeIndex > decreaseEverythingHigherThan && port.mAttributeIndex != MCORE_INVALIDINDEX32)
+            if (port.m_attributeIndex > decreaseEverythingHigherThan && port.m_attributeIndex != InvalidIndex)
             {
-                port.mAttributeIndex--;
+                port.m_attributeIndex--;
             }
         }
     }
@@ -2385,31 +2308,31 @@ namespace EMotionFX
     void AnimGraphNode::InitInternalAttributes(AnimGraphInstance* animGraphInstance)
     {
         // for all output ports of this node
-        for (Port& port : mOutputPorts)
+        for (Port& port : m_outputPorts)
         {
-            MCore::Attribute* newAttribute = MCore::GetAttributeFactory().CreateAttributeByType(port.mCompatibleTypes[0]); // assume compatibility type 0 to be the attribute type ID
-            port.mAttributeIndex = animGraphInstance->AddInternalAttribute(newAttribute);
+            MCore::Attribute* newAttribute = MCore::GetAttributeFactory().CreateAttributeByType(port.m_compatibleTypes[0]); // assume compatibility type 0 to be the attribute type ID
+            port.m_attributeIndex = animGraphInstance->AddInternalAttribute(newAttribute);
         }
     }
 
 
     void* AnimGraphNode::GetCustomData() const
     {
-        return mCustomData;
+        return m_customData;
     }
 
 
     void AnimGraphNode::SetCustomData(void* dataPointer)
     {
-        mCustomData = dataPointer;
+        m_customData = dataPointer;
     }
 
 
     void AnimGraphNode::SetNodeInfo(const AZStd::string& info)
     {
-        if (mNodeInfo != info)
+        if (m_nodeInfo != info)
         {
-            mNodeInfo = info;
+            m_nodeInfo = info;
 
             SyncVisualObject();
         }
@@ -2418,88 +2341,88 @@ namespace EMotionFX
 
     const AZStd::string& AnimGraphNode::GetNodeInfo() const
     {
-        return mNodeInfo;
+        return m_nodeInfo;
     }
 
 
     bool AnimGraphNode::GetIsEnabled() const
     {
-        return (mDisabled == false);
+        return (m_disabled == false);
     }
 
 
     void AnimGraphNode::SetIsEnabled(bool enabled)
     {
-        mDisabled = !enabled;
+        m_disabled = !enabled;
     }
 
 
     bool AnimGraphNode::GetIsCollapsed() const
     {
-        return mIsCollapsed;
+        return m_isCollapsed;
     }
 
 
     void AnimGraphNode::SetIsCollapsed(bool collapsed)
     {
-        mIsCollapsed = collapsed;
+        m_isCollapsed = collapsed;
     }
 
 
     void AnimGraphNode::SetVisualizeColor(const AZ::Color& color)
     {
-        mVisualizeColor = color;
+        m_visualizeColor = color;
         SyncVisualObject();
     }
 
 
     const AZ::Color& AnimGraphNode::GetVisualizeColor() const
     {
-        return mVisualizeColor;
+        return m_visualizeColor;
     }
 
 
     void AnimGraphNode::SetVisualPos(int32 x, int32 y)
     {
-        mPosX = x;
-        mPosY = y;
+        m_posX = x;
+        m_posY = y;
     }
 
 
     int32 AnimGraphNode::GetVisualPosX() const
     {
-        return mPosX;
+        return m_posX;
     }
 
 
     int32 AnimGraphNode::GetVisualPosY() const
     {
-        return mPosY;
+        return m_posY;
     }
 
 
     bool AnimGraphNode::GetIsVisualizationEnabled() const
     {
-        return mVisEnabled;
+        return m_visEnabled;
     }
 
 
     void AnimGraphNode::SetVisualization(bool enabled)
     {
-        mVisEnabled = enabled;
+        m_visEnabled = enabled;
     }
 
 
     void AnimGraphNode::AddChildNode(AnimGraphNode* node)
     {
-        mChildNodes.push_back(node);
+        m_childNodes.push_back(node);
         node->SetParentNode(this);
     }
 
 
-    void AnimGraphNode::ReserveChildNodes(uint32 numChildNodes)
+    void AnimGraphNode::ReserveChildNodes(size_t numChildNodes)
     {
-        mChildNodes.reserve(numChildNodes);
+        m_childNodes.reserve(numChildNodes);
     }
 
 
@@ -2522,7 +2445,7 @@ namespace EMotionFX
 
     void AnimGraphNode::ResetPoseRefCount(AnimGraphInstance* animGraphInstance)
     {
-        AnimGraphNodeData* uniqueData = reinterpret_cast<AnimGraphNodeData*>(animGraphInstance->GetUniqueObjectData(mObjectIndex));
+        AnimGraphNodeData* uniqueData = reinterpret_cast<AnimGraphNodeData*>(animGraphInstance->GetUniqueObjectData(m_objectIndex));
         if (uniqueData)
         {
             uniqueData->SetPoseRefCount(0);
@@ -2531,7 +2454,7 @@ namespace EMotionFX
 
     void AnimGraphNode::ResetRefDataRefCount(AnimGraphInstance* animGraphInstance)
     {
-        AnimGraphNodeData* uniqueData = reinterpret_cast<AnimGraphNodeData*>(animGraphInstance->GetUniqueObjectData(mObjectIndex));
+        AnimGraphNodeData* uniqueData = reinterpret_cast<AnimGraphNodeData*>(animGraphInstance->GetUniqueObjectData(m_objectIndex));
         if (uniqueData)
         {
             uniqueData->SetRefDataRefCount(0);
@@ -2588,14 +2511,14 @@ namespace EMotionFX
             ->PersistentId([](const void* instance) -> AZ::u64 { return static_cast<const AnimGraphNode*>(instance)->GetId(); })
             ->Field("id", &AnimGraphNode::m_id)
             ->Field("name", &AnimGraphNode::m_name)
-            ->Field("posX", &AnimGraphNode::mPosX)
-            ->Field("posY", &AnimGraphNode::mPosY)
-            ->Field("visualizeColor", &AnimGraphNode::mVisualizeColor)
-            ->Field("isDisabled", &AnimGraphNode::mDisabled)
-            ->Field("isCollapsed", &AnimGraphNode::mIsCollapsed)
-            ->Field("isVisEnabled", &AnimGraphNode::mVisEnabled)
-            ->Field("childNodes", &AnimGraphNode::mChildNodes)
-            ->Field("connections", &AnimGraphNode::mConnections)
+            ->Field("posX", &AnimGraphNode::m_posX)
+            ->Field("posY", &AnimGraphNode::m_posY)
+            ->Field("visualizeColor", &AnimGraphNode::m_visualizeColor)
+            ->Field("isDisabled", &AnimGraphNode::m_disabled)
+            ->Field("isCollapsed", &AnimGraphNode::m_isCollapsed)
+            ->Field("isVisEnabled", &AnimGraphNode::m_visEnabled)
+            ->Field("childNodes", &AnimGraphNode::m_childNodes)
+            ->Field("connections", &AnimGraphNode::m_connections)
             ->Field("actionSetup", &AnimGraphNode::m_actionSetup);
             ;
 

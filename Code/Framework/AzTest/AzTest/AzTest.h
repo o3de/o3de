@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -43,12 +44,12 @@ namespace AZ
             virtual ~ITestEnvironment()
             {}
 
-            void SetUp() override final
+            void SetUp() final
             {
                 SetupEnvironment();
             }
 
-            void TearDown() override final
+            void TearDown() final
             {
                 TeardownEnvironment();
             }
@@ -103,7 +104,6 @@ namespace AZ
 
         void addTestEnvironment(ITestEnvironment* env);
         void addTestEnvironments(std::vector<ITestEnvironment*> envs);
-        void excludeIntegTests();
         
         //! A hook that can be used to read any other misc parameters and remove them before google sees them.
         //! Note that this modifies argc and argv to delete the parameters it consumes.
@@ -217,7 +217,7 @@ namespace AZ
         public:
             std::list<std::string> resultList;
             
-            void OnTestEnd(const ::testing::TestInfo& test_info)
+            void OnTestEnd(const ::testing::TestInfo& test_info) override
             {
                 std::string result;
                 if (test_info.result()->Failed())
@@ -232,7 +232,7 @@ namespace AZ
                 resultList.emplace_back(formattedResult);
             }
 
-            void OnTestProgramEnd(const ::testing::UnitTest& unit_test)
+            void OnTestProgramEnd(const ::testing::UnitTest& unit_test) override
             {
                 for (std::string testResults : resultList)
                 {
@@ -265,7 +265,6 @@ namespace AZ
             ::testing::TestEventListeners& listeners = testing::UnitTest::GetInstance()->listeners();   \
             listeners.Append(new AZ::Test::OutputEventListener);                                        \
         }                                                                                               \
-        AZ::Test::excludeIntegTests();                                                                  \
         AZ::Test::ApplyGlobalParameters(&argc, argv);                                                   \
         AZ::Test::printUnusedParametersWarning(argc, argv);                                             \
         AZ::Test::addTestEnvironments({TEST_ENV});                                                      \

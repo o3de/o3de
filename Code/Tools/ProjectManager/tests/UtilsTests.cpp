@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -201,7 +202,7 @@ namespace O3DE::ProjectManager
         TEST_F(ProjectManagerUtilsTests, ReplaceFile_Succeeds)
 #endif // !AZ_TRAIT_DISABLE_FAILED_PROJECT_MANAGER_TESTS
         {
-            EXPECT_TRUE(ReplaceFile(m_projectAOrigFilePath, m_projectAReplaceFilePath, nullptr, false));
+            EXPECT_TRUE(ReplaceProjectFile(m_projectAOrigFilePath, m_projectAReplaceFilePath, nullptr, false));
 
             QFile origFile(m_projectAOrigFilePath);
             EXPECT_TRUE(origFile.open(QIODevice::ReadOnly));
