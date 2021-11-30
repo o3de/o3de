@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "MaterialPropertyGroupVisibility_Enabled",
+            "base": "MaterialPropertyGroupVisibility_Enabled",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "MaterialPropertyGroupVisibility_Enabled::Getter",
-                "category": "Constants"
-            }
+                "name": "Enabled",
+                "category": "Constants/Material Property Group Visibility"
+            },
+            "methods": [
+                {
+                    "base": "GetMaterialPropertyGroupVisibility_Enabled",
+                    "details": {
+                        "name": "Enabled"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

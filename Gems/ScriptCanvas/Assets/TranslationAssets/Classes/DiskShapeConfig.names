@@ -1,12 +1,59 @@
 {
     "entries": [
         {
-            "key": "DiskShapeConfig",
+            "base": "DiskShapeConfig",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
-                "name": "DiskShapeConfig"
-            }
+                "name": "Disk Shape Config",
+                "category": "Rendering/Shapes"
+            },
+            "methods": [
+                {
+                    "base": "GetRadius",
+                    "details": {
+                        "name": "Get Radius"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{24EC2919-F198-4871-8404-F6DE8A16275E}",
+                            "details": {
+                                "name": "Configuration",
+                                "tooltip": "Disk shape configuration parameters"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetRadius",
+                    "details": {
+                        "name": "Set Radius"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{24EC2919-F198-4871-8404-F6DE8A16275E}",
+                            "details": {
+                                "name": "Configuration",
+                                "tooltip": "Disk shape configuration parameters"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

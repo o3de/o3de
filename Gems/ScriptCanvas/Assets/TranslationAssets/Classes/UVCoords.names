@@ -1,191 +1,341 @@
 {
     "entries": [
         {
-            "key": "UVCoords",
+            "base": "UVCoords",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
                 "name": "UV Coords",
-                "category": "UI/LyShine Examples"
+                "category": "UI/UI Examples"
             },
             "methods": [
                 {
-                    "key": "SetUVCoords",
+                    "base": "SetUVCoords",
                     "context": "UVCoords",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetUVCoords"
+                        "tooltip": "When signaled, this will invoke SetUV Coords"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetUVCoords is invoked"
+                        "tooltip": "Signaled after SetUV Coords is invoked"
                     },
                     "details": {
-                        "name": "UVCoords::SetUVCoords",
-                        "category": "UI/LyShine Examples"
+                        "name": "Set UV Coords"
                     },
                     "params": [
                         {
                             "typeid": "{E134EAE8-52A1-4E43-847B-09E546CC5B95}",
                             "details": {
-                                "name": "UV Coords",
-                                "tooltip": "The UV coordinates to set"
+                                "name": "UV Rect"
                             }
                         },
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Left",
-                                "tooltip": "The lower X UV coordinate [0-1]"
+                                "name": "Left"
                             }
                         },
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Top",
-                                "tooltip": "The higher Y UV coordinate [0-1]"
+                                "name": "Top"
                             }
                         },
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Right",
-                                "tooltip": "The higher X UV coordinate [0-1]"
+                                "name": "Right"
                             }
                         },
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Bottom",
-                                "tooltip": "The lower Y UV coordinate [0-1]"
+                                "name": "Bottom"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "SetBottom",
+                    "base": "SetBottom",
                     "context": "UVCoords",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetBottom"
+                        "tooltip": "When signaled, this will invoke Set Bottom"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetBottom is invoked"
+                        "tooltip": "Signaled after Set Bottom is invoked"
                     },
                     "details": {
-                        "name": "UVCoords::SetBottom",
-                        "category": "UI/LyShine Examples"
+                        "name": "Set Bottom"
                     },
                     "params": [
                         {
                             "typeid": "{E134EAE8-52A1-4E43-847B-09E546CC5B95}",
                             "details": {
-                                "name": "UV Coords",
-                                "tooltip": "The UV coordinates to set"
+                                "name": "UV Rect"
                             }
                         },
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Bottom",
-                                "tooltip": "The lower Y UV coordinate [0-1]"
+                                "name": "Bottom"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "SetRight",
+                    "base": "SetRight",
                     "context": "UVCoords",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetRight"
+                        "tooltip": "When signaled, this will invoke Set Right"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetRight is invoked"
+                        "tooltip": "Signaled after Set Right is invoked"
                     },
                     "details": {
-                        "name": "UVCoords::SetRight",
-                        "category": "UI/LyShine Examples"
+                        "name": "Set Right"
                     },
                     "params": [
                         {
                             "typeid": "{E134EAE8-52A1-4E43-847B-09E546CC5B95}",
                             "details": {
-                                "name": "UV Coords",
-                                "tooltip": "The UV coordinates to set"
+                                "name": "UV Rect"
                             }
                         },
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Right",
-                                "tooltip": "The higher X UV coordinate [0-1]"
+                                "name": "Right"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "SetTop",
+                    "base": "SetTop",
                     "context": "UVCoords",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetTop"
+                        "tooltip": "When signaled, this will invoke Set Top"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetTop is invoked"
+                        "tooltip": "Signaled after Set Top is invoked"
                     },
                     "details": {
-                        "name": "UVCoords::SetTop",
-                        "category": "UI/LyShine Examples"
+                        "name": "Set Top"
                     },
                     "params": [
                         {
                             "typeid": "{E134EAE8-52A1-4E43-847B-09E546CC5B95}",
                             "details": {
-                                "name": "UV Coords",
-                                "tooltip": "The UV coordinates to set"
+                                "name": "UV Rect"
                             }
                         },
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Top",
-                                "tooltip": "The higher Y UV coordinate [0-1]"
+                                "name": "Top"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "SetLeft",
+                    "base": "SetLeft",
                     "context": "UVCoords",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetLeft"
+                        "tooltip": "When signaled, this will invoke Set Left"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetLeft is invoked"
+                        "tooltip": "Signaled after Set Left is invoked"
                     },
                     "details": {
-                        "name": "UVCoords::SetLeft",
-                        "category": "UI/LyShine Examples"
+                        "name": "Set Left"
                     },
                     "params": [
                         {
                             "typeid": "{E134EAE8-52A1-4E43-847B-09E546CC5B95}",
                             "details": {
-                                "name": "UV Coords",
-                                "tooltip": "The UV coordinates to set"
+                                "name": "UV Rect"
                             }
                         },
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Left",
-                                "tooltip": "Sets the lower X UV coordinate [0-1]"
+                                "name": "Left"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "Getleft",
+                    "details": {
+                        "name": "Left"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{E134EAE8-52A1-4E43-847B-09E546CC5B95}",
+                            "details": {
+                                "name": "UV Rect"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Left"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "Setleft",
+                    "details": {
+                        "name": "Set Left"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{E134EAE8-52A1-4E43-847B-09E546CC5B95}",
+                            "details": {
+                                "name": "UV Rect"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Left"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "Gettop",
+                    "details": {
+                        "name": "Top"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{E134EAE8-52A1-4E43-847B-09E546CC5B95}",
+                            "details": {
+                                "name": "UV Rect"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Top"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "Settop",
+                    "details": {
+                        "name": "Set Top"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{E134EAE8-52A1-4E43-847B-09E546CC5B95}",
+                            "details": {
+                                "name": "UV Rect"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Top"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "Getright",
+                    "details": {
+                        "name": "Get Right"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{E134EAE8-52A1-4E43-847B-09E546CC5B95}",
+                            "details": {
+                                "name": "UV Rect"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Right"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "Setright",
+                    "details": {
+                        "name": "Set Right"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{E134EAE8-52A1-4E43-847B-09E546CC5B95}",
+                            "details": {
+                                "name": "UV Rect"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Right"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "Getbottom",
+                    "details": {
+                        "name": "Get Bottom"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{E134EAE8-52A1-4E43-847B-09E546CC5B95}",
+                            "details": {
+                                "name": "UV Rect"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Bottom"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "Setbottom",
+                    "details": {
+                        "name": "Bottom"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{E134EAE8-52A1-4E43-847B-09E546CC5B95}",
+                            "details": {
+                                "name": "UV Rect"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Bottom"
                             }
                         }
                     ]

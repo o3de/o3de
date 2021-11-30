@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "PhysicsSystemInterface",
+            "base": "PhysicsSystemInterface",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
@@ -10,18 +10,18 @@
             },
             "methods": [
                 {
-                    "key": "GetOnPresimulateEvent",
+                    "base": "GetOnPresimulateEvent",
                     "context": "PhysicsSystemInterface",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke Get On Presimulate Event"
+                        "tooltip": "When signaled, this will invoke Get On Pre Simulate Event"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after Get On Presimulate Event is invoked"
+                        "tooltip": "Signaled after Get On Pre Simulate Event is invoked"
                     },
                     "details": {
-                        "name": "Get On Presimulate Event"
+                        "name": "Get On Pre Simulate Event"
                     },
                     "results": [
                         {
@@ -33,18 +33,18 @@
                     ]
                 },
                 {
-                    "key": "GetOnPostsimulateEvent",
+                    "base": "GetOnPostsimulateEvent",
                     "context": "PhysicsSystemInterface",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke Get On Postsimulate Event"
+                        "tooltip": "When signaled, this will invoke Get On Post Simulate Event"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after Get On Postsimulate Event is invoked"
+                        "tooltip": "Signaled after Get On Post Simulate Event is invoked"
                     },
                     "details": {
-                        "name": "Get On Postsimulate Event"
+                        "name": "Get On Post Simulate Event"
                     },
                     "results": [
                         {
@@ -56,7 +56,7 @@
                     ]
                 },
                 {
-                    "key": "GetSceneHandle",
+                    "base": "GetSceneHandle",
                     "context": "PhysicsSystemInterface",
                     "entry": {
                         "name": "In",
@@ -73,7 +73,7 @@
                         {
                             "typeid": "{B6F4D92A-061B-4CB3-AAB5-984B599A53AE}",
                             "details": {
-                                "name": "Interface"
+                                "name": "System Interface"
                             }
                         },
                         {
@@ -93,7 +93,7 @@
                     ]
                 },
                 {
-                    "key": "GetScene",
+                    "base": "GetScene",
                     "context": "PhysicsSystemInterface",
                     "entry": {
                         "name": "In",
@@ -110,7 +110,7 @@
                         {
                             "typeid": "{B6F4D92A-061B-4CB3-AAB5-984B599A53AE}",
                             "details": {
-                                "name": "Interface"
+                                "name": "System Interface"
                             }
                         },
                         {

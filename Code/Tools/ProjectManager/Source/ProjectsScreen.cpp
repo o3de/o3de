@@ -23,7 +23,6 @@
 #include <AzFramework/Process/ProcessCommon.h>
 #include <AzFramework/Process/ProcessWatcher.h>
 #include <AzCore/Utils/Utils.h>
-#include <AzCore/Settings/SettingsRegistry.h>
 
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -408,18 +407,26 @@ namespace O3DE::ProjectManager
             emit ChangeScreenRequest(ProjectManagerScreen::Projects);
         }
     }
+
     void ProjectsScreen::HandleOpenProject(const QString& projectPath)
     {
         if (!projectPath.isEmpty())
         {
             if (!WarnIfInBuildQueue(projectPath))
             {
-                AZ::IO::FixedMaxPath executableDirectory = ProjectUtils::GetEditorDirectory();
-                AZStd::string executableFilename = "Editor";
-                AZ::IO::FixedMaxPath editorExecutablePath = executableDirectory / (executableFilename + AZ_TRAIT_OS_EXECUTABLE_EXTENSION);
+                AZ::IO::FixedMaxPath fixedProjectPath = projectPath.toUtf8().constData();
+                AZ::IO::FixedMaxPath editorExecutablePath = ProjectUtils::GetEditorExecutablePath(fixedProjectPath);
+                if (editorExecutablePath.empty())
+                {
+                    AZ_Error("ProjectManager", false, "Failed to locate editor");
+                    QMessageBox::critical(
+                        this, tr("Error"), tr("Failed to locate the Editor, please verify that it is built."));
+                    return;
+                }
+
                 auto cmdPath = AZ::IO::FixedMaxPathString::format(
                     "%s --regset=\"/Amazon/AzCore/Bootstrap/project_path=%s\"", editorExecutablePath.c_str(),
-                    projectPath.toStdString().c_str());
+                    fixedProjectPath.c_str());
 
                 AzFramework::ProcessLauncher::ProcessLaunchInfo processLaunchInfo;
                 processLaunchInfo.m_commandlineParameters = cmdPath;

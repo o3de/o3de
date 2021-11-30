@@ -17,120 +17,6 @@
 #include "ErrorReport.h"
 #include "Undo/IUndoObject.h"
 
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Undo functionality for Managers, including add library, remove library, and rename library -- Vera, Confetti
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-class CUndoBaseLibraryManager
-    : public IUndoObject
-{
-public:
-    CUndoBaseLibraryManager(CBaseLibraryManager* pMngr, const QString& description, const QString& modifiedManager = nullptr)
-        : m_pMngr(pMngr)
-        , m_description(description)
-        , m_editorObject(modifiedManager)
-    {
-        assert(m_pMngr);
-        SerializeTo(m_undos);
-    }
-
-    QString GetEditorObjectName() override
-    {
-        return m_editorObject;
-    }
-
-protected:
-    int GetSize() override { return sizeof(CUndoBaseLibraryManager); }
-    QString GetDescription() override { return m_description; };
-
-    void Undo(bool bUndo) override
-    {
-        if (bUndo)
-        {
-            SerializeTo(m_redos);
-        }
-        m_pMngr->ClearAll();
-        UnserializeFrom(m_undos);
-        GetIEditor()->Notify(eNotify_OnDataBaseUpdate);
-    }
-
-    void Redo() override
-    {
-        m_pMngr->ClearAll();
-        UnserializeFrom(m_redos);
-        GetIEditor()->Notify(eNotify_OnDataBaseUpdate);
-    }
-
-private:
-    struct LibUndoNode
-        : public _i_reference_target_t
-    {
-        LibUndoNode()
-        {
-            node = nullptr;
-            fileName = "";
-        }
-        XmlNodeRef node;
-        QString fileName;
-    };
-
-    static const char* const LIBRARY_TAG;
-    static const char* const LEVEL_LIBRARY_TAG;
-
-    void SerializeTo(std::vector<_smart_ptr<LibUndoNode> >& undos) // Save Library Undo
-    {
-        undos.clear();
-        for (int i = 0; i < m_pMngr->GetLibraryCount(); i++)
-        {
-            IDataBaseLibrary* library = m_pMngr->GetLibrary(i);
-
-            const char* tag = library->IsLevelLibrary() ? LEVEL_LIBRARY_TAG : LIBRARY_TAG;
-            XmlNodeRef node = GetIEditor()->GetSystem()->CreateXmlNode(tag);
-            QString file = library->GetFilename().isEmpty() ? library->GetFilename() : library->GetName();
-            library->Serialize(node, false);
-            if (node && !file.isEmpty())
-            {
-                _smart_ptr<LibUndoNode> undo = new LibUndoNode();
-                undo->fileName = file;
-                undo->node = node;
-                undos.push_back(undo);
-            }
-        }
-    }
-
-    void UnserializeFrom(std::vector<_smart_ptr<LibUndoNode> >& undos) // Load Library Undo
-    {
-        for (int i = 0; i < undos.size(); i++)
-        {
-            _smart_ptr<LibUndoNode> undo = undos[i];
-            if (undo->node && !undo->fileName.isEmpty())
-            {
-                //AddLibrary adds a .xml to the end of the library path, this will remove the extra for compatibility
-                undo->fileName.replace(m_pMngr->GetLibsPath().toLower(), "");
-                undo->fileName.replace(".xml", "");
-
-                const bool isLevelLibrary = (strcmp(undo->node->getTag(), LEVEL_LIBRARY_TAG) == 0);
-
-                IDataBaseLibrary* library = m_pMngr->AddLibrary(undo->fileName, isLevelLibrary);
-                library->Serialize(undo->node, true);
-            }
-        }
-    }
-
-
-    QString m_description;
-    QString m_editorObject;
-    CBaseLibraryManager* m_pMngr;
-    std::vector<_smart_ptr<LibUndoNode> > m_undos;
-    std::vector<_smart_ptr<LibUndoNode> > m_redos;
-};
-
-const char* const CUndoBaseLibraryManager::LIBRARY_TAG = "UndoLibrary";
-const char* const CUndoBaseLibraryManager::LEVEL_LIBRARY_TAG = "UndoLevelLibrary";
-
-
-
 //////////////////////////////////////////////////////////////////////////
 // CBaseLibraryManager implementation.
 //////////////////////////////////////////////////////////////////////////
@@ -606,11 +492,9 @@ void CBaseLibraryManager::RegisterItem(CBaseLibraryItem* pItem, REFGUID newGuid)
 
     if (m_bUniqGuidMap)
     {
-        bool bNewItem = true;
         REFGUID oldGuid = pItem->GetGUID();
         if (!GuidUtil::IsEmpty(oldGuid))
         {
-            bNewItem = false;
             m_itemsGuidMap.erase(oldGuid);
         }
         if (GuidUtil::IsEmpty(newGuid))

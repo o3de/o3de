@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "SystemConfigPlatform_Pc",
+            "base": "SystemConfigPlatform_Pc",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "SystemConfigPlatform_Pc::Getter",
-                "category": "Constants"
-            }
+                "name": "Pc",
+                "category": "Constants/System Configuration"
+            },
+            "methods": [
+                {
+                    "base": "GetSystemConfigPlatform_Pc",
+                    "details": {
+                        "name": "Pc"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

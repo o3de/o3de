@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "eUiAnimationEvent_Updated",
+            "base": "eUiAnimationEvent_Updated",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "eUiAnimationEvent_Updated::Getter",
-                "category": "Constants"
-            }
+                "name": "Updated",
+                "category": "Constants/UI/Animation Event"
+            },
+            "methods": [
+                {
+                    "base": "GeteUiAnimationEvent_Updated",
+                    "details": {
+                        "name": "Updated"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

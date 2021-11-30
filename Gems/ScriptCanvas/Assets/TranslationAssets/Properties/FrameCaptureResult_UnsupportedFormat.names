@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "FrameCaptureResult_UnsupportedFormat",
+            "base": "FrameCaptureResult_UnsupportedFormat",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "FrameCaptureResult_UnsupportedFormat::Getter",
-                "category": "Constants"
-            }
+                "name": "Unsupported Format",
+                "category": "Constants/Frame Capture Result"
+            },
+            "methods": [
+                {
+                    "base": "GetFrameCaptureResult_UnsupportedFormat",
+                    "details": {
+                        "name": "Unsupported Format"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

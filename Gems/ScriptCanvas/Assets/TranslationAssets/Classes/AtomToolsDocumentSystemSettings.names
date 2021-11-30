@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "AtomToolsDocumentSystemSettings",
+            "base": "AtomToolsDocumentSystemSettings",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetshowReloadDocumentPrompt",
+                    "base": "GetshowReloadDocumentPrompt",
                     "details": {
                         "name": "Get Show Reload Document Prompt"
                     },
@@ -32,7 +32,7 @@
                     ]
                 },
                 {
-                    "key": "SetshowReloadDocumentPrompt",
+                    "base": "SetshowReloadDocumentPrompt",
                     "details": {
                         "name": "Set Show Reload Document Prompt"
                     },

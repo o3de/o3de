@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "DisplaySettings_HideLinks",
+            "base": "DisplaySettings_HideLinks",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "DisplaySettings_HideLinks::Getter",
-                "category": "Constants"
-            }
+                "name": "Hide Links",
+                "category": "Constants/Display Settings"
+            },
+            "methods": [
+                {
+                    "base": "GetDisplaySettings_HideLinks",
+                    "details": {
+                        "name": "Get Hide Links"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

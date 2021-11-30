@@ -33,6 +33,7 @@
 
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzQtComponents/Utilities/DesktopUtilities.h>
+#include <Source/Translation/TranslationSerializer.h>
 
 namespace ScriptCanvasEditorTools
 {
@@ -278,21 +279,33 @@ namespace ScriptCanvasEditorTools
                 // Arguments (Input Slots)
                 if (behaviorMethod->GetNumArguments() > 0)
                 {
-                    for (size_t argIndex = 0; argIndex < behaviorMethod->GetNumArguments(); ++argIndex)
+                    size_t startIndex = behaviorMethod->HasResult() ? 1 : 0;
+                    for (size_t argIndex = startIndex; argIndex < behaviorMethod->GetNumArguments(); ++argIndex)
                     {
                         const AZ::BehaviorParameter* parameter = behaviorMethod->GetArgument(argIndex);
 
                         Argument argument;
 
                         AZStd::string argumentKey = parameter->m_typeId.ToString<AZStd::string>();
-                        AZStd::string argumentName = parameter->m_name;
-                        AZStd::string argumentDescription = "";
+                        AZStd::string argumentName;
+                        AZStd::string argumentDescription;
 
                         Helpers::GetTypeNameAndDescription(parameter->m_typeId, argumentName, argumentDescription);
 
+                        const AZStd::string* argName = behaviorMethod->GetArgumentName(argIndex);
+                        if (argName && !(*argName).empty())
+                        {
+                            argumentName = *argName;
+                        }
+
+                        const AZStd::string* argDesc = behaviorMethod->GetArgumentToolTip(argIndex);
+                        if (argDesc && !(*argDesc).empty())
+                        {
+                            argumentDescription = *argDesc;
+                        }
+
                         argument.m_typeId = argumentKey;
-                        argument.m_details.m_name = parameter->m_name;
-                        argument.m_details.m_category = "";
+                        argument.m_details.m_name = argumentName;
                         argument.m_details.m_tooltip = argumentDescription;
 
                         SplitCamelCase(argument.m_details.m_name);
@@ -832,12 +845,13 @@ namespace ScriptCanvasEditorTools
 
                 AZStd::string argumentKey = parameter->m_typeId.ToString<AZStd::string>();
                 AZStd::string argumentName = parameter->m_name;
-                AZStd::string argumentDescription = "";
+                AZStd::string argumentDescription;
 
                 Helpers::GetTypeNameAndDescription(parameter->m_typeId, argumentName, argumentDescription);
 
+                const AZStd::string* argName = behaviorMethod->GetArgumentName(argIndex);
                 argument.m_typeId = argumentKey;
-                argument.m_details.m_name = parameter->m_name;
+                argument.m_details.m_name = (argName && !argName->empty()) ? *argName : argumentName;
                 argument.m_details.m_category = "";
                 argument.m_details.m_tooltip = argumentDescription;
 
@@ -855,12 +869,13 @@ namespace ScriptCanvasEditorTools
 
             AZStd::string resultKey = resultParameter->m_typeId.ToString<AZStd::string>();
             AZStd::string resultName = resultParameter->m_name;
-            AZStd::string resultDescription = "";
+            AZStd::string resultDescription;
 
             Helpers::GetTypeNameAndDescription(resultParameter->m_typeId, resultName, resultDescription);
 
+            const AZStd::string* resName = behaviorMethod->GetArgumentName(0);
             result.m_typeId = resultKey;
-            result.m_details.m_name = resultParameter->m_name;
+            result.m_details.m_name = (resName && !resName->empty()) ? *resName : resultName;
             result.m_details.m_tooltip = resultDescription;
 
             SplitCamelCase(result.m_details.m_name);
@@ -885,6 +900,9 @@ namespace ScriptCanvasEditorTools
         {
             entry->m_key = className;
             entry->m_context = context;
+
+            entry->m_details.m_name = className;
+            SplitCamelCase(entry->m_details.m_name);
         }
 
         if (behaviorProperty->m_getter)
@@ -903,6 +921,11 @@ namespace ScriptCanvasEditorTools
             SplitCamelCase(method.m_details.m_name);
 
             TranslateMethod(behaviorProperty->m_getter, method);
+
+            // We know this is a getter, so there will only be one parameter, we will use the method name as a best
+            // guess for the argument name
+            SplitCamelCase(cleanName);
+            method.m_arguments[1].m_details.m_name = cleanName;
 
             entry->m_methods.push_back(method);
 
@@ -925,6 +948,11 @@ namespace ScriptCanvasEditorTools
             SplitCamelCase(method.m_details.m_name);
 
             TranslateMethod(behaviorProperty->m_setter, method);
+
+            // We know this is a setter, so there will only be one parameter, we will use the method name as a best
+            // guess for the argument name
+            SplitCamelCase(cleanName);
+            method.m_arguments[1].m_details.m_name = cleanName;
 
             entry->m_methods.push_back(method);
         }
@@ -1078,13 +1106,13 @@ namespace ScriptCanvasEditorTools
             rapidjson_ly::Value value(rapidjson_ly::kStringType);
 
             value.SetString(entrySource.m_key.c_str(), document.GetAllocator());
-            entry.AddMember("key", value, document.GetAllocator());
+            entry.AddMember(GraphCanvas::Schema::Field::key, value, document.GetAllocator());
 
             value.SetString(entrySource.m_context.c_str(), document.GetAllocator());
-            entry.AddMember("context", value, document.GetAllocator());
+            entry.AddMember(GraphCanvas::Schema::Field::context, value, document.GetAllocator());
 
             value.SetString(entrySource.m_variant.c_str(), document.GetAllocator());
-            entry.AddMember("variant", value, document.GetAllocator());
+            entry.AddMember(GraphCanvas::Schema::Field::variant, value, document.GetAllocator());
 
             rapidjson_ly::Value details(rapidjson_ly::kObjectType);
             value.SetString(entrySource.m_details.m_name.c_str(), document.GetAllocator());
@@ -1105,12 +1133,12 @@ namespace ScriptCanvasEditorTools
                     rapidjson_ly::Value theMethod(rapidjson_ly::kObjectType);
 
                     value.SetString(methodSource.m_key.c_str(), document.GetAllocator());
-                    theMethod.AddMember("key", value, document.GetAllocator());
+                    theMethod.AddMember(GraphCanvas::Schema::Field::key, value, document.GetAllocator());
 
                     if (!methodSource.m_context.empty())
                     {
                         value.SetString(methodSource.m_context.c_str(), document.GetAllocator());
-                        theMethod.AddMember("context", value, document.GetAllocator());
+                        theMethod.AddMember(GraphCanvas::Schema::Field::context, value, document.GetAllocator());
                     }
 
                     if (!methodSource.m_entry.m_name.empty())
@@ -1218,7 +1246,7 @@ namespace ScriptCanvasEditorTools
                     rapidjson_ly::Value theSlot(rapidjson_ly::kObjectType);
 
                     value.SetString(slotSource.m_key.c_str(), document.GetAllocator());
-                    theSlot.AddMember("key", value, document.GetAllocator());
+                    theSlot.AddMember(GraphCanvas::Schema::Field::key, value, document.GetAllocator());
 
                     rapidjson_ly::Value sloDetails(rapidjson_ly::kObjectType);
                     if (!slotSource.m_details.m_name.empty())
@@ -1298,6 +1326,7 @@ namespace ScriptCanvasEditorTools
         AZStd::regex splitRegex(R"(/[a-z]+|[0-9]+|(?:[A-Z][a-z]+)|(?:[A-Z]+(?=(?:[A-Z][a-z])|[^AZa-z]|[$\d\n]))/g)");
         text = AZStd::regex_replace(text, splitRegex, " $&");
         text = AZ::StringFunc::LStrip(text);
+        AZ::StringFunc::Replace(text, "  ", " ");
     }
 
     namespace Helpers

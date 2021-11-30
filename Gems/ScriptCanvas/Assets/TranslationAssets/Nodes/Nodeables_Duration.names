@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "{CCF1F41F-39C2-C847-9D9E-0155C8B46E1C}",
+            "base": "{CCF1F41F-39C2-C847-9D9E-0155C8B46E1C}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
@@ -11,38 +11,38 @@
             },
             "slots": [
                 {
-                    "key": "Input_Start",
+                    "base": "Input_Start",
                     "details": {
                         "name": "Start"
                     }
                 },
                 {
-                    "key": "DataInput_Duration",
+                    "base": "DataInput_Duration",
                     "details": {
                         "name": "Duration"
                     }
                 },
                 {
-                    "key": "Output_On Start",
+                    "base": "Output_On Start",
                     "details": {
                         "name": "On Start"
                     }
                 },
                 {
-                    "key": "Output_OnTick",
+                    "base": "Output_OnTick",
                     "details": {
                         "name": "OnTick",
                         "tooltip": "Signaled every frame while the duration is active."
                     }
                 },
                 {
-                    "key": "DataOutput_Elapsed",
+                    "base": "DataOutput_Elapsed",
                     "details": {
                         "name": "Elapsed"
                     }
                 },
                 {
-                    "key": "Output_Done",
+                    "base": "Output_Done",
                     "details": {
                         "name": "Done",
                         "tooltip": "Signaled after waiting for the specified amount of times."

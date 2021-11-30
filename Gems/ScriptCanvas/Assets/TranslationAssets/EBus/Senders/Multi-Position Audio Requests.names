@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "Multi-Position Audio Requests",
+            "base": "Multi-Position Audio Requests",
             "context": "EBusSender",
             "variant": "",
             "details": {
@@ -9,7 +9,7 @@
             },
             "methods": [
                 {
-                    "key": "AddEntity",
+                    "base": "Add Entity",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Add Entity"
@@ -32,7 +32,7 @@
                     ]
                 },
                 {
-                    "key": "RemoveEntity",
+                    "base": "RemoveEntity",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Remove Entity"
@@ -42,7 +42,7 @@
                         "tooltip": "Signaled after Remove Entity is invoked"
                     },
                     "details": {
-                        "name": "RemoveEntity"
+                        "name": "Remove Entity"
                     },
                     "params": [
                         {
@@ -55,25 +55,24 @@
                     ]
                 },
                 {
-                    "key": "SetBehaviorType",
+                    "base": "SetBehaviorType",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetBehaviorType"
+                        "tooltip": "When signaled, this will invoke Set Behavior Type"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetBehaviorType is invoked"
+                        "tooltip": "Signaled after Set Behavior Type is invoked"
                     },
                     "details": {
-                        "name": "Set Behavior Type",
-                        "tooltip": "0: Separate, 1: Blended"
+                        "name": "Set Behavior Type"
                     },
                     "params": [
                         {
                             "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
                             "details": {
-                                "name": "Behavior Type",
-                                "tooltip": "0: Separate, 1: Blended"
+                                "name": "Type",
+                                "tooltip": "0: Separate\n1: Blended"
                             }
                         }
                     ]

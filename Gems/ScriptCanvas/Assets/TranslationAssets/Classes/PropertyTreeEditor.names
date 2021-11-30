@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "PropertyTreeEditor",
+            "base": "PropertyTreeEditor",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
@@ -9,7 +9,7 @@
             },
             "methods": [
                 {
-                    "key": "ResetContainer",
+                    "base": "ResetContainer",
                     "context": "PropertyTreeEditor",
                     "entry": {
                         "name": "In",
@@ -47,7 +47,7 @@
                     ]
                 },
                 {
-                    "key": "CompareProperty",
+                    "base": "CompareProperty",
                     "context": "PropertyTreeEditor",
                     "entry": {
                         "name": "In",
@@ -91,7 +91,7 @@
                     ]
                 },
                 {
-                    "key": "IsContainer",
+                    "base": "IsContainer",
                     "context": "PropertyTreeEditor",
                     "entry": {
                         "name": "In",
@@ -129,7 +129,7 @@
                     ]
                 },
                 {
-                    "key": "GetContainerCount",
+                    "base": "GetContainerCount",
                     "context": "PropertyTreeEditor",
                     "entry": {
                         "name": "In",
@@ -167,7 +167,7 @@
                     ]
                 },
                 {
-                    "key": "SetProperty",
+                    "base": "SetProperty",
                     "context": "PropertyTreeEditor",
                     "entry": {
                         "name": "In",
@@ -211,7 +211,7 @@
                     ]
                 },
                 {
-                    "key": "AppendContainerItem",
+                    "base": "AppendContainerItem",
                     "context": "PropertyTreeEditor",
                     "entry": {
                         "name": "In",
@@ -255,7 +255,7 @@
                     ]
                 },
                 {
-                    "key": "GetProperty",
+                    "base": "GetProperty",
                     "context": "PropertyTreeEditor",
                     "entry": {
                         "name": "In",
@@ -293,7 +293,7 @@
                     ]
                 },
                 {
-                    "key": "AddContainerItem",
+                    "base": "AddContainerItem",
                     "context": "PropertyTreeEditor",
                     "entry": {
                         "name": "In",
@@ -343,7 +343,7 @@
                     ]
                 },
                 {
-                    "key": "RemoveContainerItem",
+                    "base": "RemoveContainerItem",
                     "context": "PropertyTreeEditor",
                     "entry": {
                         "name": "In",
@@ -387,7 +387,7 @@
                     ]
                 },
                 {
-                    "key": "BuildPathsListWithTypes",
+                    "base": "BuildPathsListWithTypes",
                     "context": "PropertyTreeEditor",
                     "entry": {
                         "name": "In",
@@ -419,7 +419,7 @@
                     ]
                 },
                 {
-                    "key": "HasAttribute",
+                    "base": "HasAttribute",
                     "context": "PropertyTreeEditor",
                     "entry": {
                         "name": "In",
@@ -463,7 +463,7 @@
                     ]
                 },
                 {
-                    "key": "BuildPathsList",
+                    "base": "BuildPathsList",
                     "context": "PropertyTreeEditor",
                     "entry": {
                         "name": "In",
@@ -495,7 +495,7 @@
                     ]
                 },
                 {
-                    "key": "SetVisibleEnforcement",
+                    "base": "SetVisibleEnforcement",
                     "context": "PropertyTreeEditor",
                     "entry": {
                         "name": "In",
@@ -525,7 +525,7 @@
                     ]
                 },
                 {
-                    "key": "UpdateContainerItem",
+                    "base": "UpdateContainerItem",
                     "context": "PropertyTreeEditor",
                     "entry": {
                         "name": "In",
@@ -575,7 +575,7 @@
                     ]
                 },
                 {
-                    "key": "GetContainerItem",
+                    "base": "GetContainerItem",
                     "context": "PropertyTreeEditor",
                     "entry": {
                         "name": "In",

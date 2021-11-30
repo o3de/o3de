@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "ComponentId",
+            "base": "ComponentId",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "IsValid",
+                    "base": "IsValid",
                     "context": "ComponentId",
                     "entry": {
                         "name": "In",
@@ -41,7 +41,7 @@
                     ]
                 },
                 {
-                    "key": "Equal",
+                    "base": "Equal",
                     "context": "ComponentId",
                     "entry": {
                         "name": "In",
@@ -78,7 +78,7 @@
                     ]
                 },
                 {
-                    "key": "ToString",
+                    "base": "ToString",
                     "context": "ComponentId",
                     "entry": {
                         "name": "In",

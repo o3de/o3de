@@ -27,7 +27,6 @@
 #include <AzToolsFramework/Manipulators/ScaleManipulators.h>
 #include <AzToolsFramework/Manipulators/TranslationManipulators.h>
 #include <AzToolsFramework/Maths/TransformUtils.h>
-#include <AzToolsFramework/Prefab/PrefabFocusPublicInterface.h>
 #include <AzToolsFramework/Prefab/PrefabFocusInterface.h>
 #include <AzToolsFramework/Prefab/PrefabFocusPublicInterface.h>
 #include <AzToolsFramework/ToolsComponents/EditorLockComponentBus.h>
@@ -893,37 +892,34 @@ namespace AzToolsFramework
         prevModifiers = action.m_modifiers;
     }
 
-    static void HandleAccents(
-        const bool hasSelectedEntities,
-        const AZ::EntityId entityIdUnderCursor,
-        const bool ctrlHeld,
-        AZ::EntityId& hoveredEntityId,
+    void HandleAccents(
+        const AZ::EntityId currentEntityIdUnderCursor,
+        AZ::EntityId& hoveredEntityIdUnderCursor,
+        const HandleAccentsContext& handleAccentsContext,
         const ViewportInteraction::MouseButtons mouseButtons,
-        const bool usingBoxSelect)
+        const AZStd::function<void(AZ::EntityId, bool)>& setEntityAccentedFn)
     {
-        AZ_PROFILE_FUNCTION(AzToolsFramework);
-
         const bool invalidMouseButtonHeld = mouseButtons.Middle() || mouseButtons.Right();
+        const bool hasSelectedEntities = handleAccentsContext.m_hasSelectedEntities;
+        const bool ctrlHeld = handleAccentsContext.m_ctrlHeld;
+        const bool boxSelect = handleAccentsContext.m_usingBoxSelect;
+        const bool stickySelect = handleAccentsContext.m_usingStickySelect;
+        const bool canSelect = stickySelect ? !hasSelectedEntities || ctrlHeld : true;
 
-        if ((hoveredEntityId.IsValid() && hoveredEntityId != entityIdUnderCursor) ||
-            (hasSelectedEntities && !ctrlHeld && hoveredEntityId.IsValid()) || invalidMouseButtonHeld)
+        const bool removePreviousAccent =
+            (currentEntityIdUnderCursor != hoveredEntityIdUnderCursor && hoveredEntityIdUnderCursor.IsValid()) || invalidMouseButtonHeld;
+        const bool addNextAccent = currentEntityIdUnderCursor.IsValid() && canSelect && !invalidMouseButtonHeld && !boxSelect;
+
+        if (removePreviousAccent)
         {
-            if (hoveredEntityId.IsValid())
-            {
-                ToolsApplicationRequestBus::Broadcast(&ToolsApplicationRequests::SetEntityHighlighted, hoveredEntityId, false);
-
-                hoveredEntityId.SetInvalid();
-            }
+            setEntityAccentedFn(hoveredEntityIdUnderCursor, false);
+            hoveredEntityIdUnderCursor.SetInvalid();
         }
 
-        if (!invalidMouseButtonHeld && !usingBoxSelect && (!hasSelectedEntities || ctrlHeld))
+        if (addNextAccent)
         {
-            if (entityIdUnderCursor.IsValid())
-            {
-                ToolsApplicationRequestBus::Broadcast(&ToolsApplicationRequests::SetEntityHighlighted, entityIdUnderCursor, true);
-
-                hoveredEntityId = entityIdUnderCursor;
-            }
+            setEntityAccentedFn(currentEntityIdUnderCursor, true);
+            hoveredEntityIdUnderCursor = currentEntityIdUnderCursor;
         }
     }
 
@@ -1781,7 +1777,7 @@ namespace AzToolsFramework
         const AzFramework::CameraState cameraState = GetCameraState(viewportId);
 
         const auto cursorEntityIdQuery = m_editorHelpers->FindEntityIdUnderCursor(cameraState, mouseInteraction);
-        m_cachedEntityIdUnderCursor = cursorEntityIdQuery.ContainerAncestorEntityId();
+        m_currentEntityIdUnderCursor = cursorEntityIdQuery.ContainerAncestorEntityId();
 
         const auto selectClickEvent = ClickDetectorEventFromViewportInteraction(mouseInteraction);
         m_cursorState.SetCurrentPosition(mouseInteraction.m_mouseInteraction.m_mousePick.m_screenCoordinates);
@@ -1802,7 +1798,7 @@ namespace AzToolsFramework
                         mouseInteraction.m_mouseInteraction,
                         AZ::Aabb::CreateFromMinMax(boxPosition - scaledSize, boxPosition + scaledSize)))
                 {
-                    m_cachedEntityIdUnderCursor = entityId;
+                    m_currentEntityIdUnderCursor = entityId;
                 }
             }
         }
@@ -1822,7 +1818,7 @@ namespace AzToolsFramework
             return true;
         }
 
-        const AZ::EntityId entityIdUnderCursor = m_cachedEntityIdUnderCursor;
+        const AZ::EntityId entityIdUnderCursor = m_currentEntityIdUnderCursor;
 
         if (mouseInteraction.m_mouseEvent == ViewportInteraction::MouseEvent::DoubleClick &&
             mouseInteraction.m_mouseInteraction.m_mouseButtons.Left())
@@ -3341,9 +3337,23 @@ namespace AzToolsFramework
 
         m_cursorState.Update();
 
+        bool stickySelect = false;
+        ViewportInteraction::ViewportSettingsRequestBus::EventResult(
+            stickySelect, viewportInfo.m_viewportId, &ViewportInteraction::ViewportSettingsRequestBus::Events::StickySelectEnabled);
+
+        HandleAccentsContext handleAccentsContext;
+        handleAccentsContext.m_ctrlHeld = keyboardModifiers.Ctrl();
+        handleAccentsContext.m_hasSelectedEntities = !m_selectedEntityIds.empty();
+        handleAccentsContext.m_usingBoxSelect = m_boxSelect.Active();
+        handleAccentsContext.m_usingStickySelect = stickySelect;
+
         HandleAccents(
-            !m_selectedEntityIds.empty(), m_cachedEntityIdUnderCursor, keyboardModifiers.Ctrl(), m_hoveredEntityId,
-            ViewportInteraction::BuildMouseButtons(QGuiApplication::mouseButtons()), m_boxSelect.Active());
+            m_currentEntityIdUnderCursor, m_hoveredEntityId, handleAccentsContext,
+            ViewportInteraction::BuildMouseButtons(QGuiApplication::mouseButtons()),
+            [](const AZ::EntityId entityId, bool highlighted)
+            {
+                ToolsApplicationRequestBus::Broadcast(&ToolsApplicationRequests::SetEntityHighlighted, entityId, highlighted);
+            });
 
         const ReferenceFrame referenceFrame = m_spaceCluster.m_spaceLock.value_or(ReferenceFrameFromModifiers(keyboardModifiers));
 
@@ -3487,7 +3497,7 @@ namespace AzToolsFramework
         // get the editor cameras current orientation
         const int viewportId = viewportInfo.m_viewportId;
         const AzFramework::CameraState editorCameraState = GetCameraState(viewportId);
-        const AZ::Matrix3x3& editorCameraOrientation = AZ::Matrix3x3::CreateFromMatrix4x4(AzFramework::CameraTransform(editorCameraState));
+        const AZ::Matrix3x3& editorCameraOrientation = AZ::Matrix3x3::CreateFromMatrix3x4(AzFramework::CameraTransform(editorCameraState));
 
         // create a gizmo camera transform about the origin matching the orientation of the editor camera
         // (10 units back in the y axis to produce an orbit effect)
@@ -3589,7 +3599,8 @@ namespace AzToolsFramework
         if (auto prefabFocusPublicInterface = AZ::Interface<AzToolsFramework::Prefab::PrefabFocusPublicInterface>::Get())
         {
             AzFramework::EntityContextId editorEntityContextId = GetEntityContextId();
-            if (AZ::EntityId focusRoot = prefabFocusPublicInterface->GetFocusedPrefabContainerEntityId(editorEntityContextId); focusRoot.IsValid())
+            if (AZ::EntityId focusRoot = prefabFocusPublicInterface->GetFocusedPrefabContainerEntityId(editorEntityContextId);
+                focusRoot.IsValid())
             {
                 m_selectedEntityIds.erase(focusRoot);
             }
@@ -3721,7 +3732,6 @@ namespace AzToolsFramework
             break;
         case ViewportEditorMode::Focus:
             {
-                
                 ViewportUi::ViewportUiRequestBus::Event(
                     ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::RemoveViewportBorder);
             }

@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "AWSMetricsNotificationBus",
+            "base": "AWSMetricsNotificationBus",
             "context": "EBusHandler",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "OnSendMetricsSuccess",
+                    "base": "OnSendMetricsSuccess",
                     "details": {
                         "name": "On Send Metrics Success"
                     },
@@ -24,7 +24,7 @@
                     ]
                 },
                 {
-                    "key": "OnSendMetricsFailure",
+                    "base": "OnSendMetricsFailure",
                     "details": {
                         "name": "On Send Metrics Failure"
                     },

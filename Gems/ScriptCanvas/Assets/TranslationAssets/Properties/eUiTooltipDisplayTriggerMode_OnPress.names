@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "eUiTooltipDisplayTriggerMode_OnPress",
+            "base": "eUiTooltipDisplayTriggerMode_OnPress",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "eUiTooltipDisplayTriggerMode_OnPress::Getter",
-                "category": "Constants"
-            }
+                "name": "On Press",
+                "category": "Constants/UI/Tooltip Display Trigger Mode"
+            },
+            "methods": [
+                {
+                    "base": "GeteUiTooltipDisplayTriggerMode_OnPress",
+                    "details": {
+                        "name": "On Press"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

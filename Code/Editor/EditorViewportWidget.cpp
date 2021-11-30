@@ -97,9 +97,6 @@
 
 #include <QtGui/private/qhighdpiscaling_p.h>
 
-#include <IEntityRenderState.h>
-#include <IStatObj.h>
-
 AZ_CVAR(
     bool, ed_visibility_logTiming, false, nullptr, AZ::ConsoleFunctorFlags::Null, "Output the timing of the new IVisibilitySystem query");
 

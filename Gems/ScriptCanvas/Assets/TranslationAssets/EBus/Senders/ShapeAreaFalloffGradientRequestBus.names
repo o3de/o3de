@@ -1,15 +1,15 @@
 {
     "entries": [
         {
-            "key": "ShapeAreaFalloffGradientRequestBus",
+            "base": "ShapeAreaFalloffGradientRequestBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "ShapeAreaFalloffGradientRequestBus"
+                "name": "Shape Area Falloff Gradient"
             },
             "methods": [
                 {
-                    "key": "SetFalloffType",
+                    "base": "SetFalloffType",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetFalloffType"
@@ -31,7 +31,7 @@
                     ]
                 },
                 {
-                    "key": "SetFalloffWidth",
+                    "base": "SetFalloffWidth",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetFalloffWidth"
@@ -53,7 +53,7 @@
                     ]
                 },
                 {
-                    "key": "GetFalloffType",
+                    "base": "GetFalloffType",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetFalloffType"
@@ -75,7 +75,7 @@
                     ]
                 },
                 {
-                    "key": "GetFalloffWidth",
+                    "base": "GetFalloffWidth",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetFalloffWidth"
@@ -97,7 +97,7 @@
                     ]
                 },
                 {
-                    "key": "SetShapeEntityId",
+                    "base": "SetShapeEntityId",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetShapeEntityId"
@@ -120,7 +120,7 @@
                     ]
                 },
                 {
-                    "key": "GetShapeEntityId",
+                    "base": "GetShapeEntityId",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetShapeEntityId"

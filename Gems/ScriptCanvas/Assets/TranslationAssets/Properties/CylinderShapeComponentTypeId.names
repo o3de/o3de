@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "CylinderShapeComponentTypeId",
+            "base": "CylinderShapeComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "CylinderShapeComponentTypeId::Getter",
-                "category": "Constants"
-            }
+                "name": "Cylinder Shape Component Type Id",
+                "category": "Constants/Editor"
+            },
+            "methods": [
+                {
+                    "base": "GetCylinderShapeComponentTypeId",
+                    "details": {
+                        "name": "Get Cylinder Shape Component Type Id"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}",
+                            "details": {
+                                "name": "AZ:: Uuid"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

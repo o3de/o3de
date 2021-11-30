@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "idle_enable",
+            "base": "idle_enable",
             "context": "Method",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "idle_enable",
+                    "base": "idle_enable",
                     "context": "Global",
                     "entry": {
                         "name": "In",

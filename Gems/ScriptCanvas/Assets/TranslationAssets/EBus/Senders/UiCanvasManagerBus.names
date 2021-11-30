@@ -1,16 +1,16 @@
 {
     "entries": [
         {
-            "key": "UiCanvasManagerBus",
+            "base": "UiCanvasManagerBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "UiCanvasManagerBus",
+                "name": "UI Canvas Manager",
                 "category": "UI"
             },
             "methods": [
                 {
-                    "key": "CreateCanvas",
+                    "base": "CreateCanvas",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Create Canvas"
@@ -34,7 +34,7 @@
                     ]
                 },
                 {
-                    "key": "LoadCanvas",
+                    "base": "LoadCanvas",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Load Canvas"
@@ -67,7 +67,7 @@
                     ]
                 },
                 {
-                    "key": "UnloadCanvas",
+                    "base": "UnloadCanvas",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Unload Canvas"
@@ -91,7 +91,7 @@
                     ]
                 },
                 {
-                    "key": "FindLoadedCanvasByPathName",
+                    "base": "FindLoadedCanvasByPathName",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Find Loaded Canvas By Pathname"

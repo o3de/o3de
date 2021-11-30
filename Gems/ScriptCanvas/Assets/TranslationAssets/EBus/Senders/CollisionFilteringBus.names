@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "CollisionFilteringBus",
+            "base": "CollisionFilteringBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
@@ -9,7 +9,7 @@
             },
             "methods": [
                 {
-                    "key": "ToggleCollisionLayer",
+                    "base": "ToggleCollisionLayer",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Toggle Collision Layer"
@@ -43,7 +43,7 @@
                     ]
                 },
                 {
-                    "key": "SetCollisionGroup",
+                    "base": "SetCollisionGroup",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Collision Group"
@@ -71,7 +71,7 @@
                     ]
                 },
                 {
-                    "key": "GetCollisionGroupName",
+                    "base": "GetCollisionGroupName",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Collision Group Name"
@@ -93,7 +93,7 @@
                     ]
                 },
                 {
-                    "key": "GetCollisionLayerName",
+                    "base": "GetCollisionLayerName",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Collision Layer Name"
@@ -115,7 +115,7 @@
                     ]
                 },
                 {
-                    "key": "SetCollisionLayer",
+                    "base": "SetCollisionLayer",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Collision Layer"

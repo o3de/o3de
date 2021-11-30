@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "eUiParticleCoordinateType_Cartesian",
+            "base": "eUiParticleCoordinateType_Cartesian",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "eUiParticleCoordinateType_Cartesian::Getter",
-                "category": "Constants"
-            }
+                "name": "Cartesian",
+                "category": "Constants/UI/Particle Coordinate Type"
+            },
+            "methods": [
+                {
+                    "base": "GeteUiParticleCoordinateType_Cartesian",
+                    "details": {
+                        "name": "Cartesian"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

@@ -6,6 +6,8 @@
  *
  */
 
+#include <AzFramework/Entity/EntityDebugDisplayBus.h>
+
 #include <AtomActorDebugDraw.h>
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Public/AuxGeom/AuxGeomDraw.h>
@@ -21,10 +23,12 @@
 #include <EMotionFX/Source/TransformData.h>
 #include <EMotionFX/Source/Mesh.h>
 #include <EMotionFX/Source/Node.h>
+#include <EMotionFX/Source/JointSelectionBus.h>
 
 namespace AZ::Render
 {
     AtomActorDebugDraw::AtomActorDebugDraw(AZ::EntityId entityId)
+        : m_entityId(entityId)
     {
         m_auxGeomFeatureProcessor = RPI::Scene::GetFeatureProcessorForEntity<RPI::AuxGeomFeatureProcessorInterface>(entityId);
     }
@@ -42,9 +46,11 @@ namespace AZ::Render
             return;
         }
 
-        const RPI::Scene* scene = RPI::Scene::GetSceneForEntityId(instance->GetEntityId());
+        const RPI::Scene* scene = RPI::Scene::GetSceneForEntityId(m_entityId);
         const RPI::ViewportContextPtr viewport = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get()->GetViewportContextByScene(scene);
+        AzFramework::DebugDisplayRequests* debugDisplay = GetDebugDisplay(viewport->GetId());
         const AZ::Render::RenderActorSettings& renderActorSettings = EMotionFX::GetRenderActorSettings();
+        const float scaleMultiplier = CalculateScaleMultiplier(instance);
 
         // Render aabb
         if (renderFlags[EMotionFX::ActorRenderFlag::RENDER_AABB])
@@ -75,6 +81,12 @@ namespace AZ::Render
             RenderEMFXDebugDraw(instance);
         }
 
+        // Render
+        if (renderFlags[EMotionFX::ActorRenderFlag::RENDER_NODEORIENTATION])
+        {
+            RenderNodeOrientations(instance, debugDisplay, renderActorSettings.m_nodeOrientationScale * scaleMultiplier);
+        }
+
         // Render vertex normal, face normal, tagent and wireframe.
         const bool renderVertexNormals = renderFlags[EMotionFX::ActorRenderFlag::RENDER_VERTEXNORMALS];
         const bool renderFaceNormals = renderFlags[EMotionFX::ActorRenderFlag::RENDER_FACENORMALS];
@@ -87,7 +99,6 @@ namespace AZ::Render
             const EMotionFX::Pose* pose = instance->GetTransformData()->GetCurrentPose();
             const size_t geomLODLevel = instance->GetLODLevel();
             const size_t numEnabled = instance->GetNumEnabledNodes();
-            const float scaleMultiplier = CalculateScaleMultiplier(instance);
             for (size_t i = 0; i < numEnabled; ++i)
             {
                 EMotionFX::Node* node = instance->GetActor()->GetSkeleton()->GetNode(instance->GetEnabledNode(i));
@@ -175,6 +186,13 @@ namespace AZ::Render
         }
     }
 
+    AzFramework::DebugDisplayRequests* AtomActorDebugDraw::GetDebugDisplay(AzFramework::ViewportId viewportId)
+    {
+        AzFramework::DebugDisplayRequestBus::BusPtr debugDisplayBus;
+        AzFramework::DebugDisplayRequestBus::Bind(debugDisplayBus, viewportId);
+        return AzFramework::DebugDisplayRequestBus::FindFirstHandler(debugDisplayBus);
+    }
+
     void AtomActorDebugDraw::RenderAABB(EMotionFX::ActorInstance* instance, const AZ::Color& aabbColor)
     {
         RPI::AuxGeomDrawPtr auxGeom = m_auxGeomFeatureProcessor->GetDrawQueue();
@@ -195,6 +213,13 @@ namespace AZ::Render
 
         m_auxVertices.clear();
         m_auxVertices.reserve(numJoints * 2);
+        m_auxColors.clear();
+        m_auxColors.reserve(numJoints * 2);
+        AZ::Color renderColor;
+
+        const AZStd::unordered_set<size_t>* cachedSelectedJointIndices;
+        EMotionFX::JointSelectionRequestBus::BroadcastResult(
+            cachedSelectedJointIndices, &EMotionFX::JointSelectionRequests::FindSelectedJointIndices, instance);
 
         for (size_t jointIndex = 0; jointIndex < numJoints; ++jointIndex)
         {
@@ -210,18 +235,29 @@ namespace AZ::Render
                 continue;
             }
 
+            if (cachedSelectedJointIndices && cachedSelectedJointIndices->find(jointIndex) != cachedSelectedJointIndices->end())
+            {
+                renderColor = SelectedColor;
+            }
+            else
+            {
+                renderColor = skeletonColor;
+            }
+
             const AZ::Vector3 parentPos = pose->GetWorldSpaceTransform(parentIndex).m_position;
             m_auxVertices.emplace_back(parentPos);
+            m_auxColors.emplace_back(renderColor);
 
             const AZ::Vector3 bonePos = pose->GetWorldSpaceTransform(jointIndex).m_position;
             m_auxVertices.emplace_back(bonePos);
+            m_auxColors.emplace_back(renderColor);
         }
 
         RPI::AuxGeomDraw::AuxGeomDynamicDrawArguments lineArgs;
         lineArgs.m_verts = m_auxVertices.data();
         lineArgs.m_vertCount = static_cast<uint32_t>(m_auxVertices.size());
-        lineArgs.m_colors = &skeletonColor;
-        lineArgs.m_colorCount = 1;
+        lineArgs.m_colors = m_auxColors.data();
+        lineArgs.m_colorCount = lineArgs.m_vertCount;
         lineArgs.m_depthTest = RPI::AuxGeomDraw::DepthTest::Off;
         auxGeom->DrawLines(lineArgs);
     }
@@ -234,6 +270,12 @@ namespace AZ::Render
         const EMotionFX::Skeleton* skeleton = instance->GetActor()->GetSkeleton();
         const EMotionFX::Pose* pose = transformData->GetCurrentPose();
         const size_t numEnabled = instance->GetNumEnabledNodes();
+
+        AZ::Color renderColor = skeletonColor;
+        const AZStd::unordered_set<size_t>* cachedSelectedJointIndices;
+        EMotionFX::JointSelectionRequestBus::BroadcastResult(
+            cachedSelectedJointIndices, &EMotionFX::JointSelectionRequests::FindSelectedJointIndices, instance);
+
         for (size_t i = 0; i < numEnabled; ++i)
         {
             EMotionFX::Node* joint = skeleton->GetNode(instance->GetEnabledNode(i));
@@ -256,9 +298,17 @@ namespace AZ::Render
             const float parentBoneScale = CalculateBoneScale(instance, skeleton->GetNode(parentIndex));
             const float cylinderSize = boneLength - boneScale - parentBoneScale;
 
+            if (cachedSelectedJointIndices && cachedSelectedJointIndices->find(jointIndex) != cachedSelectedJointIndices->end())
+            {
+                renderColor = SelectedColor;
+            }
+            else
+            {
+                renderColor = skeletonColor;
+            }
             // Render the bone cylinder, the cylinder will be directed towards the node's parent and must fit between the spheres
-            auxGeom->DrawCylinder(centerWorldPos, boneDirection, boneScale, cylinderSize, skeletonColor);
-            auxGeom->DrawSphere(nodeWorldPos, boneScale, skeletonColor);
+            auxGeom->DrawCylinder(centerWorldPos, boneDirection, boneScale, cylinderSize, renderColor);
+            auxGeom->DrawSphere(nodeWorldPos, boneScale, renderColor);
         }
     }
 
@@ -580,6 +630,10 @@ namespace AZ::Render
             return;
         }
 
+        const AZStd::unordered_set<size_t>* cachedSelectedJointIndices;
+        EMotionFX::JointSelectionRequestBus::BroadcastResult(
+            cachedSelectedJointIndices, &EMotionFX::JointSelectionRequests::FindSelectedJointIndices, actorInstance);
+
         const EMotionFX::Actor* actor = actorInstance->GetActor();
         const EMotionFX::Skeleton* skeleton = actor->GetSkeleton();
         const EMotionFX::TransformData* transformData = actorInstance->GetTransformData();
@@ -590,7 +644,6 @@ namespace AZ::Render
         AzFramework::WindowSize viewportSize = viewportContext->GetViewportSize();
         m_drawParams.m_position = AZ::Vector3(static_cast<float>(viewportSize.m_width), 0.0f, 1.0f) +
             TopRightBorderPadding * viewportContext->GetDpiScalingFactor();
-        m_drawParams.m_color = jointNameColor;
         m_drawParams.m_scale = AZ::Vector2(BaseFontSize);
         m_drawParams.m_hAlign = AzFramework::TextHorizontalAlignment::Right;
         m_drawParams.m_monospace = false;
@@ -607,7 +660,109 @@ namespace AZ::Render
             const AZ::Vector3 worldPos = pose->GetWorldSpaceTransform(jointIndex).m_position;
 
             m_drawParams.m_position = worldPos;
+            if (cachedSelectedJointIndices && cachedSelectedJointIndices->find(jointIndex) != cachedSelectedJointIndices->end())
+            {
+                m_drawParams.m_color = SelectedColor;
+            }
+            else
+            {
+                m_drawParams.m_color = jointNameColor;
+            }
             m_fontDrawInterface->DrawScreenAlignedText3d(m_drawParams, joint->GetName());
+        }
+    }
+
+    void AtomActorDebugDraw::RenderNodeOrientations(EMotionFX::ActorInstance* actorInstance,
+        AzFramework::DebugDisplayRequests* debugDisplay, float scale)
+    {
+        // Get the actor and the transform data
+        const float unitScale =
+            1.0f / (float)MCore::Distance::ConvertValue(1.0f, MCore::Distance::UNITTYPE_METERS, EMotionFX::GetEMotionFX().GetUnitType());
+        const EMotionFX::Actor* actor = actorInstance->GetActor();
+        const EMotionFX::Skeleton* skeleton = actor->GetSkeleton();
+        const EMotionFX::TransformData* transformData = actorInstance->GetTransformData();
+        const EMotionFX::Pose* pose = transformData->GetCurrentPose();
+        const float constPreScale = scale * unitScale * 3.0f;
+
+        const AZStd::unordered_set<size_t>* cachedSelectedJointIndices;
+        EMotionFX::JointSelectionRequestBus::BroadcastResult(
+            cachedSelectedJointIndices, &EMotionFX::JointSelectionRequests::FindSelectedJointIndices, actorInstance);
+
+        const size_t numEnabled = actorInstance->GetNumEnabledNodes();
+        for (size_t i = 0; i < numEnabled; ++i)
+        {
+            EMotionFX::Node* joint = skeleton->GetNode(actorInstance->GetEnabledNode(i));
+            const size_t jointIndex = joint->GetNodeIndex();
+
+            static const float axisBoneScale = 50.0f;
+            const float size = CalculateBoneScale(actorInstance, joint) * constPreScale * axisBoneScale;
+            AZ::Transform worldTM = pose->GetWorldSpaceTransform(jointIndex).ToAZTransform();
+            bool selected = false;
+            if (cachedSelectedJointIndices && cachedSelectedJointIndices->find(jointIndex) != cachedSelectedJointIndices->end())
+            {
+                selected = true;
+            }
+            RenderLineAxis(debugDisplay, worldTM, size, selected);
+        }
+    }
+
+    void AtomActorDebugDraw::RenderLineAxis(
+        AzFramework::DebugDisplayRequests* debugDisplay,
+        AZ::Transform worldTM,
+        float size,
+        bool selected,
+        bool renderAxisName)
+    {
+        const float axisHeight = size * 0.7f;
+        const float frontSize = size * 5.0f + 0.2f;
+        const AZ::Vector3 position = worldTM.GetTranslation();
+
+        // Render x axis
+        {
+            AZ::Color xSelectedColor = selected ? AZ::Colors::Orange : AZ::Colors::Red;
+
+            const AZ::Vector3 xAxisDir = (worldTM.TransformPoint(AZ::Vector3(size, 0.0f, 0.0f)) - position).GetNormalized();
+            const AZ::Vector3 xAxisArrowStart = position + xAxisDir * axisHeight;
+            debugDisplay->SetColor(xSelectedColor);
+            debugDisplay->DrawArrow(position, xAxisArrowStart, size);
+
+            if (renderAxisName)
+            {
+                const AZ::Vector3 xNamePos = position + xAxisDir * (size * 1.15f);
+                debugDisplay->DrawTextLabel(xNamePos, frontSize, "X");
+            }
+        }
+
+        // Render y axis
+        {
+            AZ::Color ySelectedColor = selected ? AZ::Colors::Orange : AZ::Colors::Blue;
+
+            const AZ::Vector3 yAxisDir = (worldTM.TransformPoint(AZ::Vector3(0.0f, size, 0.0f)) - position).GetNormalized();
+            const AZ::Vector3 yAxisArrowStart = position + yAxisDir * axisHeight;
+            debugDisplay->SetColor(ySelectedColor);
+            debugDisplay->DrawArrow(position, yAxisArrowStart, size);
+
+            if (renderAxisName)
+            {
+                const AZ::Vector3 yNamePos = position + yAxisDir * (size * 1.15f);
+                debugDisplay->DrawTextLabel(yNamePos, frontSize, "Y");
+            }
+        }
+
+        // Render z axis
+        {
+            AZ::Color zSelectedColor = selected ? AZ::Colors::Orange : AZ::Colors::Green;
+
+            const AZ::Vector3 zAxisDir = (worldTM.TransformPoint(AZ::Vector3(0.0f, 0.0f, size)) - position).GetNormalized();
+            const AZ::Vector3 zAxisArrowStart = position + zAxisDir * axisHeight;
+            debugDisplay->SetColor(zSelectedColor);
+            debugDisplay->DrawArrow(position, zAxisArrowStart, size);
+
+            if (renderAxisName)
+            {
+                const AZ::Vector3 zNamePos = position + zAxisDir * (size * 1.15f);
+                debugDisplay->DrawTextLabel(zNamePos, frontSize, "Z");
+            }
         }
     }
 } // namespace AZ::Render

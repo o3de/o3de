@@ -9,7 +9,7 @@
 #include <AtomToolsFramework/Viewport/ModularViewportCameraController.h>
 #include <AzCore/Settings/SettingsRegistryImpl.h>
 #include <AzFramework/Viewport/ViewportControllerList.h>
-#include <AzToolsFramework/Input/QtEventToAzInputManager.h>
+#include <AzToolsFramework/Input/QtEventToAzInputMapper.h>
 #include <AzToolsFramework/UnitTest/AzToolsFrameworkTestHelpers.h>
 #include <EditorViewportWidget.h>
 #include <Mocks/MockWindowRequests.h>

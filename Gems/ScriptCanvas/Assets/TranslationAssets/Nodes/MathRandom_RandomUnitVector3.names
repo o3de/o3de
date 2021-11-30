@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "{D0A2F62C-EB98-51CC-A482-80F9623CE128}",
+            "base": "{D0A2F62C-EB98-51CC-A482-80F9623CE128}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
@@ -11,19 +11,19 @@
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "key": "DataOutput_Result",
+                    "base": "DataOutput_Result",
                     "details": {
                         "name": "Result"
                     }

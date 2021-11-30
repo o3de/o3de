@@ -1,12 +1,59 @@
 {
     "entries": [
         {
-            "key": "BoxShapeConfig",
+            "base": "BoxShapeConfig",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
-                "name": "BoxShapeConfig"
-            }
+                "name": "Box Shape Config",
+                "category": "Rendering/Shapes"
+            },
+            "methods": [
+                {
+                    "base": "GetDimensions",
+                    "details": {
+                        "name": "Get Dimensions"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{F034FBA2-AC2F-4E66-8152-14DFB90D6283}",
+                            "details": {
+                                "name": "Box Shape Config",
+                                "tooltip": "Box shape configuration parameters"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Dimensions"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetDimensions",
+                    "details": {
+                        "name": "Set Dimensions"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{F034FBA2-AC2F-4E66-8152-14DFB90D6283}",
+                            "details": {
+                                "name": "Box Shape Config",
+                                "tooltip": "Box shape configuration parameters"
+                            }
+                        },
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Dimensions"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

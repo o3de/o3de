@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "PhotometricUnit_Lux",
+            "base": "PhotometricUnit_Lux",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "PhotometricUnit_Lux::Getter",
-                "category": "Constants"
-            }
+                "name": "Lux",
+                "category": "Constants/Photometric Unit"
+            },
+            "methods": [
+                {
+                    "base": "GetPhotometricUnit_Lux",
+                    "details": {
+                        "name": "Lux"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

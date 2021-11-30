@@ -16,7 +16,6 @@
 
 #include <GraphCanvas/Types/Endpoint.h>
 #include <GraphCanvas/Types/Types.h>
-#include <GraphCanvas/Types/TranslationTypes.h>
 
 class QGraphicsLayoutItem;
 

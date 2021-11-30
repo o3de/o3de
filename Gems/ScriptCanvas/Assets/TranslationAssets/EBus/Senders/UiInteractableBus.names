@@ -1,16 +1,16 @@
 {
     "entries": [
         {
-            "key": "UiInteractableBus",
+            "base": "UiInteractableBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "UiInteractableBus",
+                "name": "UI Interactable",
                 "category": "UI"
             },
             "methods": [
                 {
-                    "key": "SetIsAutoActivationEnabled",
+                    "base": "SetIsAutoActivationEnabled",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Is Auto Activation Enabled"
@@ -34,7 +34,7 @@
                     ]
                 },
                 {
-                    "key": "GetIsAutoActivationEnabled",
+                    "base": "GetIsAutoActivationEnabled",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Is Auto Activation Enabled"
@@ -57,7 +57,7 @@
                     ]
                 },
                 {
-                    "key": "SetIsHandlingMultiTouchEvents",
+                    "base": "SetIsHandlingMultiTouchEvents",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Is Handling Multi-touch Events"
@@ -81,7 +81,7 @@
                     ]
                 },
                 {
-                    "key": "IsHandlingMultiTouchEvents",
+                    "base": "IsHandlingMultiTouchEvents",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Is Handling Multi-touch Events"
@@ -104,7 +104,7 @@
                     ]
                 },
                 {
-                    "key": "IsHandlingEvents",
+                    "base": "IsHandlingEvents",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Is Handling Events"
@@ -127,7 +127,7 @@
                     ]
                 },
                 {
-                    "key": "SetIsHandlingEvents",
+                    "base": "SetIsHandlingEvents",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Is Handling Events"

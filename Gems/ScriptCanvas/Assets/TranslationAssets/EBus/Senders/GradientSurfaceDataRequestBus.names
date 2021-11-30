@@ -1,15 +1,15 @@
 {
     "entries": [
         {
-            "key": "GradientSurfaceDataRequestBus",
+            "base": "GradientSurfaceDataRequestBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "GradientSurfaceDataRequestBus"
+                "name": "Gradient Surface Data"
             },
             "methods": [
                 {
-                    "key": "GetThresholdMax",
+                    "base": "GetThresholdMax",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetThresholdMax"
@@ -31,7 +31,7 @@
                     ]
                 },
                 {
-                    "key": "SetThresholdMax",
+                    "base": "SetThresholdMax",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetThresholdMax"
@@ -53,7 +53,7 @@
                     ]
                 },
                 {
-                    "key": "GetNumTags",
+                    "base": "GetNumTags",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetNumTags"
@@ -75,7 +75,7 @@
                     ]
                 },
                 {
-                    "key": "RemoveTag",
+                    "base": "RemoveTag",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke RemoveTag"
@@ -97,7 +97,7 @@
                     ]
                 },
                 {
-                    "key": "GetThresholdMin",
+                    "base": "GetThresholdMin",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetThresholdMin"
@@ -119,7 +119,7 @@
                     ]
                 },
                 {
-                    "key": "SetShapeConstraintEntityId",
+                    "base": "SetShapeConstraintEntityId",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetShapeConstraintEntityId"
@@ -142,7 +142,7 @@
                     ]
                 },
                 {
-                    "key": "SetThresholdMin",
+                    "base": "SetThresholdMin",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetThresholdMin"
@@ -164,7 +164,7 @@
                     ]
                 },
                 {
-                    "key": "GetTag",
+                    "base": "GetTag",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetTag"
@@ -194,7 +194,7 @@
                     ]
                 },
                 {
-                    "key": "AddTag",
+                    "base": "AddTag",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke AddTag"
@@ -216,7 +216,7 @@
                     ]
                 },
                 {
-                    "key": "GetShapeConstraintEntityId",
+                    "base": "GetShapeConstraintEntityId",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetShapeConstraintEntityId"

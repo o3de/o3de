@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "eUiScaleToDeviceMode_None",
+            "base": "eUiScaleToDeviceMode_None",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "eUiScaleToDeviceMode_None::Getter",
-                "category": "Constants"
-            }
+                "name": "None",
+                "category": "Constants/UI/Scale To Device Mode"
+            },
+            "methods": [
+                {
+                    "base": "GeteUiScaleToDeviceMode_None",
+                    "details": {
+                        "name": "None"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }
