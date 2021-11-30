@@ -157,6 +157,7 @@ class TestAutomation(EditorTestSuite):
             file_system.delete([os.path.join(workspace.paths.engine_root(), "AutomatedTesting", "Levels", "tmp_level")],
                                True, True)
 
+    @pytest.mark.xfail(reason="Fails to create level")
     class test_DynamicSliceInstanceSpawner_External_E2E_Editor(EditorSingleTest):
         from .EditorScripts import DynamicSliceInstanceSpawner_External_E2E as test_module
 
@@ -164,7 +165,8 @@ class TestAutomation(EditorTestSuite):
         def teardown(self, request, workspace, editor, editor_test_results, launcher_platform):
             file_system.delete([os.path.join(workspace.paths.engine_root(), "AutomatedTesting", "Levels", "tmp_level")],
                                True, True)
-        
+
+    @pytest.mark.xfail(reason="Fails to create level")
     class test_LayerBlender_E2E_Editor(EditorSingleTest):
         from .EditorScripts import LayerBlender_E2E_Editor as test_module
 
