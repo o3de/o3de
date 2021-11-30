@@ -58,7 +58,7 @@ void ApplyDirectionalLights(Surface surface, inout LightingData lightingData)
         // [GFX TODO][ATOM-2012] care of multiple directional light
         // Currently shadow check is done only for index == shadowIndex.
         float currentLitRatio = 1.0f;
-        float currentTransmissionParameter = 1.0f;
+        float currentTransmissionParameter = (o_transmission_mode == TransmissionMode::ThickObject) ? 0.0f : 9999.0f;
         if (o_enableShadows)
         {
             bool activeLight = index == shadowIndex;
@@ -66,12 +66,12 @@ void ApplyDirectionalLights(Surface surface, inout LightingData lightingData)
             if (o_transmission_mode == TransmissionMode::ThickObject)
             {
                 // Back shadow ratio (add contribution only if current directional light is the active one for shadows)
-                currentTransmissionParameter = activeLight ?  backShadowRatio : 0.;
+                currentTransmissionParameter = activeLight ?  backShadowRatio : 0.0f;
             }
             else if (o_transmission_mode == TransmissionMode::ThinObject)
             {
                 // Transmission distance (add contribution only if current directional light is the active one for shadows)
-                currentTransmissionParameter = activeLight ? transmissionDistance : 9999.f;
+                currentTransmissionParameter = activeLight ? transmissionDistance : 9999.0f;
             }
         }
         
