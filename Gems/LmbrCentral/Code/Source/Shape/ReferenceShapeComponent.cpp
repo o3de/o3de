@@ -27,7 +27,7 @@ namespace LmbrCentral
             if (edit)
             {
                 edit->Class<ReferenceShapeConfig>(
-                    "Reference Shape", "")
+                    "Shape Reference", "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)

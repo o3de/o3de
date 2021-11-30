@@ -61,7 +61,7 @@ namespace UnitTest
     {
     public:
         AZ::Entity m_entity;
-        mutable int m_count = 0;
+        int m_count = 0;
 
         MockShape()
         {
