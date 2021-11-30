@@ -156,6 +156,7 @@ namespace Multiplayer
             [[fallthrough]];
         case eNotify_OnEndGameMode:
             // Kill the configured server if it's active
+            AZ::TickBus::Handler::BusDisconnect();
             if (m_serverProcessWatcher)
             {
                 m_serverProcessWatcher->TerminateProcess(0);
@@ -168,9 +169,7 @@ namespace Multiplayer
                 m_serverProcessWatcher = nullptr;
                 m_serverProcessTracePrinter = nullptr;
             }
-
-            AZ::TickBus::Handler::BusDisconnect();
-
+            
             if (INetworkInterface* editorNetworkInterface = AZ::Interface<INetworking>::Get()->RetrieveNetworkInterface(AZ::Name(MpEditorInterfaceName)))
             {
                 editorNetworkInterface->Disconnect(m_editorConnId, AzNetworking::DisconnectReason::TerminatedByClient);
@@ -247,10 +246,12 @@ namespace Multiplayer
         // Stop the previous server if one exists
         if (m_serverProcessWatcher)
         {
+            AZ::TickBus::Handler::BusDisconnect();
             m_serverProcessWatcher->TerminateProcess(0);
         }
         m_serverProcessWatcher.reset(outProcess);
         m_serverProcessTracePrinter = AZStd::make_unique<ProcessCommunicatorTracePrinter>(m_serverProcessWatcher->GetCommunicator(), "EditorServer");
+        AZ::TickBus::Handler::BusConnect();
     }
 
     void MultiplayerEditorSystemComponent::OnGameEntitiesStarted()
@@ -311,7 +312,6 @@ namespace Multiplayer
 
             // Launch the editor-server
             LaunchEditorServer();
-            AZ::TickBus::Handler::BusConnect();
         }
         else
         {
