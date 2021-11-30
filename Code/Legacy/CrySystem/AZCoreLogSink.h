@@ -162,7 +162,7 @@ public:
         }
 
         CryWarning(VALIDATOR_MODULE_UNKNOWN, VALIDATOR_WARNING, "(%s) - %s", window, message);
-        return true; // suppress default AzCore behavior.
+        return m_suppressSystemOutput;
     }
 
     bool OnOutput(const char* window, const char* message)  override

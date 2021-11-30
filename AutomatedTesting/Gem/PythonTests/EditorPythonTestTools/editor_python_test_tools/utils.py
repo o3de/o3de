@@ -118,6 +118,8 @@ class TestHelper:
 
             wait_for_critical_expected_line("Editor-server ready. Editor has successfully connected to the editor-server's network simulation.", section_tracer.prints, 5.0)
 
+            wait_for_critical_unexpected_line(f"MultiplayerSystemComponent: SpawnDefaultPlayerPrefab failed. Missing sv_defaultPlayerSpawnAsset at path '{sv_default_player_spawn_asset.lower()}'.", section_tracer.prints, 0.5)
+
         TestHelper.wait_for_condition(lambda : multiplayer.PythonEditorFuncs_is_in_game_mode(), 5.0)
         Report.critical_result(msgtuple_success_fail, multiplayer.PythonEditorFuncs_is_in_game_mode())
 
