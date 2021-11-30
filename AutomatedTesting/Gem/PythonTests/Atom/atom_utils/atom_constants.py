@@ -149,6 +149,8 @@ class AtomComponentProperties:
     def display_mapper(property: str = 'name') -> str:
         """
         Display Mapper component properties.
+          - 'LDR color Grading LUT' is the Low Definition Range (LDR) color grading for Look-up Textures (LUT) which is
+            typically a lighting asset file (i.e. test.lightingpreset.azasset set as a LDR color grading LUT).
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """
