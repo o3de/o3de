@@ -350,6 +350,7 @@ set(FILES
     Source/MotionData/MotionData.h
     Source/MotionData/MotionDataFactory.cpp
     Source/MotionData/MotionDataFactory.h
+    Source/MotionData/MotionDataSampleSettings.h
     Source/MotionData/NonUniformMotionData.cpp
     Source/MotionData/NonUniformMotionData.h
     Source/MotionData/UniformMotionData.cpp
