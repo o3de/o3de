@@ -1,16 +1,16 @@
 {
     "entries": [
         {
-            "key": "UiLayoutColumnBus",
+            "base": "UiLayoutColumnBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "UiLayoutColumnBus",
+                "name": "UI Layout Column",
                 "category": "UI"
             },
             "methods": [
                 {
-                    "key": "SetSpacing",
+                    "base": "SetSpacing",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Spacing"
@@ -34,7 +34,7 @@
                     ]
                 },
                 {
-                    "key": "GetOrder",
+                    "base": "GetOrder",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Order"
@@ -57,7 +57,7 @@
                     ]
                 },
                 {
-                    "key": "SetOrder",
+                    "base": "SetOrder",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Order"
@@ -81,7 +81,7 @@
                     ]
                 },
                 {
-                    "key": "GetSpacing",
+                    "base": "GetSpacing",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Spacing"
@@ -104,7 +104,7 @@
                     ]
                 },
                 {
-                    "key": "GetPadding",
+                    "base": "GetPadding",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Padding"
@@ -127,7 +127,7 @@
                     ]
                 },
                 {
-                    "key": "SetPadding",
+                    "base": "SetPadding",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Padding"

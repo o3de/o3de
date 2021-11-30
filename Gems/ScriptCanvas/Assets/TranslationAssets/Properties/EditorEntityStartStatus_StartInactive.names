@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "EditorEntityStartStatus_StartInactive",
+            "base": "EditorEntityStartStatus_StartInactive",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "EditorEntityStartStatus_StartInactive::Getter",
-                "category": "Constants"
-            }
+                "name": "Editor Entity Start Status_ Start Inactive",
+                "category": "Constants/Editor"
+            },
+            "methods": [
+                {
+                    "base": "GetEditorEntityStartStatus_StartInactive",
+                    "details": {
+                        "name": "Get Editor Entity Start Status_ Start Inactive"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

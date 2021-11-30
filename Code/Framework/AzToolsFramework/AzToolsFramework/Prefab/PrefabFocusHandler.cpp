@@ -49,8 +49,7 @@ namespace AzToolsFramework::Prefab
 
     void PrefabFocusHandler::Reflect(AZ::ReflectContext* context)
     {
-        AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context);
-        if (behaviorContext)
+        if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context); behaviorContext)
         {
             behaviorContext->EBus<PrefabFocusPublicRequestBus>("PrefabFocusPublicRequestBus")
                 ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
@@ -227,7 +226,17 @@ namespace AzToolsFramework::Prefab
 
     AZ::EntityId PrefabFocusHandler::GetFocusedPrefabContainerEntityId([[maybe_unused]] AzFramework::EntityContextId entityContextId) const
     {
-        return m_focusedInstanceContainerEntityId;
+        if (m_focusedInstanceContainerEntityId.IsValid())
+        {
+            return m_focusedInstanceContainerEntityId;
+        }
+
+        if (auto instance = GetReferenceFromContainerEntityId(m_focusedInstanceContainerEntityId); instance.has_value())
+        {
+            return instance->get().GetContainerEntityId();
+        }
+
+        return AZ::EntityId();
     }
 
     bool PrefabFocusHandler::IsOwningPrefabBeingFocused(AZ::EntityId entityId) const
@@ -381,7 +390,7 @@ namespace AzToolsFramework::Prefab
         size_t index = 0;
         size_t maxIndex = m_instanceFocusHierarchy.size() - 1;
 
-        for (const AZ::EntityId containerEntityId : m_instanceFocusHierarchy)
+        for (const AZ::EntityId& containerEntityId : m_instanceFocusHierarchy)
         {
             InstanceOptionalReference instance = GetReferenceFromContainerEntityId(containerEntityId);
             if (instance.has_value())
@@ -419,7 +428,7 @@ namespace AzToolsFramework::Prefab
             return;
         }
         
-        for (const AZ::EntityId containerEntityId : instances)
+        for (const AZ::EntityId& containerEntityId : instances)
         {
             InstanceOptionalReference instance = GetReferenceFromContainerEntityId(containerEntityId);
 
@@ -438,7 +447,7 @@ namespace AzToolsFramework::Prefab
             return;
         }
 
-        for (const AZ::EntityId containerEntityId : instances)
+        for (const AZ::EntityId& containerEntityId : instances)
         {
             InstanceOptionalReference instance = GetReferenceFromContainerEntityId(containerEntityId);
 

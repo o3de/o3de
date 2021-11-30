@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "BlendFactor_FactorInverse",
+            "base": "BlendFactor_FactorInverse",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "BlendFactor_FactorInverse::Getter",
-                "category": "Constants"
-            }
+                "name": "Factor Inverse",
+                "category": "Constants/Blend Factor"
+            },
+            "methods": [
+                {
+                    "base": "GetBlendFactor_FactorInverse",
+                    "details": {
+                        "name": "Get Factor Inverse"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

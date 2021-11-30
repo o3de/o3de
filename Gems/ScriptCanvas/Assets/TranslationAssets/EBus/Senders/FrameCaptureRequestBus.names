@@ -1,15 +1,15 @@
 {
     "entries": [
         {
-            "key": "FrameCaptureRequestBus",
+            "base": "FrameCaptureRequestBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "FrameCaptureRequestBus"
+                "name": "Frame Capture"
             },
             "methods": [
                 {
-                    "key": "CaptureScreenshot",
+                    "base": "CaptureScreenshot",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke CaptureScreenshot"
@@ -39,7 +39,7 @@
                     ]
                 },
                 {
-                    "key": "CaptureScreenshotWithPreview",
+                    "base": "CaptureScreenshotWithPreview",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke CaptureScreenshotWithPreview"
@@ -69,7 +69,7 @@
                     ]
                 },
                 {
-                    "key": "CapturePassAttachment",
+                    "base": "CapturePassAttachment",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke CapturePassAttachment"

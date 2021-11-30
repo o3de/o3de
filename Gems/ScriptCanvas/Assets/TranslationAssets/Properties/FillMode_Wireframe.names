@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "FillMode_Wireframe",
+            "base": "FillMode_Wireframe",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "FillMode_Wireframe::Getter",
-                "category": "Constants"
-            }
+                "name": "Wireframe",
+                "category": "Constants/Fill Mode"
+            },
+            "methods": [
+                {
+                    "base": "GetFillMode_Wireframe",
+                    "details": {
+                        "name": "Wireframe"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

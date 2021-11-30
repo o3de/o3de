@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "eUiVAlign_Center",
+            "base": "eUiVAlign_Center",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "eUiVAlign_Center::Getter",
-                "category": "Constants"
-            }
+                "name": "Vertical Align Center",
+                "category": "Constants/UI/Align"
+            },
+            "methods": [
+                {
+                    "base": "GeteUiVAlign_Center",
+                    "details": {
+                        "name": "Vertical Align: Center"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "StencilOp_IncrementSaturate",
+            "base": "StencilOp_IncrementSaturate",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "StencilOp_IncrementSaturate::Getter",
-                "category": "Constants"
-            }
+                "name": "Increment Saturate",
+                "category": "Constants/Stencil Op"
+            },
+            "methods": [
+                {
+                    "base": "GetStencilOp_IncrementSaturate",
+                    "details": {
+                        "name": "Increment Saturate"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

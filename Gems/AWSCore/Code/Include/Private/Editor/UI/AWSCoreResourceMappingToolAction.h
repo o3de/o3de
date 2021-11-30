@@ -13,6 +13,8 @@
 #include <QAction>
 #include <QObject>
 
+#include "AWSCoreEditor_Traits_Platform.h"
+
 namespace AWSCore
 {
     class AWSCoreResourceMappingToolAction
@@ -22,7 +24,7 @@ namespace AWSCore
         static constexpr const char AWSCoreResourceMappingToolActionName[] = "AWSCoreResourceMappingToolAction";
         static constexpr const char ResourceMappingToolDirectoryPath[] = "Gems/AWSCore/Code/Tools/ResourceMappingTool";
         static constexpr const char ResourceMappingToolLogDirectoryPath[] = "user/log/";
-        static constexpr const char EngineWindowsPythonEntryScriptPath[] = "python/python.cmd";
+        static constexpr const char EngineWindowsPythonEntryScriptPath[] = AWSCORE_EDITOR_PYTHON_COMMAND;
 
         AWSCoreResourceMappingToolAction(const QString& text, QObject* parent = nullptr);
 

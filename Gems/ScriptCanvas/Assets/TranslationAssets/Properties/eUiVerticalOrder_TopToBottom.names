@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "eUiVerticalOrder_TopToBottom",
+            "base": "eUiVerticalOrder_TopToBottom",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "eUiVerticalOrder_TopToBottom::Getter",
-                "category": "Constants"
-            }
+                "name": "Top To Bottom",
+                "category": "Constants/UI/Order/Vertical"
+            },
+            "methods": [
+                {
+                    "base": "GeteUiVerticalOrder_TopToBottom",
+                    "details": {
+                        "name": "Top To Bottom"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

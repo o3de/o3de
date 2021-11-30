@@ -1,16 +1,16 @@
 {
     "entries": [
         {
-            "key": "UiSliderBus",
+            "base": "UiSliderBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "UiSliderBus",
+                "name": "UI Slider",
                 "category": "UI"
             },
             "methods": [
                 {
-                    "key": "GetValueChangingActionName",
+                    "base": "GetValueChangingActionName",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Value Changing Action Name"
@@ -33,7 +33,7 @@
                     ]
                 },
                 {
-                    "key": "SetValueChangingActionName",
+                    "base": "SetValueChangingActionName",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Value Changing Action Name"
@@ -57,7 +57,7 @@
                     ]
                 },
                 {
-                    "key": "GetManipulatorEntity",
+                    "base": "GetManipulatorEntity",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Manipulator Entity"
@@ -81,7 +81,7 @@
                     ]
                 },
                 {
-                    "key": "SetTrackEntity",
+                    "base": "SetTrackEntity",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Track Entity"
@@ -105,7 +105,7 @@
                     ]
                 },
                 {
-                    "key": "GetFillEntity",
+                    "base": "GetFillEntity",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Fill Entity"
@@ -129,7 +129,7 @@
                     ]
                 },
                 {
-                    "key": "SetFillEntity",
+                    "base": "SetFillEntity",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Fill Entity"
@@ -153,7 +153,7 @@
                     ]
                 },
                 {
-                    "key": "SetManipulatorEntity",
+                    "base": "SetManipulatorEntity",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Manipulator Entity"
@@ -177,7 +177,7 @@
                     ]
                 },
                 {
-                    "key": "GetValueChangedActionName",
+                    "base": "GetValueChangedActionName",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Value Changed Action Name"
@@ -200,7 +200,7 @@
                     ]
                 },
                 {
-                    "key": "GetTrackEntity",
+                    "base": "GetTrackEntity",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Track Entity"
@@ -224,7 +224,7 @@
                     ]
                 },
                 {
-                    "key": "GetMinValue",
+                    "base": "GetMinValue",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Min Value"
@@ -247,7 +247,7 @@
                     ]
                 },
                 {
-                    "key": "SetMinValue",
+                    "base": "SetMinValue",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Min Value"
@@ -271,7 +271,7 @@
                     ]
                 },
                 {
-                    "key": "SetStepValue",
+                    "base": "SetStepValue",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Step Value"
@@ -295,7 +295,7 @@
                     ]
                 },
                 {
-                    "key": "SetValue",
+                    "base": "SetValue",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Value"
@@ -319,7 +319,7 @@
                     ]
                 },
                 {
-                    "key": "SetMaxValue",
+                    "base": "SetMaxValue",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Max Value"
@@ -343,7 +343,7 @@
                     ]
                 },
                 {
-                    "key": "GetStepValue",
+                    "base": "GetStepValue",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Step Value"
@@ -366,7 +366,7 @@
                     ]
                 },
                 {
-                    "key": "GetValue",
+                    "base": "GetValue",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Value"
@@ -389,7 +389,7 @@
                     ]
                 },
                 {
-                    "key": "GetMaxValue",
+                    "base": "GetMaxValue",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Max Value"
@@ -412,7 +412,7 @@
                     ]
                 },
                 {
-                    "key": "SetValueChangedActionName",
+                    "base": "SetValueChangedActionName",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Value Changed Action Name"

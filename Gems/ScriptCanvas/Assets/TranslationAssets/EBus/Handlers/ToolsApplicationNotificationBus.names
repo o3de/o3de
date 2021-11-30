@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "ToolsApplicationNotificationBus",
+            "base": "ToolsApplicationNotificationBus",
             "context": "EBusHandler",
             "variant": "",
             "details": {
@@ -9,7 +9,7 @@
             },
             "methods": [
                 {
-                    "key": "EntityRegistered",
+                    "base": "EntityRegistered",
                     "details": {
                         "name": "EntityRegistered"
                     },
@@ -24,7 +24,7 @@
                     ]
                 },
                 {
-                    "key": "EntityDeregistered",
+                    "base": "EntityDeregistered",
                     "details": {
                         "name": "EntityDeregistered"
                     },

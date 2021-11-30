@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "EditorExposureControlComponentTypeId",
+            "base": "EditorExposureControlComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "EditorExposureControlComponentTypeId::Getter",
-                "category": "Constants"
-            }
+                "name": "Editor Exposure Control Component Type Id",
+                "category": "Constants/Editor"
+            },
+            "methods": [
+                {
+                    "base": "GetEditorExposureControlComponentTypeId",
+                    "details": {
+                        "name": "Get Editor Exposure Control Component Type Id"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}",
+                            "details": {
+                                "name": "AZ:: Uuid"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

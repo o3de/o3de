@@ -1,33 +1,33 @@
 {
     "entries": [
         {
-            "key": "UiAnchors",
+            "base": "UiAnchors",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
-                "name": "UiAnchors"
+                "name": "UI Anchors",
+                "category": "UI"
             },
             "methods": [
                 {
-                    "key": "SetBottom",
+                    "base": "SetBottom",
                     "context": "UiAnchors",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetBottom"
+                        "tooltip": "When signaled, this will invoke Set Bottom"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetBottom is invoked"
+                        "tooltip": "Signaled after Set Bottom is invoked"
                     },
                     "details": {
-                        "name": "UiAnchors::SetBottom",
-                        "category": "Other"
+                        "name": "Set Bottom"
                     },
                     "params": [
                         {
                             "typeid": "{65D4346C-FB16-4CB0-9BDC-1185B122C4A9}",
                             "details": {
-                                "name": "Anchors*"
+                                "name": "Anchors"
                             }
                         },
                         {
@@ -39,25 +39,24 @@
                     ]
                 },
                 {
-                    "key": "SetRight",
+                    "base": "SetRight",
                     "context": "UiAnchors",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetRight"
+                        "tooltip": "When signaled, this will invoke Set Right"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetRight is invoked"
+                        "tooltip": "Signaled after Set Right is invoked"
                     },
                     "details": {
-                        "name": "UiAnchors::SetRight",
-                        "category": "Other"
+                        "name": "Set Right"
                     },
                     "params": [
                         {
                             "typeid": "{65D4346C-FB16-4CB0-9BDC-1185B122C4A9}",
                             "details": {
-                                "name": "Anchors*"
+                                "name": "Anchors"
                             }
                         },
                         {
@@ -69,25 +68,24 @@
                     ]
                 },
                 {
-                    "key": "SetTop",
+                    "base": "SetTop",
                     "context": "UiAnchors",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetTop"
+                        "tooltip": "When signaled, this will invoke Set Top"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetTop is invoked"
+                        "tooltip": "Signaled after Set Top is invoked"
                     },
                     "details": {
-                        "name": "UiAnchors::SetTop",
-                        "category": "Other"
+                        "name": "Set Top"
                     },
                     "params": [
                         {
                             "typeid": "{65D4346C-FB16-4CB0-9BDC-1185B122C4A9}",
                             "details": {
-                                "name": "Anchors*"
+                                "name": "Anchors"
                             }
                         },
                         {
@@ -99,25 +97,24 @@
                     ]
                 },
                 {
-                    "key": "SetLeft",
+                    "base": "SetLeft",
                     "context": "UiAnchors",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetLeft"
+                        "tooltip": "When signaled, this will invoke Set Left"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetLeft is invoked"
+                        "tooltip": "Signaled after Set Left is invoked"
                     },
                     "details": {
-                        "name": "UiAnchors::SetLeft",
-                        "category": "Other"
+                        "name": "Set Left"
                     },
                     "params": [
                         {
                             "typeid": "{65D4346C-FB16-4CB0-9BDC-1185B122C4A9}",
                             "details": {
-                                "name": "Anchors*"
+                                "name": "Anchors"
                             }
                         },
                         {
@@ -129,25 +126,24 @@
                     ]
                 },
                 {
-                    "key": "SetAnchors",
+                    "base": "SetAnchors",
                     "context": "UiAnchors",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetAnchors"
+                        "tooltip": "When signaled, this will invoke Set Anchors"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetAnchors is invoked"
+                        "tooltip": "Signaled after Set Anchors is invoked"
                     },
                     "details": {
-                        "name": "UiAnchors::SetAnchors",
-                        "category": "Other"
+                        "name": "Set Anchors"
                     },
                     "params": [
                         {
                             "typeid": "{65D4346C-FB16-4CB0-9BDC-1185B122C4A9}",
                             "details": {
-                                "name": "Anchors*"
+                                "name": "Anchors"
                             }
                         },
                         {
@@ -177,15 +173,15 @@
                     ]
                 },
                 {
-                    "key": "left",
+                    "base": "Getleft",
                     "details": {
-                        "name": "UiAnchors::left::Getter"
+                        "name": "Getleft"
                     },
                     "params": [
                         {
                             "typeid": "{65D4346C-FB16-4CB0-9BDC-1185B122C4A9}",
                             "details": {
-                                "name": "Anchors*"
+                                "name": "Anchors"
                             }
                         }
                     ],
@@ -193,41 +189,41 @@
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "float&"
+                                "name": "float"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "left",
+                    "base": "Setleft",
                     "details": {
-                        "name": "UiAnchors::left::Setter"
+                        "name": "Setleft"
                     },
                     "params": [
                         {
                             "typeid": "{65D4346C-FB16-4CB0-9BDC-1185B122C4A9}",
                             "details": {
-                                "name": "Anchors*"
+                                "name": "Anchors"
                             }
                         },
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "const float&"
+                                "name": "float"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "top",
+                    "base": "Gettop",
                     "details": {
-                        "name": "UiAnchors::top::Getter"
+                        "name": "Gettop"
                     },
                     "params": [
                         {
                             "typeid": "{65D4346C-FB16-4CB0-9BDC-1185B122C4A9}",
                             "details": {
-                                "name": "Anchors*"
+                                "name": "Anchors"
                             }
                         }
                     ],
@@ -235,41 +231,41 @@
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "float&"
+                                "name": "float"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "top",
+                    "base": "Settop",
                     "details": {
-                        "name": "UiAnchors::top::Setter"
+                        "name": "Settop"
                     },
                     "params": [
                         {
                             "typeid": "{65D4346C-FB16-4CB0-9BDC-1185B122C4A9}",
                             "details": {
-                                "name": "Anchors*"
+                                "name": "Anchors"
                             }
                         },
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "const float&"
+                                "name": "float"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "right",
+                    "base": "Getright",
                     "details": {
-                        "name": "UiAnchors::right::Getter"
+                        "name": "Getright"
                     },
                     "params": [
                         {
                             "typeid": "{65D4346C-FB16-4CB0-9BDC-1185B122C4A9}",
                             "details": {
-                                "name": "Anchors*"
+                                "name": "Anchors"
                             }
                         }
                     ],
@@ -277,41 +273,41 @@
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "float&"
+                                "name": "float"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "right",
+                    "base": "Setright",
                     "details": {
-                        "name": "UiAnchors::right::Setter"
+                        "name": "Setright"
                     },
                     "params": [
                         {
                             "typeid": "{65D4346C-FB16-4CB0-9BDC-1185B122C4A9}",
                             "details": {
-                                "name": "Anchors*"
+                                "name": "Anchors"
                             }
                         },
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "const float&"
+                                "name": "float"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "bottom",
+                    "base": "Getbottom",
                     "details": {
-                        "name": "UiAnchors::bottom::Getter"
+                        "name": "Getbottom"
                     },
                     "params": [
                         {
                             "typeid": "{65D4346C-FB16-4CB0-9BDC-1185B122C4A9}",
                             "details": {
-                                "name": "Anchors*"
+                                "name": "Anchors"
                             }
                         }
                     ],
@@ -319,27 +315,27 @@
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "float&"
+                                "name": "float"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "bottom",
+                    "base": "Setbottom",
                     "details": {
-                        "name": "UiAnchors::bottom::Setter"
+                        "name": "Setbottom"
                     },
                     "params": [
                         {
                             "typeid": "{65D4346C-FB16-4CB0-9BDC-1185B122C4A9}",
                             "details": {
-                                "name": "Anchors*"
+                                "name": "Anchors"
                             }
                         },
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "const float&"
+                                "name": "float"
                             }
                         }
                     ]

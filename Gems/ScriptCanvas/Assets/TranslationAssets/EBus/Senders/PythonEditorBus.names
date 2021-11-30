@@ -1,15 +1,15 @@
 {
     "entries": [
         {
-            "key": "PythonEditorBus",
+            "base": "PythonEditorBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "PythonEditorBus"
+                "name": "Python Editor"
             },
             "methods": [
                 {
-                    "key": "ExecuteCommand",
+                    "base": "ExecuteCommand",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke ExecuteCommand"
@@ -31,7 +31,7 @@
                     ]
                 },
                 {
-                    "key": "GetCVar",
+                    "base": "GetCVar",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetCVar"
@@ -61,7 +61,7 @@
                     ]
                 },
                 {
-                    "key": "IsInSimulationMode",
+                    "base": "IsInSimulationMode",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke IsInSimulationMode"
@@ -83,7 +83,7 @@
                     ]
                 },
                 {
-                    "key": "SetAxisConstraint",
+                    "base": "SetAxisConstraint",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetAxisConstraint"
@@ -105,7 +105,7 @@
                     ]
                 },
                 {
-                    "key": "IsInGameMode",
+                    "base": "IsInGameMode",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke IsInGameMode"
@@ -127,7 +127,7 @@
                     ]
                 },
                 {
-                    "key": "SetCVarFromFloat",
+                    "base": "SetCVarFromFloat",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetCVarFromFloat"
@@ -155,7 +155,7 @@
                     ]
                 },
                 {
-                    "key": "MessageBoxYesNo",
+                    "base": "MessageBoxYesNo",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke MessageBoxYesNo"
@@ -185,7 +185,7 @@
                     ]
                 },
                 {
-                    "key": "Redo",
+                    "base": "Redo",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Redo"
@@ -199,7 +199,7 @@
                     }
                 },
                 {
-                    "key": "SetCVarFromInteger",
+                    "base": "SetCVarFromInteger",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetCVarFromInteger"
@@ -227,7 +227,7 @@
                     ]
                 },
                 {
-                    "key": "DrawLabel",
+                    "base": "DrawLabel",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke DrawLabel"
@@ -291,7 +291,7 @@
                     ]
                 },
                 {
-                    "key": "Undo",
+                    "base": "Undo",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Undo"
@@ -305,7 +305,7 @@
                     }
                 },
                 {
-                    "key": "Log",
+                    "base": "Log",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Log"
@@ -327,7 +327,7 @@
                     ]
                 },
                 {
-                    "key": "ComboBox",
+                    "base": "ComboBox",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke ComboBox"
@@ -369,7 +369,7 @@
                     ]
                 },
                 {
-                    "key": "ExitGameMode",
+                    "base": "ExitGameMode",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke ExitGameMode"
@@ -383,7 +383,7 @@
                     }
                 },
                 {
-                    "key": "OpenFileBox",
+                    "base": "OpenFileBox",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke OpenFileBox"
@@ -405,7 +405,7 @@
                     ]
                 },
                 {
-                    "key": "MessageBoxOk",
+                    "base": "MessageBoxOk",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke MessageBoxOk"
@@ -435,7 +435,7 @@
                     ]
                 },
                 {
-                    "key": "RunFile",
+                    "base": "RunFile",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke RunFile"
@@ -457,7 +457,7 @@
                     ]
                 },
                 {
-                    "key": "EditBoxCheckDataType",
+                    "base": "EditBoxCheckDataType",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke EditBoxCheckDataType"
@@ -487,7 +487,7 @@
                     ]
                 },
                 {
-                    "key": "SetCVarFromString",
+                    "base": "SetCVarFromString",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetCVarFromString"
@@ -515,7 +515,7 @@
                     ]
                 },
                 {
-                    "key": "RunConsole",
+                    "base": "RunConsole",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke RunConsole"
@@ -537,7 +537,7 @@
                     ]
                 },
                 {
-                    "key": "ExitSimulationMode",
+                    "base": "ExitSimulationMode",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke ExitSimulationMode"
@@ -551,7 +551,7 @@
                     }
                 },
                 {
-                    "key": "SetCVar",
+                    "base": "SetCVar",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetCVar"
@@ -579,7 +579,7 @@
                     ]
                 },
                 {
-                    "key": "GetPakFromFile",
+                    "base": "GetPakFromFile",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetPakFromFile"
@@ -609,7 +609,7 @@
                     ]
                 },
                 {
-                    "key": "RunFileParameters",
+                    "base": "RunFileParameters",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke RunFileParameters"
@@ -637,7 +637,7 @@
                     ]
                 },
                 {
-                    "key": "EnterSimulationMode",
+                    "base": "EnterSimulationMode",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke EnterSimulationMode"
@@ -651,7 +651,7 @@
                     }
                 },
                 {
-                    "key": "GetAxisConstraint",
+                    "base": "GetAxisConstraint",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetAxisConstraint"
@@ -673,7 +673,7 @@
                     ]
                 },
                 {
-                    "key": "EnterGameMode",
+                    "base": "EnterGameMode",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke EnterGameMode"
@@ -687,7 +687,7 @@
                     }
                 },
                 {
-                    "key": "MessageBoxOkCancel",
+                    "base": "MessageBoxOkCancel",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke MessageBoxOkCancel"
@@ -717,7 +717,7 @@
                     ]
                 },
                 {
-                    "key": "EditBox",
+                    "base": "EditBox",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke EditBox"

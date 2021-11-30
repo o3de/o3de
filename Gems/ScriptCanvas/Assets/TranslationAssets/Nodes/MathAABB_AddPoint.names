@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "{2FEFADF8-0D3F-5796-BB6B-C7B8758A5751}",
+            "base": "{2FEFADF8-0D3F-5796-BB6B-C7B8758A5751}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
@@ -12,31 +12,31 @@
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "key": "DataInput_AABB: Source",
+                    "base": "DataInput_AABB: Source",
                     "details": {
                         "name": "Source"
                     }
                 },
                 {
-                    "key": "DataInput_Vector3: Point",
+                    "base": "DataInput_Vector3: Point",
                     "details": {
                         "name": "Point"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: AABB",
+                    "base": "DataOutput_Result: AABB",
                     "details": {
                         "name": "AABB"
                     }

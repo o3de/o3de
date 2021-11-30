@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "SurfaceMaskGradientComponentTypeId",
+            "base": "SurfaceMaskGradientComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "SurfaceMaskGradientComponentTypeId::Getter",
-                "category": "Constants"
-            }
+                "name": "Surface Mask Gradient Component Type Id",
+                "category": "Constants/Editor"
+            },
+            "methods": [
+                {
+                    "base": "GetSurfaceMaskGradientComponentTypeId",
+                    "details": {
+                        "name": "Get Surface Mask Gradient Component Type Id"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}",
+                            "details": {
+                                "name": "AZ:: Uuid"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

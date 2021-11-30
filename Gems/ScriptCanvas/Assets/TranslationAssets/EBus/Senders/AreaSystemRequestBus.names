@@ -1,16 +1,15 @@
 {
     "entries": [
         {
-            "key": "AreaSystemRequestBus",
+            "base": "AreaSystemRequestBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "Area System",
                 "category": "Area System"
             },
             "methods": [
                 {
-                    "key": "GetInstanceCountInAabb",
+                    "base": "GetInstanceCountInAabb",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Instance Count In AABB"
@@ -40,7 +39,7 @@
                     ]
                 },
                 {
-                    "key": "GetInstancesInAabb",
+                    "base": "GetInstancesInAabb",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Instances In AABB"

@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "AWSScriptBehaviorLambda",
+            "base": "AWSScriptBehaviorLambda",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "Invoke",
+                    "base": "Invoke",
                     "context": "AWSScriptBehaviorLambda",
                     "entry": {
                         "name": "In",
@@ -39,7 +39,7 @@
                     ]
                 },
                 {
-                    "key": "InvokeRaw",
+                    "base": "InvokeRaw",
                     "context": "AWSScriptBehaviorLambda",
                     "entry": {
                         "name": "In",

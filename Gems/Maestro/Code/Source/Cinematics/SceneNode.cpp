@@ -197,8 +197,8 @@ CAnimSceneNode::CAnimSceneNode(const int id)
     m_lastCaptureKey = -1;
     m_bLastCapturingEnded = true;
     m_captureFrameCount = 0;
-    m_pCamNodeOnHoldForInterp = 0;
-    m_CurrentSelectTrack = 0;
+    m_pCamNodeOnHoldForInterp = nullptr;
+    m_CurrentSelectTrack = nullptr;
     m_CurrentSelectTrackKeyNumber = 0;
     m_lastPrecachePoint = -1.f;
     SetName("Scene");
@@ -335,12 +335,12 @@ void CAnimSceneNode::Animate(SAnimContext& ec)
         return;
     }
 
-    CSelectTrack* cameraTrack = NULL;
-    CEventTrack* pEventTrack = NULL;
-    CSequenceTrack* pSequenceTrack = NULL;
-    CConsoleTrack* pConsoleTrack = NULL;
-    CGotoTrack* pGotoTrack = NULL;
-    CCaptureTrack* pCaptureTrack = NULL;
+    CSelectTrack* cameraTrack = nullptr;
+    CEventTrack* pEventTrack = nullptr;
+    CSequenceTrack* pSequenceTrack = nullptr;
+    CConsoleTrack* pConsoleTrack = nullptr;
+    CGotoTrack* pGotoTrack = nullptr;
+    CCaptureTrack* pCaptureTrack = nullptr;
     /*
     bool bTimeJump = false;
     if (ec.time < m_time)
@@ -449,7 +449,7 @@ void CAnimSceneNode::Animate(SAnimContext& ec)
     // Check if a camera override is set by CVar
     const char* overrideCamName = gEnv->pMovieSystem->GetOverrideCamName();
     AZ::EntityId overrideCamId;
-    if (overrideCamName != 0 && strlen(overrideCamName) > 0)
+    if (overrideCamName != nullptr && strlen(overrideCamName) > 0)
     {
         // overriding with a Camera Component entity is done by entityId (as names are not unique among AZ::Entities) - try to convert string to u64 to see if it's an id
         AZ::u64 u64Id = strtoull(overrideCamName, nullptr, /*base (radix)*/ 10);
@@ -784,7 +784,7 @@ void CAnimSceneNode::ApplyCameraKey(ISelectKey& key, SAnimContext& ec)
     if (!bInterpolateCamera && m_pCamNodeOnHoldForInterp)
     {
         m_pCamNodeOnHoldForInterp->SetSkipInterpolatedCameraNode(false);
-        m_pCamNodeOnHoldForInterp = 0;
+        m_pCamNodeOnHoldForInterp = nullptr;
     }
 
     SCameraParams cameraParams;
@@ -861,9 +861,9 @@ void CAnimSceneNode::ApplyCameraKey(ISelectKey& key, SAnimContext& ec)
             }
 
             IAnimNode* prevCameraAnimNode = m_pSequence->FindNodeByName(prevKey.szSelection.c_str(), this);
-            if (prevCameraAnimNode == NULL)
+            if (prevCameraAnimNode == nullptr)
             {
-                prevCameraAnimNode = m_pSequence->FindNodeByName(prevKey.szSelection.c_str(), NULL);
+                prevCameraAnimNode = m_pSequence->FindNodeByName(prevKey.szSelection.c_str(), nullptr);
             }
 
             if (prevCameraAnimNode && prevCameraAnimNode->GetType() == AnimNodeType::Camera && prevCameraAnimNode->GetTrackForParameter(AnimParamType::FOV))
@@ -930,35 +930,33 @@ void CAnimSceneNode::ApplyAudioKey(char const* const sTriggerName, bool const bP
 //////////////////////////////////////////////////////////////////////////
 void CAnimSceneNode::ApplySequenceKey(IAnimTrack* pTrack, [[maybe_unused]] int nPrevKey, int nCurrKey, ISequenceKey& key, SAnimContext& ec)
 {
-    if (nCurrKey >= 0)
+    if (nCurrKey < 0)
     {
-        IAnimSequence* pSequence = GetSequenceFromSequenceKey(key);
-        if (pSequence)
-        {
-            float startTime = -FLT_MAX;
-            float endTime = -FLT_MAX;
+        return;
+    }
+    IAnimSequence* pSequence = GetSequenceFromSequenceKey(key);
+    if (!pSequence)
+    {
+        return;
+    }
 
-            if (key.bOverrideTimes)
-            {
-                key.fDuration = (key.fEndTime - key.fStartTime) > 0.0f ? (key.fEndTime - key.fStartTime) : 0.0f;
-                startTime = key.fStartTime;
-                endTime = key.fEndTime;
-            }
-            else
-            {
-                key.fDuration = pSequence->GetTimeRange().Length();
-            }
+    if (key.bOverrideTimes)
+    {
+        key.fDuration = (key.fEndTime - key.fStartTime) > 0.0f ? (key.fEndTime - key.fStartTime) : 0.0f;
+    }
+    else
+    {
+        key.fDuration = pSequence->GetTimeRange().Length();
+    }
 
-            pTrack->SetKey(nCurrKey, &key);
+    pTrack->SetKey(nCurrKey, &key);
 
-            SAnimContext newAnimContext = ec;
-            newAnimContext.time = std::min(ec.time - key.time + key.fStartTime, key.fDuration + key.fStartTime);
+    SAnimContext newAnimContext = ec;
+    newAnimContext.time = std::min(ec.time - key.time + key.fStartTime, key.fDuration + key.fStartTime);
 
-            if (static_cast<CAnimSequence*>(pSequence)->GetTime() != newAnimContext.time)
-            {
-                pSequence->Animate(newAnimContext);
-            }
-        }
+    if (static_cast<CAnimSequence*>(pSequence)->GetTime() != newAnimContext.time)
+    {
+        pSequence->Animate(newAnimContext);
     }
 }
 

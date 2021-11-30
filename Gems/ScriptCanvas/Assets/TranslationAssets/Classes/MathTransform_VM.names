@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "MathTransform_VM",
+            "base": "MathTransform_VM",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
@@ -9,7 +9,7 @@
             },
             "methods": [
                 {
-                    "key": "RotationZDegrees",
+                    "base": "RotationZDegrees",
                     "context": "MathTransform_VM",
                     "entry": {
                         "name": "In",
@@ -41,7 +41,7 @@
                     ]
                 },
                 {
-                    "key": "GetUp",
+                    "base": "GetUp",
                     "context": "MathTransform_VM",
                     "entry": {
                         "name": "In",
@@ -79,7 +79,7 @@
                     ]
                 },
                 {
-                    "key": "GetForward",
+                    "base": "GetForward",
                     "context": "MathTransform_VM",
                     "entry": {
                         "name": "In",
@@ -117,7 +117,7 @@
                     ]
                 },
                 {
-                    "key": "IsClose",
+                    "base": "IsClose",
                     "context": "MathTransform_VM",
                     "entry": {
                         "name": "In",
@@ -161,7 +161,7 @@
                     ]
                 },
                 {
-                    "key": "RotationXDegrees",
+                    "base": "RotationXDegrees",
                     "context": "MathTransform_VM",
                     "entry": {
                         "name": "In",
@@ -193,7 +193,7 @@
                     ]
                 },
                 {
-                    "key": "FromTranslation",
+                    "base": "FromTranslation",
                     "context": "MathTransform_VM",
                     "entry": {
                         "name": "In",
@@ -225,7 +225,7 @@
                     ]
                 },
                 {
-                    "key": "IsFinite",
+                    "base": "IsFinite",
                     "context": "MathTransform_VM",
                     "entry": {
                         "name": "In",
@@ -257,7 +257,7 @@
                     ]
                 },
                 {
-                    "key": "MultiplyByUniformScale",
+                    "base": "MultiplyByUniformScale",
                     "context": "MathTransform_VM",
                     "entry": {
                         "name": "In",
@@ -295,7 +295,7 @@
                     ]
                 },
                 {
-                    "key": "MultiplyByTransform",
+                    "base": "MultiplyByTransform",
                     "context": "MathTransform_VM",
                     "entry": {
                         "name": "In",
@@ -333,7 +333,7 @@
                     ]
                 },
                 {
-                    "key": "FromRotation",
+                    "base": "FromRotation",
                     "context": "MathTransform_VM",
                     "entry": {
                         "name": "In",
@@ -365,7 +365,7 @@
                     ]
                 },
                 {
-                    "key": "RotationYDegrees",
+                    "base": "RotationYDegrees",
                     "context": "MathTransform_VM",
                     "entry": {
                         "name": "In",
@@ -397,7 +397,7 @@
                     ]
                 },
                 {
-                    "key": "FromRotationAndTranslation",
+                    "base": "FromRotationAndTranslation",
                     "context": "MathTransform_VM",
                     "entry": {
                         "name": "In",
@@ -435,7 +435,7 @@
                     ]
                 },
                 {
-                    "key": "MultiplyByVector3",
+                    "base": "MultiplyByVector3",
                     "context": "MathTransform_VM",
                     "entry": {
                         "name": "In",
@@ -473,7 +473,7 @@
                     ]
                 },
                 {
-                    "key": "MultiplyByVector4",
+                    "base": "MultiplyByVector4",
                     "context": "MathTransform_VM",
                     "entry": {
                         "name": "In",
@@ -511,7 +511,7 @@
                     ]
                 },
                 {
-                    "key": "ToScale",
+                    "base": "ToScale",
                     "context": "MathTransform_VM",
                     "entry": {
                         "name": "In",
@@ -543,7 +543,7 @@
                     ]
                 },
                 {
-                    "key": "FromMatrix3x3",
+                    "base": "FromMatrix3x3",
                     "context": "MathTransform_VM",
                     "entry": {
                         "name": "In",
@@ -575,7 +575,7 @@
                     ]
                 },
                 {
-                    "key": "GetRight",
+                    "base": "GetRight",
                     "context": "MathTransform_VM",
                     "entry": {
                         "name": "In",
@@ -613,7 +613,7 @@
                     ]
                 },
                 {
-                    "key": "IsOrthogonal",
+                    "base": "IsOrthogonal",
                     "context": "MathTransform_VM",
                     "entry": {
                         "name": "In",
@@ -651,7 +651,7 @@
                     ]
                 },
                 {
-                    "key": "Orthogonalize",
+                    "base": "Orthogonalize",
                     "context": "MathTransform_VM",
                     "entry": {
                         "name": "In",
@@ -683,7 +683,7 @@
                     ]
                 },
                 {
-                    "key": "FromMatrix3x3AndTranslation",
+                    "base": "FromMatrix3x3AndTranslation",
                     "context": "MathTransform_VM",
                     "entry": {
                         "name": "In",
@@ -721,7 +721,7 @@
                     ]
                 },
                 {
-                    "key": "FromScale",
+                    "base": "FromScale",
                     "context": "MathTransform_VM",
                     "entry": {
                         "name": "In",
@@ -753,7 +753,7 @@
                     ]
                 },
                 {
-                    "key": "GetTranslation",
+                    "base": "GetTranslation",
                     "context": "MathTransform_VM",
                     "entry": {
                         "name": "In",

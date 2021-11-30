@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "AudioSystemComponentRequestBus",
+            "base": "AudioSystemComponentRequestBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "LevelUnloadAudio",
+                    "base": "LevelUnloadAudio",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke LevelUnloadAudio"
@@ -24,7 +24,7 @@
                     }
                 },
                 {
-                    "key": "LevelLoadAudio",
+                    "base": "LevelLoadAudio",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke LevelLoadAudio"
@@ -46,7 +46,7 @@
                     ]
                 },
                 {
-                    "key": "GlobalKillAudioTrigger",
+                    "base": "GlobalKillAudioTrigger",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Global Kill Audio Trigger"
@@ -75,7 +75,7 @@
                     ]
                 },
                 {
-                    "key": "GlobalSetAudioRtpc",
+                    "base": "GlobalSetAudioRtpc",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Global Set Audio RTPC"
@@ -103,7 +103,7 @@
                     ]
                 },
                 {
-                    "key": "GlobalSetAudioSwitchState",
+                    "base": "GlobalSetAudioSwitchState",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Global Set Audio Switch State"
@@ -131,7 +131,7 @@
                     ]
                 },
                 {
-                    "key": "GlobalRefreshAudio",
+                    "base": "GlobalRefreshAudio",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GlobalRefreshAudio"
@@ -153,7 +153,7 @@
                     ]
                 },
                 {
-                    "key": "GlobalMuteAudio",
+                    "base": "GlobalMuteAudio",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Global Mute Audio"
@@ -167,7 +167,7 @@
                     }
                 },
                 {
-                    "key": "GlobalExecuteAudioTrigger",
+                    "base": "GlobalExecuteAudioTrigger",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Global Execute Audio Trigger"
@@ -196,7 +196,7 @@
                     ]
                 },
                 {
-                    "key": "GlobalStopAllSounds",
+                    "base": "GlobalStopAllSounds",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Global Stop All Sounds"
@@ -210,7 +210,7 @@
                     }
                 },
                 {
-                    "key": "GlobalUnmuteAudio",
+                    "base": "GlobalUnmuteAudio",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Global Unmute Audio"
@@ -224,7 +224,7 @@
                     }
                 },
                 {
-                    "key": "GlobalResetAudioRtpcs",
+                    "base": "GlobalResetAudioRtpcs",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Global Reset Audio RTPCs"

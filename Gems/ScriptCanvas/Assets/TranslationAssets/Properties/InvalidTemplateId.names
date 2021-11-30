@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "InvalidTemplateId",
+            "base": "InvalidTemplateId",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "InvalidTemplateId::Getter",
-                "category": "Constants"
-            }
+                "name": "Invalid Template Id",
+                "category": "Constants/Editor"
+            },
+            "methods": [
+                {
+                    "base": "GetInvalidTemplateId",
+                    "details": {
+                        "name": "Get Invalid Template Id"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{D6597933-47CD-4FC8-B911-63F3E2B0993A}",
+                            "details": {
+                                "name": "AZ::u 64"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

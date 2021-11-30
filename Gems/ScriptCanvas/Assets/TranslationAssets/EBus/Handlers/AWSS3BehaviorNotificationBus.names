@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "AWSS3BehaviorNotificationBus",
+            "base": "AWSS3BehaviorNotificationBus",
             "context": "EBusHandler",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "OnHeadObjectSuccess",
+                    "base": "OnHeadObjectSuccess",
                     "details": {
                         "name": "On Head Object Success"
                     },
@@ -24,7 +24,7 @@
                     ]
                 },
                 {
-                    "key": "OnHeadObjectError",
+                    "base": "OnHeadObjectError",
                     "details": {
                         "name": "On Head Object Error"
                     },
@@ -38,7 +38,7 @@
                     ]
                 },
                 {
-                    "key": "OnGetObjectSuccess",
+                    "base": "OnGetObjectSuccess",
                     "details": {
                         "name": "On Get Object Success"
                     },
@@ -52,7 +52,7 @@
                     ]
                 },
                 {
-                    "key": "OnGetObjectError",
+                    "base": "OnGetObjectError",
                     "details": {
                         "name": "On Get Object Error"
                     },

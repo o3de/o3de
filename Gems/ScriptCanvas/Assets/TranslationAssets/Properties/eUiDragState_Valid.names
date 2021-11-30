@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "eUiDragState_Valid",
+            "base": "eUiDragState_Valid",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "eUiDragState_Valid::Getter",
-                "category": "Constants"
-            }
+                "name": "Valid",
+                "category": "Constants/UI/Drag State"
+            },
+            "methods": [
+                {
+                    "base": "GeteUiDragState_Valid",
+                    "details": {
+                        "name": "Valid"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

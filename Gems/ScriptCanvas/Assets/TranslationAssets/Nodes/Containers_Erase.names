@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "{F1A891C9-81D4-4675-A57A-F11AB415F95F}",
+            "base": "{F1A891C9-81D4-4675-A57A-F11AB415F95F}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
@@ -12,33 +12,33 @@
             },
             "slots": [
                 {
-                    "key": "DataInput_Source",
+                    "base": "DataInput_Source",
                     "details": {
                         "name": "Source"
                     }
                 },
                 {
-                    "key": "DataOutput_Container",
+                    "base": "DataOutput_Container",
                     "details": {
                         "name": "Container"
                     }
                 },
                 {
-                    "key": "Input_In",
+                    "base": "Input_In",
                     "details": {
                         "name": "In",
                         "tooltip": "Input signal"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out",
                     "details": {
                         "name": "Out",
                         "tooltip": "Output signal"
                     }
                 },
                 {
-                    "key": "Output_Element Not Found",
+                    "base": "Output_Element Not Found",
                     "details": {
                         "name": "Element Not Found",
                         "tooltip": "Triggered if the specified element was not found"

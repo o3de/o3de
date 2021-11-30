@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "eUiTextOverflowMode_OverflowText",
+            "base": "eUiTextOverflowMode_OverflowText",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "eUiTextOverflowMode_OverflowText::Getter",
-                "category": "Constants"
-            }
+                "name": "Overflow Text",
+                "category": "Constants/UI/Text Overflow Mode"
+            },
+            "methods": [
+                {
+                    "base": "GeteUiTextOverflowMode_OverflowText",
+                    "details": {
+                        "name": "Overflow Text"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

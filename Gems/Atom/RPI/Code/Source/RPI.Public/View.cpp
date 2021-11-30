@@ -216,6 +216,16 @@ namespace AZ
             return m_viewToWorldMatrix;
         }
 
+        AZ::Matrix3x4 View::GetWorldToViewMatrixAsMatrix3x4() const
+        {
+            return AZ::Matrix3x4::UnsafeCreateFromMatrix4x4(m_worldToViewMatrix);
+        }
+
+        AZ::Matrix3x4 View::GetViewToWorldMatrixAsMatrix3x4() const
+        {
+            return AZ::Matrix3x4::UnsafeCreateFromMatrix4x4(m_viewToWorldMatrix);
+        }
+
         const AZ::Matrix4x4& View::GetViewToClipMatrix() const
         {
             return m_viewToClipMatrix;
@@ -267,12 +277,12 @@ namespace AZ
             passWithDrawListTag->SortDrawList(drawList);
         }
 
-        void View::ConnectWorldToViewMatrixChangedHandler(View::MatrixChangedEvent::Handler& handler)
+        void View::ConnectWorldToViewMatrixChangedHandler(MatrixChangedEvent::Handler& handler)
         {
             handler.Connect(m_onWorldToViewMatrixChange);
         }
 
-        void View::ConnectWorldToClipMatrixChangedHandler(View::MatrixChangedEvent::Handler& handler)
+        void View::ConnectWorldToClipMatrixChangedHandler(MatrixChangedEvent::Handler& handler)
         {
             handler.Connect(m_onWorldToClipMatrixChange);
         }

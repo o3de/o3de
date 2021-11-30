@@ -1,12 +1,449 @@
 {
     "entries": [
         {
-            "key": "InputDeviceGamepad",
+            "base": "InputDeviceGamepad",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
-                "name": "InputDeviceGamepad"
-            }
+                "name": "Input Device Gamepad",
+                "category": "Input"
+            },
+            "methods": [
+                {
+                    "base": "gamepad_button_l3",
+                    "details": {
+                        "name": "gamepad_button_l3"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "gamepad_thumbstick_r_x",
+                    "details": {
+                        "name": "gamepad_thumbstick_r_x"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "gamepad_thumbstick_l_up",
+                    "details": {
+                        "name": "gamepad_thumbstick_l_up"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "gamepad_trigger_l2",
+                    "details": {
+                        "name": "gamepad_trigger_l2"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "gamepad_button_r3",
+                    "details": {
+                        "name": "gamepad_button_r3"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "gamepad_thumbstick_r_left",
+                    "details": {
+                        "name": "gamepad_thumbstick_r_left"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "gamepad_button_r1",
+                    "details": {
+                        "name": "gamepad_button_r1"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "gamepad_button_b",
+                    "details": {
+                        "name": "gamepad_button_b"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "gamepad_thumbstick_l",
+                    "details": {
+                        "name": "gamepad_thumbstick_l"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "gamepad_button_d_right",
+                    "details": {
+                        "name": "gamepad_button_d_right"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "gamepad_thumbstick_r_up",
+                    "details": {
+                        "name": "gamepad_thumbstick_r_up"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "gamepad_thumbstick_r_y",
+                    "details": {
+                        "name": "gamepad_thumbstick_r_y"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "gamepad_thumbstick_l_left",
+                    "details": {
+                        "name": "gamepad_thumbstick_l_left"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "gamepad_thumbstick_r",
+                    "details": {
+                        "name": "gamepad_thumbstick_r"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "gamepad_thumbstick_r_right",
+                    "details": {
+                        "name": "gamepad_thumbstick_r_right"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "gamepad_button_d_up",
+                    "details": {
+                        "name": "gamepad_button_d_up"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "gamepad_thumbstick_l_x",
+                    "details": {
+                        "name": "gamepad_thumbstick_l_x"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "gamepad_button_d_down",
+                    "details": {
+                        "name": "gamepad_button_d_down"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "gamepad_button_select",
+                    "details": {
+                        "name": "gamepad_button_select"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "gamepad_button_y",
+                    "details": {
+                        "name": "gamepad_button_y"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "gamepad_thumbstick_l_right",
+                    "details": {
+                        "name": "gamepad_thumbstick_l_right"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "gamepad_button_l1",
+                    "details": {
+                        "name": "gamepad_button_l1"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "gamepad_thumbstick_l_down",
+                    "details": {
+                        "name": "gamepad_thumbstick_l_down"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "Getname",
+                    "details": {
+                        "name": "Get Name"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "Name"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "gamepad_button_start",
+                    "details": {
+                        "name": "gamepad_button_start"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "gamepad_button_x",
+                    "details": {
+                        "name": "gamepad_button_x"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "gamepad_button_d_left",
+                    "details": {
+                        "name": "gamepad_button_d_left"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "gamepad_trigger_r2",
+                    "details": {
+                        "name": "gamepad_trigger_r2"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "gamepad_button_a",
+                    "details": {
+                        "name": "gamepad_button_a"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "gamepad_thumbstick_r_down",
+                    "details": {
+                        "name": "gamepad_thumbstick_r_down"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "gamepad_thumbstick_l_y",
+                    "details": {
+                        "name": "gamepad_thumbstick_l_y"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

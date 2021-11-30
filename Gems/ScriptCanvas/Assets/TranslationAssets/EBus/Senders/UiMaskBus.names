@@ -1,16 +1,16 @@
 {
     "entries": [
         {
-            "key": "UiMaskBus",
+            "base": "UiMaskBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "UiMaskBus",
+                "name": "UI Mask",
                 "category": "UI"
             },
             "methods": [
                 {
-                    "key": "SetDrawInFront",
+                    "base": "SetDrawInFront",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Draw In Front"
@@ -34,7 +34,7 @@
                     ]
                 },
                 {
-                    "key": "GetUseRenderToTexture",
+                    "base": "GetUseRenderToTexture",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Use Render To Texture"
@@ -57,7 +57,7 @@
                     ]
                 },
                 {
-                    "key": "GetDrawInFront",
+                    "base": "GetDrawInFront",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Draw In Front"
@@ -80,7 +80,7 @@
                     ]
                 },
                 {
-                    "key": "GetDrawBehind",
+                    "base": "GetDrawBehind",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Draw Behind"
@@ -103,7 +103,7 @@
                     ]
                 },
                 {
-                    "key": "GetIsInteractionMaskingEnabled",
+                    "base": "GetIsInteractionMaskingEnabled",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Is Interaction Masking Enabled"
@@ -126,7 +126,7 @@
                     ]
                 },
                 {
-                    "key": "GetUseAlphaTest",
+                    "base": "GetUseAlphaTest",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Use Alpha Test"
@@ -149,7 +149,7 @@
                     ]
                 },
                 {
-                    "key": "SetIsMaskingEnabled",
+                    "base": "SetIsMaskingEnabled",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Is Masking Enabled"
@@ -173,7 +173,7 @@
                     ]
                 },
                 {
-                    "key": "SetUseRenderToTexture",
+                    "base": "SetUseRenderToTexture",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Use Render To Texture"
@@ -197,7 +197,7 @@
                     ]
                 },
                 {
-                    "key": "GetIsMaskingEnabled",
+                    "base": "GetIsMaskingEnabled",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Is Masking Enabled"
@@ -220,7 +220,7 @@
                     ]
                 },
                 {
-                    "key": "SetIsInteractionMaskingEnabled",
+                    "base": "SetIsInteractionMaskingEnabled",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Is Interaction Masking Enabled"
@@ -244,7 +244,7 @@
                     ]
                 },
                 {
-                    "key": "SetDrawBehind",
+                    "base": "SetDrawBehind",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Draw Behind"
@@ -268,7 +268,7 @@
                     ]
                 },
                 {
-                    "key": "SetUseAlphaTest",
+                    "base": "SetUseAlphaTest",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Use Alpha Test"

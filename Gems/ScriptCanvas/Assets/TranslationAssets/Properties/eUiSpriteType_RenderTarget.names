@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "eUiSpriteType_RenderTarget",
+            "base": "eUiSpriteType_RenderTarget",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "eUiSpriteType_RenderTarget::Getter",
-                "category": "Constants"
-            }
+                "name": "Render Target",
+                "category": "Constants/UI/Sprite Type"
+            },
+            "methods": [
+                {
+                    "base": "GeteUiSpriteType_RenderTarget",
+                    "details": {
+                        "name": "Render Target"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }
