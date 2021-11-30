@@ -13,6 +13,8 @@
 #include <Artifact/Factory/TestImpactNativeTestTargetMetaMapFactory.h>
 #include <Artifact/Factory/TestImpactNativeTargetDescriptorFactory.h>
 #include <Artifact/Static/TestImpactNativeTargetDescriptorCompiler.h>
+#include <Target/Native/TestImpactNativeTestTarget.h>
+#include <Target/Native/TestImpactNativeProductionTarget.h>
 
 #include <filesystem>
 

@@ -31,24 +31,4 @@ namespace TestImpact
                 .c_str();
         }
     }
-
-    RepoPath GenerateTargetEnumerationCacheFilePath(const NativeTestTarget* testTarget, const RepoPath& cacheDir)
-    {
-        return AZStd::string::format("%s.cache", (cacheDir / RepoPath(testTarget->GetName())).c_str());
-    }
-
-    RepoPath GenerateTargetEnumerationArtifactFilePath(const NativeTestTarget* testTarget, const RepoPath& artifactDir)
-    {
-        return AZStd::string::format("%s.Enumeration.xml", (artifactDir / RepoPath(testTarget->GetName())).c_str());
-    }
-
-    RepoPath GenerateTargetRunArtifactFilePath(const NativeTestTarget* testTarget, const RepoPath& artifactDir)
-    {
-        return AZStd::string::format("%s.Run.xml", (artifactDir / RepoPath(testTarget->GetName())).c_str());
-    }
-
-    RepoPath GenerateTargetCoverageArtifactFilePath(const NativeTestTarget* testTarget, const RepoPath& artifactDir)
-    {
-        return AZStd::string::format("%s.Coverage.xml", (artifactDir / RepoPath(testTarget->GetName())).c_str());
-    }
 } // namespace TestImpact

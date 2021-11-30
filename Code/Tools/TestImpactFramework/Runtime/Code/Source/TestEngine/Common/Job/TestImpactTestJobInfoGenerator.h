@@ -19,6 +19,10 @@ namespace TestImpact
     class TestJobInfoGenerator
     {
     public:
+        using Command = typename TestJobRunner::Command;
+        using JobInfo = typename TestJobRunner::JobInfo;
+        using JobData = typename TestJobRunner::JobData;
+
         virtual ~TestJobInfoGenerator() = default;
 
         //! Generates the information for a test enumeration job.

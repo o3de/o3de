@@ -16,13 +16,12 @@
 #include <TestRunner/Native/TestImpactNativeTestEnumerator.h>
 #include <TestRunner/Native/TestImpactNativeInstrumentedTestRunner.h>
 #include <TestRunner/Native/TestImpactNativeRegularTestRunner.h>
-#include <TestEngine/Native/Job/TestImpactNativeRegularTestRunJobInfoGenerator.h>
-#include <TestEngine/Native/Job/TestImpactNativeInstrumentedTestRunJobInfoGenerator.h>
+#include <TestEngine/Native/Job/TestImpactNativeTestJobInfoGenerator.h>
 
 namespace TestImpact
 {
     //!
-    AZStd::optional<Client::TestRunResult> StandAloneHandler(ReturnCode returnCode)
+    AZStd::optional<Client::TestRunResult> StandAloneErrorHandler(ReturnCode returnCode)
     {
         if (returnCode == 0)
         {
@@ -53,7 +52,7 @@ namespace TestImpact
                     AZStd::vector<ErrorCodeHandler>{ GetNativeTestLibraryErrorCodeHandler(),
                                                     [](ReturnCode returnCode)
                                                     {
-                                                        return StandAloneHandler(returnCode);
+                                                       return StandAloneErrorHandler(returnCode);
                                                     } },
                     AZStd::vector<ErrorCodeHandler>{ GetNativeTestRunnerErrorCodeHandler(), GetNativeTestLibraryErrorCodeHandler() },
                     callback)
@@ -80,7 +79,7 @@ namespace TestImpact
                     AZStd::vector<ErrorCodeHandler>{ GetNativeInstrumentationErrorCodeHandler(), GetNativeTestLibraryErrorCodeHandler(),
                                                     [](ReturnCode returnCode)
                                                     {
-                                                        return StandAloneHandler(returnCode);
+                                                       return StandAloneErrorHandler(returnCode);
                                                     } },
                     AZStd::vector<ErrorCodeHandler>{ GetNativeInstrumentationErrorCodeHandler(), GetNativeTestRunnerErrorCodeHandler(),
                                                     GetNativeTestLibraryErrorCodeHandler() },
