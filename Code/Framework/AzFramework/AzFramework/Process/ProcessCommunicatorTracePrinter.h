@@ -18,13 +18,13 @@ public:
     ProcessCommunicatorTracePrinter(AzFramework::ProcessCommunicator* communicator, const char* window);
     ~ProcessCommunicatorTracePrinter();
 
-    // Call this periodically to drain the buffers and write them.
+    //! Call this periodically to drain the buffers and write them.
     void Pump();
 
-    // Drains the buffer into the string that's being built, then traces the string when it hits a newline.
+    //! Drains the buffer into the string that's being built, then traces the string when it hits a newline.
     void ParseDataBuffer(AZ::u32 readSize, bool isFromStdErr);
 
-    // Prints the current buffer to AZ_Error or AZ_TracePrintf so that it can be picked up by AZ::Debug::Trace
+    //! Prints the current buffer to AZ_Error or AZ_TracePrintf so that it can be picked up by AZ::Debug::Trace
     void WriteCurrentString(bool isFromStdError);
 
 private:
