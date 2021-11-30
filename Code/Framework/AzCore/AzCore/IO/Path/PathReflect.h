@@ -5,6 +5,15 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #pragma once
 
-#include <AzFramework/Archive/ArchiveVars_Linux.h>
+namespace AZ
+{
+    class ReflectContext;
+}
+
+namespace AZ::IO
+{
+    void PathReflect(AZ::ReflectContext* context);
+}

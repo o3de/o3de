@@ -6,7 +6,7 @@
  *
  */
 
-#include <AzToolsFramework/Input/QtEventToAzInputManager.h>
+#include <AzToolsFramework/Input/QtEventToAzInputMapper.h>
 
 #include <AzCore/std/smart_ptr/make_shared.h>
 

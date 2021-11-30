@@ -1,0 +1,275 @@
+{
+    "entries": [
+        {
+            "base": "AWSGameLiftCreateSessionOnQueueRequest",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "Create Session On Queue Request",
+                "category": "AWS Game Lift"
+            },
+            "methods": [
+                {
+                    "base": "GetPlacementId",
+                    "details": {
+                        "name": "Get Placement Id"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{2B99E594-CE81-4EB0-8888-74EF4242B59F}",
+                            "details": {
+                                "name": "AWS Game Lift Create Session On Queue Request"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Placement Id"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetPlacementId",
+                    "details": {
+                        "name": "Set Placement Id"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{2B99E594-CE81-4EB0-8888-74EF4242B59F}",
+                            "details": {
+                                "name": "AWS Game Lift Create Session On Queue Request"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Placement Id"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetQueueName",
+                    "details": {
+                        "name": "Get Queue Name"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{2B99E594-CE81-4EB0-8888-74EF4242B59F}",
+                            "details": {
+                                "name": "AWS Game Lift Create Session On Queue Request"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Queue Name"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetQueueName",
+                    "details": {
+                        "name": "Set Queue Name"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{2B99E594-CE81-4EB0-8888-74EF4242B59F}",
+                            "details": {
+                                "name": "AWS Game Lift Create Session On Queue Request"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Queue Name"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetSessionName",
+                    "details": {
+                        "name": "Get Session Name"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{E39C2A45-89C9-4CFB-B337-9734DC798930}",
+                            "details": {
+                                "name": "Create Session Request",
+                                "tooltip": "The container for CreateSession request parameters"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Session Name"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetSessionName",
+                    "details": {
+                        "name": "Set Session Name"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{E39C2A45-89C9-4CFB-B337-9734DC798930}",
+                            "details": {
+                                "name": "Create Session Request",
+                                "tooltip": "The container for CreateSession request parameters"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Session Name"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetMaxPlayer",
+                    "details": {
+                        "name": "Get Max Player"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{E39C2A45-89C9-4CFB-B337-9734DC798930}",
+                            "details": {
+                                "name": "Create Session Request",
+                                "tooltip": "The container for CreateSession request parameters"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{D6597933-47CD-4FC8-B911-63F3E2B0993A}",
+                            "details": {
+                                "name": "Max Player"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetMaxPlayer",
+                    "details": {
+                        "name": "Set Max Player"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{E39C2A45-89C9-4CFB-B337-9734DC798930}",
+                            "details": {
+                                "name": "Create Session Request",
+                                "tooltip": "The container for CreateSession request parameters"
+                            }
+                        },
+                        {
+                            "typeid": "{D6597933-47CD-4FC8-B911-63F3E2B0993A}",
+                            "details": {
+                                "name": "Max Player"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetSessionProperties",
+                    "details": {
+                        "name": "Get Session Properties"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{E39C2A45-89C9-4CFB-B337-9734DC798930}",
+                            "details": {
+                                "name": "Create Session Request",
+                                "tooltip": "The container for CreateSession request parameters"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{F8A7460C-2CC2-5755-AFDA-49B1109A751E}",
+                            "details": {
+                                "name": "Session Properties"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetSessionProperties",
+                    "details": {
+                        "name": "Set Session Properties"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{E39C2A45-89C9-4CFB-B337-9734DC798930}",
+                            "details": {
+                                "name": "Create Session Request",
+                                "tooltip": "The container for CreateSession request parameters"
+                            }
+                        },
+                        {
+                            "typeid": "{F8A7460C-2CC2-5755-AFDA-49B1109A751E}",
+                            "details": {
+                                "name": "Session Properties"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetCreatorId",
+                    "details": {
+                        "name": "Get Creator Id"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{E39C2A45-89C9-4CFB-B337-9734DC798930}",
+                            "details": {
+                                "name": "Create Session Request",
+                                "tooltip": "The container for CreateSession request parameters"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Creator Id"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetCreatorId",
+                    "details": {
+                        "name": "Set Creator Id"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{E39C2A45-89C9-4CFB-B337-9734DC798930}",
+                            "details": {
+                                "name": "Create Session Request",
+                                "tooltip": "The container for CreateSession request parameters"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Creator Id"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}
