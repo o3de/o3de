@@ -30,7 +30,7 @@ class CrcValidator(CommitValidator):
                 
                 with open(file_name, mode='r', encoding='utf8') as fh:
                     fileContents = fh.read()
-                    matchesFound = re.findall(r'AZ_CRC\("([^"]+)",([^\)]*)\)', fileContents)
+                    matchesFound = re.findall(r'AZ_CRC\("([^"]+)",([^)]*)\)', fileContents)
                     for element in matchesFound:
                         stringInCode = element[0]
                         valueInCode = element[1].strip()
