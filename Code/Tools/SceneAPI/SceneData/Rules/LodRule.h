@@ -25,7 +25,7 @@ namespace AZ
         }
         namespace SceneData
         {
-            SCENE_DATA_CLASS class LodRule
+            class SCENE_DATA_CLASS LodRule
                 : public DataTypes::ILodRule
             {
             public:
