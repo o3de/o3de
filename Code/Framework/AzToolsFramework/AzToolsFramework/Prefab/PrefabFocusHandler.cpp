@@ -49,8 +49,7 @@ namespace AzToolsFramework::Prefab
 
     void PrefabFocusHandler::Reflect(AZ::ReflectContext* context)
     {
-        AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context);
-        if (behaviorContext)
+        if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context); behaviorContext)
         {
             behaviorContext->EBus<PrefabFocusPublicRequestBus>("PrefabFocusPublicRequestBus")
                 ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
