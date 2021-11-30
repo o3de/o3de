@@ -1,60 +1,60 @@
 {
     "entries": [
         {
-            "key": "SimpleMotionComponentRequestBus",
+            "base": "SimpleMotionComponentRequestBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "SimpleMotionComponentRequestBus",
+                "name": "Simple Motion",
                 "category": "Animation"
             },
             "methods": [
                 {
-                    "key": "BlendOutTime",
+                    "base": "BlendOutTime",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke BlendOutTime"
+                        "tooltip": "When signaled, this will invoke Blend Out Time"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after BlendOutTime is invoked"
+                        "tooltip": "Signaled after Blend Out Time is invoked"
                     },
                     "details": {
-                        "name": "BlendOutTime"
+                        "name": "Blend Out Time"
                     },
                     "params": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "float"
+                                "name": "Time"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "GetBlendInTime",
+                    "base": "GetBlendInTime",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetBlendInTime"
+                        "tooltip": "When signaled, this will invoke Get Blend In Time"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetBlendInTime is invoked"
+                        "tooltip": "Signaled after Get Blend In Time is invoked"
                     },
                     "details": {
-                        "name": "GetBlendInTime"
+                        "name": "Get Blend In Time"
                     },
                     "results": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "float"
+                                "name": "Time"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "PlayMotion",
+                    "base": "PlayMotion",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke PlayMotion"
@@ -64,11 +64,11 @@
                         "tooltip": "Signaled after PlayMotion is invoked"
                     },
                     "details": {
-                        "name": "PlayMotion"
+                        "name": "Play Motion"
                     }
                 },
                 {
-                    "key": "GetMotion",
+                    "base": "GetMotion",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetMotion"
@@ -78,41 +78,41 @@
                         "tooltip": "Signaled after GetMotion is invoked"
                     },
                     "details": {
-                        "name": "GetMotion"
+                        "name": "Get Motion"
                     },
                     "results": [
                         {
                             "typeid": "{652ED536-3402-439B-AEBE-4A5DBC554085}",
                             "details": {
-                                "name": "AssetId"
+                                "name": "Asset Id"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "GetBlendOutTime",
+                    "base": "GetBlendOutTime",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetBlendOutTime"
+                        "tooltip": "When signaled, this will invoke Get Blend Out Time"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetBlendOutTime is invoked"
+                        "tooltip": "Signaled after Get Blend Out Time is invoked"
                     },
                     "details": {
-                        "name": "GetBlendOutTime"
+                        "name": "Get Blend Out Time"
                     },
                     "results": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "float"
+                                "name": "Time"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "ReverseMotion",
+                    "base": "ReverseMotion",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Reverse Motion"
@@ -128,57 +128,57 @@
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": "bool"
+                                "name": "Enable"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "GetPlaySpeed",
+                    "base": "GetPlaySpeed",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetPlaySpeed"
+                        "tooltip": "When signaled, this will invoke Get Play Speed"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetPlaySpeed is invoked"
+                        "tooltip": "Signaled after Get Play Speed is invoked"
                     },
                     "details": {
-                        "name": "GetPlaySpeed"
+                        "name": "Get Play Speed"
                     },
                     "results": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "float"
+                                "name": "Speed"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "GetPlayTime",
+                    "base": "GetPlayTime",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetPlayTime"
+                        "tooltip": "When signaled, this will invoke Get Play Time"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetPlayTime is invoked"
+                        "tooltip": "Signaled after Get Play Time is invoked"
                     },
                     "details": {
-                        "name": "GetPlayTime"
+                        "name": "Get Play Time"
                     },
                     "results": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "float"
+                                "name": "Time"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "RetargetMotion",
+                    "base": "RetargetMotion",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Retarget Motion"
@@ -194,13 +194,13 @@
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": "bool"
+                                "name": "Enable"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "SetPlaySpeed",
+                    "base": "SetPlaySpeed",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Play Speed"
@@ -216,13 +216,13 @@
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "float"
+                                "name": "Speed"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "Motion",
+                    "base": "Motion",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Motion"
@@ -238,79 +238,79 @@
                         {
                             "typeid": "{652ED536-3402-439B-AEBE-4A5DBC554085}",
                             "details": {
-                                "name": "AssetId"
+                                "name": "Asset Id"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "BlendInTime",
+                    "base": "BlendInTime",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke BlendInTime"
+                        "tooltip": "When signaled, this will invoke Blend In Time"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after BlendInTime is invoked"
+                        "tooltip": "Signaled after Blend In Time is invoked"
                     },
                     "details": {
-                        "name": "BlendInTime"
+                        "name": "Blend In Time"
                     },
                     "params": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "float"
+                                "name": "Time"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "GetLoopMotion",
+                    "base": "GetLoopMotion",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetLoopMotion"
+                        "tooltip": "When signaled, this will invoke Get Loop Motion"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetLoopMotion is invoked"
+                        "tooltip": "Signaled after Get Loop Motion is invoked"
                     },
                     "details": {
-                        "name": "GetLoopMotion"
+                        "name": "Get Loop Motion"
                     },
                     "results": [
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": "bool"
+                                "name": "Loop Motion"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "PlayTime",
+                    "base": "PlayTime",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke PlayTime"
+                        "tooltip": "When signaled, this will invoke Play Time"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after PlayTime is invoked"
+                        "tooltip": "Signaled after Play Time is invoked"
                     },
                     "details": {
-                        "name": "PlayTime"
+                        "name": "Play Time"
                     },
                     "params": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "float"
+                                "name": "Time"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "LoopMotion",
+                    "base": "LoopMotion",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Loop Motion"
@@ -326,13 +326,13 @@
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": "bool"
+                                "name": "Enable"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "MirrorMotion",
+                    "base": "MirrorMotion",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Mirror Motion"
@@ -348,7 +348,7 @@
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": "bool"
+                                "name": "Enable"
                             }
                         }
                     ]

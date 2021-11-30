@@ -49,7 +49,6 @@ namespace AudioControls
         explicit CUndoControlAdd(CID id);
     protected:
         int GetSize() override { return sizeof(*this); }
-        QString GetDescription() override { return "Undo ATL Control Add"; }
 
         void Undo(bool bUndo) override;
         void Redo() override;
@@ -63,7 +62,6 @@ namespace AudioControls
         explicit CUndoControlRemove(AZStd::shared_ptr<CATLControl>& pControl);
     protected:
         int GetSize() override { return sizeof(*this); }
-        QString GetDescription() override { return "Undo ATL Control Remove"; }
 
         void Undo(bool bUndo) override;
         void Redo() override;
@@ -90,7 +88,6 @@ namespace AudioControls
         explicit CUndoFolderRemove(QStandardItem* pItem);
     protected:
         int GetSize() override { return sizeof(*this); }
-        QString GetDescription() override { return "Undo ATL Folder Remove"; }
 
         void Undo(bool bUndo) override;
         void Redo() override;
@@ -104,7 +101,6 @@ namespace AudioControls
         explicit CUndoFolderAdd(QStandardItem* pItem);
     protected:
         int GetSize() override { return sizeof(*this); }
-        QString GetDescription() override { return "Undo ATL Folder Add"; }
 
         void Undo(bool bUndo) override;
         void Redo() override;
@@ -118,7 +114,6 @@ namespace AudioControls
         explicit CUndoControlModified(CID id);
     protected:
         int GetSize() override { return sizeof(*this); }
-        QString GetDescription() override { return "Undo ATL Control Modify"; }
 
         void SwapData();
         void Undo(bool bUndo) override;
@@ -140,7 +135,6 @@ namespace AudioControls
 
     protected:
         int GetSize() override { return sizeof(*this); }
-        QString GetDescription() override { return "Undo ATL Control Move"; }
 
         void Undo(bool bUndo) override;
         void Redo() override;

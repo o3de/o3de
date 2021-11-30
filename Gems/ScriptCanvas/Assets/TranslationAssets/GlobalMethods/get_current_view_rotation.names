@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "get_current_view_rotation",
+            "base": "get_current_view_rotation",
             "context": "Method",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "get_current_view_rotation",
+                    "base": "get_current_view_rotation",
                     "context": "Global",
                     "entry": {
                         "name": "In",

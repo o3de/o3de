@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "ShapeChangeReasons_ShapeChanged",
+            "base": "ShapeChangeReasons_ShapeChanged",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "ShapeChangeReasons_ShapeChanged::Getter",
-                "category": "Constants"
-            }
+                "name": "Shape Change Reasons_ Shape Changed",
+                "category": "Constants/Editor"
+            },
+            "methods": [
+                {
+                    "base": "GetShapeChangeReasons_ShapeChanged",
+                    "details": {
+                        "name": "Get Shape Change Reasons_ Shape Changed"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

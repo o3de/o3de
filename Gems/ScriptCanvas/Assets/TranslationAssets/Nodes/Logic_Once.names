@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "{0E37D3CA-2862-4667-BFDB-7393DD48241B}",
+            "base": "{0E37D3CA-2862-4667-BFDB-7393DD48241B}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
@@ -11,28 +11,28 @@
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In",
                     "details": {
                         "name": "In",
                         "tooltip": "Input signal"
                     }
                 },
                 {
-                    "key": "Input_Reset",
+                    "base": "Input_Reset",
                     "details": {
                         "name": "Reset",
                         "tooltip": "Reset signal"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out",
                     "details": {
                         "name": "Out",
                         "tooltip": "Output signal"
                     }
                 },
                 {
-                    "key": "Output_On Reset",
+                    "base": "Output_On Reset",
                     "details": {
                         "name": "On Reset",
                         "tooltip": "Triggered when Reset"

@@ -1,16 +1,16 @@
 {
     "entries": [
         {
-            "key": "UiFaderBus",
+            "base": "UiFaderBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "UiFaderBus",
+                "name": "UI Fader",
                 "category": "UI"
             },
             "methods": [
                 {
-                    "key": "GetUseRenderToTexture",
+                    "base": "GetUseRenderToTexture",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Use Render To Texture"
@@ -33,7 +33,7 @@
                     ]
                 },
                 {
-                    "key": "IsFading",
+                    "base": "IsFading",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Is Fading"
@@ -56,7 +56,7 @@
                     ]
                 },
                 {
-                    "key": "Fade",
+                    "base": "Fade",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Fade"
@@ -87,7 +87,7 @@
                     ]
                 },
                 {
-                    "key": "SetFadeValue",
+                    "base": "SetFadeValue",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Fade Value"
@@ -111,7 +111,7 @@
                     ]
                 },
                 {
-                    "key": "GetFadeValue",
+                    "base": "GetFadeValue",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Fade Value"
@@ -134,7 +134,7 @@
                     ]
                 },
                 {
-                    "key": "SetUseRenderToTexture",
+                    "base": "SetUseRenderToTexture",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Use Render To Texture"

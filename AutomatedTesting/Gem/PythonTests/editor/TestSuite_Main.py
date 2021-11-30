@@ -33,14 +33,14 @@ class TestAutomation(TestAutomationBase):
     def test_BasicEditorWorkflows_LevelEntityComponentCRUD(self, request, workspace, editor, launcher_platform,
                                                            remove_test_level):
         from .EditorScripts import BasicEditorWorkflows_LevelEntityComponentCRUD as test_module
-        self._run_test(request, workspace, editor, test_module, batch_mode=False, autotest_mode=False)
+        self._run_test(request, workspace, editor, test_module, batch_mode=False, autotest_mode=False, enable_prefab_system=False)
 
     @pytest.mark.REQUIRES_gpu
     def test_BasicEditorWorkflows_GPU_LevelEntityComponentCRUD(self, request, workspace, editor, launcher_platform,
                                                                remove_test_level):
         from .EditorScripts import BasicEditorWorkflows_LevelEntityComponentCRUD as test_module
         self._run_test(request, workspace, editor, test_module, batch_mode=False, autotest_mode=False,
-                       use_null_renderer=False)
+                       use_null_renderer=False, enable_prefab_system=False)
 
     def test_EntityOutlienr_EntityOrdering(self, request, workspace, editor, launcher_platform):
         from .EditorScripts import EntityOutliner_EntityOrdering as test_module
@@ -51,5 +51,4 @@ class TestAutomation(TestAutomationBase):
             test_module, 
             batch_mode=False, 
             autotest_mode=True,
-            extra_cmdline_args=["--regset=/Amazon/Preferences/EnablePrefabSystem=true"]
         )

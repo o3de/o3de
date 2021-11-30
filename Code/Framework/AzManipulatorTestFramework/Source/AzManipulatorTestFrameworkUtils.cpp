@@ -95,7 +95,7 @@ namespace AzManipulatorTestFramework
 
         AzToolsFramework::ViewportInteraction::MousePick mousePick;
         mousePick.m_screenCoordinates = screenPoint;
-        mousePick.m_rayOrigin = cameraState.m_position;
+        mousePick.m_rayOrigin = nearPlaneWorldPosition;
         mousePick.m_rayDirection = (nearPlaneWorldPosition - cameraState.m_position).GetNormalized();
 
         return mousePick;

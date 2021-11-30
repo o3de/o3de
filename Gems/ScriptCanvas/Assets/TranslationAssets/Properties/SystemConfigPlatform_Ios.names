@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "SystemConfigPlatform_Ios",
+            "base": "SystemConfigPlatform_Ios",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "SystemConfigPlatform_Ios::Getter",
-                "category": "Constants"
-            }
+                "name": "Ios",
+                "category": "Constants/System Configuration"
+            },
+            "methods": [
+                {
+                    "base": "GetSystemConfigPlatform_Ios",
+                    "details": {
+                        "name": "Ios"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

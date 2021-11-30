@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "{261E424C-4241-5777-8742-21945C69FD29}",
+            "base": "{261E424C-4241-5777-8742-21945C69FD29}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
@@ -11,25 +11,25 @@
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "key": "DataInput_Degrees",
+                    "base": "DataInput_Degrees",
                     "details": {
                         "name": "Degrees"
                     }
                 },
                 {
-                    "key": "DataOutput_Result",
+                    "base": "DataOutput_Result",
                     "details": {
                         "name": "Result"
                     }

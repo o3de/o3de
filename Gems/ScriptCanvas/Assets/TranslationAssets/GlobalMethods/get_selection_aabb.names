@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "get_selection_aabb",
+            "base": "get_selection_aabb",
             "context": "Method",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "get_selection_aabb",
+                    "base": "get_selection_aabb",
                     "context": "Global",
                     "entry": {
                         "name": "In",

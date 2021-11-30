@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "eUiScrollBoxScrollBarVisibility_AlwaysShow",
+            "base": "eUiScrollBoxScrollBarVisibility_AlwaysShow",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "eUiScrollBoxScrollBarVisibility_AlwaysShow::Getter",
-                "category": "Constants"
-            }
+                "name": "Always Show",
+                "category": "Constants/UI/Scroll Box Scroll Bar Visibility"
+            },
+            "methods": [
+                {
+                    "base": "GeteUiScrollBoxScrollBarVisibility_AlwaysShow",
+                    "details": {
+                        "name": "Always Show"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

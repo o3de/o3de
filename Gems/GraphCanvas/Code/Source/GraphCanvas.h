@@ -77,7 +77,10 @@ namespace GraphCanvas
         AZ::EntityId CreateVirtualChild(const AZ::EntityId& real, const AZStd::string& virtualChildElement) const override;
         ////
 
+        // AzFramework::AssetCatalogEventBus::Handler
         void OnCatalogLoaded(const char* /*catalogFile*/) override;
+        void OnCatalogAssetChanged(const AZ::Data::AssetId&) override;
+        ////
 
         AZStd::unique_ptr<TranslationAssetHandler> m_assetHandler;
 

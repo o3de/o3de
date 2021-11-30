@@ -19,7 +19,6 @@
 
 #include <AzToolsFramework/ToolsComponents/EditorComponentBase.h>
 
-#include <GraphCanvas/Types/TranslationTypes.h>
 #include <GraphCanvas/Components/SceneBus.h>
 #include <GraphCanvas/Components/StyleBus.h>
 

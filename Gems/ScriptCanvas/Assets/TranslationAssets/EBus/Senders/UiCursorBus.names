@@ -1,16 +1,16 @@
 {
     "entries": [
         {
-            "key": "UiCursorBus",
+            "base": "UiCursorBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "UiCursorBus",
+                "name": "UI Cursor",
                 "category": "UI"
             },
             "methods": [
                 {
-                    "key": "GetUiCursorPosition",
+                    "base": "GetUiCursorPosition",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Position"
@@ -33,7 +33,7 @@
                     ]
                 },
                 {
-                    "key": "IsUiCursorVisible",
+                    "base": "IsUiCursorVisible",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Is Visible"
@@ -56,7 +56,7 @@
                     ]
                 },
                 {
-                    "key": "DecrementVisibleCounter",
+                    "base": "DecrementVisibleCounter",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Decrement Visible Counter"
@@ -71,7 +71,7 @@
                     }
                 },
                 {
-                    "key": "IncrementVisibleCounter",
+                    "base": "IncrementVisibleCounter",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Increment Visible Counter"
@@ -86,7 +86,7 @@
                     }
                 },
                 {
-                    "key": "SetUiCursor",
+                    "base": "SetUiCursor",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Cursor"

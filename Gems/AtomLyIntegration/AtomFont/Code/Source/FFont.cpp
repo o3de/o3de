@@ -561,12 +561,10 @@ uint32_t AZ::FFont::GetNumQuadsForText(const char* str, const bool asciiMultiLin
             ++numQuads;
         }
 
-        uint32_t nextCh = 0;
         const wchar_t* pChar = strW.c_str();
         while (uint32_t ch = *pChar)
         {
             ++pChar;
-            nextCh = *pChar;
 
             switch (ch)
             {
@@ -1726,15 +1724,13 @@ void AZ::FFont::DrawScreenAlignedText3d(
     {
         return;
     }
-    AZ::Vector3 positionNDC = AzFramework::WorldToScreenNdc(
-        params.m_position,
-        currentView->GetWorldToViewMatrix(),
-        currentView->GetViewToClipMatrix()
-    );
 
-    // Text behind the camera shouldn't get rendered.  WorldToScreenNDC returns values in the range 0 - 1, so Z < 0.5 is behind the screen
+    const AZ::Vector3 positionNdc = AzFramework::WorldToScreenNdc(
+        params.m_position, currentView->GetWorldToViewMatrixAsMatrix3x4(), currentView->GetViewToClipMatrix());
+
+    // Text behind the camera shouldn't get rendered.  WorldToScreenNdc returns values in the range 0 - 1, so Z < 0.5 is behind the screen
     // and >= 0.5 is in front of the screen.
-    if (positionNDC.GetZ() < 0.5f)
+    if (positionNdc.GetZ() < 0.5f)
     {
         return;
     }
@@ -1744,9 +1740,9 @@ void AZ::FFont::DrawScreenAlignedText3d(
     DrawStringUInternal(
         *internalParams.m_viewport, 
         internalParams.m_viewportContext, 
-        positionNDC.GetX() * internalParams.m_viewport->GetWidth(), 
-        (1.0f - positionNDC.GetY()) * internalParams.m_viewport->GetHeight(), 
-        positionNDC.GetZ(), // Z
+        positionNdc.GetX() * internalParams.m_viewport->GetWidth(), 
+        (1.0f - positionNdc.GetY()) * internalParams.m_viewport->GetHeight(), 
+        positionNdc.GetZ(), // Z
         text.data(),
         params.m_multiline,
         internalParams.m_ctx

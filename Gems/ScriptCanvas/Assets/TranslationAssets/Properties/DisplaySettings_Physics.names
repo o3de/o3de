@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "DisplaySettings_Physics",
+            "base": "DisplaySettings_Physics",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "DisplaySettings_Physics::Getter",
-                "category": "Constants"
-            }
+                "name": "Physics",
+                "category": "Constants/Display Settings"
+            },
+            "methods": [
+                {
+                    "base": "GetDisplaySettings_Physics",
+                    "details": {
+                        "name": "Get Physics"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "AWSMetrics_AttributesSubmissionList",
+            "base": "AWSMetrics_AttributesSubmissionList",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "Getattributes",
+                    "base": "Getattributes",
                     "details": {
                         "name": "Get Attributes"
                     },
@@ -32,7 +32,7 @@
                     ]
                 },
                 {
-                    "key": "Setattributes",
+                    "base": "Setattributes",
                     "details": {
                         "name": "Set Attributes"
                     },

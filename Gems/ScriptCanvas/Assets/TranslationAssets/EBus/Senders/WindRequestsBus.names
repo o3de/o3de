@@ -1,16 +1,15 @@
 {
     "entries": [
         {
-            "key": "WindRequestsBus",
+            "base": "WindRequestsBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "WindRequestsBus",
-                "category": "PhysX"
+                "name": "Wind"
             },
             "methods": [
                 {
-                    "key": "GetGlobalWind",
+                    "base": "GetGlobalWind",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Global Wind"
@@ -26,13 +25,13 @@
                         {
                             "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
                             "details": {
-                                "name": "Vector3"
+                                "name": "Global Wind Direction"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "GetWindAtPosition",
+                    "base": "GetWindAtPosition",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Wind At Position"
@@ -56,13 +55,13 @@
                         {
                             "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
                             "details": {
-                                "name": "Vector3"
+                                "name": "Wind Direction"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "GetWindInsideAabb",
+                    "base": "GetWindInsideAabb",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Wind Inside AABB"
@@ -86,7 +85,7 @@
                         {
                             "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
                             "details": {
-                                "name": "Vector3"
+                                "name": "Wind Direction"
                             }
                         }
                     ]

@@ -1,76 +1,82 @@
 {
     "entries": [
         {
-            "key": "LookAt",
+            "base": "LookAt",
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "LookAt"
+                "name": "Look At",
+                "category": "Gameplay"
             },
             "methods": [
                 {
-                    "key": "SetTarget",
+                    "base": "SetTarget",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetTarget"
+                        "tooltip": "When signaled, this will invoke Set Target"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetTarget is invoked"
+                        "tooltip": "Signaled after Set Target is invoked"
                     },
                     "details": {
-                        "name": "SetTarget"
+                        "name": "Set Target",
+                        "tooltip": "Set the entity to look at"
                     },
                     "params": [
                         {
                             "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
                             "details": {
-                                "name": "EntityId",
-                                "tooltip": "Entity Unique Id"
+                                "name": "Target",
+                                "tooltip": "The entity to look at"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "SetTargetPosition",
+                    "base": "SetTargetPosition",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetTargetPosition"
+                        "tooltip": "When signaled, this will invoke Set Target Position"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetTargetPosition is invoked"
+                        "tooltip": "Signaled after Set Target Position is invoked"
                     },
                     "details": {
-                        "name": "SetTargetPosition"
+                        "name": "Set Target Position",
+                        "tooltip": "Sets the target position to look at."
                     },
                     "params": [
                         {
                             "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
                             "details": {
-                                "name": "Vector3"
+                                "name": "Position",
+                                "tooltip": "The position to look at"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "SetAxis",
+                    "base": "SetAxis",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetAxis"
+                        "tooltip": "When signaled, this will invoke Set Axis"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetAxis is invoked"
+                        "tooltip": "Signaled after Set Axis is invoked"
                     },
                     "details": {
-                        "name": "SetAxis"
+                        "name": "Set Axis",
+                        "tooltip": "Specify the forward axis to use as reference for the look at"
                     },
                     "params": [
                         {
                             "typeid": "{72B9409A-7D1A-4831-9CFE-FCB3FADD3426}",
                             "details": {
-                                "name": "unsigned char"
+                                "name": "Axis",
+                                "tooltip": "The forward axis to use as reference"
                             }
                         }
                     ]

@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "ImageGradientComponentTypeId",
+            "base": "ImageGradientComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "ImageGradientComponentTypeId::Getter",
-                "category": "Constants"
-            }
+                "name": "Image Gradient Component Type Id",
+                "category": "Constants/Editor"
+            },
+            "methods": [
+                {
+                    "base": "GetImageGradientComponentTypeId",
+                    "details": {
+                        "name": "Get Image Gradient Component Type Id"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}",
+                            "details": {
+                                "name": "AZ:: Uuid"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

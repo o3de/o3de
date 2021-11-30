@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "eUiInteractableState_Normal",
+            "base": "eUiInteractableState_Normal",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "eUiInteractableState_Normal::Getter",
-                "category": "Constants"
-            }
+                "name": "Normal",
+                "category": "Constants/UI/Interactable State"
+            },
+            "methods": [
+                {
+                    "base": "GeteUiInteractableState_Normal",
+                    "details": {
+                        "name": "Normal"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

@@ -14,7 +14,6 @@
 #include <AzCore/std/string/conversions.h>
 
 #include <ScriptCanvas/Core/Slot.h>
-#include <GraphCanvas/Types/TranslationTypes.h>
 #include <Source/Translation/TranslationBus.h>
 #include <AzFramework/Gem/GemInfo.h>
 #include <AzCore/Settings/SettingsRegistry.h>

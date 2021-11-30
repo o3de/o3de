@@ -1,38 +1,50 @@
 {
     "entries": [
         {
-            "key": "{BA107060-249D-4818-9CEC-7573718273FC}",
+            "base": "{E73DB180-A325-763B-A1FE-517B548AF66E}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "HeartBeat",
+                "name": "Heart Beat",
                 "category": "Timing",
-                "tooltip": "While active, will signal the output at the given interval.",
-                "subtitle": "Timing"
+                "tooltip": "While active, will signal the output at the given interval."
             },
             "slots": [
                 {
-                    "key": "Input_Start",
+                    "base": "Input_Start",
                     "details": {
                         "name": "Start"
                     }
                 },
                 {
-                    "key": "Input_Stop",
+                    "base": "DataInput_Interval",
+                    "details": {
+                        "name": "Interval"
+                    }
+                },
+                {
+                    "base": "Output_On Start",
+                    "details": {
+                        "name": "On Start"
+                    }
+                },
+                {
+                    "base": "Input_Stop",
                     "details": {
                         "name": "Stop"
                     }
                 },
                 {
-                    "key": "Output_Pulse",
+                    "base": "Output_On Stop",
                     "details": {
-                        "name": "Pulse"
+                        "name": "On Stop"
                     }
                 },
                 {
-                    "key": "DataInput_Interval",
+                    "base": "Output_Pulse",
                     "details": {
-                        "name": "Interval"
+                        "name": "Pulse",
+                        "tooltip": "Signaled at each specified interval."
                     }
                 }
             ]

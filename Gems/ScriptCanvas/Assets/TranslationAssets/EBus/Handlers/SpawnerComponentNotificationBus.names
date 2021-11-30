@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "SpawnerComponentNotificationBus",
+            "base": "SpawnerComponentNotificationBus",
             "context": "EBusHandler",
             "variant": "",
             "details": {
@@ -10,90 +10,84 @@
             },
             "methods": [
                 {
-                    "key": "OnSpawnBegin",
+                    "base": "OnSpawnBegin",
                     "details": {
-                        "name": "On Spawn Begin",
-                        "tooltip": "Notifies when the spawn starts"
+                        "name": "On Spawn Begin"
                     },
                     "params": [
                         {
                             "typeid": "{E6E7C0C5-07C9-44BB-A38C-930431948667}",
                             "details": {
-                                "name": "Slice",
-                                "tooltip": "Slice instance from the spawn event"
+                                "name": "Slice Instantiation Ticket"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "OnSpawnEnd",
+                    "base": "OnSpawnEnd",
                     "details": {
-                        "name": "On Spawn End",
-                        "tooltip": "Notifies when the spawn completes"
+                        "name": "On Spawn End"
                     },
                     "params": [
                         {
                             "typeid": "{E6E7C0C5-07C9-44BB-A38C-930431948667}",
                             "details": {
-                                "name": "Slice",
-                                "tooltip": "Slice instance from the spawn event"
+                                "name": "Slice Instantiation Ticket"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "OnEntitySpawned",
+                    "base": "OnEntitySpawned",
                     "details": {
-                        "name": "On Entity Spawned",
-                        "tooltip": "Notify that an entity has spawned, will be called once for each entity spawned in a slice"
+                        "name": "On Entity Spawned"
                     },
                     "params": [
                         {
                             "typeid": "{E6E7C0C5-07C9-44BB-A38C-930431948667}",
                             "details": {
-                                "name": "Slice",
-                                "tooltip": "Slice instance from the spawn event"
+                                "name": "Slice Instantiation Ticket"
                             }
                         },
                         {
                             "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
                             "details": {
-                                "name": "Entity",
-                                "tooltip": "EntityID of the spawned entity, for each spawned entity"
+                                "name": "Entity Id",
+                                "tooltip": "Entity Unique Id"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "OnSpawnedSliceDestroyed",
+                    "base": "OnSpawnedSliceDestroyed",
                     "details": {
-                        "name": "OnSpawnedSliceDestroyed"
+                        "name": "On Spawned Slice Destroyed"
                     },
                     "params": [
                         {
                             "typeid": "{E6E7C0C5-07C9-44BB-A38C-930431948667}",
                             "details": {
-                                "name": "SliceInstantiationTicket"
+                                "name": "Slice Instantiation Ticket"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "OnEntitiesSpawned",
+                    "base": "OnEntitiesSpawned",
                     "details": {
-                        "name": "OnEntitiesSpawned"
+                        "name": "On Entities Spawned"
                     },
                     "params": [
                         {
                             "typeid": "{E6E7C0C5-07C9-44BB-A38C-930431948667}",
                             "details": {
-                                "name": "SliceInstantiationTicket"
+                                "name": "Slice Instantiation Ticket"
                             }
                         },
                         {
                             "typeid": "{4841CFF0-7A5C-519C-BD16-D3625E99605E}",
                             "details": {
-                                "name": "AZStd::vector"
+                                "name": "Entities"
                             }
                         }
                     ]

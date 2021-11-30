@@ -1,45 +1,45 @@
 {
     "entries": [
         {
-            "key": "BlendShapeData",
+            "base": "BlendShapeData",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
-                "name": "BlendShapeData"
+                "name": "Blend Shape Data",
+                "category": "Rendering"
             },
             "methods": [
                 {
-                    "key": "GetUV",
+                    "base": "GetUV",
                     "context": "BlendShapeData",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetUV"
+                        "tooltip": "When signaled, this will invoke Get UV"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetUV is invoked"
+                        "tooltip": "Signaled after Get UV is invoked"
                     },
                     "details": {
-                        "name": "BlendShapeData::GetUV",
-                        "category": "Other"
+                        "name": "Get UV"
                     },
                     "params": [
                         {
                             "typeid": "{FF875C22-2E4F-4CE3-BA49-09BF78C70A09}",
                             "details": {
-                                "name": "BlendShapeData*"
+                                "name": "Blend Shape Data"
                             }
                         },
                         {
                             "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
                             "details": {
-                                "name": "unsigned int"
+                                "name": "Vertex Index"
                             }
                         },
                         {
                             "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
                             "details": {
-                                "name": "unsigned int"
+                                "name": "UV Set Index"
                             }
                         }
                     ],
@@ -47,37 +47,36 @@
                         {
                             "typeid": "{3D80F623-C85C-4741-90D0-E4E66164E6BF}",
                             "details": {
-                                "name": "const Vector2&"
+                                "name": "UV"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "GetTangent",
+                    "base": "GetTangent",
                     "context": "BlendShapeData",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetTangent"
+                        "tooltip": "When signaled, this will invoke Get Tangent"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetTangent is invoked"
+                        "tooltip": "Signaled after Get Tangent is invoked"
                     },
                     "details": {
-                        "name": "BlendShapeData::GetTangent",
-                        "category": "Other"
+                        "name": "Get Tangent"
                     },
                     "params": [
                         {
                             "typeid": "{FF875C22-2E4F-4CE3-BA49-09BF78C70A09}",
                             "details": {
-                                "name": "const BlendShapeData&"
+                                "name": "Blend Shape Data"
                             }
                         },
                         {
                             "typeid": "{D6597933-47CD-4FC8-B911-63F3E2B0993A}",
                             "details": {
-                                "name": "AZ::u64"
+                                "name": "Index"
                             }
                         }
                     ],
@@ -85,37 +84,36 @@
                         {
                             "typeid": "{0CE9FA36-1E3A-4C06-9254-B7C73A732053}",
                             "details": {
-                                "name": "Vector4"
+                                "name": "Tangents"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "GetBitangent",
+                    "base": "GetBitangent",
                     "context": "BlendShapeData",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetBitangent"
+                        "tooltip": "When signaled, this will invoke Get Bitangent"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetBitangent is invoked"
+                        "tooltip": "Signaled after Get Bitangent is invoked"
                     },
                     "details": {
-                        "name": "BlendShapeData::GetBitangent",
-                        "category": "Other"
+                        "name": "Get Bi-Tangent"
                     },
                     "params": [
                         {
                             "typeid": "{FF875C22-2E4F-4CE3-BA49-09BF78C70A09}",
                             "details": {
-                                "name": "const BlendShapeData&"
+                                "name": "Blend Shape Data"
                             }
                         },
                         {
                             "typeid": "{D6597933-47CD-4FC8-B911-63F3E2B0993A}",
                             "details": {
-                                "name": "AZ::u64"
+                                "name": "Index"
                             }
                         }
                     ],
@@ -123,43 +121,42 @@
                         {
                             "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
                             "details": {
-                                "name": "Vector3"
+                                "name": "Bi-Tangent"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "GetColor",
+                    "base": "GetColor",
                     "context": "BlendShapeData",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetColor"
+                        "tooltip": "When signaled, this will invoke Get Color"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetColor is invoked"
+                        "tooltip": "Signaled after Get Color is invoked"
                     },
                     "details": {
-                        "name": "BlendShapeData::GetColor",
-                        "category": "Other"
+                        "name": "Get Color"
                     },
                     "params": [
                         {
                             "typeid": "{FF875C22-2E4F-4CE3-BA49-09BF78C70A09}",
                             "details": {
-                                "name": "const BlendShapeData&"
+                                "name": "Blend Shape Data"
                             }
                         },
                         {
                             "typeid": "{72B9409A-7D1A-4831-9CFE-FCB3FADD3426}",
                             "details": {
-                                "name": "unsigned char"
+                                "name": "Color Set Index"
                             }
                         },
                         {
                             "typeid": "{72B9409A-7D1A-4831-9CFE-FCB3FADD3426}",
                             "details": {
-                                "name": "unsigned char"
+                                "name": "Color Index"
                             }
                         }
                     ],
@@ -167,7 +164,7 @@
                         {
                             "typeid": "{937E3BF8-5204-4D40-A8DA-C8F083C89F9F}",
                             "details": {
-                                "name": "SceneAPI::DataTypes::Color"
+                                "name": "Color"
                             }
                         }
                     ]

@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "EditorPhysicsSceneId",
+            "base": "EditorPhysicsSceneId",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "EditorPhysicsSceneId::Getter",
-                "category": "Constants"
-            }
+                "name": "Editor Physics Scene Id",
+                "category": "Constants/Editor"
+            },
+            "methods": [
+                {
+                    "base": "GetEditorPhysicsSceneId",
+                    "details": {
+                        "name": "Get Editor Physics Scene Id"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{9F4E062E-06A0-46D4-85DF-E0DA96467D3A}",
+                            "details": {
+                                "name": "Crc 32"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

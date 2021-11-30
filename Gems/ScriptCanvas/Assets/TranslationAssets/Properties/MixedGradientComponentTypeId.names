@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "MixedGradientComponentTypeId",
+            "base": "MixedGradientComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "MixedGradientComponentTypeId::Getter",
-                "category": "Constants"
-            }
+                "name": "Mixed Gradient Component Type Id",
+                "category": "Constants/Editor"
+            },
+            "methods": [
+                {
+                    "base": "GetMixedGradientComponentTypeId",
+                    "details": {
+                        "name": "Get Mixed Gradient Component Type Id"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}",
+                            "details": {
+                                "name": "AZ:: Uuid"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

@@ -187,6 +187,8 @@ set(FILES
     IO/Path/Path.inl
     IO/Path/PathIterable.inl
     IO/Path/PathParser.inl
+    IO/Path/PathReflect.cpp
+    IO/Path/PathReflect.h
     IO/Path/Path_fwd.h
     IO/SystemFile.cpp
     IO/SystemFile.h

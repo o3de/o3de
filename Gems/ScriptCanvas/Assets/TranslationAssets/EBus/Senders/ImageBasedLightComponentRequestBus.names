@@ -1,185 +1,186 @@
 {
     "entries": [
         {
-            "key": "ImageBasedLightComponentRequestBus",
+            "base": "ImageBasedLightComponentRequestBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "ImageBasedLightComponentRequestBus"
+                "name": "Image Based Light Component",
+                "category": "Rendering"
             },
             "methods": [
                 {
-                    "key": "GetDiffuseImageAssetId",
+                    "base": "GetDiffuseImageAssetId",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetDiffuseImageAssetId"
+                        "tooltip": "When signaled, this will invoke Get Diffuse Image Asset Id"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetDiffuseImageAssetId is invoked"
+                        "tooltip": "Signaled after Get Diffuse Image Asset Id is invoked"
                     },
                     "details": {
-                        "name": "GetDiffuseImageAssetId"
+                        "name": "Get Diffuse Image Asset Id"
                     },
                     "results": [
                         {
                             "typeid": "{652ED536-3402-439B-AEBE-4A5DBC554085}",
                             "details": {
-                                "name": "AssetId"
+                                "name": "Asset Id"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "SetDiffuseImageAssetPath",
+                    "base": "SetDiffuseImageAssetPath",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetDiffuseImageAssetPath"
+                        "tooltip": "When signaled, this will invoke Set Diffuse Image Asset Path"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetDiffuseImageAssetPath is invoked"
+                        "tooltip": "Signaled after Set Diffuse Image Asset Path is invoked"
                     },
                     "details": {
-                        "name": "SetDiffuseImageAssetPath"
+                        "name": "Set Diffuse Image Asset Path"
                     },
                     "params": [
                         {
                             "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
                             "details": {
-                                "name": "AZStd::string"
+                                "name": "AZ Std::string"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "SetDiffuseImageAssetId",
+                    "base": "SetDiffuseImageAssetId",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetDiffuseImageAssetId"
+                        "tooltip": "When signaled, this will invoke Set Diffuse Image Asset Id"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetDiffuseImageAssetId is invoked"
+                        "tooltip": "Signaled after Set Diffuse Image Asset Id is invoked"
                     },
                     "details": {
-                        "name": "SetDiffuseImageAssetId"
-                    },
-                    "params": [
-                        {
-                            "typeid": "{652ED536-3402-439B-AEBE-4A5DBC554085}",
-                            "details": {
-                                "name": "AssetId"
-                            }
-                        }
-                    ]
-                },
-                {
-                    "key": "GetSpecularImageAssetId",
-                    "entry": {
-                        "name": "In",
-                        "tooltip": "When signaled, this will invoke GetSpecularImageAssetId"
-                    },
-                    "exit": {
-                        "name": "Out",
-                        "tooltip": "Signaled after GetSpecularImageAssetId is invoked"
-                    },
-                    "details": {
-                        "name": "GetSpecularImageAssetId"
-                    },
-                    "results": [
-                        {
-                            "typeid": "{652ED536-3402-439B-AEBE-4A5DBC554085}",
-                            "details": {
-                                "name": "AssetId"
-                            }
-                        }
-                    ]
-                },
-                {
-                    "key": "SetSpecularImageAssetPath",
-                    "entry": {
-                        "name": "In",
-                        "tooltip": "When signaled, this will invoke SetSpecularImageAssetPath"
-                    },
-                    "exit": {
-                        "name": "Out",
-                        "tooltip": "Signaled after SetSpecularImageAssetPath is invoked"
-                    },
-                    "details": {
-                        "name": "SetSpecularImageAssetPath"
-                    },
-                    "params": [
-                        {
-                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
-                            "details": {
-                                "name": "AZStd::string"
-                            }
-                        }
-                    ]
-                },
-                {
-                    "key": "GetSpecularImageAssetPath",
-                    "entry": {
-                        "name": "In",
-                        "tooltip": "When signaled, this will invoke GetSpecularImageAssetPath"
-                    },
-                    "exit": {
-                        "name": "Out",
-                        "tooltip": "Signaled after GetSpecularImageAssetPath is invoked"
-                    },
-                    "details": {
-                        "name": "GetSpecularImageAssetPath"
-                    },
-                    "results": [
-                        {
-                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
-                            "details": {
-                                "name": "AZStd::string"
-                            }
-                        }
-                    ]
-                },
-                {
-                    "key": "GetDiffuseImageAssetPath",
-                    "entry": {
-                        "name": "In",
-                        "tooltip": "When signaled, this will invoke GetDiffuseImageAssetPath"
-                    },
-                    "exit": {
-                        "name": "Out",
-                        "tooltip": "Signaled after GetDiffuseImageAssetPath is invoked"
-                    },
-                    "details": {
-                        "name": "GetDiffuseImageAssetPath"
-                    },
-                    "results": [
-                        {
-                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
-                            "details": {
-                                "name": "AZStd::string"
-                            }
-                        }
-                    ]
-                },
-                {
-                    "key": "SetSpecularImageAssetId",
-                    "entry": {
-                        "name": "In",
-                        "tooltip": "When signaled, this will invoke SetSpecularImageAssetId"
-                    },
-                    "exit": {
-                        "name": "Out",
-                        "tooltip": "Signaled after SetSpecularImageAssetId is invoked"
-                    },
-                    "details": {
-                        "name": "SetSpecularImageAssetId"
+                        "name": "Set Diffuse Image Asset Id"
                     },
                     "params": [
                         {
                             "typeid": "{652ED536-3402-439B-AEBE-4A5DBC554085}",
                             "details": {
-                                "name": "AssetId"
+                                "name": "Asset Id"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetSpecularImageAssetId",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Specular Image Asset Id"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Specular Image Asset Id is invoked"
+                    },
+                    "details": {
+                        "name": "Get Specular Image Asset Id"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{652ED536-3402-439B-AEBE-4A5DBC554085}",
+                            "details": {
+                                "name": "Asset Id"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetSpecularImageAssetPath",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Specular Image Asset Path"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Specular Image Asset Path is invoked"
+                    },
+                    "details": {
+                        "name": "Set Specular Image Asset Path"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZ Std::string"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetSpecularImageAssetPath",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Specular Image Asset Path"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Specular Image Asset Path is invoked"
+                    },
+                    "details": {
+                        "name": "Get Specular Image Asset Path"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZ Std::string"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetDiffuseImageAssetPath",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Diffuse Image Asset Path"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Diffuse Image Asset Path is invoked"
+                    },
+                    "details": {
+                        "name": "Get Diffuse Image Asset Path"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZ Std::string"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetSpecularImageAssetId",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Specular Image Asset Id"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Specular Image Asset Id is invoked"
+                    },
+                    "details": {
+                        "name": "Set Specular Image Asset Id"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{652ED536-3402-439B-AEBE-4A5DBC554085}",
+                            "details": {
+                                "name": "Asset Id"
                             }
                         }
                     ]

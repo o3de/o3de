@@ -1,12 +1,99 @@
 {
     "entries": [
         {
-            "key": "AxisType",
+            "base": "AxisType",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
-                "name": "AxisType"
-            }
+                "name": "Axis Type",
+                "category": "Constants"
+            },
+            "methods": [
+                {
+                    "base": "GetZNegative",
+                    "details": {
+                        "name": "Get -Z"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72B9409A-7D1A-4831-9CFE-FCB3FADD3426}",
+                            "details": {
+                                "name": "-Z"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetZPositive",
+                    "details": {
+                        "name": "Get +Z"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72B9409A-7D1A-4831-9CFE-FCB3FADD3426}",
+                            "details": {
+                                "name": "+Z"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetYPositive",
+                    "details": {
+                        "name": "Get +Y"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72B9409A-7D1A-4831-9CFE-FCB3FADD3426}",
+                            "details": {
+                                "name": "+Y"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetXNegative",
+                    "details": {
+                        "name": "Get -X"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72B9409A-7D1A-4831-9CFE-FCB3FADD3426}",
+                            "details": {
+                                "name": "-X"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetXPositive",
+                    "details": {
+                        "name": "Get +X"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72B9409A-7D1A-4831-9CFE-FCB3FADD3426}",
+                            "details": {
+                                "name": "+X"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetYNegative",
+                    "details": {
+                        "name": "Get -Y"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72B9409A-7D1A-4831-9CFE-FCB3FADD3426}",
+                            "details": {
+                                "name": "-Y"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

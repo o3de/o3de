@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "eUiInteractableState_Hover",
+            "base": "eUiInteractableState_Hover",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "eUiInteractableState_Hover::Getter",
-                "category": "Constants"
-            }
+                "name": "Hover",
+                "category": "Constants/UI/Interactable State"
+            },
+            "methods": [
+                {
+                    "base": "GeteUiInteractableState_Hover",
+                    "details": {
+                        "name": "Hover"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

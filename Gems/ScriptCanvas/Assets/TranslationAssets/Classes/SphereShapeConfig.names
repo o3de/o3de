@@ -1,12 +1,59 @@
 {
     "entries": [
         {
-            "key": "SphereShapeConfig",
+            "base": "SphereShapeConfig",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
-                "name": "SphereShapeConfig"
-            }
+                "name": "Sphere Shape Config",
+                "category": "Rendering/Shapes"
+            },
+            "methods": [
+                {
+                    "base": "GetRadius",
+                    "details": {
+                        "name": "Get Radius"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{4AADFD75-48A7-4F31-8F30-FE4505F09E35}",
+                            "details": {
+                                "name": "Configuration",
+                                "tooltip": "Sphere shape configuration parameters"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetRadius",
+                    "details": {
+                        "name": "Set Radius"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{4AADFD75-48A7-4F31-8F30-FE4505F09E35}",
+                            "details": {
+                                "name": "Configuration",
+                                "tooltip": "Sphere shape configuration parameters"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }
