@@ -154,6 +154,7 @@
 #include <Editor/QtMetaTypes.h>
 #include <GraphCanvas/Components/SceneBus.h>
 
+#include <Editor/LyViewPaneNames.h>
 
 namespace ScriptCanvasEditor
 {
@@ -4305,9 +4306,14 @@ namespace ScriptCanvasEditor
         m_forceCloseInProgress = true;
         QMessageBox::critical(this, QString(), QObject::tr
         ("The ScriptCanvas Editor has encountered an external bug which prevents it from tracking the file state.<br><br>"
-        "Likely the Asset Processor has crashed. ScriptCanvas files may have saved successfully, but the O3DE Engine and Asset Processor should be restarted before continuing work."));
+        "The ScriptCanvas files in the process of being saved may have saved successfully.<br><br>Closing this window will close "
+        "the ScriptCanvas Editor, and request a launch of the Asset Processor.<br>"
+        "Verify that the Asset Processor or is running before launching the ScriptCanvas Editor again.<br>"
+        "The status of the Asset Processor can be monitored from the O3DE Editor in the bottom-right corner of the status bar."));
+
+        AzFramework::AssetSystem::LaunchAssetProcessor();
         AZ::SystemTickBus::Handler::BusDisconnect();
-        qobject_cast<QWidget*>(parent())->close();
+        AzToolsFramework::CloseViewPane(LyViewPane::ScriptCanvas);
     }
 
     void MainWindow::OnCommandStarted(AZ::Crc32)
