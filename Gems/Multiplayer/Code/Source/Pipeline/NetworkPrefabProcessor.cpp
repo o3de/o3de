@@ -9,7 +9,6 @@
 #include <Multiplayer/IMultiplayerTools.h>
 #include <Multiplayer/Components/NetBindComponent.h>
 #include <Pipeline/NetworkPrefabProcessor.h>
-#include <Pipeline/NetworkSpawnableHolderComponent.h>
 
 #include <AzCore/Serialization/Utils.h>
 #include <AzFramework/Components/TransformComponent.h>
@@ -17,6 +16,7 @@
 #include <AzToolsFramework/Prefab/Instance/Instance.h>
 #include <AzToolsFramework/Prefab/PrefabDomUtils.h>
 #include <Prefab/Spawnable/SpawnableUtils.h>
+#include <Source/NetworkEntity/NetworkEntityManager.h>
 
 namespace Multiplayer
 {

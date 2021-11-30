@@ -24,7 +24,6 @@
 #include <Multiplayer/Components/NetBindComponent.h>
 #include <Multiplayer/Components/NetworkHierarchyChildComponent.h>
 #include <Multiplayer/Components/NetworkHierarchyRootComponent.h>
-#include <Pipeline/NetworkSpawnableHolderComponent.h>
 
 namespace Multiplayer
 {
