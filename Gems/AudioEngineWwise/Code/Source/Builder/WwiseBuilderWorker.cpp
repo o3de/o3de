@@ -29,23 +29,25 @@ namespace WwiseBuilder
         {
             if (!rootObject.IsObject())
             {
-                return AZ::Failure(AZStd::string("The root of the metadata file is not an object. Please regenerate the metadata for this soundbank."));
+                return AZ::Failure(AZStd::string("The root of the metadata file is not an object.  "
+                    "Please regenerate the dependencies metadata for this soundbank."));
             }
 
             // If the file doesn't define a dependency field, then there are no dependencies.
             if (!rootObject.HasMember(JsonDependencyKey))
             {
                 AZStd::string addingDefaultDependencyWarning = AZStd::string::format(
-                    "Dependencies array does not exist. The file was likely manually edited. Registering a default "
-                    "dependency on %s. Please regenerate the metadata for this bank.",
+                    "Dependencies array does not exist - the .bankdeps file may have been manually edited.  "
+                    "Registering a default dependency on %s.  Dependencies may need to be regenerated via the authoring tool scripts.",
                     Audio::Wwise::InitBank);
+                fileNames.push_back(Audio::Wwise::InitBank);
                 return AZ::Success(addingDefaultDependencyWarning);
             }
 
             const rapidjson::Value& dependenciesArray = rootObject[JsonDependencyKey];
             if (!dependenciesArray.IsArray())
             {
-                return AZ::Failure(AZStd::string("Dependency field is not an array. Please regenerate the metadata for this soundbank."));
+                return AZ::Failure(AZStd::string("Dependency field is not an array. Please regenerate the dependencies metadata for this soundbank."));
             }
 
             for (rapidjson::SizeType dependencyIndex = 0; dependencyIndex < dependenciesArray.Size(); ++dependencyIndex)
@@ -53,26 +55,38 @@ namespace WwiseBuilder
                 fileNames.push_back(dependenciesArray[dependencyIndex].GetString());
             }
 
-            // The dependency array is empty, which likely means it was modified by hand. However, every bank is dependent
-            //  on init.bnk (other than itself), so just force add it as a dependency here. and emit a warning.
-            if (fileNames.size() == 0)
+            // Make sure init.bnk is a dependency. Force-add it if it's not.
+            // Look for init.bnk in the dependencies file list...
+            auto iter = AZStd::find_if(
+                fileNames.begin(), fileNames.end(),
+                [](AZStd::string fileName) -> bool
+                {
+                    // use a string copy argument in order to to_lower it...
+                    AZStd::to_lower(fileName.begin(), fileName.end());
+                    return fileName == Audio::Wwise::InitBank;
+                });
+            if (iter == fileNames.end())
             {
-                AZStd::string addingDefaultDependencyWarning = AZStd::string::format(
-                    "Dependencies array is empty. The file was likely manually edited. Registering a default "
-                    "dependency on %s. Please regenerate the metadata for this bank.",
-                    Audio::Wwise::InitBank);
-                return AZ::Success(addingDefaultDependencyWarning);
-            }
-            // Make sure init.bnk is in the dependency list. Force add it if it's not
-            else if (AZStd::find(fileNames.begin(), fileNames.end(), Audio::Wwise::InitBank) == fileNames.end())
-            {
-                AZStd::string addingDefaultDependencyWarning = AZStd::string::format(
-                    "Dependencies does not contain the initialization bank. The file was likely manually edited to remove "
-                    "it, however it is necessary for all banks to have the initialization bank loaded. Registering a "
-                    "default dependency on %s. Please regenerate the metadata for this bank.",
-                    Audio::Wwise::InitBank);
+                // Init bank wasn't found, which likely means it was modified by hand. However, every bank is dependent
+                // on init.bnk (other than itself), so just force add it as a dependency here. and emit a warning.
+                AZStd::string dependencyWarning;
+                if (fileNames.size() == 0)
+                {
+                    dependencyWarning = AZStd::string::format(
+                        "Dependencies array is empty - the .bankdeps file may have been manually edited.  "
+                        "Registering a default dependency on %s.  Dependencies may need to be regenerated via the authoring tool scripts.",
+                        Audio::Wwise::InitBank);
+                }
+                else
+                {
+                    dependencyWarning = AZStd::string::format(
+                        "Dependencies did not contain the initialization bank - it may have been manually removed from the .bankdeps file.  "
+                        "It is necessary for all banks to declare %s as a dependency, so it has been automatically added.  "
+                        "Dependencies may need to be regenerated via the authoring tool scripts.",
+                        Audio::Wwise::InitBank);
+                }
                 fileNames.push_back(Audio::Wwise::InitBank);
-                return AZ::Success(addingDefaultDependencyWarning);
+                return AZ::Success(dependencyWarning);
             }
 
             return AZ::Success(AZStd::string());
@@ -209,9 +223,9 @@ namespace WwiseBuilder
                 }
                 else
                 {
-                    if (gatherProductDependenciesResponse.GetValue().empty())
+                    if (!gatherProductDependenciesResponse.GetValue().empty())
                     {
-                        AZ_Warning(WwiseBuilderWindowName, false, gatherProductDependenciesResponse.GetValue().c_str());
+                        AZ_Warning(WwiseBuilderWindowName, false, "%s", gatherProductDependenciesResponse.GetValue().c_str());
                     }
                     jobProduct.m_pathDependencies = AZStd::move(dependencyPaths);
                 }
@@ -237,7 +251,10 @@ namespace WwiseBuilder
             AZ::IO::PathView requestFileName = AZ::IO::PathView(fullPath).Filename();
             if (requestFileName != Audio::Wwise::InitBank)
             {
-                success_message = AZStd::string::format("Failed to find the metadata file %s for soundbank %s. Full dependency information cannot be determined without the metadata file. Please regenerate the metadata for this soundbank.", bankMetadataPath.c_str(), fullPath.c_str());
+                success_message = AZStd::string::format(
+                    "Failed to find the metadata file %s for soundbank %s. Full dependency information cannot be determined without the "
+                    "metadata file. Please regenerate the metadata for this soundbank.",
+                    bankMetadataPath.c_str(), fullPath.c_str());
             }
             return AZ::Success(success_message);
         }
@@ -245,14 +262,19 @@ namespace WwiseBuilder
         AZ::u64 fileSize = AZ::IO::SystemFile::Length(bankMetadataPath.c_str());
         if (fileSize == 0)
         {
-            return AZ::Failure(AZStd::string::format("Soundbank metadata file at path %s is an empty file. Please regenerate the metadata for this soundbank.", bankMetadataPath.c_str()));
+            return AZ::Failure(AZStd::string::format(
+                "Soundbank metadata file at path %s is an empty file. Please regenerate the metadata for this soundbank.",
+                bankMetadataPath.c_str()));
         }
 
         AZStd::vector<char> buffer(fileSize + 1);
         buffer[fileSize] = 0;
         if (!AZ::IO::SystemFile::Read(bankMetadataPath.c_str(), buffer.data()))
         {
-            return AZ::Failure(AZStd::string::format("Failed to read the soundbank metadata file at path %s. Please make sure the file is not open or being edited by another program.", bankMetadataPath.c_str()));
+            return AZ::Failure(AZStd::string::format(
+                "Failed to read the soundbank metadata file at path %s. Please make sure the file is not open or being edited by another "
+                "program.",
+                bankMetadataPath.c_str()));
         }
 
         // load the file
@@ -260,18 +282,24 @@ namespace WwiseBuilder
         bankMetadataDoc.Parse(buffer.data());
         if (bankMetadataDoc.GetParseError() != rapidjson::ParseErrorCode::kParseErrorNone)
         {
-            return AZ::Failure(AZStd::string::format("Failed to parse soundbank metadata at path %s into JSON. Please regenerate the metadata for this soundbank.", bankMetadataPath.c_str()));
+            return AZ::Failure(AZStd::string::format(
+                "Failed to parse soundbank metadata at path %s into JSON. Please regenerate the metadata for this soundbank.",
+                bankMetadataPath.c_str()));
         }
 
         AZStd::vector<AZStd::string> wwiseFiles;
         AZ::Outcome<AZStd::string, AZStd::string> gatherDependenciesResult = Internal::GetDependenciesFromMetadata(bankMetadataDoc, wwiseFiles);
         if (!gatherDependenciesResult.IsSuccess())
         {
-            return AZ::Failure(AZStd::string::format("Failed to gather dependencies for %s from metadata file %s. %s", fullPath.c_str(), bankMetadataPath.c_str(), gatherDependenciesResult.GetError().c_str()));
+            return AZ::Failure(AZStd::string::format(
+                "Failed to gather dependencies for %s from metadata file %s. %s", fullPath.c_str(), bankMetadataPath.c_str(),
+                gatherDependenciesResult.GetError().c_str()));
         }
         else if (!gatherDependenciesResult.GetValue().empty())
         {
-            success_message = AZStd::string::format("Dependency information for %s was unavailable in the metadata file %s. %s", fullPath.c_str(), bankMetadataPath.c_str(), gatherDependenciesResult.GetValue().c_str());
+            success_message = AZStd::string::format(
+                "Dependency metadata file %s was processed, with warnings: %s", bankMetadataPath.c_str(),
+                gatherDependenciesResult.GetValue().c_str());
         }
 
         // Register dependencies stored in the file to the job response. (they'll be relative to the bank itself.)
