@@ -5,7 +5,7 @@
             "context": "BehaviorClass",
             "variant": "",
             "details": {
-                "name": "Asset Reference"
+                "name": "Simple Asset Reference"
             },
             "methods": [
                 {
@@ -26,20 +26,20 @@
                         {
                             "typeid": "{E16CA6C5-5C78-4AD9-8E9B-F8C1FB4D1DB8}",
                             "details": {
-                                "name": "Asset Reference",
+                                "name": "Asset path",
                                 "tooltip": "Asset reference as a project-relative path"
                             }
                         },
                         {
                             "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
                             "details": {
-                                "name": "Path"
+                                "name": "char"
                             }
                         }
                     ]
                 },
                 {
-                    "base": "assetPath",
+                    "base": "GetassetPath",
                     "details": {
                         "name": "Get Asset Path"
                     },
@@ -47,7 +47,7 @@
                         {
                             "typeid": "{E16CA6C5-5C78-4AD9-8E9B-F8C1FB4D1DB8}",
                             "details": {
-                                "name": "Asset Reference",
+                                "name": "Asset path",
                                 "tooltip": "Asset reference as a project-relative path"
                             }
                         }
@@ -56,13 +56,13 @@
                         {
                             "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
                             "details": {
-                                "name": "Path"
+                                "name": "AZ Std::string"
                             }
                         }
                     ]
                 },
                 {
-                    "base": "assetType",
+                    "base": "GetassetType",
                     "details": {
                         "name": "Get Asset Type"
                     },
@@ -70,7 +70,7 @@
                         {
                             "typeid": "{E16CA6C5-5C78-4AD9-8E9B-F8C1FB4D1DB8}",
                             "details": {
-                                "name": "Asset Reference",
+                                "name": "Asset path",
                                 "tooltip": "Asset reference as a project-relative path"
                             }
                         }
@@ -79,13 +79,13 @@
                         {
                             "typeid": "{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}",
                             "details": {
-                                "name": "Type"
+                                "name": "AZ:: Uuid"
                             }
                         }
                     ]
                 },
                 {
-                    "base": "fileFilter",
+                    "base": "GetfileFilter",
                     "details": {
                         "name": "Get File Filter"
                     },
@@ -93,7 +93,7 @@
                         {
                             "typeid": "{E16CA6C5-5C78-4AD9-8E9B-F8C1FB4D1DB8}",
                             "details": {
-                                "name": "Asset Reference",
+                                "name": "Asset path",
                                 "tooltip": "Asset reference as a project-relative path"
                             }
                         }
@@ -102,7 +102,7 @@
                         {
                             "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
                             "details": {
-                                "name": "Filter"
+                                "name": "char"
                             }
                         }
                     ]

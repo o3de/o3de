@@ -5,7 +5,7 @@
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "UiNavigationBus",
+                "name": "UI Navigation",
                 "category": "UI"
             },
             "methods": [

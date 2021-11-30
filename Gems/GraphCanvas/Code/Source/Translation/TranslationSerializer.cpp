@@ -68,12 +68,7 @@ namespace GraphCanvas
                 // if there is a "base" member within the object, then use it, otherwise use the index
                 if (array[i].IsObject())
                 {
-                    if (array[i].HasMember(Schema::Field::deprecated_key))
-                    {
-                        AZStd::string innerKey = array[i].FindMember(Schema::Field::deprecated_key)->value.GetString();
-                        itemKey.append(AZStd::string::format(".%s", innerKey.c_str()));
-                    }
-                    else if (array[i].HasMember(Schema::Field::key))
+                    if (array[i].HasMember(Schema::Field::key))
                     {
                         AZStd::string innerKey = array[i].FindMember(Schema::Field::key)->value.GetString();
                         itemKey.append(AZStd::string::format(".%s", innerKey.c_str()));
@@ -126,12 +121,7 @@ namespace GraphCanvas
 
                 AZStd::string keyStr;
                 rapidjson::Value::ConstMemberIterator keyValue;
-                if (entry.HasMember(Schema::Field::deprecated_key))
-                {
-                    keyValue = entry.FindMember(Schema::Field::deprecated_key);
-                    keyStr = keyValue->value.GetString();
-                }
-                else if (entry.HasMember(Schema::Field::key))
+                if (entry.HasMember(Schema::Field::key))
                 {
                     keyValue = entry.FindMember(Schema::Field::key);
                     keyStr = keyValue->value.GetString();

@@ -209,20 +209,7 @@ CSystem::CSystem(SharedEnvironmentInstance* pSharedEnvironment)
     m_env.pSharedEnvironment = pSharedEnvironment;
     //////////////////////////////////////////////////////////////////////////
 
-    m_pIFont = NULL;
-    m_pIFontUi = NULL;
-    m_rWidth = NULL;
-    m_rHeight = NULL;
-    m_rWidthAndHeightAsFractionOfScreenSize = NULL;
-    m_rMaxWidth = NULL;
-    m_rMaxHeight = NULL;
-    m_rColorBits = NULL;
-    m_rDepthBits = NULL;
-    m_cvSSInfo = NULL;
-    m_rStencilBits = NULL;
-    m_rFullscreen = NULL;
     m_sysNoUpdate = NULL;
-    m_pProcess = NULL;
     m_pCmdLine = NULL;
     m_pLevelSystem = NULL;
     m_pLocalizationManager = NULL;
@@ -230,18 +217,9 @@ CSystem::CSystem(SharedEnvironmentInstance* pSharedEnvironment)
 #define AZ_RESTRICTED_SECTION SYSTEM_CPP_SECTION_2
 #include AZ_RESTRICTED_FILE(System_cpp)
 #endif
-    m_sys_min_step = 0;
-    m_sys_max_step = 0;
-
-    m_cvAIUpdate = NULL;
 
     m_pUserCallback = NULL;
-    m_sys_memory_debug = NULL;
-    m_sysWarnings = NULL;
-    m_sysKeyboard = NULL;
     m_sys_firstlaunch = NULL;
-    m_sys_enable_budgetmonitoring = NULL;
-    m_sys_preload = NULL;
 
     //  m_sys_filecache = NULL;
     m_gpu_particle_physics = NULL;
@@ -256,22 +234,11 @@ CSystem::CSystem(SharedEnvironmentInstance* pSharedEnvironment)
     m_bNoCrashDialog = false;
     m_bNoErrorReportWindow = false;
 
-    m_pCVarQuit = NULL;
-
-    m_bForceNonDevMode = false;
-    m_bWasInDevMode = false;
     m_bInDevMode = false;
     m_bGameFolderWritable = false;
 
-    m_bDrawConsole = true;
-    m_bDrawUI = true;
-
-    m_nServerConfigSpec = CONFIG_VERYHIGH_SPEC;
-    m_nMaxConfigSpec = CONFIG_VERYHIGH_SPEC;
-
     m_bPaused = false;
     m_bNoUpdate = false;
-    m_nUpdateCounter = 0;
     m_iApplicationInstance = -1;
 
 
@@ -293,7 +260,6 @@ CSystem::CSystem(SharedEnvironmentInstance* pSharedEnvironment)
 
     m_bHasRenderedErrorMessage = false;
 
-    m_pDataProbe = nullptr;
 #if AZ_LEGACY_CRYSYSTEM_TRAIT_USE_MESSAGE_HANDLER
     RegisterWindowMessageHandler(this);
 #endif
@@ -340,47 +306,14 @@ void CSystem::Release()
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CSystem::FreeLib(AZStd::unique_ptr<AZ::DynamicModuleHandle>& hLibModule)
-{
-    if (hLibModule)
-    {
-        if (hLibModule->IsLoaded())
-        {
-            hLibModule->Unload();
-        }
-        hLibModule.release();
-    }
-}
-
-//////////////////////////////////////////////////////////////////////////
 IRemoteConsole* CSystem::GetIRemoteConsole()
 {
     return CRemoteConsole::GetInst();
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CSystem::SetForceNonDevMode(const bool bValue)
-{
-    m_bForceNonDevMode = bValue;
-    if (bValue)
-    {
-        SetDevMode(false);
-    }
-}
-
-//////////////////////////////////////////////////////////////////////////
-bool CSystem::GetForceNonDevMode() const
-{
-    return m_bForceNonDevMode;
-}
-
-//////////////////////////////////////////////////////////////////////////
 void CSystem::SetDevMode(bool bEnable)
 {
-    if (bEnable)
-    {
-        m_bWasInDevMode = true;
-    }
     m_bInDevMode = bEnable;
 }
 
@@ -464,30 +397,12 @@ void CSystem::ShutDown()
 
     // Release console variables.
 
-    SAFE_RELEASE(m_pCVarQuit);
-    SAFE_RELEASE(m_rWidth);
-    SAFE_RELEASE(m_rHeight);
-    SAFE_RELEASE(m_rWidthAndHeightAsFractionOfScreenSize);
-    SAFE_RELEASE(m_rMaxWidth);
-    SAFE_RELEASE(m_rMaxHeight);
-    SAFE_RELEASE(m_rColorBits);
-    SAFE_RELEASE(m_rDepthBits);
-    SAFE_RELEASE(m_cvSSInfo);
-    SAFE_RELEASE(m_rStencilBits);
-    SAFE_RELEASE(m_rFullscreen);
-
-    SAFE_RELEASE(m_sysWarnings);
-    SAFE_RELEASE(m_sysKeyboard);
     SAFE_RELEASE(m_sys_firstlaunch);
-    SAFE_RELEASE(m_sys_enable_budgetmonitoring);
 
 #if defined(AZ_RESTRICTED_PLATFORM)
 #define AZ_RESTRICTED_SECTION SYSTEM_CPP_SECTION_3
 #include AZ_RESTRICTED_FILE(System_cpp)
 #endif
-
-    SAFE_RELEASE(m_sys_min_step);
-    SAFE_RELEASE(m_sys_max_step);
 
     SAFE_DELETE(m_pLocalizationManager);
 
@@ -554,14 +469,6 @@ bool CSystem::IsQuitting() const
     bool wasExitMainLoopRequested = false;
     AzFramework::ApplicationRequests::Bus::BroadcastResult(wasExitMainLoopRequested, &AzFramework::ApplicationRequests::WasExitMainLoopRequested);
     return wasExitMainLoopRequested;
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CSystem::SetIProcess(IProcess* process)
-{
-    m_pProcess = process;
-    //if (m_pProcess)
-    //m_pProcess->SetPMessage("");
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -659,7 +566,6 @@ bool CSystem::UpdatePreTickBus(int updateFlags, int nPauseMode)
 
     AZ_TRACE_METHOD();
 
-    m_nUpdateCounter++;
 #ifndef EXCLUDE_UPDATE_ON_CONSOLE
     if (m_pUserCallback)
     {
@@ -952,13 +858,16 @@ void CSystem::Warning(EValidatorModule module, EValidatorSeverity severity, int 
 }
 
 //////////////////////////////////////////////////////////////////////////
-int CSystem::ShowMessage(const char* text, const char* caption, unsigned int uType)
+void CSystem::ShowMessage(const char* text, const char* caption, unsigned int uType)
 {
     if (m_pUserCallback)
     {
-        return m_pUserCallback->ShowMessage(text, caption, uType);
+        m_pUserCallback->ShowMessage(text, caption, uType);
     }
-    return CryMessageBox(text, caption, uType);
+    else
+    {
+        CryMessageBox(text, caption, uType);
+    }
 }
 
 inline const char* ValidatorModuleToString(EValidatorModule module)
@@ -1035,22 +944,18 @@ void CSystem::WarningV(EValidatorModule module, EValidatorSeverity severity, int
     default:
         break;
     }
-    char szBuffer[MAX_WARNING_LENGTH];
-    vsnprintf_s(szBuffer, sizeof(szBuffer), sizeof(szBuffer) - 1, format, args);
+
+    AZStd::fixed_string<MAX_WARNING_LENGTH> fmt;
+    vsnprintf_s(fmt.data(), MAX_WARNING_LENGTH, MAX_WARNING_LENGTH - 1, format, args);
 
     if (file && *file)
     {
-        AZStd::fixed_string<MAX_WARNING_LENGTH> fmt = szBuffer;
         fmt += " [File=";
         fmt += file;
         fmt += "]";
 
-        m_env.pLog->LogWithType(ltype, flags | VALIDATOR_FLAG_SKIP_VALIDATOR, "%s", fmt.c_str());
     }
-    else
-    {
-        m_env.pLog->LogWithType(ltype, flags | VALIDATOR_FLAG_SKIP_VALIDATOR, "%s", szBuffer);
-    }
+    m_env.pLog->LogWithType(ltype, flags | VALIDATOR_FLAG_SKIP_VALIDATOR, "%s", fmt.c_str());
 
     if (bDbgBreak && g_cvars.sys_error_debugbreak)
     {
@@ -1136,34 +1041,6 @@ ILocalizationManager* CSystem::GetLocalizationManager()
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CSystem::debug_GetCallStackRaw(void** callstack, uint32& callstackLength)
-{
-    memset(callstack, 0, sizeof(void*) * callstackLength);
-
-#if !defined(ANDROID)
-    callstackLength = 0;
-#endif
-
-#if AZ_LEGACY_CRYSYSTEM_TRAIT_CAPTURESTACK
-    uint32 nNumStackFramesToSkip = 1;
-    uint32 callstackCapacity = callstackLength;
-    if (callstackCapacity > 0x40)
-    {
-        callstackCapacity = 0x40;
-    }
-    callstackLength = RtlCaptureStackBackTrace(nNumStackFramesToSkip, callstackCapacity, callstack, NULL);
-#elif defined(AZ_RESTRICTED_PLATFORM)
-#define AZ_RESTRICTED_SECTION SYSTEM_CPP_SECTION_7
-#include AZ_RESTRICTED_FILE(System_cpp)
-#endif
-
-    if (callstackLength > 0)
-    {
-        std::reverse(callstack, callstack + callstackLength);
-    }
-}
-
-//////////////////////////////////////////////////////////////////////////
 void CSystem::ExecuteCommandLine(bool deferred)
 {
     if (m_executedCommandLine)
@@ -1199,12 +1076,6 @@ void CSystem::ExecuteCommandLine(bool deferred)
     }
 
     //gEnv->pConsole->ExecuteString("sys_RestoreSpec test*"); // to get useful debugging information about current spec settings to the log file
-}
-
-//////////////////////////////////////////////////////////////////////////
-ESystemConfigSpec CSystem::GetMaxConfigSpec() const
-{
-    return m_nMaxConfigSpec;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1402,23 +1273,6 @@ void CSystem::SetSystemGlobalState(const ESystemGlobalState systemGlobalState)
 }
 
 //////////////////////////////////////////////////////////////////////////
-void* CSystem::GetRootWindowMessageHandler()
-{
-#if defined(AZ_RESTRICTED_PLATFORM)
-    #define AZ_RESTRICTED_SECTION SYSTEM_CPP_SECTION_9
-    #include AZ_RESTRICTED_FILE(System_cpp)
-#endif
-#if defined(AZ_RESTRICTED_SECTION_IMPLEMENTED)
-#undef AZ_RESTRICTED_SECTION_IMPLEMENTED
-#elif defined(WIN32)
-    return reinterpret_cast<void*>(&WndProc);
-#else
-    CRY_ASSERT(false && "This platform does not support window message handlers");
-    return NULL;
-#endif
-}
-
-//////////////////////////////////////////////////////////////////////////
 void CSystem::RegisterWindowMessageHandler(IWindowMessageHandler* pHandler)
 {
 #if AZ_LEGACY_CRYSYSTEM_TRAIT_USE_MESSAGE_HANDLER
@@ -1600,11 +1454,6 @@ bool CSystem::HandleMessage([[maybe_unused]] HWND hWnd, UINT uMsg, WPARAM wParam
 }
 
 #endif
-
-std::shared_ptr<AZ::IO::FileIOBase> CSystem::CreateLocalFileIO()
-{
-    return std::make_shared<AZ::IO::LocalFileIO>();
-}
 
 ILevelSystem* CSystem::GetILevelSystem()
 {

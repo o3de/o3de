@@ -5,7 +5,7 @@
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "UiAnimationBus",
+                "name": "UI Animation",
                 "category": "UI"
             },
             "methods": [

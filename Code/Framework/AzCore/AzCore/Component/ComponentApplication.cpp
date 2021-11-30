@@ -45,6 +45,7 @@
 #include <AzCore/Module/Module.h>
 #include <AzCore/Module/ModuleManager.h>
 
+#include <AzCore/IO/Path/PathReflect.h>
 #include <AzCore/IO/SystemFile.h>
 
 #include <AzCore/Driller/Driller.h>
@@ -1547,7 +1548,7 @@ namespace AZ
         // reflect name dictionary.
         Name::Reflect(context);
         // reflect path
-        IO::PathReflection::Reflect(context);
+        IO::PathReflect(context);
 
         // reflect the SettingsRegistryInterface, SettignsRegistryImpl and the global Settings Registry
         // instance (AZ::SettingsRegistry::Get()) into the Behavior Context

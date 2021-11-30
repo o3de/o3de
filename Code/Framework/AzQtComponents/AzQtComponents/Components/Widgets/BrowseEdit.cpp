@@ -27,7 +27,7 @@ AZ_POP_DISABLE_WARNING
 
 namespace AzQtComponents
 {
-    static const char clearButtonActionNameC[] = "_q_qlineeditclearaction";
+    static const QString ClearButtonActionNameC = QStringLiteral("_q_qlineeditclearaction");
 
     struct BrowseEdit::InternalData
     {
@@ -263,7 +263,7 @@ namespace AzQtComponents
             auto lineEdit = browseEdit->m_data->m_lineEdit;
             LineEdit::polish(style, lineEdit, lineEditConfig);
 
-            QAction* action = lineEdit->findChild<QAction*>(clearButtonActionNameC);
+            QAction* action = lineEdit->findChild<QAction*>(ClearButtonActionNameC);
             if (action)
             {
                 QStyleOptionFrame option;
@@ -284,7 +284,7 @@ namespace AzQtComponents
             auto lineEdit = browseEdit->m_data->m_lineEdit;
             LineEdit::unpolish(style, lineEdit, lineEditConfig);
 
-            QAction* action = lineEdit->findChild<QAction*>(clearButtonActionNameC);
+            QAction* action = lineEdit->findChild<QAction*>(ClearButtonActionNameC);
             if (action)
             {
                 QStyleOptionFrame option;
