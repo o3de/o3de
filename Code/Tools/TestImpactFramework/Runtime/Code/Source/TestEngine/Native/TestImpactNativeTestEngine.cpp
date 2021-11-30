@@ -16,7 +16,8 @@
 #include <TestRunner/Native/TestImpactNativeTestEnumerator.h>
 #include <TestRunner/Native/TestImpactNativeInstrumentedTestRunner.h>
 #include <TestRunner/Native/TestImpactNativeRegularTestRunner.h>
-#include <TestEngine/Native/Job/TestImpactNativeTestJobInfoGenerator.h>
+#include <TestEngine/Native/Job/TestImpactNativeRegularTestRunJobInfoGenerator.h>
+#include <TestEngine/Native/Job/TestImpactNativeInstrumentedTestRunJobInfoGenerator.h>
 
 namespace TestImpact
 {
@@ -111,55 +112,27 @@ namespace TestImpact
         using TestEngineJobType = TestEngineInstrumentedRun<NativeTestTarget>;
         using TestJobRunnerCallbackHandlerType = InstrumentedRegularTestJobRunnerCallbackHandler;
     };
-                
-    // Helper function to compile the run type specific test engine jobs from their associated jobs and payloads
-    template<typename TestJobRunner>
-    AZStd::vector<TestEngineJobType<TestJobRunner>> CompileTestEngineRuns(
-        const AZStd::vector<const NativeTestTarget*>& testTargets,
-        AZStd::vector<typename TestJobRunner::Job>& runnerjobs,
-        TestEngineJobMap<typename TestJobRunner::JobInfo::IdType, NativeTestTarget>&& engineJobs)
-    {
-        AZStd::vector<TestEngineJobType<TestJobRunner>> engineRuns;
-        engineRuns.reserve(testTargets.size());
-
-        for (auto& job : runnerjobs)
-        {
-            const auto id = job.GetJobInfo().GetId().m_value;
-            if (auto it = engineJobs.find(id);
-                it != engineJobs.end())
-            {
-                // An entry in the test engine job map means that this job was acted upon (an attempt to execute, successful or otherwise)
-                auto& engineJob = it->second;
-                TestEngineJobType<TestJobRunner> run(AZStd::move(engineJob), job.ReleasePayload());
-                engineRuns.push_back(AZStd::move(run));
-            }
-            else
-            {
-                // No entry in the test engine job map means that this job never had the opportunity to be acted upon (the sequence
-                // was terminated whilst this job was still queued up for execution)
-                const auto& args = job.GetJobInfo().GetCommand().m_args;
-                const auto* target = testTargets[id];
-                TestEngineJobType<TestJobRunner> run(
-                    TestEngineJob<NativeTestTarget>(target, args, {}, Client::TestRunResult::NotRun, "", ""),
-                    {});
-                engineRuns.push_back(AZStd::move(run));
-            }
-        }
-
-        return engineRuns;
-        }
 
     TestEngine::TestEngine(
         const RepoPath& sourceDir,
         const RepoPath& targetBinaryDir,
-        const RepoPath& cacheDir,
+        [[maybe_unused]]const RepoPath& cacheDir,
         const RepoPath& artifactDir,
         const RepoPath& testRunnerBinary,
         const RepoPath& instrumentBinary,
         size_t maxConcurrentRuns)
         : m_maxConcurrentRuns(maxConcurrentRuns)
-        , m_testJobInfoGenerator(AZStd::make_unique<NativeTestJobInfoGenerator>(
-            sourceDir, targetBinaryDir, cacheDir, artifactDir, testRunnerBinary, instrumentBinary))
+        , m_regularTestJobInfoGenerator(AZStd::make_unique<NativeRegularTestRunJobInfoGenerator>(
+            sourceDir,
+            targetBinaryDir,
+            artifactDir,
+            testRunnerBinary))
+        , m_instrumentedTestJobInfoGenerator(AZStd::make_unique<NativeInstrumentedTestRunJobInfoGenerator>(
+            sourceDir,
+            targetBinaryDir,
+            artifactDir,
+            testRunnerBinary,
+            instrumentBinary))
         , m_testEnumerator(AZStd::make_unique<NativeTestEnumerator>(maxConcurrentRuns))
         , m_instrumentedTestRunner(AZStd::make_unique<NativeInstrumentedTestRunner>(maxConcurrentRuns))
         , m_testRunner(AZStd::make_unique<NativeRegularTestRunner>(maxConcurrentRuns))
@@ -206,10 +179,10 @@ namespace TestImpact
     {
         DeleteArtifactXmls();
 
-        auto [result, engineRuns] = RunTests(
+        return RunTests(
             m_testRunner.get(),
+            m_regularTestJobInfoGenerator.get(),
             testTargets,
-            m_testJobInfoGenerator->GenerateRegularTestRunJobInfos(testTargets),
             executionFailurePolicy,
             testFailurePolicy,
             targetOutputCapture,
@@ -217,8 +190,6 @@ namespace TestImpact
             globalTimeout,
             callback
             );
-
-        return { CalculateSequenceResult(result, engineRuns, executionFailurePolicy), AZStd::move(engineRuns) };
     }
 
     AZStd::pair<TestSequenceResult, AZStd::vector<TestEngineInstrumentedRun<NativeTestTarget>>> TestEngine::InstrumentedRun(
@@ -235,8 +206,8 @@ namespace TestImpact
 
         auto [result, engineRuns] = RunTests(
             m_instrumentedTestRunner.get(),
+            m_instrumentedTestJobInfoGenerator.get(),
             testTargets,
-            m_testJobInfoGenerator->GenerateInstrumentedTestRunJobInfos(testTargets, CoverageLevel::Source),
             executionFailurePolicy,
             testFailurePolicy,
             targetOutputCapture,
@@ -260,6 +231,6 @@ namespace TestImpact
             }
         }
 
-        return { CalculateSequenceResult(result, engineRuns, executionFailurePolicy), AZStd::move(engineRuns) };
+        return { result, engineRuns };
     }
 } // namespace TestImpact

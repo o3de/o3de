@@ -23,7 +23,8 @@
 namespace TestImpact
 {
     class NativeTestTarget;
-    class NativeTestJobInfoGenerator;
+    class NativeRegularTestRunJobInfoGenerator;
+    class NativeInstrumentedTestRunJobInfoGenerator;
     class NativeTestEnumerator;
     class NativeInstrumentedTestRunner;
     class NativeRegularTestRunner;
@@ -114,7 +115,8 @@ namespace TestImpact
         void DeleteArtifactXmls() const;
 
         size_t m_maxConcurrentRuns = 0;
-        AZStd::unique_ptr<NativeTestJobInfoGenerator> m_testJobInfoGenerator;
+        AZStd::unique_ptr<NativeRegularTestRunJobInfoGenerator> m_regularTestJobInfoGenerator;
+        AZStd::unique_ptr<NativeInstrumentedTestRunJobInfoGenerator> m_instrumentedTestJobInfoGenerator;
         AZStd::unique_ptr<NativeTestEnumerator> m_testEnumerator;
         AZStd::unique_ptr<NativeInstrumentedTestRunner> m_instrumentedTestRunner;
         AZStd::unique_ptr<NativeRegularTestRunner> m_testRunner;

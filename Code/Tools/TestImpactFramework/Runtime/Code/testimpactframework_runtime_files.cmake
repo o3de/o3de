@@ -131,14 +131,21 @@ set(FILES
     Source/TestEngine/Common/TestImpactTestEngineArtifactDirectory.h
     Source/TestEngine/Common/TestImpactTestEngine.h
     Source/TestEngine/Common/Job/TestImpactTestEngineJob.h
+    Source/TestEngine/Common/Job/TestImpactTestJobInfoGenerator.h
     Source/TestEngine/Common/Enumeration/TestImpactTestEngineEnumeration.h
     Source/TestEngine/Common/Run/TestImpactTestEngineRegularRun.h
     Source/TestEngine/Common/Run/TestImpactTestEngineInstrumentedRun.h
     Source/TestEngine/Native/TestImpactNativeTestEngine.cpp
     Source/TestEngine/Native/TestImpactNativeTestEngine.h
     Source/TestEngine/Native/TestImpactNativeTestTargetExtension.h
-    Source/TestEngine/Native/Job/TestImpactNativeTestJobInfoGenerator.cpp
-    Source/TestEngine/Native/Job/TestImpactNativeTestJobInfoGenerator.h
+    Source/TestEngine/Native/Job/TestImpactNativeTestJobInfoUtils.cpp
+    Source/TestEngine/Native/Job/TestImpactNativeTestJobInfoUtils.h
+    Source/TestEngine/Native/Job/TestImpactNativeTestEnumerationJobInfoGenerator.cpp
+    Source/TestEngine/Native/Job/TestImpactNativeTestEnumerationJobInfoGenerator.h
+    Source/TestEngine/Native/Job/TestImpactNativeRegularTestRunJobInfoGenerator.cpp
+    Source/TestEngine/Native/Job/TestImpactNativeRegularTestRunJobInfoGenerator.h
+    Source/TestEngine/Native/Job/TestImpactNativeInstrumentedTestRunJobInfoGenerator.cpp
+    Source/TestEngine/Native/Job/TestImpactNativeInstrumentedTestRunJobInfoGenerator.h
     Source/TestEngine/Python/Job/TestImpactPythonTestJobInfoGenerator.cpp
     Source/TestEngine/Python/Job/TestImpactPythonTestJobInfoGenerator.h
     Source/TestImpactException.cpp

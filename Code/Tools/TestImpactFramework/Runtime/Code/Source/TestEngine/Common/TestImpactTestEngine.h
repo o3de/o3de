@@ -7,6 +7,7 @@
  */
 
 #include <Process/Scheduler/TestImpactProcessScheduler.h>
+#include <TestEngine/Common/TestImpactTestEngineException.h>
 #include <TestEngine/Common/TestImpactErrorCodeChecker.h>
 #include <TestEngine/Common/Job/TestImpactTestEngineJob.h>
 
@@ -223,11 +224,11 @@ namespace TestImpact
     }
 
     //!
-    template<typename TestJobRunner, typename TestTarget>
-    AZStd::pair<ProcessSchedulerResult, AZStd::vector<TestEngineJobType<TestJobRunner>>> RunTests(
+    template<typename TestJobRunner, typename TestJobInfoGenerator, typename TestTarget>
+    AZStd::pair<TestSequenceResult, AZStd::vector<TestEngineJobType<TestJobRunner>>> RunTests(
         TestJobRunner* testRunner,
+        TestJobInfoGenerator* jobInfoGenerator,
         const AZStd::vector<const TestTarget*>& testTargets,
-        const AZStd::vector<typename TestJobRunner::JobInfo>& jobInfos,
         Policy::ExecutionFailure executionFailurePolicy,
         Policy::TestFailure testFailurePolicy,
         Policy::TargetOutputCapture targetOutputCapture,
@@ -237,7 +238,7 @@ namespace TestImpact
     {
         TestEngineJobMap<TestJobRunner::JobInfo::IdType, TestTarget> engineJobs;
         auto [result, runnerJobs] = testRunner->RunTests(
-            jobInfos,
+            jobInfoGenerator->GenerateJobInfos(testTargets),
             targetOutputCapture == Policy::TargetOutputCapture::None ? StdOutputRouting::None : StdOutputRouting::ToParent,
             targetOutputCapture == Policy::TargetOutputCapture::None ? StdErrorRouting::None : StdErrorRouting::ToParent,
             testTargetTimeout,
@@ -250,6 +251,7 @@ namespace TestImpact
                 &callback),
             AZStd::nullopt);
 
-        return { result, CompileTestEngineRuns<TestJobRunner, TestTarget>(testTargets, runnerJobs, AZStd::move(engineJobs)) };
+        auto engineRuns = CompileTestEngineRuns<TestJobRunner, TestTarget>(testTargets, runnerJobs, AZStd::move(engineJobs));
+        return { CalculateSequenceResult(result, engineRuns, executionFailurePolicy), AZStd::move(engineRuns) };
     }
 } // namespace TestImpact
