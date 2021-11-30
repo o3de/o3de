@@ -112,7 +112,7 @@ namespace TestImpact
         using TestJobRunnerCallbackHandlerType = InstrumentedRegularTestJobRunnerCallbackHandler;
     };
 
-    TestEngine::TestEngine(
+    NativeTestEngine::NativeTestEngine(
         const RepoPath& sourceDir,
         const RepoPath& targetBinaryDir,
         [[maybe_unused]]const RepoPath& cacheDir,
@@ -139,14 +139,14 @@ namespace TestImpact
     {
     }
 
-    TestEngine::~TestEngine() = default;
+    NativeTestEngine::~NativeTestEngine() = default;
 
-    void TestEngine::DeleteArtifactXmls() const
+    void NativeTestEngine::DeleteArtifactXmls() const
     {
         DeleteFiles(m_artifactDir, "*.xml");
     }
 
-    //AZStd::pair<TestSequenceResult, AZStd::vector<TestEngineEnumeration>> TestEngine::UpdateEnumerationCache(
+    //AZStd::pair<TestSequenceResult, AZStd::vector<TestEngineEnumeration>> NativeTestEngine::UpdateEnumerationCache(
     //    const AZStd::vector<const NativeTestTarget*>& testTargets,
     //    Policy::ExecutionFailure executionFailurePolicy,
     //    Policy::TestFailure testFailurePolicy,
@@ -167,7 +167,7 @@ namespace TestImpact
     //    return { CalculateSequenceResult(result, engineRuns, executionFailurePolicy), AZStd::move(engineRuns) };
     //}
 
-    AZStd::pair<TestSequenceResult, AZStd::vector<TestEngineRegularRun<NativeTestTarget>>> TestEngine::RegularRun(
+    AZStd::pair<TestSequenceResult, AZStd::vector<TestEngineRegularRun<NativeTestTarget>>> NativeTestEngine::RegularRun(
         const AZStd::vector<const NativeTestTarget*>& testTargets,
         Policy::ExecutionFailure executionFailurePolicy,
         Policy::TestFailure testFailurePolicy,
@@ -191,7 +191,7 @@ namespace TestImpact
             );
     }
 
-    AZStd::pair<TestSequenceResult, AZStd::vector<TestEngineInstrumentedRun<NativeTestTarget>>> TestEngine::InstrumentedRun(
+    AZStd::pair<TestSequenceResult, AZStd::vector<TestEngineInstrumentedRun<NativeTestTarget>>> NativeTestEngine::InstrumentedRun(
         const AZStd::vector<const NativeTestTarget*>& testTargets,
         Policy::ExecutionFailure executionFailurePolicy,
         Policy::IntegrityFailure integrityFailurePolicy,

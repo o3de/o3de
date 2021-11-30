@@ -30,7 +30,7 @@ namespace TestImpact
     class NativeRegularTestRunner;
 
     //! Provides the front end for performing test enumerations and test runs.
-    class TestEngine
+    class NativeTestEngine
     {
     public:
         //! Configures the test engine with the necessary path information for launching test targets and managing the artifacts they produce.
@@ -41,7 +41,7 @@ namespace TestImpact
         //! @param testRunnerBinary Path to the binary responsible for launching test targets that have the TestRunner launch method.
         //! @param instrumentBinary Path to the binary responsible for launching test targets with test coverage instrumentation.
         //! @param maxConcurrentRuns The maximum number of concurrent test targets that can be in flight at any given moment.
-        TestEngine(
+        NativeTestEngine(
             const RepoPath& sourceDir,
             const RepoPath& targetBinaryDir,
             const RepoPath& cacheDir,
@@ -50,7 +50,7 @@ namespace TestImpact
             const RepoPath& instrumentBinary,
             size_t maxConcurrentRuns);
 
-        ~TestEngine();
+        ~NativeTestEngine();
 
         //! Updates the cached enumerations for the specified test targets.
         //! @note Whilst test runs will make use of this cache for test target sharding it is the responsibility of the client to
