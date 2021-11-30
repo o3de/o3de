@@ -366,7 +366,10 @@ namespace AzToolsFramework
         cameraCorrectAxisPartialFn(axis1 * axis1.Dot(m_offset), m_cameraCorrectedOffsetAxis1);
         cameraCorrectAxisPartialFn(axis2 * axis2.Dot(m_offset), m_cameraCorrectedOffsetAxis2);
 
-        const auto cameraCorrectedVisualOffset = (m_cameraCorrectedOffsetAxis1 + m_cameraCorrectedOffsetAxis2);
+        const AZ::Vector3 totalScale =
+            manipulatorState.m_nonUniformScale + AZ::Vector3(manipulatorState.m_worldFromLocal.GetUniformScale());
+
+        const auto cameraCorrectedVisualOffset = (m_cameraCorrectedOffsetAxis1 + m_cameraCorrectedOffsetAxis2) * totalScale.GetReciprocal();
         const auto viewScale =
             ManipulatorViewScaleMultiplier(manipulatorState.m_worldFromLocal.TransformPoint(manipulatorState.m_localPosition), cameraState);
         const Picking::BoundShapeQuad quadBoundVisual = CalculateQuadBound(
@@ -397,8 +400,9 @@ namespace AzToolsFramework
         const float hitSize = m_size * ed_planarManipulatorBoundScaleFactor;
         // size of edge bounds (the 'margin/border' outside the visual representation)
         const float edgeSize = (hitSize - m_size) * 0.5f;
-        const auto cameraCorrectedHitOffset =
-            cameraCorrectedVisualOffset - (m_cameraCorrectedAxis1 * edgeSize + m_cameraCorrectedAxis2 * edgeSize);
+        const AZ::Vector3 edgeOffset =
+            ((m_cameraCorrectedAxis1 * edgeSize + m_cameraCorrectedAxis2 * edgeSize) * totalScale.GetReciprocal());
+        const auto cameraCorrectedHitOffset = cameraCorrectedVisualOffset - edgeOffset;
         const Picking::BoundShapeQuad quadBoundHit = CalculateQuadBound(
             manipulatorState.m_localPosition + (cameraCorrectedHitOffset * viewScale), manipulatorState, m_cameraCorrectedAxis1,
             m_cameraCorrectedAxis2, hitSize * viewScale);

@@ -287,7 +287,7 @@ namespace AzToolsFramework
         {
             m_surfaceManipulator->SetView(CreateManipulatorViewSphere(
                 color, radius,
-                [](const ViewportInteraction::MouseInteraction& /*mouseInteraction*/, bool mouseOver,
+                []([[maybe_unused]] const ViewportInteraction::MouseInteraction& mouseInteraction, bool mouseOver,
                    const AZ::Color& defaultColor) -> AZ::Color
                 {
                     const AZ::Color color[2] = {
