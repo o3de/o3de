@@ -30,6 +30,7 @@ void CEditorPreferencesPage_ViewportManipulator::Reflect(AZ::SerializeContext& s
         ->Field("LinearManipulatorConeRadius", &Manipulators::m_linearManipulatorConeRadius)
         ->Field("ScaleManipulatorBoxHalfExtent", &Manipulators::m_scaleManipulatorBoxHalfExtent)
         ->Field("RotationManipulatorRadius", &Manipulators::m_rotationManipulatorRadius)
+        ->Field("ManipulatorViewBaseScale", &Manipulators::m_manipulatorViewBaseScale)
         ->Field("FlipManipulatorAxesTowardsView", &Manipulators::m_flipManipulatorAxesTowardsView);
 
     serialize.Class<CEditorPreferencesPage_ViewportManipulator>()->Version(2)->Field(
@@ -89,6 +90,11 @@ void CEditorPreferencesPage_ViewportManipulator::Reflect(AZ::SerializeContext& s
             ->Attribute(AZ::Edit::Attributes::Min, 0.5f)
             ->Attribute(AZ::Edit::Attributes::Max, 5.0f)
             ->DataElement(
+                AZ::Edit::UIHandlers::SpinBox, &Manipulators::m_manipulatorViewBaseScale, "Manipulator View Base Scale",
+                "The base scale to apply to all Manipulator Views (default is 1.0)")
+            ->Attribute(AZ::Edit::Attributes::Min, 0.5f)
+            ->Attribute(AZ::Edit::Attributes::Max, 2.0f)
+            ->DataElement(
                 AZ::Edit::UIHandlers::CheckBox, &Manipulators::m_flipManipulatorAxesTowardsView, "Flip Manipulator Axes Towards View",
                 "Determines whether Planar and Linear Manipulators should switch to face the view (camera) in the Editor");
 
@@ -146,6 +152,7 @@ void CEditorPreferencesPage_ViewportManipulator::OnApply()
     AzToolsFramework::SetScaleManipulatorBoxHalfExtent(m_manipulators.m_scaleManipulatorBoxHalfExtent);
     AzToolsFramework::SetRotationManipulatorRadius(m_manipulators.m_rotationManipulatorRadius);
     AzToolsFramework::SetFlipManipulatorAxesTowardsView(m_manipulators.m_flipManipulatorAxesTowardsView);
+    AzToolsFramework::SetManipulatorViewBaseScale(m_manipulators.m_manipulatorViewBaseScale);
 }
 
 void CEditorPreferencesPage_ViewportManipulator::InitializeSettings()
@@ -162,4 +169,5 @@ void CEditorPreferencesPage_ViewportManipulator::InitializeSettings()
     m_manipulators.m_scaleManipulatorBoxHalfExtent = AzToolsFramework::ScaleManipulatorBoxHalfExtent();
     m_manipulators.m_rotationManipulatorRadius = AzToolsFramework::RotationManipulatorRadius();
     m_manipulators.m_flipManipulatorAxesTowardsView = AzToolsFramework::FlipManipulatorAxesTowardsView();
+    m_manipulators.m_manipulatorViewBaseScale = AzToolsFramework::ManipulatorViewBaseScale();
 }

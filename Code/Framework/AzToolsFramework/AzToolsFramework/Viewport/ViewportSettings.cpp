@@ -19,6 +19,7 @@ namespace AzToolsFramework
     constexpr AZStd::string_view LinearManipulatorConeRadiusSetting = "/Amazon/Preferences/Editor/LinearManipulatorConeRadius";
     constexpr AZStd::string_view ScaleManipulatorBoxHalfExtentSetting = "/Amazon/Preferences/Editor/ScaleManipulatorBoxHalfExtent";
     constexpr AZStd::string_view RotationManipulatorRadiusSetting = "/Amazon/Preferences/Editor/RotationManipulatorRadius";
+    constexpr AZStd::string_view ManipulatorViewBaseScaleSetting = "/Amazon/Preferences/Editor/ManipulatorViewBaseScale";
 
     bool FlipManipulatorAxesTowardsView()
     {
@@ -108,5 +109,15 @@ namespace AzToolsFramework
     void SetRotationManipulatorRadius(const float radius)
     {
         SetRegistry(RotationManipulatorRadiusSetting, radius);
+    }
+
+    float ManipulatorViewBaseScale()
+    {
+        return aznumeric_cast<float>(GetRegistry(ManipulatorViewBaseScaleSetting, 1.0));
+    }
+
+    void SetManipulatorViewBaseScale(const float scale)
+    {
+        SetRegistry(ManipulatorViewBaseScaleSetting, scale);
     }
 } // namespace AzToolsFramework

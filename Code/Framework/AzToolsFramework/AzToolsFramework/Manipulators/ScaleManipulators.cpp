@@ -126,14 +126,14 @@ namespace AzToolsFramework
 
         for (size_t manipulatorIndex = 0; manipulatorIndex < m_axisScaleManipulators.size(); ++manipulatorIndex)
         {
-            const auto lineLength = axisLength - boxHalfExtent;
+            const auto lineLength = axisLength - (2.0f * boxHalfExtent);
 
             ManipulatorViews views;
             views.emplace_back(CreateManipulatorViewLine(
-                *m_axisScaleManipulators[manipulatorIndex], colors[manipulatorIndex], axisLength + boxHalfExtent, m_lineBoundWidth));
+                *m_axisScaleManipulators[manipulatorIndex], colors[manipulatorIndex], axisLength, m_lineBoundWidth));
             views.emplace_back(CreateManipulatorViewBox(
                 AZ::Transform::CreateIdentity(), colors[manipulatorIndex],
-                m_axisScaleManipulators[manipulatorIndex]->GetAxis() * lineLength, AZ::Vector3(boxHalfExtent)));
+                m_axisScaleManipulators[manipulatorIndex]->GetAxis() * (lineLength + boxHalfExtent), AZ::Vector3(boxHalfExtent)));
             m_axisScaleManipulators[manipulatorIndex]->SetViews(AZStd::move(views));
         }
 

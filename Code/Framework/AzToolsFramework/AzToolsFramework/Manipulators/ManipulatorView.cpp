@@ -334,7 +334,8 @@ namespace AzToolsFramework
     float ManipulatorView::ManipulatorViewScaleMultiplier(
         const AZ::Vector3& worldPosition, const AzFramework::CameraState& cameraState) const
     {
-        return ScreenSizeFixed() ? CalculateScreenToWorldMultiplier(worldPosition, cameraState) : 1.0f;
+        const float screenScale = ScreenSizeFixed() ? CalculateScreenToWorldMultiplier(worldPosition, cameraState) : 1.0f;
+        return screenScale * ManipulatorViewBaseScale();
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -412,12 +413,12 @@ namespace AzToolsFramework
 
     void ManipulatorViewQuadBillboard::Draw(
         const ManipulatorManagerId managerId,
-        const ManipulatorManagerState& /*managerState*/,
+        [[maybe_unused]] const ManipulatorManagerState& managerState,
         const ManipulatorId manipulatorId,
         const ManipulatorState& manipulatorState,
         AzFramework::DebugDisplayRequests& debugDisplay,
         const AzFramework::CameraState& cameraState,
-        const ViewportInteraction::MouseInteraction& /*mouseInteraction*/)
+        [[maybe_unused]] const ViewportInteraction::MouseInteraction& mouseInteraction)
     {
         const Picking::BoundShapeQuad quadBound = CalculateQuadBoundBillboard(
             manipulatorState.m_localPosition, manipulatorState.m_worldFromLocal,
@@ -477,7 +478,7 @@ namespace AzToolsFramework
 
     void ManipulatorViewLineSelect::Draw(
         const ManipulatorManagerId managerId,
-        const ManipulatorManagerState& /*managerState*/,
+        [[maybe_unused]] const ManipulatorManagerState& managerState,
         const ManipulatorId manipulatorId,
         const ManipulatorState& manipulatorState,
         AzFramework::DebugDisplayRequests& debugDisplay,
@@ -605,7 +606,7 @@ namespace AzToolsFramework
 
     void ManipulatorViewSphere::Draw(
         const ManipulatorManagerId managerId,
-        const ManipulatorManagerState& /*managerState*/,
+        [[maybe_unused]] const ManipulatorManagerState& managerState,
         const ManipulatorId manipulatorId,
         const ManipulatorState& manipulatorState,
         AzFramework::DebugDisplayRequests& debugDisplay,
@@ -634,12 +635,12 @@ namespace AzToolsFramework
 
     void ManipulatorViewCircle::Draw(
         const ManipulatorManagerId managerId,
-        const ManipulatorManagerState& /*managerState*/,
+        [[maybe_unused]] const ManipulatorManagerState& managerState,
         const ManipulatorId manipulatorId,
         const ManipulatorState& manipulatorState,
         AzFramework::DebugDisplayRequests& debugDisplay,
         const AzFramework::CameraState& cameraState,
-        const ViewportInteraction::MouseInteraction& /*mouseInteraction*/)
+        [[maybe_unused]] const ViewportInteraction::MouseInteraction& mouseInteraction)
     {
         const float viewScale =
             ManipulatorViewScaleMultiplier(manipulatorState.m_worldFromLocal.TransformPoint(manipulatorState.m_localPosition), cameraState);
@@ -700,7 +701,7 @@ namespace AzToolsFramework
 
     void ManipulatorViewSplineSelect::Draw(
         const ManipulatorManagerId managerId,
-        const ManipulatorManagerState& /*managerState*/,
+        [[maybe_unused]] const ManipulatorManagerState& managerState,
         const ManipulatorId manipulatorId,
         const ManipulatorState& manipulatorState,
         AzFramework::DebugDisplayRequests& debugDisplay,

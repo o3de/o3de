@@ -63,4 +63,7 @@ namespace AzToolsFramework
 
     float RotationManipulatorRadius();
     void SetRotationManipulatorRadius(float radius);
+
+    float ManipulatorViewBaseScale();
+    void SetManipulatorViewBaseScale(float scale);
 } // namespace AzToolsFramework
