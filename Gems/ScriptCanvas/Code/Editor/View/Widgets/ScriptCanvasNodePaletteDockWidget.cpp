@@ -639,7 +639,7 @@ namespace ScriptCanvasEditor
             m_mimeType = NodePaletteDockWidget::GetMimeType();
             m_isInContextMenu = isInContextMenu;
             m_allowArrowKeyNavigation = isInContextMenu;
-            m_saveIdentifier = m_isInContextMenu ? "ScriptCanvas" : "ScriptCnavas_ContextMenu";
+            m_saveIdentifier = m_isInContextMenu ? "ScriptCanvas" : "ScriptCanvas_ContextMenu";
 
             m_rootTreeItem = Widget::NodePaletteWidget::ExternalCreateNodePaletteRoot(nodePaletteModel, assetModel);
         }

@@ -151,7 +151,12 @@ namespace Camera
 
     void CameraComponentController::SetShouldActivateFunction(AZStd::function<bool()> shouldActivateFunction)
     {
-        m_shouldActivateFn = shouldActivateFunction;
+        m_shouldActivateFn = AZStd::move(shouldActivateFunction);
+    }
+
+    void CameraComponentController::SetIsLockedFunction(AZStd::function<bool()> isLockedFunction)
+    {
+        m_isLockedFn = AZStd::move(isLockedFunction);
     }
 
     void CameraComponentController::Reflect(AZ::ReflectContext* context)
@@ -195,10 +200,11 @@ namespace Camera
     {
         m_onViewMatrixChanged = AZ::Event<const AZ::Matrix4x4&>::Handler([this](const AZ::Matrix4x4&)
         {
-            if (!m_updatingTransformFromEntity)
+            if (!m_updatingTransformFromEntity && !m_isLockedFn())
             {
                 AZ::TransformBus::Event(m_entityId, &AZ::TransformInterface::SetWorldTM, m_atomCamera->GetCameraTransform());
             }
+
         });
     }
 

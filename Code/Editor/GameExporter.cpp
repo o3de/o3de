@@ -146,13 +146,11 @@ bool CGameExporter::Export(unsigned int flags, [[maybe_unused]] EEndian eExportE
             exportSuccessful = false;
         }
 
-        if (exportSuccessful)
+        if (exportSuccessful && m_bAutoExportMode)
         {
-            if (m_bAutoExportMode)
-            {
-                // Remove read-only flags.
-                CrySetFileAttributes(m_levelPak.m_sPath.toUtf8().data(), FILE_ATTRIBUTE_NORMAL);
-            }
+            // Remove read-only flags.
+            auto perms = QFile::permissions(m_levelPak.m_sPath) | QFile::Permission::WriteOwner;
+            QFile::setPermissions(m_levelPak.m_sPath, perms);
         }
 
         //////////////////////////////////////////////////////////////////////////

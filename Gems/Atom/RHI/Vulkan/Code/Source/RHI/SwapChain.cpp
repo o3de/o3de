@@ -483,12 +483,18 @@ namespace AZ
         void SwapChain::InvalidateNativeSwapChain()
         {
             auto& device = static_cast<Device&>(GetDevice());
-            vkDeviceWaitIdle(device.GetNativeDevice());
-            if (m_nativeSwapChain != VK_NULL_HANDLE)
+            auto presentCommand = [this,  &device]([[maybe_unused]] void* queue)
             {
-                vkDestroySwapchainKHR(device.GetNativeDevice(), m_nativeSwapChain, nullptr);
-                m_nativeSwapChain = VK_NULL_HANDLE;
-            }
+                vkDeviceWaitIdle(device.GetNativeDevice());
+                if (m_nativeSwapChain != VK_NULL_HANDLE)
+                {
+                    vkDestroySwapchainKHR(device.GetNativeDevice(), m_nativeSwapChain, nullptr);
+                    m_nativeSwapChain = VK_NULL_HANDLE;
+                }
+            };
+
+            m_presentationQueue->QueueCommand(AZStd::move(presentCommand));
+            m_presentationQueue->FlushCommands();
         }
 
         RHI::ResultCode SwapChain::CreateSwapchain()
@@ -496,7 +502,7 @@ namespace AZ
             auto& device = static_cast<Device&>(GetDevice());
 
             m_surfaceCapabilities = GetSurfaceCapabilities();
-            m_surfaceFormat = GetSupportedSurfaceFormat(GetDescriptor().m_dimensions.m_imageFormat);
+            m_surfaceFormat = GetSupportedSurfaceFormat(m_dimensions.m_imageFormat);
             m_presentMode = GetSupportedPresentMode(GetDescriptor().m_verticalSyncInterval);
             m_compositeAlphaFlagBits = GetSupportedCompositeAlpha(); 
 
