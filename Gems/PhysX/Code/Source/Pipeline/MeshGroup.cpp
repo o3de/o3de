@@ -864,7 +864,8 @@ namespace PhysX
         {
             if (auto* physicsSystem = AZ::Interface<AzPhysics::SystemInterface>::Get())
             {
-                if (const auto* physicsConfiguration = physicsSystem->GetConfiguration())
+                if (const auto* physicsConfiguration = physicsSystem->GetConfiguration();
+                    physicsConfiguration && physicsConfiguration->m_materialLibraryAsset)
                 {
                     const auto& materials = physicsConfiguration->m_materialLibraryAsset->GetMaterialsData();
 
