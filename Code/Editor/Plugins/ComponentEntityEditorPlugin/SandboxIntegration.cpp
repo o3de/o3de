@@ -447,7 +447,7 @@ void SandboxIntegrationManager::OnEndUndo(const char* label, bool changed)
     // Add the undo only after we know it's got a legit change, we can't remove undos from the cry undo system so we do it here instead of OnBeginUndo
     if (changed && CUndo::IsRecording())
     {
-        CUndo::Record(new CToolsApplicationUndoLink(label));
+        CUndo::Record(new CToolsApplicationUndoLink());
     }
     if (m_startedUndoRecordingNestingLevel)
     {
@@ -1396,7 +1396,7 @@ void SandboxIntegrationManager::ContextMenu_NewEntity()
     {
         worldPosition = AzToolsFramework::FindClosestPickIntersection(
             view->GetViewportId(), AzFramework::ScreenPointFromVector2(m_contextMenuViewPoint), AzToolsFramework::EditorPickRayLength,
-            GetDefaultEntityPlacementDistance());
+            AzToolsFramework::GetDefaultEntityPlacementDistance());
     }
 
     CreateNewEntityAtPosition(worldPosition);
