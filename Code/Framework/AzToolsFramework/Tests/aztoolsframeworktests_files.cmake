@@ -100,6 +100,7 @@ set(FILES
     Prefab/SpawnableSortEntitiesTests.cpp
     Prefab/PrefabScriptingTests.cpp
     Prefab/ProceduralPrefabAssetTests.cpp
+    PropertyIntCtrlCommonTests.cpp
     PropertyIntCtrlCommonTests.h
     PropertyIntSliderCtrlTests.cpp
     PropertyIntSpinCtrlTests.cpp
