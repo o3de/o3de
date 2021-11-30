@@ -141,7 +141,6 @@ public:
     const SGizmoParameters& GetGlobalGizmoParameters() override;
     CBaseObject* NewObject(const char* typeName, const char* fileName = "", const char* name = "", float x = 0.0f, float y = 0.0f, float z = 0.0f, bool modifyDoc = true) override;
     void DeleteObject(CBaseObject* obj) override;
-    CBaseObject* CloneObject(CBaseObject* obj) override;
     IObjectManager* GetObjectManager() override;
     // This will return a null pointer if CrySystem is not loaded before
     // Global Sandbox Settings are loaded from the registry before CrySystem

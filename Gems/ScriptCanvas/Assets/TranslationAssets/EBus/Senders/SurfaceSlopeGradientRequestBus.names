@@ -5,7 +5,7 @@
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "SurfaceSlopeGradientRequestBus"
+                "name": "Surface Slope Gradient"
             },
             "methods": [
                 {

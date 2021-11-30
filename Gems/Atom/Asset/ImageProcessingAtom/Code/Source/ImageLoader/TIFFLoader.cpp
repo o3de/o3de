@@ -99,11 +99,9 @@ namespace ImageProcessingAtom
                 return pRet;
             }
 
-            const char* pFormatText;
             if (dwBitsPerChannel == 8)
             {
                 // R8, GR8, BGR8, BGRA8
-                pFormatText = "8-bit";
                 pRet = Load8BitImageFromTIFF(tif);
             }
             else if (dwBitsPerChannel == 16)
@@ -111,19 +109,16 @@ namespace ImageProcessingAtom
                 // A/L/R16, R16F, GR16, GR16f, ARGB16, ARGB16f
                 if (dwFormat == SAMPLEFORMAT_IEEEFP)
                 {
-                    pFormatText = "16-bit float";
                     pRet = Load16BitHDRImageFromTIFF(tif);
                 }
                 else
                 {
-                    pFormatText = "16-bit int";
                     pRet = Load16BitImageFromTIFF(tif);
                 }
             }
             else if (dwBitsPerChannel == 32 && dwFormat == SAMPLEFORMAT_IEEEFP)
             {
                 // A/L/R32f, GR32f, ARGB32f
-                pFormatText = "32-bit float";
                 pRet = Load32BitHDRImageFromTIFF(tif);
             }
             else

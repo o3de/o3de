@@ -5,7 +5,8 @@
             "context": "BehaviorClass",
             "variant": "",
             "details": {
-                "name": "Capsule Shape Config"
+                "name": "Capsule Shape Config",
+                "category": "Rendering/Shapes"
             },
             "methods": [
                 {

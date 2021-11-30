@@ -213,12 +213,10 @@ namespace AzQtComponents
         // rectangle drawing.
         if (qTableView || qListView)
         {
-            int hHdr = 0;
             int vHdr = 0;
 
             if (qTableView)
             {
-                hHdr = qTableView->horizontalHeader()->isVisible() ? qTableView->horizontalHeader()->height() : 0;
                 vHdr = qTableView->verticalHeader()->isVisible() ? qTableView->verticalHeader()->width() : 0;
             }
 

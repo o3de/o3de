@@ -5,7 +5,7 @@
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "ShapeAreaFalloffGradientRequestBus"
+                "name": "Shape Area Falloff Gradient"
             },
             "methods": [
                 {

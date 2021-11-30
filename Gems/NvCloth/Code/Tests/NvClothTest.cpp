@@ -144,10 +144,7 @@ namespace UnitTest
     {
         m_cloth->GetClothConfigurator()->SetTransform(m_clothTransform);
 
-        static float time = 0.0f;
-        static float velocity = 1.0f;
-
-        time += deltaTime;
+        constexpr float velocity = 1.0f;
 
         for (auto& sphere : m_sphereColliders)
         {

@@ -5,7 +5,7 @@
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "UiFlipbookAnimationBus",
+                "name": "UI Flipbook Animation",
                 "category": "UI"
             },
             "methods": [
