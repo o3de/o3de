@@ -8,6 +8,6 @@
 
 ly_add_pytest(
     NAME test_commit_validation
-    PATH ${CMAKE_CURRENT_LIST_DIR}/tests
+    PATH ${CMAKE_CURRENT_LIST_DIR}/commit_validation/tests
     TEST_SUITE smoke
 )
