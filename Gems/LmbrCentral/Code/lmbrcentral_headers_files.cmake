@@ -36,7 +36,6 @@ set(FILES
     include/LmbrCentral/Rendering/MaterialHandle.h
     include/LmbrCentral/Rendering/MeshAsset.h
     include/LmbrCentral/Rendering/MeshModificationBus.h
-    include/LmbrCentral/Rendering/RenderNodeBus.h
     include/LmbrCentral/Rendering/GiRegistrationBus.h
     include/LmbrCentral/Rendering/RenderBoundsBus.h
     include/LmbrCentral/Scripting/EditorTagComponentBus.h
