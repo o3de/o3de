@@ -88,6 +88,7 @@ namespace AzToolsFramework
         const ViewportInteraction::ProjectedViewportRay& viewportRay,
         const float rayLength)
     {
+        AZ_Assert(rayLength > 0.0f, "Invalid ray length passed to RefreshRayRequest");
         rayRequest.m_startWorldPosition = viewportRay.origin;
         rayRequest.m_endWorldPosition = viewportRay.origin + viewportRay.direction * rayLength;
     }
@@ -99,7 +100,7 @@ namespace AzToolsFramework
         const float defaultDistance)
     {
         AzFramework::RenderGeometry::RayRequest ray;
-        ray.m_onlyVisible = true;
+        ray.m_onlyVisible = true; // only consider visible objects
 
         RefreshRayRequest(ray, ViewportInteraction::ViewportScreenToWorldRay(viewportId, screenPoint), rayLength);
 

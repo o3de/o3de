@@ -359,10 +359,12 @@ namespace AzToolsFramework
     //! Performs an intersection test against meshes in the scene, if there is a hit (the ray intersects
     //! a mesh), that position is returned, otherwise a point projected defaultDistance from the
     //! origin of the ray will be returned.
+    //! @note The intersection will only consider visible objects.
     AZ::Vector3 FindClosestPickIntersection(
         AzFramework::ViewportId viewportId, const AzFramework::ScreenPoint& screenPoint, float rayLength, float defaultDistance);
 
     //! Overload of FindClosestPickIntersection taking a RenderGeometry::RayRequest directly.
+    //! @note rayRequest must contain a valid ray/line segment (start/endWorldPosition must not be at the same position).
     AZ::Vector3 FindClosestPickIntersection(const AzFramework::RenderGeometry::RayRequest& rayRequest, float defaultDistance);
 
     //! Update the in/out parameter rayRequest based on the latest viewport ray.

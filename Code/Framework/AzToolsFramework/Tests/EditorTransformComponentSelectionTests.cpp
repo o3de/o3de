@@ -3000,14 +3000,14 @@ namespace UnitTest
             m_entityIdGround = createEntityWithGeometryIntersectionFn("Entity1");
             m_entityIdBox = createEntityWithGeometryIntersectionFn("Entity2");
 
-            if (auto ground = AzToolsFramework::GetEntityById(m_entityIdGround)->FindComponent<RenderGeometryIntersectionTestComponent>())
+            if (auto* ground = AzToolsFramework::GetEntityById(m_entityIdGround)->FindComponent<RenderGeometryIntersectionTestComponent>())
             {
                 ground->m_localBounds = AZ::Aabb::CreateFromMinMax(AZ::Vector3(-10.0f, -10.0f, -0.5f), AZ::Vector3(10.0f, 10.0f, 0.5f));
             }
 
             AzToolsFramework::SetWorldTransform(m_entityIdGround, AZ::Transform::CreateTranslation(AZ::Vector3(0.0f, 10.0f, 5.0f)));
 
-            if (auto box = AzToolsFramework::GetEntityById(m_entityIdBox)->FindComponent<RenderGeometryIntersectionTestComponent>())
+            if (auto* box = AzToolsFramework::GetEntityById(m_entityIdBox)->FindComponent<RenderGeometryIntersectionTestComponent>())
             {
                 box->m_localBounds = AZ::Aabb::CreateFromMinMax(AZ::Vector3(-0.5f), AZ::Vector3(0.5f));
             }
@@ -3028,7 +3028,7 @@ namespace UnitTest
     TEST_F(
         EditorTransformComponentSelectionRenderGeometryIntersectionManipulatorFixture, BoxCanBePlacedOnMeshSurfaceUsingSurfaceManipulator)
     {
-        // camera - 0.00, 20.00, 12.00, -35.00, -180.00
+        // camera (go to position format) - 0.00, 20.00, 12.00, -35.00, -180.00
         m_cameraState.m_viewportSize = AZ::Vector2(1280.0f, 720.0f);
         AzFramework::SetCameraTransform(
             m_cameraState,
@@ -3068,7 +3068,7 @@ namespace UnitTest
         EditorTransformComponentSelectionRenderGeometryIntersectionManipulatorFixture,
         SurfaceManipulatorFollowsMouseAtDefaultEditorDistanceFromCameraWhenNoMeshIntersection)
     {
-        // camera - 0.00, 25.00, 12.00, 0.00, -180.00
+        // camera (go to position format) - 0.00, 25.00, 12.00, 0.00, -180.00
         m_cameraState.m_viewportSize = AZ::Vector2(1280.0f, 720.0f);
         AzFramework::SetCameraTransform(
             m_cameraState,
@@ -3112,7 +3112,7 @@ namespace UnitTest
         EditorTransformComponentSelectionRenderGeometryIntersectionManipulatorFixture,
         MiddleMouseButtonWithShiftAndCtrlHeldOnMeshSurfaceWillSnapSelectedEntityToIntersectionPoint)
     {
-        // camera - 21.00, 8.00, 11.00, -22.00, 150.00
+        // camera (go to position format) - 21.00, 8.00, 11.00, -22.00, 150.00
         m_cameraState.m_viewportSize = AZ::Vector2(1280.0f, 720.0f);
         AzFramework::SetCameraTransform(
             m_cameraState,

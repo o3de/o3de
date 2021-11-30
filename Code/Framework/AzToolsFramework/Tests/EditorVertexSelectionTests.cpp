@@ -264,7 +264,7 @@ namespace UnitTest
         AZStd::vector<AzFramework::ScreenPoint> vertexScreenPositions;
         for (size_t vertIndex = 0; vertIndex < AZStd::size(horizontalPositions); ++vertIndex)
         {
-            AZ::Vector3 localVertex;
+            AZ::Vector3 localVertex = AZ::Vector3::CreateZero();
             bool found = false;
             AZ::FixedVerticesRequestBus<AZ::Vector3>::EventResult(
                 found, m_entityId, &AZ::FixedVerticesRequestBus<AZ::Vector3>::Handler::GetVertex, vertIndex, localVertex);
@@ -426,7 +426,7 @@ namespace UnitTest
                     AZ::Matrix3x3::CreateRotationZ(AZ::DegToRad(60.0f)),
                 AZ::Vector3(14.0f, -6.0f, 5.0f)));
 
-        // camera - 12.00, 18.00, 16.00, -38.00, -175.00
+        // camera (go to position format) - 12.00, 18.00, 16.00, -38.00, -175.00
         m_cameraState.m_viewportSize = AZ::Vector2(1280.0f, 720.0f);
         AzFramework::SetCameraTransform(
             m_cameraState,
@@ -459,7 +459,7 @@ namespace UnitTest
         m_vertexSelection.HandleMouse(middleMouseDownEvent);
 
         // read back the position of the vertex now
-        AZ::Vector3 localVertex;
+        AZ::Vector3 localVertex = AZ::Vector3::CreateZero();
         bool found = false;
         AZ::FixedVerticesRequestBus<AZ::Vector3>::EventResult(
             found, m_entityId, &AZ::FixedVerticesRequestBus<AZ::Vector3>::Handler::GetVertex, 0, localVertex);
@@ -467,6 +467,7 @@ namespace UnitTest
         // transform to world space
         const AZ::Vector3 worldVertex = vertexSelectionTransform.TransformPoint(localVertex);
 
+        EXPECT_THAT(found, ::testing::IsTrue());
         // ensure final world positions match
         EXPECT_THAT(worldVertex, IsCloseTolerance(finalPositionWorld, 0.01f));
     }

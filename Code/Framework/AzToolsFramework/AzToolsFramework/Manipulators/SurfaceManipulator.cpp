@@ -61,6 +61,7 @@ namespace AzToolsFramework
         SetSpace(worldFromLocal);
         AttachLeftMouseDownImpl();
 
+        // only cast rays against objects (entities/meshes etc.) we can actually see
         m_rayRequest.m_onlyVisible = true;
     }
 
@@ -86,8 +87,9 @@ namespace AzToolsFramework
 
         const AzFramework::ViewportId viewportId = interaction.m_interactionId.m_viewportId;
 
-        m_rayRequest.m_entityFilter.m_ignoreEntities.clear();
         const auto& entityComponentIdPairs = EntityComponentIdPairs();
+        m_rayRequest.m_entityFilter.m_ignoreEntities.clear();
+        m_rayRequest.m_entityFilter.m_ignoreEntities.reserve(entityComponentIdPairs.size());
         AZStd::transform(
             entityComponentIdPairs.begin(), entityComponentIdPairs.end(),
             AZStd::inserter(m_rayRequest.m_entityFilter.m_ignoreEntities, m_rayRequest.m_entityFilter.m_ignoreEntities.begin()),

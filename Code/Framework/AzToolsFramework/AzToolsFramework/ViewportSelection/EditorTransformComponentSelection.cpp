@@ -247,8 +247,8 @@ namespace AzToolsFramework
         {
             return mouseInteraction.m_mouseInteraction.m_mouseButtons.Middle() &&
                 mouseInteraction.m_mouseEvent == ViewportInteraction::MouseEvent::Down &&
-                (mouseInteraction.m_mouseInteraction.m_keyboardModifiers.Shift() &&
-                 mouseInteraction.m_mouseInteraction.m_keyboardModifiers.Ctrl());
+                mouseInteraction.m_mouseInteraction.m_keyboardModifiers.Shift() &&
+                mouseInteraction.m_mouseInteraction.m_keyboardModifiers.Ctrl();
         }
 
         static bool ManipulatorDitto(
@@ -1266,7 +1266,7 @@ namespace AzToolsFramework
                 m_axisPreview.m_translation = m_entityIdManipulators.m_manipulators->GetLocalTransform().GetTranslation();
                 m_axisPreview.m_orientation = QuaternionFromTransformNoScaling(m_entityIdManipulators.m_manipulators->GetLocalTransform());
 
-                // [ref 1.]
+                // see comment [ref 1.] above
                 BeginRecordManipulatorCommand();
             });
 
@@ -1301,7 +1301,7 @@ namespace AzToolsFramework
                 m_axisPreview.m_translation = m_entityIdManipulators.m_manipulators->GetLocalTransform().GetTranslation();
                 m_axisPreview.m_orientation = QuaternionFromTransformNoScaling(m_entityIdManipulators.m_manipulators->GetLocalTransform());
 
-                // [ref 1.]
+                // see comment [ref 1.] above
                 BeginRecordManipulatorCommand();
             });
 
@@ -1334,7 +1334,7 @@ namespace AzToolsFramework
                 m_axisPreview.m_translation = m_entityIdManipulators.m_manipulators->GetLocalTransform().GetTranslation();
                 m_axisPreview.m_orientation = QuaternionFromTransformNoScaling(m_entityIdManipulators.m_manipulators->GetLocalTransform());
 
-                // [ref 1.]
+                // see comment [ref 1.] above
                 BeginRecordManipulatorCommand();
             });
 
@@ -1408,7 +1408,7 @@ namespace AzToolsFramework
                 m_axisPreview.m_translation = m_entityIdManipulators.m_manipulators->GetLocalTransform().GetTranslation();
                 m_axisPreview.m_orientation = QuaternionFromTransformNoScaling(m_entityIdManipulators.m_manipulators->GetLocalTransform());
 
-                // [ref 1.]
+                // see comment [ref 1.] above
                 BeginRecordManipulatorCommand();
             });
 
