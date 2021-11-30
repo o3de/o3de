@@ -273,7 +273,7 @@ namespace EMotionFX
         {
             AZ::Vector3 boneCenter = nodeTransform.GetTranslation() + 0.5f * boneDirection;
             float sumDistanceFromAxisSq = 0.0f;
-            float boneLengthSqReciprocal = 1.0f / boneDirection.GetLengthSq();
+            float boneLengthSqReciprocal = 1.0f / (boneLength * boneLength);
             for (int i = 0; i < numMeshPoints; i++)
             {
                 meshPoints[i] -= boneCenter;
