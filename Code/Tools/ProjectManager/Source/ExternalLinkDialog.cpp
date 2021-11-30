@@ -63,12 +63,12 @@ namespace O3DE::ProjectManager
         layout->addWidget(bodyLabel);
 
         // Don't actually set linkUrl we are just using LinkLabel superficially here
-        LinkLabel* linkLabel = new LinkLabel(url.toString());
+        LinkLabel* linkLabel = new LinkLabel(url.toString(), {}, 12);
         layout->addWidget(linkLabel);
 
         layout->addSpacing(40);
 
-        QCheckBox* skipDialogCheckbox = new QCheckBox("Do not show this again");
+        QCheckBox* skipDialogCheckbox = new QCheckBox(tr("Do not show this again"));
         layout->addWidget(skipDialogCheckbox);
         connect(skipDialogCheckbox, &QCheckBox::stateChanged, this, &ExternalLinkDialog::SetSkipDialogSetting);
 
@@ -87,10 +87,10 @@ namespace O3DE::ProjectManager
 
     void ExternalLinkDialog::SetSkipDialogSetting(bool state)
     {
-        QString settingsKey = GetExternalLinkWarningKey();
         auto settingsRegistry = AZ::SettingsRegistry::Get();
         if (settingsRegistry)
         {
+            QString settingsKey = GetExternalLinkWarningKey();
             settingsRegistry->Set(settingsKey.toStdString().c_str(), state);
             SaveProjectManagerSettings();
         }

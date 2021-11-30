@@ -33,11 +33,11 @@ namespace O3DE::ProjectManager
         {
             // Check if user request not to be shown external link warning dialog
             bool skipDialog = false;
-            QString settingsKey = GetExternalLinkWarningKey();
             auto settingsRegistry = AZ::SettingsRegistry::Get();
 
             if (settingsRegistry)
             {
+                QString settingsKey = GetExternalLinkWarningKey();
                 settingsRegistry->Get(skipDialog, settingsKey.toStdString().c_str());
             }
 
