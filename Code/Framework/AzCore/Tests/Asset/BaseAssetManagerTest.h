@@ -20,7 +20,8 @@
 #include <Tests/Asset/TestAssetTypes.h>
 #include <Tests/SerializeContextFixture.h>
 #include <Tests/TestCatalog.h>
-
+#include <AzCore/UnitTest/Mocks/MockFileIOBase.h>
+#include <Streamer/IStreamerMock.h>
 
 namespace UnitTest
 {
@@ -58,7 +59,11 @@ namespace UnitTest
 
         // Subclasses can optionally override the streamer creation and destruction
         virtual IO::IStreamer* CreateStreamer() { return aznew IO::Streamer(AZStd::thread_desc{}, StreamerComponent::CreateStreamerStack()); }
-        virtual void DestroyStreamer(IO::IStreamer* streamer) { delete streamer; }
+        virtual void DestroyStreamer(IO::IStreamer* streamer)
+        {
+            delete streamer;
+            streamer = nullptr;
+        }
 
         void SetUp() override;
         void TearDown() override;
@@ -66,8 +71,8 @@ namespace UnitTest
         static void SuppressTraceOutput(bool suppress);
 
         // Helper methods to create and destroy actual assets on the disk for true end-to-end asset loading.
-        void WriteAssetToDisk(const AZStd::string& assetName, const AZStd::string& assetIdGuid);
-        void DeleteAssetFromDisk(const AZStd::string& assetName);
+        virtual void WriteAssetToDisk(const AZStd::string& assetName, const AZStd::string& assetIdGuid);
+        virtual void DeleteAssetFromDisk(const AZStd::string& assetName);
 
         void BlockUntilAssetJobsAreComplete();
 
@@ -80,6 +85,59 @@ namespace UnitTest
         IO::IStreamer* m_streamer{ nullptr };
         TestFileIOBase m_fileIO;
         AZStd::vector<AZStd::string> m_assetsWritten;
+    };
+
+    
+    struct ReadRequest
+    {
+        AZStd::chrono::milliseconds m_deadline{};
+        AZ::IO::IStreamerTypes::Priority m_priority{};
+        IO::IStreamerTypes::RequestMemoryAllocatorResult m_data{ nullptr, 0, IO::IStreamerTypes::MemoryType::ReadWrite };
+        AZ::IO::IStreamer::OnCompleteCallback m_callback;
+        IO::FileRequestPtr m_request;
+    };
+
+    struct MemoryStreamerWrapper
+    {
+        MemoryStreamerWrapper();
+        ~MemoryStreamerWrapper() = default;
+
+        ReadRequest* GetReadRequest(IO::FileRequestHandle request);
+
+        template<typename TObject>
+        bool WriteMemoryFile(const AZStd::string& filePath, TObject* object, AZ::SerializeContext* context)
+        {
+            auto& buffer = m_virtualFiles[filePath];
+            ByteContainerStream stream(&buffer);
+
+            return AZ::Utils::SaveObjectToStream(stream, DataStream::StreamType::ST_XML, object, context);
+        }
+
+        AZStd::vector<char>* FindFile(AZStd::string_view path);
+
+        ::testing::NiceMock<StreamerMock> m_mockStreamer;
+        IO::StreamerContext m_context;
+        AZStd::atomic_bool m_suspended{ false };
+
+        AZStd::recursive_mutex m_mutex;
+        AZStd::queue<FileRequestHandle> m_processingQueue; // Keeps tracks of requests that have been queued while processing is suspended
+        AZStd::vector<ReadRequest> m_readRequests;
+        AZStd::unordered_map<AZStd::string, AZStd::vector<char>> m_virtualFiles;
+    };
+
+    struct DisklessAssetManagerBase : BaseAssetManagerTest
+    {
+        void SetUp() override;
+        void TearDown() override;
+        IO::IStreamer* CreateStreamer() override;
+        void DestroyStreamer(IO::IStreamer*) override;
+
+        void WriteAssetToDisk(const AZStd::string& assetName, const AZStd::string& assetIdGuid) override;
+        void DeleteAssetFromDisk(const AZStd::string& assetName) override;
+
+        AZStd::unique_ptr<MemoryStreamerWrapper> m_streamerWrapper;
+        ::testing::NiceMock<MockFileIOBase> m_fileIO;
+        IO::FileIOBase* m_prevFileIO{};
     };
 
 }

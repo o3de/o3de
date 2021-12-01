@@ -10,20 +10,21 @@
 
 #include <AzFramework/Process/ProcessCommunicator.h>
 
-//! CommunicatorTracePrinter listens to stderr and stdout of a running process and writes its output to the AZ_Trace system
+//! ProcessCommunicatorTracePrinter listens to stderr and stdout of a running process and writes its output to the AZ_Trace system
 //! Importantly, it does not do any blocking operations.
-class CommunicatorTracePrinter
+class ProcessCommunicatorTracePrinter
 {
 public:
-    CommunicatorTracePrinter(AzFramework::ProcessCommunicator* communicator, const char* window);
-    ~CommunicatorTracePrinter();
+    ProcessCommunicatorTracePrinter(AzFramework::ProcessCommunicator* communicator, const char* window);
+    ~ProcessCommunicatorTracePrinter();
 
-    // call this periodically to drain the buffers and write them.
+    //! Call this periodically to drain the buffers and write them.
     void Pump();
 
-    // drains the buffer into the string thats being built, then traces the string when it hits a newline.
+    //! Drains the buffer into the string that's being built, then traces the string when it hits a newline.
     void ParseDataBuffer(AZ::u32 readSize, bool isFromStdErr);
 
+    //! Prints the current buffer to AZ_Error or AZ_TracePrintf so that it can be picked up by AZ::Debug::Trace
     void WriteCurrentString(bool isFromStdError);
 
 private:
