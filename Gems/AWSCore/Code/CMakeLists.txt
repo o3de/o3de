@@ -16,10 +16,10 @@ ly_add_target(
          ${pal_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
     INCLUDE_DIRECTORIES
         PUBLIC
-            Include/Public
+            Include
             ${pal_dir}
         PRIVATE
-            Include/Private
+            Source
     BUILD_DEPENDENCIES
         PRIVATE
             AZ::AzCore
@@ -36,7 +36,7 @@ ly_add_target(
         awscore_shared_files.cmake
     INCLUDE_DIRECTORIES
         PRIVATE
-            Include/Private
+            Source
     BUILD_DEPENDENCIES
         PRIVATE
             AZ::AzCore
@@ -71,10 +71,10 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
             ${pal_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}_editor_files.cmake
         INCLUDE_DIRECTORIES
             PRIVATE
-                Include/Private
+                Source
                 ${pal_dir}
             PUBLIC
-                Include/Public
+                Include
         BUILD_DEPENDENCIES
             PRIVATE
                 AZ::AzQtComponents
@@ -93,7 +93,7 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
             awscore_editor_shared_files.cmake
         INCLUDE_DIRECTORIES
             PRIVATE
-                Include/Private
+                Source
         BUILD_DEPENDENCIES
             PRIVATE
                 AZ::AzCore
@@ -112,7 +112,7 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
                 awscore_resourcemappingtool_files.cmake
             INCLUDE_DIRECTORIES
                 PRIVATE
-                    Include/Private
+                    Source
             BUILD_DEPENDENCIES
                 PRIVATE
                     Gem::AWSCore.Editor.Static
@@ -156,8 +156,8 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
             awscore_tests_files.cmake
         INCLUDE_DIRECTORIES
             PRIVATE
-                Include/Private
-                Include/Public
+                Source
+                Include
                 Tests
         BUILD_DEPENDENCIES
             PRIVATE
@@ -190,9 +190,9 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 ${pal_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}_editor_tests_files.cmake
             INCLUDE_DIRECTORIES
                 PRIVATE
-                    Include/Private
+                    Source
                     ${pal_dir}
-                    Include/Public
+                    Include
                     Tests
             COMPILE_DEFINITIONS
                 PRIVATE
