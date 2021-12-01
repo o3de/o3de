@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "edit_box",
+            "base": "edit_box",
             "context": "Method",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "edit_box",
+                    "base": "edit_box",
                     "context": "Global",
                     "entry": {
                         "name": "In",

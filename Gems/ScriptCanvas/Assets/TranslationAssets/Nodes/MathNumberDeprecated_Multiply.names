@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "{1BC9A5A9-9BF3-4DA7-A8F7-911254AEB243}",
+            "base": "{1BC9A5A9-9BF3-4DA7-A8F7-911254AEB243}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
@@ -12,33 +12,33 @@
             },
             "slots": [
                 {
-                    "key": "DataOutput_Result",
+                    "base": "DataOutput_Result",
                     "details": {
                         "name": "Result"
                     }
                 },
                 {
-                    "key": "Input_In",
+                    "base": "Input_In",
                     "details": {
                         "name": "In",
                         "tooltip": "Signal to perform the evaluation when desired."
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out",
                     "details": {
                         "name": "Out",
                         "tooltip": "Signaled after the arithmetic operation is done."
                     }
                 },
                 {
-                    "key": "DataInput_Value A",
+                    "base": "DataInput_Value A",
                     "details": {
                         "name": "Value A"
                     }
                 },
                 {
-                    "key": "DataInput_Value B",
+                    "base": "DataInput_Value B",
                     "details": {
                         "name": "Value B"
                     }

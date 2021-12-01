@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "UiDropTargetNotificationBus",
+            "base": "UiDropTargetNotificationBus",
             "context": "EBusHandler",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "OnDropHoverStart",
+                    "base": "OnDropHoverStart",
                     "details": {
                         "name": "On Drop Hover Start",
                         "tooltip": "Executes when the focus starts to be on the drop target during dragging"
@@ -26,7 +26,7 @@
                     ]
                 },
                 {
-                    "key": "OnDropHoverEnd",
+                    "base": "OnDropHoverEnd",
                     "details": {
                         "name": "On Drop Hover End",
                         "tooltip": "Executes when the focus stops being on the drop target during dragging"
@@ -42,7 +42,7 @@
                     ]
                 },
                 {
-                    "key": "OnDrop",
+                    "base": "OnDrop",
                     "details": {
                         "name": "On Drop",
                         "tooltip": "Executes when a draggable element is dropped on the drop target. Implement the game logic of what should happen on drag and drop here"

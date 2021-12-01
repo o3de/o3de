@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "ConstantGradientComponentTypeId",
+            "base": "ConstantGradientComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "ConstantGradientComponentTypeId::Getter",
-                "category": "Constants"
-            }
+                "name": "Constant Gradient Component Type Id",
+                "category": "Constants/Editor"
+            },
+            "methods": [
+                {
+                    "base": "GetConstantGradientComponentTypeId",
+                    "details": {
+                        "name": "Get Constant Gradient Component Type Id"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}",
+                            "details": {
+                                "name": "AZ:: Uuid"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

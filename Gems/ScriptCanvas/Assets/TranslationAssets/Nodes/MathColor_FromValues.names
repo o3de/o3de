@@ -1,56 +1,55 @@
 {
     "entries": [
         {
-            "key": "{84F9B63C-F6F5-58AD-8669-C25287CDC037}",
+            "base": "{84F9B63C-F6F5-58AD-8669-C25287CDC037}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "FromValues",
+                "name": "From Values",
                 "category": "Math/Color",
-                "tooltip": "returns a Color from the R, G, B, A inputs",
-                "subtitle": "Color"
+                "tooltip": "Returns a Color from the R, G, B, A inputs"
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "key": "DataInput_Number: R",
+                    "base": "DataInput_R",
                     "details": {
-                        "name": "Number: R"
+                        "name": "R"
                     }
                 },
                 {
-                    "key": "DataInput_Number: G",
+                    "base": "DataInput_G",
                     "details": {
-                        "name": "Number: G"
+                        "name": "G"
                     }
                 },
                 {
-                    "key": "DataInput_Number: B",
+                    "base": "DataInput_B",
                     "details": {
-                        "name": "Number: B"
+                        "name": "B"
                     }
                 },
                 {
-                    "key": "DataInput_Number: A",
+                    "base": "DataInput_A",
                     "details": {
-                        "name": "Number: A"
+                        "name": "A"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Color",
+                    "base": "DataOutput_Result",
                     "details": {
-                        "name": "Result: Color"
+                        "name": "Result"
                     }
                 }
             ]

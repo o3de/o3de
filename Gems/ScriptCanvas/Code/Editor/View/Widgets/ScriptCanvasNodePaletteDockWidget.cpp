@@ -26,12 +26,18 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/UserSettings/UserSettings.h>
 #include <AzCore/std/containers/map.h>
+
+#include <AzFramework/Gem/GemInfo.h>
 #include <AzFramework/StringFunc/StringFunc.h>
+
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/AssetBrowser/Entries/ProductAssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Entries/SourceAssetBrowserEntry.h>
 #include <AzToolsFramework/AssetEditor/AssetEditorUtils.h>
 #include <AzToolsFramework/ToolsComponents/EditorComponentBase.h>
+
+#include <AzQtComponents/Utilities/DesktopUtilities.h>
+
 #include <Editor/Assets/ScriptCanvasAssetHelpers.h>
 #include <Editor/Components/IconComponent.h>
 #include <Editor/GraphCanvas/GraphCanvasEditorNotificationBusId.h>
@@ -50,9 +56,11 @@
 #include <Editor/View/Widgets/NodePalette/VariableNodePaletteTreeItemTypes.h>
 #include <Editor/View/Widgets/ScriptCanvasNodePaletteDockWidget.h>
 #include <Editor/View/Widgets/ui_ScriptCanvasNodePaletteToolbar.h>
+
 #include <GraphCanvas/Widgets/NodePalette/NodePaletteTreeView.h>
 #include <GraphCanvas/Widgets/NodePalette/NodePaletteWidget.h>
 #include <GraphCanvas/Widgets/NodePalette/TreeItems/NodePaletteTreeItem.h>
+
 #include <ScriptCanvas/Asset/RuntimeAsset.h>
 #include <ScriptCanvas/Core/Attributes.h>
 #include <ScriptCanvas/Core/SubgraphInterfaceUtility.h>
@@ -63,7 +71,6 @@
 #include <ScriptCanvas/Libraries/Libraries.h>
 #include <ScriptCanvas/Utils/NodeUtils.h>
 #include <ScriptEvents/ScriptEventsAsset.h>
-#include "AzQtComponents/Utilities/DesktopUtilities.h"
 
 namespace ScriptCanvasEditor
 {
@@ -639,7 +646,7 @@ namespace ScriptCanvasEditor
             m_mimeType = NodePaletteDockWidget::GetMimeType();
             m_isInContextMenu = isInContextMenu;
             m_allowArrowKeyNavigation = isInContextMenu;
-            m_saveIdentifier = m_isInContextMenu ? "ScriptCanvas" : "ScriptCnavas_ContextMenu";
+            m_saveIdentifier = m_isInContextMenu ? "ScriptCanvas" : "ScriptCanvas_ContextMenu";
 
             m_rootTreeItem = Widget::NodePaletteWidget::ExternalCreateNodePaletteRoot(nodePaletteModel, assetModel);
         }
@@ -877,17 +884,14 @@ namespace ScriptCanvasEditor
         {
             QModelIndexList indexList = GetTreeView()->selectionModel()->selectedRows();
 
-            if (indexList.size() == 1)
+            QSortFilterProxyModel* filterModel = static_cast<QSortFilterProxyModel*>(GetTreeView()->model());
+
+            for (const QModelIndex& index : indexList)
             {
-                QSortFilterProxyModel* filterModel = static_cast<QSortFilterProxyModel*>(GetTreeView()->model());
+                QModelIndex sourceIndex = filterModel->mapToSource(index);
 
-                for (const QModelIndex& index : indexList)
-                {
-                    QModelIndex sourceIndex = filterModel->mapToSource(index);
-
-                    GraphCanvas::NodePaletteTreeItem* nodePaletteItem = static_cast<GraphCanvas::NodePaletteTreeItem*>(sourceIndex.internalPointer());
-                    nodePaletteItem->GenerateTranslationData();
-                }
+                GraphCanvas::NodePaletteTreeItem* nodePaletteItem = static_cast<GraphCanvas::NodePaletteTreeItem*>(sourceIndex.internalPointer());
+                nodePaletteItem->GenerateTranslationData();
             }
         }
 

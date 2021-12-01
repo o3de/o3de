@@ -1,16 +1,16 @@
 {
     "entries": [
         {
-            "key": "UiCustomImageBus",
+            "base": "UiCustomImageBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "UiCustomImageBus",
+                "name": "UI Custom Image",
                 "category": "UI/LyShine Examples"
             },
             "methods": [
                 {
-                    "key": "GetClamp",
+                    "base": "GetClamp",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Clamp"
@@ -33,7 +33,7 @@
                     ]
                 },
                 {
-                    "key": "SetUVs",
+                    "base": "SetUVs",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set UVs"
@@ -57,7 +57,7 @@
                     ]
                 },
                 {
-                    "key": "SetClamp",
+                    "base": "SetClamp",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Clamp"
@@ -81,7 +81,7 @@
                     ]
                 },
                 {
-                    "key": "SetSpritePathname",
+                    "base": "SetSpritePathname",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Sprite Pathname"
@@ -105,7 +105,7 @@
                     ]
                 },
                 {
-                    "key": "GetSpritePathname",
+                    "base": "GetSpritePathname",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Sprite Pathname"
@@ -128,7 +128,7 @@
                     ]
                 },
                 {
-                    "key": "GetUVs",
+                    "base": "GetUVs",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get UVs"
@@ -151,7 +151,7 @@
                     ]
                 },
                 {
-                    "key": "SetColor",
+                    "base": "SetColor",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Color"
@@ -175,7 +175,7 @@
                     ]
                 },
                 {
-                    "key": "GetColor",
+                    "base": "GetColor",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Color"

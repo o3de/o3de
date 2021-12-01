@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "DefaultLodType",
+            "base": "DefaultLodType",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "DefaultLodType::Getter",
-                "category": "Constants"
-            }
+                "name": "Default Lod Type",
+                "category": "Constants/Defaults"
+            },
+            "methods": [
+                {
+                    "base": "GetDefaultLodType",
+                    "details": {
+                        "name": "Get Default Lod Type"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72B9409A-7D1A-4831-9CFE-FCB3FADD3426}",
+                            "details": {
+                                "name": "unsigned char"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

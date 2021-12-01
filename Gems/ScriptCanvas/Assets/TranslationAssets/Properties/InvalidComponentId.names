@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "InvalidComponentId",
+            "base": "InvalidComponentId",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "InvalidComponentId::Getter",
-                "category": "Constants"
-            }
+                "name": "Invalid Component Id",
+                "category": "Constants/Editor"
+            },
+            "methods": [
+                {
+                    "base": "GetInvalidComponentId",
+                    "details": {
+                        "name": "Get Invalid Component Id"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{D6597933-47CD-4FC8-B911-63F3E2B0993A}",
+                            "details": {
+                                "name": "AZ::u 64"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

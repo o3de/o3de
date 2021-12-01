@@ -33,6 +33,7 @@ AZ_POP_DISABLE_WARNING
 #include <QScopedValueRollback>
 #include <QClipboard>
 #include <QMenuBar>
+#include <QMessageBox>
 #include <QDialogButtonBox>
 
 // Aws Native SDK
@@ -370,10 +371,8 @@ void CCryEditApp::RegisterActionHandlers()
     ON_COMMAND(ID_EDIT_FETCH, OnEditFetch)
     ON_COMMAND(ID_FILE_EXPORTTOGAMENOSURFACETEXTURE, OnFileExportToGameNoSurfaceTexture)
     ON_COMMAND(ID_VIEW_SWITCHTOGAME, OnViewSwitchToGame)
-    MainWindow::instance()->GetActionManager()->RegisterActionHandler(ID_VIEW_SWITCHTOGAME_FULLSCREEN, [this]() {
-        ed_previewGameInFullscreen_once = true;
-        OnViewSwitchToGame();
-    });
+    ON_COMMAND(ID_VIEW_SWITCHTOGAME_VIEWPORT, OnViewSwitchToGame)
+    ON_COMMAND(ID_VIEW_SWITCHTOGAME_FULLSCREEN, OnViewSwitchToGameFullScreen)
     ON_COMMAND(ID_MOVE_OBJECT, OnMoveObject)
     ON_COMMAND(ID_RENAME_OBJ, OnRenameObj)
     ON_COMMAND(ID_UNDO, OnUndo)
@@ -913,13 +912,9 @@ namespace
     QWidget* g_splashScreen = nullptr;
 }
 
-QString FormatVersion(const SFileVersion& v)
+QString FormatVersion([[maybe_unused]] const SFileVersion& v)
 {
-#if defined(LY_BUILD)
-    return QObject::tr("Version %1.%2.%3.%4 - Build %5").arg(v[3]).arg(v[2]).arg(v[1]).arg(v[0]).arg(LY_BUILD);
-#else
-    return QObject::tr("Version %1.%2.%3.%4").arg(v[3]).arg(v[2]).arg(v[1]).arg(v[0]);
-#endif
+    return QObject::tr("Version %1").arg(LY_VERSION_BUILD_NUMBER);
 }
 
 QString FormatRichTextCopyrightNotice()
@@ -2573,6 +2568,12 @@ void CCryEditApp::OnViewSwitchToGame()
     GetIEditor()->SetInGameMode(inGame);
 }
 
+void CCryEditApp::OnViewSwitchToGameFullScreen()
+{
+    ed_previewGameInFullscreen_once = true;
+    OnViewSwitchToGame();
+}
+
 //////////////////////////////////////////////////////////////////////////
 void CCryEditApp::OnExportSelectedObjects()
 {
@@ -4016,7 +4017,7 @@ void CCryEditApp::OnError(AzFramework::AssetSystem::AssetSystemErrors error)
         break;
     }
 
-    CryMessageBox(errorMessage.c_str(), "Error", MB_OK | MB_ICONERROR | MB_SETFOREGROUND);
+    QMessageBox::critical(nullptr,"Error",errorMessage.c_str());
 }
 
 void CCryEditApp::OnOpenProceduralMaterialEditor()
@@ -4183,6 +4184,8 @@ extern "C" int AZ_DLL_EXPORT CryEditMain(int argc, char* argv[])
         AZ_Error("Editor", didCryEditStart, "O3DE Editor did not initialize correctly, and will close."
             "\nThis could be because of incorrectly configured components, or missing required gems."
             "\nSee other errors for more details.");
+
+        AzToolsFramework::EditorEventsBus::Broadcast(&AzToolsFramework::EditorEvents::NotifyEditorInitialized);
 
         if (didCryEditStart)
         {

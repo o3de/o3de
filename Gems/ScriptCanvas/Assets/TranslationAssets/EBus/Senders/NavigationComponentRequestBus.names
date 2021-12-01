@@ -1,59 +1,62 @@
 {
     "entries": [
         {
-            "key": "NavigationComponentRequestBus",
+            "base": "NavigationComponentRequestBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "NavigationComponentRequestBus"
+                "name": "Movement",
+                "category": "Navigation"
             },
             "methods": [
                 {
-                    "key": "SetAgentSpeed",
+                    "base": "SetAgentSpeed",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetAgentSpeed"
+                        "tooltip": "When signaled, this will invoke Set Agent Speed"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetAgentSpeed is invoked"
+                        "tooltip": "Signaled after Set Agent Speed is invoked"
                     },
                     "details": {
-                        "name": "SetAgentSpeed"
+                        "name": "Set Agent Speed"
                     },
                     "params": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "float"
+                                "name": "Speed",
+                                "tooltip": "The agent speed in meters per second"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "SetAgentMovementMethod",
+                    "base": "SetAgentMovementMethod",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetAgentMovementMethod"
+                        "tooltip": "When signaled, this will invoke Set Agent Movement Method"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetAgentMovementMethod is invoked"
+                        "tooltip": "Signaled after Set Agent Movement Method is invoked"
                     },
                     "details": {
-                        "name": "SetAgentMovementMethod"
+                        "name": "Set Agent Movement Method"
                     },
                     "params": [
                         {
                             "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
                             "details": {
-                                "name": "int"
+                                "name": "Method",
+                                "tooltip": "0: Transform, 1: Physics, 2: Custom"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "GetAgentSpeed",
+                    "base": "GetAgentSpeed",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetAgentSpeed"
@@ -63,35 +66,36 @@
                         "tooltip": "Signaled after GetAgentSpeed is invoked"
                     },
                     "details": {
-                        "name": "GetAgentSpeed"
+                        "name": "Get Agent Speed"
                     },
                     "results": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "float"
+                                "name": "Speed"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "FindPathToPosition",
+                    "base": "FindPathToPosition",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke FindPathToPosition"
+                        "tooltip": "When signaled, this will invoke Find Path To Position"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after FindPathToPosition is invoked"
+                        "tooltip": "Signaled after Find Path To Position is invoked"
                     },
                     "details": {
-                        "name": "FindPathToPosition"
+                        "name": "Find Path To Position"
                     },
                     "params": [
                         {
                             "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
                             "details": {
-                                "name": "Vector3"
+                                "name": "Position",
+                                "tooltip": "The position to navigate to"
                             }
                         }
                     ],
@@ -99,13 +103,13 @@
                         {
                             "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
                             "details": {
-                                "name": "unsigned int"
+                                "name": "Request Id"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "Stop",
+                    "base": "Stop",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Stop"
@@ -121,30 +125,31 @@
                         {
                             "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
                             "details": {
-                                "name": "unsigned int"
+                                "name": "Request Id",
+                                "tooltip": "The request Id of the navigation process to stop"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "FindPathToEntity",
+                    "base": "FindPathToEntity",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke FindPathToEntity"
+                        "tooltip": "When signaled, this will invoke Find Path To Entity"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after FindPathToEntity is invoked"
+                        "tooltip": "Signaled after Find Path To Entity is invoked"
                     },
                     "details": {
-                        "name": "FindPathToEntity"
+                        "name": "Find Path To Entity"
                     },
                     "params": [
                         {
                             "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
                             "details": {
-                                "name": "EntityId",
-                                "tooltip": "Entity Unique Id"
+                                "name": "Entity Id",
+                                "tooltip": "The entity to follow"
                             }
                         }
                     ],
@@ -152,29 +157,30 @@
                         {
                             "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
                             "details": {
-                                "name": "unsigned int"
+                                "name": "Request Id"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "GetAgentMovementMethod",
+                    "base": "GetAgentMovementMethod",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetAgentMovementMethod"
+                        "tooltip": "When signaled, this will invoke Get Agent Movement Method"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetAgentMovementMethod is invoked"
+                        "tooltip": "Signaled after Get Agent Movement Method is invoked"
                     },
                     "details": {
-                        "name": "GetAgentMovementMethod"
+                        "name": "Get Agent Movement Method"
                     },
                     "results": [
                         {
                             "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
                             "details": {
-                                "name": "int"
+                                "name": "Method",
+                                "tooltip": "0: Transform, 1: Physics, 2: Custom"
                             }
                         }
                     ]

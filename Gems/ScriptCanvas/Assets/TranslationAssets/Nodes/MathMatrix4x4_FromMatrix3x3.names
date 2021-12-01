@@ -1,38 +1,37 @@
 {
     "entries": [
         {
-            "key": "{ACD49054-0267-55C7-80E9-1513CAD9182F}",
+            "base": "{ACD49054-0267-55C7-80E9-1513CAD9182F}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "FromMatrix3x3",
+                "name": "From Matrix3x3",
                 "category": "Math/Matrix4x4",
-                "tooltip": "returns a matrix from the from the Matrix3x3",
-                "subtitle": "Matrix4x4"
+                "tooltip": "Returns a matrix from the from the Matrix3x3"
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "key": "DataInput_Matrix3x3: Source",
+                    "base": "DataInput_Source",
                     "details": {
-                        "name": "Matrix3x3: Source"
+                        "name": "Source"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Matrix4x4",
+                    "base": "DataOutput_Result",
                     "details": {
-                        "name": "Result: Matrix4x4"
+                        "name": "Result"
                     }
                 }
             ]

@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "CullMode_None",
+            "base": "CullMode_None",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "CullMode_None::Getter",
-                "category": "Constants"
-            }
+                "name": "None",
+                "category": "Constants/Cull Mode"
+            },
+            "methods": [
+                {
+                    "base": "GetCullMode_None",
+                    "details": {
+                        "name": "Get None"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "RandomTimedSpawnerComponent",
+            "base": "RandomTimedSpawnerComponent",
             "context": "BehaviorClass",
             "variant": "",
             "details": {

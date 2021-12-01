@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "ActorComponent",
+            "base": "ActorComponent",
             "context": "BehaviorClass",
             "variant": "",
             "details": {

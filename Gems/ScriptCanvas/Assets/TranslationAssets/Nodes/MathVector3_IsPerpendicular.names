@@ -1,50 +1,49 @@
 {
     "entries": [
         {
-            "key": "{775DA8B7-881F-55AF-911B-9CD28DC5F9B0}",
+            "base": "{775DA8B7-881F-55AF-911B-9CD28DC5F9B0}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "IsPerpendicular",
+                "name": "Is Perpendicular",
                 "category": "Math/Vector3",
-                "tooltip": "returns true if A is within tolerance of perpendicular with B, that is if Dot(A, B) < tolerance, else false",
-                "subtitle": "Vector3"
+                "tooltip": "Returns true if A is within tolerance of perpendicular with B, that is if Dot(A, B) < tolerance, else false"
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "key": "DataInput_Vector3: A",
+                    "base": "DataInput_A",
                     "details": {
-                        "name": "Vector3: A"
+                        "name": "A"
                     }
                 },
                 {
-                    "key": "DataInput_Vector3: B",
+                    "base": "DataInput_B",
                     "details": {
-                        "name": "Vector3: B"
+                        "name": "B"
                     }
                 },
                 {
-                    "key": "DataInput_Number: Tolerance",
+                    "base": "DataInput_Tolerance",
                     "details": {
-                        "name": "Number: Tolerance"
+                        "name": "Tolerance"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Boolean",
+                    "base": "DataOutput_Result",
                     "details": {
-                        "name": "Result: Boolean"
+                        "name": "Result"
                     }
                 }
             ]

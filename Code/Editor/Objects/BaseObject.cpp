@@ -33,8 +33,6 @@
 #include "ViewManager.h"
 #include "IEditorImpl.h"
 #include "GameEngine.h"
-#include <IEntityRenderState.h>
-#include <IStatObj.h>
 // To use the Andrew's algorithm in order to make convex hull from the points, this header is needed.
 #include "Util/GeometryUtil.h"
 
@@ -53,18 +51,16 @@ class CUndoBaseObject
     : public IUndoObject
 {
 public:
-    CUndoBaseObject(CBaseObject* pObj, const char* undoDescription);
+    CUndoBaseObject(CBaseObject* pObj);
 
 protected:
     int GetSize() override { return sizeof(*this);   }
-    QString GetDescription() override { return m_undoDescription; };
     QString GetObjectName() override;
 
     void Undo(bool bUndo) override;
     void Redo() override;
 
 protected:
-    QString m_undoDescription;
     GUID m_guid;
     XmlNodeRef m_undo;
     XmlNodeRef m_redo;
@@ -77,11 +73,10 @@ class CUndoBaseObjectMinimal
     : public IUndoObject
 {
 public:
-    CUndoBaseObjectMinimal(CBaseObject* obj, const char* undoDescription, int flags);
+    CUndoBaseObjectMinimal(CBaseObject* obj, int flags);
 
 protected:
     int GetSize() override { return sizeof(*this); }
-    QString GetDescription() override { return m_undoDescription; };
     QString GetObjectName() override;
 
     void Undo(bool bUndo) override;
@@ -101,7 +96,6 @@ private:
     void SetTransformsFromState(CBaseObject* pObject, const StateStruct& state, bool bUndo);
 
     GUID m_guid;
-    QString m_undoDescription;
     StateStruct m_undoState;
     StateStruct m_redoState;
 };
@@ -167,7 +161,6 @@ private:
     }
 
     int GetSize() override { return sizeof(CUndoAttachBaseObject); }
-    QString GetDescription() override { return "Attachment Changed"; }
 
     GUID m_attachedObjectGUID;
     GUID m_parentObjectGUID;
@@ -176,11 +169,10 @@ private:
 };
 
 //////////////////////////////////////////////////////////////////////////
-CUndoBaseObject::CUndoBaseObject(CBaseObject* obj, const char* undoDescription)
+CUndoBaseObject::CUndoBaseObject(CBaseObject* obj)
 {
     // Stores the current state of this object.
     assert(obj != 0);
-    m_undoDescription = undoDescription;
     m_guid = obj->GetId();
 
     m_redo = nullptr;
@@ -254,11 +246,10 @@ void CUndoBaseObject::Redo()
 }
 
 //////////////////////////////////////////////////////////////////////////
-CUndoBaseObjectMinimal::CUndoBaseObjectMinimal(CBaseObject* pObj, const char* undoDescription, [[maybe_unused]] int flags)
+CUndoBaseObjectMinimal::CUndoBaseObjectMinimal(CBaseObject* pObj, [[maybe_unused]] int flags)
 {
     // Stores the current state of this object.
     assert(pObj != nullptr);
-    m_undoDescription = undoDescription;
     m_guid = pObj->GetId();
 
     ZeroStruct(m_redoState);
@@ -287,7 +278,7 @@ QString CUndoBaseObjectMinimal::GetObjectName()
 void CUndoBaseObjectMinimal::Undo(bool bUndo)
 {
     CBaseObject* pObject = GetIEditor()->GetObjectManager()->FindObject(m_guid);
-    if (!pObject || pObject->GetType() == OBJTYPE_DUMMY)
+    if (!pObject)
     {
         return;
     }
@@ -316,7 +307,7 @@ void CUndoBaseObjectMinimal::Undo(bool bUndo)
 void CUndoBaseObjectMinimal::Redo()
 {
     CBaseObject* pObject = GetIEditor()->GetObjectManager()->FindObject(m_guid);
-    if (!pObject || pObject->GetType() == OBJTYPE_DUMMY)
+    if (!pObject)
     {
         return;
     }
@@ -382,7 +373,6 @@ CBaseObject::CBaseObject()
     , m_rotate(IDENTITY)
     , m_scale(1, 1, 1)
     , m_guid(GUID_NULL)
-    , m_floorNumber(-1)
     , m_flags(0)
     , m_nTextureIcon(0)
     , m_color(QColor(255, 255, 255))
@@ -398,11 +388,9 @@ CBaseObject::CBaseObject()
     , m_bMatrixInWorldSpace(false)
     , m_bMatrixValid(false)
     , m_bWorldBoxValid(false)
-    , m_nMaterialLayersMask(0)
     , m_nMinSpec(0)
     , m_vDrawIconPos(0, 0, 0)
     , m_nIconFlags(0)
-    , m_hideOrder(CBaseObject::s_invalidHiddenID)
 {
     m_worldBounds.min.Set(0, 0, 0);
     m_worldBounds.max.Set(0, 0, 0);
@@ -431,7 +419,6 @@ bool CBaseObject::Init([[maybe_unused]] IEditor* ie, CBaseObject* prev, [[maybe_
         SetLocalTM(prev->GetPos(), prev->GetRotation(), prev->GetScale());
         SetArea(prev->GetArea());
         SetColor(prev->GetColor());
-        m_nMaterialLayersMask = prev->m_nMaterialLayersMask;
         SetMinSpec(prev->GetMinSpec(), false);
 
         // Copy all basic variables.
@@ -488,7 +475,7 @@ void CBaseObject::SetName(const QString& name)
         return;
     }
 
-    StoreUndo("Name");
+    StoreUndo();
 
     // Notification is expensive and not required if this is during construction.
     bool notify = (!m_name.isEmpty());
@@ -500,7 +487,6 @@ void CBaseObject::SetName(const QString& name)
     if (notify)
     {
         NotifyListeners(ON_RENAME);
-        static_cast<CObjectManager*>(GetIEditor()->GetObjectManager())->NotifyObjectListeners(this, ON_RENAME);
     }
 }
 
@@ -527,47 +513,6 @@ void CBaseObject::GenerateUniqueName()
 const QString& CBaseObject::GetName() const
 {
     return m_name;
-}
-
-//////////////////////////////////////////////////////////////////////////
-QString CBaseObject::GetWarningsText() const
-{
-    QString warnings;
-
-    if (gSettings.viewports.bShowScaleWarnings)
-    {
-        const EScaleWarningLevel scaleWarningLevel = GetScaleWarningLevel();
-        if (scaleWarningLevel == eScaleWarningLevel_Rescaled)
-        {
-            warnings += "\\n  Warning: Object Scale is not 100%.";
-        }
-        else if (scaleWarningLevel == eScaleWarningLevel_RescaledNonUniform)
-        {
-            warnings += "\\n  Warning: Object has non-uniform scale.";
-        }
-    }
-
-    if (gSettings.viewports.bShowRotationWarnings)
-    {
-        const ERotationWarningLevel rotationWarningLevel = GetRotationWarningLevel();
-
-        if (rotationWarningLevel == eRotationWarningLevel_Rotated)
-        {
-            warnings += "\\n  Warning: Object is rotated.";
-        }
-        else if (rotationWarningLevel == eRotationWarningLevel_RotatedNonRectangular)
-        {
-            warnings += "\\n  Warning: Object is rotated non-orthogonally.";
-        }
-    }
-
-    return warnings;
-}
-
-//////////////////////////////////////////////////////////////////////////
-bool CBaseObject::IsSameClass(CBaseObject* obj)
-{
-    return GetClassDesc() == obj->GetClassDesc();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -615,7 +560,7 @@ bool CBaseObject::SetPos(const Vec3& pos, int flags)
     //////////////////////////////////////////////////////////////////////////
     if (!bPositionDelegated && (flags & eObjectUpdateFlags_RestoreUndo) == 0 && (flags & eObjectUpdateFlags_Animated) == 0)
     {
-        StoreUndo("Position", true, flags);
+        StoreUndo(true, flags);
     }
 
     if (!bPositionDelegated)
@@ -659,7 +604,7 @@ bool CBaseObject::SetRotation(const Quat& rotate, int flags)
 
     if (!bRotationDelegated && (flags & eObjectUpdateFlags_RestoreUndo) == 0 && (flags & eObjectUpdateFlags_Animated) == 0)
     {
-        StoreUndo("Rotate", true, flags);
+        StoreUndo(true, flags);
     }
 
     if (!bRotationDelegated)
@@ -704,7 +649,7 @@ bool CBaseObject::SetScale(const Vec3& scale, int flags)
 
     if (!bScaleDelegated && (flags & eObjectUpdateFlags_RestoreUndo) == 0 && (flags & eObjectUpdateFlags_Animated) == 0)
     {
-        StoreUndo("Scale", true, flags);
+        StoreUndo(true, flags);
     }
 
     if (!bScaleDelegated)
@@ -763,7 +708,7 @@ void CBaseObject::ChangeColor(const QColor& color)
         return;
     }
 
-    StoreUndo("Color", true);
+    StoreUndo(true);
 
     SetColor(color);
     SetModified(false);
@@ -783,7 +728,7 @@ void CBaseObject::SetArea(float area)
         return;
     }
 
-    StoreUndo("Area", true);
+    StoreUndo(true);
 
     m_flattenArea = area;
     SetModified(false);
@@ -1184,47 +1129,6 @@ bool CBaseObject::CanBeDrawn(const DisplayContext& dc, bool& outDisplaySelection
 }
 
 //////////////////////////////////////////////////////////////////////////
-int CBaseObject::MouseCreateCallback(CViewport* view, EMouseEvent event, QPoint& point, int flags)
-{
-    AZ_PROFILE_FUNCTION(Editor);
-
-    if (event == eMouseMove || event == eMouseLDown)
-    {
-        Vec3 pos;
-        if (GetIEditor()->GetAxisConstrains() != AXIS_TERRAIN)
-        {
-            pos = view->MapViewToCP(point);
-        }
-        else
-        {
-            // Snap to terrain.
-            bool hitTerrain;
-            pos = view->ViewToWorld(point, &hitTerrain);
-            if (hitTerrain)
-            {
-                pos.z = GetIEditor()->GetTerrainElevation(pos.x, pos.y) + 1.0f;
-            }
-            pos = view->SnapToGrid(pos);
-        }
-        SetPos(pos);
-
-        if (event == eMouseLDown)
-        {
-            return MOUSECREATE_OK;
-        }
-    }
-
-    if (event == eMouseWheel)
-    {
-        float angle = 1;
-        Quat rot = GetRotation();
-        rot.SetRotationXYZ(Ang3(0.f, 0.f, rot.GetRotZ() + DEG2RAD(flags > 0 ? angle * (-1) : angle)));
-        SetRotation(rot);
-    }
-    return MOUSECREATE_CONTINUE;
-}
-
-//////////////////////////////////////////////////////////////////////////
 void CBaseObject::OnEvent(ObjectEvent event)
 {
     switch (event)
@@ -1237,18 +1141,13 @@ void CBaseObject::OnEvent(ObjectEvent event)
 
 
 //////////////////////////////////////////////////////////////////////////
-void CBaseObject::SetShared([[maybe_unused]] bool bShared)
-{
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CBaseObject::SetHidden(bool bHidden, uint64 hiddenID, bool bAnimated)
+void CBaseObject::SetHidden(bool bHidden, bool bAnimated)
 {
     if (CheckFlags(OBJFLAG_HIDDEN) != bHidden)
     {
         if (!bAnimated)
         {
-            StoreUndo("Hide Object");
+            StoreUndo();
         }
 
         if (bHidden)
@@ -1260,7 +1159,6 @@ void CBaseObject::SetHidden(bool bHidden, uint64 hiddenID, bool bAnimated)
             ClearFlags(OBJFLAG_HIDDEN);
         }
 
-        m_hideOrder = hiddenID;
         UpdateVisibility(!IsHidden());
     }
 }
@@ -1270,7 +1168,7 @@ void CBaseObject::SetFrozen(bool bFrozen)
 {
     if (CheckFlags(OBJFLAG_FROZEN) != bFrozen)
     {
-        StoreUndo("Freeze Object");
+        StoreUndo();
         if (bFrozen)
         {
             SetFlags(OBJFLAG_FROZEN);
@@ -1356,14 +1254,6 @@ void CBaseObject::Serialize(CObjectArchive& ar)
     if (ar.bLoading)
     {
         // Loading.
-        if (ar.ShouldResetInternalMembers())
-        {
-            m_flags = 0;
-            m_flattenArea = 0.0f;
-            m_nMinSpec = 0;
-            m_scale.Set(1.0f, 1.0f, 1.0f);
-        }
-
         int flags = 0;
         int oldFlags = m_flags;
 
@@ -1403,7 +1293,6 @@ void CBaseObject::Serialize(CObjectArchive& ar)
         xmlNode->getAttr("LookAt", lookatId);
         xmlNode->getAttr("Material", mtlName);
         xmlNode->getAttr("MinSpec", nMinSpec);
-        xmlNode->getAttr("FloorNumber", m_floorNumber);
 
         if (nMinSpec <= CONFIG_VERYHIGH_SPEC) // Ignore invalid values.
         {
@@ -1467,18 +1356,6 @@ void CBaseObject::Serialize(CObjectArchive& ar)
         SetModified(false);
 
         //////////////////////////////////////////////////////////////////////////
-
-        if (ar.bUndo)
-        {
-            // If we are selected update UI Panel.
-            xmlNode->getAttr("HideOrder", m_hideOrder);
-        }
-
-        // We reseted the min spec and deserialized it so set it internally
-        if (ar.ShouldResetInternalMembers())
-        {
-            SetMinSpec(m_nMinSpec);
-        }
     }
     else
     {
@@ -1490,7 +1367,6 @@ void CBaseObject::Serialize(CObjectArchive& ar)
         xmlNode->setAttr("Id", m_guid);
 
         xmlNode->setAttr("Name", GetName().toUtf8().data());
-        xmlNode->setAttr("HideOrder", m_hideOrder);
 
         if (m_parent)
         {
@@ -1506,8 +1382,6 @@ void CBaseObject::Serialize(CObjectArchive& ar)
         {
             xmlNode->setAttr("Pos", GetPos());
         }
-
-        xmlNode->setAttr("FloorNumber", m_floorNumber);
 
         xmlNode->setAttr("Rotate", m_rotate);
 
@@ -1601,13 +1475,8 @@ CBaseObject* CBaseObject::FindObject(REFGUID id) const
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CBaseObject::StoreUndo(const char* UndoDescription, bool minimal, int flags)
+void CBaseObject::StoreUndo(bool minimal, int flags)
 {
-    if (m_objType == OBJTYPE_DUMMY)
-    {
-        return;
-    }
-
     // Don't use Sandbox undo for AZ entities, except for the move & scale tools, which rely on it.
     const bool isGizmoTool = 0 != (flags & (eObjectUpdateFlags_MoveTool | eObjectUpdateFlags_ScaleTool | eObjectUpdateFlags_UserInput));
     if (!isGizmoTool && 0 != (m_flags & OBJFLAG_DONT_SAVE))
@@ -1619,28 +1488,18 @@ void CBaseObject::StoreUndo(const char* UndoDescription, bool minimal, int flags
     {
         if (minimal)
         {
-            CUndo::Record(new CUndoBaseObjectMinimal(this, UndoDescription, flags));
+            CUndo::Record(new CUndoBaseObjectMinimal(this, flags));
         }
         else
         {
-            CUndo::Record(new CUndoBaseObject(this, UndoDescription));
+            CUndo::Record(new CUndoBaseObject(this));
         }
     }
-}
-
-//////////////////////////////////////////////////////////////////////////
-bool CBaseObject::IsCreateGameObjects() const
-{
-    return GetObjectManager()->IsCreateGameObjects();
 }
 
 //////////////////////////////////////////////////////////////////////////
 QString CBaseObject::GetTypeName() const
 {
-    if (m_objType == OBJTYPE_DUMMY)
-    {
-        return "";
-    }
     QString className = m_classDesc->ClassName();
     QString subClassName = strstr(className.toUtf8().data(), "::");
     if (subClassName.isEmpty())
@@ -1649,7 +1508,7 @@ QString CBaseObject::GetTypeName() const
     }
 
     QString name;
-    name.append(className.mid(0, className.length() - subClassName.length()));
+    name.append(className.midRef(0, className.length() - subClassName.length()));
     return name;
 }
 
@@ -1902,130 +1761,10 @@ bool CBaseObject::HitTestRect(HitContext& hc)
 }
 
 //////////////////////////////////////////////////////////////////////////
-bool CBaseObject::HitHelperTest(HitContext& hc)
-{
-    return HitHelperAtTest(hc, GetWorldPos());
-}
-
-//////////////////////////////////////////////////////////////////////////
-bool CBaseObject::HitHelperAtTest(HitContext& hc, const Vec3& pos)
-{
-    AZ_PROFILE_FUNCTION(Editor);
-
-    bool bResult = false;
-
-    if (m_nTextureIcon && (gSettings.viewports.bShowIcons || gSettings.viewports.bShowSizeBasedIcons) && !hc.bUseSelectionHelpers)
-    {
-        int iconSizeX = OBJECT_TEXTURE_ICON_SIZEX;
-        int iconSizeY = OBJECT_TEXTURE_ICON_SIZEY;
-
-        if (gSettings.viewports.bDistanceScaleIcons)
-        {
-            float fScreenScale = hc.view->GetScreenScaleFactor(pos);
-
-            iconSizeX = static_cast<int>(static_cast<float>(iconSizeX) * OBJECT_TEXTURE_ICON_SCALE / fScreenScale);
-            iconSizeY = static_cast<int>(static_cast<float>(iconSizeY) * OBJECT_TEXTURE_ICON_SCALE / fScreenScale);
-        }
-
-        // Hit Test icon of this object.
-        Vec3 testPos = pos;
-        int y0 = -(iconSizeY / 2);
-        int y1 = +(iconSizeY / 2);
-        if (CheckFlags(OBJFLAG_SHOW_ICONONTOP))
-        {
-            Vec3 objectPos = GetWorldPos();
-
-            AABB box;
-            GetBoundBox(box);
-            testPos.z = (pos.z - objectPos.z) + box.max.z;
-            y0 = -(iconSizeY);
-            y1 = 0;
-        }
-        QPoint pnt = hc.view->WorldToView(testPos);
-
-        if (hc.point2d.x() >= pnt.x() - (iconSizeX / 2) && hc.point2d.x() <= pnt.x() + (iconSizeX / 2) &&
-            hc.point2d.y() >= pnt.y() + y0 && hc.point2d.y() <= pnt.y() + y1)
-        {
-            hc.dist = hc.raySrc.GetDistance(testPos) - 0.2f;
-            hc.iconHit = true;
-            bResult = true;
-        }
-    }
-    else if (hc.bUseSelectionHelpers)
-    {
-        // Check potentially children first
-        bResult = HitHelperTestForChildObjects(hc);
-
-        // If no hit check this object
-        if (!bResult)
-        {
-            // Hit test helper.
-            Vec3 w = pos - hc.raySrc;
-            w = hc.rayDir.Cross(w);
-            float d = w.GetLengthSquared();
-
-            static const float screenScaleToRadiusFactor = 0.008f;
-            const float radius = hc.view->GetScreenScaleFactor(pos) * screenScaleToRadiusFactor;
-            const float pickDistance = hc.raySrc.GetDistance(pos);
-            if (d < radius * radius + hc.distanceTolerance && hc.dist >= pickDistance)
-            {
-                hc.dist = pickDistance;
-                hc.object = this;
-                bResult = true;
-            }
-        }
-    }
-
-
-    return bResult;
-}
-
-//////////////////////////////////////////////////////////////////////////
 CBaseObject* CBaseObject::GetChild(size_t const i) const
 {
     assert(i < m_childs.size());
     return m_childs[i];
-}
-
-//////////////////////////////////////////////////////////////////////////
-bool CBaseObject::IsChildOf(CBaseObject* node)
-{
-    CBaseObject* p = m_parent;
-    while (p && p != node)
-    {
-        p = p->m_parent;
-    }
-    if (p == node)
-    {
-        return true;
-    }
-    return false;
-}
-
-//////////////////////////////////////////////////////////////////////////
-
-
-//////////////////////////////////////////////////////////////////////////
-void CBaseObject::CloneChildren(CBaseObject* pFromObject)
-{
-    if (pFromObject == nullptr)
-    {
-        return;
-    }
-
-    for (size_t i = 0, nChildCount(pFromObject->GetChildCount()); i < nChildCount; ++i)
-    {
-        CBaseObject* pFromChildObject = pFromObject->GetChild(i);
-
-        CBaseObject* pChildClone = GetObjectManager()->CloneObject(pFromChildObject);
-        if (pChildClone == nullptr)
-        {
-            continue;
-        }
-
-        pChildClone->CloneChildren(pFromChildObject);
-        AddMember(pChildClone, false);
-    }
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -2044,7 +1783,6 @@ void CBaseObject::AttachChild(CBaseObject* child, bool bKeepPos)
             return;
         }
 
-        static_cast<CObjectManager*>(GetObjectManager())->NotifyObjectListeners(child, ON_PREATTACHED);
         child->NotifyListeners(bKeepPos ? ON_PREATTACHEDKEEPXFORM : ON_PREATTACHED);
 
         pTransformDelegate = m_pTransformDelegate;
@@ -2089,7 +1827,6 @@ void CBaseObject::AttachChild(CBaseObject* child, bool bKeepPos)
         m_pTransformDelegate = pTransformDelegate;
         child->m_pTransformDelegate = pChildTransformDelegate;
 
-        static_cast<CObjectManager*>(GetObjectManager())->NotifyObjectListeners(child, ON_ATTACHED);
         child->NotifyListeners(ON_ATTACHED);
 
         NotifyListeners(ON_CHILDATTACHED);
@@ -2127,7 +1864,6 @@ void CBaseObject::DetachThis(bool bKeepPos)
 
         {
             CScopedSuspendUndo suspendUndo;
-            static_cast<CObjectManager*>(GetObjectManager())->NotifyObjectListeners(this, ON_PREDETACHED);
             NotifyListeners(bKeepPos ? ON_PREDETACHEDKEEPXFORM : ON_PREDETACHED);
 
             pTransformDelegate = m_pTransformDelegate;
@@ -2158,7 +1894,6 @@ void CBaseObject::DetachThis(bool bKeepPos)
 
             SetTransformDelegate(pTransformDelegate);
 
-            static_cast<CObjectManager*>(GetObjectManager())->NotifyObjectListeners(this, ON_DETACHED);
             NotifyListeners(ON_DETACHED);
         }
     }
@@ -2260,12 +1995,6 @@ Matrix34 CBaseObject::GetParentAttachPointWorldTM() const
     }
 
     return Matrix34(IDENTITY);
-}
-
-//////////////////////////////////////////////////////////////////////////
-bool CBaseObject::IsParentAttachmentValid() const
-{
-    return true;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -2418,7 +2147,7 @@ void CBaseObject::SetLookAt(CBaseObject* target)
         return;
     }
 
-    StoreUndo("Change LookAt");
+    StoreUndo();
 
     if (m_lookat)
     {
@@ -2544,63 +2273,6 @@ void CBaseObject::Validate(IErrorReport* report)
 };
 
 //////////////////////////////////////////////////////////////////////////
-Ang3 CBaseObject::GetWorldAngles() const
-{
-    if (m_scale == Vec3(1, 1, 1))
-    {
-        Quat q = Quat(GetWorldTM());
-        Ang3 angles = RAD2DEG(Ang3::GetAnglesXYZ(Matrix33(q)));
-        return angles;
-    }
-    else
-    {
-        Matrix34 tm = GetWorldTM();
-        tm.OrthonormalizeFast();
-        Quat q = Quat(tm);
-        Ang3 angles = RAD2DEG(Ang3::GetAnglesXYZ(Matrix33(q)));
-        return angles;
-    }
-};
-
-//////////////////////////////////////////////////////////////////////////
-void CBaseObject::PostClone(CBaseObject* pFromObject, CObjectCloneContext& ctx)
-{
-    CBaseObject* pFromParent = pFromObject->GetParent();
-    if (pFromParent)
-    {
-        SetFloorNumber(pFromObject->GetFloorNumber());
-
-        CBaseObject* pFromParentInContext = ctx.FindClone(pFromParent);
-        if (pFromParentInContext)
-        {
-            pFromParentInContext->AddMember(this, false);
-        }
-        else
-        {
-            pFromParent->AddMember(this, false);
-        }
-    }
-    if (pFromObject->ShouldCloneChildren())
-    {
-        for (int i = 0; i < pFromObject->GetChildCount(); i++)
-        {
-            CBaseObject* pChildObject = pFromObject->GetChild(i);
-            CBaseObject* pClonedChild = GetObjectManager()->CloneObject(pChildObject);
-            ctx.AddClone(pChildObject, pClonedChild);
-        }
-        for (int i = 0; i < pFromObject->GetChildCount(); i++)
-        {
-            CBaseObject* pChildObject = pFromObject->GetChild(i);
-            CBaseObject* pClonedChild = ctx.FindClone(pChildObject);
-            if (pClonedChild)
-            {
-                pClonedChild->PostClone(pChildObject, ctx);
-            }
-        }
-    }
-}
-
-//////////////////////////////////////////////////////////////////////////
 void CBaseObject::GatherUsedResources(CUsedResources& resources)
 {
     if (GetVarBlock())
@@ -2633,79 +2305,6 @@ void CBaseObject::SetMinSpec(uint32 nSpec, bool bSetChildren)
             m_childs[i]->SetMinSpec(nSpec, true);
         }
     }
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CBaseObject::OnPropertyChanged(IVariable*)
-{
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CBaseObject::OnMultiSelPropertyChanged(IVariable*)
-{
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CBaseObject::OnMenuShowInAssetBrowser()
-{
-    if (!IsSelected())
-    {
-        CUndo undo("Select Object");
-        GetIEditor()->GetObjectManager()->ClearSelection();
-        GetIEditor()->SelectObject(this);
-    }
-
-    GetIEditor()->ExecuteCommand("asset_browser.show_viewport_selection");
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CBaseObject::OnContextMenu(QMenu* menu)
-{
-    if (!menu->isEmpty())
-    {
-        menu->addSeparator();
-    }
-    CUsedResources resources;
-    GatherUsedResources(resources);
-
-    static_cast<CEditorImpl*>(GetIEditor())->OnObjectContextMenuOpened(menu, this);
-}
-
-//////////////////////////////////////////////////////////////////////////
-bool CBaseObject::IntersectRayMesh(const Vec3& raySrc, const Vec3& rayDir, SRayHitInfo& outHitInfo) const
-{
-    const float fRenderMeshTestDistance = 0.2f;
-    IRenderNode* pRenderNode = GetEngineNode();
-    if (!pRenderNode)
-    {
-        return false;
-    }
-
-    Matrix34 worldTM;
-    IStatObj* pStatObj = pRenderNode->GetEntityStatObj(0, 0, &worldTM);
-    if (!pStatObj)
-    {
-        return false;
-    }
-
-    // transform decal into object space
-    Matrix34 worldTM_Inverted = worldTM.GetInverted();
-    Matrix33 worldRot(worldTM_Inverted);
-    worldRot.Transpose();
-    // put hit direction into the object space
-    Vec3 vRayDir = rayDir.GetNormalized() * worldRot;
-    // put hit position into the object space
-    Vec3 vHitPos = worldTM_Inverted.TransformPoint(raySrc);
-    Vec3 vLineP1 = vHitPos - vRayDir * fRenderMeshTestDistance;
-
-    memset(&outHitInfo, 0, sizeof(outHitInfo));
-    outHitInfo.inReferencePoint = vHitPos;
-    outHitInfo.inRay.origin = vLineP1;
-    outHitInfo.inRay.direction = vRayDir;
-    outHitInfo.bInFirstHit = false;
-    outHitInfo.bUseCache = false;
-
-    return pStatObj->RayIntersection(outHitInfo, nullptr);
 }
 
 //////////////////////////////////////////////////////////////////////////

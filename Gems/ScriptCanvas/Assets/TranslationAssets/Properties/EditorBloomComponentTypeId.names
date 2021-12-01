@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "EditorBloomComponentTypeId",
+            "base": "EditorBloomComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "EditorBloomComponentTypeId::Getter",
-                "category": "Constants"
-            }
+                "name": "Editor Bloom Component Type Id",
+                "category": "Constants/Editor/Component Type Id"
+            },
+            "methods": [
+                {
+                    "base": "GetEditorBloomComponentTypeId",
+                    "details": {
+                        "name": "Get Editor Bloom Component Type Id"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}",
+                            "details": {
+                                "name": "AZ:: Uuid"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

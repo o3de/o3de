@@ -1,16 +1,16 @@
 {
     "entries": [
         {
-            "key": "ConsoleRequestBus",
+            "base": "ConsoleRequestBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "ConsoleRequestBus",
+                "name": "Console",
                 "category": "Utilities"
             },
             "methods": [
                 {
-                    "key": "ExecuteConsoleCommand",
+                    "base": "ExecuteConsoleCommand",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Execute Console Command"
@@ -26,7 +26,7 @@
                         {
                             "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
                             "details": {
-                                "name": "char"
+                                "name": "Command"
                             }
                         }
                     ]

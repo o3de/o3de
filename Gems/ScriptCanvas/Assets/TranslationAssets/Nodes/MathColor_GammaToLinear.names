@@ -1,38 +1,38 @@
 {
     "entries": [
         {
-            "key": "{721CF0C9-BE86-59B4-A5B6-AC936744CE5E}",
+            "base": "{721CF0C9-BE86-59B4-A5B6-AC936744CE5E}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "GammaToLinear",
+                "name": "Gamma To Linear",
                 "category": "Math/Color",
                 "tooltip": "returns Source converted from gamma corrected to linear space",
                 "subtitle": "Color"
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "key": "DataInput_Color: Source",
+                    "base": "DataInput_Color: Source",
                     "details": {
-                        "name": "Color: Source"
+                        "name": "Source"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Color",
+                    "base": "DataOutput_Result: Color",
                     "details": {
-                        "name": "Result: Color"
+                        "name": "Result"
                     }
                 }
             ]

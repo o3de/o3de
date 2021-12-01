@@ -1,44 +1,44 @@
 {
     "entries": [
         {
-            "key": "{A03CA593-2B2E-5BEE-9A63-118D2F1E9DED}",
+            "base": "{A03CA593-2B2E-5BEE-9A63-118D2F1E9DED}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
                 "name": "Clamp",
-                "category": "Math/AABB",
+                "category": "Math/Axis Aligned Bounding Box",
                 "tooltip": "returns the largest version of Source that can fit entirely within Clamp",
-                "subtitle": "AABB"
+                "subtitle": "Axis Aligned Bounding Box"
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "key": "DataInput_AABB: Source",
+                    "base": "DataInput_AABB: Source",
                     "details": {
-                        "name": "AABB: Source"
+                        "name": "Source"
                     }
                 },
                 {
-                    "key": "DataInput_AABB: Clamp",
+                    "base": "DataInput_AABB: Clamp",
                     "details": {
-                        "name": "AABB: Clamp"
+                        "name": "Clamp"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: AABB",
+                    "base": "DataOutput_Result: AABB",
                     "details": {
-                        "name": "Result: AABB"
+                        "name": "AABB"
                     }
                 }
             ]

@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "DefaultMaterialAssignment",
+            "base": "DefaultMaterialAssignment",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "DefaultMaterialAssignment::Getter",
-                "category": "Constants"
-            }
+                "name": "Default Material Assignment",
+                "category": "Constants/Defaults"
+            },
+            "methods": [
+                {
+                    "base": "GetDefaultMaterialAssignment",
+                    "details": {
+                        "name": "Get Default Material Assignment"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{C66E5214-A24B-4722-B7F0-5991E6F8F163}",
+                            "details": {
+                                "name": "AZ:: Render:: Material Assignment"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

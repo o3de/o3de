@@ -25,7 +25,7 @@ namespace AZ
     namespace RPI
     {
         /**
-         * This is the central component that drive the process of exporting a scene to Model 
+         * This is the central component that drive the process of exporting a scene to Model
          * and Material assets. It delegates asset-build duties to other components like
          * ModelAssetBuilderComponent and MaterialAssetBuilderComponent via export events.
          */
@@ -55,7 +55,7 @@ namespace AZ
 
                 AZStd::string_view m_relativeFileName;
                 AZStd::string_view m_extension;
-                const Uuid m_sourceUuid;
+                const Uuid m_sourceUuid = Uuid::CreateNull();
                 const DataStream::StreamType m_dataStreamType = DataStream::ST_BINARY;
             };
 

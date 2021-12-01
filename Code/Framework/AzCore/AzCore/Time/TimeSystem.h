@@ -74,8 +74,7 @@ namespace AZ
         //! Updated in AdvanceTickDeltaTimes().
         TimeUs m_realTickDeltaTimeUs = AZ::Time::ZeroTimeUs;
 
-        TimeUs m_lastSimulationTickTimeUs = AZ::Time::ZeroTimeUs; //!< Used to determine the game tick delta time (affected by cvars).
-        TimeUs m_lastRealTickTimeUs = AZ::Time::ZeroTimeUs; //!< Used to determine the real game tick delta time (not affected by cvars).
+        TimeUs m_lastSimulationTickTimeUs = AZ::Time::ZeroTimeUs; //!< Used to determine the game tick delta time.
 
         TimeUs m_simulationTickDeltaOverride = AZ::Time::ZeroTimeUs; //<! Stores the TimeUs value of the t_simulationTickDeltaOverride cvar.
         TimeUs m_simulationTickLimitTimeUs = AZ::Time::ZeroTimeUs; //<! Stores the TimeUs value of the t_simulationTickRate cvar.

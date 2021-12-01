@@ -1,38 +1,37 @@
 {
     "entries": [
         {
-            "key": "{F54FFF79-75FF-5444-B941-DF216680BEA1}",
+            "base": "{F54FFF79-75FF-5444-B941-DF216680BEA1}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "FromTransform",
+                "name": "From Transform",
                 "category": "Math/Matrix3x3",
-                "tooltip": "returns a matrix using the supplied transform",
-                "subtitle": "Matrix3x3"
+                "tooltip": "Returns a matrix using the supplied transform"
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "key": "DataInput_Transform: Transform",
+                    "base": "DataInput_Transform",
                     "details": {
-                        "name": "Transform: Transform"
+                        "name": "Transform"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Matrix3x3",
+                    "base": "DataOutput_Result",
                     "details": {
-                        "name": "Result: Matrix3x3"
+                        "name": "Result"
                     }
                 }
             ]

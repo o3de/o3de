@@ -1,38 +1,37 @@
 {
     "entries": [
         {
-            "key": "{4DD9115A-D1D0-53B3-8CC5-EA08EAA8BF13}",
+            "base": "{4DD9115A-D1D0-53B3-8CC5-EA08EAA8BF13}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "FromDiagonal",
+                "name": "From Diagonal",
                 "category": "Math/Matrix4x4",
-                "tooltip": "returns a diagonal matrix using the supplied vector",
-                "subtitle": "Matrix4x4"
+                "tooltip": "Returns a diagonal matrix using the supplied vector"
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "key": "DataInput_Vector4: Source",
+                    "base": "DataInput_Source",
                     "details": {
-                        "name": "Vector4: Source"
+                        "name": "Source"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Matrix4x4",
+                    "base": "DataOutput_Result",
                     "details": {
-                        "name": "Result: Matrix4x4"
+                        "name": "Result"
                     }
                 }
             ]

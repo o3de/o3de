@@ -1,12 +1,103 @@
 {
     "entries": [
         {
-            "key": "CapsuleShapeConfig",
+            "base": "CapsuleShapeConfig",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
-                "name": "CapsuleShapeConfig"
-            }
+                "name": "Capsule Shape Config",
+                "category": "Rendering/Shapes"
+            },
+            "methods": [
+                {
+                    "base": "GetHeight",
+                    "details": {
+                        "name": "Get Height"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{00931AEB-2AD8-42CE-B1DC-FA4332F51501}",
+                            "details": {
+                                "name": "Capsule Shape Config",
+                                "tooltip": "Capsule shape configuration parameters"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Height"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetHeight",
+                    "details": {
+                        "name": "Set Height"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{00931AEB-2AD8-42CE-B1DC-FA4332F51501}",
+                            "details": {
+                                "name": "Capsule Shape Config",
+                                "tooltip": "Capsule shape configuration parameters"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Height"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetRadius",
+                    "details": {
+                        "name": "Get Radius"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{00931AEB-2AD8-42CE-B1DC-FA4332F51501}",
+                            "details": {
+                                "name": "Capsule Shape Config",
+                                "tooltip": "Capsule shape configuration parameters"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Radius"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetRadius",
+                    "details": {
+                        "name": "Set Radius"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{00931AEB-2AD8-42CE-B1DC-FA4332F51501}",
+                            "details": {
+                                "name": "Capsule Shape Config",
+                                "tooltip": "Capsule shape configuration parameters"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Radius"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

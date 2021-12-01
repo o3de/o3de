@@ -1,12 +1,563 @@
 {
     "entries": [
         {
-            "key": "GradientSampler",
+            "base": "GradientSampler",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
-                "name": "GradientSampler"
-            }
+                "name": "Gradient Sampler",
+                "category": "Rendering"
+            },
+            "methods": [
+                {
+                    "base": "Getscale",
+                    "details": {
+                        "name": "Getscale"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3768D3A6-BF70-4ABC-B4EC-73C75A886916}",
+                            "details": {
+                                "name": "Gradient Sampler"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Vector 3"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "Setscale",
+                    "details": {
+                        "name": "Setscale"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3768D3A6-BF70-4ABC-B4EC-73C75A886916}",
+                            "details": {
+                                "name": "Gradient Sampler"
+                            }
+                        },
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Vector 3"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetoutputMin",
+                    "details": {
+                        "name": "Getoutput Min"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3768D3A6-BF70-4ABC-B4EC-73C75A886916}",
+                            "details": {
+                                "name": "Gradient Sampler"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetoutputMin",
+                    "details": {
+                        "name": "Setoutput Min"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3768D3A6-BF70-4ABC-B4EC-73C75A886916}",
+                            "details": {
+                                "name": "Gradient Sampler"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "Getrotation",
+                    "details": {
+                        "name": "Getrotation"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3768D3A6-BF70-4ABC-B4EC-73C75A886916}",
+                            "details": {
+                                "name": "Gradient Sampler"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Vector 3"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "Setrotation",
+                    "details": {
+                        "name": "Setrotation"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3768D3A6-BF70-4ABC-B4EC-73C75A886916}",
+                            "details": {
+                                "name": "Gradient Sampler"
+                            }
+                        },
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Vector 3"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetinputMin",
+                    "details": {
+                        "name": "Getinput Min"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3768D3A6-BF70-4ABC-B4EC-73C75A886916}",
+                            "details": {
+                                "name": "Gradient Sampler"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetinputMin",
+                    "details": {
+                        "name": "Setinput Min"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3768D3A6-BF70-4ABC-B4EC-73C75A886916}",
+                            "details": {
+                                "name": "Gradient Sampler"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetinvertInput",
+                    "details": {
+                        "name": "Getinvert Input"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3768D3A6-BF70-4ABC-B4EC-73C75A886916}",
+                            "details": {
+                                "name": "Gradient Sampler"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetinvertInput",
+                    "details": {
+                        "name": "Setinvert Input"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3768D3A6-BF70-4ABC-B4EC-73C75A886916}",
+                            "details": {
+                                "name": "Gradient Sampler"
+                            }
+                        },
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetinputMid",
+                    "details": {
+                        "name": "Getinput Mid"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3768D3A6-BF70-4ABC-B4EC-73C75A886916}",
+                            "details": {
+                                "name": "Gradient Sampler"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetinputMid",
+                    "details": {
+                        "name": "Setinput Mid"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3768D3A6-BF70-4ABC-B4EC-73C75A886916}",
+                            "details": {
+                                "name": "Gradient Sampler"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetenableTransforms",
+                    "details": {
+                        "name": "Getenable Transforms"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3768D3A6-BF70-4ABC-B4EC-73C75A886916}",
+                            "details": {
+                                "name": "Gradient Sampler"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetenableTransforms",
+                    "details": {
+                        "name": "Setenable Transforms"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3768D3A6-BF70-4ABC-B4EC-73C75A886916}",
+                            "details": {
+                                "name": "Gradient Sampler"
+                            }
+                        },
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "Getopacity",
+                    "details": {
+                        "name": "Getopacity"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3768D3A6-BF70-4ABC-B4EC-73C75A886916}",
+                            "details": {
+                                "name": "Gradient Sampler"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "Setopacity",
+                    "details": {
+                        "name": "Setopacity"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3768D3A6-BF70-4ABC-B4EC-73C75A886916}",
+                            "details": {
+                                "name": "Gradient Sampler"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetenableLevels",
+                    "details": {
+                        "name": "Getenable Levels"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3768D3A6-BF70-4ABC-B4EC-73C75A886916}",
+                            "details": {
+                                "name": "Gradient Sampler"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetenableLevels",
+                    "details": {
+                        "name": "Setenable Levels"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3768D3A6-BF70-4ABC-B4EC-73C75A886916}",
+                            "details": {
+                                "name": "Gradient Sampler"
+                            }
+                        },
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetinputMax",
+                    "details": {
+                        "name": "Getinput Max"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3768D3A6-BF70-4ABC-B4EC-73C75A886916}",
+                            "details": {
+                                "name": "Gradient Sampler"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetinputMax",
+                    "details": {
+                        "name": "Setinput Max"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3768D3A6-BF70-4ABC-B4EC-73C75A886916}",
+                            "details": {
+                                "name": "Gradient Sampler"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetoutputMax",
+                    "details": {
+                        "name": "Getoutput Max"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3768D3A6-BF70-4ABC-B4EC-73C75A886916}",
+                            "details": {
+                                "name": "Gradient Sampler"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetoutputMax",
+                    "details": {
+                        "name": "Setoutput Max"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3768D3A6-BF70-4ABC-B4EC-73C75A886916}",
+                            "details": {
+                                "name": "Gradient Sampler"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "Gettranslation",
+                    "details": {
+                        "name": "Gettranslation"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3768D3A6-BF70-4ABC-B4EC-73C75A886916}",
+                            "details": {
+                                "name": "Gradient Sampler"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Vector 3"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "Settranslation",
+                    "details": {
+                        "name": "Settranslation"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3768D3A6-BF70-4ABC-B4EC-73C75A886916}",
+                            "details": {
+                                "name": "Gradient Sampler"
+                            }
+                        },
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Vector 3"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetgradientId",
+                    "details": {
+                        "name": "Getgradient Id"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3768D3A6-BF70-4ABC-B4EC-73C75A886916}",
+                            "details": {
+                                "name": "Gradient Sampler"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Entity Id",
+                                "tooltip": "Entity Unique Id"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetgradientId",
+                    "details": {
+                        "name": "Setgradient Id"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3768D3A6-BF70-4ABC-B4EC-73C75A886916}",
+                            "details": {
+                                "name": "Gradient Sampler"
+                            }
+                        },
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Entity Id",
+                                "tooltip": "Entity Unique Id"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

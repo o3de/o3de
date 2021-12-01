@@ -1,50 +1,49 @@
 {
     "entries": [
         {
-            "key": "{7CF70E06-039B-5DFB-BA6D-A94DBB010A91}",
+            "base": "{7CF70E06-039B-5DFB-BA6D-A94DBB010A91}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "IsClose",
+                "name": "Is Close",
                 "category": "Math/Quaternion",
-                "tooltip": "returns true if A and B are within Tolerance of each other",
-                "subtitle": "Quaternion"
+                "tooltip": "Returns true if A and B are within Tolerance of each other"
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "key": "DataInput_Quaternion: A",
+                    "base": "DataInput_A",
                     "details": {
-                        "name": "Quaternion: A"
+                        "name": "A"
                     }
                 },
                 {
-                    "key": "DataInput_Quaternion: B",
+                    "base": "DataInput_B",
                     "details": {
-                        "name": "Quaternion: B"
+                        "name": "B"
                     }
                 },
                 {
-                    "key": "DataInput_Number: Tolerance",
+                    "base": "DataInput_Tolerance",
                     "details": {
-                        "name": "Number: Tolerance"
+                        "name": "Tolerance"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Boolean",
+                    "base": "DataOutput_Result",
                     "details": {
-                        "name": "Result: Boolean"
+                        "name": "Result"
                     }
                 }
             ]

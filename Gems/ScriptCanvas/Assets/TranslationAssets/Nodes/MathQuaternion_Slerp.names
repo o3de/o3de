@@ -1,50 +1,49 @@
 {
     "entries": [
         {
-            "key": "{92A204FE-A6E2-5EB7-B2A2-F782DBA8C1C3}",
+            "base": "{92A204FE-A6E2-5EB7-B2A2-F782DBA8C1C3}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
                 "name": "Slerp",
                 "category": "Math/Quaternion",
-                "tooltip": "returns the spherical linear interpolation between From and To by the amount T, the result is NOT normalized",
-                "subtitle": "Quaternion"
+                "tooltip": "Returns the spherical linear interpolation between From and To by the amount T, the result is NOT normalized"
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "key": "DataInput_Quaternion: From",
+                    "base": "DataInput_From",
                     "details": {
-                        "name": "Quaternion: From"
+                        "name": "From"
                     }
                 },
                 {
-                    "key": "DataInput_Quaternion: To",
+                    "base": "DataInput_To",
                     "details": {
-                        "name": "Quaternion: To"
+                        "name": "To"
                     }
                 },
                 {
-                    "key": "DataInput_Number: T",
+                    "base": "DataInput_T",
                     "details": {
-                        "name": "Number: T"
+                        "name": "T"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Quaternion",
+                    "base": "DataOutput_Result",
                     "details": {
-                        "name": "Result: Quaternion"
+                        "name": "Result"
                     }
                 }
             ]

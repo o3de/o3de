@@ -1,38 +1,38 @@
 {
     "entries": [
         {
-            "key": "{5B585330-B99A-5FDF-BA3C-CDA72468D4CA}",
+            "base": "{5B585330-B99A-5FDF-BA3C-CDA72468D4CA}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "IsFinite",
-                "category": "Math/AABB",
+                "name": "Is Finite",
+                "category": "Math/Axis Aligned Bounding Box",
                 "tooltip": "returns true if Source is finite, else false",
-                "subtitle": "AABB"
+                "subtitle": "Axis Aligned Bounding Box"
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "key": "DataInput_AABB: Source",
+                    "base": "DataInput_AABB: Source",
                     "details": {
-                        "name": "AABB: Source"
+                        "name": "Source"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Boolean",
+                    "base": "DataOutput_Result: Boolean",
                     "details": {
-                        "name": "Result: Boolean"
+                        "name": "Is Finite"
                     }
                 }
             ]

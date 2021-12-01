@@ -1,44 +1,43 @@
 {
     "entries": [
         {
-            "key": "{F7805CC3-4A0A-58BD-968F-5D1CAA4D8215}",
+            "base": "{F7805CC3-4A0A-58BD-968F-5D1CAA4D8215}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "IsZero",
+                "name": "Is Zero",
                 "category": "Math/Quaternion",
-                "tooltip": "returns true if Source is within Tolerance of the Zero rotation",
-                "subtitle": "Quaternion"
+                "tooltip": "Returns true if Source is within Tolerance of the Zero rotation"
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "key": "DataInput_Quaternion: Source",
+                    "base": "DataInput_Source",
                     "details": {
-                        "name": "Quaternion: Source"
+                        "name": "Source"
                     }
                 },
                 {
-                    "key": "DataInput_Number: Tolerance",
+                    "base": "DataInput_Tolerance",
                     "details": {
-                        "name": "Number: Tolerance"
+                        "name": "Tolerance"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Boolean",
+                    "base": "DataOutput_Result",
                     "details": {
-                        "name": "Result: Boolean"
+                        "name": "Result"
                     }
                 }
             ]

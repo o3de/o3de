@@ -1,83 +1,82 @@
 {
     "entries": [
         {
-            "key": "CameraRequestBus",
+            "base": "CameraRequestBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "CameraRequestBus",
+                "name": "Camera",
                 "category": "Camera"
             },
             "methods": [
                 {
-                    "key": "GetOrthographicHalfWidth",
+                    "base": "GetOrthographicHalfWidth",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetOrthographicHalfWidth"
+                        "tooltip": "When signaled, this will invoke Get Orthographic Half Width"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetOrthographicHalfWidth is invoked"
+                        "tooltip": "Signaled after Get Orthographic Half Width is invoked"
                     },
                     "details": {
-                        "name": "GetOrthographicHalfWidth"
+                        "name": "Get Orthographic Half Width"
                     },
                     "results": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "float"
+                                "name": "Half Width"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "GetFov",
+                    "base": "GetFov",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke Get FOV"
+                        "tooltip": "When signaled, this will invoke Get Field of View"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after Get FOV is invoked"
+                        "tooltip": "Signaled after Get Field of View is invoked"
                     },
                     "details": {
-                        "name": "Get FOV",
-                        "tooltip": "Returns the field of view of the camera"
+                        "name": "Get Field of View"
                     },
                     "results": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "float"
+                                "name": "FOV"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "SetFovRadians",
+                    "base": "SetFovRadians",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetFovRadians"
+                        "tooltip": "When signaled, this will invoke Set Field of View (Radians)"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetFovRadians is invoked"
+                        "tooltip": "Signaled after Set Field of View (Radians) is invoked"
                     },
                     "details": {
-                        "name": "SetFovRadians"
+                        "name": "Set Field of View (Radians)"
                     },
                     "params": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "float"
+                                "name": "FOV (Radians)"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "SetNearClipDistance",
+                    "base": "SetNearClipDistance",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Near Clip Distance"
@@ -87,111 +86,107 @@
                         "tooltip": "Signaled after Set Near Clip Distance is invoked"
                     },
                     "details": {
-                        "name": "Set Near Clip Distance",
-                        "tooltip": "Sets the near clip distance of the camera"
+                        "name": "Set Near Clip Distance"
                     },
                     "params": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Distance",
-                                "tooltip": "Set the near clip distance of the camera"
+                                "name": "Near Clip Distance"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "IsOrthographic",
+                    "base": "IsOrthographic",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke IsOrthographic"
+                        "tooltip": "When signaled, this will invoke Is Orthographic"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after IsOrthographic is invoked"
+                        "tooltip": "Signaled after Is Orthographic is invoked"
                     },
                     "details": {
-                        "name": "IsOrthographic"
+                        "name": "Is Orthographic"
                     },
                     "results": [
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": "bool"
+                                "name": "Is Orthographic"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "SetFovDegrees",
+                    "base": "SetFovDegrees",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetFovDegrees"
+                        "tooltip": "When signaled, this will invoke Set Field of View (Degrees)"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetFovDegrees is invoked"
+                        "tooltip": "Signaled after Set Field of View (Degrees) is invoked"
                     },
                     "details": {
-                        "name": "SetFovDegrees"
+                        "name": "Set Field of View (Degrees)"
                     },
                     "params": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "float"
+                                "name": "Field of View (Degrees)"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "GetFovRadians",
+                    "base": "GetFovRadians",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetFovRadians"
+                        "tooltip": "When signaled, this will invoke Get Field of View (Radians)"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetFovRadians is invoked"
+                        "tooltip": "Signaled after Get Field of View (Radians) is invoked"
                     },
                     "details": {
-                        "name": "GetFovRadians"
+                        "name": "Get Field of View (Radians)"
                     },
                     "results": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "float"
+                                "name": "Field of View (Radians)"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "SetFov",
+                    "base": "SetFov",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke Set FOV"
+                        "tooltip": "When signaled, this will invoke Set Field of View"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after Set FOV is invoked"
+                        "tooltip": "Signaled after Set Field of View is invoked"
                     },
                     "details": {
-                        "name": "Set FOV",
-                        "tooltip": "Set the field of view of the camera"
+                        "name": "Set Field of View"
                     },
                     "params": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "FOV",
-                                "tooltip": "The field of view of the camera"
+                                "name": "Field of View"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "MakeActiveView",
+                    "base": "MakeActiveView",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Make Active View"
@@ -201,12 +196,11 @@
                         "tooltip": "Signaled after Make Active View is invoked"
                     },
                     "details": {
-                        "name": "Make Active View",
-                        "tooltip": "Sets the camera on the specified entity to the active view"
+                        "name": "Make Active View"
                     }
                 },
                 {
-                    "key": "GetFarClipDistance",
+                    "base": "GetFarClipDistance",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Far Clip Distance"
@@ -216,86 +210,85 @@
                         "tooltip": "Signaled after Get Far Clip Distance is invoked"
                     },
                     "details": {
-                        "name": "Get Far Clip Distance",
-                        "tooltip": "Returns the far clip distance of the camera"
+                        "name": "Get Far Clip Distance"
                     },
                     "results": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "float"
+                                "name": "Far Clip Distance"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "GetFovDegrees",
+                    "base": "GetFovDegrees",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetFovDegrees"
+                        "tooltip": "When signaled, this will invoke Get Field of View (Degrees)"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetFovDegrees is invoked"
+                        "tooltip": "Signaled after Get Field of View (Degrees) is invoked"
                     },
                     "details": {
-                        "name": "GetFovDegrees"
+                        "name": "Get Field of View (Degrees)"
                     },
                     "results": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "float"
+                                "name": "Field of View (Degrees)"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "SetOrthographic",
+                    "base": "SetOrthographic",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetOrthographic"
+                        "tooltip": "When signaled, this will invoke Set Orthographic"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetOrthographic is invoked"
+                        "tooltip": "Signaled after Set Orthographic is invoked"
                     },
                     "details": {
-                        "name": "SetOrthographic"
+                        "name": "Set Orthographic"
                     },
                     "params": [
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": "bool"
+                                "name": "Orthographic"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "SetOrthographicHalfWidth",
+                    "base": "SetOrthographicHalfWidth",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetOrthographicHalfWidth"
+                        "tooltip": "When signaled, this will invoke Set Orthographic Half Width"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetOrthographicHalfWidth is invoked"
+                        "tooltip": "Signaled after Set Orthographic Half Width is invoked"
                     },
                     "details": {
-                        "name": "SetOrthographicHalfWidth"
+                        "name": "Set Orthographic Half Width"
                     },
                     "params": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "float"
+                                "name": "Half Width"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "GetNearClipDistance",
+                    "base": "GetNearClipDistance",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Near Clip Distance"
@@ -305,20 +298,19 @@
                         "tooltip": "Signaled after Get Near Clip Distance is invoked"
                     },
                     "details": {
-                        "name": "Get Near Clip Distance",
-                        "tooltip": "Returns the near clip distance of the camera"
+                        "name": "Get Near Clip Distance"
                     },
                     "results": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "float"
+                                "name": "Near Clip Distance"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "SetFarClipDistance",
+                    "base": "SetFarClipDistance",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Far Clip Distance"
@@ -328,37 +320,35 @@
                         "tooltip": "Signaled after Set Far Clip Distance is invoked"
                     },
                     "details": {
-                        "name": "Set Far Clip Distance",
-                        "tooltip": "Sets the far clip distance of the camera"
+                        "name": "Set Far Clip Distance"
                     },
                     "params": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Distance",
-                                "tooltip": "The far clip distance of the camera"
+                                "name": "Far Clip Distance"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "IsActiveView",
+                    "base": "IsActiveView",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke IsActiveView"
+                        "tooltip": "When signaled, this will invoke Is Active View"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after IsActiveView is invoked"
+                        "tooltip": "Signaled after Is Active View is invoked"
                     },
                     "details": {
-                        "name": "IsActiveView"
+                        "name": "Is Active View"
                     },
                     "results": [
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": "bool"
+                                "name": "Is Active View"
                             }
                         }
                     ]

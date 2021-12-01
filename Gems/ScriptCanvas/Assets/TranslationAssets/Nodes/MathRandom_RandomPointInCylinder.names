@@ -1,44 +1,43 @@
 {
     "entries": [
         {
-            "key": "{DE205B79-32D5-5FA9-868A-442CE0388F7F}",
+            "base": "{DE205B79-32D5-5FA9-868A-442CE0388F7F}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "RandomPointInCylinder",
+                "name": "Random Point In Cylinder",
                 "category": "Math/Random",
-                "tooltip": "returns a random point in a cylinder",
-                "subtitle": "Random"
+                "tooltip": "Returns a random point in a cylinder"
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "key": "DataInput_Number: Radius",
+                    "base": "DataInput_Radius",
                     "details": {
-                        "name": "Number: Radius"
+                        "name": "Radius"
                     }
                 },
                 {
-                    "key": "DataInput_Number: Height",
+                    "base": "DataInput_Height",
                     "details": {
-                        "name": "Number: Height"
+                        "name": "Height"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Vector3",
+                    "base": "DataOutput_Result",
                     "details": {
-                        "name": "Result: Vector3"
+                        "name": "Result"
                     }
                 }
             ]

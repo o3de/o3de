@@ -15,8 +15,6 @@
 
 ShaderResourceGroup ObjectSrg : SRG_PerObject
 {
-    row_major float3x4 m_modelToWorld;
-
     struct TerrainData
     {
         float2 m_uvMin;
@@ -36,6 +34,8 @@ ShaderResourceGroup ObjectSrg : SRG_PerObject
         uint m_mapsInUse;
     };
 
+    row_major float3x4 m_modelToWorld;
+
     TerrainData m_terrainData;
 
     MacroMaterialData m_macroMaterialData[4];
@@ -43,7 +43,7 @@ ShaderResourceGroup ObjectSrg : SRG_PerObject
 
     Texture2D m_macroColorMap[4];
     Texture2D m_macroNormalMap[4];
-    
+
     // The below shouldn't be in this SRG but needs to be for now because the lighting functions depend on them.
 
     //! Reflection Probe (smallest probe volume that overlaps the object position)
@@ -93,26 +93,6 @@ ShaderResourceGroup ObjectSrg : SRG_PerObject
 
 ShaderResourceGroup TerrainMaterialSrg : SRG_PerMaterial
 {
-    Texture2D m_heightmapImage;
-    Texture2D<uint4> m_detailMaterialIdImage;
-    float2 m_detailMaterialIdImageCenter;
-    float m_detailTextureMultiplier;
-    float m_detailFadeDistance;
-    float m_detailFadeLength;
-
-    float4 m_detailAabb;
-    float m_detailHalfPixelUv;
-
-    Sampler HeightmapSampler
-    {
-        MinFilter = Linear;
-        MagFilter = Linear;
-        MipFilter = Point;
-        AddressU = Clamp;
-        AddressV = Clamp;
-        AddressW = Clamp;
-    };
-
     Sampler m_sampler
     {
         AddressU = Wrap;
@@ -123,41 +103,16 @@ ShaderResourceGroup TerrainMaterialSrg : SRG_PerMaterial
         MaxAnisotropy = 16;
     };
 
-    Sampler m_detailSampler
-    {
-        AddressU = Wrap;
-        AddressV = Wrap;
-        MinFilter = Point;
-        MagFilter = Point;
-        MipFilter = Point;
-    };
-
     // Base Color
     float3 m_baseColor;
-    float m_baseColorFactor;
-    Texture2D m_baseColorMap;
 
-    // Normal
-    Texture2D m_normalMap;
-    bool m_flipNormalX;
-    bool m_flipNormalY;
-    float m_normalFactor;
-
-    // Roughness
-    Texture2D m_roughnessMap;
-    float m_roughnessFactor;
-
-    // Specular
-    Texture2D m_specularF0Map;
-    float m_specularF0Factor;
+    // Detail Material Properties    
+    float m_detailTextureMultiplier;
+    float m_detailFadeDistance;
+    float m_detailFadeLength;
 }
 
 option bool o_useTerrainSmoothing = false;
-option bool o_baseColor_useTexture = true;
-option bool o_specularF0_useTexture = true;
-option bool o_normal_useTexture = true;
-option bool o_roughness_useTexture = true;
-option TextureBlendMode o_baseColorTextureBlendMode = TextureBlendMode::Multiply;
 
 struct VertexInput
 {
@@ -240,12 +195,12 @@ float GetHeight(float2 origUv)
     if (o_useTerrainSmoothing)
     {
         float2 textureSize;
-        TerrainMaterialSrg::m_heightmapImage.GetDimensions(textureSize.x, textureSize.y);
-        height = SampleBSpline5Tap(TerrainMaterialSrg::m_heightmapImage, TerrainMaterialSrg::HeightmapSampler, uv, textureSize, rcp(textureSize));
+        ViewSrg::m_heightmapImage.GetDimensions(textureSize.x, textureSize.y);
+        height = SampleBSpline5Tap(ViewSrg::m_heightmapImage, ViewSrg::HeightmapSampler, uv, textureSize, rcp(textureSize));
     }
     else
     {
-        height = TerrainMaterialSrg::m_heightmapImage.SampleLevel(TerrainMaterialSrg::HeightmapSampler, uv, 0).r;
+        height = ViewSrg::m_heightmapImage.SampleLevel(ViewSrg::HeightmapSampler, uv, 0).r;
     }
 
     return ObjectSrg::m_terrainData.m_heightScale * (height - 0.5f);

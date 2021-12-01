@@ -1,44 +1,44 @@
 {
     "entries": [
         {
-            "key": "{6D65A9E0-733D-5277-B7CA-983E1468A40A}",
+            "base": "{6D65A9E0-733D-5277-B7CA-983E1468A40A}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
                 "name": "Distance",
-                "category": "Math/AABB",
+                "category": "Math/Axis Aligned Bounding Box",
                 "tooltip": "returns the shortest distance from Point to Source, or zero of Point is contained in Source",
-                "subtitle": "AABB"
+                "subtitle": "Axis Aligned Bounding Box"
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "key": "DataInput_AABB: Source",
+                    "base": "DataInput_AABB: Source",
                     "details": {
-                        "name": "AABB: Source"
+                        "name": "Source"
                     }
                 },
                 {
-                    "key": "DataInput_Vector3: Point",
+                    "base": "DataInput_Vector3: Point",
                     "details": {
-                        "name": "Vector3: Point"
+                        "name": "Point"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Number",
+                    "base": "DataOutput_Result: Number",
                     "details": {
-                        "name": "Result: Number"
+                        "name": "Distance"
                     }
                 }
             ]

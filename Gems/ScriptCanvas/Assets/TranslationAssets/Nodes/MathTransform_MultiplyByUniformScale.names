@@ -1,44 +1,43 @@
 {
     "entries": [
         {
-            "key": "{493F14D7-FC42-5544-9BA1-400762EB6D41}",
+            "base": "{493F14D7-FC42-5544-9BA1-400762EB6D41}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "MultiplyByUniformScale",
+                "name": "Multiply By Uniform Scale",
                 "category": "Math/Transform",
-                "tooltip": "returns Source multiplied uniformly by Scale",
-                "subtitle": "Transform"
+                "tooltip": "Returns Source multiplied uniformly by Scale"
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "key": "DataInput_Transform: Source",
+                    "base": "DataInput_Source",
                     "details": {
-                        "name": "Transform: Source"
+                        "name": "Source"
                     }
                 },
                 {
-                    "key": "DataInput_Number: Scale",
+                    "base": "DataInput_Scale",
                     "details": {
-                        "name": "Number: Scale"
+                        "name": "Scale"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Transform",
+                    "base": "DataOutput_Result",
                     "details": {
-                        "name": "Result: Transform"
+                        "name": "Result"
                     }
                 }
             ]

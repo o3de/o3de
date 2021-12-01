@@ -1,44 +1,43 @@
 {
     "entries": [
         {
-            "key": "{18B8A477-A413-5477-ACA7-8A27C7C9A966}",
+            "base": "{18B8A477-A413-5477-ACA7-8A27C7C9A966}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "FromQuaternionAndTranslation",
+                "name": "From Quaternion And Translation",
                 "category": "Math/Matrix4x4",
-                "tooltip": "returns a skew-symmetric cross product matrix based on supplied vector",
-                "subtitle": "Matrix4x4"
+                "tooltip": "Returns a skew-symmetric cross product matrix based on supplied vector"
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "key": "DataInput_Quaternion: Rotation",
+                    "base": "DataInput_Rotation",
                     "details": {
-                        "name": "Quaternion: Rotation"
+                        "name": "Rotation"
                     }
                 },
                 {
-                    "key": "DataInput_Vector3: Translation",
+                    "base": "DataInput_Translation",
                     "details": {
-                        "name": "Vector3: Translation"
+                        "name": "Translation"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Matrix4x4",
+                    "base": "DataOutput_Result",
                     "details": {
-                        "name": "Result: Matrix4x4"
+                        "name": "Result"
                     }
                 }
             ]

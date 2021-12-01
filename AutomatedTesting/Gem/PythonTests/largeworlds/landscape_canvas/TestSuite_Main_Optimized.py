@@ -18,6 +18,8 @@ from ly_test_tools.o3de.editor_test import EditorSingleTest, EditorSharedTest, E
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
 class TestAutomation(EditorTestSuite):
 
+    enable_prefab_system = False
+
     class test_LandscapeCanvas_SlotConnections_UpdateComponentReferences(EditorSharedTest):
         from .EditorScripts import SlotConnections_UpdateComponentReferences as test_module
 

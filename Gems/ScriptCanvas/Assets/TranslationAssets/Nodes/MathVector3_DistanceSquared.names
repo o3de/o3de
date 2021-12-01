@@ -1,44 +1,43 @@
 {
     "entries": [
         {
-            "key": "{920C0CA6-3393-5AC7-805E-09D52E134ED4}",
+            "base": "{920C0CA6-3393-5AC7-805E-09D52E134ED4}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "DistanceSquared",
+                "name": "Distance Squared",
                 "category": "Math/Vector3",
-                "tooltip": "returns the distance squared from B to A, (generally faster than the actual distance if only needed for comparison)",
-                "subtitle": "Vector3"
+                "tooltip": "Returns the distance squared from B to A, (generally faster than the actual distance if only needed for comparison)"
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "key": "DataInput_Vector3: A",
+                    "base": "DataInput_A",
                     "details": {
-                        "name": "Vector3: A"
+                        "name": "A"
                     }
                 },
                 {
-                    "key": "DataInput_Vector3: B",
+                    "base": "DataInput_B",
                     "details": {
-                        "name": "Vector3: B"
+                        "name": "B"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Number",
+                    "base": "DataOutput_Result",
                     "details": {
-                        "name": "Result: Number"
+                        "name": "Result"
                     }
                 }
             ]

@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "SmoothStepGradientComponentTypeId",
+            "base": "SmoothStepGradientComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "SmoothStepGradientComponentTypeId::Getter",
-                "category": "Constants"
-            }
+                "name": "Smooth Step Gradient Component Type Id",
+                "category": "Constants/Editor"
+            },
+            "methods": [
+                {
+                    "base": "GetSmoothStepGradientComponentTypeId",
+                    "details": {
+                        "name": "Get Smooth Step Gradient Component Type Id"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}",
+                            "details": {
+                                "name": "AZ:: Uuid"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

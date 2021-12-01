@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "BlendOp_Invalid",
+            "base": "BlendOp_Invalid",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "BlendOp_Invalid::Getter",
-                "category": "Constants"
-            }
+                "name": "Invalid",
+                "category": "Constants/Blend Operation"
+            },
+            "methods": [
+                {
+                    "base": "GetBlendOp_Invalid",
+                    "details": {
+                        "name": "Get Invalid"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

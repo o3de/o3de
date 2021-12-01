@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "set_recording",
+            "base": "set_recording",
             "context": "Method",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "set_recording",
+                    "base": "set_recording",
                     "context": "Global",
                     "entry": {
                         "name": "In",

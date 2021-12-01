@@ -1,59 +1,60 @@
 {
     "entries": [
         {
-            "key": "AnimGraphComponentNetworkRequestBus",
+            "base": "AnimGraphComponentNetworkRequestBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "AnimGraphComponentNetworkRequestBus"
+                "name": "Anim Graph",
+                "category": "Animation"
             },
             "methods": [
                 {
-                    "key": "GetActiveStates",
+                    "base": "GetActiveStates",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetActiveStates"
+                        "tooltip": "When signaled, this will invoke Get Active States"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetActiveStates is invoked"
+                        "tooltip": "Signaled after Get Active States is invoked"
                     },
                     "details": {
-                        "name": "GetActiveStates"
+                        "name": "Get Active States"
                     },
                     "results": [
                         {
                             "typeid": "{3349AACD-BE04-50BC-9478-528BF2ACFD55}",
                             "details": {
-                                "name": "AZStd::vector"
+                                "name": "Active States"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "CreateSnapshot",
+                    "base": "CreateSnapshot",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke CreateSnapshot"
+                        "tooltip": "When signaled, this will invoke Create Snapshot"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after CreateSnapshot is invoked"
+                        "tooltip": "Signaled after Create Snapshot is invoked"
                     },
                     "details": {
-                        "name": "CreateSnapshot"
+                        "name": "Create Snapshot"
                     },
                     "params": [
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": "bool"
+                                "name": "Is Authoritative"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "SetActiveStates",
+                    "base": "SetActiveStates",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetActiveStates"
@@ -63,57 +64,57 @@
                         "tooltip": "Signaled after SetActiveStates is invoked"
                     },
                     "details": {
-                        "name": "SetActiveStates"
+                        "name": "Set Active States"
                     },
                     "params": [
                         {
                             "typeid": "{3349AACD-BE04-50BC-9478-528BF2ACFD55}",
                             "details": {
-                                "name": "AZStd::vector"
+                                "name": "Active States"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "IsAssetReady",
+                    "base": "IsAssetReady",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke IsAssetReady"
+                        "tooltip": "When signaled, this will invoke Is Asset Ready"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after IsAssetReady is invoked"
+                        "tooltip": "Signaled after Is Asset Ready is invoked"
                     },
                     "details": {
-                        "name": "IsAssetReady"
+                        "name": "Is Asset Ready"
                     },
                     "results": [
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": "bool"
+                                "name": "Is Asset Ready"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "HasSnapshot",
+                    "base": "HasSnapshot",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke HasSnapshot"
+                        "tooltip": "When signaled, this will invoke Has Snapshot"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after HasSnapshot is invoked"
+                        "tooltip": "Signaled after Has Snapshot is invoked"
                     },
                     "details": {
-                        "name": "HasSnapshot"
+                        "name": "Has Snapshot"
                     },
                     "results": [
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": "bool"
+                                "name": "Has Snapshot"
                             }
                         }
                     ]

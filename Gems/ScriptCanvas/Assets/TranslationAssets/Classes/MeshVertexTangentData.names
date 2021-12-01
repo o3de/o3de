@@ -1,71 +1,56 @@
 {
     "entries": [
         {
-            "key": "MeshVertexTangentData",
+            "base": "MeshVertexTangentData",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
-                "name": "MeshVertexTangentData"
+                "name": "Mesh Vertex Tangent Data",
+                "category": "Rendering"
             },
             "methods": [
                 {
-                    "key": "GetCount",
+                    "base": "GetCount",
                     "context": "MeshVertexTangentData",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetCount"
+                        "tooltip": "When signaled, this will invoke Get Count"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetCount is invoked"
+                        "tooltip": "Signaled after Get Count is invoked"
                     },
                     "details": {
-                        "name": "MeshVertexTangentData::GetCount",
-                        "category": "Other"
+                        "name": "Get Count"
                     },
-                    "params": [
-                        {
-                            "typeid": "{C16F0F38-8F8F-45A2-A33B-F2758922A7C4}",
-                            "details": {
-                                "name": "MeshVertexTangentData*"
-                            }
-                        }
-                    ],
                     "results": [
                         {
                             "typeid": "{D6597933-47CD-4FC8-B911-63F3E2B0993A}",
                             "details": {
-                                "name": "AZ::u64"
+                                "name": "AZ::u 64"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "GetTangent",
+                    "base": "GetTangent",
                     "context": "MeshVertexTangentData",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetTangent"
+                        "tooltip": "When signaled, this will invoke Get Tangent"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetTangent is invoked"
+                        "tooltip": "Signaled after Get Tangent is invoked"
                     },
                     "details": {
-                        "name": "MeshVertexTangentData::GetTangent",
-                        "category": "Other"
+                        "name": "Get Tangent"
                     },
                     "params": [
                         {
-                            "typeid": "{C16F0F38-8F8F-45A2-A33B-F2758922A7C4}",
-                            "details": {
-                                "name": "MeshVertexTangentData*"
-                            }
-                        },
-                        {
                             "typeid": "{D6597933-47CD-4FC8-B911-63F3E2B0993A}",
                             "details": {
-                                "name": "AZ::u64"
+                                "name": "AZ::u 64"
                             }
                         }
                     ],
@@ -73,66 +58,76 @@
                         {
                             "typeid": "{0CE9FA36-1E3A-4C06-9254-B7C73A732053}",
                             "details": {
-                                "name": "const Vector4&"
+                                "name": "const Vector 4&"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "GetTangentSetIndex",
+                    "base": "GetTangentSetIndex",
                     "context": "MeshVertexTangentData",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetTangentSetIndex"
+                        "tooltip": "When signaled, this will invoke Get Tangent Set Index"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetTangentSetIndex is invoked"
+                        "tooltip": "Signaled after Get Tangent Set Index is invoked"
                     },
                     "details": {
-                        "name": "MeshVertexTangentData::GetTangentSetIndex",
-                        "category": "Other"
+                        "name": "Get Tangent Set Index"
                     },
-                    "params": [
-                        {
-                            "typeid": "{C16F0F38-8F8F-45A2-A33B-F2758922A7C4}",
-                            "details": {
-                                "name": "MeshVertexTangentData*"
-                            }
-                        }
-                    ],
                     "results": [
                         {
                             "typeid": "{D6597933-47CD-4FC8-B911-63F3E2B0993A}",
                             "details": {
-                                "name": "AZ::u64"
+                                "name": "AZ::u 64"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "GetGenerationMethod",
+                    "base": "GetGenerationMethod",
                     "context": "MeshVertexTangentData",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetGenerationMethod"
+                        "tooltip": "When signaled, this will invoke Get Generation Method"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetGenerationMethod is invoked"
+                        "tooltip": "Signaled after Get Generation Method is invoked"
                     },
                     "details": {
-                        "name": "MeshVertexTangentData::GetGenerationMethod",
-                        "category": "Other"
+                        "name": "Get Generation Method"
                     },
-                    "params": [
+                    "results": [
                         {
-                            "typeid": "{C16F0F38-8F8F-45A2-A33B-F2758922A7C4}",
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
                             "details": {
-                                "name": "MeshVertexTangentData*"
+                                "name": "int"
                             }
                         }
-                    ],
+                    ]
+                },
+                {
+                    "base": "GetFromSourceScene",
+                    "details": {
+                        "name": "Get From Source Scene"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetMikkT",
+                    "details": {
+                        "name": "Get MikkT"
+                    },
                     "results": [
                         {
                             "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",

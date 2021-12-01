@@ -1,62 +1,61 @@
 {
     "entries": [
         {
-            "key": "{E7275C69-D728-5468-9402-C4FBA1ADDA97}",
+            "base": "{E7275C69-D728-5468-9402-C4FBA1ADDA97}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
                 "name": "Squad",
                 "category": "Math/Quaternion",
-                "tooltip": "returns the quadratic interpolation, that is: Squad(From, To, In, Out, T) = Slerp(Slerp(From, Out, T), Slerp(To, In, T), 2(1 - T)T)",
-                "subtitle": "Quaternion"
+                "tooltip": "Returns the quadratic interpolation, that is: Squad(From, To, In, Out, T) = Slerp(Slerp(From, Out, T), Slerp(To, In, T), 2(1 - T)T)"
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "key": "DataInput_Quaternion: From",
+                    "base": "DataInput_From",
                     "details": {
-                        "name": "Quaternion: From"
+                        "name": "From"
                     }
                 },
                 {
-                    "key": "DataInput_Quaternion: To",
+                    "base": "DataInput_To",
                     "details": {
-                        "name": "Quaternion: To"
+                        "name": "To"
                     }
                 },
                 {
-                    "key": "DataInput_Quaternion: In",
+                    "base": "DataInput_In",
                     "details": {
-                        "name": "Quaternion: In"
+                        "name": "In"
                     }
                 },
                 {
-                    "key": "DataInput_Quaternion: Out",
+                    "base": "DataInput_Out",
                     "details": {
-                        "name": "Quaternion: Out"
+                        "name": "Out"
                     }
                 },
                 {
-                    "key": "DataInput_Number: T",
+                    "base": "DataInput_T",
                     "details": {
-                        "name": "Number: T"
+                        "name": "T"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Quaternion",
+                    "base": "DataOutput_Result",
                     "details": {
-                        "name": "Result: Quaternion"
+                        "name": "Result"
                     }
                 }
             ]

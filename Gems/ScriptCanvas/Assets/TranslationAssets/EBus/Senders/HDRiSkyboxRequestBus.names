@@ -1,15 +1,16 @@
 {
     "entries": [
         {
-            "key": "HDRiSkyboxRequestBus",
+            "base": "HDRiSkyboxRequestBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "HDRiSkyboxRequestBus"
+                "name": "HDRi Skybox",
+                "category": "Rendering"
             },
             "methods": [
                 {
-                    "key": "SetExposure",
+                    "base": "SetExposure",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetExposure"
@@ -31,7 +32,7 @@
                     ]
                 },
                 {
-                    "key": "GetExposure",
+                    "base": "GetExposure",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetExposure"

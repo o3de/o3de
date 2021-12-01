@@ -1,44 +1,43 @@
 {
     "entries": [
         {
-            "key": "{E16EC7BB-A046-5CD7-B26C-0A75358A37F2}",
+            "base": "{E16EC7BB-A046-5CD7-B26C-0A75358A37F2}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "RandomGrayscale",
+                "name": "Random Grayscale",
                 "category": "Math/Random",
-                "tooltip": "Returns a random grayscale color between [Min, Max] intensities",
-                "subtitle": "Random"
+                "tooltip": "Returns a random grayscale color between [Min, Max] intensities"
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "key": "DataInput_Number: Min",
+                    "base": "DataInput_Min",
                     "details": {
-                        "name": "Number: Min"
+                        "name": "Min"
                     }
                 },
                 {
-                    "key": "DataInput_Number: Max",
+                    "base": "DataInput_Max",
                     "details": {
-                        "name": "Number: Max"
+                        "name": "Max"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Color",
+                    "base": "DataOutput_Result",
                     "details": {
-                        "name": "Result: Color"
+                        "name": "Result"
                     }
                 }
             ]

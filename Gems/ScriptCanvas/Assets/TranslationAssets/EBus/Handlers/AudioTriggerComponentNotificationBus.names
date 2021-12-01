@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "AudioTriggerComponentNotificationBus",
+            "base": "AudioTriggerComponentNotificationBus",
             "context": "EBusHandler",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "OnTriggerFinished",
+                    "base": "OnTriggerFinished",
                     "details": {
                         "name": "On Trigger Finished",
                         "tooltip": "Executes when an audio trigger has finished playing (the sound has ended)."

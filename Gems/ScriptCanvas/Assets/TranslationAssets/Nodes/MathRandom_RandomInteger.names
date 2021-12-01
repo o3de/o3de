@@ -1,44 +1,43 @@
 {
     "entries": [
         {
-            "key": "{48BF5246-995E-5EFD-B541-F468937D2423}",
+            "base": "{48BF5246-995E-5EFD-B541-F468937D2423}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "RandomInteger",
+                "name": "Random Integer",
                 "category": "Math/Random",
-                "tooltip": "returns a random integer [Min, Max]",
-                "subtitle": "Random"
+                "tooltip": "Returns a random integer [Min, Max]"
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "key": "DataInput_Number: Min",
+                    "base": "DataInput_Min",
                     "details": {
-                        "name": "Number: Min"
+                        "name": "Min"
                     }
                 },
                 {
-                    "key": "DataInput_Number: Max",
+                    "base": "DataInput_Max",
                     "details": {
-                        "name": "Number: Max"
+                        "name": "Max"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Number",
+                    "base": "DataOutput_Result",
                     "details": {
-                        "name": "Result: Number"
+                        "name": "Result"
                     }
                 }
             ]

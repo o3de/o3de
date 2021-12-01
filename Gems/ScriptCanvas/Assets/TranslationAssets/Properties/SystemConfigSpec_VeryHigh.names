@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "SystemConfigSpec_VeryHigh",
+            "base": "SystemConfigSpec_VeryHigh",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "SystemConfigSpec_VeryHigh::Getter",
-                "category": "Constants"
-            }
+                "name": "Very High",
+                "category": "Constants/System Spec"
+            },
+            "methods": [
+                {
+                    "base": "GetSystemConfigSpec_VeryHigh",
+                    "details": {
+                        "name": "Very High"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

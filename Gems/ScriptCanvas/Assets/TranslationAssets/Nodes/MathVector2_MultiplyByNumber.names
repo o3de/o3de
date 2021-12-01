@@ -1,44 +1,43 @@
 {
     "entries": [
         {
-            "key": "{4FA0D3F0-A95B-5DEB-B46D-E9D08C43D55E}",
+            "base": "{4FA0D3F0-A95B-5DEB-B46D-E9D08C43D55E}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "MultiplyByNumber",
+                "name": "Multiply By Number",
                 "category": "Math/Vector2",
-                "tooltip": "returns the vector Source with each element multiplied by Multiplier",
-                "subtitle": "Vector2"
+                "tooltip": "Returns the vector Source with each element multiplied by Multiplier"
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "key": "DataInput_Vector2: Source",
+                    "base": "DataInput_Source",
                     "details": {
-                        "name": "Vector2: Source"
+                        "name": "Source"
                     }
                 },
                 {
-                    "key": "DataInput_Number: Multiplier",
+                    "base": "DataInput_Multiplier",
                     "details": {
-                        "name": "Number: Multiplier"
+                        "name": "Multiplier"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Vector2",
+                    "base": "DataOutput_Result",
                     "details": {
-                        "name": "Result: Vector2"
+                        "name": "Result"
                     }
                 }
             ]

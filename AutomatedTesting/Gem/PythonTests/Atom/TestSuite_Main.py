@@ -13,6 +13,8 @@ from ly_test_tools.o3de.editor_test import EditorSharedTest, EditorTestSuite
 @pytest.mark.parametrize("launcher_platform", ['windows_editor'])
 class TestAutomation(EditorTestSuite):
 
+    enable_prefab_system = False
+
     @pytest.mark.test_case_id("C36525657")
     class AtomEditorComponents_BloomAdded(EditorSharedTest):
         from Atom.tests import hydra_AtomEditorComponents_BloomAdded as test_module
@@ -60,6 +62,10 @@ class TestAutomation(EditorTestSuite):
     @pytest.mark.test_case_id("C36525671")
     class AtomEditorComponents_HDRColorGradingAdded(EditorSharedTest):
         from Atom.tests import hydra_AtomEditorComponents_HDRColorGradingAdded as test_module
+
+    @pytest.mark.test_case_id("C32078116")
+    class AtomEditorComponents_HDRiSkyboxAdded(EditorSharedTest):
+        from Atom.tests import hydra_AtomEditorComponents_HDRiSkyboxAdded as test_module
 
     @pytest.mark.test_case_id("C32078117")
     class AtomEditorComponents_LightAdded(EditorSharedTest):

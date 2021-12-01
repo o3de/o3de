@@ -1,16 +1,16 @@
 {
     "entries": [
         {
-            "key": "SplineComponentRequestBus",
+            "base": "SplineComponentRequestBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "SplineComponentRequestBus",
+                "name": "Spline Component",
                 "category": "Shape"
             },
             "methods": [
                 {
-                    "key": "ClearVertices",
+                    "base": "ClearVertices",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Clear Vertices"
@@ -24,7 +24,7 @@
                     }
                 },
                 {
-                    "key": "RemoveVertex",
+                    "base": "RemoveVertex",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Remove Vertex"
@@ -54,7 +54,7 @@
                     ]
                 },
                 {
-                    "key": "UpdateVertex",
+                    "base": "UpdateVertex",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Update Vertex"
@@ -90,7 +90,7 @@
                     ]
                 },
                 {
-                    "key": "AddVertex",
+                    "base": "AddVertex",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Add Vertex"
@@ -112,7 +112,7 @@
                     ]
                 },
                 {
-                    "key": "GetSpline",
+                    "base": "GetSpline",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Spline"
@@ -134,7 +134,7 @@
                     ]
                 },
                 {
-                    "key": "SetClosed",
+                    "base": "SetClosed",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Closed"
@@ -156,7 +156,7 @@
                     ]
                 },
                 {
-                    "key": "InsertVertex",
+                    "base": "InsertVertex",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Insert Vertex"

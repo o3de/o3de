@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "eUiScrollerOrientation_Vertical",
+            "base": "eUiScrollerOrientation_Vertical",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "eUiScrollerOrientation_Vertical::Getter",
-                "category": "Constants"
-            }
+                "name": "Vertical",
+                "category": "Constants/UI/Scroller Orientation"
+            },
+            "methods": [
+                {
+                    "base": "GeteUiScrollerOrientation_Vertical",
+                    "details": {
+                        "name": "Vertical"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

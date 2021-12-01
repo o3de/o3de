@@ -1,36 +1,36 @@
 {
     "entries": [
         {
-            "key": "{58B36FE7-19EB-5407-95BD-D16C62F04E0D}",
+            "base": "{58B36FE7-19EB-5407-95BD-D16C62F04E0D}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "XExtent",
-                "category": "Math/AABB",
+                "name": "X Extent",
+                "category": "Math/Axis Aligned Bounding Box",
                 "tooltip": "returns the X extent (max X - min X) of Source",
-                "subtitle": "AABB"
+                "subtitle": "Axis Aligned Bounding Box"
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "key": "DataInput_AABB: Source",
+                    "base": "DataInput_AABB: Source",
                     "details": {
                         "name": "AABB: Source"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Number",
+                    "base": "DataOutput_Result: Number",
                     "details": {
                         "name": "Result: Number"
                     }

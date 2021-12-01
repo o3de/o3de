@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "StencilOp_DecrementSaturate",
+            "base": "StencilOp_DecrementSaturate",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "StencilOp_DecrementSaturate::Getter",
-                "category": "Constants"
-            }
+                "name": "Decrement Saturate",
+                "category": "Constants/Stencil Op"
+            },
+            "methods": [
+                {
+                    "base": "GetStencilOp_DecrementSaturate",
+                    "details": {
+                        "name": "Decrement Saturate"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

@@ -8,8 +8,10 @@
 
 #include <QToolButton>
 #include <QMenu>
+#include <QSettings>
 #include <EMStudio/AnimViewportToolBar.h>
 #include <EMStudio/AnimViewportRequestBus.h>
+#include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/EMStudioManager.h>
 #include <AzCore/std/string/string.h>
 #include <AzQtComponents/Components/Widgets/ToolBar.h>
 
@@ -34,8 +36,9 @@ namespace EMStudio
 
             CreateViewOptionEntry(contextMenu, "Solid", EMotionFX::ActorRenderFlag::RENDER_SOLID);
             CreateViewOptionEntry(contextMenu, "Wireframe", EMotionFX::ActorRenderFlag::RENDER_WIREFRAME);
-            CreateViewOptionEntry(contextMenu, "Lighting", EMotionFX::ActorRenderFlag::RENDER_LIGHTING);
-            CreateViewOptionEntry(contextMenu, "Backface Culling", EMotionFX::ActorRenderFlag::RENDER_BACKFACECULLING);
+            // [EMFX-TODO] Add those option once implemented.
+            // CreateViewOptionEntry(contextMenu, "Lighting", EMotionFX::ActorRenderFlag::RENDER_LIGHTING);
+            // CreateViewOptionEntry(contextMenu, "Backface Culling", EMotionFX::ActorRenderFlag::RENDER_BACKFACECULLING);
             contextMenu->addSeparator();
             CreateViewOptionEntry(contextMenu, "Vertex Normals", EMotionFX::ActorRenderFlag::RENDER_VERTEXNORMALS);
             CreateViewOptionEntry(contextMenu, "Face Normals", EMotionFX::ActorRenderFlag::RENDER_FACENORMALS);
@@ -46,7 +49,8 @@ namespace EMStudio
             CreateViewOptionEntry(contextMenu, "Solid Skeleton", EMotionFX::ActorRenderFlag::RENDER_SKELETON);
             CreateViewOptionEntry(contextMenu, "Joint Names", EMotionFX::ActorRenderFlag::RENDER_NODENAMES);
             CreateViewOptionEntry(contextMenu, "Joint Orientations", EMotionFX::ActorRenderFlag::RENDER_NODEORIENTATION);
-            CreateViewOptionEntry(contextMenu, "Actor Bind Pose", EMotionFX::ActorRenderFlag::RENDER_ACTORBINDPOSE);
+            // [EMFX-TODO] Add those option once implemented.
+            // CreateViewOptionEntry(contextMenu, "Actor Bind Pose", EMotionFX::ActorRenderFlag::RENDER_ACTORBINDPOSE);
             contextMenu->addSeparator();
             CreateViewOptionEntry(contextMenu, "Hit Detection Colliders", EMotionFX::ActorRenderFlag::RENDER_HITDETECTION_COLLIDERS);
             CreateViewOptionEntry(contextMenu, "Ragdoll Colliders", EMotionFX::ActorRenderFlag::RENDER_RAGDOLL_COLLIDERS);
@@ -107,6 +111,13 @@ namespace EMStudio
             cameraButton->setIcon(QIcon(":/EMotionFXAtom/Camera_category.svg"));
             addWidget(cameraButton);
         }
+
+        LoadSettings();
+    }
+
+    AnimViewportToolBar::~AnimViewportToolBar()
+    {
+        SaveSettings();
     }
 
     void AnimViewportToolBar::CreateViewOptionEntry(
@@ -141,5 +152,24 @@ namespace EMStudio
                 action->setChecked(renderFlags[i]);
             }
         }
+    }
+
+    void AnimViewportToolBar::LoadSettings()
+    {
+        AZStd::string renderFlagsFilename(EMStudioManager::GetInstance()->GetAppDataFolder());
+        renderFlagsFilename += "AnimViewportRenderFlags.cfg";
+        QSettings settings(renderFlagsFilename.c_str(), QSettings::IniFormat, this);
+
+        const bool isChecked = settings.value("CameraFollowUp", false).toBool();
+        m_followCharacterAction->setChecked(isChecked);
+    }
+
+    void AnimViewportToolBar::SaveSettings()
+    {
+        AZStd::string renderFlagsFilename(EMStudioManager::GetInstance()->GetAppDataFolder());
+        renderFlagsFilename += "AnimViewportRenderFlags.cfg";
+        QSettings settings(renderFlagsFilename.c_str(), QSettings::IniFormat, this);
+
+        settings.setValue("CameraFollowUp", m_followCharacterAction->isChecked());
     }
 } // namespace EMStudio

@@ -1,44 +1,43 @@
 {
     "entries": [
         {
-            "key": "{89B55821-3E77-5410-B0EC-336A3D747308}",
+            "base": "{89B55821-3E77-5410-B0EC-336A3D747308}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "GetRow",
+                "name": "Get Row",
                 "category": "Math/Matrix3x3",
-                "tooltip": "returns vector from matrix corresponding to the Row index",
-                "subtitle": "Matrix3x3"
+                "tooltip": "Returns vector from matrix corresponding to the Row index"
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "key": "DataInput_Matrix3x3: Source",
+                    "base": "DataInput_Source",
                     "details": {
-                        "name": "Matrix3x3: Source"
+                        "name": "Source"
                     }
                 },
                 {
-                    "key": "DataInput_Number: Row",
+                    "base": "DataInput_Row",
                     "details": {
-                        "name": "Number: Row"
+                        "name": "Row"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Vector3",
+                    "base": "DataOutput_Result",
                     "details": {
-                        "name": "Result: Vector3"
+                        "name": "Result"
                     }
                 }
             ]

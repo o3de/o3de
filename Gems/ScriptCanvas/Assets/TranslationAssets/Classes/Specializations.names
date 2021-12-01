@@ -1,39 +1,40 @@
 {
     "entries": [
         {
-            "key": "Specializations",
+            "base": "Specializations",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
-                "name": "Specializations"
+                "name": "Specializations",
+                "category": "Registry"
             },
             "methods": [
                 {
-                    "key": "GetPriority",
+                    "base": "GetPriority",
                     "context": "Specializations",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetPriority"
+                        "tooltip": "When signaled, this will invoke Get Priority"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetPriority is invoked"
+                        "tooltip": "Signaled after Get Priority is invoked"
                     },
                     "details": {
-                        "name": "Specializations::GetPriority",
+                        "name": "Get Priority",
                         "category": "Other"
                     },
                     "params": [
                         {
                             "typeid": "{EB6B8ADF-ABAA-4D22-B596-127F9C611740}",
                             "details": {
-                                "name": "SpecializationsProxy*"
+                                "name": "Specializations Proxy"
                             }
                         },
                         {
                             "typeid": "{7114E998-A8B4-519B-9342-A86D1587B4F7}",
                             "details": {
-                                "name": "AZStd::basic_string_view<char, AZStd::char_traits<char>>"
+                                "name": "Specialization"
                             }
                         }
                     ],
@@ -41,31 +42,30 @@
                         {
                             "typeid": "{D6597933-47CD-4FC8-B911-63F3E2B0993A}",
                             "details": {
-                                "name": "AZ::u64"
+                                "name": "Priority"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "GetCount",
+                    "base": "GetCount",
                     "context": "Specializations",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetCount"
+                        "tooltip": "When signaled, this will invoke Get Count"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetCount is invoked"
+                        "tooltip": "Signaled after Get Count is invoked"
                     },
                     "details": {
-                        "name": "Specializations::GetCount",
-                        "category": "Other"
+                        "name": "Get Count"
                     },
                     "params": [
                         {
                             "typeid": "{EB6B8ADF-ABAA-4D22-B596-127F9C611740}",
                             "details": {
-                                "name": "SpecializationsProxy*"
+                                "name": "Specializations Proxy"
                             }
                         }
                     ],
@@ -73,13 +73,13 @@
                         {
                             "typeid": "{D6597933-47CD-4FC8-B911-63F3E2B0993A}",
                             "details": {
-                                "name": "AZ::u64"
+                                "name": "Count"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "Contains",
+                    "base": "Contains",
                     "context": "Specializations",
                     "entry": {
                         "name": "In",
@@ -90,20 +90,19 @@
                         "tooltip": "Signaled after Contains is invoked"
                     },
                     "details": {
-                        "name": "Specializations::Contains",
-                        "category": "Other"
+                        "name": "Contains"
                     },
                     "params": [
                         {
                             "typeid": "{EB6B8ADF-ABAA-4D22-B596-127F9C611740}",
                             "details": {
-                                "name": "SpecializationsProxy*"
+                                "name": "Specializations Proxy"
                             }
                         },
                         {
                             "typeid": "{7114E998-A8B4-519B-9342-A86D1587B4F7}",
                             "details": {
-                                "name": "AZStd::basic_string_view<char, AZStd::char_traits<char>>"
+                                "name": "Specialization"
                             }
                         }
                     ],
@@ -111,13 +110,13 @@
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": "bool"
+                                "name": "Contains"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "Append",
+                    "base": "Append",
                     "context": "Specializations",
                     "entry": {
                         "name": "In",
@@ -128,20 +127,19 @@
                         "tooltip": "Signaled after Append is invoked"
                     },
                     "details": {
-                        "name": "Specializations::Append",
-                        "category": "Other"
+                        "name": "Append"
                     },
                     "params": [
                         {
                             "typeid": "{EB6B8ADF-ABAA-4D22-B596-127F9C611740}",
                             "details": {
-                                "name": "SpecializationsProxy*"
+                                "name": "Specializations Proxy"
                             }
                         },
                         {
                             "typeid": "{7114E998-A8B4-519B-9342-A86D1587B4F7}",
                             "details": {
-                                "name": "AZStd::basic_string_view<char, AZStd::char_traits<char>>"
+                                "name": "Specialization"
                             }
                         }
                     ],
@@ -149,37 +147,36 @@
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": "bool"
+                                "name": "Success"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "GetSpecialization",
+                    "base": "GetSpecialization",
                     "context": "Specializations",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetSpecialization"
+                        "tooltip": "When signaled, this will invoke Get Specialization"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetSpecialization is invoked"
+                        "tooltip": "Signaled after Get Specialization is invoked"
                     },
                     "details": {
-                        "name": "Specializations::GetSpecialization",
-                        "category": "Other"
+                        "name": "Get Specialization"
                     },
                     "params": [
                         {
                             "typeid": "{EB6B8ADF-ABAA-4D22-B596-127F9C611740}",
                             "details": {
-                                "name": "SpecializationsProxy*"
+                                "name": "Specializations Proxy"
                             }
                         },
                         {
                             "typeid": "{D6597933-47CD-4FC8-B911-63F3E2B0993A}",
                             "details": {
-                                "name": "AZ::u64"
+                                "name": "Index"
                             }
                         }
                     ],
@@ -187,7 +184,7 @@
                         {
                             "typeid": "{7114E998-A8B4-519B-9342-A86D1587B4F7}",
                             "details": {
-                                "name": "AZStd::basic_string_view<char, AZStd::char_traits<char>>"
+                                "name": "Specialization"
                             }
                         }
                     ]

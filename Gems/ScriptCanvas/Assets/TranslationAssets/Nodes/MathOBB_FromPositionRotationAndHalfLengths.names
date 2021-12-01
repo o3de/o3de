@@ -1,50 +1,49 @@
 {
     "entries": [
         {
-            "key": "{6F7A0335-C2D2-53A3-BF18-B3735DBFF8AA}",
+            "base": "{6F7A0335-C2D2-53A3-BF18-B3735DBFF8AA}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "FromPositionRotationAndHalfLengths",
-                "category": "Math/OBB",
-                "tooltip": "returns an OBB from the position, rotation and half lengths",
-                "subtitle": "OBB"
+                "name": "From Position Rotation And Half Lengths",
+                "category": "Math/Oriented Bounding Box",
+                "tooltip": "returns an Oriented Bounding Box from the position, rotation and half lengths"
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "key": "DataInput_Vector3: Position",
+                    "base": "DataInput_Position",
                     "details": {
-                        "name": "Vector3: Position"
+                        "name": "Position"
                     }
                 },
                 {
-                    "key": "DataInput_Quaternion: Rotation",
+                    "base": "DataInput_Rotation",
                     "details": {
-                        "name": "Quaternion: Rotation"
+                        "name": "Rotation"
                     }
                 },
                 {
-                    "key": "DataInput_Vector3: HalfLengths",
+                    "base": "DataInput_HalfLengths",
                     "details": {
-                        "name": "Vector3: HalfLengths"
+                        "name": "Half Lengths"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: OBB",
+                    "base": "DataOutput_Result",
                     "details": {
-                        "name": "Result: OBB"
+                        "name": "Result"
                     }
                 }
             ]

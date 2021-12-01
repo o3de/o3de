@@ -501,41 +501,53 @@ namespace ScriptCanvas
             return lua_gettop(lua);
         }
 
-        void InitializeInterpretedStatics(const RuntimeData& runtimeData)
+        void InitializeInterpretedStatics(RuntimeData& runtimeData)
         {
-#if defined(AZ_PROFILE_BUILD) || defined(AZ_DEBUG_BUILD)
-            Execution::InitializeFromLuaStackFunctions(const_cast<Grammar::DebugSymbolMap&>(runtimeData.m_debugMap));
-#endif
-            if (runtimeData.RequiresStaticInitialization())
+            if (!runtimeData.m_areStaticsInitialized)
             {
-                AZ::ScriptLoadResult result{};
-                AZ::ScriptSystemRequestBus::BroadcastResult(result, &AZ::ScriptSystemRequests::LoadAndGetNativeContext, runtimeData.m_script, AZ::k_scriptLoadBinary, AZ::ScriptContextIds::DefaultScriptContextId);
-                AZ_Assert(result.status == AZ::ScriptLoadResult::Status::Initial, "ExecutionStateInterpreted script asset was valid but failed to load.");
-                AZ_Assert(result.lua, "Must have a default script context and a lua_State");
-                AZ_Assert(lua_istable(result.lua, -1), "No run-time execution was available for this script");
+                runtimeData.m_areStaticsInitialized = true;
 
-                auto lua = result.lua;
-                // Lua: table
-                lua_getfield(lua, -1, Grammar::k_InitializeStaticsName);
-                // Lua: table, ?
-                if (lua_isfunction(lua, -1))
+                for (auto& dependency : runtimeData.m_requiredAssets)
                 {
-                    // Lua: table, function
-                    lua_pushvalue(lua, -2);
-                    // Lua: table, function, table
-                    for (auto& clonerSource : runtimeData.m_cloneSources)
-                    {
-                        lua_pushlightuserdata(lua, const_cast<void*>(reinterpret_cast<const void*>(&clonerSource)));
-                    }
-                    // Lua: table, function, table, cloners...
-                    AZ::Internal::LuaSafeCall(lua, aznumeric_caster(runtimeData.m_cloneSources.size() + 1), 0);
-                    // Lua: table
-                    lua_pop(lua, 1);
+                    InitializeInterpretedStatics(dependency.Get()->GetData());
                 }
-                else
+
+#if defined(AZ_PROFILE_BUILD) || defined(AZ_DEBUG_BUILD)
+                Execution::InitializeFromLuaStackFunctions(const_cast<Grammar::DebugSymbolMap&>(runtimeData.m_debugMap));
+#endif
+                AZ_WarningOnce("ScriptCanvas", !runtimeData.m_areStaticsInitialized, "ScriptCanvas runtime data already initalized");
+
+                if (runtimeData.RequiresStaticInitialization())
                 {
+                    AZ::ScriptLoadResult result{};
+                    AZ::ScriptSystemRequestBus::BroadcastResult(result, &AZ::ScriptSystemRequests::LoadAndGetNativeContext, runtimeData.m_script, AZ::k_scriptLoadBinary, AZ::ScriptContextIds::DefaultScriptContextId);
+                    AZ_Assert(result.status == AZ::ScriptLoadResult::Status::Initial, "ExecutionStateInterpreted script asset was valid but failed to load.");
+                    AZ_Assert(result.lua, "Must have a default script context and a lua_State");
+                    AZ_Assert(lua_istable(result.lua, -1), "No run-time execution was available for this script");
+
+                    auto lua = result.lua;
+                    // Lua: table
+                    lua_getfield(lua, -1, Grammar::k_InitializeStaticsName);
                     // Lua: table, ?
-                    lua_pop(lua, 2);
+                    if (lua_isfunction(lua, -1))
+                    {
+                        // Lua: table, function
+                        lua_pushvalue(lua, -2);
+                        // Lua: table, function, table
+                        for (auto& clonerSource : runtimeData.m_cloneSources)
+                        {
+                            lua_pushlightuserdata(lua, const_cast<void*>(reinterpret_cast<const void*>(&clonerSource)));
+                        }
+                        // Lua: table, function, table, cloners...
+                        AZ::Internal::LuaSafeCall(lua, aznumeric_caster(runtimeData.m_cloneSources.size() + 1), 0);
+                        // Lua: table
+                        lua_pop(lua, 1);
+                    }
+                    else
+                    {
+                        // Lua: table, ?
+                        lua_pop(lua, 2);
+                    }
                 }
             }
         }

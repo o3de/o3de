@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "GradientSurfaceDataComponentTypeId",
+            "base": "GradientSurfaceDataComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "GradientSurfaceDataComponentTypeId::Getter",
-                "category": "Constants"
-            }
+                "name": "Gradient Surface Data Component Type Id",
+                "category": "Constants/Editor"
+            },
+            "methods": [
+                {
+                    "base": "GetGradientSurfaceDataComponentTypeId",
+                    "details": {
+                        "name": "Get Gradient Surface Data Component Type Id"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}",
+                            "details": {
+                                "name": "AZ:: Uuid"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

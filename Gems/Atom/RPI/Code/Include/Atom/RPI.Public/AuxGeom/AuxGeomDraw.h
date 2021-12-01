@@ -147,6 +147,30 @@ namespace AZ
             //! @param viewProjOverrideIndex Which view projection override entry to use, -1 if unused
             virtual void DrawSphere( const AZ::Vector3& center, float radius, const AZ::Color& color, DrawStyle style = DrawStyle::Shaded, DepthTest depthTest = DepthTest::On, DepthWrite depthWrite = DepthWrite::On, FaceCullMode faceCull = FaceCullMode::Back, int32_t viewProjOverrideIndex = -1) = 0;
 
+            //! Draw a sphere.
+            //! @param center        The center of the sphere.
+            //! @param direction     The direction vector. The Pole of the hemisphere will point along this vector.
+            //! @param radius        The radius.
+            //! @param color         The color to draw the sphere.
+            //! @param style         The draw style (point, wireframe, solid, shaded etc).
+            //! @param depthTest     If depth testing should be enabled
+            //! @param depthWrite    If depth writing should be enabled
+            //! @param faceCull      Which (if any) facing triangles should be culled
+            //! @param viewProjOverrideIndex Which view projection override entry to use, -1 if unused
+            virtual void DrawSphere(const AZ::Vector3& center, const AZ::Vector3& direction, float radius, const AZ::Color& color, DrawStyle style = DrawStyle::Shaded, DepthTest depthTest = DepthTest::On, DepthWrite depthWrite = DepthWrite::On, FaceCullMode faceCull = FaceCullMode::Back, int32_t viewProjOverrideIndex = -1) = 0;
+
+            //! Draw a hemisphere.
+            //! @param center        The center of the sphere.
+            //! @param direction     The direction vector. The Pole of the hemisphere will point along this vector.
+            //! @param radius        The radius.
+            //! @param color         The color to draw the sphere.
+            //! @param style         The draw style (point, wireframe, solid, shaded etc).
+            //! @param depthTest     If depth testing should be enabled
+            //! @param depthWrite    If depth writing should be enabled
+            //! @param faceCull      Which (if any) facing triangles should be culled
+            //! @param viewProjOverrideIndex Which view projection override entry to use, -1 if unused
+            virtual void DrawHemisphere( const AZ::Vector3& center, const AZ::Vector3& direction, float radius, const AZ::Color& color, DrawStyle style = DrawStyle::Shaded, DepthTest depthTest = DepthTest::On, DepthWrite depthWrite = DepthWrite::On, FaceCullMode faceCull = FaceCullMode::Back, int32_t viewProjOverrideIndex = -1) = 0;
+
             //! Draw a disk.
             //! @param center        The center of the disk.
             //! @param direction     The direction vector. The disk will be orthogonal this vector.
@@ -172,7 +196,7 @@ namespace AZ
             //! @param viewProjOverrideIndex Which view projection override entry to use, -1 if unused
             virtual void DrawCone(const AZ::Vector3& center, const AZ::Vector3& direction, float radius, float height, const AZ::Color& color, DrawStyle style = DrawStyle::Shaded, DepthTest depthTest = DepthTest::On, DepthWrite depthWrite = DepthWrite::On, FaceCullMode faceCull = FaceCullMode::Back, int32_t viewProjOverrideIndex = -1) = 0;
 
-            //! Draw a cylinder.
+            //! Draw a cylinder (with flat disks on the end).
             //! @param center        The center of the base circle.
             //! @param direction     The direction vector. The top end cap of the cylinder will face along this vector.
             //! @param radius        The radius.
@@ -184,6 +208,19 @@ namespace AZ
             //! @param faceCull      Which (if any) facing triangles should be culled
             //! @param viewProjOverrideIndex Which view projection override entry to use, -1 if unused
             virtual void DrawCylinder(const AZ::Vector3& center, const AZ::Vector3& direction, float radius, float height, const AZ::Color& color, DrawStyle style = DrawStyle::Shaded, DepthTest depthTest = DepthTest::On, DepthWrite depthWrite = DepthWrite::On, FaceCullMode faceCull = FaceCullMode::Back, int32_t viewProjOverrideIndex = -1) = 0;
+
+            //! Draw a cylinder without flat disk on the end.
+            //! @param center        The center of the base circle.
+            //! @param direction     The direction vector. The top end cap of the cylinder will face along this vector.
+            //! @param radius        The radius.
+            //! @param height        The height of the cylinder.
+            //! @param color         The color to draw the cylinder.
+            //! @param style         The draw style (point, wireframe, solid, shaded etc).
+            //! @param depthTest     If depth testing should be enabled
+            //! @param depthWrite    If depth writing should be enabled
+            //! @param faceCull      Which (if any) facing triangles should be culled
+            //! @param viewProjOverrideIndex Which view projection override entry to use, -1 if unused
+            virtual void DrawCylinderNoEnds(const AZ::Vector3& center, const AZ::Vector3& direction, float radius, float height, const AZ::Color& color, DrawStyle style = DrawStyle::Shaded, DepthTest depthTest = DepthTest::On, DepthWrite depthWrite = DepthWrite::On, FaceCullMode faceCull = FaceCullMode::Back, int32_t viewProjOverrideIndex = -1) = 0;
 
             //! Draw an axis-aligned bounding box with no transform.
             //! @param aabb          The AABB (typically the bounding box of a set of world space points).

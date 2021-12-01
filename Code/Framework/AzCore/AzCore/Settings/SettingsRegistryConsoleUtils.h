@@ -14,15 +14,16 @@
 
 namespace AZ::SettingsRegistryConsoleUtils
 {
-    //! Only 4 console command are registered for the settings registry
-    //! "regset", "regremove", "regdump", "regdumpall"
+    //! The following console command are registered for the settings registry
+    //! "regset", "regremove", "regdump", "regdumpall", "regset-file"
     //! The value should be increased if more commands are needed
-    inline constexpr size_t MaxSettingsRegistryConsoleFunctors = 4;
+    inline constexpr size_t MaxSettingsRegistryConsoleFunctors = 5;
 
     inline constexpr const char* SettingsRegistrySet = "sr_regset";
     inline constexpr const char* SettingsRegistryRemove = "sr_regremove";
     inline constexpr const char* SettingsRegistryDump = "sr_regdump";
     inline constexpr const char* SettingsRegistryDumpAll = "sr_regdumpall";
+    inline constexpr const char* SettingsRegistryMergeFile = "sr_regset-file";
 
     // RAII structure which owns the instances of the Settings Registry Console commands
     // registered with an AZ Console
@@ -51,6 +52,10 @@ namespace AZ::SettingsRegistryConsoleUtils
     //!
     //! "sr_regdumpall" accepts 0 arguments and dumps the entire settings registry
     //!  NOTE: this might result in a large amount of output to the console
+    //!
+    //! "sr_regset-file" accepts 1 or 2 arguments - <file-path> [<anchor json path>]
+    //!  Merges the json formatted file <file path> into the settings registry underneath the root anchor ""
+    //!  or <anchor json path> if supplied
     [[nodiscard]] ConsoleFunctorHandle RegisterAzConsoleCommands(SettingsRegistryInterface& registry, AZ::IConsole& azConsole);
     
 }

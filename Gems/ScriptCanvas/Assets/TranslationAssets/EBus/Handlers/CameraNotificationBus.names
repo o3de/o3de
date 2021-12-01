@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "CameraNotificationBus",
+            "base": "CameraNotificationBus",
             "context": "EBusHandler",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "OnCameraAdded",
+                    "base": "OnCameraAdded",
                     "details": {
                         "name": "On Camera Added"
                     },
@@ -18,14 +18,14 @@
                         {
                             "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
                             "details": {
-                                "name": "EntityId",
+                                "name": "Entity Id",
                                 "tooltip": "Entity Unique Id"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "OnCameraRemoved",
+                    "base": "OnCameraRemoved",
                     "details": {
                         "name": "On Camera Removed"
                     },
@@ -33,14 +33,14 @@
                         {
                             "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
                             "details": {
-                                "name": "EntityId",
+                                "name": "Entity Id",
                                 "tooltip": "Entity Unique Id"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "OnActiveViewChanged",
+                    "base": "OnActiveViewChanged",
                     "details": {
                         "name": "On Active View Changed"
                     },
@@ -48,7 +48,7 @@
                         {
                             "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
                             "details": {
-                                "name": "EntityId",
+                                "name": "Entity Id",
                                 "tooltip": "Entity Unique Id"
                             }
                         }

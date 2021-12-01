@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "{61E2CDC6-5CFA-47A2-8936-6A4332511E28}",
+            "base": "{61E2CDC6-5CFA-47A2-8936-6A4332511E28}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
@@ -12,63 +12,63 @@
             },
             "slots": [
                 {
-                    "key": "Input_In0",
+                    "base": "Input_In0",
                     "details": {
                         "name": "In0",
                         "tooltip": "Input 0"
                     }
                 },
                 {
-                    "key": "Input_In1",
+                    "base": "Input_In1",
                     "details": {
                         "name": "In1",
                         "tooltip": "Input 1"
                     }
                 },
                 {
-                    "key": "Input_In2",
+                    "base": "Input_In2",
                     "details": {
                         "name": "In2",
                         "tooltip": "Input 2"
                     }
                 },
                 {
-                    "key": "Input_In3",
+                    "base": "Input_In3",
                     "details": {
                         "name": "In3",
                         "tooltip": "Input 3"
                     }
                 },
                 {
-                    "key": "Input_In4",
+                    "base": "Input_In4",
                     "details": {
                         "name": "In4",
                         "tooltip": "Input 4"
                     }
                 },
                 {
-                    "key": "Input_In5",
+                    "base": "Input_In5",
                     "details": {
                         "name": "In5",
                         "tooltip": "Input 5"
                     }
                 },
                 {
-                    "key": "Input_In6",
+                    "base": "Input_In6",
                     "details": {
                         "name": "In6",
                         "tooltip": "Input 6"
                     }
                 },
                 {
-                    "key": "Input_In7",
+                    "base": "Input_In7",
                     "details": {
                         "name": "In7",
                         "tooltip": "Input 7"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out",
                     "details": {
                         "name": "Out",
                         "tooltip": "Signaled when the node is triggered."

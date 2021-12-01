@@ -1,38 +1,37 @@
 {
     "entries": [
         {
-            "key": "{478D4CC5-BC42-574A-A81C-818FA9A3C635}",
+            "base": "{478D4CC5-BC42-574A-A81C-818FA9A3C635}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "FromRotationXDegrees",
+                "name": "From Rotation X Degrees",
                 "category": "Math/Matrix3x3",
-                "tooltip": "returns a rotation matrix representing a rotation in degrees around X-axis",
-                "subtitle": "Matrix3x3"
+                "tooltip": "Returns a rotation matrix representing a rotation in degrees around X-axis"
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "key": "DataInput_Number: Degrees",
+                    "base": "DataInput_Degrees",
                     "details": {
-                        "name": "Number: Degrees"
+                        "name": "Degrees"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Matrix3x3",
+                    "base": "DataOutput_Result",
                     "details": {
-                        "name": "Result: Matrix3x3"
+                        "name": "Result"
                     }
                 }
             ]

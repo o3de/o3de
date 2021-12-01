@@ -1,50 +1,49 @@
 {
     "entries": [
         {
-            "key": "{13EE83FC-EA87-5957-966F-EFD4E88A7698}",
+            "base": "{13EE83FC-EA87-5957-966F-EFD4E88A7698}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "GetColumns",
+                "name": "Get Columns",
                 "category": "Math/Matrix3x3",
-                "tooltip": "returns all columns from matrix",
-                "subtitle": "Matrix3x3"
+                "tooltip": "Returns all columns from matrix"
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "key": "DataInput_Matrix3x3: Source",
+                    "base": "DataInput_Source",
                     "details": {
-                        "name": "Matrix3x3: Source"
+                        "name": "Source"
                     }
                 },
                 {
-                    "key": "DataOutput_Column1: Vector3",
+                    "base": "DataOutput_Column1",
                     "details": {
-                        "name": "Column1: Vector3"
+                        "name": "Column 1"
                     }
                 },
                 {
-                    "key": "DataOutput_Column2: Vector3",
+                    "base": "DataOutput_Column2",
                     "details": {
-                        "name": "Column2: Vector3"
+                        "name": "Column 2"
                     }
                 },
                 {
-                    "key": "DataOutput_Column3: Vector3",
+                    "base": "DataOutput_Column3",
                     "details": {
-                        "name": "Column3: Vector3"
+                        "name": "Column 3"
                     }
                 }
             ]

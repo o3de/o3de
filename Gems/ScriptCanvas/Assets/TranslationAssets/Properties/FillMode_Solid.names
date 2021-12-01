@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "FillMode_Solid",
+            "base": "FillMode_Solid",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "FillMode_Solid::Getter",
-                "category": "Constants"
-            }
+                "name": "Solid",
+                "category": "Constants/Fill Mode"
+            },
+            "methods": [
+                {
+                    "base": "GetFillMode_Solid",
+                    "details": {
+                        "name": "Solid"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

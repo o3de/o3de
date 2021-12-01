@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "BlendFactor_One",
+            "base": "BlendFactor_One",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "BlendFactor_One::Getter",
-                "category": "Constants"
-            }
+                "name": "One",
+                "category": "Constants/Blend Factor"
+            },
+            "methods": [
+                {
+                    "base": "GetBlendFactor_One",
+                    "details": {
+                        "name": "Get One"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

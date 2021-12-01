@@ -131,6 +131,9 @@ namespace ScriptCanvasEditorTools
         //! Generates the translation data for the specified property in the BehaviorContext
         void TranslateBehaviorProperty(const AZ::BehaviorProperty* behaviorProperty, const AZStd::string& className, const AZStd::string& context, Entry* entry = nullptr);
 
+        //! Generates a type map from reflected types that are suitable for BehaviorContext objects used by ScriptCanvas
+        void TranslateDataTypes();
+
     private:
 
         //! Utility to populate a BehaviorMethod's translation data
@@ -141,6 +144,9 @@ namespace ScriptCanvasEditorTools
 
         //! Utility function that saves a TranslationFormat object in the desired JSON format
         void SaveJSONData(const AZStd::string& filename, TranslationFormat& translationRoot);
+
+        //! Utility function that splits camel-case syntax string into separate words
+        void SplitCamelCase(AZStd::string&);
 
         //! Evaluates if the specified object has exclusion flags and should be skipped from generation
         template <typename T>

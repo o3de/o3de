@@ -1,44 +1,43 @@
 {
     "entries": [
         {
-            "key": "{00EEE23E-7FAC-5DE4-A3B1-9AC4DBD40AE4}",
+            "base": "{00EEE23E-7FAC-5DE4-A3B1-9AC4DBD40AE4}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "MultiplyByVector3",
+                "name": "Multiply By Vector3",
                 "category": "Math/Transform",
-                "tooltip": "returns Source post multiplied by Multiplier",
-                "subtitle": "Transform"
+                "tooltip": "Returns Source post multiplied by Multiplier"
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "key": "DataInput_Transform: Source",
+                    "base": "DataInput_Source",
                     "details": {
-                        "name": "Transform: Source"
+                        "name": "Source"
                     }
                 },
                 {
-                    "key": "DataInput_Vector3: Multiplier",
+                    "base": "DataInput_Multiplier",
                     "details": {
-                        "name": "Vector3: Multiplier"
+                        "name": "Multiplier"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Vector3",
+                    "base": "DataOutput_Result",
                     "details": {
-                        "name": "Result: Vector3"
+                        "name": "Result"
                     }
                 }
             ]

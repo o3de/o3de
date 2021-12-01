@@ -1,44 +1,43 @@
 {
     "entries": [
         {
-            "key": "{D2321D1F-C3B8-516E-AFE2-3A536A89BCAB}",
+            "base": "{D2321D1F-C3B8-516E-AFE2-3A536A89BCAB}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "FromMatrix3x3AndTranslation",
+                "name": "From Matrix3x3 And Translation",
                 "category": "Math/Transform",
-                "tooltip": "returns a transform from the 3x3 matrix and the translation",
-                "subtitle": "Transform"
+                "tooltip": "Returns a transform from the 3x3 matrix and the translation"
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "key": "DataInput_Matrix3x3: Matrix",
+                    "base": "DataInput_Matrix",
                     "details": {
-                        "name": "Matrix3x3: Matrix"
+                        "name": "Matrix"
                     }
                 },
                 {
-                    "key": "DataInput_Vector3: Translation",
+                    "base": "DataInput_Translation",
                     "details": {
-                        "name": "Vector3: Translation"
+                        "name": "Translation"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Transform",
+                    "base": "DataOutput_Result",
                     "details": {
-                        "name": "Result: Transform"
+                        "name": "Result"
                     }
                 }
             ]

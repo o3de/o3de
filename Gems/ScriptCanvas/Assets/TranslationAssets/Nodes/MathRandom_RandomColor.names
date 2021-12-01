@@ -1,44 +1,43 @@
 {
     "entries": [
         {
-            "key": "{66072FDF-E318-5A40-B0C1-FD9EE0F59D7B}",
+            "base": "{66072FDF-E318-5A40-B0C1-FD9EE0F59D7B}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "RandomColor",
+                "name": "Random Color",
                 "category": "Math/Random",
-                "tooltip": "Returns a random color [Min, Max]",
-                "subtitle": "Random"
+                "tooltip": "Returns a random color [Min, Max]"
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "key": "DataInput_Color: Min",
+                    "base": "DataInput_Min",
                     "details": {
-                        "name": "Color: Min"
+                        "name": "Min"
                     }
                 },
                 {
-                    "key": "DataInput_Color: Max",
+                    "base": "DataInput_Max",
                     "details": {
-                        "name": "Color: Max"
+                        "name": "Max"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Color",
+                    "base": "DataOutput_Result",
                     "details": {
-                        "name": "Result: Color"
+                        "name": "Result"
                     }
                 }
             ]

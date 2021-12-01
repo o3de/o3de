@@ -1,38 +1,37 @@
 {
     "entries": [
         {
-            "key": "{138EE359-9CA0-520B-873D-90C2183C96FE}",
+            "base": "{138EE359-9CA0-520B-873D-90C2183C96FE}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "IsFinite",
+                "name": "Is Finite",
                 "category": "Math/Vector4",
-                "tooltip": "returns true if every element in the source is finite, else false",
-                "subtitle": "Vector4"
+                "tooltip": "Returns true if every element in the source is finite, else false"
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "key": "DataInput_Vector4: Source",
+                    "base": "DataInput_Source",
                     "details": {
-                        "name": "Vector4: Source"
+                        "name": "Source"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Boolean",
+                    "base": "DataOutput_Result",
                     "details": {
-                        "name": "Result: Boolean"
+                        "name": "Result"
                     }
                 }
             ]

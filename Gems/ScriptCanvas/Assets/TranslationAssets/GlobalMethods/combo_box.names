@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "combo_box",
+            "base": "combo_box",
             "context": "Method",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "combo_box",
+                    "base": "combo_box",
                     "context": "Global",
                     "entry": {
                         "name": "In",

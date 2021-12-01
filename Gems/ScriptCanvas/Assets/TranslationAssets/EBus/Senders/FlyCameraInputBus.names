@@ -1,16 +1,16 @@
 {
     "entries": [
         {
-            "key": "FlyCameraInputBus",
+            "base": "FlyCameraInputBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "FlyCameraInputBus",
+                "name": "Fly Camera",
                 "category": "Camera"
             },
             "methods": [
                 {
-                    "key": "SetIsEnabled",
+                    "base": "SetIsEnabled",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Is Enabled"
@@ -26,29 +26,29 @@
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": "bool"
+                                "name": "Is Enabled"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "GetIsEnabled",
+                    "base": "GetIsEnabled",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke Is Enabled"
+                        "tooltip": "When signaled, this will invoke Get Is Enabled"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after Is Enabled is invoked"
+                        "tooltip": "Signaled after Get Is Enabled is invoked"
                     },
                     "details": {
-                        "name": "Is Enabled"
+                        "name": "Get Is Enabled"
                     },
                     "results": [
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": "bool"
+                                "name": "Is Enabled"
                             }
                         }
                     ]
