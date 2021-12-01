@@ -356,8 +356,6 @@ set(FILES
     UI/ComponentPalette/ComponentPaletteWidget.cpp
     UI/ComponentPalette/ComponentPaletteModel.hxx
     UI/ComponentPalette/ComponentPaletteModel.cpp
-    UI/ComponentPalette/ComponentPaletteModelFilter.hxx
-    UI/ComponentPalette/ComponentPaletteModelFilter.cpp
     UI/ComponentPalette/ComponentPaletteUtil.hxx
     UI/ComponentPalette/ComponentPaletteUtil.cpp
     UI/Layer/NameConflictWarning.hxx
