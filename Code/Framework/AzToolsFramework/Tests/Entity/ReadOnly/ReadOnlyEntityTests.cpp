@@ -74,9 +74,9 @@ namespace AzToolsFramework
         // Communicate to the ReadOnlyEntitySystemComponent that the read-only state for the child entity may have changed.
         // Note that this operation would usually be executed by the handler, hence the Query interface call.
         if (auto readOnlyEntityQueryInterface = AZ::Interface<ReadOnlyEntityQueryInterface>::Get())
-    {
+        {
             readOnlyEntityQueryInterface->RefreshReadOnlyState({ m_entityMap[ChildEntityName] });
-    }
+        }
 
         // Verify the child entity is marked as read-only
         EXPECT_TRUE(m_readOnlyEntityPublicInterface->IsReadOnly(m_entityMap[ChildEntityName]));
