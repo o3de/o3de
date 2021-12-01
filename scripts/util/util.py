@@ -13,24 +13,9 @@ import sys
 import subprocess
 
 
-class LyBuildError(Exception):
-    def __init__(self, message):
-        super(LyBuildError, self).__init__(message)
-
-
-def ly_build_error(message):
-    raise LyBuildError(message)
-
-
 def error(message):
     print(('Error: {}'.format(message)))
     exit(1)
-
-
-# Exit with status code 0 means it won't fail the whole build process
-def safe_exit_with_error(message):
-    print(('Error: {}'.format(message)))
-    exit(0)
 
 
 def warn(message):
