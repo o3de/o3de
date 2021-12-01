@@ -18,6 +18,7 @@ AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option")
 #include <QPainter> 
 AZ_POP_DISABLE_WARNING
 #include <QtWidgets/QToolButton>
+#include <QtGUI/QRegExpValidator>
 
 namespace AzToolsFramework
 {
