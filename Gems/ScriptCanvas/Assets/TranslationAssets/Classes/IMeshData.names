@@ -1,0 +1,61 @@
+{
+    "entries": [
+        {
+            "base": "IMeshData",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "IMesh Data",
+                "category": "Rendering"
+            },
+            "methods": [
+                {
+                    "base": "GetUnitSizeInMeters",
+                    "context": "IMeshData",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Unit Size In Meters"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Unit Size In Meters is invoked"
+                    },
+                    "details": {
+                        "name": "Get Unit Size In Meters"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetOriginalUnitSizeInMeters",
+                    "context": "IMeshData",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Original Unit Size In Meters"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Original Unit Size In Meters is invoked"
+                    },
+                    "details": {
+                        "name": "Get Original Unit Size In Meters"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

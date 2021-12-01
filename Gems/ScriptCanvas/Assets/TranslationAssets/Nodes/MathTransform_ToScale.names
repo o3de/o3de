@@ -1,0 +1,40 @@
+{
+    "entries": [
+        {
+            "base": "{AC6712AA-0494-5879-B7F8-4B04352924DE}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "To Scale",
+                "category": "Math/Transform",
+                "tooltip": "Returns the uniform scale of the Source"
+            },
+            "slots": [
+                {
+                    "base": "Input_In",
+                    "details": {
+                        "name": "In"
+                    }
+                },
+                {
+                    "base": "Output_Out",
+                    "details": {
+                        "name": "Out"
+                    }
+                },
+                {
+                    "base": "DataInput_Source",
+                    "details": {
+                        "name": "Source"
+                    }
+                },
+                {
+                    "base": "DataOutput_Result",
+                    "details": {
+                        "name": "Result"
+                    }
+                }
+            ]
+        }
+    ]
+}

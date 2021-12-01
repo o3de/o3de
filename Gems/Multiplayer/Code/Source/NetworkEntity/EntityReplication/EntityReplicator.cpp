@@ -344,7 +344,7 @@ namespace Multiplayer
     void EntityReplicator::SetPendingRemoval(AZ::TimeMs pendingRemovalTimeMs)
     {
         AZ_Assert(m_propertyPublisher, "Only valid if we are publishing updates");
-        if (pendingRemovalTimeMs > AZ::TimeMs{ 0 })
+        if (pendingRemovalTimeMs > AZ::Time::ZeroTimeMs)
         {
             if (!IsPendingRemoval())
             {

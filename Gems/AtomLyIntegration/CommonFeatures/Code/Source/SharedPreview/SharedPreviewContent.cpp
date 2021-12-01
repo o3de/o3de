@@ -163,9 +163,9 @@ namespace AZ
                 m_modelAsset->GetAabb().GetAsSphere(center, radius);
             }
 
-            const auto distance = radius + NearDist;
-            const auto cameraRotation = Quaternion::CreateFromAxisAngle(Vector3::CreateAxisZ(), CameraRotationAngle);
-            const auto cameraPosition = center + cameraRotation.TransformVector(Vector3(0.0f, distance, 0.0f));
+            const auto distance = fabsf(radius / sinf(FieldOfView)) + NearDist;
+            const auto cameraRotation = Quaternion::CreateFromAxisAngle(Vector3::CreateAxisX(), -CameraRotationAngle);
+            const auto cameraPosition = center + cameraRotation.TransformVector(-Vector3::CreateAxisY() * distance);
             const auto cameraTransform = Transform::CreateLookAt(cameraPosition, center);
             m_view->SetCameraTransform(Matrix3x4::CreateFromTransform(cameraTransform));
         }

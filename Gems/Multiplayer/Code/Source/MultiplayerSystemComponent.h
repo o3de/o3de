@@ -178,7 +178,7 @@ namespace Multiplayer
         AZStd::queue<AZStd::string> m_pendingConnectionTickets;
         AZStd::unordered_map<uint64_t, NetEntityId> m_playerRejoinData;
 
-        AZ::TimeMs m_lastReplicatedHostTimeMs = AZ::TimeMs{ 0 };
+        AZ::TimeMs m_lastReplicatedHostTimeMs = AZ::Time::ZeroTimeMs;
         HostFrameId m_lastReplicatedHostFrameId = HostFrameId(0);
 
         uint64_t m_temporaryUserIdentifier = 0; // Used in the event of a migration or rejoin

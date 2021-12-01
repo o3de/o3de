@@ -1,0 +1,47 @@
+{
+    "entries": [
+        {
+            "base": "{8EE5053F-63BF-5E73-A88F-BD09C09DA9DB}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "MultiplyByColor",
+                "category": "Deprecated",
+                "tooltip": "This node is deprecated, use Multiply (*), it provides contextual type and slots",
+                "subtitle": "Deprecated"
+            },
+            "slots": [
+                {
+                    "base": "Input_In",
+                    "details": {
+                        "name": "In"
+                    }
+                },
+                {
+                    "base": "Output_Out",
+                    "details": {
+                        "name": "Out"
+                    }
+                },
+                {
+                    "base": "DataInput_Color: A",
+                    "details": {
+                        "name": "Color: A"
+                    }
+                },
+                {
+                    "base": "DataInput_Color: B",
+                    "details": {
+                        "name": "Color: B"
+                    }
+                },
+                {
+                    "base": "DataOutput_Result: Color",
+                    "details": {
+                        "name": "Result: Color"
+                    }
+                }
+            ]
+        }
+    ]
+}

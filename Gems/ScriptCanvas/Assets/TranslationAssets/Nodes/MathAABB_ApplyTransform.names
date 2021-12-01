@@ -1,0 +1,47 @@
+{
+    "entries": [
+        {
+            "base": "{B1930C91-3527-593E-A382-DACC9E9C2245}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "Apply Transform",
+                "category": "Math/Axis Aligned Bounding Box",
+                "tooltip": "returns the AABB translated and possibly scaled by the Transform",
+                "subtitle": "Axis Aligned Bounding Box"
+            },
+            "slots": [
+                {
+                    "base": "Input_In",
+                    "details": {
+                        "name": "In"
+                    }
+                },
+                {
+                    "base": "Output_Out",
+                    "details": {
+                        "name": "Out"
+                    }
+                },
+                {
+                    "base": "DataInput_AABB: Source",
+                    "details": {
+                        "name": "Source"
+                    }
+                },
+                {
+                    "base": "DataInput_Transform: Transform",
+                    "details": {
+                        "name": "Transform"
+                    }
+                },
+                {
+                    "base": "DataOutput_Result: AABB",
+                    "details": {
+                        "name": "AABB"
+                    }
+                }
+            ]
+        }
+    ]
+}

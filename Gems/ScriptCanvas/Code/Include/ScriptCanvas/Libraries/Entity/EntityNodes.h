@@ -21,7 +21,7 @@ namespace ScriptCanvas
     namespace EntityNodes
     {
         using namespace Data;
-        static const char* k_categoryName = "Entity/Entity";
+        static constexpr const char* k_categoryName = "Entity/Entity";
 
         template<int t_Index>
         AZ_INLINE void DefaultScale(Node& node) { SetDefaultValuesByIndex<t_Index>::_(node, Data::One()); }

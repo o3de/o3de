@@ -1,0 +1,46 @@
+{
+    "entries": [
+        {
+            "base": "{EBD3BEF3-0FA8-5508-8C9B-BDCA64A00E5E}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "Is Zero",
+                "category": "Math/Vector4",
+                "tooltip": "Returns true if A is within tolerance of the zero vector, else false"
+            },
+            "slots": [
+                {
+                    "base": "Input_In",
+                    "details": {
+                        "name": "In"
+                    }
+                },
+                {
+                    "base": "Output_Out",
+                    "details": {
+                        "name": "Out"
+                    }
+                },
+                {
+                    "base": "DataInput_Source",
+                    "details": {
+                        "name": "Source"
+                    }
+                },
+                {
+                    "base": "DataInput_Tolerance",
+                    "details": {
+                        "name": "Tolerance"
+                    }
+                },
+                {
+                    "base": "DataOutput_Result",
+                    "details": {
+                        "name": "Result"
+                    }
+                }
+            ]
+        }
+    ]
+}

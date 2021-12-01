@@ -57,6 +57,7 @@ ly_add_target(
     NAME ScriptCanvas.Static STATIC
     NAMESPACE Gem
     FILES_CMAKE
+        scriptcanvasgem_headers.cmake
         scriptcanvasgem_common_files.cmake
         scriptcanvasgem_runtime_asset_files.cmake
     INCLUDE_DIRECTORIES
@@ -87,6 +88,22 @@ ly_add_target(
         *.ScriptCanvasNodeable.xml,ScriptCanvasNodeable_Source.jinja,$path/$fileprefix.generated.cpp
     RUNTIME_DEPENDENCIES
         Gem::ScriptCanvasDebugger
+)
+
+ly_add_target(
+    NAME ScriptCanvas.API HEADERONLY
+    NAMESPACE Gem
+    FILES_CMAKE
+        scriptcanvasgem_headers.cmake
+    COMPILE_DEFINITIONS
+        INTERFACE
+            SCRIPTCANVAS_ERRORS_ENABLED
+            ${SCRIPT_CANVAS_COMMON_DEFINES}
+    INCLUDE_DIRECTORIES
+        INTERFACE
+            .
+            Include
+            ${SCRIPT_CANVAS_AUTOGEN_BUILD_DIR}
 )
 
 ly_add_target(
@@ -137,6 +154,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 .
                 Editor/Include
                 Editor/Static/Include
+                Editor/Assets
         BUILD_DEPENDENCIES
             PRIVATE
                 AZ::AzCore
@@ -155,6 +173,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
             scriptcanvasgem_editor_files.cmake
             scriptcanvasgem_editor_asset_files.cmake
             scriptcanvasgem_editor_builder_files.cmake
+            scriptcanvasgem_editor_tools_files.cmake
         COMPILE_DEFINITIONS
             PUBLIC
                 SCRIPTCANVAS_ERRORS_ENABLED
@@ -165,6 +184,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
             PRIVATE
                 .
                 Editor
+                Tools
                 Editor/Include
                 ${SCRIPT_CANVAS_AUTOGEN_BUILD_DIR}
         BUILD_DEPENDENCIES  

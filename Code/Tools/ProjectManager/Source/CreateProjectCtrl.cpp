@@ -15,6 +15,7 @@
 #include <GemCatalog/GemCatalogScreen.h>
 #include <GemRepo/GemRepoScreen.h>
 #include <ProjectUtils.h>
+#include <DownloadController.h>
 
 #include <QDialogButtonBox>
 #include <QHBoxLayout>

@@ -1,0 +1,12 @@
+{
+    "entries": [
+        {
+            "base": "SurfaceSlopeGradientComponent",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "SurfaceSlopeGradientComponent"
+            }
+        }
+    ]
+}

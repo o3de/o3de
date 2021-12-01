@@ -8,6 +8,7 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 import errno
 import logging
 import os
+import stat
 import psutil
 import subprocess
 import sys
@@ -454,24 +455,33 @@ class TestChangePermissions(unittest.TestCase):
         self.assertEqual(file_system.change_permissions('.', 0o777), False)
 
 
+class MockStatResult():
+    def __init__(self, st_mode):
+        self.st_mode = st_mode
+
 class TestUnlockFile(unittest.TestCase):
 
     def setUp(self):
         self.file_name = 'file'
 
+    @mock.patch('os.stat')
     @mock.patch('os.chmod')
     @mock.patch('os.access')
-    def test_UnlockFile_WriteLocked_UnlockFile(self, mock_access, mock_chmod):
+    def test_UnlockFile_WriteLocked_UnlockFile(self, mock_access, mock_chmod, mock_stat):
         mock_access.return_value = False
+        os.stat.return_value = MockStatResult(stat.S_IREAD)
 
         success = file_system.unlock_file(self.file_name)
+        mock_chmod.assert_called_once_with(self.file_name, stat.S_IREAD | stat.S_IWRITE)
 
         self.assertTrue(success)
 
+    @mock.patch('os.stat')
     @mock.patch('os.chmod')
     @mock.patch('os.access')
-    def test_UnlockFile_AlreadyUnlocked_LogAlreadyUnlocked(self, mock_access, mock_chmod):
+    def test_UnlockFile_AlreadyUnlocked_LogAlreadyUnlocked(self, mock_access, mock_chmod, mock_stat):
         mock_access.return_value = True
+        os.stat.return_value = MockStatResult(stat.S_IREAD | stat.S_IWRITE)
 
         success = file_system.unlock_file(self.file_name)
 
@@ -483,19 +493,24 @@ class TestLockFile(unittest.TestCase):
     def setUp(self):
         self.file_name = 'file'
 
+    @mock.patch('os.stat')
     @mock.patch('os.chmod')
     @mock.patch('os.access')
-    def test_UnlockFile_UnlockedFile_FileLockedSuccessReturnsTrue(self, mock_access, mock_chmod):
+    def test_LockFile_UnlockedFile_FileLockedSuccessReturnsTrue(self, mock_access, mock_chmod, mock_stat):
         mock_access.return_value = True
+        os.stat.return_value = MockStatResult(stat.S_IREAD | stat.S_IWRITE)
 
         success = file_system.lock_file(self.file_name)
+        mock_chmod.assert_called_once_with(self.file_name, stat.S_IREAD)
 
         self.assertTrue(success)
 
+    @mock.patch('os.stat')
     @mock.patch('os.chmod')
     @mock.patch('os.access')
-    def test_UnlockFile_AlreadyLocked_FileLockedFailedReturnsFalse(self, mock_access, mock_chmod):
+    def test_LockFile_AlreadyLocked_FileLockedFailedReturnsFalse(self, mock_access, mock_chmod, mock_stat):
         mock_access.return_value = False
+        os.stat.return_value = MockStatResult(stat.S_IREAD)
 
         success = file_system.lock_file(self.file_name)
 

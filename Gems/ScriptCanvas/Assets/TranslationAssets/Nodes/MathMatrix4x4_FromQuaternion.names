@@ -1,0 +1,41 @@
+{
+    "entries": [
+        {
+            "base": "{B522091B-B802-5B9C-97CB-B208F58FC535}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "FromQuaternion",
+                "category": "Math/Matrix4x4",
+                "tooltip": "returns a rotation matrix using the supplied quaternion",
+                "subtitle": "Matrix4x4"
+            },
+            "slots": [
+                {
+                    "base": "Input_In",
+                    "details": {
+                        "name": "In"
+                    }
+                },
+                {
+                    "base": "Output_Out",
+                    "details": {
+                        "name": "Out"
+                    }
+                },
+                {
+                    "base": "DataInput_Quaternion: Source",
+                    "details": {
+                        "name": "Quaternion: Source"
+                    }
+                },
+                {
+                    "base": "DataOutput_Result: Matrix4x4",
+                    "details": {
+                        "name": "Result: Matrix4x4"
+                    }
+                }
+            ]
+        }
+    ]
+}

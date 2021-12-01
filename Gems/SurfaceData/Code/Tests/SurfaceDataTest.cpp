@@ -7,7 +7,6 @@
  */
 
 #include <AzTest/AzTest.h>
-#include <Mocks/ITimerMock.h>
 #include <Mocks/ICryPakMock.h>
 #include <Mocks/IConsoleMock.h>
 #include <Mocks/ISystemMock.h>
@@ -31,7 +30,6 @@ struct MockGlobalEnvironment
 {
     MockGlobalEnvironment()
     {
-        m_stubEnv.pTimer = &m_stubTimer;
         m_stubEnv.pCryPak = &m_stubPak;
         m_stubEnv.pConsole = &m_stubConsole;
         m_stubEnv.pSystem = &m_stubSystem;
@@ -45,7 +43,6 @@ struct MockGlobalEnvironment
 
 private:
     SSystemGlobalEnvironment m_stubEnv;
-    testing::NiceMock<TimerMock> m_stubTimer;
     testing::NiceMock<CryPakMock> m_stubPak;
     testing::NiceMock<ConsoleMock> m_stubConsole;
     testing::NiceMock<SystemMock> m_stubSystem;

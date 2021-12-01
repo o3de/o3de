@@ -1,0 +1,52 @@
+{
+    "entries": [
+        {
+            "base": "{13EE83FC-EA87-5957-966F-EFD4E88A7698}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "Get Columns",
+                "category": "Math/Matrix3x3",
+                "tooltip": "Returns all columns from matrix"
+            },
+            "slots": [
+                {
+                    "base": "Input_In",
+                    "details": {
+                        "name": "In"
+                    }
+                },
+                {
+                    "base": "Output_Out",
+                    "details": {
+                        "name": "Out"
+                    }
+                },
+                {
+                    "base": "DataInput_Source",
+                    "details": {
+                        "name": "Source"
+                    }
+                },
+                {
+                    "base": "DataOutput_Column1",
+                    "details": {
+                        "name": "Column 1"
+                    }
+                },
+                {
+                    "base": "DataOutput_Column2",
+                    "details": {
+                        "name": "Column 2"
+                    }
+                },
+                {
+                    "base": "DataOutput_Column3",
+                    "details": {
+                        "name": "Column 3"
+                    }
+                }
+            ]
+        }
+    ]
+}

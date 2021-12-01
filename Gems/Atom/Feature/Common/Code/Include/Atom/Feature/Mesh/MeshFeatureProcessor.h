@@ -30,7 +30,7 @@ namespace AZ
         class TransformServiceFeatureProcessor;
         class RayTracingFeatureProcessor;
 
-        class MeshDataInstance
+        class ModelDataInstance
         {
             friend class MeshFeatureProcessor;
             friend class MeshLoader;
@@ -47,7 +47,7 @@ namespace AZ
             public:
                 using ModelChangedEvent = MeshFeatureProcessorInterface::ModelChangedEvent;
 
-                MeshLoader(const Data::Asset<RPI::ModelAsset>& modelAsset, MeshDataInstance* parent);
+                MeshLoader(const Data::Asset<RPI::ModelAsset>& modelAsset, ModelDataInstance* parent);
                 ~MeshLoader();
 
                 ModelChangedEvent& GetModelChangedEvent();
@@ -68,7 +68,7 @@ namespace AZ
                                                                   } };
                 MeshFeatureProcessorInterface::ModelChangedEvent m_modelChangedEvent;
                 Data::Asset<RPI::ModelAsset> m_modelAsset;
-                MeshDataInstance* m_parent = nullptr;
+                ModelDataInstance* m_parent = nullptr;
             };
 
             void DeInit();
@@ -99,7 +99,8 @@ namespace AZ
             //! A reference to the original model asset in case it got cloned before creating the model instance.
             Data::Asset<RPI::ModelAsset> m_originalModelAsset;
 
-            Data::Instance<RPI::ShaderResourceGroup> m_shaderResourceGroup;
+            //! List of object SRGs used by meshes in this model 
+            AZStd::vector<Data::Instance<RPI::ShaderResourceGroup>> m_objectSrgList;
             AZStd::unique_ptr<MeshLoader> m_meshLoader;
             RPI::Scene* m_scene = nullptr;
             RHI::DrawItemSortKey m_sortKey;
@@ -152,7 +153,7 @@ namespace AZ
 
             Data::Instance<RPI::Model> GetModel(const MeshHandle& meshHandle) const override;
             Data::Asset<RPI::ModelAsset> GetModelAsset(const MeshHandle& meshHandle) const override;
-            Data::Instance<RPI::ShaderResourceGroup> GetObjectSrg(const MeshHandle& meshHandle) const override;
+            const AZStd::vector<Data::Instance<RPI::ShaderResourceGroup>>& GetObjectSrgs(const MeshHandle& meshHandle) const override;
             void QueueObjectSrgForCompile(const MeshHandle& meshHandle) const override;
             void SetMaterialAssignmentMap(const MeshHandle& meshHandle, const Data::Instance<RPI::Material>& material) override;
             void SetMaterialAssignmentMap(const MeshHandle& meshHandle, const MaterialAssignmentMap& materials) override;
@@ -195,7 +196,7 @@ namespace AZ
             void OnRenderPipelineRemoved(RPI::RenderPipeline* pipeline) override;
                         
             AZStd::concurrency_checker m_meshDataChecker;
-            StableDynamicArray<MeshDataInstance> m_meshData;
+            StableDynamicArray<ModelDataInstance> m_modelData;
             TransformServiceFeatureProcessor* m_transformService;
             RayTracingFeatureProcessor* m_rayTracingFeatureProcessor = nullptr;
             AZ::RPI::ShaderSystemInterface::GlobalShaderOptionUpdatedEvent::Handler m_handleGlobalShaderOptionUpdate;

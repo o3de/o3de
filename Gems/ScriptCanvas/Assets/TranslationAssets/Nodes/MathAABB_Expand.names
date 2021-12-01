@@ -1,0 +1,47 @@
+{
+    "entries": [
+        {
+            "base": "{8B74AC3B-2089-5D55-BD66-3F57B3212D57}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "Expand",
+                "category": "Math/Axis Aligned Bounding Box",
+                "tooltip": "returns the Source expanded in each axis by the absolute value of each axis in Delta",
+                "subtitle": "Axis Aligned Bounding Box"
+            },
+            "slots": [
+                {
+                    "base": "Input_In",
+                    "details": {
+                        "name": "In"
+                    }
+                },
+                {
+                    "base": "Output_Out",
+                    "details": {
+                        "name": "Out"
+                    }
+                },
+                {
+                    "base": "DataInput_AABB: Source",
+                    "details": {
+                        "name": "Source"
+                    }
+                },
+                {
+                    "base": "DataInput_Vector3: Delta",
+                    "details": {
+                        "name": "Delta"
+                    }
+                },
+                {
+                    "base": "DataOutput_Result: AABB",
+                    "details": {
+                        "name": "AABB"
+                    }
+                }
+            ]
+        }
+    ]
+}

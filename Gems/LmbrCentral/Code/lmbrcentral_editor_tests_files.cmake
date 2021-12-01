@@ -21,7 +21,6 @@ set(FILES
     Tests/Builders/CopyDependencyBuilderTest.cpp
     Tests/Builders/SliceBuilderTests.cpp
     Tests/Builders/LevelBuilderTest.cpp
-    Tests/Builders/MaterialBuilderTests.cpp
     Tests/Builders/LuaBuilderTests.cpp
     Tests/Builders/SeedBuilderTests.cpp
     Source/LmbrCentral.cpp

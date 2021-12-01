@@ -1,0 +1,39 @@
+{
+    "entries": [
+        {
+            "base": "{10B3E787-BC20-5317-9553-647D40D79DCD}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "Convert Transform To Rotation",
+                "category": "Math/Quaternion"
+            },
+            "slots": [
+                {
+                    "base": "Input_In",
+                    "details": {
+                        "name": "In"
+                    }
+                },
+                {
+                    "base": "Output_Out",
+                    "details": {
+                        "name": "Out"
+                    }
+                },
+                {
+                    "base": "DataInput_Transform",
+                    "details": {
+                        "name": "Transform"
+                    }
+                },
+                {
+                    "base": "DataOutput_Result",
+                    "details": {
+                        "name": "Result"
+                    }
+                }
+            ]
+        }
+    ]
+}

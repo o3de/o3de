@@ -508,8 +508,6 @@ struct IEditor
     virtual CBaseObject* NewObject(const char* typeName, const char* fileName = "", const char* name = "", float x = 0.0f, float y = 0.0f, float z = 0.0f, bool modifyDoc = true) = 0;
     //! Delete object
     virtual void DeleteObject(CBaseObject* obj) = 0;
-    //! Clone object
-    virtual CBaseObject* CloneObject(CBaseObject* obj) = 0;
     //! Get current selection group
     virtual CSelectionGroup* GetSelection() = 0;
     virtual CBaseObject* GetSelectedObject() = 0;

@@ -53,6 +53,8 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
         BUILD_DEPENDENCIES
             PUBLIC
                 Gem::${Name}.Editor.Static
+        RUNTIME_DEPENDENCIES
+            Gem::QtForPython.Editor
     )
 
     # By default, we will specify that the above target ${Name} would be used by

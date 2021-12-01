@@ -12,16 +12,25 @@
 
 namespace UnitTest
 {
+    class AtomToolsFrameworkTestEnvironment : public AZ::Test::ITestEnvironment
+    {
+    protected:
+        void SetupEnvironment() override
+        {
+            AZ::AllocatorInstance<AZ::SystemAllocator>::Create();
+        }
+
+        void TeardownEnvironment() override
+        {
+            AZ::AllocatorInstance<AZ::SystemAllocator>::Destroy();
+        }
+    };
+
     class AtomToolsFrameworkTest : public ::testing::Test
     {
     protected:
         void SetUp() override
         {
-            if (!AZ::AllocatorInstance<AZ::SystemAllocator>::IsReady())
-            {
-                AZ::AllocatorInstance<AZ::SystemAllocator>::Create(AZ::SystemAllocator::Descriptor());
-            }
-
             m_assetSystemStub.Activate();
 
             RegisterSourceAsset("objects/upgrades/materials/supercondor.material");
@@ -38,11 +47,6 @@ namespace UnitTest
         void TearDown() override
         {
             m_assetSystemStub.Deactivate();
-
-            if (AZ::AllocatorInstance<AZ::SystemAllocator>::IsReady())
-            {
-                AZ::AllocatorInstance<AZ::SystemAllocator>::Destroy();
-            }
         }
 
         void RegisterSourceAsset(const AZStd::string& path)
@@ -73,5 +77,5 @@ namespace UnitTest
         ASSERT_EQ(AtomToolsFramework::GetExteralReferencePath("d:/project/assets/objects/upgrades/materials/supercondor.material", "d:/project/assets/materials/condor.material", 0), "materials/condor.material");
     }
 
-    AZ_UNIT_TEST_HOOK(DEFAULT_UNIT_TEST_ENV);
+    AZ_UNIT_TEST_HOOK(new AtomToolsFrameworkTestEnvironment);
 } // namespace UnitTest

@@ -79,12 +79,18 @@ namespace AtomToolsFramework
         m_styleManager.reset(new AzQtComponents::StyleManager(this));
         m_styleManager->initialize(this, engineRootPath);
 
-        connect(&m_timer, &QTimer::timeout, this, [&]()
+        m_timer.setInterval(1);
+        connect(&m_timer, &QTimer::timeout, this, [this]()
         {
             this->PumpSystemEventLoopUntilEmpty();
             this->Tick();
         });
 
+        connect(this, &QGuiApplication::applicationStateChanged, this, [this]()
+        {
+            // Limit the update interval when not in focus to reduce power consumption and interference with other applications
+            this->m_timer.setInterval((applicationState() & Qt::ApplicationActive) ? 1 : 32);
+        });
     }
 
     AtomToolsApplication ::~AtomToolsApplication()
@@ -454,10 +460,10 @@ namespace AtomToolsFramework
         return false;
     }
 
-    void AtomToolsApplication::Tick(float deltaOverride)
+    void AtomToolsApplication::Tick()
     {
         TickSystem();
-        Base::Tick(deltaOverride);
+        Base::Tick();
 
         if (WasExitMainLoopRequested())
         {

@@ -16,7 +16,6 @@
 #include "System.h"
 #include "ConsoleBatchFile.h"
 
-#include <ITimer.h>
 #include <IRenderer.h>
 #include <ISystem.h>
 #include <ILog.h>
@@ -28,6 +27,7 @@
 #include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
 #include <AzCore/std/string/conversions.h>
 #include <AzCore/std/algorithm.h>
+#include <AzCore/Time/ITime.h>
 
 #include <LyShine/Bus/UiCursorBus.h>
 //#define DEFENCE_CVAR_HASH_LOGGING
@@ -105,7 +105,8 @@ void Command_SetWaitSeconds(IConsoleCmdArgs* pCmd)
     if (pCmd->GetArgCount() > 1)
     {
         pConsole->m_waitSeconds.SetSeconds(atof(pCmd->GetArg(1)));
-        pConsole->m_waitSeconds += gEnv->pTimer->GetFrameStartTime();
+        const AZ::TimeMs elaspedTimeMs = AZ::GetRealElapsedTimeMs();
+        pConsole->m_waitSeconds += CTimeValue(AZ::TimeMsToSecondsDouble(elaspedTimeMs));
     }
 }
 
@@ -305,7 +306,6 @@ void CXConsole::Init(ISystem* pSystem)
     {
         m_pFont = pSystem->GetICryFont()->GetFont("default");
     }
-    m_pTimer = pSystem->GetITimer();
 
     AzFramework::InputChannelEventListener::Connect();
     AzFramework::InputTextEventListener::Connect();
@@ -934,8 +934,8 @@ void CXConsole::Update()
         const float fRepeatDelay = 1.0f / 40.0f;          // in sec (similar to Windows default but might differ from actual setting)
         const float fHitchDelay = 1.0f / 10.0f;               // in sec. Very low, but still reasonable frame-rate (debug builds)
 
-        m_fRepeatTimer -= gEnv->pTimer->GetRealFrameTime();                                         // works even when time is manipulated
-        //      m_fRepeatTimer -= gEnv->pTimer->GetFrameTime(ITimer::ETIMER_UI);            // can be used once ETIMER_UI works even with t_FixedTime
+        const AZ::TimeUs delta = AZ::GetRealTickDeltaTimeUs(); // works even when time is manipulated
+        m_fRepeatTimer -= AZ::TimeUsToSeconds(delta); 
 
         if (m_fRepeatTimer <= 0.0f)
         {
@@ -1961,7 +1961,9 @@ void CXConsole::ExecuteDeferredCommands()
 
     if (m_waitSeconds.GetValue())
     {
-        if (m_waitSeconds > gEnv->pTimer->GetFrameStartTime())
+        const AZ::TimeMs elaspsedTimeMs = AZ::GetRealElapsedTimeMs();
+        const double elaspedTimeSec = AZ::TimeMsToSecondsDouble(elaspsedTimeMs);
+        if (m_waitSeconds > CTimeValue(elaspedTimeSec))
         {
             return;
         }
