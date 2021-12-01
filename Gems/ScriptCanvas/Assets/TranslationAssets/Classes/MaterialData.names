@@ -5,8 +5,7 @@
             "context": "BehaviorClass",
             "variant": "",
             "details": {
-                "name": "Material Data",
-                "category": "Rendering"
+                "name": "Material Data"
             },
             "methods": [
                 {
@@ -433,9 +432,24 @@
                 },
                 {
                     "base": "GetNormal",
+                    "context": "Getter",
                     "details": {
                         "name": "Get Normal"
                     },
+                    "params": [
+                        {
+                            "typeid": "",
+                            "details": {
+                                "name": ""
+                            }
+                        },
+                        {
+                            "typeid": "",
+                            "details": {
+                                "name": "Normal"
+                            }
+                        }
+                    ],
                     "results": [
                         {
                             "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
@@ -447,9 +461,24 @@
                 },
                 {
                     "base": "GetDiffuse",
+                    "context": "Getter",
                     "details": {
                         "name": "Get Diffuse"
                     },
+                    "params": [
+                        {
+                            "typeid": "",
+                            "details": {
+                                "name": ""
+                            }
+                        },
+                        {
+                            "typeid": "",
+                            "details": {
+                                "name": "Diffuse"
+                            }
+                        }
+                    ],
                     "results": [
                         {
                             "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
@@ -461,9 +490,24 @@
                 },
                 {
                     "base": "GetSpecular",
+                    "context": "Getter",
                     "details": {
                         "name": "Get Specular"
                     },
+                    "params": [
+                        {
+                            "typeid": "",
+                            "details": {
+                                "name": ""
+                            }
+                        },
+                        {
+                            "typeid": "",
+                            "details": {
+                                "name": "Specular"
+                            }
+                        }
+                    ],
                     "results": [
                         {
                             "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
@@ -475,9 +519,24 @@
                 },
                 {
                     "base": "GetBump",
+                    "context": "Getter",
                     "details": {
                         "name": "Get Bump"
                     },
+                    "params": [
+                        {
+                            "typeid": "",
+                            "details": {
+                                "name": ""
+                            }
+                        },
+                        {
+                            "typeid": "",
+                            "details": {
+                                "name": "Bump"
+                            }
+                        }
+                    ],
                     "results": [
                         {
                             "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
@@ -489,9 +548,24 @@
                 },
                 {
                     "base": "GetEmissive",
+                    "context": "Getter",
                     "details": {
                         "name": "Get Emissive"
                     },
+                    "params": [
+                        {
+                            "typeid": "",
+                            "details": {
+                                "name": ""
+                            }
+                        },
+                        {
+                            "typeid": "",
+                            "details": {
+                                "name": "Emissive"
+                            }
+                        }
+                    ],
                     "results": [
                         {
                             "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
@@ -503,9 +577,24 @@
                 },
                 {
                     "base": "GetRoughness",
+                    "context": "Getter",
                     "details": {
                         "name": "Get Roughness"
                     },
+                    "params": [
+                        {
+                            "typeid": "",
+                            "details": {
+                                "name": ""
+                            }
+                        },
+                        {
+                            "typeid": "",
+                            "details": {
+                                "name": "Roughness"
+                            }
+                        }
+                    ],
                     "results": [
                         {
                             "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
@@ -517,9 +606,24 @@
                 },
                 {
                     "base": "GetBaseColor",
+                    "context": "Getter",
                     "details": {
                         "name": "Get Base Color"
                     },
+                    "params": [
+                        {
+                            "typeid": "",
+                            "details": {
+                                "name": ""
+                            }
+                        },
+                        {
+                            "typeid": "",
+                            "details": {
+                                "name": "Base Color"
+                            }
+                        }
+                    ],
                     "results": [
                         {
                             "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
@@ -531,9 +635,24 @@
                 },
                 {
                     "base": "GetAmbientOcclusion",
+                    "context": "Getter",
                     "details": {
                         "name": "Get Ambient Occlusion"
                     },
+                    "params": [
+                        {
+                            "typeid": "",
+                            "details": {
+                                "name": ""
+                            }
+                        },
+                        {
+                            "typeid": "",
+                            "details": {
+                                "name": "Ambient Occlusion"
+                            }
+                        }
+                    ],
                     "results": [
                         {
                             "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
@@ -545,9 +664,24 @@
                 },
                 {
                     "base": "GetMetallic",
+                    "context": "Getter",
                     "details": {
                         "name": "Get Metallic"
                     },
+                    "params": [
+                        {
+                            "typeid": "",
+                            "details": {
+                                "name": ""
+                            }
+                        },
+                        {
+                            "typeid": "",
+                            "details": {
+                                "name": "Metallic"
+                            }
+                        }
+                    ],
                     "results": [
                         {
                             "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
