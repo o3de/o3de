@@ -4275,13 +4275,13 @@ namespace ScriptCanvasEditor
 
     bool MainWindow::EvaluateSaveAttempt()
     {
-        const AZ::s64 k_saveAttemptSeconds = 20;
+        const AZ::s64 SaveAttemptSeconds = 20;
 
         if (m_saveAttemptInProgress)
         {
             auto saveDuration = AZStd::chrono::seconds(AZStd::chrono::system_clock::now() - m_saveAttemptTime).count();
 
-            if (saveDuration > k_saveAttemptSeconds)
+            if (saveDuration > SaveAttemptSeconds)
             {
                 WarnOnFailedSaveAttempt();
             }
@@ -4313,7 +4313,10 @@ namespace ScriptCanvasEditor
 
         AzFramework::AssetSystem::LaunchAssetProcessor();
         AZ::SystemTickBus::Handler::BusDisconnect();
-        AzToolsFramework::CloseViewPane(LyViewPane::ScriptCanvas);
+        AZ::SystemTickBus::QueueFunction([]()
+        {
+            AzToolsFramework::CloseViewPane(LyViewPane::ScriptCanvas);
+        });
     }
 
     void MainWindow::OnCommandStarted(AZ::Crc32)
