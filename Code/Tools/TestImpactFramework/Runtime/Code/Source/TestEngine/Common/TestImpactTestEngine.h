@@ -231,7 +231,8 @@ namespace TestImpact
         Policy::TargetOutputCapture targetOutputCapture,
         AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
         AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
-        AZStd::optional<TestEngineJobCompleteCallback<TestTarget>> callback)
+        AZStd::optional<TestEngineJobCompleteCallback<TestTarget>> jobCallback,
+        AZStd::optional<typename TestJobRunner::StdContentCallback> stdContentCallback)
     {
         TestEngineJobMap<TestJobRunner::JobInfo::IdType, TestTarget> engineJobs;
         auto [result, runnerJobs] = testRunner->RunTests(
@@ -245,8 +246,8 @@ namespace TestImpact
                 &engineJobs,
                 executionFailurePolicy,
                 testFailurePolicy,
-                &callback),
-            AZStd::nullopt);
+                &jobCallback),
+            stdContentCallback);
 
         auto engineRuns = CompileTestEngineRuns<TestJobRunner, TestTarget>(testTargets, runnerJobs, AZStd::move(engineJobs));
         return { CalculateSequenceResult(result, engineRuns, executionFailurePolicy), AZStd::move(engineRuns) };
@@ -263,7 +264,8 @@ namespace TestImpact
         Policy::TargetOutputCapture targetOutputCapture,
         AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
         AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
-        AZStd::optional<TestEngineJobCompleteCallback<TestTarget>> callback)
+        AZStd::optional<TestEngineJobCompleteCallback<TestTarget>> jobCallback,
+        AZStd::optional<typename TestJobRunner::StdContentCallback> stdContentCallback)
     {
         return RunTests(
             testRunner,
@@ -274,7 +276,8 @@ namespace TestImpact
             targetOutputCapture,
             testTargetTimeout,
             globalTimeout,
-            callback
+            jobCallback,
+            stdContentCallback
         );
     }
 } // namespace TestImpact

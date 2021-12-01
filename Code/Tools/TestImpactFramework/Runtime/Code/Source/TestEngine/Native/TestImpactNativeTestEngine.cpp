@@ -236,7 +236,8 @@ namespace TestImpact
             targetOutputCapture,
             testTargetTimeout,
             globalTimeout,
-            callback
+            callback,
+            AZStd::nullopt
             );
     }
 
@@ -261,7 +262,8 @@ namespace TestImpact
             targetOutputCapture,
             testTargetTimeout,
             globalTimeout,
-            callback
+            callback,
+            AZStd::nullopt
             );
 
         // Now that we know the true result of successful jobs that return non-zero we can deduce if we have any integrity failures

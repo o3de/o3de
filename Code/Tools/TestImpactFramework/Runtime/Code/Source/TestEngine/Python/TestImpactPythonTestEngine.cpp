@@ -101,6 +101,7 @@ namespace TestImpact
             targetOutputCapture,
             testTargetTimeout,
             globalTimeout,
-            callback);
+            callback,
+            AZStd::nullopt);
     }
 } // namespace TestImpact
