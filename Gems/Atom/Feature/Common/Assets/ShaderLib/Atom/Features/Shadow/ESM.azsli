@@ -25,5 +25,5 @@ float PCFFallbackForESM(const Texture2DArray<float> shadowMap, const float3 uv, 
     const float tr = clamp(SampleESM(shadowMap, PassSrg::PointSampler, uv + float3( 1.0, 0.0, 0.0 ) * invTexMapSize, zReceiver, overdark),0.0,1.0);
     const float bl = clamp(SampleESM(shadowMap, PassSrg::PointSampler, uv + float3( 0.0, 1.0, 0.0 ) * invTexMapSize, zReceiver, overdark),0.0,1.0);
     const float br = clamp(SampleESM(shadowMap, PassSrg::PointSampler, uv + float3( 1.0, 1.0, 0.0 ) * invTexMapSize, zReceiver, overdark),0.0,1.0);
-    return BilinearFilter(tl, tr, bl, br, uv, texMapSize);
+    return BilinearFilter(tl, tr, bl, br, uv, texMapSize.xx).x;
 }

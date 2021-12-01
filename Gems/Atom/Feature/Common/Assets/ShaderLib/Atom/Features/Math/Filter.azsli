@@ -42,7 +42,7 @@ bool IsInsideOfImageSize(
         IsInsideOfImageSize(coord, outputImageSize);
 }
 
-float BilinearFilter(const float topLeft, const float topRight, const float bottomLeft, const float bottomRight, const float2 uv, const float texMapSize)
+float2 BilinearFilter(const float topLeft, const float topRight, const float bottomLeft, const float bottomRight, const float2 uv, const float2 texMapSize)
 {
     const float2 f = frac( uv * texMapSize ); 
     const float top = lerp( topLeft, topRight, f.x );
