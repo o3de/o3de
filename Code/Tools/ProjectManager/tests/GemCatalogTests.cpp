@@ -31,7 +31,7 @@ namespace O3DE::ProjectManager
         AZStd::unique_ptr<GemModel> m_gemModel;
     };
 
-    TEST_F(GemCatalogTests, GemCatalog_Displays_But_Does_Not_Add_Dependencies)
+    TEST_F(GemCatalogTests, GemCatalog_GemWithDependencies_DisplaysButDoesNotAddDependencies)
     {
         // given 3 gems a,b,c where a depends on b which depends on c
         GemInfo gemA, gemB, gemC;
@@ -60,7 +60,7 @@ namespace O3DE::ProjectManager
         EXPECT_TRUE(GemModel::IsAddedDependency(indexB) && GemModel::IsAddedDependency(indexC));
         EXPECT_FALSE(GemModel::IsAdded(indexB) || GemModel::IsAdded(indexC));
 
-        QVector<QModelIndex> gemsToAdd = m_gemModel->GatherGemsToBeAdded();
+        const QVector<QModelIndex>& gemsToAdd = m_gemModel->GatherGemsToBeAdded();
         EXPECT_TRUE(gemsToAdd.size() == 1);
         EXPECT_EQ(GemModel::GetName(gemsToAdd.at(0)), gemA.m_name);
     }
@@ -126,7 +126,7 @@ namespace O3DE::ProjectManager
         QVector<int> m_gemRows;
     };
 
-    TEST_F(GemCatalogSearchFilterTests, GemCatalog_Filters_By_Search_String_Name_Only)
+    TEST_F(GemCatalogSearchFilterTests, GemCatalogFilters_SearchStringName_ShowsNameGems)
     {
         m_proxyModel->SetSearchString("Name");
 
@@ -137,7 +137,7 @@ namespace O3DE::ProjectManager
         EXPECT_FALSE(m_proxyModel->filterAcceptsRow(m_gemRows[Features], QModelIndex()));
     }
 
-    TEST_F(GemCatalogSearchFilterTests, GemCatalog_Filters_By_Search_String_Display_Name_Only)
+    TEST_F(GemCatalogSearchFilterTests, GemCatalogFilters_SearchStringDisplayName_ShowsDisplayNameGem)
     {
         m_proxyModel->SetSearchString("Display Name");
 
@@ -148,7 +148,7 @@ namespace O3DE::ProjectManager
         EXPECT_FALSE(m_proxyModel->filterAcceptsRow(m_gemRows[Features], QModelIndex()));
     }
 
-    TEST_F(GemCatalogSearchFilterTests, GemCatalog_Filters_By_Search_String_Creator_Only)
+    TEST_F(GemCatalogSearchFilterTests, GemCatalogFilters_SearchStringCreator_ShowsCreatorGem)
     {
         m_proxyModel->SetSearchString("Johnathon Doe");
 
@@ -159,7 +159,7 @@ namespace O3DE::ProjectManager
         EXPECT_FALSE(m_proxyModel->filterAcceptsRow(m_gemRows[Features], QModelIndex()));
     }
 
-    TEST_F(GemCatalogSearchFilterTests, GemCatalog_Filters_By_Search_String_Summary_Only)
+    TEST_F(GemCatalogSearchFilterTests, GemCatalogFilters_SearchStringSummary_ShowsSummaryGem)
     {
         m_proxyModel->SetSearchString("Unique Summary");
 
@@ -170,7 +170,7 @@ namespace O3DE::ProjectManager
         EXPECT_FALSE(m_proxyModel->filterAcceptsRow(m_gemRows[Features], QModelIndex()));
     }
 
-    TEST_F(GemCatalogSearchFilterTests, GemCatalog_Filters_By_Search_String_Features_Only)
+    TEST_F(GemCatalogSearchFilterTests, GemCatalogFilters_SearchStringFeatures_ShowsFeatureGem)
     {
         m_proxyModel->SetSearchString("Creative");
 
@@ -181,7 +181,7 @@ namespace O3DE::ProjectManager
         EXPECT_TRUE(m_proxyModel->filterAcceptsRow(m_gemRows[Features], QModelIndex()));
     }
 
-    TEST_F(GemCatalogSearchFilterTests, GemCatalog_Filters_By_Search_String_Empty_Shows_All)
+    TEST_F(GemCatalogSearchFilterTests, GemCatalogFilters_SearchStringEmpty_ShowsAll)
     {
         m_proxyModel->SetSearchString("");
 
@@ -192,7 +192,7 @@ namespace O3DE::ProjectManager
         EXPECT_TRUE(m_proxyModel->filterAcceptsRow(m_gemRows[Features], QModelIndex()));
     }
 
-    TEST_F(GemCatalogSearchFilterTests, GemCatalog_Filters_By_Search_String_A_Shows_All)
+    TEST_F(GemCatalogSearchFilterTests, GemCatalogFilters_SearchStringCommonCharacter_ShowsAll)
     {
         // All gems contain "a" in a searchable field so all should be shown
         m_proxyModel->SetSearchString("a");
@@ -204,7 +204,7 @@ namespace O3DE::ProjectManager
         EXPECT_TRUE(m_proxyModel->filterAcceptsRow(m_gemRows[Features], QModelIndex()));
     }
 
-    TEST_F(GemCatalogSearchFilterTests, GemCatalog_Filters_By_Search_String_Case_Insensitive_A_Shows_All)
+    TEST_F(GemCatalogSearchFilterTests, GemCatalogFilters_SearchStringDifferentCaseCommonCharacter_ShowsAll)
     {
         // No gems contain the character "A" but search should be case insensitive
         m_proxyModel->SetSearchString("A");
@@ -216,7 +216,7 @@ namespace O3DE::ProjectManager
         EXPECT_TRUE(m_proxyModel->filterAcceptsRow(m_gemRows[Features], QModelIndex()));
     }
 
-    TEST_F(GemCatalogSearchFilterTests, GemCatalog_Filters_By_Search_String_Z_Shows_None)
+    TEST_F(GemCatalogSearchFilterTests, GemCatalogFilters_SearchStringNoneContainCharacter_ShowsNone)
     {
         // No gems contain the character "z" or "Z" so none should be shown
         m_proxyModel->SetSearchString("z");
@@ -228,7 +228,7 @@ namespace O3DE::ProjectManager
         EXPECT_FALSE(m_proxyModel->filterAcceptsRow(m_gemRows[Features], QModelIndex()));
     }
 
-    TEST_F(GemCatalogSearchFilterTests, GemCatalog_Filters_By_Search_String_No_Token_Support)
+    TEST_F(GemCatalogSearchFilterTests, GemCatalogFilters_SearchStringPartialMatchString_ShowsNone)
     {
         // Token matching is currently not supported
         // The whole string must match a substring
@@ -295,7 +295,7 @@ namespace O3DE::ProjectManager
         QVector<QModelIndex> m_gemIndices;
     };
 
-    TEST_F(GemCatalogSelectedActiveFilterTests, GemCatalog_Filters_By_Selected_Active_Expected_State)
+    TEST_F(GemCatalogSelectedActiveFilterTests, GemCatalogFilters_SelectedActiveIntialState_AddedGemsAndDependenciesAreAdded)
     {
         // Check if gems are all in expected state
         // if this test fails all other Selected/Active tests are invalid
@@ -307,7 +307,7 @@ namespace O3DE::ProjectManager
         EXPECT_FALSE(GemModel::IsAdded(m_gemIndices[Inactive]));
     }
 
-    TEST_F(GemCatalogSelectedActiveFilterTests, GemCatalog_Filters_By_Selected_Active_No_Filter_Shows_All)
+    TEST_F(GemCatalogSelectedActiveFilterTests, GemCatalogFilters_SelectedActiveNoFilter_ShowsAll)
     {
         // Filter is clear
         EXPECT_TRUE(m_proxyModel->filterAcceptsRow(m_gemIndices[Selected].row(), QModelIndex()));
@@ -318,7 +318,7 @@ namespace O3DE::ProjectManager
         EXPECT_TRUE(m_proxyModel->filterAcceptsRow(m_gemIndices[Inactive].row(), QModelIndex()));
     }
 
-    TEST_F(GemCatalogSelectedActiveFilterTests, GemCatalog_Filters_By_Selected_Shown_Only)
+    TEST_F(GemCatalogSelectedActiveFilterTests, GemCatalogFilters_FilterSelected_ShowsSelectedAndDependencies)
     {
         // Check selected filter
         // Selected dependencies should also be shown
@@ -332,7 +332,7 @@ namespace O3DE::ProjectManager
         EXPECT_FALSE(m_proxyModel->filterAcceptsRow(m_gemIndices[Inactive].row(), QModelIndex()));
     }
 
-    TEST_F(GemCatalogSelectedActiveFilterTests, GemCatalog_Filters_By_Unselected_Shown_Only)
+    TEST_F(GemCatalogSelectedActiveFilterTests, GemCatalogFilters_FilterUnselected_ShowsUnselectedAndDependencies)
     {
         // Check unselected filter
         // Unselected dependencies should also be shown
@@ -346,7 +346,7 @@ namespace O3DE::ProjectManager
         EXPECT_FALSE(m_proxyModel->filterAcceptsRow(m_gemIndices[Inactive].row(), QModelIndex()));
     }
 
-    TEST_F(GemCatalogSelectedActiveFilterTests, GemCatalog_Filters_By_Un_Selected_Shows_All_Changes)
+    TEST_F(GemCatalogSelectedActiveFilterTests, GemCatalogFilters_FilterSelectedAndUnselected_ShowsAllChangesAndDependencies)
     {
         // Check both un/selected filter
         m_proxyModel->SetGemSelected(GemSortFilterProxyModel::GemSelected::Both);
@@ -359,7 +359,7 @@ namespace O3DE::ProjectManager
         EXPECT_FALSE(m_proxyModel->filterAcceptsRow(m_gemIndices[Inactive].row(), QModelIndex()));
     }
 
-    TEST_F(GemCatalogSelectedActiveFilterTests, GemCatalog_Filters_By_Active_Shown_Only)
+    TEST_F(GemCatalogSelectedActiveFilterTests, GemCatalogFilters_FilterActive_ShowsActive)
     {
         // Check active filter
         // Active dependencies should also be shown
@@ -373,7 +373,7 @@ namespace O3DE::ProjectManager
         EXPECT_FALSE(m_proxyModel->filterAcceptsRow(m_gemIndices[Inactive].row(), QModelIndex()));
     }
 
-    TEST_F(GemCatalogSelectedActiveFilterTests, GemCatalog_Filters_By_Inactive_Shown_Only)
+    TEST_F(GemCatalogSelectedActiveFilterTests, GemCatalogFilters_FilterActive_ShowsInactive)
     {
         // Check inactive filter
         m_proxyModel->SetGemActive(GemSortFilterProxyModel::GemActive::Inactive);
@@ -433,7 +433,7 @@ namespace O3DE::ProjectManager
         QVector<int> m_gemRows;
     };
 
-    TEST_F(GemCatalogMiscFilterTests, GemCatalog_Filters_By_Misc_No_Filter_Shows_All)
+    TEST_F(GemCatalogMiscFilterTests, GemCatalogFilters_MiscNoFilter_ShowsAll)
     {
         // No filter
         EXPECT_TRUE(m_proxyModel->filterAcceptsRow(m_gemRows[DefaultAudio], QModelIndex()));
@@ -441,7 +441,7 @@ namespace O3DE::ProjectManager
         EXPECT_TRUE(m_proxyModel->filterAcceptsRow(m_gemRows[CityProps], QModelIndex()));
     }
 
-    TEST_F(GemCatalogMiscFilterTests, GemCatalog_Filters_By_Origin_Only)
+    TEST_F(GemCatalogMiscFilterTests, GemCatalogFilters_FilterSingleOrigin_ShowsOriginMatch)
     {
         m_proxyModel->SetGemOrigins(GemInfo::GemOrigin::Open3DEngine);
 
@@ -462,7 +462,7 @@ namespace O3DE::ProjectManager
         EXPECT_TRUE(m_proxyModel->filterAcceptsRow(m_gemRows[CityProps], QModelIndex()));
     }
 
-    TEST_F(GemCatalogMiscFilterTests, GemCatalog_Filters_By_Origin_Multiselection_Shows_All_Matches)
+    TEST_F(GemCatalogMiscFilterTests, GemCatalogFilters_FilterMultipleOrigins_ShowsMultipleOriginMatches)
     {
         m_proxyModel->SetGemOrigins(GemInfo::GemOrigin::Open3DEngine | GemInfo::GemOrigin::Local);
 
@@ -471,7 +471,7 @@ namespace O3DE::ProjectManager
         EXPECT_FALSE(m_proxyModel->filterAcceptsRow(m_gemRows[CityProps], QModelIndex()));
     }
 
-    TEST_F(GemCatalogMiscFilterTests, GemCatalog_Filters_By_Type_Only)
+    TEST_F(GemCatalogMiscFilterTests, GemCatalogFilters_FilterSingleType_ShowsTypeMatch)
     {
         m_proxyModel->SetTypes(GemInfo::Type::Code);
 
@@ -492,7 +492,7 @@ namespace O3DE::ProjectManager
         EXPECT_TRUE(m_proxyModel->filterAcceptsRow(m_gemRows[CityProps], QModelIndex()));
     }
 
-    TEST_F(GemCatalogMiscFilterTests, GemCatalog_Filters_By_Type_Multiselection_Shows_All_Matches)
+    TEST_F(GemCatalogMiscFilterTests, GemCatalogFilters_FilterMultipleTypes_ShowsMultipleTypeMatches)
     {
         m_proxyModel->SetTypes(GemInfo::Type::Tool | GemInfo::Type::Asset);
 
@@ -501,7 +501,7 @@ namespace O3DE::ProjectManager
         EXPECT_TRUE(m_proxyModel->filterAcceptsRow(m_gemRows[CityProps], QModelIndex()));
     }
 
-    TEST_F(GemCatalogMiscFilterTests, GemCatalog_Filters_By_Platform_Only)
+    TEST_F(GemCatalogMiscFilterTests, GemCatalogFilters_FilterSinglePlatform_ShowsPlatformMatch)
     {
         m_proxyModel->SetPlatforms(GemInfo::Platform::Windows);
 
@@ -522,37 +522,37 @@ namespace O3DE::ProjectManager
         EXPECT_TRUE(m_proxyModel->filterAcceptsRow(m_gemRows[CityProps], QModelIndex()));
     }
 
-    TEST_F(GemCatalogMiscFilterTests, GemCatalog_Filters_By_Platform_Multiselection_Shows_All_Matches)
+    TEST_F(GemCatalogMiscFilterTests, GemCatalogFilters_FilterMultiplePlatforms_ShowsMultiplePlatformMatches)
     {
-        m_proxyModel->SetPlatforms(GemInfo::Platform::Windows | GemInfo::Platform::iOS);
+        m_proxyModel->SetPlatforms(GemInfo::Platform::Android | GemInfo::Platform::iOS);
 
-        EXPECT_TRUE(m_proxyModel->filterAcceptsRow(m_gemRows[DefaultAudio], QModelIndex()));
+        EXPECT_FALSE(m_proxyModel->filterAcceptsRow(m_gemRows[DefaultAudio], QModelIndex()));
         EXPECT_TRUE(m_proxyModel->filterAcceptsRow(m_gemRows[MobileUX], QModelIndex()));
         EXPECT_TRUE(m_proxyModel->filterAcceptsRow(m_gemRows[CityProps], QModelIndex()));
     }
 
-    TEST_F(GemCatalogMiscFilterTests, GemCatalog_Filters_By_Features_Only)
+    TEST_F(GemCatalogMiscFilterTests, GemCatalogFilters_FilterSingleFeature_ShowsFeatureMatch)
     {
-        m_proxyModel->SetFeatures({ "Framework" });
+        m_proxyModel->SetFeatures({ "Audio" });
 
         EXPECT_TRUE(m_proxyModel->filterAcceptsRow(m_gemRows[DefaultAudio], QModelIndex()));
-        EXPECT_TRUE(m_proxyModel->filterAcceptsRow(m_gemRows[MobileUX], QModelIndex()));
+        EXPECT_FALSE(m_proxyModel->filterAcceptsRow(m_gemRows[MobileUX], QModelIndex()));
         EXPECT_FALSE(m_proxyModel->filterAcceptsRow(m_gemRows[CityProps], QModelIndex()));
 
-        m_proxyModel->SetFeatures({ "Tools", "UI" });
+        m_proxyModel->SetFeatures({ "Tools", });
 
         EXPECT_FALSE(m_proxyModel->filterAcceptsRow(m_gemRows[DefaultAudio], QModelIndex()));
         EXPECT_TRUE(m_proxyModel->filterAcceptsRow(m_gemRows[MobileUX], QModelIndex()));
         EXPECT_FALSE(m_proxyModel->filterAcceptsRow(m_gemRows[CityProps], QModelIndex()));
 
-        m_proxyModel->SetFeatures({ "Assets", "Content", "Environment" });
+        m_proxyModel->SetFeatures({ "Environment" });
 
         EXPECT_FALSE(m_proxyModel->filterAcceptsRow(m_gemRows[DefaultAudio], QModelIndex()));
         EXPECT_FALSE(m_proxyModel->filterAcceptsRow(m_gemRows[MobileUX], QModelIndex()));
         EXPECT_TRUE(m_proxyModel->filterAcceptsRow(m_gemRows[CityProps], QModelIndex()));
     }
 
-    TEST_F(GemCatalogMiscFilterTests, GemCatalog_Filters_By_Features_Multiselection_Shows_All_Matches)
+    TEST_F(GemCatalogMiscFilterTests, GemCatalogFilters_FilterMultipleFeatures_ShowsMultipleFeatureMatches)
     {
         m_proxyModel->SetFeatures({ "Assets", "Framework" });
 
@@ -561,8 +561,9 @@ namespace O3DE::ProjectManager
         EXPECT_TRUE(m_proxyModel->filterAcceptsRow(m_gemRows[CityProps], QModelIndex()));
     }
 
-    TEST_F(GemCatalogMiscFilterTests, GemCatalog_Filters_By_Features_Must_Be_Exact_Match)
+    TEST_F(GemCatalogMiscFilterTests, GemCatalogFilters_FilterPartialMatchFeature_ShowsNone)
     {
+        // Features must be an exact match to filter by them directly
         m_proxyModel->SetFeatures({ "Frame" });
 
         EXPECT_FALSE(m_proxyModel->filterAcceptsRow(m_gemRows[DefaultAudio], QModelIndex()));
