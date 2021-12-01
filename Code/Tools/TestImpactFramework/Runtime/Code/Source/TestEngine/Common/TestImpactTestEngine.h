@@ -181,10 +181,6 @@ namespace TestImpact
     template<typename TestJobRunner>
     using TestEngineJobType = typename TestJobRunnerTrait<TestJobRunner>::TestEngineJobType;
 
-    // Helper function for getting the type directly of the test job runner trait
-    template<typename TestJobRunner>
-    using TestJobRunnerCallbackHandlerType = typename TestJobRunnerTrait<TestJobRunner>::TestJobRunnerCallbackHandlerType;
-
     // Helper function to compile the run type specific test engine jobs from their associated jobs and payloads
     template<typename TestJobRunner, typename TestTarget>
     AZStd::vector<TestEngineJobType<TestJobRunner>> CompileTestEngineRuns(
@@ -226,6 +222,7 @@ namespace TestImpact
         TestJobRunner* testRunner,
         const AZStd::vector<typename TestJobRunner::JobInfo>& jobInfos,
         const AZStd::vector<const TestTarget*>& testTargets,
+        ErrorCodeCheckerCallback<TestJobRunner> errorCheckerCallback,
         Policy::ExecutionFailure executionFailurePolicy,
         Policy::TestFailure testFailurePolicy,
         Policy::TargetOutputCapture targetOutputCapture,
@@ -241,11 +238,12 @@ namespace TestImpact
             targetOutputCapture == Policy::TargetOutputCapture::None ? StdErrorRouting::None : StdErrorRouting::ToParent,
             testTargetTimeout,
             globalTimeout,
-            TestJobRunnerCallbackHandlerType<TestJobRunner>(
+            TestJobRunnerCallbackHandler<TestJobRunner, TestTarget>(
                 testTargets,
                 &engineJobs,
                 executionFailurePolicy,
                 testFailurePolicy,
+                errorCheckerCallback,
                 &jobCallback),
             stdContentCallback);
 
@@ -259,6 +257,7 @@ namespace TestImpact
         TestJobRunner* testRunner,
         TestJobInfoGenerator* jobInfoGenerator,
         const AZStd::vector<const TestTarget*>& testTargets,
+        ErrorCodeCheckerCallback<TestJobRunner> errorCheckerCallback,
         Policy::ExecutionFailure executionFailurePolicy,
         Policy::TestFailure testFailurePolicy,
         Policy::TargetOutputCapture targetOutputCapture,
@@ -271,6 +270,7 @@ namespace TestImpact
             testRunner,
             jobInfoGenerator->GenerateJobInfos(testTargets),
             testTargets,
+            errorCheckerCallback,
             executionFailurePolicy,
             testFailurePolicy,
             targetOutputCapture,

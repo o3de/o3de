@@ -20,8 +20,8 @@ namespace TestImpact
     AZStd::optional<Client::TestRunResult> PythonInstrumentedTestRunnerErrorCodeChecker(
         [[maybe_unused]] const typename PythonTestRunner::JobInfo& jobInfo, const JobMeta& meta)
     {
-        // The PyTest error code for test failures overlaps with the Python error codes so we have no way of discerning at the
-        // job meta level whether a test failure or script execution error we will assume the tests failed for now
+        // The PyTest error code for test failures overlaps with the Python error code for script error so we have no way of
+        // discerning at the job meta level whether a test failure or script execution error we will assume the tests failed for now
         if (auto result = CheckPyTestErrorCode(meta.m_returnCode.value()); result.has_value())
         {
             return result;
@@ -35,34 +35,11 @@ namespace TestImpact
         return AZStd::nullopt;
     }
 
-    //!
-    class PythonTestJobRunnerCallbackHandler
-        : public TestJobRunnerCallbackHandler<PythonTestRunner, PythonTestTarget>
-    {
-    public:
-        PythonTestJobRunnerCallbackHandler(
-            const AZStd::vector<const PythonTestTarget*>& testTargets,
-            TestEngineJobMap<PythonTestRunner::JobInfo::IdType, PythonTestTarget>* engineJobs,
-            Policy::ExecutionFailure executionFailurePolicy,
-            Policy::TestFailure testFailurePolicy,
-            AZStd::optional<TestEngineJobCompleteCallback<PythonTestTarget>>* callback)
-            : TestJobRunnerCallbackHandler(
-                  testTargets,
-                  engineJobs,
-                  executionFailurePolicy,
-                  testFailurePolicy,
-                  PythonInstrumentedTestRunnerErrorCodeChecker,
-                  callback)
-        {
-        }
-    };
-
     // Type trait for the test runner
     template<>
     struct TestJobRunnerTrait<PythonTestRunner>
     {
         using TestEngineJobType = TestEngineInstrumentedRun<PythonTestTarget, TestCaseCoverage>;
-        using TestJobRunnerCallbackHandlerType = PythonTestJobRunnerCallbackHandler;
     };
 
     PythonTestEngine::PythonTestEngine(RepoPath repoDir, RepoPath pythonBinary, RepoPath buildDir, RepoPath artifactDir)
@@ -96,6 +73,7 @@ namespace TestImpact
             m_testRunner.get(),
             m_testJobInfoGenerator.get(),
             testTargets,
+            PythonInstrumentedTestRunnerErrorCodeChecker,
             executionFailurePolicy,
             testFailurePolicy,
             targetOutputCapture,

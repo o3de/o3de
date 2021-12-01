@@ -93,56 +93,11 @@ namespace TestImpact
         return AZStd::nullopt;
     }
 
-    //!
-    class RegularTestJobRunnerCallbackHandler
-        : public TestJobRunnerCallbackHandler<NativeRegularTestRunner, NativeTestTarget>
-    {
-    public:
-        RegularTestJobRunnerCallbackHandler(
-            const AZStd::vector<const NativeTestTarget*>& testTargets,
-            TestEngineJobMap<NativeRegularTestRunner::JobInfo::IdType, NativeTestTarget>* engineJobs,
-            Policy::ExecutionFailure executionFailurePolicy,
-            Policy::TestFailure testFailurePolicy,
-            AZStd::optional<TestEngineJobCompleteCallback<NativeTestTarget>>* callback)
-            : TestJobRunnerCallbackHandler(
-                    testTargets,
-                    engineJobs,
-                    executionFailurePolicy,
-                    testFailurePolicy,
-                    NativeRegularTestRunnerErrorCodeChecker,
-                    callback)
-        {
-        }
-    };
-
-    //!
-    class InstrumentedRegularTestJobRunnerCallbackHandler
-        : public TestJobRunnerCallbackHandler<NativeInstrumentedTestRunner, NativeTestTarget>
-    {
-    public:
-        InstrumentedRegularTestJobRunnerCallbackHandler(
-            const AZStd::vector<const NativeTestTarget*>& testTargets,
-            TestEngineJobMap<NativeInstrumentedTestRunner::JobInfo::IdType, NativeTestTarget>* engineJobs,
-            Policy::ExecutionFailure executionFailurePolicy,
-            Policy::TestFailure testFailurePolicy,
-            AZStd::optional<TestEngineJobCompleteCallback<NativeTestTarget>>* callback)
-            : TestJobRunnerCallbackHandler(
-                    testTargets,
-                    engineJobs,
-                    executionFailurePolicy,
-                    testFailurePolicy,
-                    NativeInstrumentedTestRunnerErrorCodeChecker,
-                    callback)
-        {
-        }
-    };
-
     // Type trait for the test enumerator
     template<>
     struct TestJobRunnerTrait<NativeTestEnumerator>
     {
         using TestEngineJobType = TestEngineEnumeration<NativeTestTarget>;
-        using TestJobRunnerCallbackHandlerType = RegularTestJobRunnerCallbackHandler; // INCORRECT!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     };
 
     // Type trait for the test runner
@@ -150,7 +105,6 @@ namespace TestImpact
     struct TestJobRunnerTrait<NativeRegularTestRunner>
     {
         using TestEngineJobType = TestEngineRegularRun<NativeTestTarget>;
-        using TestJobRunnerCallbackHandlerType = RegularTestJobRunnerCallbackHandler;
     };
 
     // Type trait for the instrumented test runner
@@ -158,7 +112,6 @@ namespace TestImpact
     struct TestJobRunnerTrait<NativeInstrumentedTestRunner>
     {
         using TestEngineJobType = TestEngineInstrumentedRun<NativeTestTarget, TestCoverage>;
-        using TestJobRunnerCallbackHandlerType = InstrumentedRegularTestJobRunnerCallbackHandler;
     };
 
     NativeTestEngine::NativeTestEngine(
@@ -231,6 +184,7 @@ namespace TestImpact
             m_testRunner.get(),
             m_regularTestJobInfoGenerator.get(),
             testTargets,
+            NativeRegularTestRunnerErrorCodeChecker,
             executionFailurePolicy,
             testFailurePolicy,
             targetOutputCapture,
@@ -257,6 +211,7 @@ namespace TestImpact
             m_instrumentedTestRunner.get(),
             m_instrumentedTestJobInfoGenerator.get(),
             testTargets,
+            NativeInstrumentedTestRunnerErrorCodeChecker,
             executionFailurePolicy,
             testFailurePolicy,
             targetOutputCapture,
