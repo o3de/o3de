@@ -131,6 +131,9 @@ namespace ScriptCanvasEditorTools
         //! Generates the translation data for the specified property in the BehaviorContext
         void TranslateBehaviorProperty(const AZ::BehaviorProperty* behaviorProperty, const AZStd::string& className, const AZStd::string& context, Entry* entry = nullptr);
 
+        //! Generates a type map from reflected types that are suitable for BehaviorContext objects used by ScriptCanvas
+        void TranslateDataTypes();
+
     private:
 
         //! Utility to populate a BehaviorMethod's translation data

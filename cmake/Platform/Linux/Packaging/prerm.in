@@ -19,5 +19,6 @@ set -o errexit # exit on the first failure encountered
     pushd @CPACK_PACKAGING_INSTALL_PREFIX@
     # delete python downloads
     rm -rf python/downloaded_packages python/runtime
-    popd    
+    find . -type d -name *.egg-info -prune -exec rm -rf {} \;
+    popd
 } &> /dev/null # hide output

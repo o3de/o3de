@@ -9,14 +9,11 @@
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
-#include <LmbrCentral/Rendering/RenderNodeBus.h>
 #include <LyShine/Bus/UiCanvasBus.h>
 #include <LyShine/Bus/World/UiCanvasRefBus.h>
 
 #include <Cry_Geo.h>
 #include <IIndexedMesh.h>
-#include <IEntityRenderState.h>
-#include <IStatObj.h>
 
 #if !defined(_RELEASE)
 #include <IRenderAuxGeom.h>

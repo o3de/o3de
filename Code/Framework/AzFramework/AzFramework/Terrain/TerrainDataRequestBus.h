@@ -52,8 +52,8 @@ namespace AzFramework
             virtual void SetTerrainAabb(const AZ::Aabb& worldBounds) = 0;
 
             //! Returns terrains height in meters at location x,y.
-            //! @terrainExistsPtr: Can be nullptr. If != nullptr then, if there's no terrain at location x,y or location x,y is inside a terrain HOLE then *terrainExistsPtr will become false,
-            //!                  otherwise *terrainExistsPtr will become true.
+            //! @terrainExistsPtr: Can be nullptr. If != nullptr then, if there's no terrain at location x,y or location x,y is inside
+            //!  a terrain HOLE then *terrainExistsPtr will become false, otherwise *terrainExistsPtr will become true.
             virtual float GetHeight(const AZ::Vector3& position, Sampler sampler = Sampler::BILINEAR, bool* terrainExistsPtr = nullptr) const = 0;
             virtual float GetHeightFromVector2(
                 const AZ::Vector2& position, Sampler sampler = Sampler::BILINEAR, bool* terrainExistsPtr = nullptr) const = 0;
@@ -68,8 +68,7 @@ namespace AzFramework
 
             // Given an XY coordinate, return the surface normal.
             //! @terrainExists: Can be nullptr. If != nullptr then, if there's no terrain at location x,y or location x,y is inside a
-            //! terrain HOLE then *terrainExistsPtr will be set to false,
-            //!                  otherwise *terrainExistsPtr will be set to true.
+            //! terrain HOLE then *terrainExistsPtr will be set to false, otherwise *terrainExistsPtr will be set to true.
             virtual AZ::Vector3 GetNormal(
                 const AZ::Vector3& position, Sampler sampleFilter = Sampler::BILINEAR, bool* terrainExistsPtr = nullptr) const = 0;
             virtual AZ::Vector3 GetNormalFromVector2(
@@ -78,8 +77,8 @@ namespace AzFramework
                 float x, float y, Sampler sampleFilter = Sampler::BILINEAR, bool* terrainExistsPtr = nullptr) const = 0;
 
             //! Given an XY coordinate, return the max surface type and weight.
-            //! @terrainExists: Can be nullptr. If != nullptr then, if there's no terrain at location x,y or location x,y is inside a terrain HOLE then *terrainExistsPtr will be set to false,
-            //!                  otherwise *terrainExistsPtr will be set to true.
+            //! @terrainExists: Can be nullptr. If != nullptr then, if there's no terrain at location x,y or location x,y is inside
+            //! a terrain HOLE then *terrainExistsPtr will be set to false, otherwise *terrainExistsPtr will be set to true.
             virtual SurfaceData::SurfaceTagWeight GetMaxSurfaceWeight(
                 const AZ::Vector3& position, Sampler sampleFilter = Sampler::BILINEAR, bool* terrainExistsPtr = nullptr) const = 0;
             virtual SurfaceData::SurfaceTagWeight GetMaxSurfaceWeightFromVector2(
@@ -87,8 +86,8 @@ namespace AzFramework
             virtual SurfaceData::SurfaceTagWeight GetMaxSurfaceWeightFromFloats(
                 float x, float y, Sampler sampleFilter = Sampler::BILINEAR, bool* terrainExistsPtr = nullptr) const = 0;
 
-            //! Given an XY coordinate, return the set of surface types and weights.  The Vector3 input position version is defined to ignore
-            //! the input Z value.
+            //! Given an XY coordinate, return the set of surface types and weights. The Vector3 input position version is defined to
+            //! ignore the input Z value.
             virtual void GetSurfaceWeights(
                 const AZ::Vector3& inPosition,
                 SurfaceData::SurfaceTagWeightList& outSurfaceWeights,
@@ -106,13 +105,14 @@ namespace AzFramework
                 Sampler sampleFilter = Sampler::DEFAULT,
                 bool* terrainExistsPtr = nullptr) const = 0;
 
-            //! Convenience function for  low level systems that can't do a reverse lookup from Crc to string. Everyone else should use GetMaxSurfaceWeight or GetMaxSurfaceWeightFromFloats.
+            //! Convenience function for  low level systems that can't do a reverse lookup from Crc to string. Everyone else should use
+            //! GetMaxSurfaceWeight or GetMaxSurfaceWeightFromFloats.
             //! Not available in the behavior context.
             //! Returns nullptr if the position is inside a hole or outside of the terrain boundaries.
             virtual const char* GetMaxSurfaceName(
                 const AZ::Vector3& position, Sampler sampleFilter = Sampler::BILINEAR, bool* terrainExistsPtr = nullptr) const = 0;
 
-            //! Given an XY coordinate, return all terrain information at that location.  The Vector3 input position version is defined
+            //! Given an XY coordinate, return all terrain information at that location. The Vector3 input position version is defined
             //! to ignore the input Z value.
             virtual void GetSurfacePoint(
                 const AZ::Vector3& inPosition,
@@ -130,6 +130,27 @@ namespace AzFramework
                 SurfaceData::SurfacePoint& outSurfacePoint,
                 Sampler sampleFilter = Sampler::DEFAULT,
                 bool* terrainExistsPtr = nullptr) const = 0;
+
+        private:
+            // Private variations of the GetSurfacePoint API exposed to BehaviorContext that returns a value instead of
+            // using an "out" parameter. The "out" parameter is useful for reusing memory allocated in SurfacePoint when
+            // using the public API, but can't easily be used from Script Canvas.
+            SurfaceData::SurfacePoint BehaviorContextGetSurfacePoint(
+                const AZ::Vector3& inPosition,
+                Sampler sampleFilter = Sampler::DEFAULT) const
+            {
+                SurfaceData::SurfacePoint result;
+                    GetSurfacePoint(inPosition, result, sampleFilter);
+                return result;
+            }
+            SurfaceData::SurfacePoint BehaviorContextGetSurfacePointFromVector2(
+                const AZ::Vector2& inPosition,
+                Sampler sampleFilter = Sampler::DEFAULT) const
+            {
+                SurfaceData::SurfacePoint result;
+                GetSurfacePointFromVector2(inPosition, result, sampleFilter);
+                return result;
+            }
         };
         using TerrainDataRequestBus = AZ::EBus<TerrainDataRequests>;
 

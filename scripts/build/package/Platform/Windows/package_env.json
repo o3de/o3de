@@ -27,7 +27,7 @@
                 {
                     "BUILD_CONFIG_FILENAME": "build_config.json",
                     "PLATFORM": "Windows",
-                    "TYPE": "profile_vs2019"
+                    "TYPE": "profile"
                 }
             ]
         }

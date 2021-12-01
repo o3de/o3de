@@ -9,7 +9,7 @@
             },
             "methods": [
                 {
-                    "base": "assetId",
+                    "base": "GetassetId",
                     "details": {
                         "name": "Get Asset Id"
                     },
@@ -31,7 +31,7 @@
                     ]
                 },
                 {
-                    "base": "assetType",
+                    "base": "GetassetType",
                     "details": {
                         "name": "Get Asset Type"
                     },
@@ -53,9 +53,9 @@
                     ]
                 },
                 {
-                    "base": "sizeBytes",
+                    "base": "GetsizeBytes",
                     "details": {
-                        "name": "Get Size (Bytes)"
+                        "name": "Get Size Bytes"
                     },
                     "params": [
                         {
@@ -69,13 +69,13 @@
                         {
                             "typeid": "{D6597933-47CD-4FC8-B911-63F3E2B0993A}",
                             "details": {
-                                "name": "Size (Bytes)"
+                                "name": "Size"
                             }
                         }
                     ]
                 },
                 {
-                    "base": "relativePath",
+                    "base": "GetrelativePath",
                     "details": {
                         "name": "Get Relative Path"
                     },
