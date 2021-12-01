@@ -114,7 +114,7 @@ class TestHelper:
 
             wait_for_critical_expected_line("Editor is sending the editor-server the level data packet.", section_tracer.prints, 5.0)
 
-            wait_for_critical_expected_line("MultiplayerEditorConnection: Editor Server completed receiving the editor's level assets, responding to Editor...", section_tracer.prints, 5.0)
+            wait_for_critical_expected_line("Logger: Editor Server completed receiving the editor's level assets, responding to Editor...", section_tracer.prints, 5.0)
 
             wait_for_critical_expected_line("Editor-server ready. Editor has successfully connected to the editor-server's network simulation.", section_tracer.prints, 5.0)
 
