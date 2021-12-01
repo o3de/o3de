@@ -5,7 +5,7 @@
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "PythonEditorBus"
+                "name": "Python Editor"
             },
             "methods": [
                 {

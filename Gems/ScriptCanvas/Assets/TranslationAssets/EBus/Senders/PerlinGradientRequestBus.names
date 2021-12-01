@@ -5,7 +5,7 @@
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "PerlinGradientRequestBus"
+                "name": "Perlin Gradient"
             },
             "methods": [
                 {

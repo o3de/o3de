@@ -15,7 +15,6 @@
 #include <AzFramework/Entity/GameEntityContextBus.h>
 #include <AzCore/std/sort.h>
 #include <AzCore/std/string/conversions.h>
-#include <LmbrCentral/Rendering/RenderNodeBus.h>
 #include <IRenderAuxGeom.h>
 #include <IConsole.h>
 
@@ -137,7 +136,7 @@ namespace ImGui
 
     void ImGuiLYAssetExplorer::MeshInstanceList_CheckEntityFilter()
     {
-        // Iterate through All Meshes.. 
+        // Iterate through All Meshes..
         for (MeshInstanceDisplayList& meshInstanceList : m_meshInstanceDisplayList)
         {
             // .. reset this flag to see if any child instances pass the name filter
@@ -159,7 +158,7 @@ namespace ImGui
         // Primary on / off Switch
         ImGui::Checkbox("Mesh Debug Enabled", &m_meshDebugEnabled);
         ImGui::SameLine();
-        
+
         // Lod Debug Switch, check for changes so we can do things once at change time
         bool lodDebug = m_lodDebugEnabled;
         ImGui::Checkbox("LOD Debug", &lodDebug);
@@ -176,12 +175,12 @@ namespace ImGui
             }
         }
 
-        // If the Lod Debug is Enabled. Draw a small legend that 
+        // If the Lod Debug is Enabled. Draw a small legend that
         if (m_lodDebugEnabled)
         {
             ImGui::BeginChild("lodDebugLegend", ImVec2(0.0f, 57.0f), true);
 
-            // Text for legend. 
+            // Text for legend.
             ImGui::TextColored(ImGui::Colors::s_NiceLabelColor, "Lod Color Legend:");
             ImGui::SameLine();
             ImGui::TextColored(s_lodColor_0, "0 ");
@@ -195,7 +194,7 @@ namespace ImGui
             ImGui::TextColored(s_lodColor_4, "4 ");
             ImGui::SameLine();
             ImGui::TextColored(s_lodColor_5, "5 ");
-            
+
             // Small boxes of each color to help with the legend
             static float s_boxSize = 21.0f;
             ImVec2 graphUpLeft(ImGui::GetWindowPos().x + 127.5f, ImGui::GetWindowPos().y + 26.0f);
@@ -228,7 +227,7 @@ namespace ImGui
                 ImVec2(graphUpLeft.x + (5 * s_boxSize), graphUpLeft.y),
                 ImVec2(graphUpLeft.x + (6 * s_boxSize), graphUpLeft.y + s_boxSize),
                 ImGui::ColorConvertFloat4ToU32(s_lodColor_5), 2.0f);
-            
+
             ImGui::EndChild();
         }
 
@@ -381,7 +380,7 @@ namespace ImGui
                     ImGui::TextColored(ImGui::Colors::s_NiceLabelColor, " * Mesh Selection overrides Entity Selection.");
                     ImGui::EndTooltip();
                 }
-                
+
                 ImGui::TextColored(ImGui::IsWindowHovered() ? ImGui::Colors::s_NiceLabelColor : ImGui::Colors::s_PlainLabelColor, "Mouse Over For Legend and Tips");
                 ImGui::EndChild(); // MouseHover Child
                 ImGui::NextColumn();
@@ -404,7 +403,7 @@ namespace ImGui
 
                 // Before we draw all these meshes, lets mark this frame as no Mouse Over being drawn.. if any are drawn, they will set this flag
                 m_anyMousedOverForDraw = false;
-                
+
                 if (m_selectionFilter)
                 {
                     ImGui::Columns(2);
@@ -443,8 +442,8 @@ namespace ImGui
                             // Keep Count of our Mesh instances and loop through them drawing them!
                             int instanceCount = 0;
                             for (auto& meshInstance : meshInstanceList.m_instanceOptionMap)
-                            {   
-                                // See if we should 
+                            {
+                                // See if we should
                                 bool displayEntity = true;
                                 if (m_entityNameFilter)
                                 {
@@ -471,11 +470,11 @@ namespace ImGui
                                     ImGui::SameLine();
                                     ImGui::TextColored(ImGui::Colors::s_PlainLabelColor, "(% .02f, % .02f, % .02f)", (float)worldPos.GetX(), (float)worldPos.GetY(), (float)worldPos.GetZ());
                                     ImGui::EndGroup();
-                                
+
                                     // Check for and Draw Entity Instance Mouse Over
                                     meshInstance.second.m_mousedOverForDraw = false;
                                     ImGuiUpdate_DrawEntityInstanceMouseOver(meshInstanceList, meshInstance.first, entityName, meshInstance.second);
-                                
+
 
                                     if (m_selectionFilter)
                                     {
@@ -489,7 +488,7 @@ namespace ImGui
 
                             ImGui::TreePop(); // End Mesh Tree
                         }
-                        else 
+                        else
                         {
                             ImGuiUpdate_DrawMeshMouseOver(meshInstanceList);
 
@@ -558,7 +557,7 @@ namespace ImGui
             ImGui::TextColored(ImGui::Colors::s_NiceLabelColor, "Entity: ");
             ImGui::SameLine();
             ImGui::TextColored(ImGui::Colors::s_PlainLabelColor, "%s %s", entityInstance.ToString().c_str(), entityName.c_str());
-            
+
             ImGui::TextColored(ImGui::Colors::s_NiceLabelColor, "Mesh: ");
             ImGui::SameLine();
             ImGui::TextColored(ImGui::Colors::s_PlainLabelColor, "%s", meshDisplayList.m_meshPath.c_str());
@@ -589,7 +588,7 @@ namespace ImGui
             }
         }
 
-        // Not found, so create a new entry.. 
+        // Not found, so create a new entry..
         MeshInstanceDisplayList meshList;
         meshList.m_meshPath = meshName;
         meshList.m_passesFilter = true;

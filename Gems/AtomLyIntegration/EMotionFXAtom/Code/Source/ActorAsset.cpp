@@ -194,7 +194,6 @@ namespace AZ
                     const uint32_t originalVertex = sourceOriginalVertex[vertexIndex + vertexStart];
                     const uint32_t influenceCount = AZStd::GetMin<uint32_t>(MaxSupportedSkinInfluences, static_cast<uint32_t>(sourceSkinningInfo->GetNumInfluences(originalVertex)));
                     uint32_t influenceIndex = 0;
-                    float weightError = 1.0f;
 
                     AZStd::vector<uint32_t> localIndices;
                     for (; influenceIndex < influenceCount; ++influenceIndex)
@@ -202,7 +201,6 @@ namespace AZ
                         EMotionFX::SkinInfluence* influence = sourceSkinningInfo->GetInfluence(originalVertex, influenceIndex);
                         localIndices.push_back(static_cast<uint32_t>(influence->GetNodeNr()));
                         blendWeightBufferData[atomVertexBufferOffset + vertexIndex][influenceIndex] = influence->GetWeight();
-                        weightError -= blendWeightBufferData[atomVertexBufferOffset + vertexIndex][influenceIndex];
                     }
 
                     // Zero out any unused ids/weights

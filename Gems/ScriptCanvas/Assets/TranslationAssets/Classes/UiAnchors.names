@@ -5,7 +5,8 @@
             "context": "BehaviorClass",
             "variant": "",
             "details": {
-                "name": "Ui Anchors"
+                "name": "UI Anchors",
+                "category": "UI"
             },
             "methods": [
                 {
@@ -180,7 +181,7 @@
                         {
                             "typeid": "{65D4346C-FB16-4CB0-9BDC-1185B122C4A9}",
                             "details": {
-                                "name": ""
+                                "name": "Anchors"
                             }
                         }
                     ],
@@ -188,7 +189,7 @@
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": ""
+                                "name": "float"
                             }
                         }
                     ]
@@ -202,13 +203,13 @@
                         {
                             "typeid": "{65D4346C-FB16-4CB0-9BDC-1185B122C4A9}",
                             "details": {
-                                "name": ""
+                                "name": "Anchors"
                             }
                         },
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": ""
+                                "name": "float"
                             }
                         }
                     ]
@@ -222,7 +223,7 @@
                         {
                             "typeid": "{65D4346C-FB16-4CB0-9BDC-1185B122C4A9}",
                             "details": {
-                                "name": ""
+                                "name": "Anchors"
                             }
                         }
                     ],
@@ -230,7 +231,7 @@
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": ""
+                                "name": "float"
                             }
                         }
                     ]
@@ -244,13 +245,13 @@
                         {
                             "typeid": "{65D4346C-FB16-4CB0-9BDC-1185B122C4A9}",
                             "details": {
-                                "name": ""
+                                "name": "Anchors"
                             }
                         },
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": ""
+                                "name": "float"
                             }
                         }
                     ]
@@ -264,7 +265,7 @@
                         {
                             "typeid": "{65D4346C-FB16-4CB0-9BDC-1185B122C4A9}",
                             "details": {
-                                "name": ""
+                                "name": "Anchors"
                             }
                         }
                     ],
@@ -272,7 +273,7 @@
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": ""
+                                "name": "float"
                             }
                         }
                     ]
@@ -286,13 +287,13 @@
                         {
                             "typeid": "{65D4346C-FB16-4CB0-9BDC-1185B122C4A9}",
                             "details": {
-                                "name": ""
+                                "name": "Anchors"
                             }
                         },
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": ""
+                                "name": "float"
                             }
                         }
                     ]
@@ -306,7 +307,7 @@
                         {
                             "typeid": "{65D4346C-FB16-4CB0-9BDC-1185B122C4A9}",
                             "details": {
-                                "name": ""
+                                "name": "Anchors"
                             }
                         }
                     ],
@@ -314,7 +315,7 @@
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": ""
+                                "name": "float"
                             }
                         }
                     ]
@@ -328,13 +329,13 @@
                         {
                             "typeid": "{65D4346C-FB16-4CB0-9BDC-1185B122C4A9}",
                             "details": {
-                                "name": ""
+                                "name": "Anchors"
                             }
                         },
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": ""
+                                "name": "float"
                             }
                         }
                     ]

@@ -1955,6 +1955,16 @@ namespace AZStd
     {
         return basic_string<Element, Traits, Allocator>(lhs).compare(rhs) >= 0;
     }
+
+    template<class Element, class Traits, class Allocator, class U>
+    decltype(auto) erase(basic_string<Element, Traits, Allocator>& container, const U& element)
+    {
+        auto iter = AZStd::remove(container.begin(), container.end(), element);
+        auto removedCount = AZStd::distance(iter, container.end());
+        container.erase(iter, container.end());
+        return removedCount;
+    }
+
     template<class Element, class Traits, class Allocator, class Predicate>
     decltype(auto) erase_if(basic_string<Element, Traits, Allocator>& container, Predicate predicate)
     {

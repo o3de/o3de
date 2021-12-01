@@ -5,7 +5,7 @@
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "ReferenceGradientRequestBus"
+                "name": "Reference Gradient"
             },
             "methods": [
                 {
