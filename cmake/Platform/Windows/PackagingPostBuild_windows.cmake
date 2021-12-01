@@ -60,7 +60,7 @@ set(_light_command
 )
 
 if(CPACK_UPLOAD_URL) # Skip signing if we are not uploading the package
-    ly_sign_binaries("${_cpack_wix_out_dir}" "win-package")
+    ly_sign_binaries("${_cpack_wix_out_dir}" "packagePath")
 endif()
 
 message(STATUS "Creating Bootstrap Installer...")
@@ -85,7 +85,7 @@ endif()
 message(STATUS "Bootstrap installer generated to ${_bootstrap_output_file}")
 
 if(CPACK_UPLOAD_URL) # Skip signing if we are not uploading the package
-    ly_sign_binaries("${_bootstrap_output_file}" "win-bootstrap")
+    ly_sign_binaries("${_bootstrap_output_file}" "bootstrapPath")
 endif()
 
 # use the internal default path if somehow not specified from cpack_configure_downloads

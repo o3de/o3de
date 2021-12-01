@@ -15,4 +15,4 @@ if(NOT CPACK_UPLOAD_URL) # Skip signing if we are not uploading the package
 endif()
 
 set(_cpack_wix_out_dir ${CPACK_TOPLEVEL_DIRECTORY})
-ly_sign_binaries(${_cpack_wix_out_dir} "win-executable")
+ly_sign_binaries("${_cpack_wix_out_dir}" "exePath")
