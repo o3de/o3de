@@ -1,8 +1,8 @@
 {
     "description": "",
-    "materialType": "Materials/Types/StandardPBR.materialtype",
     "parentMaterial": "",
-    "propertyLayoutVersion": 3,
+    "materialType": "Materials/Types/StandardPBR.materialtype",
+    "materialTypeVersion": 4,
     "properties": {
         "baseColor": {
             "color": [
@@ -11,23 +11,129 @@
                 0.800000011920929,
                 1.0
             ],
-            "textureMap": "Textures/vasePlant_1k_basecolor.png"
+            "factor": 1.0,
+            "textureBlendMode": "Lerp",
+            "textureMap": "../Textures/vasePlant_1k_basecolor.png",
+            "textureMapUv": "Tiled",
+            "useTexture": true
+        },
+        "clearCoat": {
+            "enable": false,
+            "factor": 1.0,
+            "influenceMap": "",
+            "influenceMapUv": "Tiled",
+            "normalMap": "",
+            "normalMapUv": "Tiled",
+            "normalStrength": 1.0,
+            "roughness": 0.0,
+            "roughnessMap": "",
+            "roughnessMapUv": "Tiled",
+            "useInfluenceMap": true,
+            "useNormalMap": true,
+            "useRoughnessMap": true
+        },
+        "emissive": {
+            "color": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+            ],
+            "enable": false,
+            "intensity": 4.0,
+            "textureMap": "",
+            "textureMapUv": "Tiled",
+            "unit": "Ev100",
+            "useTexture": true
         },
         "general": {
-            "applySpecularAA": true
+            "applySpecularAA": true,
+            "doubleSided": true,
+            "enableAreaLights": true,
+            "enableDirectionalLights": true,
+            "enableIBL": true,
+            "enablePunctualLights": true,
+            "enableShadows": true,
+            "forwardPassIBLSpecular": false
         },
         "irradiance": {
             "color": [
                 0.6788738965988159,
                 1.0,
-                0.026138704270124437,
+                0.026138704270124435,
                 1.0
-            ]
+            ],
+            "factor": 1.0
+        },
+        "metallic": {
+            "factor": 0.0,
+            "textureMap": "",
+            "textureMapUv": "Tiled",
+            "useTexture": true
+        },
+        "normal": {
+            "factor": 1.0,
+            "flipX": false,
+            "flipY": false,
+            "textureMap": "",
+            "textureMapUv": "Tiled",
+            "useTexture": true
+        },
+        "occlusion": {
+            "diffuseFactor": 1.0,
+            "diffuseTextureMap": "",
+            "diffuseTextureMapUv": "Tiled",
+            "diffuseUseTexture": true,
+            "specularFactor": 1.0,
+            "specularTextureMap": "",
+            "specularTextureMapUv": "Tiled",
+            "specularUseTexture": true
         },
         "opacity": {
-            "doubleSided": true,
-            "factor": 0.28999999165534975,
-            "mode": "Cutout"
+            "alphaAffectsSpecular": 0.0,
+            "alphaSource": "Split",
+            "factor": 0.23999999463558197,
+            "mode": "Cutout",
+            "textureMap": "../Textures/vasePlant_1k_alpha.png",
+            "textureMapUv": "Tiled"
+        },
+        "parallax": {
+            "algorithm": "POM",
+            "factor": 0.05000000074505806,
+            "offset": 0.0,
+            "pdo": false,
+            "quality": "Low",
+            "showClipping": false,
+            "textureMap": "",
+            "textureMapUv": "Tiled",
+            "useTexture": true
+        },
+        "roughness": {
+            "factor": 1.0,
+            "lowerBound": 0.0,
+            "textureMap": "",
+            "textureMapUv": "Tiled",
+            "upperBound": 1.0,
+            "useTexture": true
+        },
+        "specularF0": {
+            "enableMultiScatterCompensation": false,
+            "factor": 0.5,
+            "textureMap": "",
+            "textureMapUv": "Tiled",
+            "useTexture": true
+        },
+        "uv": {
+            "center": [
+                0.5,
+                0.5
+            ],
+            "offsetU": 0.0,
+            "offsetV": 0.0,
+            "rotateDegrees": 0.0,
+            "scale": 1.0,
+            "tileU": 1.0,
+            "tileV": 1.0
         }
     }
 }
