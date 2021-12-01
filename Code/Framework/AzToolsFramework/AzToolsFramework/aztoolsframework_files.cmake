@@ -159,6 +159,10 @@ set(FILES
     Entity/SliceEditorEntityOwnershipServiceBus.h
     Entity/EntityUtilityComponent.h
     Entity/EntityUtilityComponent.cpp
+    Entity/ReadOnly/ReadOnlyEntityInterface.h
+    Entity/ReadOnly/ReadOnlyEntityNotificationBus.h
+    Entity/ReadOnly/ReadOnlyEntitySystemComponent.cpp
+    Entity/ReadOnly/ReadOnlyEntitySystemComponent.h
     Fingerprinting/TypeFingerprinter.h
     Fingerprinting/TypeFingerprinter.cpp
     FocusMode/FocusModeInterface.h
