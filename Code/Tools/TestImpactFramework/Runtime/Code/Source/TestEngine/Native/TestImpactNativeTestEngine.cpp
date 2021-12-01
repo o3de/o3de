@@ -227,7 +227,7 @@ namespace TestImpact
     {
         DeleteArtifactXmls();
 
-        return RunTests(
+        return GenerateJobInfosAndRunTests(
             m_testRunner.get(),
             m_regularTestJobInfoGenerator.get(),
             testTargets,
@@ -252,7 +252,7 @@ namespace TestImpact
     {
         DeleteArtifactXmls();
 
-        auto [result, engineRuns] = RunTests(
+        auto [result, engineRuns] = GenerateJobInfosAndRunTests(
             m_instrumentedTestRunner.get(),
             m_instrumentedTestJobInfoGenerator.get(),
             testTargets,

@@ -92,7 +92,7 @@ namespace TestImpact
     {
         DeleteArtifactXmls();
 
-        return RunTests(
+        return GenerateJobInfosAndRunTests(
             m_testRunner.get(),
             m_testJobInfoGenerator.get(),
             testTargets,

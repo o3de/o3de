@@ -221,11 +221,10 @@ namespace TestImpact
         return engineRuns;
     }
 
-    //!
-    template<typename TestJobRunner, typename TestJobInfoGenerator, typename TestTarget>
+    template<typename TestJobRunner, typename TestTarget>
     AZStd::pair<TestSequenceResult, AZStd::vector<TestEngineJobType<TestJobRunner>>> RunTests(
         TestJobRunner* testRunner,
-        TestJobInfoGenerator* jobInfoGenerator,
+        const AZStd::vector<typename TestJobRunner::JobInfo>& jobInfos,
         const AZStd::vector<const TestTarget*>& testTargets,
         Policy::ExecutionFailure executionFailurePolicy,
         Policy::TestFailure testFailurePolicy,
@@ -236,7 +235,7 @@ namespace TestImpact
     {
         TestEngineJobMap<TestJobRunner::JobInfo::IdType, TestTarget> engineJobs;
         auto [result, runnerJobs] = testRunner->RunTests(
-            jobInfoGenerator->GenerateJobInfos(testTargets),
+            jobInfos,
             targetOutputCapture == Policy::TargetOutputCapture::None ? StdOutputRouting::None : StdOutputRouting::ToParent,
             targetOutputCapture == Policy::TargetOutputCapture::None ? StdErrorRouting::None : StdErrorRouting::ToParent,
             testTargetTimeout,
@@ -251,5 +250,31 @@ namespace TestImpact
 
         auto engineRuns = CompileTestEngineRuns<TestJobRunner, TestTarget>(testTargets, runnerJobs, AZStd::move(engineJobs));
         return { CalculateSequenceResult(result, engineRuns, executionFailurePolicy), AZStd::move(engineRuns) };
+    }
+
+    //!
+    template<typename TestJobRunner, typename TestJobInfoGenerator, typename TestTarget>
+    AZStd::pair<TestSequenceResult, AZStd::vector<TestEngineJobType<TestJobRunner>>> GenerateJobInfosAndRunTests(
+        TestJobRunner* testRunner,
+        TestJobInfoGenerator* jobInfoGenerator,
+        const AZStd::vector<const TestTarget*>& testTargets,
+        Policy::ExecutionFailure executionFailurePolicy,
+        Policy::TestFailure testFailurePolicy,
+        Policy::TargetOutputCapture targetOutputCapture,
+        AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
+        AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
+        AZStd::optional<TestEngineJobCompleteCallback<TestTarget>> callback)
+    {
+        return RunTests(
+            testRunner,
+            jobInfoGenerator->GenerateJobInfos(testTargets),
+            testTargets,
+            executionFailurePolicy,
+            testFailurePolicy,
+            targetOutputCapture,
+            testTargetTimeout,
+            globalTimeout,
+            callback
+        );
     }
 } // namespace TestImpact
