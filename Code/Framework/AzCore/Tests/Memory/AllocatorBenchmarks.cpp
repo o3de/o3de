@@ -364,21 +364,27 @@ namespace Benchmark
 
                 AZStd::vector<void*>& perThreadAllocations = base::GetPerThreadAllocations(state.thread_index);
                 const size_t numberOfAllocations = perThreadAllocations.size();
+                size_t totalAllocationSize = 0;
                 for (size_t allocationIndex = 0; allocationIndex < numberOfAllocations; ++allocationIndex)
                 {
                     const AllocationSizeArray& allocationArray = s_allocationSizes[TAllocationSize];
                     const size_t allocationSize = allocationArray[allocationIndex % allocationArray.size()];
+                    totalAllocationSize += allocationSize;
                     
                     state.ResumeTiming();
                     perThreadAllocations[allocationIndex] = TestAllocatorType::Allocate(allocationSize, 0);
                     state.PauseTiming();
                 }
 
-                state.PauseTiming();
-                state.counters[s_counterAllocatorMemoryRatio] =
-                    benchmark::Counter(static_cast<double>(TestAllocatorType::NumAllocatedBytes()), benchmark::Counter::kDefaults);
+                // In allocation cases, s_counterAllocatorMemoryRatio is measuring how much over-allocation our allocators
+                // are doing to keep track of the memory and because of fragmentation/under-use of blocks. A ratio over 1 means
+                // that we are using more memory than requested. Ideally we would approximate to a ratio of 1.
+                state.counters[s_counterAllocatorMemoryRatio] = benchmark::Counter(
+                    static_cast<double>(TestAllocatorType::NumAllocatedBytes()) / static_cast<double>(totalAllocationSize),
+                    benchmark::Counter::kDefaults);
+                // s_counterProcessMemoryRatio is measuring the same ratio but using the OS to measure the used process memory
                 state.counters[s_counterProcessMemoryRatio] = benchmark::Counter(
-                    static_cast<double>(Platform::GetProcessMemoryUsageBytes() - processMemoryBaseline),
+                    static_cast<double>(Platform::GetProcessMemoryUsageBytes() - processMemoryBaseline) / static_cast<double>(totalAllocationSize),
                     benchmark::Counter::kDefaults);
 
                 for (size_t allocationIndex = 0; allocationIndex < numberOfAllocations; ++allocationIndex)
@@ -391,7 +397,6 @@ namespace Benchmark
                 TestAllocatorType::GarbageCollect();
 
                 state.SetItemsProcessed(numberOfAllocations);
-                state.ResumeTiming();
             }
         }
     };
@@ -422,10 +427,12 @@ namespace Benchmark
                 const size_t processMemoryBaseline = Platform::GetProcessMemoryUsageBytes();
 
                 const size_t numberOfAllocations = perThreadAllocations.size();
+                size_t totalAllocationSize = 0;
                 for (size_t allocationIndex = 0; allocationIndex < numberOfAllocations; ++allocationIndex)
                 {
                     const AllocationSizeArray& allocationArray = s_allocationSizes[TAllocationSize];
                     const size_t allocationSize = allocationArray[allocationIndex % allocationArray.size()];
+                    totalAllocationSize += allocationSize;
                     perThreadAllocations[allocationIndex] = TestAllocatorType::Allocate(allocationSize, 0);
                 }
 
@@ -439,27 +446,38 @@ namespace Benchmark
                     perThreadAllocations[allocationIndex] = nullptr;
                 }
 
-                state.counters[s_counterAllocatorMemoryRatio] =
-                    benchmark::Counter(static_cast<double>(TestAllocatorType::NumAllocatedBytes()), benchmark::Counter::kDefaults);
+                // In deallocation cases, s_counterAllocatorMemoryRatio is measuring how much "left-over" memory our allocators
+                // have after deallocations happen. This is memory that is not returned to the operative system. A ratio of 1 means
+                // that no memory was returned to the OS. A ratio over 1 means that we are holding more memory than requested. A ratio
+                // lower than 1 means that we have returned some memory.
+                state.counters[s_counterAllocatorMemoryRatio] = benchmark::Counter(
+                    static_cast<double>(TestAllocatorType::NumAllocatedBytes()) / static_cast<double>(totalAllocationSize),
+                    benchmark::Counter::kDefaults);
+                // s_counterProcessMemoryRatio is measuring the same ratio but using the OS to measure the used process memory
                 state.counters[s_counterProcessMemoryRatio] = benchmark::Counter(
-                    static_cast<double>(Platform::GetProcessMemoryUsageBytes() - processMemoryBaseline),
+                    static_cast<double>(Platform::GetProcessMemoryUsageBytes() - processMemoryBaseline) / static_cast<double>(totalAllocationSize),
                     benchmark::Counter::kDefaults);
 
                 state.SetItemsProcessed(numberOfAllocations);
 
                 TestAllocatorType::GarbageCollect();
-
-                state.ResumeTiming();
             }
         }
     };
 
+    // For non-threaded ranges, run 100, 400, 1600 amounts
     static void RunRanges(benchmark::internal::Benchmark* b)
     {
-        for (int i = 0; i < 6; ++i)
+        for (int i = 0; i < 6; i += 2)
         {
-            b->Arg((1 << i) * 1000);
+            b->Arg((1 << i) * 100);
         }
+    }
+
+    // For threaded ranges, run just 200, multi-threaded will already multiply by thread
+    static void ThreadedRunRanges(benchmark::internal::Benchmark* b)
+    {
+        b->Arg(100);
     }
 
     // Test under and over-subscription of threads vs the amount of CPUs available
@@ -475,7 +493,7 @@ namespace Benchmark
     BM_REGISTER_TEMPLATE(FIXTURE, TESTNAME##_SMALL, ALLOCATORTYPE, SMALL)->Apply(RunRanges); \
     BM_REGISTER_TEMPLATE(FIXTURE, TESTNAME##_BIG, ALLOCATORTYPE, BIG)->Apply(RunRanges); \
     BM_REGISTER_TEMPLATE(FIXTURE, TESTNAME##_MIXED, ALLOCATORTYPE, MIXED)->Apply(RunRanges); \
-    BM_REGISTER_TEMPLATE(FIXTURE, TESTNAME##_MIXED_THREADED, ALLOCATORTYPE, MIXED)->ThreadRange(1, MaxThreadRange)->Apply(RunRanges);
+    BM_REGISTER_TEMPLATE(FIXTURE, TESTNAME##_MIXED_THREADED, ALLOCATORTYPE, MIXED)->ThreadRange(2, MaxThreadRange)->Apply(ThreadedRunRanges);
 
 #define BM_REGISTER_ALLOCATOR(TESTNAME, ALLOCATORTYPE) \
     namespace TESTNAME \
