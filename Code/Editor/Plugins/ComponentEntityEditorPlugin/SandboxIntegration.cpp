@@ -1396,7 +1396,7 @@ void SandboxIntegrationManager::ContextMenu_NewEntity()
     {
         worldPosition = AzToolsFramework::FindClosestPickIntersection(
             view->GetViewportId(), AzFramework::ScreenPointFromVector2(m_contextMenuViewPoint), AzToolsFramework::EditorPickRayLength,
-            GetDefaultEntityPlacementDistance());
+            AzToolsFramework::GetDefaultEntityPlacementDistance());
     }
 
     CreateNewEntityAtPosition(worldPosition);

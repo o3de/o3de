@@ -737,7 +737,17 @@ bool CSystem::Init(const SSystemInitParams& startupParams)
 
     m_pCmdLine = new CCmdLine(startupParams.szSystemCmdLine);
 
-    AZCoreLogSink::Connect();
+    // Init AZCoreLogSink. Don't suppress system output if we're running as an editor-server
+    bool suppressSystemOutput = true;
+    if (const ICmdLineArg* isEditorServerArg = m_pCmdLine->FindArg(eCLAT_Pre, "editorsv_isDedicated"))
+    {
+        bool editorsv_isDedicated = false;
+        if (isEditorServerArg->GetBoolValue(editorsv_isDedicated) && editorsv_isDedicated)
+        {
+            suppressSystemOutput = false;
+        }
+    }
+    AZCoreLogSink::Connect(suppressSystemOutput);
 
     // Registers all AZ Console Variables functors specified within CrySystem
     if (auto azConsole = AZ::Interface<AZ::IConsole>::Get(); azConsole)

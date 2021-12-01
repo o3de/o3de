@@ -32,7 +32,7 @@ ly_add_target(
         PRIVATE
             Legacy::CryCommon
             Gem::ScriptCanvasPhysics.Static
-            Gem::ScriptCanvas
+            Gem::ScriptCanvas.API
 )
 
 # By default, the above module is used by all application types, however, the module depends at runtime to ScriptCanvas
