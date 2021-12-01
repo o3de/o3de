@@ -16,8 +16,8 @@ namespace AZ::Dom
     class JsonBackend final : public Backend
     {
     public:
-        Visitor::Result ReadFromStringInPlace(AZStd::string& buffer, Visitor* visitor) override;
-        Visitor::Result ReadFromString(AZStd::string_view buffer, Lifetime lifetime, Visitor* visitor) override;
-        AZStd::unique_ptr<Visitor> CreateStreamWriter(AZ::IO::GenericStream* stream) override;
+        Visitor::Result ReadFromStringInPlace(AZStd::string& buffer, Visitor& visitor) override;
+        Visitor::Result ReadFromString(AZStd::string_view buffer, Lifetime lifetime, Visitor& visitor) override;
+        AZStd::unique_ptr<Visitor> CreateStreamWriter(AZ::IO::GenericStream& stream) override;
     };
 } // namespace AZ::Dom

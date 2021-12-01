@@ -9,6 +9,7 @@
 #include <AzCore/DOM/Backends/JSON/JsonBackend.h>
 #include <AzCore/DOM/Backends/JSON/JsonSerializationUtils.h>
 #include <AzCore/Name/NameDictionary.h>
+#include <AzCore/Serialization/Json/JsonSerialization.h>
 #include <AzCore/Serialization/Json/JsonUtils.h>
 #include <AzCore/UnitTest/TestTypes.h>
 
@@ -31,78 +32,6 @@ namespace AZ::Dom::Tests
             UnitTest::AllocatorsFixture::TearDown();
         }
 
-        static bool DeepCompare(const rapidjson::Value& lhs, const rapidjson::Value& rhs)
-        {
-            if (lhs.GetType() != rhs.GetType())
-            {
-                return false;
-            }
-
-            switch (lhs.GetType())
-            {
-            case rapidjson::kNullType:
-                return true;
-            case rapidjson::kFalseType:
-                return true;
-            case rapidjson::kTrueType:
-                return true;
-            case rapidjson::kObjectType:
-                {
-                    if (lhs.MemberCount() != rhs.MemberCount())
-                    {
-                        return false;
-                    }
-
-                    auto lhsIt = lhs.MemberBegin();
-                    auto rhsIt = rhs.MemberBegin();
-                    while (lhsIt != lhs.MemberEnd())
-                    {
-                        if (lhsIt->name != rhsIt->name)
-                        {
-                            return false;
-                        }
-
-                        if (!DeepCompare(lhsIt->value, rhsIt->value))
-                        {
-                            return false;
-                        }
-
-                        ++lhsIt;
-                        ++rhsIt;
-                    }
-                    return true;
-                }
-            case rapidjson::kArrayType:
-                {
-                    if (lhs.Size() != rhs.Size())
-                    {
-                        return false;
-                    }
-
-                    auto lhsIt = lhs.Begin();
-                    auto rhsIt = rhs.Begin();
-                    while (lhsIt != lhs.End())
-                    {
-                        if (!DeepCompare(*lhsIt, *rhsIt))
-                        {
-                            return false;
-                        }
-
-                        ++lhsIt;
-                        ++rhsIt;
-                    }
-                    return true;
-                }
-            case rapidjson::kStringType:
-                return lhs == rhs;
-            case rapidjson::kNumberType:
-                return lhs == rhs;
-            }
-
-            AZ_Assert(false, "Unexpected JSON value type");
-            return false;
-        }
-
         rapidjson::Value CreateString(const AZStd::string& text)
         {
             rapidjson::Value key;
@@ -110,7 +39,7 @@ namespace AZ::Dom::Tests
             return key;
         }
 
-        template <class T>
+        template<class T>
         void AddValue(const AZStd::string& key, T value)
         {
             m_document->AddMember(CreateString(key), rapidjson::Value(value), m_document->GetAllocator());
@@ -125,7 +54,7 @@ namespace AZ::Dom::Tests
             AZStd::string canonicalSerializedDocument;
             AZ::JsonSerializationUtils::WriteJsonString(*m_document, canonicalSerializedDocument);
 
-            auto visitDocumentFn = [this](AZ::Dom::Visitor* visitor)
+            auto visitDocumentFn = [this](AZ::Dom::Visitor& visitor)
             {
                 return Json::VisitRapidJsonValue(*m_document, visitor, Lifetime::Persistent);
             };
@@ -134,7 +63,7 @@ namespace AZ::Dom::Tests
             {
                 auto result = Json::WriteToRapidJsonDocument(visitDocumentFn);
                 EXPECT_TRUE(result.IsSuccess());
-                EXPECT_TRUE(DeepCompare(*m_document, result.GetValue()));
+                EXPECT_EQ(AZ::JsonSerialization::Compare(*m_document, result.GetValue()), AZ::JsonSerializerCompareResult::Equal);
             }
 
             // Document -> string
@@ -149,13 +78,13 @@ namespace AZ::Dom::Tests
             // string -> Document
             {
                 auto result = Json::WriteToRapidJsonDocument(
-                    [&canonicalSerializedDocument](AZ::Dom::Visitor* visitor)
+                    [&canonicalSerializedDocument](AZ::Dom::Visitor& visitor)
                     {
                         JsonBackend backend;
                         return backend.ReadFromString(canonicalSerializedDocument, AZ::Dom::Lifetime::Temporary, visitor);
                     });
                 EXPECT_TRUE(result.IsSuccess());
-                EXPECT_TRUE(DeepCompare(*m_document, result.GetValue()));
+                EXPECT_EQ(AZ::JsonSerialization::Compare(*m_document, result.GetValue()), JsonSerializerCompareResult::Equal);
             }
 
             // string -> string
@@ -164,7 +93,7 @@ namespace AZ::Dom::Tests
                 JsonBackend backend;
                 auto result = backend.WriteToString(
                     serializedDocument,
-                    [&backend, &canonicalSerializedDocument](AZ::Dom::Visitor* visitor)
+                    [&backend, &canonicalSerializedDocument](AZ::Dom::Visitor& visitor)
                     {
                         return backend.ReadFromString(canonicalSerializedDocument, AZ::Dom::Lifetime::Temporary, visitor);
                     });
@@ -282,7 +211,8 @@ namespace AZ::Dom::Tests
         m_document->SetObject();
         m_document->AddMember(CreateString("empty_string"), CreateString(""), m_document->GetAllocator());
         m_document->AddMember(CreateString("short_string"), CreateString("test"), m_document->GetAllocator());
-        m_document->AddMember(CreateString("long_string"), CreateString("abcdefghijklmnopqrstuvwxyz0123456789"), m_document->GetAllocator());
+        m_document->AddMember(
+            CreateString("long_string"), CreateString("abcdefghijklmnopqrstuvwxyz0123456789"), m_document->GetAllocator());
         PerformSerializationChecks();
     }
 } // namespace AZ::Dom::Tests

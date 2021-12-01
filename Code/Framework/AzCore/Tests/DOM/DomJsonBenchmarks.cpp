@@ -130,7 +130,7 @@ namespace Benchmark
             state.ResumeTiming();
 
             auto result = AZ::Dom::Json::WriteToRapidJsonDocument(
-                [&](AZ::Dom::Visitor* visitor)
+                [&](AZ::Dom::Visitor& visitor)
                 {
                     return backend.ReadFromStringInPlace(payloadCopy, visitor);
                 });
@@ -150,7 +150,7 @@ namespace Benchmark
         for (auto _ : state)
         {
             auto result = AZ::Dom::Json::WriteToRapidJsonDocument(
-                [&](AZ::Dom::Visitor* visitor)
+                [&](AZ::Dom::Visitor& visitor)
                 {
                     return backend.ReadFromString(serializedPayload, AZ::Dom::Lifetime::Temporary, visitor);
                 });

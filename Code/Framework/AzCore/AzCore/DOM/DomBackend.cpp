@@ -10,11 +10,11 @@
 
 #include <AzCore/Utils/Utils.h>
 #include <AzCore/IO/ByteContainerStream.h>
-#include "DomBackend.h"
+#include <AzCore/DOM/DomBackend.h>
 
 namespace AZ::Dom
 {
-    Visitor::Result Backend::ReadFromStream(AZ::IO::GenericStream* stream, Visitor* visitor, size_t maxSize)
+    Visitor::Result Backend::ReadFromStream(AZ::IO::GenericStream* stream, Visitor& visitor, size_t maxSize)
     {
         size_t length = stream->GetLength();
         if (length > maxSize)
@@ -27,21 +27,21 @@ namespace AZ::Dom
         return ReadFromString(buffer, Lifetime::Temporary, visitor);
     }
 
-    Visitor::Result Backend::ReadFromStringInPlace(AZStd::string& buffer, Visitor* visitor)
+    Visitor::Result Backend::ReadFromStringInPlace(AZStd::string& buffer, Visitor& visitor)
     {
         return ReadFromString(buffer, Lifetime::Persistent, visitor);
     }
 
-    Visitor::Result Backend::WriteToStream(AZ::IO::GenericStream* stream, WriteCallback callback)
+    Visitor::Result Backend::WriteToStream(AZ::IO::GenericStream& stream, WriteCallback callback)
     {
         AZStd::unique_ptr<Visitor> writer = CreateStreamWriter(stream);
-        return callback(writer.get());
+        return callback(*writer.get());
     }
 
     Visitor::Result Backend::WriteToString(AZStd::string& buffer, WriteCallback callback)
     {
         AZ::IO::ByteContainerStream<AZStd::string> stream{&buffer};
-        AZStd::unique_ptr<Visitor> writer = CreateStreamWriter(&stream);
-        return callback(writer.get());
+        AZStd::unique_ptr<Visitor> writer = CreateStreamWriter(stream);
+        return callback(*writer.get());
     }
 }

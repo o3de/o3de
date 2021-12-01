@@ -10,17 +10,17 @@
 
 namespace AZ::Dom
 {
-    Visitor::Result JsonBackend::ReadFromStringInPlace(AZStd::string& buffer, Visitor* visitor)
+    Visitor::Result JsonBackend::ReadFromStringInPlace(AZStd::string& buffer, Visitor& visitor)
     {
         return Json::VisitSerializedJsonInPlace(buffer, visitor);
     }
 
-    Visitor::Result JsonBackend::ReadFromString(AZStd::string_view buffer, Lifetime lifetime, Visitor* visitor)
+    Visitor::Result JsonBackend::ReadFromString(AZStd::string_view buffer, Lifetime lifetime, Visitor& visitor)
     {
         return Json::VisitSerializedJson(buffer, lifetime, visitor);
     }
 
-    AZStd::unique_ptr<Visitor> JsonBackend::CreateStreamWriter(AZ::IO::GenericStream* stream)
+    AZStd::unique_ptr<Visitor> JsonBackend::CreateStreamWriter(AZ::IO::GenericStream& stream)
     {
         return Json::GetJsonStreamWriter(stream, Json::OutputFormatting::PrettyPrintedJson);
     }

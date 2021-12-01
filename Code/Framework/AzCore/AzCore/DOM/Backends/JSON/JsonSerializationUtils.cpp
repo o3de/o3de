@@ -16,7 +16,6 @@
 #include <AzCore/JSON/rapidjson.h>
 #include <AzCore/JSON/reader.h>
 #include <AzCore/JSON/writer.h>
-#include <AzCore/std/containers/queue.h>
 #include <AzCore/std/containers/stack.h>
 #include <AzCore/std/containers/variant.h>
 #include <AzCore/std/optional.h>
@@ -24,202 +23,185 @@
 namespace AZ::Dom::Json
 {
     //
-    // class DocumentWriter
+    // class RapidJsonValueWriter
     //
-    // Visitor that produces a rapidjson::Document
-    class DocumentWriter final : public Visitor
+    RapidJsonValueWriter::RapidJsonValueWriter(rapidjson::Value& outputValue, rapidjson::Value::AllocatorType& allocator)
+        : m_result(outputValue)
+        , m_allocator(allocator)
     {
-    public:
-        VisitorFlags GetVisitorFlags() const override
+    }
+
+    VisitorFlags RapidJsonValueWriter::GetVisitorFlags() const
+    {
+        return VisitorFlags::SupportsRawKeys | VisitorFlags::SupportsArrays | VisitorFlags::SupportsObjects;
+    }
+
+    Visitor::Result RapidJsonValueWriter::Null()
+    {
+        CurrentValue().SetNull();
+        return FinishWrite();
+    }
+
+    Visitor::Result RapidJsonValueWriter::Bool(bool value)
+    {
+        CurrentValue().SetBool(value);
+        return FinishWrite();
+    }
+
+    Visitor::Result RapidJsonValueWriter::Int64(AZ::s64 value)
+    {
+        CurrentValue().SetInt64(value);
+        return FinishWrite();
+    }
+
+    Visitor::Result RapidJsonValueWriter::Uint64(AZ::u64 value)
+    {
+        CurrentValue().SetUint64(value);
+        return FinishWrite();
+    }
+
+    Visitor::Result RapidJsonValueWriter::Double(double value)
+    {
+        CurrentValue().SetDouble(value);
+        return FinishWrite();
+    }
+
+    Visitor::Result RapidJsonValueWriter::String(AZStd::string_view value, Lifetime lifetime)
+    {
+        if (lifetime == Lifetime::Temporary)
         {
-            return VisitorFlags::SupportsRawKeys | VisitorFlags::SupportsArrays | VisitorFlags::SupportsObjects;
+            CurrentValue().SetString(value.data(), static_cast<rapidjson::SizeType>(value.length()), m_allocator);
+        }
+        else
+        {
+            CurrentValue().SetString(value.data(), static_cast<rapidjson::SizeType>(value.length()));
+        }
+        return FinishWrite();
+    }
+
+    Visitor::Result RapidJsonValueWriter::StartObject()
+    {
+        CurrentValue().SetObject();
+
+        const bool isObject = true;
+        m_entryStack.emplace_front(isObject, CurrentValue());
+        return VisitorSuccess();
+    }
+
+    Visitor::Result RapidJsonValueWriter::EndObject(AZ::u64 attributeCount)
+    {
+        if (m_entryStack.empty())
+        {
+            return VisitorFailure(VisitorErrorCode::InternalError, "EndObject called without a matching BeginObject call");
         }
 
-        Result Null() override
+        if (!m_entryStack.front().m_isObject)
         {
-            CurrentValue().SetNull();
-            return FinishWrite();
+            return VisitorFailure(VisitorErrorCode::InternalError, "Expected EndArray and received EndObject instead");
         }
 
-        Result Bool(bool value) override
+        if (m_entryStack.front().m_entryCount != attributeCount)
         {
-            CurrentValue().SetBool(value);
-            return FinishWrite();
+            return FormatVisitorFailure(
+                VisitorErrorCode::InternalError, "EndObject: Expected %lu attributes but received %lu attributes instead", attributeCount,
+                m_entryStack.front().m_entryCount);
         }
 
-        Result Int64(AZ::s64 value) override
+        m_entryStack.pop_front();
+        return FinishWrite();
+    }
+
+    Visitor::Result RapidJsonValueWriter::Key(AZ::Name key)
+    {
+        return RawKey(key.GetStringView(), Lifetime::Persistent);
+    }
+
+    Visitor::Result RapidJsonValueWriter::RawKey(AZStd::string_view key, Lifetime lifetime)
+    {
+        AZ_Assert(!m_entryStack.empty(), "Attempmted to push a key with no object");
+        AZ_Assert(m_entryStack.front().m_isObject, "Attempted to push a key to an array");
+        if (lifetime == Lifetime::Persistent)
         {
-            CurrentValue().SetInt64(value);
-            return FinishWrite();
+            m_entryStack.front().m_key.SetString(key.data(), static_cast<rapidjson::SizeType>(key.size()));
+        }
+        else
+        {
+            m_entryStack.front().m_key.SetString(key.data(), static_cast<rapidjson::SizeType>(key.size()), m_allocator);
+        }
+        return VisitorSuccess();
+    }
+
+    Visitor::Result RapidJsonValueWriter::StartArray()
+    {
+        CurrentValue().SetArray();
+
+        const bool isObject = false;
+        m_entryStack.emplace_front(isObject, CurrentValue());
+        return VisitorSuccess();
+    }
+
+    Visitor::Result RapidJsonValueWriter::EndArray(AZ::u64 elementCount)
+    {
+        if (m_entryStack.empty())
+        {
+            return VisitorFailure(VisitorErrorCode::InternalError, "EndArray called without a matching BeginArray call");
         }
 
-        Result Uint64(AZ::u64 value) override
+        if (m_entryStack.front().m_isObject)
         {
-            CurrentValue().SetUint64(value);
-            return FinishWrite();
+            return VisitorFailure(VisitorErrorCode::InternalError, "Expected EndObject and received EndArray instead");
         }
 
-        Result Double(double value) override
+        if (m_entryStack.front().m_entryCount != elementCount)
         {
-            CurrentValue().SetDouble(value);
-            return FinishWrite();
+            return FormatVisitorFailure(
+                VisitorErrorCode::InternalError, "EndArray: Expected %lu elements but received %lu elements instead", elementCount,
+                m_entryStack.front().m_entryCount);
         }
 
-        Result String(AZStd::string_view value, Lifetime lifetime) override
-        {
-            if (lifetime == Lifetime::Temporary)
-            {
-                CurrentValue().SetString(value.data(), static_cast<rapidjson::SizeType>(value.length()), m_result.GetAllocator());
-            }
-            else
-            {
-                CurrentValue().SetString(value.data(), static_cast<rapidjson::SizeType>(value.length()));
-            }
-            return FinishWrite();
-        }
+        m_entryStack.pop_front();
+        return FinishWrite();
+    }
 
-        Result StartObject() override
+    Visitor::Result RapidJsonValueWriter::FinishWrite()
+    {
+        if (m_entryStack.empty())
         {
-            CurrentValue().SetObject();
-
-            const bool isObject = true;
-            m_entryStack.emplace_front(isObject, CurrentValue());
             return VisitorSuccess();
         }
 
-        Result EndObject(AZ::u64 attributeCount) override
+        // Retrieve the top value of the stack and replace it with a null value
+        rapidjson::Value value;
+        m_entryStack.front().m_value.Swap(value);
+        ++m_entryStack.front().m_entryCount;
+
+        if (m_entryStack.front().m_key.IsString())
         {
-            if (m_entryStack.empty())
-            {
-                return VisitorFailure(VisitorErrorCode::InternalError, "EndObject called without a matching BeginObject call");
-            }
-
-            if (!m_entryStack.front().m_isObject)
-            {
-                return VisitorFailure(VisitorErrorCode::InternalError, "Expected EndArray and received EndObject instead");
-            }
-
-            if (m_entryStack.front().m_entryCount != attributeCount)
-            {
-                return FormatVisitorFailure(
-                    VisitorErrorCode::InternalError, "EndObject: Expected %lu attributes but received %lu attributes instead",
-                    attributeCount, m_entryStack.front().m_entryCount);
-            }
-
-            m_entryStack.pop_front();
-            return FinishWrite();
+            m_entryStack.front().m_container.AddMember(m_entryStack.front().m_key.Move(), AZStd::move(value), m_allocator);
+            m_entryStack.front().m_key.SetNull();
+        }
+        else
+        {
+            m_entryStack.front().m_container.PushBack(AZStd::move(value), m_allocator);
         }
 
-        Result Key(AZ::Name key) override
+        return VisitorSuccess();
+    }
+
+    rapidjson::Value& RapidJsonValueWriter::CurrentValue()
+    {
+        if (m_entryStack.empty())
         {
-            return RawKey(key.GetStringView(), Lifetime::Persistent);
+            return m_result;
         }
+        return m_entryStack.front().m_value;
+    }
 
-        Result RawKey(AZStd::string_view key, Lifetime lifetime) override
-        {
-            AZ_Assert(!m_entryStack.empty(), "Attempmted to push a key with no object");
-            AZ_Assert(m_entryStack.front().m_isObject, "Attempted to push a key to an array");
-            if (lifetime == Lifetime::Persistent)
-            {
-                m_entryStack.front().m_key.SetString(key.data(), static_cast<rapidjson::SizeType>(key.size()));
-            }
-            else
-            {
-                m_entryStack.front().m_key.SetString(key.data(), static_cast<rapidjson::SizeType>(key.size()), m_result.GetAllocator());
-            }
-            return VisitorSuccess();
-        }
-
-        Result StartArray() override
-        {
-            CurrentValue().SetArray();
-
-            const bool isObject = false;
-            m_entryStack.emplace_front(isObject, CurrentValue());
-            return VisitorSuccess();
-        }
-
-        Result EndArray(AZ::u64 elementCount) override
-        {
-            if (m_entryStack.empty())
-            {
-                return VisitorFailure(VisitorErrorCode::InternalError, "EndArray called without a matching BeginArray call");
-            }
-
-            if (m_entryStack.front().m_isObject)
-            {
-                return VisitorFailure(VisitorErrorCode::InternalError, "Expected EndObject and received EndArray instead");
-            }
-
-            if (m_entryStack.front().m_entryCount != elementCount)
-            {
-                return FormatVisitorFailure(
-                    VisitorErrorCode::InternalError, "EndArray: Expected %lu elements but received %lu elements instead", elementCount,
-                    m_entryStack.front().m_entryCount);
-            }
-
-            m_entryStack.pop_front();
-            return FinishWrite();
-        }
-
-        rapidjson::Document&& TakeDocument()
-        {
-            return AZStd::move(m_result);
-        }
-
-    private:
-        Result FinishWrite()
-        {
-            if (m_entryStack.empty())
-            {
-                return VisitorSuccess();
-            }
-
-            // Retrieve the top value of the stack and replace it with a null value
-            rapidjson::Value value;
-            m_entryStack.front().m_value.Swap(value);
-            ++m_entryStack.front().m_entryCount;
-
-            if (m_entryStack.front().m_key.IsString())
-            {
-                m_entryStack.front().m_container.AddMember(m_entryStack.front().m_key.Move(), AZStd::move(value), m_result.GetAllocator());
-                m_entryStack.front().m_key.SetNull();
-            }
-            else
-            {
-                m_entryStack.front().m_container.PushBack(AZStd::move(value), m_result.GetAllocator());
-            }
-
-            return VisitorSuccess();
-        }
-
-        rapidjson::Value& CurrentValue()
-        {
-            if (m_entryStack.empty())
-            {
-                return m_result;
-            }
-            return m_entryStack.front().m_value;
-        }
-
-        struct ValueInfo
-        {
-            ValueInfo(bool isObject, rapidjson::Value& container)
-                : m_isObject(isObject)
-                , m_container(container)
-            {
-            }
-
-            rapidjson::Value m_key;
-            rapidjson::Value m_value;
-            rapidjson::Value& m_container;
-            AZ::u64 m_entryCount = 0;
-            bool m_isObject;
-        };
-
-        rapidjson::Document m_result;
-        AZStd::deque<ValueInfo> m_entryStack;
-    };
+    RapidJsonValueWriter::ValueInfo::ValueInfo(bool isObject, rapidjson::Value& container)
+        : m_isObject(isObject)
+        , m_container(container)
+    {
+    }
 
     //
     // class StreamWriter
@@ -503,36 +485,36 @@ namespace AZ::Dom::Json
     //
     // Serialized JSON util functions
     //
-    AZStd::unique_ptr<Visitor> GetJsonStreamWriter(AZ::IO::GenericStream* stream, OutputFormatting format)
+    AZStd::unique_ptr<Visitor> GetJsonStreamWriter(AZ::IO::GenericStream& stream, OutputFormatting format)
     {
         if (format == OutputFormatting::MinifiedJson)
         {
             using WriterType = rapidjson::Writer<AZ::IO::RapidJSONStreamWriter>;
-            return AZStd::make_unique<StreamWriter<WriterType>>(stream);
+            return AZStd::make_unique<StreamWriter<WriterType>>(&stream);
         }
         else
         {
             using WriterType = rapidjson::PrettyWriter<AZ::IO::RapidJSONStreamWriter>;
-            return AZStd::make_unique<StreamWriter<WriterType>>(stream);
+            return AZStd::make_unique<StreamWriter<WriterType>>(&stream);
         }
     }
 
-    Visitor::Result VisitSerializedJson(AZStd::string_view buffer, Lifetime lifetime, Visitor* visitor)
+    Visitor::Result VisitSerializedJson(AZStd::string_view buffer, Lifetime lifetime, Visitor& visitor)
     {
         rapidjson::Reader reader;
         rapidjson::MemoryStream stream(buffer.data(), buffer.size());
-        JsonReadHandler handler(visitor, lifetime);
+        JsonReadHandler handler(&visitor, lifetime);
 
         constexpr int flags = rapidjson::kParseCommentsFlag;
         reader.Parse<flags>(stream, handler);
         return handler.TakeOutcome();
     }
 
-    Visitor::Result VisitSerializedJsonInPlace(AZStd::string& buffer, Visitor* visitor)
+    Visitor::Result VisitSerializedJsonInPlace(AZStd::string& buffer, Visitor& visitor)
     {
         rapidjson::Reader reader;
         AzStringStream stream(buffer);
-        JsonReadHandler handler(visitor, Lifetime::Persistent);
+        JsonReadHandler handler(&visitor, Lifetime::Persistent);
 
         constexpr int flags = rapidjson::kParseCommentsFlag | rapidjson::kParseInsituFlag;
         reader.Parse<flags>(stream, handler);
@@ -544,16 +526,24 @@ namespace AZ::Dom::Json
     //
     AZ::Outcome<rapidjson::Document, AZStd::string> WriteToRapidJsonDocument(Backend::WriteCallback writeCallback)
     {
-        DocumentWriter writer;
-        auto result = writeCallback(&writer);
+        rapidjson::Document document;
+        RapidJsonValueWriter writer(document, document.GetAllocator());
+        auto result = writeCallback(writer);
         if (!result.IsSuccess())
         {
             return AZ::Failure(result.TakeError().FormatVisitorErrorMessage());
         }
-        return AZ::Success(writer.TakeDocument());
+        return AZ::Success(AZStd::move(document));
     }
 
-    Visitor::Result VisitRapidJsonValue(const rapidjson::Value& value, Visitor* visitor, Lifetime lifetime)
+    Visitor::Result WriteToRapidJsonValue(
+        rapidjson::Value& value, rapidjson::Value::AllocatorType& allocator, Backend::WriteCallback writeCallback)
+    {
+        RapidJsonValueWriter writer(value, allocator);
+        return writeCallback(writer);
+    }
+
+    Visitor::Result VisitRapidJsonValue(const rapidjson::Value& value, Visitor& visitor, Lifetime lifetime)
     {
         struct EndArrayMarker
         {
@@ -579,7 +569,7 @@ namespace AZ::Dom::Json
             Visitor::Result result = AZ::Success();
 
             AZStd::visit(
-                [visitor, &entryStack, &entryCountStack, &result, lifetime](auto&& arg)
+                [&visitor, &entryStack, &entryCountStack, &result, lifetime](auto&& arg)
                 {
                     using Alternative = AZStd::decay_t<decltype(arg)>;
                     if constexpr (AZStd::is_same_v<Alternative, const rapidjson::Value*>)
@@ -593,18 +583,18 @@ namespace AZ::Dom::Json
                         switch (currentValue.GetType())
                         {
                         case rapidjson::kNullType:
-                            result = visitor->Null();
+                            result = visitor.Null();
                             break;
                         case rapidjson::kFalseType:
-                            result = visitor->Bool(false);
+                            result = visitor.Bool(false);
                             break;
                         case rapidjson::kTrueType:
-                            result = visitor->Bool(true);
+                            result = visitor.Bool(true);
                             break;
                         case rapidjson::kObjectType:
                             entryStack.push(EndObjectMarker{});
                             entryCountStack.push(0);
-                            result = visitor->StartObject();
+                            result = visitor.StartObject();
                             for (auto it = currentValue.MemberEnd(); it != currentValue.MemberBegin(); --it)
                             {
                                 auto entry = (it - 1);
@@ -616,7 +606,7 @@ namespace AZ::Dom::Json
                         case rapidjson::kArrayType:
                             entryStack.push(EndArrayMarker{});
                             entryCountStack.push(0);
-                            result = visitor->StartArray();
+                            result = visitor.StartArray();
                             for (auto it = currentValue.End(); it != currentValue.Begin(); --it)
                             {
                                 auto entry = (it - 1);
@@ -624,22 +614,22 @@ namespace AZ::Dom::Json
                             }
                             break;
                         case rapidjson::kStringType:
-                            result = visitor->String(
+                            result = visitor.String(
                                 AZStd::string_view(currentValue.GetString(), static_cast<size_t>(currentValue.GetStringLength())),
                                 lifetime);
                             break;
                         case rapidjson::kNumberType:
                             if (currentValue.IsFloat() || currentValue.IsDouble())
                             {
-                                result = visitor->Double(currentValue.GetDouble());
+                                result = visitor.Double(currentValue.GetDouble());
                             }
                             else if (currentValue.IsInt64() || currentValue.IsInt())
                             {
-                                result = visitor->Int64(currentValue.GetInt64());
+                                result = visitor.Int64(currentValue.GetInt64());
                             }
                             else
                             {
-                                result = visitor->Uint64(currentValue.GetUint64());
+                                result = visitor.Uint64(currentValue.GetUint64());
                             }
                             break;
                         default:
@@ -648,23 +638,23 @@ namespace AZ::Dom::Json
                     }
                     else if constexpr (AZStd::is_same_v<Alternative, EndArrayMarker>)
                     {
-                        result = visitor->EndArray(entryCountStack.top());
+                        result = visitor.EndArray(entryCountStack.top());
                         entryCountStack.pop();
                     }
                     else if constexpr (AZStd::is_same_v<Alternative, EndObjectMarker>)
                     {
-                        result = visitor->EndObject(entryCountStack.top());
+                        result = visitor.EndObject(entryCountStack.top());
                         entryCountStack.pop();
                     }
                     else if constexpr (AZStd::is_same_v<Alternative, AZStd::string_view>)
                     {
-                        if (visitor->SupportsRawKeys())
+                        if (visitor.SupportsRawKeys())
                         {
-                            visitor->RawKey(arg, lifetime);
+                            visitor.RawKey(arg, lifetime);
                         }
                         else
                         {
-                            visitor->Key(AZ::Name(arg));
+                            visitor.Key(AZ::Name(arg));
                         }
                     }
                 },
