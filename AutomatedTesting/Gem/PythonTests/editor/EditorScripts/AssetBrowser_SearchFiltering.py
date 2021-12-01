@@ -99,6 +99,7 @@ def AssetBrowser_SearchFiltering():
         asset_browser = editor_window.findChild(QtWidgets.QDockWidget, "Asset Browser")
         search_bar = asset_browser.findChild(QtWidgets.QLineEdit, "textSearch")
 
+        # Add a small pause when typing in the search bar in order to check that the entries are updated properly
         search_bar.setText("Cedar.f")
         general.idle_wait(0.5)
         search_bar.setText("Cedar.fbx")
