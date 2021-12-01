@@ -37,16 +37,11 @@ namespace UnitTest
             m_model->Initialize();
             m_modelTester =
                 AZStd::make_unique<QAbstractItemModelTester>(m_model.get(), QAbstractItemModelTester::FailureReportingMode::Fatal);
-
-            AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(
-                m_undoStack, &AzToolsFramework::ToolsApplicationRequestBus::Events::GetUndoStack);
-            AZ_Assert(m_undoStack, "Failed to look up undo stack from tools application");
-
+            
             // Create a new root prefab - the synthetic "NewLevel.prefab" that comes in by default isn't suitable for outliner tests
             // because it's created before the EditorEntityModel that our EntityOutlinerListModel subscribes to, and we want to
             // recreate it as part of the fixture regardless.
-            auto entityOwnershipService = AZ::Interface<AzToolsFramework::PrefabEditorEntityOwnershipInterface>::Get();
-            entityOwnershipService->CreateNewLevelPrefab("UnitTestRoot.prefab", "");
+            CreateRootPrefab();
         }
 
         void TearDownEditorFixtureImpl() override
@@ -56,45 +51,7 @@ namespace UnitTest
             m_model.reset();
             PrefabTestFixture::TearDownEditorFixtureImpl();
         }
-
-        // Creates an entity with a given name as one undoable operation
-        // Parents to parentId, or the root prefab container entity if parentId is invalid
-        AZ::EntityId CreateNamedEntity(AZStd::string name, AZ::EntityId parentId = AZ::EntityId())
-        {
-            auto createResult = m_prefabPublicInterface->CreateEntity(parentId, AZ::Vector3());
-            AZ_Assert(createResult.IsSuccess(), "Failed to create entity: %s", createResult.GetError().c_str());
-            AZ::EntityId entityId = createResult.GetValue();
-
-            AZ::Entity* entity = nullptr;
-            AZ::ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationRequests::FindEntity, entityId);
-
-            entity->Deactivate();
-
-            entity->SetName(name);
-
-            // Normally, in invalid parent ID should automatically parent us to the root prefab, but currently in the unit test
-            // environment entities aren't created with a default transform component, so CreateEntity won't correctly parent.
-            // We get the actual target parent ID here, then create our missing transform component.
-            if (!parentId.IsValid())
-            {
-                auto prefabEditorEntityOwnershipInterface = AZ::Interface<AzToolsFramework::PrefabEditorEntityOwnershipInterface>::Get();
-                parentId = prefabEditorEntityOwnershipInterface->GetRootPrefabInstance()->get().GetContainerEntityId();
-            }
-
-            auto transform = aznew AzToolsFramework::Components::TransformComponent;
-            entity->AddComponent(transform);
-            transform->SetParent(parentId);
-
-            entity->Activate();
-
-            // Update our undo cache entry to include the rename / reparent as one atomic operation.
-            m_prefabPublicInterface->GenerateUndoNodesForEntityChangeAndUpdateCache(entityId, m_undoStack->GetTop());
-
-            ProcessDeferredUpdates();
-
-            return entityId;
-        }
-
+        
         // Helper to visualize debug state
         void PrintModel()
         {
@@ -125,32 +82,16 @@ namespace UnitTest
         }
 
         // Kicks off any updates scheduled for the next tick
-        void ProcessDeferredUpdates()
+        void ProcessDeferredUpdates() override
         {
-            // Force a prefab propagation for updates that are deferred to the next tick.
-            m_prefabSystemComponent->OnSystemTick();
+            PrefabTestFixture::ProcessDeferredUpdates();
 
             // Ensure the model process its entity update queue
             m_model->ProcessEntityUpdates();
         }
-
-        // Performs an undo operation and ensures the tick-scheduled updates happen
-        void Undo()
-        {
-            m_undoStack->Undo();
-            ProcessDeferredUpdates();
-        }
-
-        // Performs a redo operation and ensures the tick-scheduled updates happen
-        void Redo()
-        {
-            m_undoStack->Redo();
-            ProcessDeferredUpdates();
-        }
-
+        
         AZStd::unique_ptr<AzToolsFramework::EntityOutlinerListModel> m_model;
         AZStd::unique_ptr<QAbstractItemModelTester> m_modelTester;
-        AzToolsFramework::UndoSystem::UndoStack* m_undoStack = nullptr;
     };
 
     TEST_F(EntityOutlinerTest, TestCreateFlatHierarchyUndoAndRedoWorks)
