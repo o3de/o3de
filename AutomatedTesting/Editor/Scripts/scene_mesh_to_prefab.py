@@ -69,7 +69,7 @@ def update_manifest(scene):
         # Create a unique mesh group name using the filename + node name
         mesh_group_name = '{}_{}'.format(source_filename_only, mesh_name.get_name())
         # Remove forbidden filename characters from the name since this will become a file on disk later
-        mesh_group_name = "".join(char for char in mesh_group_name if char not in "|<>:\"/?*\\")
+        mesh_group_name = sanitize_name_for_disk(mesh_group_name)
         # Add the MeshGroup to the manifest and give it a unique ID
         mesh_group = scene_manifest.add_mesh_group(mesh_group_name)
         mesh_group['id'] = '{' + str(uuid.uuid5(uuid.NAMESPACE_DNS, source_filename_only + mesh_path)) + '}'

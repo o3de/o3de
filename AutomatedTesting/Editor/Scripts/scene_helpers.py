@@ -1,17 +1,44 @@
+"""
+Copyright (c) Contributors to the Open 3D Engine Project.
+For complete copyright and license terms please see the LICENSE at the root of this distribution.
+
+SPDX-License-Identifier: Apache-2.0 OR MIT
+"""
+
 import traceback, logging, json
-from typing import Tuple
+from typing import Tuple, List
 
 import azlmbr.bus
 from scene_api import scene_data as sceneData
+from scene_api.scene_data import SceneGraphName
 
 
 def log_exception_traceback():
+    """
+    Outputs an exception stacktrace.
+    """
     data = traceback.format_exc()
     logger = logging.getLogger('python')
     logger.error(data)
 
 
-def get_mesh_node_names(scene_graph: sceneData.SceneGraph) -> Tuple[list, list]:
+def sanitize_name_for_disk(name: str):
+    """
+    Removes illegal filename characters from a string.
+
+    :param name: String to clean.
+    :return: Name with illegal characters removed.
+    """
+    return "".join(char for char in name if char not in "|<>:\"/?*\\")
+
+
+def get_mesh_node_names(scene_graph: sceneData.SceneGraph) -> Tuple[List[SceneGraphName], List[str]]:
+    """
+    Returns a tuple of all the mesh nodes as well as all the node paths
+
+    :param scene_graph: Scene graph to search
+    :return: Tuple of [Mesh Nodes, All Node Paths]
+    """
     import azlmbr.scene as sceneApi
     import azlmbr.scene.graph
 
