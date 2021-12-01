@@ -10,20 +10,20 @@
  
 #include <Atom/Features/Math/Filter.azsli> // BilinearFilter()
 
- 
-float SampleESM(const Texture2DArray<float> shadowMap, const SamplerState samp, const float3 uv, const float zReceiver, const float overdark)
+
+float SampleESM(const Texture2DArray<float> shadowMap, const SamplerState samp, const float3 uv, const float zReceiver, const float esmExponent)
 {
 	const float mipmaplevel = 0;
 	const float occluder = shadowMap.SampleLevel(samp,uv, mipmaplevel).r;
-	const float lit = exp((occluder - zReceiver) * overdark);
+	const float lit = exp((occluder - zReceiver) * esmExponent);
 	return lit;
 }
 
-float PCFFallbackForESM(const Texture2DArray<float> shadowMap, const float3 uv, const float zReceiver, const float texMapSize, const float invTexMapSize, const float overdark)
+float PCFFallbackForESM(const Texture2DArray<float> shadowMap, const float3 uv, const float zReceiver, const float texMapSize, const float invTexMapSize, const float esmExponent)
 {
-    const float tl = clamp(SampleESM(shadowMap, PassSrg::PointSampler, uv + float3( 0.0, 0.0, 0.0 ) * invTexMapSize, zReceiver, overdark),0.0,1.0);
-    const float tr = clamp(SampleESM(shadowMap, PassSrg::PointSampler, uv + float3( 1.0, 0.0, 0.0 ) * invTexMapSize, zReceiver, overdark),0.0,1.0);
-    const float bl = clamp(SampleESM(shadowMap, PassSrg::PointSampler, uv + float3( 0.0, 1.0, 0.0 ) * invTexMapSize, zReceiver, overdark),0.0,1.0);
-    const float br = clamp(SampleESM(shadowMap, PassSrg::PointSampler, uv + float3( 1.0, 1.0, 0.0 ) * invTexMapSize, zReceiver, overdark),0.0,1.0);
+    const float tl = clamp(SampleESM(shadowMap, PassSrg::PointSampler, uv + float3( 0.0, 0.0, 0.0 ) * invTexMapSize, zReceiver, esmExponent),0.0,1.0);
+    const float tr = clamp(SampleESM(shadowMap, PassSrg::PointSampler, uv + float3( 1.0, 0.0, 0.0 ) * invTexMapSize, zReceiver, esmExponent),0.0,1.0);
+    const float bl = clamp(SampleESM(shadowMap, PassSrg::PointSampler, uv + float3( 0.0, 1.0, 0.0 ) * invTexMapSize, zReceiver, esmExponent),0.0,1.0);
+    const float br = clamp(SampleESM(shadowMap, PassSrg::PointSampler, uv + float3( 1.0, 1.0, 0.0 ) * invTexMapSize, zReceiver, esmExponent),0.0,1.0);
     return BilinearFilter(tl, tr, bl, br, uv, texMapSize.xx).x;
 }
