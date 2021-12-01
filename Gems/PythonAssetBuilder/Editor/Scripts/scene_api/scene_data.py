@@ -304,7 +304,7 @@ class SceneManifest():
                 "Material"
             ],
             "PhysicsMaterials": [
-                self.DefaultOrValue(physics_material, "<Default Physics Material>")
+                self.__default_or_value(physics_material, "<Default Physics Material>")
             ],
             "rules": {
                 "rules": []
