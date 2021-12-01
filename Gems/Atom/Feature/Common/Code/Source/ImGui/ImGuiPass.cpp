@@ -140,9 +140,18 @@ namespace AZ
             m_drawData.push_back(drawData);
         }
 
+        int ImGuiPass::GetTickOrder()
+        {
+            // We have to call ImGui::NewFrame (which happens in ImGuiPass::OnTick) after setting
+            // ImGui::GetIO().NavInputs (which happens in ImGuiPass::OnInputChannelEventFiltered),
+            // but before ImGui::Render (which happens in ImGuiPass::SetupFrameGraphDependencies).
+            return AZ::ComponentTickBus::TICK_PRE_RENDER;
+        }
+
         void ImGuiPass::OnTick(float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint timePoint)
         {
             auto imguiContextScope = ImguiContextScope(m_imguiContext);
+            ImGui::NewFrame();
 
             auto& io = ImGui::GetIO();
             io.DeltaTime = deltaTime;
@@ -413,6 +422,7 @@ namespace AZ
 
         void ImGuiPass::Init()
         {
+            auto imguiContextScope = ImguiContextScope(m_imguiContext);
             auto& io = ImGui::GetIO();
 
             // ImGui IO Setup
@@ -421,7 +431,6 @@ namespace AZ
                 {
                     io.KeyMap[static_cast<ImGuiKey_>(i)] = static_cast<int>(i);
                 }
-                io.NavActive = true;
 
                 // Touch input
                 const AzFramework::InputDevice* inputDevice = nullptr;
@@ -432,6 +441,17 @@ namespace AZ
                 if (inputDevice && inputDevice->IsSupported())
                 {
                     io.ConfigFlags |= ImGuiConfigFlags_IsTouchScreen;
+                }
+
+                // Gamepad input
+                inputDevice = nullptr;
+                AzFramework::InputDeviceRequestBus::EventResult(inputDevice,
+                    AzFramework::InputDeviceGamepad::IdForIndex0,
+                    &AzFramework::InputDeviceRequests::GetInputDevice);
+                if (inputDevice && inputDevice->IsSupported())
+                {
+                    io.BackendFlags |= ImGuiBackendFlags_HasGamepad;
+                    io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
                 }
 
                 // Set initial display size to something reasonable (this will be updated in FramePrepare)
@@ -571,7 +591,6 @@ namespace AZ
             auto imguiContextScope = ImguiContextScope(m_imguiContext);
             ImGui::GetIO().MouseWheel = m_lastFrameMouseWheel;
             m_lastFrameMouseWheel = 0.0;
-            ImGui::NewFrame();
         }
 
         void ImGuiPass::BuildCommandListInternal(const RHI::FrameGraphExecuteContext& context)

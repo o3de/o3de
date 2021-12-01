@@ -6,16 +6,17 @@
  *
  */
 
-#include "CommunicatorTracePrinter.h"
+#include "ProcessCommunicatorTracePrinter.h"
 
-CommunicatorTracePrinter::CommunicatorTracePrinter(AzFramework::ProcessCommunicator* communicator, const char* window) :
+
+ProcessCommunicatorTracePrinter::ProcessCommunicatorTracePrinter(AzFramework::ProcessCommunicator* communicator, const char* window) :
     m_communicator(communicator),
     m_window(window)
 {
     m_stringBeingConcatenated.reserve(1024);
 }
 
-CommunicatorTracePrinter::~CommunicatorTracePrinter()
+ProcessCommunicatorTracePrinter::~ProcessCommunicatorTracePrinter()
 {
     // flush stdout
     WriteCurrentString(false);
@@ -24,7 +25,7 @@ CommunicatorTracePrinter::~CommunicatorTracePrinter()
     WriteCurrentString(true);
 }
 
-void CommunicatorTracePrinter::Pump()
+void ProcessCommunicatorTracePrinter::Pump()
 {
     if (m_communicator->IsValid())
     {
@@ -42,7 +43,7 @@ void CommunicatorTracePrinter::Pump()
     }
 }
 
-void CommunicatorTracePrinter::ParseDataBuffer(AZ::u32 readSize, bool isFromStdErr)
+void ProcessCommunicatorTracePrinter::ParseDataBuffer(AZ::u32 readSize, bool isFromStdErr)
 {
     if (readSize > AZ_ARRAY_SIZE(m_streamBuffer))
     {
@@ -67,7 +68,7 @@ void CommunicatorTracePrinter::ParseDataBuffer(AZ::u32 readSize, bool isFromStdE
     }
 }
 
-void CommunicatorTracePrinter::WriteCurrentString(bool isFromStdErr)
+void ProcessCommunicatorTracePrinter::WriteCurrentString(bool isFromStdErr)
 {
     AZStd::string& bufferToUse = isFromStdErr ? m_errorStringBeingConcatenated : m_stringBeingConcatenated;
 
