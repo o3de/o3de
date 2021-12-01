@@ -179,20 +179,20 @@ class LinuxLauncher(Launcher):
 
 class DedicatedLinuxLauncher(LinuxLauncher):
 
-    def setup(self, backupFiles=True, launch_ap=False):
+    def setup(self, backupFiles=True, launch_ap=False, configure_settings=True):
         """
         Perform setup of this launcher, must be called before launching.
         Subclasses should call its parent's setup() before calling its own code, unless it changes configuration files
 
         :param backupFiles: Bool to backup setup files
-        :param lauch_ap: Bool to lauch the asset processor
+        :param launch_ap: Bool to launch the asset processor
         :return: None
         """
         # Base setup defaults to None
         if launch_ap is None:
             launch_ap = False
 
-        super(DedicatedLinuxLauncher, self).setup(backupFiles, launch_ap)
+        super(DedicatedLinuxLauncher, self).setup(backupFiles, launch_ap, configure_settings)
 
     def binary_path(self):
         """
