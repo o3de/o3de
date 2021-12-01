@@ -158,9 +158,9 @@ class PhysicsAnimationConfiguration():
         
     def to_dict(self):
         data = {}
-        data["hitDetectionConfig"] = self.hitDetectionConfig.to_dict(),
-        data["ragdollConfig"] = self.ragdollConfig.to_dict(),
-        data["clothConfig"] = self.clothConfig.to_dict(),
+        data["hitDetectionConfig"] = self.hitDetectionConfig.to_dict()
+        data["ragdollConfig"] = self.ragdollConfig.to_dict()
+        data["clothConfig"] = self.clothConfig.to_dict()
         data["simulatedObjectColliderConfig"] = self.simulatedObjectColliderConfig.to_dict()
         return data
 

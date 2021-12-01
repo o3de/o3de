@@ -88,9 +88,9 @@ class CharacterColliderConfiguration():
     def to_dict(self):
         data = {}
         nodeList = []
-        for index, node in enumerate(self.nodes):
+        for node in self.nodes:
             nodeList.append(node.to_dict())
-        data['nodes'] = nodeList    
+        data['nodes'] = nodeList
         return data
 
 # see Code\Framework\AzFramework\AzFramework\Physics\ShapeConfiguration.h for underlying data structures
@@ -102,13 +102,6 @@ class ShapeConfiguration():
     Attributes:
         scale: a 3-element list to describe the scale along the X, Y, and Z axises such as [1.0, 1.0, 1.0]
     """
-    # Used to identify shape configuration type from base class.
-    Sphere = 0       # Physics::ShapeType::Sphere
-    Box = 1          # Physics::ShapeType::Box
-    Capsule = 2      # Physics::ShapeType::Capsule
-    Cylinder = 3     # Physics::ShapeType::Cylinder
-    PhysicsAsset = 7 # Physics::ShapeType::PhysicsAsset
-    
     def __init__(self, shapeType):
         self._shapeType = shapeType
         self.scale = [1.0, 1.0, 1.0]
@@ -116,7 +109,7 @@ class ShapeConfiguration():
     def to_dict(self):
         return {
             "$type" : self._shapeType,
-            "radius" : self.scale            
+            "Scale" : self.scale
         }
     
 class SphereShapeConfiguration(ShapeConfiguration):
@@ -132,7 +125,7 @@ class SphereShapeConfiguration(ShapeConfiguration):
 
     def to_dict(self):
         data = super().to_dict()
-        data['radius'] = self.radius
+        data['Radius'] = self.radius
         return data    
 
 class BoxShapeConfiguration(ShapeConfiguration):
@@ -143,7 +136,7 @@ class BoxShapeConfiguration(ShapeConfiguration):
         dimensions: The width, height, and depth dimensions of the Box collider
     """
     def __init__(self):
-        super().__init__(ShapeConfiguration.Box)
+        super().__init__('BoxShapeConfiguration')
         self.dimensions = [1.0, 1.0, 1.0]
 
     def to_dict(self):
@@ -160,14 +153,14 @@ class CapsuleShapeConfiguration(ShapeConfiguration):
         radius: The radius of the Capsule
     """
     def __init__(self):
-        super().__init__(ShapeConfiguration.Capsule)
+        super().__init__('CapsuleShapeConfiguration')
         self.height = 1.00
         self.radius = 0.25
     
     def to_dict(self):
         data = super().to_dict()
-        data['height'] = self.height
-        data['radius'] = self.radius
+        data['Height'] = self.height
+        data['Radius'] = self.radius
         return data    
     
 class PhysicsAssetShapeConfiguration(ShapeConfiguration):
@@ -181,7 +174,7 @@ class PhysicsAssetShapeConfiguration(ShapeConfiguration):
         subdivisionLevel: The level of subdivision if a primitive shape is replaced with a convex mesh due to scaling.
     """
     def __init__(self):
-        super().__init__(ShapeConfiguration.PhysicsAsset)
+        super().__init__('PhysicsAssetShapeConfiguration')
         self.asset = {}
         self.assetScale = [1.0, 1.0, 1.0]
         self.useMaterialsFromAsset = True
@@ -192,10 +185,10 @@ class PhysicsAssetShapeConfiguration(ShapeConfiguration):
 
     def to_dict(self):
         data = super().to_dict()
-        data['asset'] = self.asset
-        data['assetScale'] = self.assetScale
-        data['useMaterialsFromAsset'] = self.useMaterialsFromAsset
-        data['subdivisionLevel'] = self.subdivisionLevel
+        data['PhysicsAsset'] = self.asset
+        data['AssetScale'] = self.assetScale
+        data['UseMaterialsFromAsset'] = self.useMaterialsFromAsset
+        data['SubdivisionLevel'] = self.subdivisionLevel
         return data    
 
 # for underlying data structures, see Code\Framework\AzFramework\AzFramework\Physics\Configuration\JointConfiguration.h
