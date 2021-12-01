@@ -169,28 +169,12 @@ class WinLauncher(Launcher):
         host_ip = '127.0.0.1'
         self.args.append(f'--regset="/Amazon/AzCore/Bootstrap/project_path={self.workspace.paths.project()}"')
         self.args.append(f'--regset="/Amazon/AzCore/Bootstrap/remote_ip={host_ip}"')
-        self.args.append('--regset="/Amazon/AzCore/Bootstrap/wait_for_connect=1"')
         self.args.append(f'--regset="/Amazon/AzCore/Bootstrap/allowed_list={host_ip}"')
 
         self.workspace.settings.modify_platform_setting("log_RemoteConsoleAllowedAddresses", host_ip)
 
 
 class DedicatedWinLauncher(WinLauncher):
-
-    def setup(self, backupFiles=True, launch_ap=False):
-        """
-        Perform setup of this launcher, must be called before launching.
-        Subclasses should call its parent's setup() before calling its own code, unless it changes configuration files
-
-        :param backupFiles: Bool to backup setup files
-        :param lauch_ap: Bool to lauch the asset processor
-        :return: None
-        """
-        # Base setup defaults to None
-        if launch_ap is None:
-            launch_ap = False
-
-        super(DedicatedWinLauncher, self).setup(backupFiles, launch_ap)
 
     def binary_path(self):
         """
