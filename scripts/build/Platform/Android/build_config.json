@@ -92,7 +92,7 @@
     "COMMAND":"../Windows/build_asset_windows.cmd",
     "PARAMETERS": {
         "CONFIGURATION":"profile",
-        "OUTPUT_DIRECTORY":"build\\windows_vs2019",
+        "OUTPUT_DIRECTORY":"build\\windows",
         "CMAKE_OPTIONS":"-G \"Visual Studio 16 2019\" -DCMAKE_SYSTEM_VERSION=10.0",
         "CMAKE_LY_PROJECTS":"AutomatedTesting",
         "CMAKE_TARGET":"AssetProcessorBatch",

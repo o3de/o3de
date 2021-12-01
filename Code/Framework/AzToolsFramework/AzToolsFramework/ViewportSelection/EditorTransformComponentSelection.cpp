@@ -231,8 +231,8 @@ namespace AzToolsFramework
         {
             return mouseInteraction.m_mouseInteraction.m_mouseButtons.Middle() &&
                 mouseInteraction.m_mouseEvent == ViewportInteraction::MouseEvent::Down &&
-                mouseInteraction.m_mouseInteraction.m_keyboardModifiers.Ctrl() &&
-                !mouseInteraction.m_mouseInteraction.m_keyboardModifiers.Alt();
+                !mouseInteraction.m_mouseInteraction.m_keyboardModifiers.Alt() &&
+                mouseInteraction.m_mouseInteraction.m_keyboardModifiers.Ctrl();
         }
 
         static bool IndividualDitto(const ViewportInteraction::MouseInteractionEvent& mouseInteraction)
@@ -243,12 +243,12 @@ namespace AzToolsFramework
                 mouseInteraction.m_mouseInteraction.m_keyboardModifiers.Ctrl();
         }
 
-        static bool SnapTerrain(const ViewportInteraction::MouseInteractionEvent& mouseInteraction)
+        static bool SnapSurface(const ViewportInteraction::MouseInteractionEvent& mouseInteraction)
         {
             return mouseInteraction.m_mouseInteraction.m_mouseButtons.Middle() &&
                 mouseInteraction.m_mouseEvent == ViewportInteraction::MouseEvent::Down &&
-                (mouseInteraction.m_mouseInteraction.m_keyboardModifiers.Alt() ||
-                 mouseInteraction.m_mouseInteraction.m_keyboardModifiers.Ctrl());
+                mouseInteraction.m_mouseInteraction.m_keyboardModifiers.Shift() &&
+                mouseInteraction.m_mouseInteraction.m_keyboardModifiers.Ctrl();
         }
 
         static bool ManipulatorDitto(
@@ -923,26 +923,6 @@ namespace AzToolsFramework
         }
     }
 
-    static AZ::Vector3 PickTerrainPosition(const ViewportInteraction::MouseInteraction& mouseInteraction)
-    {
-        AZ_PROFILE_FUNCTION(AzToolsFramework);
-
-        const int viewportId = mouseInteraction.m_interactionId.m_viewportId;
-        // get unsnapped terrain position (world space)
-        AZ::Vector3 worldSurfacePosition;
-        ViewportInteraction::MainEditorViewportInteractionRequestBus::EventResult(
-            worldSurfacePosition, viewportId, &ViewportInteraction::MainEditorViewportInteractionRequestBus::Events::PickTerrain,
-            mouseInteraction.m_mousePick.m_screenCoordinates);
-
-        // convert to local space - snap if enabled
-        const GridSnapParameters gridSnapParams = GridSnapSettings(viewportId);
-        const AZ::Vector3 finalSurfacePosition = gridSnapParams.m_gridSnap
-            ? CalculateSnappedTerrainPosition(worldSurfacePosition, AZ::Transform::CreateIdentity(), viewportId, gridSnapParams.m_gridSize)
-            : worldSurfacePosition;
-
-        return finalSurfacePosition;
-    }
-
     // is the passed entity id contained with in the entity id list
     template<typename EntityIdContainer>
     static bool IsEntitySelectedInternal(AZ::EntityId entityId, const EntityIdContainer& selectedEntityIds)
@@ -1286,7 +1266,7 @@ namespace AzToolsFramework
                 m_axisPreview.m_translation = m_entityIdManipulators.m_manipulators->GetLocalTransform().GetTranslation();
                 m_axisPreview.m_orientation = QuaternionFromTransformNoScaling(m_entityIdManipulators.m_manipulators->GetLocalTransform());
 
-                // [ref 1.]
+                // see comment [ref 1.] above
                 BeginRecordManipulatorCommand();
             });
 
@@ -1321,7 +1301,7 @@ namespace AzToolsFramework
                 m_axisPreview.m_translation = m_entityIdManipulators.m_manipulators->GetLocalTransform().GetTranslation();
                 m_axisPreview.m_orientation = QuaternionFromTransformNoScaling(m_entityIdManipulators.m_manipulators->GetLocalTransform());
 
-                // [ref 1.]
+                // see comment [ref 1.] above
                 BeginRecordManipulatorCommand();
             });
 
@@ -1335,6 +1315,39 @@ namespace AzToolsFramework
 
         translationManipulators->InstallPlanarManipulatorMouseUpCallback(
             [this, manipulatorEntityIds]([[maybe_unused]] const PlanarManipulator::Action& action)
+            {
+                AzToolsFramework::EditorTransformChangeNotificationBus::Broadcast(
+                    &AzToolsFramework::EditorTransformChangeNotificationBus::Events::OnEntityTransformChanged,
+                    manipulatorEntityIds->m_entityIds);
+
+                EndRecordManipulatorCommand();
+            });
+
+        // surface
+        translationManipulators->InstallSurfaceManipulatorMouseDownCallback(
+            [this, manipulatorEntityIds]([[maybe_unused]] const SurfaceManipulator::Action& action)
+            {
+                BuildSortedEntityIdVectorFromEntityIdMap(m_entityIdManipulators.m_lookups, manipulatorEntityIds->m_entityIds);
+
+                InitializeTranslationLookup(m_entityIdManipulators);
+
+                m_axisPreview.m_translation = m_entityIdManipulators.m_manipulators->GetLocalTransform().GetTranslation();
+                m_axisPreview.m_orientation = QuaternionFromTransformNoScaling(m_entityIdManipulators.m_manipulators->GetLocalTransform());
+
+                // see comment [ref 1.] above
+                BeginRecordManipulatorCommand();
+            });
+
+        translationManipulators->InstallSurfaceManipulatorMouseMoveCallback(
+            [this, prevModifiers, manipulatorEntityIds](const SurfaceManipulator::Action& action) mutable
+            {
+                UpdateTranslationManipulator(
+                    action, manipulatorEntityIds->m_entityIds, m_entityIdManipulators, m_pivotOverrideFrame, prevModifiers,
+                    m_transformChangedInternally, m_spaceCluster.m_spaceLock);
+            });
+
+        translationManipulators->InstallSurfaceManipulatorMouseUpCallback(
+            [this, manipulatorEntityIds]([[maybe_unused]] const SurfaceManipulator::Action& action)
             {
                 AzToolsFramework::EditorTransformChangeNotificationBus::Broadcast(
                     &AzToolsFramework::EditorTransformChangeNotificationBus::Events::OnEntityTransformChanged,
@@ -1395,7 +1408,7 @@ namespace AzToolsFramework
                 m_axisPreview.m_translation = m_entityIdManipulators.m_manipulators->GetLocalTransform().GetTranslation();
                 m_axisPreview.m_orientation = QuaternionFromTransformNoScaling(m_entityIdManipulators.m_manipulators->GetLocalTransform());
 
-                // [ref 1.]
+                // see comment [ref 1.] above
                 BeginRecordManipulatorCommand();
             });
 
@@ -1867,6 +1880,13 @@ namespace AzToolsFramework
 
         if (!m_selectedEntityIds.empty())
         {
+            // try snapping to a surface (mesh) if in Translation mode
+            if (Input::SnapSurface(mouseInteraction))
+            {
+                PerformSnapToSurface(mouseInteraction);
+                return false;
+            }
+
             // group copying/alignment to specific entity - 'ditto' position/orientation for group
             if (Input::GroupDitto(mouseInteraction) && PerformGroupDitto(entityIdUnderCursor))
             {
@@ -1876,13 +1896,6 @@ namespace AzToolsFramework
             // individual copying/alignment to specific entity - 'ditto' position/orientation for individual
             if (Input::IndividualDitto(mouseInteraction) && PerformIndividualDitto(entityIdUnderCursor))
             {
-                return false;
-            }
-
-            // try snapping to the terrain (if in Translation mode) and entity wasn't picked
-            if (Input::SnapTerrain(mouseInteraction))
-            {
-                PerformSnapToTerrain(mouseInteraction);
                 return false;
             }
 
@@ -1973,25 +1986,28 @@ namespace AzToolsFramework
         return false;
     }
 
-    void EditorTransformComponentSelection::PerformSnapToTerrain(const ViewportInteraction::MouseInteractionEvent& mouseInteraction)
+    void EditorTransformComponentSelection::PerformSnapToSurface(const ViewportInteraction::MouseInteractionEvent& mouseInteraction)
     {
-        for (AZ::EntityId entityId : m_selectedEntityIds)
+        for (const AZ::EntityId& entityId : m_selectedEntityIds)
         {
             ScopedUndoBatch::MarkEntityDirty(entityId);
         }
 
         if (m_mode == Mode::Translation)
         {
-            const AZ::Vector3 finalSurfacePosition = PickTerrainPosition(mouseInteraction.m_mouseInteraction);
+            const AZ::Vector3 worldPosition = FindClosestPickIntersection(
+                mouseInteraction.m_mouseInteraction.m_interactionId.m_viewportId,
+                mouseInteraction.m_mouseInteraction.m_mousePick.m_screenCoordinates, AzToolsFramework::EditorPickRayLength,
+                GetDefaultEntityPlacementDistance());
 
             // handle modifier alternatives
             if (Input::IndividualDitto(mouseInteraction))
             {
-                CopyTranslationToSelectedEntitiesIndividual(finalSurfacePosition);
+                CopyTranslationToSelectedEntitiesIndividual(worldPosition);
             }
             else if (Input::GroupDitto(mouseInteraction))
             {
-                CopyTranslationToSelectedEntitiesGroup(finalSurfacePosition);
+                CopyTranslationToSelectedEntitiesGroup(worldPosition);
             }
         }
         else if (m_mode == Mode::Rotation)

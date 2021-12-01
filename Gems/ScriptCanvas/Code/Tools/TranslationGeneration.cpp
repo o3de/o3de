@@ -34,6 +34,7 @@
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzQtComponents/Utilities/DesktopUtilities.h>
 #include <Source/Translation/TranslationSerializer.h>
+#include "Data/DataRegistry.h"
 
 namespace ScriptCanvasEditorTools
 {
@@ -832,6 +833,33 @@ namespace ScriptCanvasEditorTools
         SaveJSONData(fileName, translationRoot);
     }
 
+    void TranslationGeneration::TranslateDataTypes()
+    {
+        TranslationFormat translationRoot;
+
+        auto dataRegistry = ScriptCanvas::GetDataRegistry();
+        
+        for (auto& typePair : dataRegistry->m_creatableTypes)
+        {
+            if (ScriptCanvas::Data::IsContainerType(typePair.first))
+            {
+                continue;
+            }
+
+            const AZStd::string typeIDStr = typePair.first.GetAZType().ToString<AZStd::string>();
+            AZStd::string typeName = ScriptCanvas::Data::GetName(typePair.first);
+
+            Entry entry;
+            entry.m_key = typeIDStr;
+            entry.m_context = "BehaviorType";
+            entry.m_details.m_name = typeName;
+
+            translationRoot.m_entries.emplace_back(entry);
+        }
+
+        SaveJSONData("Types/BehaviorTypes", translationRoot);
+    }
+
     void TranslationGeneration::TranslateMethod(AZ::BehaviorMethod* behaviorMethod, Method& methodEntry)
     {
         // Arguments (Input Slots)
@@ -922,6 +950,11 @@ namespace ScriptCanvasEditorTools
 
             TranslateMethod(behaviorProperty->m_getter, method);
 
+            // We know this is a getter, so there will only be one parameter, we will use the method name as a best
+            // guess for the argument name
+            SplitCamelCase(cleanName);
+            method.m_arguments[1].m_details.m_name = cleanName;
+
             entry->m_methods.push_back(method);
 
         }
@@ -943,6 +976,11 @@ namespace ScriptCanvasEditorTools
             SplitCamelCase(method.m_details.m_name);
 
             TranslateMethod(behaviorProperty->m_setter, method);
+
+            // We know this is a setter, so there will only be one parameter, we will use the method name as a best
+            // guess for the argument name
+            SplitCamelCase(cleanName);
+            method.m_arguments[1].m_details.m_name = cleanName;
 
             entry->m_methods.push_back(method);
         }
