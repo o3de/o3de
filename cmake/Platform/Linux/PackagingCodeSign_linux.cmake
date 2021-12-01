@@ -6,9 +6,8 @@
 #
 #
 
-message(STATUS "Executing package signing...")
-
 function(ly_sign_binaries in_path)
+    message(STATUS "Executing package signing...")
     file(REAL_PATH "${CPACK_SOURCE_DIR}/.." _root_path)
     unset(_signing_command)
 
