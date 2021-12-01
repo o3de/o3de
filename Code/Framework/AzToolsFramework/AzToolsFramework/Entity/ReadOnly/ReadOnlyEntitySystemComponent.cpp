@@ -8,21 +8,23 @@
 
 #include <AzToolsFramework/Entity/ReadOnly/ReadOnlyEntitySystemComponent.h>
 
-#include <AzToolsFramework/Entity/ReadOnly/ReadOnlyEntityNotificationBus.h>
+#include <AzToolsFramework/Entity/ReadOnly/ReadOnlyEntityBus.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 
 namespace AzToolsFramework
 {
     void ReadOnlyEntitySystemComponent::Activate()
     {
-        AZ::Interface<ReadOnlyEntityInterface>::Register(this);
+        AZ::Interface<ReadOnlyEntityQueryInterface>::Register(this);
+        AZ::Interface<ReadOnlyEntityPublicInterface>::Register(this);
         EditorEntityContextNotificationBus::Handler::BusConnect();
     }
 
     void ReadOnlyEntitySystemComponent::Deactivate()
     {
         EditorEntityContextNotificationBus::Handler::BusDisconnect();
-        AZ::Interface<ReadOnlyEntityInterface>::Unregister(this);
+        AZ::Interface<ReadOnlyEntityPublicInterface>::Unregister(this);
+        AZ::Interface<ReadOnlyEntityQueryInterface>::Unregister(this);
     }
 
     void ReadOnlyEntitySystemComponent::Reflect(AZ::ReflectContext* context)
@@ -38,46 +40,60 @@ namespace AzToolsFramework
         provided.push_back(AZ_CRC_CE("ReadOnlyEntityService"));
     }
 
-    void ReadOnlyEntitySystemComponent::RegisterEntityAsReadOnly(AZ::EntityId entityId)
+    bool ReadOnlyEntitySystemComponent::IsReadOnly(const AZ::EntityId& entityId)
     {
-        m_readOnlyEntities.insert(entityId);
-        ReadOnlyEntityNotificationBus::Broadcast(&ReadOnlyEntityNotificationBus::Events::OnReadOnlyEntityStatusChanged, entityId, true);
+        if (!m_readOnlystates.contains(entityId))
+        {
+            QueryReadOnlyStateForEntity(entityId);
+        }
+
+        return m_readOnlystates[entityId];
     }
 
-    void ReadOnlyEntitySystemComponent::RegisterEntitiesAsReadOnly(EntityIdList entityIds)
+    void ReadOnlyEntitySystemComponent::RefreshReadOnlyState(const EntityIdList& entityIds)
     {
-        m_readOnlyEntities.insert(entityIds.begin(), entityIds.end());
-
-        for (AZ::EntityId entityId : entityIds)
+        for (const AZ::EntityId entityId : entityIds)
         {
-            ReadOnlyEntityNotificationBus::Broadcast(
-                &ReadOnlyEntityNotificationBus::Events::OnReadOnlyEntityStatusChanged, entityId, true);
+            bool wasReadOnly = m_readOnlystates[entityId];
+            QueryReadOnlyStateForEntity(entityId);
+
+            if (bool isReadOnly = m_readOnlystates[entityId]; wasReadOnly != isReadOnly)
+            {
+                ReadOnlyEntityPublicNotificationBus::Broadcast(
+                    &ReadOnlyEntityPublicNotificationBus::Events::OnReadOnlyEntityStatusChanged, entityId, isReadOnly);
+            }
         }
     }
 
-    void ReadOnlyEntitySystemComponent::UnregisterEntityAsReadOnly(AZ::EntityId entityId)
+    void ReadOnlyEntitySystemComponent::RefreshReadOnlyStateForAllEntities()
     {
-        m_readOnlyEntities.erase(entityId);
-        ReadOnlyEntityNotificationBus::Broadcast(&ReadOnlyEntityNotificationBus::Events::OnReadOnlyEntityStatusChanged, entityId, false);
-    }
-
-    void ReadOnlyEntitySystemComponent::UnregisterEntitiesAsReadOnly(EntityIdList entityIds)
-    {
-        for (AZ::EntityId entityId : entityIds)
+        for (auto elem : m_readOnlystates)
         {
-            m_readOnlyEntities.erase(entityId);
-            ReadOnlyEntityNotificationBus::Broadcast(&ReadOnlyEntityNotificationBus::Events::OnReadOnlyEntityStatusChanged, entityId, false);
-        }
-    }
+            AZ::EntityId entityId = elem.first;
+            bool wasReadOnly = m_readOnlystates[entityId];
+            QueryReadOnlyStateForEntity(entityId);
 
-    bool ReadOnlyEntitySystemComponent::IsReadOnly(AZ::EntityId entityId) const
-    {
-        return m_readOnlyEntities.contains(entityId);
+            if (bool isReadOnly = m_readOnlystates[entityId]; wasReadOnly != isReadOnly)
+            {
+                ReadOnlyEntityPublicNotificationBus::Broadcast(
+                    &ReadOnlyEntityPublicNotificationBus::Events::OnReadOnlyEntityStatusChanged, entityId, isReadOnly);
+            }
+        }
     }
 
     void ReadOnlyEntitySystemComponent::OnContextReset()
     {
-        return m_readOnlyEntities.clear();
+        m_readOnlystates.clear();
+    }
+
+    void ReadOnlyEntitySystemComponent::QueryReadOnlyStateForEntity(const AZ::EntityId& entityId)
+    {
+        bool isReadOnly = false;
+
+        ReadOnlyEntityQueryNotificationBus::Broadcast(
+            &ReadOnlyEntityQueryNotificationBus::Events::IsReadOnly, entityId, isReadOnly);
+
+        m_readOnlystates[entityId] = isReadOnly;
     }
 
 } // namespace AzToolsFramework

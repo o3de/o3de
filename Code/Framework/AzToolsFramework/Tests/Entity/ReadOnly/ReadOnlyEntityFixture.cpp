@@ -19,8 +19,8 @@ namespace AzToolsFramework
         // in the unit tests.
         AZ::UserSettingsComponentRequestBus::Broadcast(&AZ::UserSettingsComponentRequests::DisableSaveOnFinalize);
 
-        m_readOnlyEntityInterface = AZ::Interface<ReadOnlyEntityInterface>::Get();
-        ASSERT_TRUE(m_readOnlyEntityInterface != nullptr);
+        m_readOnlyEntityPublicInterface = AZ::Interface<ReadOnlyEntityPublicInterface>::Get();
+        ASSERT_TRUE(m_readOnlyEntityPublicInterface != nullptr);
 
         GenerateTestHierarchy();
     }
@@ -53,5 +53,73 @@ namespace AzToolsFramework
         AZ::TransformBus::Event(entity->GetId(), &AZ::TransformInterface::SetParent, parentId);
 
         return entity->GetId();
+    }
+
+    ReadOnlyHandlerAlwaysTrue::ReadOnlyHandlerAlwaysTrue()
+    {
+        auto editorEntityContextId = AzFramework::EntityContextId::CreateNull();
+        EditorEntityContextRequestBus::BroadcastResult(editorEntityContextId, &EditorEntityContextRequests::GetEditorEntityContextId);
+
+        ReadOnlyEntityQueryNotificationBus::Handler::BusConnect(editorEntityContextId);
+    }
+
+    ReadOnlyHandlerAlwaysTrue::~ReadOnlyHandlerAlwaysTrue()
+    {
+        ReadOnlyEntityQueryNotificationBus::Handler::BusDisconnect();
+
+        if (auto readOnlyEntityQueryInterface = AZ::Interface<ReadOnlyEntityQueryInterface>::Get())
+        {
+            readOnlyEntityQueryInterface->RefreshReadOnlyStateForAllEntities();
+        }
+    }
+
+    void ReadOnlyHandlerAlwaysTrue::IsReadOnly([[maybe_unused]] const AZ::EntityId& entityId, bool& isReadOnly)
+    {
+        isReadOnly = true;
+    }
+
+    ReadOnlyHandlerAlwaysFalse::ReadOnlyHandlerAlwaysFalse()
+    {
+        auto editorEntityContextId = AzFramework::EntityContextId::CreateNull();
+        EditorEntityContextRequestBus::BroadcastResult(editorEntityContextId, &EditorEntityContextRequests::GetEditorEntityContextId);
+
+        ReadOnlyEntityQueryNotificationBus::Handler::BusConnect(editorEntityContextId);
+    }
+
+    ReadOnlyHandlerAlwaysFalse::~ReadOnlyHandlerAlwaysFalse()
+    {
+        ReadOnlyEntityQueryNotificationBus::Handler::BusDisconnect();
+
+        if (auto readOnlyEntityQueryInterface = AZ::Interface<ReadOnlyEntityQueryInterface>::Get())
+        {
+            readOnlyEntityQueryInterface->RefreshReadOnlyStateForAllEntities();
+        }
+    }
+
+    ReadOnlyHandlerEntityId::ReadOnlyHandlerEntityId(AZ::EntityId entityId)
+        : m_entityId(entityId)
+    {
+        auto editorEntityContextId = AzFramework::EntityContextId::CreateNull();
+        EditorEntityContextRequestBus::BroadcastResult(editorEntityContextId, &EditorEntityContextRequests::GetEditorEntityContextId);
+
+        ReadOnlyEntityQueryNotificationBus::Handler::BusConnect(editorEntityContextId);
+    }
+
+    ReadOnlyHandlerEntityId::~ReadOnlyHandlerEntityId()
+    {
+        ReadOnlyEntityQueryNotificationBus::Handler::BusDisconnect();
+
+        if (auto readOnlyEntityQueryInterface = AZ::Interface<ReadOnlyEntityQueryInterface>::Get())
+        {
+            readOnlyEntityQueryInterface->RefreshReadOnlyStateForAllEntities();
+        }
+    }
+
+    void ReadOnlyHandlerEntityId::IsReadOnly(const AZ::EntityId& entityId, bool& isReadOnly)
+    {
+        if (entityId == m_entityId)
+        {
+            isReadOnly = true;
+        }
     }
 }

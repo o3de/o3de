@@ -14,6 +14,7 @@
 #include <AzTest/AzTest.h>
 
 #include <AzToolsFramework/UnitTest/AzToolsFrameworkTestHelpers.h>
+#include <AzToolsFramework/Entity/ReadOnly/ReadOnlyEntityBus.h>
 #include <AzToolsFramework/Entity/ReadOnly/ReadOnlyEntityInterface.h>
 
 namespace AzToolsFramework
@@ -30,7 +31,7 @@ namespace AzToolsFramework
 
         AZStd::unordered_map<AZStd::string, AZ::EntityId> m_entityMap;
 
-        ReadOnlyEntityInterface* m_readOnlyEntityInterface = nullptr;
+        ReadOnlyEntityPublicInterface* m_readOnlyEntityPublicInterface = nullptr;
 
     public:
         inline static const char* RootEntityName = "Root";
@@ -39,4 +40,39 @@ namespace AzToolsFramework
         inline static const char* GrandChild2EntityName = "GrandChild2";
     };
 
+    class ReadOnlyHandlerAlwaysTrue
+        : public ReadOnlyEntityQueryNotificationBus::Handler
+    {
+    public:
+        ReadOnlyHandlerAlwaysTrue();
+        ~ReadOnlyHandlerAlwaysTrue();
+
+        // ReadOnlyEntityQueryNotificationBus overrides ...
+        void IsReadOnly(const AZ::EntityId& entityId, bool& isReadOnly) override;
+    };
+
+    class ReadOnlyHandlerAlwaysFalse
+        : public ReadOnlyEntityQueryNotificationBus::Handler
+    {
+    public:
+        ReadOnlyHandlerAlwaysFalse();
+        ~ReadOnlyHandlerAlwaysFalse();
+
+        // ReadOnlyEntityQueryNotificationBus overrides ...
+        void IsReadOnly([[maybe_unused]] const AZ::EntityId& entityId, [[maybe_unused]] bool& isReadOnly) override {}
+    };
+
+    class ReadOnlyHandlerEntityId
+        : public ReadOnlyEntityQueryNotificationBus::Handler
+    {
+    public:
+        ReadOnlyHandlerEntityId(AZ::EntityId entityId);
+        ~ReadOnlyHandlerEntityId();
+
+        // ReadOnlyEntityQueryNotificationBus overrides ...
+        void IsReadOnly(const AZ::EntityId& entityId, bool& isReadOnly) override;
+
+    private:
+        AZ::EntityId m_entityId;
+    };
 }

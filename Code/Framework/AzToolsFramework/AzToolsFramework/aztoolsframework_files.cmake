@@ -160,7 +160,7 @@ set(FILES
     Entity/EntityUtilityComponent.h
     Entity/EntityUtilityComponent.cpp
     Entity/ReadOnly/ReadOnlyEntityInterface.h
-    Entity/ReadOnly/ReadOnlyEntityNotificationBus.h
+    Entity/ReadOnly/ReadOnlyEntityBus.h
     Entity/ReadOnly/ReadOnlyEntitySystemComponent.cpp
     Entity/ReadOnly/ReadOnlyEntitySystemComponent.h
     Fingerprinting/TypeFingerprinter.h

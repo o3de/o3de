@@ -20,7 +20,8 @@ namespace AzToolsFramework
     //! An entity registered as ReadOnly cannot be altered in the Editor.
     class ReadOnlyEntitySystemComponent final
         : public AZ::Component
-        , private ReadOnlyEntityInterface
+        , private ReadOnlyEntityPublicInterface
+        , private ReadOnlyEntityQueryInterface
         , private EditorEntityContextNotificationBus::Handler
     {
     public:
@@ -36,19 +37,20 @@ namespace AzToolsFramework
         static void Reflect(AZ::ReflectContext* context);
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);
 
-        // ReadOnlyEntityInterface overrides ...
-        void RegisterEntityAsReadOnly(AZ::EntityId entityId)  override;
-        void RegisterEntitiesAsReadOnly(EntityIdList entityIds)  override;
-        void UnregisterEntityAsReadOnly(AZ::EntityId entityId)  override;
-        void UnregisterEntitiesAsReadOnly(EntityIdList entityIds)  override;
-        bool IsReadOnly(AZ::EntityId entityId) const  override;
-
+        // ReadOnlyEntityPublicNotifications overrides ...
+        bool IsReadOnly(const AZ::EntityId& entityId) override;
+        
+        // ReadOnlyEntityQueryInterface overrides ...
+        void RefreshReadOnlyState(const EntityIdList& entityIds) override;
+        void RefreshReadOnlyStateForAllEntities() override;
 
         // EditorEntityContextNotificationBus overrides ...
         void OnContextReset() override;
 
     private:
-        AZStd::unordered_set<AZ::EntityId> m_readOnlyEntities;
+        void QueryReadOnlyStateForEntity(const AZ::EntityId& entityId);
+
+        AZStd::unordered_map<AZ::EntityId, bool> m_readOnlystates;
     };
 
 } // namespace AzToolsFramework

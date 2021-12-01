@@ -16,29 +16,28 @@
 namespace AzToolsFramework
 {
     //! An entity registered as read-only cannot be altered in the editor.
-    class ReadOnlyEntityInterface
+    class ReadOnlyEntityPublicInterface
     {
     public:
-        AZ_RTTI(ReadOnlyEntityInterface, "{921FE15B-6EBD-47F0-8238-BC63318DEDEA}");
-
-        //! Registers the entity as read-only.
-        //! @param entityId The entityId that will be registered as read-only.
-        virtual void RegisterEntityAsReadOnly(AZ::EntityId entityId) = 0;
-
-        //! Registers the entities as read-only.
-        //! @param entityIds The entityIds that will be registered as read-only.
-        virtual void RegisterEntitiesAsReadOnly(EntityIdList entityIds) = 0;
-
-        //! Unregisters the entity as read-only.
-        //! @param entityId The entityId that will be unregistered as read-only.
-        virtual void UnregisterEntityAsReadOnly(AZ::EntityId entityId) = 0;
-
-        //! Unregisters the entities as read-only.
-        //! @param entityId The entityIds that will be unregistered as read-only.
-        virtual void UnregisterEntitiesAsReadOnly(EntityIdList entityIds) = 0;
+        AZ_RTTI(ReadOnlyEntityPublicInterface, "{921FE15B-6EBD-47F0-8238-BC63318DEDEA}");
 
         //! Returns whether the entity id provided is registered as read-only.
-        virtual bool IsReadOnly(AZ::EntityId entityId) const = 0;
+        virtual bool IsReadOnly(const AZ::EntityId& entityId) = 0;
+    };
+
+    //! An entity registered as read-only cannot be altered in the editor.
+    class ReadOnlyEntityQueryInterface
+    {
+    public:
+        AZ_RTTI(ReadOnlyEntityQueryInterface, "{2ACD63C5-1F3E-4DE8-880E-8115F857D329}");
+
+        //! Refreshes the cached read-only status for the entities provided.
+        //! @param entityIds The entityIds whose read-only state will be queried again.
+        virtual void RefreshReadOnlyState(const EntityIdList& entityIds) = 0;
+
+        //! Refreshes the cached read-only status for all entities.
+        //! Useful when disconnecting a handler at runtime.
+        virtual void RefreshReadOnlyStateForAllEntities() = 0;
     };
 
 } // namespace AzToolsFramework
