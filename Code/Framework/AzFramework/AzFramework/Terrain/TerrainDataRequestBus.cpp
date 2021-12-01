@@ -18,14 +18,18 @@ namespace AzFramework::Terrain
         {
             behaviorContext->EBus<AzFramework::Terrain::TerrainDataRequestBus>("TerrainDataRequestBus")
                 ->Attribute(AZ::Script::Attributes::Category, "Terrain")
-                ->Event("GetHeight", &AzFramework::Terrain::TerrainDataRequestBus::Events::GetHeight)
-                ->Event("GetNormal", &AzFramework::Terrain::TerrainDataRequestBus::Events::GetNormal)
-                ->Event("GetMaxSurfaceWeight", &AzFramework::Terrain::TerrainDataRequestBus::Events::GetMaxSurfaceWeight)
-                ->Event("GetMaxSurfaceWeightFromVector2",
-                    &AzFramework::Terrain::TerrainDataRequestBus::Events::GetMaxSurfaceWeightFromVector2)
-                ->Event("GetSurfaceWeights", &AzFramework::Terrain::TerrainDataRequestBus::Events::GetSurfaceWeights)
-                ->Event("GetSurfaceWeightsFromVector2",
-                    &AzFramework::Terrain::TerrainDataRequestBus::Events::GetSurfaceWeightsFromVector2)
+                ->Attribute(AZ::Script::Attributes::Module, "terrain")
+                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
+                ->Event("GetHeightOnly", &AzFramework::Terrain::TerrainDataRequestBus::Events::GetHeightOnly)
+                ->Event("GetHeightFromFloatsOnly", &AzFramework::Terrain::TerrainDataRequestBus::Events::GetHeightFromFloatsOnly)
+                ->Event("GetHeightFromVector2Only", &AzFramework::Terrain::TerrainDataRequestBus::Events::GetHeightFromVector2Only)
+                ->Event("GetNormalOnly", &AzFramework::Terrain::TerrainDataRequestBus::Events::GetNormalOnly)
+                ->Event("GetMaxSurfaceWeightOnly", &AzFramework::Terrain::TerrainDataRequestBus::Events::GetMaxSurfaceWeightOnly)
+                ->Event("GetMaxSurfaceWeightFromVector2Only",
+                    &AzFramework::Terrain::TerrainDataRequestBus::Events::GetMaxSurfaceWeightFromVector2Only)
+                ->Event("GetSurfaceWeightsOnly", &AzFramework::Terrain::TerrainDataRequestBus::Events::GetSurfaceWeightsOnly)
+                ->Event("GetSurfaceWeightsFromVector2Only",
+                    &AzFramework::Terrain::TerrainDataRequestBus::Events::GetSurfaceWeightsFromVector2Only)
                 ->Event("GetIsHole", &AzFramework::Terrain::TerrainDataRequestBus::Events::GetIsHole)
                 ->Event("GetIsHoleFromFloats", &AzFramework::Terrain::TerrainDataRequestBus::Events::GetIsHoleFromFloats)
                 ->Event("GetSurfacePoint", &AzFramework::Terrain::TerrainDataRequestBus::Events::BehaviorContextGetSurfacePoint)

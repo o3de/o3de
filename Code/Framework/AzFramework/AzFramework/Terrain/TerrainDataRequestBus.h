@@ -59,6 +59,10 @@ namespace AzFramework
                 const AZ::Vector2& position, Sampler sampler = Sampler::BILINEAR, bool* terrainExistsPtr = nullptr) const = 0;
             virtual float GetHeightFromFloats(
                 float x, float y, Sampler sampler = Sampler::BILINEAR, bool* terrainExistsPtr = nullptr) const = 0;
+            //! These functions are required for python tests as we can't pass the terrainExistsPtr.
+            virtual float GetHeightOnly(const AZ::Vector3& position, Sampler sampler = Sampler::BILINEAR) const = 0;
+            virtual float GetHeightFromVector2Only(const AZ::Vector2& position, Sampler sampler = Sampler::BILINEAR) const = 0;
+            virtual float GetHeightFromFloatsOnly(float x, float y, Sampler sampler = Sampler::BILINEAR) const = 0;
 
             //! Returns true if there's a hole at location x,y.
             //! Also returns true if there's no terrain data at location x,y.
@@ -75,6 +79,8 @@ namespace AzFramework
                 const AZ::Vector2& position, Sampler sampleFilter = Sampler::BILINEAR, bool* terrainExistsPtr = nullptr) const = 0;
             virtual AZ::Vector3 GetNormalFromFloats(
                 float x, float y, Sampler sampleFilter = Sampler::BILINEAR, bool* terrainExistsPtr = nullptr) const = 0;
+            //! This function is required for python tests as we can't pass the terrainExistsPtr.
+            virtual AZ::Vector3 GetNormalOnly(const AZ::Vector3& position, Sampler sampleFilter = Sampler::BILINEAR) const = 0;
 
             //! Given an XY coordinate, return the max surface type and weight.
             //! @terrainExists: Can be nullptr. If != nullptr then, if there's no terrain at location x,y or location x,y is inside
@@ -85,6 +91,10 @@ namespace AzFramework
                 const AZ::Vector2& inPosition, Sampler sampleFilter = Sampler::DEFAULT, bool* terrainExistsPtr = nullptr) const = 0;
             virtual SurfaceData::SurfaceTagWeight GetMaxSurfaceWeightFromFloats(
                 float x, float y, Sampler sampleFilter = Sampler::BILINEAR, bool* terrainExistsPtr = nullptr) const = 0;
+            virtual SurfaceData::SurfaceTagWeight GetMaxSurfaceWeightOnly(
+                const AZ::Vector3& position, Sampler sampleFilter = Sampler::BILINEAR) const = 0;
+            virtual SurfaceData::SurfaceTagWeight GetMaxSurfaceWeightFromVector2Only(
+                const AZ::Vector2& inPosition, Sampler sampleFilter = Sampler::DEFAULT) const = 0;
 
             //! Given an XY coordinate, return the set of surface types and weights. The Vector3 input position version is defined to
             //! ignore the input Z value.
@@ -104,6 +114,14 @@ namespace AzFramework
                 SurfaceData::SurfaceTagWeightList& outSurfaceWeights,
                 Sampler sampleFilter = Sampler::DEFAULT,
                 bool* terrainExistsPtr = nullptr) const = 0;
+            virtual void GetSurfaceWeightsOnly(
+                const AZ::Vector3& inPosition,
+                SurfaceData::SurfaceTagWeightList& outSurfaceWeights,
+                Sampler sampleFilter = Sampler::DEFAULT) const = 0;
+            virtual void GetSurfaceWeightsFromVector2Only(
+                const AZ::Vector2& inPosition,
+                SurfaceData::SurfaceTagWeightList& outSurfaceWeights,
+                Sampler sampleFilter = Sampler::DEFAULT) const = 0;
 
             //! Convenience function for  low level systems that can't do a reverse lookup from Crc to string. Everyone else should use
             //! GetMaxSurfaceWeight or GetMaxSurfaceWeightFromFloats.

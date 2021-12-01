@@ -56,20 +56,29 @@ namespace UnitTest
         MOCK_CONST_METHOD3(GetHeight, float(const AZ::Vector3&, Sampler, bool*));
         MOCK_CONST_METHOD3(GetHeightFromVector2, float(const AZ::Vector2&, Sampler, bool*));
         MOCK_CONST_METHOD4(GetHeightFromFloats, float(float, float, Sampler, bool*));
+        MOCK_CONST_METHOD2(GetHeightOnly, float(const AZ::Vector3&, Sampler));
+        MOCK_CONST_METHOD2(GetHeightFromVector2Only, float(const AZ::Vector2&, Sampler));
+        MOCK_CONST_METHOD3(GetHeightFromFloatsOnly, float(float, float, Sampler));
         MOCK_CONST_METHOD2(GetIsHole, bool(const AZ::Vector3&, Sampler));
         MOCK_CONST_METHOD2(GetIsHoleFromVector2, bool(const AZ::Vector2&, Sampler));
         MOCK_CONST_METHOD3(GetIsHoleFromFloats, bool(float, float, Sampler));
         MOCK_CONST_METHOD3(GetNormal, AZ::Vector3(const AZ::Vector3&, Sampler, bool*));
+        MOCK_CONST_METHOD2(GetNormalOnly, AZ::Vector3(const AZ::Vector3&, Sampler));
         MOCK_CONST_METHOD3(GetNormalFromVector2, AZ::Vector3(const AZ::Vector2&, Sampler, bool*));
         MOCK_CONST_METHOD4(GetNormalFromFloats, AZ::Vector3(float, float, Sampler, bool*));
         MOCK_CONST_METHOD3(GetMaxSurfaceWeight, AzFramework::SurfaceData::SurfaceTagWeight(const AZ::Vector3&, Sampler, bool*));
         MOCK_CONST_METHOD3(GetMaxSurfaceWeightFromVector2, AzFramework::SurfaceData::SurfaceTagWeight(const AZ::Vector2&, Sampler, bool*));
         MOCK_CONST_METHOD4(GetMaxSurfaceWeightFromFloats, AzFramework::SurfaceData::SurfaceTagWeight(float, float, Sampler, bool*));
+        MOCK_CONST_METHOD2(GetMaxSurfaceWeightOnly, AzFramework::SurfaceData::SurfaceTagWeight(const AZ::Vector3&, Sampler));
+        MOCK_CONST_METHOD2(GetMaxSurfaceWeightFromVector2Only, AzFramework::SurfaceData::SurfaceTagWeight(const AZ::Vector2&, Sampler));
         MOCK_CONST_METHOD4(GetSurfaceWeights, void(const AZ::Vector3&, AzFramework::SurfaceData::SurfaceTagWeightList&, Sampler, bool*));
         MOCK_CONST_METHOD4(
             GetSurfaceWeightsFromVector2, void(const AZ::Vector2&, AzFramework::SurfaceData::SurfaceTagWeightList&, Sampler, bool*));
         MOCK_CONST_METHOD5(
             GetSurfaceWeightsFromFloats, void(float, float, AzFramework::SurfaceData::SurfaceTagWeightList&, Sampler, bool*));
+        MOCK_CONST_METHOD3(GetSurfaceWeightsOnly, void(const AZ::Vector3&, AzFramework::SurfaceData::SurfaceTagWeightList&, Sampler));
+        MOCK_CONST_METHOD3(
+            GetSurfaceWeightsFromVector2Only, void(const AZ::Vector2&, AzFramework::SurfaceData::SurfaceTagWeightList&, Sampler));
         MOCK_CONST_METHOD3(GetMaxSurfaceName, const char*(const AZ::Vector3&, Sampler, bool*));
         MOCK_CONST_METHOD4(GetSurfacePoint, void(const AZ::Vector3&, AzFramework::SurfaceData::SurfacePoint&, Sampler, bool*));
         MOCK_CONST_METHOD4(
