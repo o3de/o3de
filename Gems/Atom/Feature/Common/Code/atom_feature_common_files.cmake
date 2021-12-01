@@ -97,7 +97,7 @@ set(FILES
     Source/CoreLights/SimplePointLightFeatureProcessor.cpp
     Source/CoreLights/SimpleSpotLightFeatureProcessor.h
     Source/CoreLights/SimpleSpotLightFeatureProcessor.cpp
-    Source/CoreLights/Shadow.h
+    Source/CoreLights/Shadow.hgit 
     Source/CoreLights/Shadow.cpp
     Source/CoreLights/ShadowmapAtlas.h
     Source/CoreLights/ShadowmapAtlas.cpp
@@ -135,7 +135,7 @@ set(FILES
     Source/DiffuseGlobalIllumination/DiffuseProbeGridClassificationPass.h
     Source/DiffuseGlobalIllumination/DiffuseProbeGridRenderPass.cpp
     Source/DiffuseGlobalIllumination/DiffuseProbeGridRenderPass.h
-	Source/DiffuseGlobalIllumination/DiffuseProbeGridDownsamplePass.cpp
+    Source/DiffuseGlobalIllumination/DiffuseProbeGridDownsamplePass.cpp
     Source/DiffuseGlobalIllumination/DiffuseProbeGridDownsamplePass.h
     Source/DiffuseGlobalIllumination/DiffuseProbeGrid.cpp
     Source/DiffuseGlobalIllumination/DiffuseProbeGrid.h
