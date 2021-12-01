@@ -12,8 +12,8 @@ from enum import Enum, IntEnum
 
 # Wraps the AZ.SceneAPI.Containers.SceneGraph.NodeIndex internal class
 class SceneGraphNodeIndex:
-    def __init__(self, sceneGraphNodeIndex) -> None:
-        self.nodeIndex = sceneGraphNodeIndex
+    def __init__(self, scene_graph_node_index) -> None:
+        self.nodeIndex = scene_graph_node_index
 
     def as_number(self):
         return self.nodeIndex.AsNumber()
@@ -29,9 +29,9 @@ class SceneGraphNodeIndex:
 
 
 # Wraps AZ.SceneAPI.Containers.SceneGraph.Name internal class
-class SceneGraphName():
-    def __init__(self, sceneGraphName) -> None:
-        self.name = sceneGraphName
+class SceneGraphName:
+    def __init__(self, scene_graph_name) -> None:
+        self.name = scene_graph_name
 
     def get_path(self) -> str:
         return self.name.GetPath()
@@ -41,9 +41,9 @@ class SceneGraphName():
 
 
 # Wraps AZ.SceneAPI.Containers.SceneGraph class
-class SceneGraph():
-    def __init__(self, sceneGraphInstance) -> None:
-        self.sceneGraph = sceneGraphInstance
+class SceneGraph:
+    def __init__(self, scene_graph_instance) -> None:
+        self.sceneGraph = scene_graph_instance
 
     @classmethod
     def is_valid_name(cls, name):
@@ -96,6 +96,23 @@ class SceneGraph():
         return self.sceneGraph.GetNodeContent(node)
 
 
+class ColorChannel(IntEnum):
+    RED = 0
+    GREEN = 1
+    BLUE = 2
+    ALPHA = 3
+
+
+class TangentSpaceSource(IntEnum):
+    SCENE = 0
+    MIKKT_GENERATION = 1
+
+
+class TangentSpaceMethod(IntEnum):
+    TSPACE = 0
+    TSPACE_BASIC = 1
+
+
 class PrimitiveShape(IntEnum):
     BEST_FIT = 0
     SPHERE = 1
@@ -109,40 +126,81 @@ class DecompositionMode(IntEnum):
 
 
 # Contains a dictionary to contain and export AZ.SceneAPI.Containers.SceneManifest
-class SceneManifest():
+class SceneManifest:
     def __init__(self):
         self.manifest = {'values': []}
 
     def add_mesh_group(self, name: str) -> dict:
-        meshGroup = {}
-        meshGroup['$type'] = '{07B356B7-3635-40B5-878A-FAC4EFD5AD86} MeshGroup'
-        meshGroup['name'] = name
-        meshGroup['nodeSelectionList'] = {'selectedNodes': [], 'unselectedNodes': []}
-        meshGroup['rules'] = {'rules': [{'$type': 'MaterialRule'}]}
-        self.manifest['values'].append(meshGroup)
-        return meshGroup
+        """
+        Adds a Mesh Group to the scene manifest.
+
+        :param name: Name of the mesh group.  This will become a file on disk and be usable as a Mesh in the editor.
+        :return: Newly created mesh group.
+        """
+        mesh_group = {
+            '$type': '{07B356B7-3635-40B5-878A-FAC4EFD5AD86} MeshGroup',
+            'name': name,
+            'nodeSelectionList': {'selectedNodes': [], 'unselectedNodes': []},
+            'rules': {'rules': [{'$type': 'MaterialRule'}]}
+        }
+        self.manifest['values'].append(mesh_group)
+        return mesh_group
 
     def add_prefab_group(self, name: str, id: str, json: dict) -> dict:
-        prefabGroup = {}
-        prefabGroup['$type'] = '{99FE3C6F-5B55-4D8B-8013-2708010EC715} PrefabGroup'
-        prefabGroup['name'] = name
-        prefabGroup['id'] = id
-        prefabGroup['prefabDomData'] = json
-        self.manifest['values'].append(prefabGroup)
-        return prefabGroup
+        """
+        Adds a Prefab Group to the scene manifest.  This will become a file on disk and be usable as a ProceduralPrefab in the editor.
+
+        :param name: Name of the prefab.
+        :param id: Unique ID for this prefab group.
+        :param json: The prefab template data.
+        :return: The newly created Prefab group
+        """
+        prefab_group = {
+            '$type': '{99FE3C6F-5B55-4D8B-8013-2708010EC715} PrefabGroup',
+            'name': name,
+            'id': id,
+            'prefabDomData': json
+        }
+        self.manifest['values'].append(prefab_group)
+        return prefab_group
 
     def mesh_group_select_node(self, mesh_group: dict, node_name: str) -> None:
+        """
+        Adds a node as a selected node.
+
+        :param mesh_group: Mesh group to apply the selection to.
+        :param node_name: Path of the node.
+        """
         mesh_group['nodeSelectionList']['selectedNodes'].append(node_name)
 
     def mesh_group_unselect_node(self, mesh_group: dict, node_name: str) -> None:
+        """
+        Adds a node as an unselected node.
+
+        :param mesh_group: Mesh group to apply the selection to.
+        :param node_name: Path of the node.
+        """
         mesh_group['nodeSelectionList']['unselectedNodes'].append(node_name)
 
-    def mesh_group_add_advanced_coordinate_system(self, mesh_group: dict, origin_node_name: str, translation: object,
-                                                  rotation: object, scale: float) -> None:
+    def mesh_group_add_advanced_coordinate_system(self, mesh_group: dict,
+                                                  origin_node_name: str = '',
+                                                  translation: typing.Optional[object] = None,
+                                                  rotation: typing.Optional[object] = None,
+                                                  scale: float = 1.0) -> None:
+        """
+        Adds an Advanced Coordinate System rule which modifies the target coordinate system,
+        applying a transformation to all data (transforms and vertex data if it exists).
+
+        :param mesh_group: Mesh group to add the Advanced Coordinate System rule to.
+        :param origin_node_name:
+        :param translation: Moves the group along the given vector.
+        :param rotation: Sets the orientation offset of the processed mesh in degrees. Rotates the group after translation.
+        :param scale: Sets the scale offset of the processed mesh.
+        """
         origin_rule = {
             '$type': 'CoordinateSystemRule',
             'useAdvancedData': True,
-            'originNodeName': '' if origin_node_name is None else origin_node_name
+            'originNodeName': self.__default_or_value(origin_node_name, '')
         }
         if translation is not None:
             origin_rule['translation'] = translation
@@ -153,22 +211,33 @@ class SceneManifest():
         mesh_group['rules']['rules'].append(origin_rule)
 
     def mesh_group_add_comment(self, mesh_group: dict, comment: str) -> None:
-        commentRule = {
+        """
+        Adds a Comment rule.
+
+        :param mesh_group: Mesh group to add the comment rule to.
+        :param comment: Text for the comment rule.
+        """
+        comment_rule = {
             '$type': 'CommentRule',
             'comment': comment
         }
-        mesh_group['rules']['rules'].append(commentRule)
+        mesh_group['rules']['rules'].append(comment_rule)
 
     def __default_or_value(self, val, default):
         return default if val is None else val
 
-    def mesh_group_add_cloth_rule(self, mesh_group: dict, cloth_node_name: str,
-                                  inverse_masses_stream_name: str, inverse_masses_channel: int,
-                                  motion_constraints_stream_name: str, motion_constraints_channel: int,
-                                  backstop_stream_name: str, backstop_offset_channel: int,
-                                  backstop_radius_channel: int) -> None:
+    def mesh_group_add_cloth_rule(self, mesh_group: dict,
+                                  cloth_node_name: str,
+                                  inverse_masses_stream_name: typing.Optional[str],
+                                  inverse_masses_channel: typing.Optional[ColorChannel],
+                                  motion_constraints_stream_name: typing.Optional[str],
+                                  motion_constraints_channel: typing.Optional[ColorChannel],
+                                  backstop_stream_name: typing.Optional[str],
+                                  backstop_offset_channel: typing.Optional[ColorChannel],
+                                  backstop_radius_channel: typing.Optional[ColorChannel]) -> None:
         """
-        Adds a Cloth rule. 0 = Red, 1 = Green, 2 = Blue, 3 = Alpha
+        Adds a Cloth rule.
+
         :param mesh_group: Mesh Group to add the cloth rule to
         :param cloth_node_name: Name of the node that the rule applies to
         :param inverse_masses_stream_name: Name of the color stream to use for inverse masses
@@ -177,7 +246,7 @@ class SceneManifest():
         :param motion_constraints_channel: Color channel (index) for motion constraints
         :param backstop_stream_name: Name of the color stream to use for backstop
         :param backstop_offset_channel: Color channel (index) for backstop offset value
-        :param backstop_radius_channel: Color chnanel (index) for backstop radius value
+        :param backstop_radius_channel: Color channel (index) for backstop radius value
         """
         cloth_rule = {
             '$type': 'ClothRule',
@@ -186,22 +255,23 @@ class SceneManifest():
         }
 
         if inverse_masses_channel is not None:
-            cloth_rule['inverseMassesChannel'] = inverse_masses_channel
+            cloth_rule['inverseMassesChannel'] = int(inverse_masses_channel)
         cloth_rule['motionConstraintsStreamName'] = self.__default_or_value(motion_constraints_stream_name, 'Default: 1.0')
         if motion_constraints_channel is not None:
-            cloth_rule['motionConstraintsChannel'] = motion_constraints_channel
+            cloth_rule['motionConstraintsChannel'] = int(motion_constraints_channel)
         cloth_rule['backstopStreamName'] = self.__default_or_value(backstop_stream_name, 'None')
         if backstop_offset_channel is not None:
-            cloth_rule['backstopOffsetChannel'] = backstop_offset_channel
+            cloth_rule['backstopOffsetChannel'] = int(backstop_offset_channel)
         if backstop_radius_channel is not None:
-            cloth_rule['backstopRadiusChannel'] = backstop_radius_channel
+            cloth_rule['backstopRadiusChannel'] = int(backstop_radius_channel)
         mesh_group['rules']['rules'].append(cloth_rule)
 
     def mesh_group_add_lod_rule(self, mesh_group: dict) -> dict:
         """
-        Adds an LOD rule
-        :param mesh_group: Mesh Group to add the rule to
-        :return: LOD rule
+        Adds an LOD rule.
+
+        :param mesh_group: Mesh Group to add the rule to.
+        :return: LOD rule.
         """
         lod_rule = {
             '$type': '{6E796AC8-1484-4909-860A-6D3F22A7346F} LodRule',
@@ -213,9 +283,10 @@ class SceneManifest():
 
     def lod_rule_add_lod(self, lod_rule: dict) -> dict:
         """
-        Adds an LOD level to the LOD rule.  Nodes are added in order.  The first node added represents LOD1, 2nd LOD2, etc
-        :param lod_rule: LOD rule to add the LOD level to
-        :return: LOD level
+        Adds an LOD level to the LOD rule.  Nodes are added in order.  The first node added represents LOD1, 2nd LOD2, etc.
+
+        :param lod_rule: LOD rule to add the LOD level to.
+        :return: LOD level.
         """
         lod = {'selectedNodes': [], 'unselectedNodes': []}
         lod_rule['nodeSelectionList'].append(lod)
@@ -223,36 +294,41 @@ class SceneManifest():
 
     def lod_select_node(self, lod: dict, selected_node: str) -> None:
         """
-        Adds a node as a selected node
-        :param lod: LOD level to add the node to
-        :param selected_node: Path of the node
+        Adds a node as a selected node.
+
+        :param lod: LOD level to add the node to.
+        :param selected_node: Path of the node.
         """
         lod['selectedNodes'].append(selected_node)
 
     def lod_unselect_node(self, lod: dict, unselected_node: str) -> None:
         """
-        Adds a node as an unselected node
-        :param lod: LOD rule to add the node to
-        :param unselected_node: Path of the node
+        Adds a node as an unselected node.
+
+        :param lod: LOD rule to add the node to.
+        :param unselected_node: Path of the node.
         """
         lod['unselectedNodes'].append(unselected_node)
 
-    def mesh_group_add_advanced_mesh_rule(self, mesh_group: dict, use_32bit_vertices: bool, merge_meshes: bool,
-                                          use_custom_normals: bool,
-                                          vertex_color_stream: str) -> None:
+    def mesh_group_add_advanced_mesh_rule(self, mesh_group: dict,
+                                          use_32bit_vertices: bool = False,
+                                          merge_meshes: bool = True,
+                                          use_custom_normals: bool = True,
+                                          vertex_color_stream: typing.Optional[str] = None) -> None:
         """
-        Adds an Advanced Mesh rule
-        :param mesh_group: Mesh Group to add the rule to
-        :param use_32bit_vertices: False = 16bit vertex position precision. True = 32bit vertex position precision
-        :param merge_meshes: Merge all meshes into a single mesh
-        :param use_custom_normals: True = use normals from DCC tool.  False = average normals
-        :param vertex_color_stream: Color stream name to use for Vertex Coloring
+        Adds an Advanced Mesh rule.
+
+        :param mesh_group: Mesh Group to add the rule to.
+        :param use_32bit_vertices: False = 16bit vertex position precision. True = 32bit vertex position precision.
+        :param merge_meshes: Merge all meshes into a single mesh.
+        :param use_custom_normals: True = use normals from DCC tool.  False = average normals.
+        :param vertex_color_stream: Color stream name to use for Vertex Coloring.
         """
         rule = {
             '$type': 'StaticMeshAdvancedRule',
-            'use32bitVertices': self.__default_or_value(use_32bit_vertices, False),
-            'mergeMeshes': self.__default_or_value(merge_meshes, True),
-            'useCustomNormals': self.__default_or_value(use_custom_normals, True)
+            'use32bitVertices': use_32bit_vertices,
+            'mergeMeshes': merge_meshes,
+            'useCustomNormals': use_custom_normals
         }
 
         if vertex_color_stream is not None:
@@ -260,37 +336,41 @@ class SceneManifest():
 
         mesh_group['rules']['rules'].append(rule)
 
-    def mesh_group_add_skin_rule(self, mesh_group: dict, max_weights_per_vertex: int, weight_threshold: float) -> None:
+    def mesh_group_add_skin_rule(self, mesh_group: dict, max_weights_per_vertex: int = 4, weight_threshold: float = 0.001) -> None:
         """
-        Adds a Skin rule
-        :param mesh_group: Mesh Group to add the rule to
-        :param max_weights_per_vertex: Max number of joints that can influence a vertex
-        :param weight_threshold: Weight values below this value will be treated as 0
+        Adds a Skin rule.
+
+        :param mesh_group: Mesh Group to add the rule to.
+        :param max_weights_per_vertex: Max number of joints that can influence a vertex.
+        :param weight_threshold: Weight values below this value will be treated as 0.
         """
         rule = {
             '$type': 'SkinRule',
-            'maxWeightsPerVertex': self.__default_or_value(max_weights_per_vertex, 4),
-            'weightThreshold': self.__default_or_value(weight_threshold, 0.001)
+            'maxWeightsPerVertex': max_weights_per_vertex,
+            'weightThreshold': weight_threshold
         }
 
         mesh_group['rules']['rules'].append(rule)
 
-    def mesh_group_add_tangent_rule(self, mesh_group: dict, tangent_space: int, tspace_method: int) -> None:
+    def mesh_group_add_tangent_rule(self, mesh_group: dict,
+                                    tangent_space: TangentSpaceSource = TangentSpaceSource.SCENE,
+                                    tspace_method: TangentSpaceMethod = TangentSpaceMethod.TSPACE) -> None:
         """
-        Adds a Tangent rule to control tangent space generation
-        :param mesh_group: Mesh Group to add the rule to
-        :param tangent_space: Tangent space source. 0 = Scene, 1 = MikkT Tangent Generation
-        :param tspace_method: MikkT Generation method. 0 = TSpace, 1 = TSpaceBasic
+        Adds a Tangent rule to control tangent space generation.
+
+        :param mesh_group: Mesh Group to add the rule to.
+        :param tangent_space: Tangent space source. 0 = Scene, 1 = MikkT Tangent Generation.
+        :param tspace_method: MikkT Generation method. 0 = TSpace, 1 = TSpaceBasic.
         """
         rule = {
             '$type': 'TangentsRule',
-            'tangentSpace': self.__default_or_value(tangent_space, 1),
-            'tSpaceMethod': self.__default_or_value(tspace_method, 0)
+            'tangentSpace': int(tangent_space),
+            'tSpaceMethod': int(tspace_method)
         }
 
         mesh_group['rules']['rules'].append(rule)
 
-    def __add_physx_base_mesh_group(self, name: str, physics_material: typing.Optional[str]) -> dict:
+    def __add_physx_base_mesh_group(self, name: str, physics_material: typing.Optional[str] = None) -> dict:
         import azlmbr.math
         group = {
             '$type': '{5B03C8E6-8CEE-4DA0-A7FA-CD88689DD45B} MeshGroup',
@@ -314,7 +394,9 @@ class SceneManifest():
 
         return group
 
-    def add_physx_triangle_mesh_group(self, name: str, merge_meshes: bool = True, weld_vertices: bool = False,
+    def add_physx_triangle_mesh_group(self, name: str,
+                                      merge_meshes: bool = True,
+                                      weld_vertices: bool = False,
                                       disable_clean_mesh: bool = False,
                                       force_32bit_indices: bool = False,
                                       suppress_triangle_mesh_remap_table: bool = False,
