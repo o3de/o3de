@@ -461,6 +461,14 @@ def UploadAPLogs(String platformName, String jobName, String workspace, Map para
     }
 }
 
+def UploadTestArtifacts(String jobName, String workspace, String outputDirectory) {
+    catchError(message: "Error archiving test artifacts (this won't fail the build)", buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
+        def cmakeBuildDir = [workspace, ENGINE_REPOSITORY_NAME, outputDirectory].join('/')
+        ArchiveArtifactsOnS3("${cmakeBuildDir}/Testing", "test_artifacts/${jobName}", true)
+        }
+    }
+}
+
 def PostBuildCommonSteps(String workspace, boolean mount = true) {
     echo 'Starting post-build common steps...'
 
@@ -532,6 +540,14 @@ def CreateUploadAPLogsStage(String platformName, String jobName, String workspac
     }
 }
 
+def CreateUploadTestArtifactStage(String jobName, String workspace, String outputDirectory) {
+    return {
+        stage("${jobName}_upload_test_artifacts") {
+            UploadTestArtifacts(jobName, workspace, ouputDirectory)
+        }
+    }
+}
+
 def CreateTeardownStage(Map environmentVars) {
     return {
         stage('Teardown') {
@@ -585,6 +601,10 @@ def CreateSingleNode(Map pipelineConfig, def platform, def build_job, Map envVar
                         }
                         if (build_job_name.toLowerCase().contains('asset') && env.IS_UPLOAD_AP_LOGS?.toBoolean()) {
                             CreateUploadAPLogsStage(platform.key, build_job_name, envVars['WORKSPACE'], platform.value.build_types[build_job_name].PARAMETERS).call()
+                        }
+                        // Upload test artifacts only on builds that failed and ran test suites
+                        if (params.containsKey('CMAKE_TARGET') && "TEST_SUITE" in params.CMAKE_TARGET {
+                            CreateUploadTestArtifactStage(build_job_name, envVars['WORKSPACE'], params.OUTPUT_DIRECTORY)
                         }
                         // All other errors will be raised outside the retry block
                         currentResult = envVars['ON_FAILURE_MARK'] ?: 'FAILURE'
