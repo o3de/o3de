@@ -71,6 +71,14 @@ public:
     //      The value of the argument as integer number.
     virtual const int GetIValue() const = 0;
     // </interfuscator:shuffle>
+
+    // Description:
+    //      Retrieve the value of the argument.
+    // Arguments:
+    //      cmdLineValue. The cmdline value will be filled out if a valid boolean is found.
+    // Return Value:
+    //      Returns true if the cmdline arg is actually a boolean string matching "true" or "false"; otherwise return false.
+    virtual const bool GetBoolValue(bool& cmdLineValue) const = 0;
 };
 
 // Command line interface
