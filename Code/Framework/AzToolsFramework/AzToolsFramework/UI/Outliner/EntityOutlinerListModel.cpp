@@ -47,6 +47,7 @@
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
+#include <AzToolsFramework/Entity/ReadOnly/ReadOnlyEntityInterface.h>
 #include <AzToolsFramework/FocusMode/FocusModeInterface.h>
 #include <AzToolsFramework/ToolsComponents/ComponentAssetMimeDataContainer.h>
 #include <AzToolsFramework/ToolsComponents/ComponentMimeData.h>
@@ -296,6 +297,13 @@ namespace AzToolsFramework
         auto entityUiHandler = m_editorEntityUiInterface->GetHandler(id);
         QIcon icon;
 
+        // TODO - Move to member variable
+        bool isReadOnly = false;
+        if (ReadOnlyEntityInterface* readOnlyEntityInterface = AZ::Interface<ReadOnlyEntityInterface>::Get())
+        {
+            isReadOnly = readOnlyEntityInterface->IsReadOnly(id);
+        }
+
         // Retrieve the icon from the handler
         if (entityUiHandler != nullptr)
         {
@@ -313,7 +321,7 @@ namespace AzToolsFramework
 
         if (isEditorOnly)
         {
-            return QIcon(QString(":/Icons/Entity_Editor_Only.svg"));
+            return QIcon(QString(":/Entity/entity_editoronly.svg"));
         }
 
         AZ::Entity* entity = nullptr;
@@ -322,10 +330,10 @@ namespace AzToolsFramework
 
         if (!isInitiallyActive)
         {
-            return QIcon(QString(":/Icons/Entity_Not_Active.svg"));
+            return QIcon(QString(":/Entity/entity_notactive.svg"));
         }
 
-        return QIcon(QString(":/Icons/Entity.svg"));
+        return isReadOnly ? QIcon(QString(":/Entity/entity_readonly.svg")) : QIcon(QString(":/Entity/entity.svg"));
     }
 
     QVariant EntityOutlinerListModel::GetEntityTooltip(const AZ::EntityId& id) const
