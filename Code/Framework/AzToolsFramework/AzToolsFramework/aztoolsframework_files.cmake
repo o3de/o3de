@@ -444,8 +444,6 @@ set(FILES
     UI/Slice/SliceRelationshipWidget.hxx
     UI/UICore/AspectRatioAwarePixmapWidget.hxx
     UI/UICore/AspectRatioAwarePixmapWidget.cpp
-    UI/UICore/AZAutoSizingScrollArea.hxx
-    UI/UICore/AZAutoSizingScrollArea.cpp
     UI/UICore/ColorPickerDelegate.hxx
     UI/UICore/ColorPickerDelegate.cpp
     UI/UICore/ClickableLabel.hxx
