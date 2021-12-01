@@ -22,9 +22,9 @@ namespace AZ
     {
         namespace SharedPreviewUtils
         {
-            AZStd::unordered_set<AZ::Uuid> GetSupportedAssetTypes()
+            AZStd::vector<AZ::Uuid> GetSupportedAssetTypes()
             {
-                return { RPI::AnyAsset::RTTI_Type(), RPI::MaterialAsset::RTTI_Type(), RPI::ModelAsset::RTTI_Type() };
+                return { RPI::ModelAsset::RTTI_Type(), RPI::MaterialAsset::RTTI_Type(), RPI::AnyAsset::RTTI_Type() };
             }
 
             bool IsSupportedAssetType(AzToolsFramework::Thumbnailer::SharedThumbnailKey key)
@@ -46,11 +46,15 @@ namespace AZ
                         foundIt, &AzToolsFramework::AssetSystemRequestBus::Events::GetAssetsProducedBySourceUUID,
                         sourceKey->GetSourceUuid(), productsAssetInfo);
 
-                    for (const auto& assetInfo : productsAssetInfo)
+                    // Search the product assets for a matching asset type ID in the order of the supported type IDs, which are organized by priority
+                    for (const auto& typeId : supportedTypeIds)
                     {
-                        if (supportedTypeIds.find(assetInfo.m_assetType) != supportedTypeIds.end())
+                        for (const auto& assetInfo : productsAssetInfo)
                         {
-                            return assetInfo;
+                            if (assetInfo.m_assetType == typeId)
+                            {
+                                return assetInfo;
+                            }
                         }
                     }
                     return AZ::Data::AssetInfo();
@@ -59,7 +63,8 @@ namespace AZ
                 // if it's a product thumbnail key just return its assetId
                 AZ::Data::AssetInfo assetInfo;
                 auto productKey = azrtti_cast<const AzToolsFramework::AssetBrowser::ProductThumbnailKey*>(key.data());
-                if (productKey && supportedTypeIds.find(productKey->GetAssetType()) != supportedTypeIds.end())
+                if (productKey &&
+                    AZStd::find(supportedTypeIds.begin(), supportedTypeIds.end(), productKey->GetAssetType()) != supportedTypeIds.end())
                 {
                     AZ::Data::AssetCatalogRequestBus::BroadcastResult(
                         assetInfo, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetInfoById, productKey->GetAssetId());

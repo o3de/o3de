@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <AzFramework/Viewport/ViewportId.h>
 #include <AzToolsFramework/Manipulators/ManipulatorBus.h>
 #include <AzToolsFramework/UnitTest/AzToolsFrameworkTestHelpers.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
@@ -40,7 +41,7 @@ namespace AzManipulatorTestFramework
         //! Set the angular step.
         virtual void SetAngularStep(float step) = 0;
         //! Get the viewport id.
-        virtual int GetViewportId() const = 0;
+        virtual AzFramework::ViewportId GetViewportId() const = 0;
         //! Updates the visibility state.
         //! Updates which entities are currently visible given the current camera state.
         virtual void UpdateVisibility() = 0;

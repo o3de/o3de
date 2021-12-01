@@ -5,21 +5,22 @@
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "EditorReflectionProbeBus"
+                "name": "Editor Reflection Probe",
+                "category": "Rendering"
             },
             "methods": [
                 {
                     "base": "BakeReflectionProbe",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke BakeReflectionProbe"
+                        "tooltip": "When signaled, this will invoke Bake Reflection Probe"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after BakeReflectionProbe is invoked"
+                        "tooltip": "Signaled after Bake Reflection Probe is invoked"
                     },
                     "details": {
-                        "name": "BakeReflectionProbe"
+                        "name": "Bake Reflection Probe"
                     },
                     "results": [
                         {

@@ -5,7 +5,7 @@
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "UiParticleEmitterBus",
+                "name": "UI Particle Emitter",
                 "category": "UI"
             },
             "methods": [

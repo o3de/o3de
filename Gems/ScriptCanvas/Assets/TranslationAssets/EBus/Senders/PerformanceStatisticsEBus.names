@@ -5,7 +5,7 @@
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "PerformanceStatisticsEBus"
+                "name": "Performance Statistics EBus"
             },
             "methods": [
                 {

@@ -54,6 +54,7 @@
 #include <AzToolsFramework/API/ComponentEntityObjectBus.h>
 #include <AzToolsFramework/API/EditorCameraBus.h>
 #include <AzToolsFramework/API/ViewPaneOptions.h>
+#include <AzToolsFramework/API/ViewportEditorModeTrackerNotificationBus.h>
 #include <AzToolsFramework/Entity/EditorEntitySearchComponent.h>
 #include <AzToolsFramework/Entity/EditorEntitySortComponent.h>
 #include <AzToolsFramework/Entity/EditorEntityModelComponent.h>
@@ -385,6 +386,7 @@ namespace AzToolsFramework
         ComponentModeFramework::ComponentModeDelegate::Reflect(context);
 
         ViewportInteraction::ViewportInteractionReflect(context);
+        ViewportEditorModeNotifications::Reflect(context);
 
         Camera::EditorCameraRequests::Reflect(context);
         AzToolsFramework::EditorTransformComponentSelectionRequests::Reflect(context);

@@ -4,7 +4,7 @@ For complete copyright and license terms please see the LICENSE at the root of t
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
 
-A fixture for using the Asset Processor in lmbr_test, this will stop the asset processor after every test via
+A fixture for using the Asset Processor, this will stop the asset processor after every test via
 the teardown. Using the fixture at class level will stop the asset processor after the suite completes.
 Using the fixture at test level will stop asset processor after the test completes. Calling this fixture as a test argument will still run the teardown to stop the Asset Processor.
 """

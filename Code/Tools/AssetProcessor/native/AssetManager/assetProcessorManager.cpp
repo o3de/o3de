@@ -274,11 +274,9 @@ namespace AssetProcessor
         }
 
         //look for the job in flight first
-        bool found = false;
         auto foundElement = m_jobRunKeyToJobInfoMap.find(request.m_jobRunKey);
         if (foundElement != m_jobRunKeyToJobInfoMap.end())
         {
-            found = true;
             jobInfo = foundElement->second;
         }
         else
@@ -296,7 +294,6 @@ namespace AssetProcessor
 
             AZ_Assert(jobInfos.size() == 1, "Should only have found one jobInfo!!!");
             jobInfo = AZStd::move(jobInfos[0]);
-            found = true;
         }
 
         if (jobInfo.m_status == JobStatus::Failed_InvalidSourceNameExceedsMaxLimit)

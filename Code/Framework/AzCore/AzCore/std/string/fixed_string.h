@@ -465,6 +465,15 @@ namespace AZStd
     template<class Element, size_t MaxElementCount, class Traits>
     constexpr bool operator>=(const Element* lhs, const basic_fixed_string<Element, MaxElementCount, Traits>& rhs);
 
+    // C++20 erase helpers
+    template<class Element, size_t MaxElementCount, class Traits, class U>
+    constexpr auto erase(basic_fixed_string<Element, MaxElementCount, Traits>& container, const U& element)
+        -> typename basic_fixed_string<Element, MaxElementCount, Traits>::size_type;
+
+    template<class Element, size_t MaxElementCount, class Traits, class Predicate>
+    constexpr auto erase_if(basic_fixed_string<Element, MaxElementCount, Traits>& container, Predicate predicate)
+        -> typename basic_fixed_string<Element, MaxElementCount, Traits>::size_type;
+
     template<class T>
     struct hash;
 

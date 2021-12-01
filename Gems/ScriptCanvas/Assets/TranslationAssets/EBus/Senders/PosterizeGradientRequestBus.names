@@ -5,7 +5,7 @@
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "PosterizeGradientRequestBus"
+                "name": "Posterize Gradient"
             },
             "methods": [
                 {
