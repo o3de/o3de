@@ -34,7 +34,7 @@ namespace GraphModelIntegration
 
         //! Constructor
         //! \param nodeName Name of the node that will show up in the Palette
-        //! \param editorId Unique name of the client system editor (ex: AZ_CRC("ShaderCanvas", 0xa6d1a85a))
+        //! \param editorId Unique name of the client system editor (ex: AZ_CRC("ShaderCanvas", 0x0a1dff96))
         StandardNodePaletteItem(AZStd::string_view nodeName, GraphCanvas::EditorId editorId)
             : DraggableNodePaletteTreeItem(nodeName, editorId)
         {

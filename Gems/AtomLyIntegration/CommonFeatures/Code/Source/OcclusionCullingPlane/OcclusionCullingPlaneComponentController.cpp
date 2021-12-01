@@ -59,12 +59,12 @@ namespace AZ
 
         void OcclusionCullingPlaneComponentController::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
         {
-            provided.push_back(AZ_CRC("OcclusionCullingPlaneService", 0x9123f33d));
+            provided.push_back(AZ_CRC("OcclusionCullingPlaneService", 0x7d036c2e));
         }
 
         void OcclusionCullingPlaneComponentController::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
         {
-            incompatible.push_back(AZ_CRC("OcclusionCullingPlaneService", 0x9123f33d));
+            incompatible.push_back(AZ_CRC("OcclusionCullingPlaneService", 0x7d036c2e));
         }
 
         void OcclusionCullingPlaneComponentController::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
