@@ -9,6 +9,7 @@
 #include <AzCore/Asset/AssetManagerBus.h>
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/IO/FileIOEventBus.h>
+#include <AzCore/IO/Streamer/FileRequest.h>
 #include <AzFramework/Asset/AssetSystemBus.h>
 #include <AzFramework/IO/FileOperations.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>

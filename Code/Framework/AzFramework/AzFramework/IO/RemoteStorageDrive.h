@@ -16,8 +16,15 @@
 #include <AzCore/std/chrono/clocks.h>
 #include <AzFramework/IO/RemoteFileIO.h>
 
+namespace AZ::IO
+{
+    class RequestPath;
+    struct FileRequestReportData;
+}
+
 namespace AzFramework
 {
+
     struct RemoteStorageDriveConfig final :
         public AZ::IO::IStreamerStackConfig
     {
@@ -53,7 +60,7 @@ namespace AzFramework
 
     protected:
         static constexpr AZ::s32 s_maxRequests = 1;
-            
+
         void ReadFile(AZ::IO::FileRequest* request);
         bool CancelRequest(AZ::IO::FileRequest* cancelRequest, AZ::IO::FileRequestPtr& target);
         void FileExistsRequest(AZ::IO::FileRequest* request);
@@ -63,7 +70,7 @@ namespace AzFramework
             const AZ::IO::RequestPath*& activeFile) const;
         void FlushCache(const AZ::IO::RequestPath& filePath);
         void FlushEntireCache();
-        void Report(const AZ::IO::FileRequest::ReportData& data) const;
+        void Report(const AZ::IO::FileRequestReportData& data) const;
 
         AZ::IO::RemoteFileIO m_fileIO;
         AZ::IO::TimedAverageWindow<AZ::IO::s_statisticsWindowSize> m_fileOpenCloseTimeAverage;

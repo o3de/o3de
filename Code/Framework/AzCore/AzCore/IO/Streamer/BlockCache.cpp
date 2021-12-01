@@ -137,7 +137,7 @@ namespace AZ::IO
         AZStd::visit([this, request](auto&& args)
         {
             using Command = AZStd::decay_t<decltype(args)>;
-            if constexpr (AZStd::is_same_v<Command, FileRequest::ReadData>)
+            if constexpr (AZStd::is_same_v<Command, FileRequestReadData>)
             {
                 ReadFile(request, args);
                 return;
@@ -166,7 +166,7 @@ namespace AZ::IO
         {
             Section& delayed = m_delayedSections.front();
             AZ_Assert(delayed.m_parent, "Delayed section doesn't have a reference to the original request.");
-            auto data = AZStd::get_if<FileRequest::ReadData>(&delayed.m_parent->GetCommand());
+            auto data = AZStd::get_if<FileRequestReadData>(&delayed.m_parent->GetCommand());
             AZ_Assert(data, "A request in the delayed queue of the BlockCache didn't have a parent with read data.");
             // This call can add the same section to the back of the queue if there's not
             // enough space. Because of this the entry needs to be removed from the delayed
@@ -233,7 +233,7 @@ namespace AZ::IO
         }
     }
 
-    void BlockCache::ReadFile(FileRequest* request, FileRequest::ReadData& data)
+    void BlockCache::ReadFile(FileRequest* request, FileRequestReadData& data)
     {
         if (!m_next)
         {
@@ -272,7 +272,7 @@ namespace AZ::IO
         Section main;
         Section epilog;
 
-        auto& data = AZStd::get<FileRequest::ReadData>(request->GetCommand());
+        auto& data = AZStd::get<FileRequestReadData>(request->GetCommand());
 
         if (!SplitRequest(prolog, main, epilog, data.m_path, fileLength, data.m_offset, data.m_size,
             reinterpret_cast<u8*>(data.m_output)))

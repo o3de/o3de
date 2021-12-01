@@ -222,19 +222,19 @@ namespace AZ::IO
         {
             using Command = AZStd::decay_t<decltype(args)>;
             if constexpr (
-                AZStd::is_same_v<Command, FileRequest::ReadData> ||
+                AZStd::is_same_v<Command, FileRequestReadData> ||
                 AZStd::is_same_v<Command, FileRequest::CompressedReadData>)
             {
-                auto parentReadRequest = next->GetCommandFromChain<FileRequest::ReadRequestData>();
+                auto parentReadRequest = next->GetCommandFromChain<FileRequestReadRequestData>();
                 AZ_Assert(parentReadRequest != nullptr, "The issued read request can't be found for the (compressed) read command.");
-                
+
                 size_t size = parentReadRequest->m_size;
                 if (parentReadRequest->m_output == nullptr)
                 {
                     AZ_Assert(parentReadRequest->m_allocator,
                         "The read request was issued without a memory allocator or valid output address.");
                     u64 recommendedSize = size;
-                    if constexpr (AZStd::is_same_v<Command, FileRequest::ReadData>)
+                    if constexpr (AZStd::is_same_v<Command, FileRequestReadData>)
                     {
                         recommendedSize = m_recommendations.CalculateRecommendedMemorySize(size, parentReadRequest->m_offset);
                     }
@@ -249,7 +249,7 @@ namespace AZ::IO
                     parentReadRequest->m_output = allocation.m_address;
                     parentReadRequest->m_outputSize = allocation.m_size;
                     parentReadRequest->m_memoryType = allocation.m_type;
-                    if constexpr (AZStd::is_same_v<Command, FileRequest::ReadData>)
+                    if constexpr (AZStd::is_same_v<Command, FileRequestReadData>)
                     {
                         args.m_output = parentReadRequest->m_output;
                         args.m_outputSize = allocation.m_size;
@@ -266,8 +266,8 @@ namespace AZ::IO
                     m_processingStartTime = AZStd::chrono::system_clock::now();
                 }
 #endif
-                
-                if constexpr (AZStd::is_same_v<Command, FileRequest::ReadData>)
+
+                if constexpr (AZStd::is_same_v<Command, FileRequestReadData>)
                 {
                     m_threadData.m_lastFilePath = args.m_path;
                     m_threadData.m_lastFileOffset = args.m_offset + args.m_size;
@@ -345,7 +345,7 @@ namespace AZ::IO
 #endif
         {
             using Command = AZStd::decay_t<decltype(args)>;
-            if constexpr (AZStd::is_same_v<Command, FileRequest::ReadRequestData>)
+            if constexpr (AZStd::is_same_v<Command, FileRequestReadRequestData>)
             {
                 if (args.m_output == nullptr && args.m_allocator != nullptr)
                 {
@@ -411,7 +411,7 @@ namespace AZ::IO
                 ++pendingIt;
             }
         }
-        
+
         m_threadData.m_streamStack->QueueRequest(request);
     }
 
@@ -424,7 +424,7 @@ namespace AZ::IO
             if (pending->WorksOn(data.m_target))
             {
                 // Read requests are the only requests that use deadlines and dynamic priorities.
-                auto readRequest = pending->GetCommandFromChain<FileRequest::ReadRequestData>();
+                auto readRequest = pending->GetCommandFromChain<FileRequestReadRequestData>();
                 if (readRequest)
                 {
                     readRequest->m_deadline = data.m_newDeadline;
@@ -463,8 +463,8 @@ namespace AZ::IO
 
         // Order is the same for both requests, so prioritize the request that are at risk of missing
         // it's deadline.
-        const FileRequest::ReadRequestData* firstRead = first->GetCommandFromChain<FileRequest::ReadRequestData>();
-        const FileRequest::ReadRequestData* secondRead = second->GetCommandFromChain<FileRequest::ReadRequestData>();
+        const FileRequestReadRequestData* firstRead = first->GetCommandFromChain<FileRequestReadRequestData>();
+        const FileRequestReadRequestData* secondRead = second->GetCommandFromChain<FileRequestReadRequestData>();
 
         if (firstRead == nullptr || secondRead == nullptr)
         {
@@ -496,7 +496,7 @@ namespace AZ::IO
         auto sameFile = [this](auto&& args)
         {
             using Command = AZStd::decay_t<decltype(args)>;
-            if constexpr (AZStd::is_same_v<Command, FileRequest::ReadData>)
+            if constexpr (AZStd::is_same_v<Command, FileRequestReadData>)
             {
                 return m_threadData.m_lastFilePath == args.m_path;
             }
@@ -517,7 +517,7 @@ namespace AZ::IO
             auto offset = [](auto&& args) -> s64
             {
                 using Command = AZStd::decay_t<decltype(args)>;
-                if constexpr (AZStd::is_same_v<Command, FileRequest::ReadData>)
+                if constexpr (AZStd::is_same_v<Command, FileRequestReadData>)
                 {
                     return aznumeric_caster(args.m_offset);
                 }

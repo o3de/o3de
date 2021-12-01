@@ -207,7 +207,7 @@ namespace AZ
     {
         if (m_streamer)
         {
-            m_streamer->QueueRequest(m_streamer->Report(AZ::IO::FileRequest::ReportData::ReportType::FileLocks));
+            m_streamer->QueueRequest(m_streamer->Report(AZ::IO::FileRequestReportData::ReportType::FileLocks));
         }
     }
 

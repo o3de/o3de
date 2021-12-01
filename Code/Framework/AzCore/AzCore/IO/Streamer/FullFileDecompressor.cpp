@@ -91,12 +91,12 @@ namespace AZ::IO
         AZStd::visit([this, request](auto&& args)
         {
             using Command = AZStd::decay_t<decltype(args)>;
-            if constexpr (AZStd::is_same_v<Command, FileRequest::ReadRequestData>)
+            if constexpr (AZStd::is_same_v<Command, FileRequestReadRequestData>)
             {
                 PrepareReadRequest(request, args);
             }
-            else if constexpr (AZStd::is_same_v<Command, FileRequest::CreateDedicatedCacheData> ||
-                AZStd::is_same_v<Command, FileRequest::DestroyDedicatedCacheData>)
+            else if constexpr (AZStd::is_same_v<Command, FileRequestCreateDedicatedCacheData> ||
+                AZStd::is_same_v<Command, FileRequestDestroyDedicatedCacheData>)
             {
                 PrepareDedicatedCache(request, args.m_path);
             }
@@ -343,7 +343,7 @@ namespace AZ::IO
             m_numRunningJobs == 0;
     }
 
-    void FullFileDecompressor::PrepareReadRequest(FileRequest* request, FileRequest::ReadRequestData& data)
+    void FullFileDecompressor::PrepareReadRequest(FileRequest* request, FileRequestReadRequestData &data)
     {
         CompressionInfo info;
         if (CompressionUtils::FindCompressionInfo(info, data.m_path.GetRelativePath()))
@@ -412,12 +412,12 @@ namespace AZ::IO
             AZStd::visit([request, &info, nextRequest](auto&& args)
             {
                 using Command = AZStd::decay_t<decltype(args)>;
-                if constexpr (AZStd::is_same_v<Command, FileRequest::CreateDedicatedCacheData>)
+                if constexpr (AZStd::is_same_v<Command, FileRequestCreateDedicatedCacheData>)
                 {
                     nextRequest->CreateDedicatedCacheCreation(AZStd::move(info.m_archiveFilename),
                         FileRange::CreateRange(info.m_offset, info.m_compressedSize), request);
                 }
-                else if constexpr (AZStd::is_same_v<Command, FileRequest::DestroyDedicatedCacheData>)
+                else if constexpr (AZStd::is_same_v<Command, FileRequestDestroyDedicatedCacheData>)
                 {
                     nextRequest->CreateDedicatedCacheDestruction(AZStd::move(info.m_archiveFilename),
                         FileRange::CreateRange(info.m_offset, info.m_compressedSize), request);

@@ -210,7 +210,7 @@ namespace AZ::IO
         IStreamerTypes::ClaimMemory claimMemory) const
     {
         AZ_Assert(request.m_request, "The request handle provided to Streamer::GetReadRequestResult is invalid.");
-        auto readRequest = AZStd::get_if<FileRequest::ReadRequestData>(&request.m_request->GetCommand());
+        auto readRequest = AZStd::get_if<FileRequestReadRequestData>(&request.m_request->GetCommand());
         if (readRequest != nullptr)
         {
             buffer = readRequest->m_output;
@@ -219,7 +219,7 @@ namespace AZ::IO
             {
                 AZ_Assert(HasRequestCompleted(request), "Claiming memory from a read request that's still in progress. "
                     "This can lead to crashing if data is still being streamed to the request's buffer.");
-                // The caller has claimed the buffer and is now responsible for clearing it. 
+                // The caller has claimed the buffer and is now responsible for clearing it.
                 readRequest->m_allocator->UnlockAllocator();
                 readRequest->m_allocator = nullptr;
             }
@@ -281,19 +281,19 @@ namespace AZ::IO
         }
     }
 
-    FileRequestPtr Streamer::Report(FileRequest::ReportData::ReportType reportType)
+    FileRequestPtr Streamer::Report(FileRequestReportData::ReportType reportType)
     {
         FileRequestPtr result = CreateRequest();
         Report(result, reportType);
         return result;
     }
 
-    FileRequestPtr& Streamer::Report(FileRequestPtr& request, FileRequest::ReportData::ReportType reportType)
+    FileRequestPtr& Streamer::Report(FileRequestPtr& request, FileRequestReportData::ReportType reportType)
     {
         request->m_request.CreateReport(reportType);
         return request;
     }
-    
+
     Streamer::Streamer(const AZStd::thread_desc& threadDesc, AZStd::unique_ptr<Scheduler> streamStack)
         : m_streamStack(AZStd::move(streamStack))
     {

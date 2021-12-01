@@ -204,7 +204,7 @@ namespace AZ
                                 m_latePredictionsPercentageStat.GetMostRecentSample());
                         }
                     }
-                    auto readRequest = AZStd::get_if<FileRequest::ReadRequestData>(&top->GetCommand());
+                    auto readRequest = AZStd::get_if<FileRequestReadRequestData>(&top->GetCommand());
                     if (readRequest != nullptr)
                     {
                         m_missedDeadlinePercentageStat.PushSample(now < readRequest->m_deadline ? 0.0 : 1.0);

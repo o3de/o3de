@@ -8,6 +8,7 @@
 
 
 #include <ATLEntities.h>
+#include <AzCore/IO/Streamer/FileRequest.h>
 
 namespace Audio
 {
@@ -285,5 +286,23 @@ namespace Audio
 
         return sResult;
     }
+
+    CATLAudioFileEntry::CATLAudioFileEntry(const char * const filePath, IATLAudioFileEntryData * const implData)
+        : m_filePath(filePath)
+        , m_fileSize(0)
+        , m_useCount(0)
+        , m_memoryBlockAlignment(AUDIO_MEMORY_ALIGNMENT)
+        , m_flags(eAFF_NOTFOUND)
+        , m_dataScope(eADS_ALL)
+        , m_memoryBlock(nullptr)
+        , m_implData(implData)
+    {
+    }
+
+    CATLAudioFileEntry::~CATLAudioFileEntry()
+    {
+
+    }
+
 #endif // !AUDIO_RELEASE
 } // namespace Audio

@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <AzCore/IO/Streamer/FileRequest.h>
 #include <AzCore/IO/IStreamerTypes.h>
 #include <AzCore/IO/Streamer/Statistics.h>
 #include <AzCore/IO/Streamer/StreamerConfiguration.h>
@@ -23,7 +24,7 @@
 namespace AZ::IO
 {
     class FileRequest;
-    
+
     class Scheduler final
     {
     public:
@@ -63,7 +64,7 @@ namespace AZ::IO
         void Thread_ProcessTillIdle();
         void Thread_ProcessCancelRequest(FileRequest* request, FileRequest::CancelData& data);
         void Thread_ProcessRescheduleRequest(FileRequest* request, FileRequest::RescheduleData& data);
-        
+
         enum class Order
         {
             FirstRequest, //< The first request is the most important to process next.

@@ -100,7 +100,7 @@ namespace AZ::IO
 
         void QueueReadRequest(FileRequest* request)
         {
-            auto data = AZStd::get_if<FileRequest::ReadData>(&request->GetCommand());
+            auto data = AZStd::get_if<FileRequestReadData>(&request->GetCommand());
             if (data)
             {
                 if (m_fakeFileFound)
@@ -158,7 +158,7 @@ namespace AZ::IO
 
         void QueueCanceledReadRequest(FileRequest* request)
         {
-            auto data = AZStd::get_if<FileRequest::ReadData>(&request->GetCommand());
+            auto data = AZStd::get_if<FileRequestReadData>(&request->GetCommand());
             if (data)
             {
                 ReadFile(data->m_output, data->m_path, data->m_offset, data->m_size);

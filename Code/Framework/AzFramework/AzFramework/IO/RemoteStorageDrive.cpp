@@ -83,9 +83,9 @@ namespace AzFramework
         AZ_PROFILE_FUNCTION(AzCore);
         AZ_Assert(request, "PrepareRequest was provided a null request.");
 
-        if (AZStd::holds_alternative<FileRequest::ReadRequestData>(request->GetCommand()))
+        if (AZStd::holds_alternative<FileRequestReadRequestData>(request->GetCommand()))
         {
-            auto& readRequest = AZStd::get<FileRequest::ReadRequestData>(request->GetCommand());
+            auto& readRequest = AZStd::get<FileRequestReadRequestData>(request->GetCommand());
 
             FileRequest* read = m_context->GetNewInternalRequest();
             read->CreateRead(request, readRequest.m_output, readRequest.m_outputSize, readRequest.m_path,
@@ -106,7 +106,7 @@ namespace AzFramework
         {
             using namespace AZ::IO;
             using Command = AZStd::decay_t<decltype(args)>;
-            if constexpr (AZStd::is_same_v<Command, FileRequest::ReadData> ||
+            if constexpr (AZStd::is_same_v<Command, FileRequestReadData> ||
                 AZStd::is_same_v<Command, FileRequest::FileExistsCheckData> ||
                 AZStd::is_same_v<Command, FileRequest::FileMetaDataRetrievalData>)
             {
@@ -132,7 +132,7 @@ namespace AzFramework
                 {
                     FlushEntireCache();
                 }
-                else if constexpr (AZStd::is_same_v<Command, FileRequest::ReportData>)
+                else if constexpr (AZStd::is_same_v<Command, FileRequestReportData>)
                 {
                     Report(args);
                 }
@@ -152,7 +152,7 @@ namespace AzFramework
             {
                 using namespace AZ::IO;
                 using Command = AZStd::decay_t<decltype(args)>;
-                if constexpr (AZStd::is_same_v<Command, FileRequest::ReadData>)
+                if constexpr (AZStd::is_same_v<Command, FileRequestReadData>)
                 {
                     ReadFile(request);
                 }
@@ -199,7 +199,7 @@ namespace AzFramework
         {
             activeFile = &m_filePaths[m_activeCacheSlot];
         }
-            
+
         // Estimate requests in this stack entry.
         for (FileRequest* request : m_pendingRequests)
         {
@@ -232,7 +232,7 @@ namespace AzFramework
         {
             using namespace AZ::IO;
             using Command = AZStd::decay_t<decltype(args)>;
-            if constexpr (AZStd::is_same_v<Command, FileRequest::ReadData>)
+            if constexpr (AZStd::is_same_v<Command, FileRequestReadData>)
             {
                 targetFile = &args.m_path;
                 readSize = args.m_size;
@@ -279,8 +279,8 @@ namespace AzFramework
         using namespace AZ::IO;
 
         AZ_PROFILE_FUNCTION(AzCore);
-            
-        auto data = AZStd::get_if<FileRequest::ReadData>(&request->GetCommand());
+
+        auto data = AZStd::get_if<FileRequestReadData>(&request->GetCommand());
         AZ_Assert(data, "Request doing reading in the RemoteStorageDrive didn't contain read data.");
 
         HandleType file = InvalidHandle;
@@ -292,7 +292,7 @@ namespace AzFramework
             file = m_fileHandles[cacheIndex];
             m_fileLastUsed[cacheIndex] = AZStd::chrono::high_resolution_clock::now();
         }
-            
+
         // If the file is not open, eject the oldest entry from the cache and open the file for reading.
         if (file == InvalidHandle)
         {
@@ -325,7 +325,7 @@ namespace AzFramework
         }
         m_activeCacheSlot = cacheIndex;
 
-        AZ_Assert(file != InvalidHandle, 
+        AZ_Assert(file != InvalidHandle,
             "While searching for file '%s' RemoteStorageDevice::ReadFile encountered a problem that wasn't reported.", data->m_path.GetRelativePath());
         {
             TIMED_AVERAGE_WINDOW_SCOPE(m_readTimeAverage);
@@ -357,7 +357,7 @@ namespace AzFramework
             }
         }
         m_readSizeAverage.PushEntry(data->m_size);
-            
+
         request->SetStatus(IStreamerTypes::RequestStatus::Completed);
         m_context->MarkRequestAsCompleted(request);
     }
@@ -507,7 +507,7 @@ namespace AzFramework
         using namespace AZ::IO;
 
         using DoubleSeconds = AZStd::chrono::duration<double>;
-            
+
         double totalBytesReadMB = m_readSizeAverage.GetTotal() / (1024.0 * 1024.0);
         double totalReadTimeSec = AZStd::chrono::duration_cast<DoubleSeconds>(m_readTimeAverage.GetTotal()).count();
         if (m_readSizeAverage.GetTotal() > 1) // A default is always added.
@@ -526,13 +526,13 @@ namespace AzFramework
         StreamStackEntry::CollectStatistics(statistics);
     }
 
-    void RemoteStorageDrive::Report(const AZ::IO::FileRequest::ReportData& data) const
+    void RemoteStorageDrive::Report(const AZ::IO::FileRequestReportData& data) const
     {
         using namespace AZ::IO;
 
         switch (data.m_reportType)
         {
-        case FileRequest::ReportData::ReportType::FileLocks:
+        case FileRequestReportData::ReportType::FileLocks:
             for (AZ::u32 i = 0; i < m_fileHandles.size(); ++i)
             {
                 if (m_fileHandles[i] != InvalidHandle)

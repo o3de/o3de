@@ -16,6 +16,8 @@
 #include <Rendering/SharedBuffer.h>
 #include <Rendering/HairCommon.h>
 
+#include <numeric>
+
 namespace AZ
 {
     namespace Render
@@ -72,7 +74,7 @@ namespace AZ
             );
             m_buffer = Hair::UtilityClass::CreateBuffer("Hair Gem", descriptor, nullptr);
         }
-        
+
         void SharedBuffer::CreateBufferAsset()
         {
             // Create the shared buffer pool
@@ -103,16 +105,16 @@ namespace AZ
                 bufferDescriptor.m_byteCount = m_sizeInBytes;
                 bufferDescriptor.m_alignment = m_alignment;
                 creator.SetBuffer(nullptr, 0, bufferDescriptor);
-                
+
                 RHI::BufferViewDescriptor viewDescriptor;
                 viewDescriptor.m_elementFormat = RHI::Format::Unknown;
 
-                // [To Do] - set this as AZ::Vector4 for offset approach shader code optimization 
+                // [To Do] - set this as AZ::Vector4 for offset approach shader code optimization
                 viewDescriptor.m_elementSize = sizeof(float);
                 viewDescriptor.m_elementCount = aznumeric_cast<uint32_t>(m_sizeInBytes) / sizeof(float);
                 viewDescriptor.m_elementOffset = 0;
                 creator.SetBufferViewDescriptor(viewDescriptor);
-                
+
                 creator.End(m_bufferAsset);
             }
         }
@@ -130,7 +132,7 @@ namespace AZ
             //      size calculation must be added.
             // Requirement: the buffer already has an assert on allocation beyond the memory.  In the future it should
             // support greedy memory allocation when memory has reached its end.  This must not invalidate the buffer during
-            // the current frame, hence allocation of second buffer, fence and a copy must take place. 
+            // the current frame, hence allocation of second buffer, fence and a copy must take place.
 
             CalculateAlignment(buffersDescriptors);
 
@@ -198,7 +200,7 @@ namespace AZ
         }
 
         //! Update buffer's content with sourceData at an offset of bufferByteOffset
-        bool SharedBuffer::UpdateData(const void* sourceData, uint64_t sourceDataSizeInBytes, uint64_t bufferByteOffset) 
+        bool SharedBuffer::UpdateData(const void* sourceData, uint64_t sourceDataSizeInBytes, uint64_t bufferByteOffset)
         {
             AZStd::lock_guard<AZStd::mutex> lock(m_allocatorMutex);
             if (m_buffer.get())
@@ -234,7 +236,7 @@ namespace AZ
         //! Utility function to create a resource view of different type than the shared buffer data.
         //! Since this class is sub-buffer container, this method should be used after creating
         //!  a new allocation to be used as a sub-buffer.
-        //! Notice the alignment required according to the element size - this might need 
+        //! Notice the alignment required according to the element size - this might need
         RHI::BufferViewDescriptor SharedBuffer::CreateResourceViewWithDifferentFormat(
             uint32_t offsetInBytes, uint32_t elementCount, uint32_t elementSize,
             RHI::Format format, RHI::BufferBindFlags overrideBindFlags)

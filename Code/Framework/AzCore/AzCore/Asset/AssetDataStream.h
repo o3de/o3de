@@ -100,7 +100,7 @@ namespace AZ::Data
         //! The path and file name of the asset being loaded
         AZStd::string m_filePath;
 
-        //! The offset into the file to start loading at.  
+        //! The offset into the file to start loading at.
         size_t m_fileOffset{ 0 };
 
         //! The amount of data that's expected to be loaded.
@@ -120,7 +120,7 @@ namespace AZ::Data
         size_t m_curOffset{ 0 };
 
         //! The current active streamer read request - tracked in case we need to cancel it prematurely
-        AZ::IO::FileRequestPtr m_curReadRequest{ nullptr };
+        AZ::IO::FileRequestPtr m_curReadRequest;
 
         //! The current request deadline.  Used to avoid requesting a reschedule to the same (current) deadline.
         AZStd::chrono::milliseconds m_curDeadline{ AZ::IO::IStreamerTypes::s_noDeadline };

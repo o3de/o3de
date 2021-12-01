@@ -10,11 +10,13 @@
 #include "ScriptCanvasMemoryAsset.h"
 #include "ScriptCanvasUndoHelper.h"
 
-#include <ScriptCanvas/Assets/ScriptCanvasAssetHandler.h>
+#include <AzCore/IO/Streamer/StreamerContext.h>
+#include <AzCore/IO/Streamer/FileRequest.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
-#include <ScriptCanvas/Asset/ScriptCanvasAssetBase.h>
-#include <ScriptCanvas/Components/EditorGraph.h>
 #include <Editor/Assets/ScriptCanvasAssetTrackerBus.h>
+#include <ScriptCanvas/Asset/ScriptCanvasAssetBase.h>
+#include <ScriptCanvas/Assets/ScriptCanvasAssetHandler.h>
+#include <ScriptCanvas/Components/EditorGraph.h>
 
 namespace ScriptCanvasEditor
 {
@@ -408,7 +410,7 @@ namespace ScriptCanvasEditor
         // This updates the asset Id with the canonical assetId on SourceFileChanged
 
         // This occurs for new ScriptCanvas assets because before the SC asset is saved to disk, the asset database
-        // has no asset Id associated with it, so this uses the supplied source path to find the asset Id registered 
+        // has no asset Id associated with it, so this uses the supplied source path to find the asset Id registered
         AZStd::string fullPath;
         AzFramework::StringFunc::Path::Join(scanFolder.data(), relativePath.data(), fullPath);
         AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::NormalizePath, fullPath);

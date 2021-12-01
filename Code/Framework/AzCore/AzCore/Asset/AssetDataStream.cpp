@@ -8,10 +8,13 @@
 
 #include <AzCore/Asset/AssetDataStream.h>
 
+#include <AzCore/IO/Streamer/FileRequest.h>
+
 namespace AZ::Data
 {
     AssetDataStream::AssetDataStream(AZ::IO::IStreamerTypes::RequestMemoryAllocator* bufferAllocator)
         : m_bufferAllocator(bufferAllocator ? bufferAllocator : &m_defaultAllocator)
+        , m_curReadRequest(nullptr)
     {
         ClearInternalStateData();
     }
@@ -83,7 +86,7 @@ namespace AZ::Data
                 AZ_PROFILE_SCOPE(AzCore, "AZ::Data::LoadAssetDataStreamCallback %s",
                     m_filePath.c_str());
 
-                // Get the results 
+                // Get the results
                 auto streamer = AZ::Interface<AZ::IO::IStreamer>::Get();
                 AZ::u64 bytesRead = 0;
                 streamer->GetReadRequestResult(fileHandle, m_buffer, bytesRead,

@@ -62,9 +62,9 @@ namespace AZ
             AZ_PROFILE_FUNCTION(AzCore);
             AZ_Assert(request, "PrepareRequest was provided a null request.");
 
-            if (AZStd::holds_alternative<FileRequest::ReadRequestData>(request->GetCommand()))
+            if (AZStd::holds_alternative<FileRequestReadRequestData>(request->GetCommand()))
             {
-                auto& readRequest = AZStd::get<FileRequest::ReadRequestData>(request->GetCommand());
+                auto& readRequest = AZStd::get<FileRequestReadRequestData>(request->GetCommand());
 
                 FileRequest* read = m_context->GetNewInternalRequest();
                 read->CreateRead(request, readRequest.m_output, readRequest.m_outputSize, readRequest.m_path,
@@ -81,7 +81,7 @@ namespace AZ
             AZStd::visit([this, request](auto&& args)
             {
                 using Command = AZStd::decay_t<decltype(args)>;
-                if constexpr (AZStd::is_same_v<Command, FileRequest::ReadData> ||
+                if constexpr (AZStd::is_same_v<Command, FileRequestReadData> ||
                     AZStd::is_same_v<Command, FileRequest::FileExistsCheckData> ||
                     AZStd::is_same_v<Command, FileRequest::FileMetaDataRetrievalData>)
                 {
@@ -103,7 +103,7 @@ namespace AZ
                     {
                         FlushEntireCache();
                     }
-                    else if constexpr (AZStd::is_same_v<Command, FileRequest::ReportData>)
+                    else if constexpr (AZStd::is_same_v<Command, FileRequestReportData>)
                     {
                         Report(args);
                     }
@@ -120,7 +120,7 @@ namespace AZ
                 AZStd::visit([this, request](auto&& args)
                 {
                     using Command = AZStd::decay_t<decltype(args)>;
-                    if constexpr (AZStd::is_same_v<Command, FileRequest::ReadData>)
+                    if constexpr (AZStd::is_same_v<Command, FileRequestReadData>)
                     {
                         ReadFile(request);
                     }
@@ -157,7 +157,7 @@ namespace AZ
                 status.m_numAvailableSlots = AZStd::min(status.m_numAvailableSlots, s_maxRequests);
             }
         }
-        
+
         void StorageDrive::UpdateCompletionEstimates(AZStd::chrono::system_clock::time_point now,
             AZStd::vector<FileRequest*>& internalPending, StreamerContext::PreparedQueue::iterator pendingBegin,
             StreamerContext::PreparedQueue::iterator pendingEnd)
@@ -201,7 +201,7 @@ namespace AZ
             AZStd::visit([&](auto&& args)
             {
                 using Command = AZStd::decay_t<decltype(args)>;
-                if constexpr (AZStd::is_same_v<Command, FileRequest::ReadData>)
+                if constexpr (AZStd::is_same_v<Command, FileRequestReadData>)
                 {
                     targetFile = &args.m_path;
                     readSize = args.m_size;
@@ -256,9 +256,9 @@ namespace AZ
         {
             AZ_PROFILE_FUNCTION(AzCore);
 
-            auto data = AZStd::get_if<FileRequest::ReadData>(&request->GetCommand());
+            auto data = AZStd::get_if<FileRequestReadData>(&request->GetCommand());
             AZ_Assert(data, "FileRequest queued on StorageDrive to be read didn't contain read data.");
-            
+
             SystemFile* file = nullptr;
 
             // If the file is already open, use that file handle and update it's last touched time.
@@ -268,8 +268,8 @@ namespace AZ
                 file = m_fileHandles[cacheIndex].get();
                 m_fileLastUsed[cacheIndex] = AZStd::chrono::high_resolution_clock::now();
             }
-            
-            // If the file is not open, eject the entry from the cache that hasn't been used for the longest time 
+
+            // If the file is not open, eject the entry from the cache that hasn't been used for the longest time
             // and open the file for reading.
             if (!file)
             {
@@ -300,7 +300,7 @@ namespace AZ
                 m_fileHandles[cacheIndex] = AZStd::move(newFile);
                 m_filePaths[cacheIndex] = data->m_path;
             }
-            
+
             AZ_Assert(file, "While searching for file '%s' StorageDevice::ReadFile failed to detect a problem.", data->m_path.GetRelativePath());
             u64 bytesRead = 0;
             {
@@ -431,7 +431,7 @@ namespace AZ
         {
             constexpr double bytesToMB = (1024.0 * 1024.0);
             using DoubleSeconds = AZStd::chrono::duration<double>;
-            
+
             double totalBytesReadMB = m_readSizeAverage.GetTotal() / bytesToMB;
             double totalReadTimeSec = AZStd::chrono::duration_cast<DoubleSeconds>(m_readTimeAverage.GetTotal()).count();
             if (m_readSizeAverage.GetTotal() > 1) // A default value is always added.
@@ -448,11 +448,11 @@ namespace AZ
             }
         }
 
-        void StorageDrive::Report(const FileRequest::ReportData& data) const
+        void StorageDrive::Report(const FileRequestReportData& data) const
         {
             switch (data.m_reportType)
             {
-            case FileRequest::ReportData::ReportType::FileLocks:
+            case FileRequestReportData::ReportType::FileLocks:
                 for (u32 i = 0; i < m_fileHandles.size(); ++i)
                 {
                     if (m_fileHandles[i] != nullptr)

@@ -38,6 +38,8 @@
 #include <AzCore/Math/Transform.h>
 #include <AzCore/base.h>
 
+#include <numeric>
+
 namespace AZ
 {
     namespace Render
@@ -201,7 +203,7 @@ namespace AZ
             m_meshFeatureProcessor = nullptr;
             m_skinnedMeshFeatureProcessor = nullptr;
         }
-        
+
         RPI::ModelMaterialSlotMap AtomActorInstance::GetModelMaterialSlots() const
         {
             Data::Asset<const RPI::ModelAsset> modelAsset = GetModelAsset();
@@ -334,7 +336,7 @@ namespace AZ
         {
             return m_meshFeatureProcessor->GetMeshLodConfiguration(*m_meshHandle).m_lodType;
         }
-        
+
         void AtomActorInstance::SetLodOverride(RPI::Cullable::LodOverride lodOverride)
         {
             RPI::Cullable::LodConfiguration config = m_meshFeatureProcessor->GetMeshLodConfiguration(*m_meshHandle);

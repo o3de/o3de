@@ -30,7 +30,7 @@ namespace AZ::IO
         {
             using ::testing::_;
             using ::testing::AnyNumber;
-            
+
             UnitTest::AllocatorsFixture::SetUp();
 
             m_mock = AZStd::make_shared<StreamStackEntryMock>();
@@ -78,7 +78,7 @@ namespace AZ::IO
         {
             using ::testing::_;
             using ::testing::AtLeast;
-            
+
             EXPECT_CALL(*m_mock, UpdateStatus(_)).Times(AtLeast(1));
             EXPECT_CALL(*m_mock, UpdateCompletionEstimates(_, _, _, _)).Times(AtLeast(1));
             EXPECT_CALL(*m_mock, PrepareRequest(_))
@@ -86,7 +86,7 @@ namespace AZ::IO
                 .WillOnce([this](FileRequest* request)
                     {
                         AZ_Assert(m_streamerContext, "AZ::IO::Streamer is not ready to process requests.");
-                        auto readData = AZStd::get_if<FileRequest::ReadRequestData>(&request->GetCommand());
+                        auto readData = AZStd::get_if<FileRequestReadRequestData>(&request->GetCommand());
                         AZ_Assert(readData, "Test didn't pass in the correct request.");
                         FileRequest* read = m_streamerContext->GetNewInternalRequest();
                         read->CreateRead(request, readData->m_output, readData->m_outputSize, readData->m_path,
@@ -99,7 +99,7 @@ namespace AZ::IO
                 .WillOnce([this](FileRequest* request)
                     {
                         AZ_Assert(m_streamerContext, "AZ::IO::Streamer is not ready to process requests.");
-                        auto readData = AZStd::get_if<FileRequest::ReadData>(&request->GetCommand());
+                        auto readData = AZStd::get_if<FileRequestReadData>(&request->GetCommand());
                         AZ_Assert(readData, "Test didn't pass in the correct request.");
                         auto output = reinterpret_cast<uint8_t*>(readData->m_output);
                         AZ_Assert(output != nullptr, "Output buffer has not been set.");
@@ -115,7 +115,7 @@ namespace AZ::IO
         void MockAllocatorForUnclaimedMemory(IStreamerTypes::RequestMemoryAllocatorMock& mock, AZStd::binary_semaphore& sync)
         {
             using ::testing::_;
-            
+
             EXPECT_CALL(mock, LockAllocator()).Times(1);
             EXPECT_CALL(mock, UnlockAllocator())
                 .Times(1)
@@ -256,13 +256,13 @@ namespace AZ::IO
         using ::testing::_;
         using ::testing::AtLeast;
         using ::testing::Return;
-        
+
         EXPECT_CALL(*m_mock, UpdateStatus(_)).Times(AtLeast(1));
         EXPECT_CALL(*m_mock, UpdateCompletionEstimates(_, _, _, _)).Times(AtLeast(1));
         EXPECT_CALL(*m_mock, PrepareRequest(_)).Times(AtLeast(1));
         EXPECT_CALL(*m_mock, ExecuteRequests()).Times(AtLeast(1));
         EXPECT_CALL(*m_mock, QueueRequest(_)).Times(1);
-        
+
         AZStd::atomic_int counter = 2;
         AZStd::binary_semaphore sync;
         auto wait = [&sync, &counter](FileRequestHandle)
@@ -304,7 +304,7 @@ namespace AZ::IO
         EXPECT_CALL(*m_mock, QueueRequest(_)).Times(1)
             .WillOnce(Invoke([this](FileRequest* request)
             {
-                auto* read = request->GetCommandFromChain<FileRequest::ReadRequestData>();
+                auto* read = request->GetCommandFromChain<FileRequestReadRequestData>();
                 ASSERT_NE(nullptr, read);
                 EXPECT_LT(read->m_deadline, FileRequest::s_noDeadlineTime);
                 EXPECT_EQ(read->m_priority, IStreamerTypes::s_priorityHighest);
@@ -350,7 +350,7 @@ namespace AZ::IO
 
         EXPECT_CALL(*m_mock, UpdateStatus(_)).Times(AnyNumber());
         EXPECT_CALL(*m_mock, UpdateCompletionEstimates(_, _, _, _)).Times(AnyNumber());
-        
+
         // Pretend to be busy [Iterations] times, then set the status to idle so the Scheduler thread can exit.
         EXPECT_CALL(*m_mock, ExecuteRequests())
             .Times(Iterations + 1)

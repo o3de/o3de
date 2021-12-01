@@ -603,7 +603,7 @@ namespace AZ::IO
         AZ_POP_DISABLE_WARNING
         {
             EXPECT_EQ(request.GetStatus(), AZ::IO::IStreamerTypes::RequestStatus::Completed);
-            auto& readRequest = AZStd::get<AZ::IO::FileRequest::ReadData>(request.GetCommand());
+            auto& readRequest = AZStd::get<AZ::IO::FileRequestReadData>(request.GetCommand());
             EXPECT_EQ(readRequest.m_size, fileSize);
             EXPECT_STREQ(readRequest.m_path.GetAbsolutePath(), m_dummyFilepath.c_str());
         };
@@ -648,7 +648,7 @@ namespace AZ::IO
         AZ_POP_DISABLE_WARNING
         {
             EXPECT_EQ(request.GetStatus(), AZ::IO::IStreamerTypes::RequestStatus::Completed);
-            auto& readRequest = AZStd::get<AZ::IO::FileRequest::ReadData>(request.GetCommand());
+            auto& readRequest = AZStd::get<AZ::IO::FileRequestReadData>(request.GetCommand());
             EXPECT_EQ(readRequest.m_size, unalignedSize);
             EXPECT_EQ(readRequest.m_offset, unalignedOffset);
             EXPECT_STREQ(readRequest.m_path.GetAbsolutePath(), m_dummyFilepath.c_str());
@@ -796,7 +796,7 @@ namespace AZ::IO
             AZ_POP_DISABLE_WARNING
             {
                 EXPECT_EQ(request.GetStatus(), AZ::IO::IStreamerTypes::RequestStatus::Completed);
-                auto& readRequest = AZStd::get<AZ::IO::FileRequest::ReadData>(request.GetCommand());
+                auto& readRequest = AZStd::get<AZ::IO::FileRequestReadData>(request.GetCommand());
                 EXPECT_EQ(readRequest.m_size, chunkSize);
                 EXPECT_EQ(readRequest.m_offset, i * chunkSize);
             };
@@ -1110,7 +1110,7 @@ namespace AZ::IO
         // This needs to be a large enough number so there are requests in the queue. Due to the aggressive completion and queue, faster
         // drives can prove to be able to read faster than requests can be queued.
         constexpr size_t numRequests = 1024;
-        
+
         SetupStorageDrive(numRequests + 1); // Over commit so all request are queued in one go
 
         CreateDummyFile(size);
@@ -1144,13 +1144,13 @@ namespace AZ::IO
             {
                 m_storageDriveWin->QueueRequest(cancelRequest);
             });
-        
+
         // Suspend processing so all request are processed fully before reading begins.
         m_streamer->SuspendProcessing();
         m_streamer->QueueRequestBatch(requests);
         m_streamer->QueueRequest(sentinalRequest);
         m_streamer->ResumeProcessing();
-       
+
         bool acquired = wait.try_acquire_for(AZStd::chrono::seconds(5));
         ASSERT_TRUE(acquired);
 
@@ -1193,7 +1193,7 @@ namespace Benchmark
     public:
         constexpr static const char* TestFileName = "StreamerBenchmark.bin";
         constexpr static size_t FileSize = 64_mib;
-            
+
         void SetupStreamer(bool enableFileSharing)
         {
             using namespace AZ::IO;
@@ -1207,7 +1207,7 @@ namespace Benchmark
             file.Open(TestFileName, SystemFile::OpenMode::SF_OPEN_CREATE | SystemFile::OpenMode::SF_OPEN_READ_WRITE);
             AZStd::unique_ptr<char[]> buffer(new char[FileSize]);
             ::memset(buffer.get(), 'c', FileSize);
-            
+
             file.Write(buffer.get(), FileSize);
             file.Close();
 
@@ -1247,7 +1247,7 @@ namespace Benchmark
             using namespace AZStd::chrono;
 
             AZStd::unique_ptr<char[]> buffer(new char[FileSize]);
-    
+
             for (auto _ : state)
             {
                 AZStd::binary_semaphore waitForReads;

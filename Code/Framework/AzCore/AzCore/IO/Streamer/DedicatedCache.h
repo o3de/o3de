@@ -22,6 +22,9 @@ namespace AZ
 {
     namespace IO
     {
+        struct FileRequestCreateDedicatedCacheData;
+        struct FileRequestDestroyDedicatedCacheData;
+
         struct DedicatedCacheConfig final :
             public IStreamerStackConfig
         {
@@ -48,7 +51,7 @@ namespace AZ
         {
         public:
             DedicatedCache(u64 cacheSize, u32 blockSize, u32 alignment, bool onlyEpilogWrites);
-            
+
             void SetNext(AZStd::shared_ptr<StreamStackEntry> next) override;
             void SetContext(StreamerContext& context) override;
 
@@ -64,10 +67,10 @@ namespace AZ
             void CollectStatistics(AZStd::vector<Statistic>& statistics) const override;
 
         private:
-            void CreateDedicatedCache(FileRequest* request, FileRequest::CreateDedicatedCacheData& data);
-            void DestroyDedicatedCache(FileRequest* request, FileRequest::DestroyDedicatedCacheData& data);
+            void CreateDedicatedCache(FileRequest* request, FileRequestCreateDedicatedCacheData& data);
+            void DestroyDedicatedCache(FileRequest* request, FileRequestDestroyDedicatedCacheData& data);
 
-            void ReadFile(FileRequest* request, FileRequest::ReadData& data);
+            void ReadFile(FileRequest* request, AZ::IO::FileRequestReadData &data);
             size_t FindCache(const RequestPath& filename, FileRange range);
             size_t FindCache(const RequestPath& filename, u64 offset);
 

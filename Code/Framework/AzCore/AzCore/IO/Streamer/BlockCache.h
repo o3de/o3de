@@ -23,6 +23,9 @@ namespace AZ
 {
     namespace IO
     {
+        class RequestPath;
+        struct FileRequestReadData;
+
         struct BlockCacheConfig final :
             public IStreamerStackConfig
         {
@@ -111,7 +114,7 @@ namespace AZ
 
             using TimePoint = AZStd::chrono::system_clock::time_point;
 
-            void ReadFile(FileRequest* request, FileRequest::ReadData& data);
+            void ReadFile(FileRequest* request, FileRequestReadData& data);
             void ContinueReadFile(FileRequest* request, u64 fileLength);
             CacheResult ReadFromCache(FileRequest* request, Section& section, const RequestPath& filePath);
             CacheResult ReadFromCache(FileRequest* request, Section& section, u32 cacheBlock);
@@ -150,7 +153,7 @@ namespace AZ
             AZStd::unique_ptr<TimePoint[]> m_blockLastTouched; // Array of m_numBlocks size.
             //! The file request that's currently read data into the cache block. If null, the block has been read.
             AZStd::unique_ptr<FileRequest*[]> m_inFlightRequests; // Array of m_numbBlocks size.
-            
+
             //! The number of requests waiting for meta data to be retrieved.
             s32 m_numMetaDataRetrievalInProgress{ 0 };
             //! Whether or not only the epilog ever writes to the cache.

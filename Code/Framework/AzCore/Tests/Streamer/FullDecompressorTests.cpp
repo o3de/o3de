@@ -89,7 +89,7 @@ namespace AZ::IO
             m_context = nullptr;
 
             AllocatorInstance<ThreadPoolAllocator>::Destroy();
-            AllocatorInstance<PoolAllocator>::Destroy(); 
+            AllocatorInstance<PoolAllocator>::Destroy();
 
             UnitTest::AllocatorsFixture::TearDown();
         }
@@ -123,7 +123,7 @@ namespace AZ::IO
                 .WillRepeatedly(Return(false));
             EXPECT_CALL(*m_mock, QueueRequest(_));
             EXPECT_CALL(*m_mock, UpdateStatus(_)).Times(AnyNumber());
-                    
+
             switch (mockResult)
             {
             case ReadResult::Success:
@@ -145,7 +145,7 @@ namespace AZ::IO
 
         void PrepareReadRequest(FileRequest* request)
         {
-            auto data = AZStd::get_if<FileRequest::ReadData>(&request->GetCommand());
+            auto data = AZStd::get_if<FileRequestReadData>(&request->GetCommand());
             ASSERT_NE(nullptr, data);
 
             u64 size = data->m_size >> 2;
@@ -267,7 +267,7 @@ namespace AZ::IO
             {
                 allCompleted = allCompleted && request.GetStatus() == IStreamerTypes::RequestStatus::Completed;
             };
-                
+
             FileRequest* requests[count];
             AZStd::unique_ptr<u32[]> buffers[count];
             for (size_t i = 0; i < count; ++i)
@@ -300,7 +300,7 @@ namespace AZ::IO
             size = size >> 2;
             for (u64 i = 0; i < size; ++i)
             {
-                // Using assert here because in case of a problem EXPECT would 
+                // Using assert here because in case of a problem EXPECT would
                 // cause a large amount of log noise.
                 ASSERT_EQ(buffer[i], offset + (i << 2));
             }

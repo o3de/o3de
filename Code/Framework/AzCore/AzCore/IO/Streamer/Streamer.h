@@ -185,9 +185,9 @@ namespace AZ::IO
         void RecordStatistics();
 
         //! Tells AZ::IO::Streamer the report the information for the report to the output.
-        FileRequestPtr Report(FileRequest::ReportData::ReportType reportType);
+        FileRequestPtr Report(FileRequestReportData::ReportType reportType);
         //! Tells AZ::IO::Streamer the report the information for the report to the output.
-        FileRequestPtr& Report(FileRequestPtr& request, FileRequest::ReportData::ReportType reportType);
+        FileRequestPtr& Report(FileRequestPtr& request, FileRequestReportData::ReportType reportType);
 
 
         Streamer(const AZStd::thread_desc& threadDesc, AZStd::unique_ptr<Scheduler> streamStack);

@@ -23,6 +23,8 @@ namespace AZ
 {
     namespace IO
     {
+        struct FileRequestReadRequestData;
+
         struct FullFileDecompressorConfig final :
             public IStreamerStackConfig
         {
@@ -59,11 +61,11 @@ namespace AZ
             void PrepareRequest(FileRequest* request) override;
             void QueueRequest(FileRequest* request) override;
             bool ExecuteRequests() override;
-            
+
             void UpdateStatus(Status& status) const override;
             void UpdateCompletionEstimates(AZStd::chrono::system_clock::time_point now, AZStd::vector<FileRequest*>& internalPending,
                 StreamerContext::PreparedQueue::iterator pendingBegin, StreamerContext::PreparedQueue::iterator pendingEnd) override;
-            
+
             void CollectStatistics(AZStd::vector<Statistic>& statistics) const override;
 
         private:
@@ -89,7 +91,7 @@ namespace AZ
 
             bool IsIdle() const;
 
-            void PrepareReadRequest(FileRequest* request, FileRequest::ReadRequestData& data);
+            void PrepareReadRequest(FileRequest* request, FileRequestReadRequestData& data);
             void PrepareDedicatedCache(FileRequest* request, const RequestPath& path);
             void FileExistsCheck(FileRequest* checkRequest);
 
@@ -100,7 +102,7 @@ namespace AZ
             void FinishArchiveRead(FileRequest* readRequest, u32 readSlot);
             bool StartDecompressions();
             void FinishDecompression(FileRequest* waitRequest, u32 jobSlot);
-            
+
             static void FullDecompression(StreamerContext* context, DecompressionInformation& info);
             static void PartialDecompression(StreamerContext* context, DecompressionInformation& info);
 
@@ -119,7 +121,7 @@ namespace AZ
             // Nullptr if not reading, the read request if reading the file and the wait request for decompression when waiting on decompression.
             AZStd::unique_ptr<FileRequest*[]> m_readRequests;
             AZStd::unique_ptr<ReadBufferStatus[]> m_readBufferStatus;
-            
+
             AZStd::unique_ptr<DecompressionInformation[]> m_processingJobs;
             AZStd::unique_ptr<JobManager> m_decompressionJobManager;
             AZStd::unique_ptr<JobContext> m_decompressionjobContext;
