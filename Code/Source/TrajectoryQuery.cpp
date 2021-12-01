@@ -60,7 +60,8 @@ namespace EMotionFX::MotionMatching
         const FeatureTrajectory* trajectoryFeature,
         const TrajectoryHistory& trajectoryHistory,
         EMode mode,
-        const AZ::Vector3& targetPos,
+        [[maybe_unused]] AZ::Vector3 targetPos,
+        [[maybe_unused]] AZ::Vector3 targetFacingDir,
         float timeDelta,
         float pathRadius,
         float pathSpeed)
@@ -100,6 +101,12 @@ namespace EMotionFX::MotionMatching
                 const AZ::Vector3 curSample = SampleFunction(mode, offset, pathRadius, phase);
                 AZ::Vector3 displacement = curSample - base;
                 m_futureControlPoints[i].m_position = actorInstance->GetWorldSpaceTransform().m_position + displacement;
+
+                // Evaluate a control point slightly further into the future than the actual
+                // one and use the position difference as the facing direction.
+                const AZ::Vector3 deltaSample = SampleFunction(mode, offset + 0.01f, pathRadius, phase);
+                const AZ::Vector3 dir = deltaSample - curSample;
+                m_futureControlPoints[i].m_facingDirection = dir.GetNormalizedSafe();
             }
         }
 
@@ -111,8 +118,8 @@ namespace EMotionFX::MotionMatching
         for (size_t i = 0; i < numPastSamples; ++i)
         {
             const float sampleTimeNormalized = i / static_cast<float>(numPastSamples - 1);
-            const AZ::Vector3 position = trajectoryHistory.Sample(sampleTimeNormalized * pastTimeRange);
-            m_pastControlPoints[i].m_position = position;
+            const TrajectoryHistory::Sample sample = trajectoryHistory.Evaluate(sampleTimeNormalized * pastTimeRange);
+            m_pastControlPoints[i] = { sample.m_position, sample.m_facingDirection };
         }
     }
 
@@ -136,7 +143,8 @@ namespace EMotionFX::MotionMatching
 
             for (size_t i = 0; i < numControlPoints - 1; ++i)
             {
-                const AZ::Vector3& posA = controlPoints[i].m_position;
+                const ControlPoint& current = controlPoints[i];
+                const AZ::Vector3& posA = current.m_position;
                 const AZ::Vector3& posB = controlPoints[i + 1].m_position;
                 const AZ::Vector3 diff = posB - posA;
 
@@ -145,11 +153,14 @@ namespace EMotionFX::MotionMatching
                     /*radius=*/0.0025f,
                     /*height=*/diff.GetLength(),
                     /*drawShaded=*/false);
+
+                FeatureTrajectory::DebugDrawFacingDirection(debugDisplay, current.m_position, current.m_facingDirection);
             }
 
             for (const ControlPoint& controlPoint : controlPoints)
             {
                 debugDisplay.DrawBall(controlPoint.m_position, markerSize, /*drawShaded=*/false);
+                FeatureTrajectory::DebugDrawFacingDirection(debugDisplay, controlPoint.m_position, controlPoint.m_facingDirection);
             }
         }
     }

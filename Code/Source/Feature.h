@@ -113,6 +113,7 @@ namespace EMotionFX
              * 180.0 degrees        -1.0            1.0
              * 270.0 degrees        0.0             0.5
              **/
+            float GetNormalizedDirectionDifference(const AZ::Vector2& directionA, const AZ::Vector2& directionB) const;
             float GetNormalizedDirectionDifference(const AZ::Vector3& directionA, const AZ::Vector3& directionB) const;
 
             AZ::TypeId m_id = AZ::TypeId::CreateRandom(); /**< The frame data id. Use this instead of the RTTI class Id. This is because we can have multiple of the same types. */

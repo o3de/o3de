@@ -63,33 +63,57 @@ namespace EMotionFX
         void FeatureTrajectory::SetFacingAxis(const Axis axis)
         {
             m_facingAxis = axis;
+
+            switch (m_facingAxis)
+            {
+            case Axis::X:
+            {
+                m_facingAxisDir = AZ::Vector3::CreateAxisX();
+                break;
+            }
+            case Axis::Y:
+            {
+                m_facingAxisDir = AZ::Vector3::CreateAxisY();
+                break;
+            }
+            case Axis::X_NEGATIVE:
+            {
+                m_facingAxisDir = -AZ::Vector3::CreateAxisX();
+                break;
+            }
+            case Axis::Y_NEGATIVE:
+            {
+                m_facingAxisDir = -AZ::Vector3::CreateAxisY();
+                break;
+            }
+            default:
+            {
+                AZ_Assert(false, "Facing direction axis unknown.");
+            }
+            }
         }
 
-        AZ::Vector3 FeatureTrajectory::CalculateFacingDirectionWorldSpace(const Pose& pose, Axis facingAxis, size_t jointIndex) const
+        AZ::Vector2 FeatureTrajectory::CalculateFacingDirection(const Pose& pose, const Transform& invRootTransform) const
         {
-            AZ::Vector3 facingDirection = AZ::Vector3::CreateZero();
-            facingDirection.SetElement(static_cast<int>(facingAxis), 1.0f);
-            return pose.GetWorldSpaceTransform(jointIndex).TransformVector(facingDirection).GetNormalizedSafe();
+            // Get the facing direction of the given joint for the given pose in animation world space.
+            // The given pose is either sampled into the relative past or future based on the frame we want to extract the feature for.
+            const AZ::Vector3 facingDirAnimationWorldSpace = pose.GetWorldSpaceTransform(m_nodeIndex).TransformVector(m_facingAxisDir);
+
+            // The invRootTransform is the inverse of the world space transform for the given joint at the frame we want to extract the feature for.
+            // The result after this will be the facing direction relative to the frame we want to extract the feature for.
+            const AZ::Vector3 facingDirection = invRootTransform.TransformVector(facingDirAnimationWorldSpace);
+
+            // Project to the ground plane and make sure the direction is normalized.
+            return AZ::Vector2(facingDirection).GetNormalizedSafe();
         }
-/*
-        // Calculate the angle difference between the direction we're heading in and where the root is pointing towards.
-        // This allows us to detect when we're strafing for example, when the angle is 90 degrees between these two vectors.
-        float TrajectoryFrameData::CalculateFacingAngle(const Transform& invBaseTransform, const Pose& pose, const AZ::Vector3& velocityDirection) const
-        {
-            const AZ::Vector3 facingDirectionWorldSpace = CalculateWorldSpaceDirection(pose, m_facingAxis, m_nodeIndex);
-            const AZ::Vector3 relativeFacingDirection = invBaseTransform.TransformVector(facingDirectionWorldSpace).GetNormalizedSafeExact();;
-            return velocityDirection.Dot(relativeFacingDirection);
-        }
-*/
 
         FeatureTrajectory::Sample FeatureTrajectory::GetSampleFromPose(const Pose& pose, const Transform& invRootTransform) const
         {
-            // Extract the position.
+            // Position of the root joint in the model space relative to frame to extract.
             const AZ::Vector2 position = AZ::Vector2(invRootTransform.TransformPoint(pose.GetWorldSpaceTransform(m_nodeIndex).m_position));
 
             // Calculate the facing direction.
-            //facingDirectionWorldSpace = CalculateFacingDirectionWorldSpace(samplePose->GetPose(), m_facingAxis, m_nodeIndex);
-            const AZ::Vector2 facingDirection = AZ::Vector2::CreateZero();
+            const AZ::Vector2 facingDirection = CalculateFacingDirection(pose, invRootTransform);
 
             return { position, facingDirection };
         }
@@ -104,9 +128,11 @@ namespace EMotionFX
 
             const size_t frameIndex = context.m_frameIndex;
             const Frame& currentFrame = context.m_data->GetFrame(context.m_frameIndex);
+
+            // Inverse of the root transform for the frame that we want to extract data from.
             const Transform invRootTransform = context.m_pose->GetWorldSpaceTransform(m_relativeToNodeIndex).Inversed();
 
-            const size_t midSampleIndex = CalcMidFrameDataIndex();
+            const size_t midSampleIndex = CalcMidFrameIndex();
             const Sample midSample = GetSampleFromPose(*context.m_pose, invRootTransform);
             SetFeatureData(context.m_featureMatrix, frameIndex, midSampleIndex, midSample);
 
@@ -116,7 +142,7 @@ namespace EMotionFX
             SamplePose(currentFrame.GetSampleTime(), bindPose, sourceMotion, context.m_motionInstance, &samplePose->GetPose());
             for (size_t i = 0; i < m_numPastSamples; ++i)
             {
-                const size_t sampleIndex = CalcPastFrameDataIndex(i);
+                const size_t sampleIndex = CalcPastFrameIndex(i);
 
                 // Increase the sample index by one as the zeroth past/future sample actually needs one time delta time difference to the current frame.
                 const float sampleTime = AZ::GetMax(0.0f, currentFrame.GetSampleTime() - (i+1) * pastFrameTimeDelta);
@@ -133,7 +159,7 @@ namespace EMotionFX
             SamplePose(currentFrame.GetSampleTime(), bindPose, sourceMotion, context.m_motionInstance, &samplePose->GetPose());
             for (size_t i = 0; i < m_numFutureSamples; ++i)
             {
-                const size_t sampleIndex = CalcFutureFrameDataIndex(i);
+                const size_t sampleIndex = CalcFutureFrameIndex(i);
 
                 // Sample the value at the future sample point.
                 const float sampleTime = AZ::GetMin(currentFrame.GetSampleTime() + (i+1) * futureFrameTimeDelta, sourceMotion->GetDuration());
@@ -169,10 +195,34 @@ namespace EMotionFX
             m_numFutureSamples = numFutureSamples;
         }
 
+        void FeatureTrajectory::DebugDrawFacingDirection(AzFramework::DebugDisplayRequests& debugDisplay,
+            const AZ::Vector3& positionWorldSpace,
+            const AZ::Vector3& facingDirectionWorldSpace)
+        {
+            const float length = 0.2f;
+            const float radius = 0.01f;
+
+            const AZ::Vector3 facingDirectionTarget = positionWorldSpace + facingDirectionWorldSpace * length;
+            debugDisplay.DrawSolidCylinder(/*center=*/(facingDirectionTarget + positionWorldSpace) * 0.5f,
+                /*direction=*/facingDirectionWorldSpace,
+                radius,
+                /*height=*/length,
+                /*drawShaded=*/false);
+        }
+
+        void FeatureTrajectory::DebugDrawFacingDirection(AzFramework::DebugDisplayRequests& debugDisplay,
+            const Transform& worldSpaceTransform,
+            const Sample& sample,
+            const AZ::Vector3& samplePosWorldSpace) const
+        {
+            const AZ::Vector3 facingDirectionWorldSpace = worldSpaceTransform.TransformVector(AZ::Vector3(sample.m_facingDirection)).GetNormalizedSafe();
+            DebugDrawFacingDirection(debugDisplay, samplePosWorldSpace, facingDirectionWorldSpace);
+        }
+
         void FeatureTrajectory::DebugDrawTrajectory(AzFramework::DebugDisplayRequests& debugDisplay,
             BehaviorInstance* behaviorInstance,
             size_t frameIndex,
-            const Transform& transform,
+            const Transform& worldSpaceTransform,
             const AZ::Color& color,
             size_t numSamples,
             const SplineToFeatureMatrixIndex& splineToFeatureMatrixIndex) const
@@ -188,14 +238,15 @@ namespace EMotionFX
             debugDisplay.DepthTestOff();
             debugDisplay.SetColor(color);
 
+            Sample nextSample;
             AZ::Vector3 nextSamplePos;
             for (size_t i = 0; i < numSamples - 1; ++i)
             {
                 const Sample currentSample = GetFeatureData(featureMatrix, frameIndex, splineToFeatureMatrixIndex(i));
-                const Sample nextSample = GetFeatureData(featureMatrix, frameIndex, splineToFeatureMatrixIndex(i + 1));
+                nextSample = GetFeatureData(featureMatrix, frameIndex, splineToFeatureMatrixIndex(i + 1));
 
-                const AZ::Vector3 currentSamplePos = transform.TransformPoint(AZ::Vector3(currentSample.m_position));
-                nextSamplePos = transform.TransformPoint(AZ::Vector3(nextSample.m_position));
+                const AZ::Vector3 currentSamplePos = worldSpaceTransform.TransformPoint(AZ::Vector3(currentSample.m_position));
+                nextSamplePos = worldSpaceTransform.TransformPoint(AZ::Vector3(nextSample.m_position));
 
                 // Line between current and next sample.
                 debugDisplay.DrawSolidCylinder(/*center=*/(nextSamplePos + currentSamplePos) * 0.5f,
@@ -204,11 +255,13 @@ namespace EMotionFX
                     /*height=*/(nextSamplePos - currentSamplePos).GetLength(),
                     /*drawShaded=*/false);
 
-                // Sphere at the sample position.
+                // Sphere at the sample position and a cylinder to indicate the facing direction.
                 debugDisplay.DrawBall(currentSamplePos, markerSize, /*drawShaded=*/false);
+                DebugDrawFacingDirection(debugDisplay, worldSpaceTransform, currentSample, currentSamplePos);
             }
 
             debugDisplay.DrawBall(nextSamplePos, markerSize, /*drawShaded=*/false);
+            DebugDrawFacingDirection(debugDisplay, worldSpaceTransform, nextSample, nextSamplePos);
         }
 
         void FeatureTrajectory::DebugDraw(AzFramework::DebugDisplayRequests& debugDisplay,
@@ -219,36 +272,28 @@ namespace EMotionFX
             const Transform transform = actorInstance->GetTransformData()->GetCurrentPose()->GetWorldSpaceTransform(m_nodeIndex);
 
             DebugDrawTrajectory(debugDisplay, behaviorInstance, frameIndex, transform,
-                m_debugColor, m_numPastSamples, AZStd::bind(&FeatureTrajectory::CalcPastFrameDataIndex, this, AZStd::placeholders::_1));
+                m_debugColor, m_numPastSamples, AZStd::bind(&FeatureTrajectory::CalcPastFrameIndex, this, AZStd::placeholders::_1));
 
             DebugDrawTrajectory(debugDisplay, behaviorInstance, frameIndex, transform,
-                m_debugColor, m_numFutureSamples, AZStd::bind(&FeatureTrajectory::CalcFutureFrameDataIndex, this, AZStd::placeholders::_1));
+                m_debugColor, m_numFutureSamples, AZStd::bind(&FeatureTrajectory::CalcFutureFrameIndex, this, AZStd::placeholders::_1));
         }
 
-        size_t FeatureTrajectory::CalcMidFrameDataIndex() const
+        size_t FeatureTrajectory::CalcMidFrameIndex() const
         {
             return m_numPastSamples;
         }
 
-        size_t FeatureTrajectory::CalcPastFrameDataIndex(size_t historyFrameIndex) const
+        size_t FeatureTrajectory::CalcPastFrameIndex(size_t historyFrameIndex) const
         {
             AZ_Assert(historyFrameIndex < m_numPastSamples, "The history frame index is out of range");
             return m_numPastSamples - historyFrameIndex - 1;
         }
 
-        size_t FeatureTrajectory::CalcFutureFrameDataIndex(size_t futureFrameIndex) const
+        size_t FeatureTrajectory::CalcFutureFrameIndex(size_t futureFrameIndex) const
         {
             AZ_Assert(futureFrameIndex < m_numFutureSamples, "The future frame index is out of range");
-            return CalcMidFrameDataIndex() + 1 + futureFrameIndex;
+            return CalcMidFrameIndex() + 1 + futureFrameIndex;
         }
-        /*
-        float FeatureTrajectory::CalculateDirectionCost(size_t frameIndex, const FrameCostContext& context) const
-        {
-            const AZ::Vector3 frameFacingDirection = m_samples[CalcMidFrameDataIndex(frameIndex)].m_facingDirection;
-            const float dotResult = context.m_facingDirectionRelative.Dot(frameFacingDirection);
-            return 2.0f - (1.0f - dotResult);
-        }
-        */
 
         float FeatureTrajectory::CalculateCost(const FeatureMatrix& featureMatrix,
             size_t frameIndex,
@@ -274,7 +319,13 @@ namespace EMotionFX
                     const float posDistance = (samplePos - controlPointPos).GetLength();
                     const float posDeltaDistance = (controlPointDelta - sampleDelta).GetLength();
 
-                    cost += posDistance + posDeltaDistance;
+                    // The facing direction from the control point (trajectory query) is in world space while the facing direction from the
+                    // sample of this trajectory feature is in relative-to-frame-root-joint space.
+                    const AZ::Vector2 controlPointFacingDirRelativeSpace = AZ::Vector2(invRootTransform.TransformVector(controlPoint.m_facingDirection));
+                    const float facingDirectionCost = GetNormalizedDirectionDifference(sample.m_facingDirection,
+                        controlPointFacingDirRelativeSpace);
+
+                    cost += posDistance + posDeltaDistance + facingDirectionCost;
                 }
 
                 lastControlPoint = controlPointPos;
@@ -288,14 +339,14 @@ namespace EMotionFX
         {
             AZ_Assert(context.m_trajectoryQuery->GetFutureControlPoints().size() == m_numFutureSamples, "Number of future control points does not match trajecotry frame data number of future points.");
             const Transform invRootTransform = context.m_pose->GetWorldSpaceTransform(m_relativeToNodeIndex).Inversed();
-            return CalculateCost(context.m_featureMatrix, frameIndex, invRootTransform, context.m_trajectoryQuery->GetFutureControlPoints(), AZStd::bind(&FeatureTrajectory::CalcFutureFrameDataIndex, this, AZStd::placeholders::_1));
+            return CalculateCost(context.m_featureMatrix, frameIndex, invRootTransform, context.m_trajectoryQuery->GetFutureControlPoints(), AZStd::bind(&FeatureTrajectory::CalcFutureFrameIndex, this, AZStd::placeholders::_1));
         }
 
         float FeatureTrajectory::CalculatePastFrameCost(size_t frameIndex, const FrameCostContext& context) const
         {
             AZ_Assert(context.m_trajectoryQuery->GetPastControlPoints().size() == m_numPastSamples, "Number of past control points does not match trajecotry frame data number of past points.");
             const Transform invRootTransform = context.m_pose->GetWorldSpaceTransform(m_relativeToNodeIndex).Inversed();
-            return CalculateCost(context.m_featureMatrix, frameIndex, invRootTransform, context.m_trajectoryQuery->GetPastControlPoints(), AZStd::bind(&FeatureTrajectory::CalcPastFrameDataIndex, this, AZStd::placeholders::_1));
+            return CalculateCost(context.m_featureMatrix, frameIndex, invRootTransform, context.m_trajectoryQuery->GetPastControlPoints(), AZStd::bind(&FeatureTrajectory::CalcPastFrameIndex, this, AZStd::placeholders::_1));
         }
 
         void FeatureTrajectory::Reflect(AZ::ReflectContext* context)
@@ -332,7 +383,7 @@ namespace EMotionFX
 
             const int sampleIndex = aznumeric_cast<int>(index) / aznumeric_cast<int>(Sample::s_componentsPerSample);
             const int componentIndex = index % Sample::s_componentsPerSample;
-            const int midSampleIndex = aznumeric_cast<int>(CalcMidFrameDataIndex());
+            const int midSampleIndex = aznumeric_cast<int>(CalcMidFrameIndex());
 
             if (sampleIndex == midSampleIndex)
             {

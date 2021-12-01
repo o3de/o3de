@@ -36,8 +36,9 @@ namespace EMotionFX
             : AnimGraphNode()
         {
             // Setup the input ports.
-            InitInputPorts(1);
+            InitInputPorts(2);
             SetupInputPort("Goal Pos", INPUTPORT_TARGETPOS, MCore::AttributeVector3::TYPE_ID, PORTID_INPUT_TARGETPOS);
+            SetupInputPort("Goal Facing Dir", INPUTPORT_TARGETFACINGDIR, MCore::AttributeVector3::TYPE_ID, PORTID_INPUT_TARGETFACINGDIR);
 
             // Setup the output ports.
             InitOutputPorts(1);
@@ -164,8 +165,11 @@ namespace EMotionFX
             AZ::Vector3 targetPos = AZ::Vector3::CreateZero();
             TryGetInputVector3(animGraphInstance, INPUTPORT_TARGETPOS, targetPos);
 
+            AZ::Vector3 targetFacingDir = AZ::Vector3::CreateAxisY();
+            TryGetInputVector3(animGraphInstance, INPUTPORT_TARGETFACINGDIR, targetFacingDir);
+
             MotionMatching::BehaviorInstance* behaviorInstance = uniqueData->m_behaviorInstance;
-            behaviorInstance->Update(timePassedInSeconds, targetPos, m_trajectoryQueryMode, m_pathRadius, m_pathSpeed);
+            behaviorInstance->Update(timePassedInSeconds, targetPos, targetFacingDir, m_trajectoryQueryMode, m_pathRadius, m_pathSpeed);
 
             // set the current time to the new calculated time
             uniqueData->ClearInheritFlags();
@@ -176,7 +180,7 @@ namespace EMotionFX
             {
                 uniqueData->SetPreSyncTime(uniqueData->GetCurrentPlayTime());
             }
-                
+
             //AZ_Printf("EMotionFX", "%f, %f    =    %f", uniqueData->GetPreSyncTime(), uniqueData->GetCurrentPlayTime(), uniqueData->GetCurrentPlayTime() - uniqueData->GetPreSyncTime());
             
             m_updateTimeInMs = m_timer.GetDeltaTimeInSeconds() * 1000.0f;
@@ -254,6 +258,7 @@ namespace EMotionFX
             }
 
             OutputIncomingNode(animGraphInstance, GetInputNode(INPUTPORT_TARGETPOS));
+            OutputIncomingNode(animGraphInstance, GetInputNode(INPUTPORT_TARGETFACINGDIR));
 
             Pose& outTransformPose = outputPose->GetPose();
 

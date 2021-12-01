@@ -50,13 +50,14 @@ namespace EMotionFX
             {
                 X = 0,
                 Y = 1,
-                Z = 2
+                X_NEGATIVE = 2,
+                Y_NEGATIVE = 3,
             };
 
             struct EMFX_API Sample
             {
-                AZ::Vector2 m_position;
-                AZ::Vector2 m_facingDirection;
+                AZ::Vector2 m_position; //! Position in the space relative to the extracted frame.
+                AZ::Vector2 m_facingDirection; //! Facing direction in the space relative to the extracted frame.
 
                 static constexpr size_t s_componentsPerSample = 4;
             };
@@ -80,11 +81,9 @@ namespace EMotionFX
                 const FeatureMatrix& m_featureMatrix;
                 const Pose* m_pose;
                 const TrajectoryQuery* m_trajectoryQuery;
-                AZ::Vector3 m_facingDirectionRelative = AZ::Vector3(0.0f, 1.0f, 0.0f);
             };
             float CalculateFutureFrameCost(size_t frameIndex, const FrameCostContext& context) const;
             float CalculatePastFrameCost(size_t frameIndex, const FrameCostContext& context) const;
-            //float CalculateDirectionCost(size_t frameIndex, const FrameCostContext& context) const;
 
             void SetNumPastSamplesPerFrame(size_t numHistorySamples);
             void SetNumFutureSamplesPerFrame(size_t numFutureSamples);
@@ -98,8 +97,8 @@ namespace EMotionFX
             float GetFutureTimeRange() const { return m_futureTimeRange; }
             float GetPastTimeRange() const { return m_pastTimeRange; }
 
-            AZ::Vector3 CalculateFacingDirectionWorldSpace(const Pose& pose, Axis facingAxis, size_t jointIndex) const;
-            //float CalculateFacingAngle(const Transform& invBaseTransform, const Pose& pose, const AZ::Vector3& velocityDirection) const;
+            AZ::Vector2 CalculateFacingDirection(const Pose& pose, const Transform& invRootTransform) const;
+            AZ::Vector3 GetFacingAxisDir() const { return m_facingAxisDir; }
 
             void SetNodeIndex(size_t nodeIndex);
 
@@ -108,10 +107,15 @@ namespace EMotionFX
             size_t GetNumDimensions() const override;
             AZStd::string GetDimensionName(size_t index, Skeleton* skeleton) const override;
 
+            // Shared helper function to draw a facing direction.
+            static void DebugDrawFacingDirection(AzFramework::DebugDisplayRequests& debugDisplay,
+                const AZ::Vector3& positionWorldSpace,
+                const AZ::Vector3& facingDirectionWorldSpace);
+
         private:
-            size_t CalcMidFrameDataIndex() const;
-            size_t CalcPastFrameDataIndex(size_t historyFrameIndex) const;
-            size_t CalcFutureFrameDataIndex(size_t futureFrameIndex) const;
+            size_t CalcMidFrameIndex() const;
+            size_t CalcPastFrameIndex(size_t historyFrameIndex) const;
+            size_t CalcFutureFrameIndex(size_t futureFrameIndex) const;
             size_t CalcNumSamplesPerFrame() const;
 
             using SplineToFeatureMatrixIndex = AZStd::function<size_t(size_t)>;
@@ -121,6 +125,9 @@ namespace EMotionFX
                 const AZStd::vector<TrajectoryQuery::ControlPoint>& controlPoints,
                 const SplineToFeatureMatrixIndex& splineToFeatureMatrixIndex) const;
 
+            //! Called for every sample in the past or future range to extract its information.
+            //! @param[in] pose The sampled pose within the trajectory range [m_pastTimeRange, m_futureTimeRange].
+            //! @param[in] invRootTransform The inverse of the world space transform of the joint at frame time that the feature is extracted for.
             Sample GetSampleFromPose(const Pose& pose, const Transform& invRootTransform) const;
 
             Sample GetFeatureData(const FeatureMatrix& featureMatrix, size_t frameIndex, size_t sampleIndex) const;
@@ -134,12 +141,19 @@ namespace EMotionFX
                 size_t numSamples,
                 const SplineToFeatureMatrixIndex& splineToFeatureMatrixIndex) const;
 
+            void DebugDrawFacingDirection(AzFramework::DebugDisplayRequests& debugDisplay,
+                const Transform& worldSpaceTransform,
+                const Sample& sample,
+                const AZ::Vector3& samplePosWorldSpace) const;
+
             size_t m_nodeIndex = InvalidIndex32; /**< The node to grab the data from. */
             size_t m_numFutureSamples = 5; /**< How many samples do we store per frame, for the future trajectory of this frame? */
             size_t m_numPastSamples = 5; /**< How many samples do we store per frame, for the past (history) of the trajectory of this frame? */
             float m_futureTimeRange = 1.0f; /**< How many seconds do we look into the future? */
             float m_pastTimeRange = 1.0f; /**< How many seconds do we look back in the past? */
+
             Axis m_facingAxis = Axis::Y; /** Which of this node's axes points forward? */
+            AZ::Vector3 m_facingAxisDir = AZ::Vector3::CreateAxisY();
         };
     } // namespace MotionMatching
 } // namespace EMotionFX
