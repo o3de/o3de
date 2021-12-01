@@ -248,10 +248,6 @@ namespace Benchmark
     {
     public:
         AZ_TYPE_INFO(TestSystemAllocator, "{360D4DAA-D65D-4D5C-A6FA-1A4C5261C35C}");
-
-        TestSystemAllocator()
-            : AZ::SystemAllocator()
-        {}
     };
 
     // Allocated bytes reported by the allocator / actually requested bytes
@@ -293,7 +289,7 @@ namespace Benchmark
                 m_allocations.resize(state.threads);
                 for (auto& perThreadAllocations : m_allocations)
                 {
-                    perThreadAllocations.resize(state.range_x(), nullptr);
+                    perThreadAllocations.resize(state.range(0), nullptr);
                 }
             }
         }
@@ -342,7 +338,7 @@ namespace Benchmark
         : public AllocatorBenchmarkFixture<TAllocator>
     {
         using base = AllocatorBenchmarkFixture<TAllocator>;
-        using TestAllocatorType = base::TestAllocatorType;
+        using TestAllocatorType = typename base::TestAllocatorType;
 
         void internalSetUp(const ::benchmark::State& state) override
         {
@@ -406,7 +402,7 @@ namespace Benchmark
         : public AllocatorBenchmarkFixture<TAllocator>
     {
         using base = AllocatorBenchmarkFixture<TAllocator>;
-        using TestAllocatorType = base::TestAllocatorType;
+        using TestAllocatorType = typename base::TestAllocatorType;
 
         void internalSetUp(const ::benchmark::State& state) override
         {
