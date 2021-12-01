@@ -129,7 +129,6 @@ set(FILES
     DOM/DomBackend.h
     DOM/DomVisitor.cpp
     DOM/DomVisitor.h
-    DOM/Backends/JSON/JsonBackend.cpp
     DOM/Backends/JSON/JsonBackend.h
     DOM/Backends/JSON/JsonSerializationUtils.cpp
     DOM/Backends/JSON/JsonSerializationUtils.h

@@ -13,11 +13,26 @@
 
 namespace AZ::Dom
 {
+    //! A DOM backend for serializing and deserializing JSON <=> UTF-8 text
+    //! \param ParseFlags Controls how deserialized JSON is parsed.
+    //! \param WriteFormat Controls how serialized JSON is formatted.
+    template<Json::ParseFlags ParseFlags = Json::ParseFlags::ParseComments, Json::OutputFormatting WriteFormat = Json::OutputFormatting::PrettyPrintedJson>
     class JsonBackend final : public Backend
     {
     public:
-        Visitor::Result ReadFromStringInPlace(AZStd::string& buffer, Visitor& visitor) override;
-        Visitor::Result ReadFromString(AZStd::string_view buffer, Lifetime lifetime, Visitor& visitor) override;
-        AZStd::unique_ptr<Visitor> CreateStreamWriter(AZ::IO::GenericStream& stream) override;
+        Visitor::Result ReadFromStringInPlace(AZStd::string& buffer, Visitor& visitor) override
+        {
+            return Json::VisitSerializedJsonInPlace<ParseFlags>(buffer, visitor);
+        }
+
+        Visitor::Result ReadFromString(AZStd::string_view buffer, Lifetime lifetime, Visitor& visitor) override
+        {
+            return Json::VisitSerializedJson<ParseFlags>(buffer, lifetime, visitor);
+        }
+
+        AZStd::unique_ptr<Visitor> CreateStreamWriter(AZ::IO::GenericStream& stream) override
+        {
+            return Json::GetJsonStreamWriter(stream, WriteFormat);
+        }
     };
 } // namespace AZ::Dom

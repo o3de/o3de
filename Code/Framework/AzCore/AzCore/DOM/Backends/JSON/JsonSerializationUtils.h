@@ -26,6 +26,21 @@ namespace AZ::Dom::Json
         PrettyPrintedJson, //!< Formats JSON in a pretty printed form, focusing on legibility to readers.
     };
 
+    //! Specifies parsing behavior when deserializing JSON.
+    enum class ParseFlags : int
+    {
+        Null = 0,
+        StopWhenDone = rapidjson::kParseStopWhenDoneFlag,
+        FullFloatingPointPrecision = rapidjson::kParseFullPrecisionFlag,
+        ParseComments = rapidjson::kParseCommentsFlag,
+        ParseNumbersAsStrings = rapidjson::kParseNumbersAsStringsFlag,
+        ParseTrailingCommas = rapidjson::kParseTrailingCommasFlag,
+        ParseNanAndInfinity = rapidjson::kParseNanAndInfFlag,
+        ParseEscapedApostrophies = rapidjson::kParseEscapedApostropheFlag,
+    };
+
+    AZ_DEFINE_ENUM_BITWISE_OPERATORS(ParseFlags);
+
     //! Visitor that feeds into a rapidjson::Value
     class RapidJsonValueWriter final : public Visitor
     {
@@ -128,16 +143,18 @@ namespace AZ::Dom::Json
     //! \param lifetime Specifies the lifetime of the specified buffer. If the string specified by buffer might be deallocated,
     //! ensure Lifetime::Temporary is specified.
     //! \param visitor The visitor to visit with the JSON buffer's contents.
+    //! \param parseFlags (template) Settings for adjusting parser behavior.
     //! \return The aggregate result specifying whether the visitor operations were successful.
-    template<int ParseFlags = rapidjson::kParseCommentsFlag>
+    template<ParseFlags parseFlags = ParseFlags::ParseComments>
     Visitor::Result VisitSerializedJson(AZStd::string_view buffer, Lifetime lifetime, Visitor& visitor);
     //! Reads serialized JSON from a string in-place and applies it to a visitor.
     //! \param buffer The UTF-8 serialized JSON to read. This buffer will be modified as part of the deserialization process to
     //! apply null terminators.
     //! \param visitor The visitor to visit with the JSON buffer's contents. The strings provided to the visitor will only
     //! be valid for the lifetime of buffer.
+    //! \param parseFlags (template) Settings for adjusting parser behavior.
     //! \return The aggregate result specifying whether the visitor operations were successful.
-    template<int ParseFlags = rapidjson::kParseCommentsFlag | rapidjson::kParseInsituFlag>
+    template<ParseFlags parseFlags = ParseFlags::ParseComments>
     Visitor::Result VisitSerializedJsonInPlace(AZStd::string& buffer, Visitor& visitor);
 
     //! Takes a visitor specified by a callback and produces a rapidjson::Document.
@@ -159,31 +176,25 @@ namespace AZ::Dom::Json
     //! \return The aggregate result specifying whether the visitor operations were successful.
     Visitor::Result VisitRapidJsonValue(const rapidjson::Value& value, Visitor& visitor, Lifetime lifetime);
 
-    template<int ParseFlags>
+    template<ParseFlags parseFlags>
     Visitor::Result VisitSerializedJson(AZStd::string_view buffer, Lifetime lifetime, Visitor& visitor)
     {
-        static_assert(
-            (ParseFlags & rapidjson::kParseInsituFlag) == 0,
-            "VisitSerializedJsonInPlace requires kParseInSituFlag not to be set, use VisitSerializedJsonInPlace to parse in-situ");
-
         rapidjson::Reader reader;
         rapidjson::MemoryStream stream(buffer.data(), buffer.size());
         RapidJsonReadHandler handler(&visitor, lifetime);
 
-        reader.Parse<ParseFlags>(stream, handler);
+        reader.Parse<static_cast<int>(parseFlags)>(stream, handler);
         return handler.TakeOutcome();
     }
 
-    template<int ParseFlags>
+    template<ParseFlags parseFlags>
     Visitor::Result VisitSerializedJsonInPlace(AZStd::string& buffer, Visitor& visitor)
     {
-        static_assert((ParseFlags & rapidjson::kParseInsituFlag) != 0, "VisitSerializedJsonInPlace requires kParseInSituFlag to be set");
-
         rapidjson::Reader reader;
         AzStringStream stream(buffer);
         RapidJsonReadHandler handler(&visitor, Lifetime::Persistent);
 
-        reader.Parse<ParseFlags>(stream, handler);
+        reader.Parse<static_cast<int>(parseFlags) | rapidjson::kParseInsituFlag>(stream, handler);
         return handler.TakeOutcome();
     }
 } // namespace AZ::Dom::Json
