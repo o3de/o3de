@@ -73,9 +73,9 @@ def DynamicSliceInstanceSpawner_External_E2E():
     # 1) Create a new, temporary level
     lvl_name = "tmp_level"
     helper.init_idle()
-    level_created = general.create_level_no_prompt(lvl_name, 1024, 1, 4096, False)
+    level_created = helper.create_level(lvl_name)
     general.idle_wait(1.0)
-    Report.critical_result(Tests.level_created, level_created == 0)
+    Report.critical_result(Tests.level_created, level_created)
     general.set_current_view_position(512.0, 480.0, 38.0)
 
     # 2) Create a new entity with required vegetation area components and switch the Vegetation Asset List Source
