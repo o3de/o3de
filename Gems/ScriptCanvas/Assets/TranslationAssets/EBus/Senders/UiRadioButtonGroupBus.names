@@ -5,7 +5,7 @@
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "UiRadioButtonGroupBus",
+                "name": "UI Radio Button Group",
                 "category": "UI"
             },
             "methods": [

@@ -5,7 +5,8 @@
             "context": "BehaviorClass",
             "variant": "",
             "details": {
-                "name": "Vertex Color"
+                "name": "Vertex Color",
+                "category": "Rendering"
             },
             "methods": [
                 {

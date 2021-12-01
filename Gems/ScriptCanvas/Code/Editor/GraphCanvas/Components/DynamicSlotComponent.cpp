@@ -11,6 +11,7 @@
 
 #include <GraphCanvas/Components/Nodes/NodeBus.h>
 
+#include <ScriptCanvas/Core/Slot.h>
 #include <ScriptCanvas/GraphCanvas/NodeDescriptorBus.h>
 
 #include <Editor/GraphCanvas/Components/DynamicSlotComponent.h>

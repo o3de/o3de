@@ -38,7 +38,6 @@ namespace AudioControls
 
     private slots:
         void ShowConnectionContextMenu(const QPoint& pos);
-        void SelectedConnectionChanged();
         void CurrentConnectionModified();
         void RemoveSelectedConnection();
 

@@ -5,7 +5,7 @@
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "ComponentModeSystemRequestBus"
+                "name": "Component Mode System"
             },
             "methods": [
                 {
