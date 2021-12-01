@@ -9,7 +9,7 @@
 #include <AzCore/PlatformIncl.h>
 #include <AzCore/Debug/Trace.h>
 
-#include <malloc.h>
+#include <malloc/malloc.h>
 #include <sys/resource.h>
 
 namespace Benchmark
@@ -25,7 +25,7 @@ namespace Benchmark
 
         size_t GetMemorySize(void* memory)
         {
-            return memory ? malloc_usable_size(memory) : 0;
+            return memory ? malloc_size(memory) : 0;
         }
     }
 }
