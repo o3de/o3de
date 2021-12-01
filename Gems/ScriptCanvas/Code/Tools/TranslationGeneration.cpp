@@ -483,6 +483,7 @@ namespace ScriptCanvasEditorTools
         {
             TranslateNode(node);
         }
+
     }
 
     void TranslationGeneration::TranslateNode(const AZ::TypeId& nodeTypeId)
@@ -557,8 +558,11 @@ namespace ScriptCanvasEditorTools
                 nodeComponent->Init();
                 nodeComponent->Configure();
 
-                int inputIndex = 0;
-                int outputIndex = 0;
+                int exeInputIndex = 0;
+                int exeOutputIndex = 0;
+
+                int dataInputIndex = 0;
+                int dataOutputIndex = 0;
 
                 const auto& allSlots = nodeComponent->GetAllSlots();
                 for (const auto& slot : allSlots)
@@ -569,16 +573,16 @@ namespace ScriptCanvasEditorTools
                     {
                         if (slot->GetDescriptor().IsInput())
                         {
-                            slotEntry.m_key = AZStd::string::format("Input_%s", slot->GetName().c_str());
-                            inputIndex++;
+                            slotEntry.m_key = AZStd::string::format("Input_%s_%d", slot->GetName().c_str(), exeInputIndex);
+                            exeInputIndex++;
 
                             slotEntry.m_details.m_name = slot->GetName();
                             slotEntry.m_details.m_tooltip = slot->GetToolTip();
                         }
                         else if (slot->GetDescriptor().IsOutput())
                         {
-                            slotEntry.m_key = AZStd::string::format("Output_%s", slot->GetName().c_str());
-                            outputIndex++;
+                            slotEntry.m_key = AZStd::string::format("Output_%s_%d", slot->GetName().c_str(), exeOutputIndex);
+                            exeOutputIndex++;
 
                             slotEntry.m_details.m_name = slot->GetName();
                             slotEntry.m_details.m_tooltip = slot->GetToolTip();
@@ -617,8 +621,8 @@ namespace ScriptCanvasEditorTools
 
                         if (slot->GetDescriptor().IsInput())
                         {
-                            slotEntry.m_key = AZStd::string::format("DataInput_%s", slot->GetName().c_str());
-                            inputIndex++;
+                            slotEntry.m_key = AZStd::string::format("DataInput_%s_%d", slot->GetName().c_str(), dataInputIndex);
+                            dataInputIndex++;
 
                             AZStd::string argumentKey = slotTypeKey;
                             AZStd::string argumentName = slot->GetName();
@@ -631,8 +635,8 @@ namespace ScriptCanvasEditorTools
                         }
                         else if (slot->GetDescriptor().IsOutput())
                         {
-                            slotEntry.m_key = AZStd::string::format("DataOutput_%s", slot->GetName().c_str());
-                            outputIndex++;
+                            slotEntry.m_key = AZStd::string::format("DataOutput_%s_%d", slot->GetName().c_str(), dataOutputIndex);
+                            dataOutputIndex++;
 
                             AZStd::string resultKey = slotTypeKey;
                             AZStd::string resultName = slot->GetName();
@@ -1321,7 +1325,7 @@ namespace ScriptCanvasEditorTools
 
         scratchBuffer.Clear();
 
-        AzQtComponents::ShowFileOnDesktop(endPath.c_str());
+ //       AzQtComponents::ShowFileOnDesktop(endPath.c_str());
 
     }
 

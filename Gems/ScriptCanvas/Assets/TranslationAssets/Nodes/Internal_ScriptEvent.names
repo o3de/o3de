@@ -7,8 +7,7 @@
             "details": {
                 "name": "Script Event",
                 "category": "Internal",
-                "tooltip": "Base class for Script Events.",
-                "subtitle": "Internal"
+                "tooltip": "Base class for Script Events."
             }
         }
     ]
