@@ -14,6 +14,8 @@ def test_Sanity_Untagged_Pass(): # should happen in main pass also
 
 @pytest.mark.SUITE_smoke
 def test_Sanity_Smoke_Pass():
+    # Do not submit, failing intentionally for manual testing
+    assert False
     pass
 
 @pytest.mark.SUITE_main
