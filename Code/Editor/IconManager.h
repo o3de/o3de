@@ -8,11 +8,6 @@
 
 
 // Description : Manages Textures used by Icon.
-
-
-#ifndef CRYINCLUDE_EDITOR_ICONMANAGER_H
-#define CRYINCLUDE_EDITOR_ICONMANAGER_H
-
 #pragma once
 
 #include "Include/IIconManager.h"   // for IIconManager
@@ -31,7 +26,7 @@ class CIconManager
 public:
     // Construction
     CIconManager();
-    ~CIconManager();
+    ~CIconManager() override;
 
     void Init();
     void Done();
@@ -41,8 +36,6 @@ public:
 
     // Operations
     virtual int GetIconTexture(EIcon icon);
-
-    virtual IStatObj*   GetObject(EStatObject object);
     virtual int GetIconTexture(const char* iconName);
 
     //////////////////////////////////////////////////////////////////////////
@@ -61,7 +54,6 @@ public:
 private:
     StdMap<QString, int> m_textures;
 
-    IStatObj*   m_objects[eStatObject_COUNT];
     int m_icons[eIcon_COUNT];
 
     //////////////////////////////////////////////////////////////////////////
@@ -70,5 +62,3 @@ private:
     typedef std::map<QString, QImage*> IconsMap;
     IconsMap m_iconBitmapsMap;
 };
-
-#endif // CRYINCLUDE_EDITOR_ICONMANAGER_H

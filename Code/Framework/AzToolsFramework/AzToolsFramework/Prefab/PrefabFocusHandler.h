@@ -30,8 +30,8 @@ namespace AzToolsFramework::Prefab
 
     //! Handles Prefab Focus mode, determining which prefab file entity changes will target.
     class PrefabFocusHandler final
-        : private PrefabFocusInterface
-        , private PrefabFocusPublicInterface
+        : public PrefabFocusPublicRequestBus::Handler
+        , private PrefabFocusInterface
         , private PrefabPublicNotificationBus::Handler
         , private EditorEntityContextNotificationBus::Handler
         , private EditorEntityInfoNotificationBus::Handler
@@ -42,13 +42,15 @@ namespace AzToolsFramework::Prefab
         PrefabFocusHandler();
         ~PrefabFocusHandler();
 
+        static void Reflect(AZ::ReflectContext* context);
+
         // PrefabFocusInterface overrides ...
         void InitializeEditorInterfaces() override;
         PrefabFocusOperationResult FocusOnPrefabInstanceOwningEntityId(AZ::EntityId entityId) override;
         TemplateId GetFocusedPrefabTemplateId(AzFramework::EntityContextId entityContextId) const override;
         InstanceOptionalReference GetFocusedPrefabInstance(AzFramework::EntityContextId entityContextId) const override;
 
-        // PrefabFocusPublicInterface overrides ...
+        // PrefabFocusPublicInterface and PrefabFocusPublicRequestBus overrides ...
         PrefabFocusOperationResult FocusOnOwningPrefab(AZ::EntityId entityId) override;
         PrefabFocusOperationResult FocusOnParentOfFocusedPrefab(AzFramework::EntityContextId entityContextId) override;
         PrefabFocusOperationResult FocusOnPathIndex(AzFramework::EntityContextId entityContextId, int index) override;

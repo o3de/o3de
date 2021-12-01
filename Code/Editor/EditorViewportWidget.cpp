@@ -97,9 +97,6 @@
 
 #include <QtGui/private/qhighdpiscaling_p.h>
 
-#include <IEntityRenderState.h>
-#include <IStatObj.h>
-
 AZ_CVAR(
     bool, ed_visibility_logTiming, false, nullptr, AZ::ConsoleFunctorFlags::Null, "Output the timing of the new IVisibilitySystem query");
 
@@ -475,7 +472,7 @@ void EditorViewportWidget::Update()
     {
         auto start = std::chrono::steady_clock::now();
 
-        m_entityVisibilityQuery.UpdateVisibility(GetCameraState());
+        m_entityVisibilityQuery.UpdateVisibility(m_renderViewport->GetCameraState());
 
         if (ed_visibility_logTiming)
         {
@@ -717,7 +714,7 @@ void EditorViewportWidget::RenderAll()
 
         m_debugDisplay->DepthTestOff();
         m_manipulatorManager->DrawManipulators(
-            *m_debugDisplay, GetCameraState(),
+            *m_debugDisplay, m_renderViewport->GetCameraState(),
             BuildMouseInteractionInternal(
                 AztfVi::MouseButtons(AztfVi::TranslateMouseButtons(QGuiApplication::mouseButtons())), keyboardModifiers,
                 BuildMousePick(WidgetToViewport(mapFromGlobal(QCursor::pos())))));
@@ -881,29 +878,9 @@ void EditorViewportWidget::OnMenuSelectCurrentCamera()
     }
 }
 
-AzFramework::CameraState EditorViewportWidget::GetCameraState()
-{
-    return m_renderViewport->GetCameraState();
-}
-
-AZ::Vector3 EditorViewportWidget::PickTerrain(const AzFramework::ScreenPoint& point)
-{
-    return LYVec3ToAZVec3(ViewToWorld(AzToolsFramework::ViewportInteraction::QPointFromScreenPoint(point), nullptr, true));
-}
-
-float EditorViewportWidget::TerrainHeight(const AZ::Vector2& position)
-{
-    return GetIEditor()->GetTerrainElevation(position.GetX(), position.GetY());
-}
-
 void EditorViewportWidget::FindVisibleEntities(AZStd::vector<AZ::EntityId>& visibleEntitiesOut)
 {
     visibleEntitiesOut.assign(m_entityVisibilityQuery.Begin(), m_entityVisibilityQuery.End());
-}
-
-AzFramework::ScreenPoint EditorViewportWidget::ViewportWorldToScreen(const AZ::Vector3& worldPosition)
-{
-    return m_renderViewport->ViewportWorldToScreen(worldPosition);
 }
 
 QWidget* EditorViewportWidget::GetWidgetForViewportContextMenu()
@@ -2135,7 +2112,7 @@ bool EditorViewportWidget::GetActiveCameraState(AzFramework::CameraState& camera
 {
     if (m_pPrimaryViewport == this)
     {
-        cameraState = GetCameraState();
+        cameraState = m_renderViewport->GetCameraState();
         return true;
     }
 

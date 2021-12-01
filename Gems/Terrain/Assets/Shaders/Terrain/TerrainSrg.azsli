@@ -17,16 +17,6 @@ ShaderResourceGroupSemantic SRG_Terrain
 
 ShaderResourceGroup TerrainSrg : SRG_Terrain
 {
-    
-    Sampler DetailSampler
-    {
-        AddressU = Wrap;
-        AddressV = Wrap;
-        MinFilter = Point;
-        MagFilter = Point;
-        MipFilter = Point;
-    };
-
     struct DetailMaterialData
     {
         // Uv

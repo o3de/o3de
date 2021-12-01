@@ -113,7 +113,7 @@ namespace Camera
         // Set transform to that of the viewport, otherwise default to Identity matrix and 60 degree FOV
         const auto worldFromView = AzFramework::CameraTransform(cameraState);
         const auto cameraTransform = AZ::Transform::CreateFromMatrix3x3AndTranslation(
-            AZ::Matrix3x3::CreateFromMatrix4x4(worldFromView), worldFromView.GetTranslation());
+            AZ::Matrix3x3::CreateFromMatrix3x4(worldFromView), worldFromView.GetTranslation());
         AZ::TransformBus::Event(newEntityId, &AZ::TransformInterface::SetWorldTM, cameraTransform);
         CameraRequestBus::Event(newEntityId, &CameraComponentRequests::SetFov, AZ::RadToDeg(cameraState.m_fovOrZoom));
         undoBatch.MarkEntityDirty(newEntityId);

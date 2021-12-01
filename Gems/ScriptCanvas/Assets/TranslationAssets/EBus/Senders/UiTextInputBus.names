@@ -5,7 +5,7 @@
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "UiTextInputBus",
+                "name": "UI Text Input",
                 "category": "UI"
             },
             "methods": [
