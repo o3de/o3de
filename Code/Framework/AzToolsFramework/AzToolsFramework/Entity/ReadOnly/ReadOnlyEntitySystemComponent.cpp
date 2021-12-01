@@ -45,7 +45,7 @@ namespace AzToolsFramework
         if (!m_readOnlystates.contains(entityId))
         {
             QueryReadOnlyStateForEntity(entityId);
-        }
+    }
 
         return m_readOnlystates[entityId];
     }
@@ -58,23 +58,23 @@ namespace AzToolsFramework
             QueryReadOnlyStateForEntity(entityId);
 
             if (bool isReadOnly = m_readOnlystates[entityId]; wasReadOnly != isReadOnly)
-            {
+        {
                 ReadOnlyEntityPublicNotificationBus::Broadcast(
                     &ReadOnlyEntityPublicNotificationBus::Events::OnReadOnlyEntityStatusChanged, entityId, isReadOnly);
-            }
         }
+    }
     }
 
     void ReadOnlyEntitySystemComponent::RefreshReadOnlyStateForAllEntities()
     {
         for (auto& elem : m_readOnlystates)
-        {
+    {
             AZ::EntityId entityId = elem.first;
             bool wasReadOnly = elem.second;
             QueryReadOnlyStateForEntity(entityId);
 
             if (bool isReadOnly = m_readOnlystates[entityId]; wasReadOnly != isReadOnly)
-            {
+        {
                 ReadOnlyEntityPublicNotificationBus::Broadcast(
                     &ReadOnlyEntityPublicNotificationBus::Events::OnReadOnlyEntityStatusChanged, entityId, isReadOnly);
             }

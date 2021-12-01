@@ -39,7 +39,7 @@ namespace AzToolsFramework
 
         // ReadOnlyEntityPublicNotifications overrides ...
         bool IsReadOnly(const AZ::EntityId& entityId) override;
-        
+
         // ReadOnlyEntityQueryInterface overrides ...
         void RefreshReadOnlyState(const EntityIdList& entityIds) override;
         void RefreshReadOnlyStateForAllEntities() override;
