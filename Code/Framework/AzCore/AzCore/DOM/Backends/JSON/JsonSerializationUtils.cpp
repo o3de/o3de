@@ -304,183 +304,165 @@ namespace AZ::Dom::Json
     //
     // struct JsonReadHandler
     //
-    // Handler for a rapidjson::Reader that translates reads into an AZ::Dom::Visitor
-    struct JsonReadHandler
+    RapidJsonReadHandler::RapidJsonReadHandler(Visitor* visitor, Lifetime stringLifetime)
+        : m_visitor(visitor)
+        , m_stringLifetime(stringLifetime)
+        , m_outcome(AZ::Success())
     {
-    public:
-        JsonReadHandler(Visitor* visitor, Lifetime stringLifetime)
-            : m_visitor(visitor)
-            , m_stringLifetime(stringLifetime)
-            , m_outcome(AZ::Success())
-        {
-        }
+    }
 
-        bool Null()
-        {
-            return CheckResult(m_visitor->Null());
-        }
+    bool RapidJsonReadHandler::Null()
+    {
+        return CheckResult(m_visitor->Null());
+    }
 
-        bool Bool(bool b)
-        {
-            return CheckResult(m_visitor->Bool(b));
-        }
+    bool RapidJsonReadHandler::Bool(bool b)
+    {
+        return CheckResult(m_visitor->Bool(b));
+    }
 
-        bool Int(int i)
-        {
-            return CheckResult(m_visitor->Int64(static_cast<AZ::s64>(i)));
-        }
+    bool RapidJsonReadHandler::Int(int i)
+    {
+        return CheckResult(m_visitor->Int64(static_cast<AZ::s64>(i)));
+    }
 
-        bool Uint(unsigned i)
-        {
-            return CheckResult(m_visitor->Uint64(static_cast<AZ::u64>(i)));
-        }
+    bool RapidJsonReadHandler::Uint(unsigned i)
+    {
+        return CheckResult(m_visitor->Uint64(static_cast<AZ::u64>(i)));
+    }
 
-        bool Int64(int64_t i)
-        {
-            return CheckResult(m_visitor->Int64(i));
-        }
+    bool RapidJsonReadHandler::Int64(int64_t i)
+    {
+        return CheckResult(m_visitor->Int64(i));
+    }
 
-        bool Uint64(uint64_t i)
-        {
-            return CheckResult(m_visitor->Uint64(i));
-        }
+    bool RapidJsonReadHandler::Uint64(uint64_t i)
+    {
+        return CheckResult(m_visitor->Uint64(i));
+    }
 
-        bool Double(double d)
-        {
-            return CheckResult(m_visitor->Double(d));
-        }
+    bool RapidJsonReadHandler::Double(double d)
+    {
+        return CheckResult(m_visitor->Double(d));
+    }
 
-        bool RawNumber([[maybe_unused]] const char* str, [[maybe_unused]] rapidjson::SizeType length, [[maybe_unused]] bool copy)
+    bool RapidJsonReadHandler::RawNumber(
+        [[maybe_unused]] const char* str, [[maybe_unused]] rapidjson::SizeType length, [[maybe_unused]] bool copy)
+    {
+        AZ_Assert(false, "Raw numbers are unsupported in the rapidjson DOM backend");
+        return false;
+    }
+
+    bool RapidJsonReadHandler::String(const char* str, rapidjson::SizeType length, bool copy)
+    {
+        Lifetime lifetime = m_stringLifetime;
+        if (!copy)
         {
-            AZ_Assert(false, "Raw numbers are unsupported in the rapidjson DOM backend");
+            lifetime = Lifetime::Temporary;
+        }
+        return CheckResult(m_visitor->String(AZStd::string_view(str, length), lifetime));
+    }
+
+    bool RapidJsonReadHandler::StartObject()
+    {
+        return CheckResult(m_visitor->StartObject());
+    }
+
+    bool RapidJsonReadHandler::Key(const char* str, rapidjson::SizeType length, [[maybe_unused]] bool copy)
+    {
+        AZStd::string_view key = AZStd::string_view(str, length);
+        if (!m_visitor->SupportsRawKeys())
+        {
+            m_visitor->Key(AZ::Name(key));
+        }
+        Lifetime lifetime = m_stringLifetime;
+        if (!copy)
+        {
+            lifetime = Lifetime::Temporary;
+        }
+        return CheckResult(m_visitor->RawKey(key, lifetime));
+    }
+
+    bool RapidJsonReadHandler::EndObject([[maybe_unused]] rapidjson::SizeType memberCount)
+    {
+        return CheckResult(m_visitor->EndObject(memberCount));
+    }
+
+    bool RapidJsonReadHandler::StartArray()
+    {
+        return CheckResult(m_visitor->StartArray());
+    }
+
+    bool RapidJsonReadHandler::EndArray([[maybe_unused]] rapidjson::SizeType elementCount)
+    {
+        return CheckResult(m_visitor->EndArray(elementCount));
+    }
+
+    Visitor::Result&& RapidJsonReadHandler::TakeOutcome()
+    {
+        return AZStd::move(m_outcome);
+    }
+
+    bool RapidJsonReadHandler::CheckResult(Visitor::Result result)
+    {
+        if (!result.IsSuccess())
+        {
+            m_outcome = AZStd::move(result);
             return false;
         }
-
-        bool String(const char* str, rapidjson::SizeType length, bool copy)
-        {
-            Lifetime lifetime = m_stringLifetime;
-            if (!copy)
-            {
-                lifetime = Lifetime::Temporary;
-            }
-            return CheckResult(m_visitor->String(AZStd::string_view(str, length), lifetime));
-        }
-
-        bool StartObject()
-        {
-            return CheckResult(m_visitor->StartObject());
-        }
-
-        bool Key(const char* str, rapidjson::SizeType length, [[maybe_unused]] bool copy)
-        {
-            AZStd::string_view key = AZStd::string_view(str, length);
-            if (!m_visitor->SupportsRawKeys())
-            {
-                m_visitor->Key(AZ::Name(key));
-            }
-            Lifetime lifetime = m_stringLifetime;
-            if (!copy)
-            {
-                lifetime = Lifetime::Temporary;
-            }
-            return CheckResult(m_visitor->RawKey(key, lifetime));
-        }
-
-        bool EndObject([[maybe_unused]] rapidjson::SizeType memberCount)
-        {
-            return CheckResult(m_visitor->EndObject(memberCount));
-        }
-
-        bool StartArray()
-        {
-            return CheckResult(m_visitor->StartArray());
-        }
-
-        bool EndArray([[maybe_unused]] rapidjson::SizeType elementCount)
-        {
-            return CheckResult(m_visitor->EndArray(elementCount));
-        }
-
-        Visitor::Result&& TakeOutcome()
-        {
-            return AZStd::move(m_outcome);
-        }
-
-    private:
-        bool CheckResult(Visitor::Result result)
-        {
-            if (!result.IsSuccess())
-            {
-                m_outcome = AZStd::move(result);
-                return false;
-            }
-            return true;
-        }
-
-        Visitor::Result m_outcome;
-        Visitor* m_visitor;
-        Lifetime m_stringLifetime;
-    };
+        return true;
+    }
 
     //
     // struct AzStringStream
     //
     // rapidjson stream wrapper for AZStd::string suitable for in-situ parsing
-    struct AzStringStream
+    AzStringStream::AzStringStream(AZStd::string& buffer)
     {
-        using Ch = char;
+        m_cursor = buffer.data();
+        m_begin = m_cursor;
+    }
 
-        AzStringStream(AZStd::string& buffer)
-        {
-            m_cursor = buffer.data();
-            m_begin = m_cursor;
-        }
+    char AzStringStream::Peek() const
+    {
+        return *m_cursor;
+    }
 
-        char Peek() const
-        {
-            return *m_cursor;
-        }
+    char AzStringStream::Take()
+    {
+        return *m_cursor++;
+    }
 
-        char Take()
-        {
-            return *m_cursor++;
-        }
+    size_t AzStringStream::Tell() const
+    {
+        return static_cast<size_t>(m_cursor - m_begin);
+    }
 
-        size_t Tell() const
-        {
-            return static_cast<size_t>(m_cursor - m_begin);
-        }
+    char* AzStringStream::PutBegin()
+    {
+        m_write = m_cursor;
+        return m_cursor;
+    }
 
-        char* PutBegin()
-        {
-            m_write = m_cursor;
-            return m_cursor;
-        }
+    void AzStringStream::Put(char c)
+    {
+        (*m_write++) = c;
+    }
 
-        void Put(char c)
-        {
-            (*m_write++) = c;
-        }
+    void AzStringStream::Flush()
+    {
+    }
 
-        void Flush()
-        {
-        }
+    size_t AzStringStream::PutEnd(char* begin)
+    {
+        return m_write - begin;
+    }
 
-        size_t PutEnd(char* begin)
-        {
-            return m_write - begin;
-        }
-
-        const char* Peek4() const
-        {
-            AZ_Assert(false, "Not implemented, encoding is hard-coded to UTF-8");
-            return m_cursor;
-        }
-
-        char* m_cursor; //!< Current read position.
-        char* m_write; //!< Current write position.
-        const char* m_begin; //!< Head of string.
-    };
+    const char* AzStringStream::Peek4() const
+    {
+        AZ_Assert(false, "Not implemented, encoding is hard-coded to UTF-8");
+        return m_cursor;
+    }
 
     //
     // Serialized JSON util functions
@@ -497,28 +479,6 @@ namespace AZ::Dom::Json
             using WriterType = rapidjson::PrettyWriter<AZ::IO::RapidJSONStreamWriter>;
             return AZStd::make_unique<StreamWriter<WriterType>>(&stream);
         }
-    }
-
-    Visitor::Result VisitSerializedJson(AZStd::string_view buffer, Lifetime lifetime, Visitor& visitor)
-    {
-        rapidjson::Reader reader;
-        rapidjson::MemoryStream stream(buffer.data(), buffer.size());
-        JsonReadHandler handler(&visitor, lifetime);
-
-        constexpr int flags = rapidjson::kParseCommentsFlag;
-        reader.Parse<flags>(stream, handler);
-        return handler.TakeOutcome();
-    }
-
-    Visitor::Result VisitSerializedJsonInPlace(AZStd::string& buffer, Visitor& visitor)
-    {
-        rapidjson::Reader reader;
-        AzStringStream stream(buffer);
-        JsonReadHandler handler(&visitor, Lifetime::Persistent);
-
-        constexpr int flags = rapidjson::kParseCommentsFlag | rapidjson::kParseInsituFlag;
-        reader.Parse<flags>(stream, handler);
-        return handler.TakeOutcome();
     }
 
     //

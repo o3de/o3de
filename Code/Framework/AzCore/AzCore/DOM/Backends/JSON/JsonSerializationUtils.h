@@ -67,6 +67,56 @@ namespace AZ::Dom::Json
         AZStd::deque<ValueInfo> m_entryStack;
     };
 
+    //! Handler for a rapidjson::Reader that translates reads into an AZ::Dom::Visitor
+    struct RapidJsonReadHandler
+    {
+    public:
+        RapidJsonReadHandler(Visitor* visitor, Lifetime stringLifetime);
+
+        bool Null();
+        bool Bool(bool b);
+        bool Int(int i);
+        bool Uint(unsigned i);
+        bool Int64(int64_t i);
+        bool Uint64(uint64_t i);
+        bool Double(double d);
+        bool RawNumber(const char* str, rapidjson::SizeType length, bool copy);
+        bool String(const char* str, rapidjson::SizeType length, bool copy);
+        bool StartObject();
+        bool Key(const char* str, rapidjson::SizeType length, bool copy);
+        bool EndObject(rapidjson::SizeType memberCount);
+        bool StartArray();
+        bool EndArray(rapidjson::SizeType elementCount);
+        Visitor::Result&& TakeOutcome();
+
+    private:
+        bool CheckResult(Visitor::Result result);
+
+        Visitor::Result m_outcome;
+        Visitor* m_visitor;
+        Lifetime m_stringLifetime;
+    };
+
+    //! rapidjson stream wrapper for AZStd::string suitable for in-situ parsing
+    struct AzStringStream
+    {
+        using Ch = char; //<! Denotes the string character storage type for rapidjson
+
+        AzStringStream(AZStd::string& buffer);
+        char Peek() const;
+        char Take();
+        size_t Tell() const;
+        char* PutBegin();
+        void Put(char c);
+        void Flush();
+        size_t PutEnd(char* begin);
+        const char* Peek4() const;
+
+        char* m_cursor; //!< Current read position.
+        char* m_write; //!< Current write position.
+        const char* m_begin; //!< Head of string.
+    };
+
     //! Creates a Visitor that will write serialized JSON to the specified stream.
     //! \param stream The stream the visitor will write to.
     //! \param format The format to write in.
@@ -76,9 +126,10 @@ namespace AZ::Dom::Json
     //! Reads serialized JSON from a string and applies it to a visitor.
     //! \param buffer The UTF-8 serialized JSON to read.
     //! \param lifetime Specifies the lifetime of the specified buffer. If the string specified by buffer might be deallocated,
-    //! ensure specify Lifetime::Temporary is specified.
+    //! ensure Lifetime::Temporary is specified.
     //! \param visitor The visitor to visit with the JSON buffer's contents.
     //! \return The aggregate result specifying whether the visitor operations were successful.
+    template<int ParseFlags = rapidjson::kParseCommentsFlag>
     Visitor::Result VisitSerializedJson(AZStd::string_view buffer, Lifetime lifetime, Visitor& visitor);
     //! Reads serialized JSON from a string in-place and applies it to a visitor.
     //! \param buffer The UTF-8 serialized JSON to read. This buffer will be modified as part of the deserialization process to
@@ -86,6 +137,7 @@ namespace AZ::Dom::Json
     //! \param visitor The visitor to visit with the JSON buffer's contents. The strings provided to the visitor will only
     //! be valid for the lifetime of buffer.
     //! \return The aggregate result specifying whether the visitor operations were successful.
+    template<int ParseFlags = rapidjson::kParseCommentsFlag | rapidjson::kParseInsituFlag>
     Visitor::Result VisitSerializedJsonInPlace(AZStd::string& buffer, Visitor& visitor);
 
     //! Takes a visitor specified by a callback and produces a rapidjson::Document.
@@ -106,4 +158,32 @@ namespace AZ::Dom::Json
     //! before the visitor is finished using these values, Lifetime::Temporary should be specified.
     //! \return The aggregate result specifying whether the visitor operations were successful.
     Visitor::Result VisitRapidJsonValue(const rapidjson::Value& value, Visitor& visitor, Lifetime lifetime);
+
+    template<int ParseFlags>
+    Visitor::Result VisitSerializedJson(AZStd::string_view buffer, Lifetime lifetime, Visitor& visitor)
+    {
+        static_assert(
+            (ParseFlags & rapidjson::kParseInsituFlag) == 0,
+            "VisitSerializedJsonInPlace requires kParseInSituFlag not to be set, use VisitSerializedJsonInPlace to parse in-situ");
+
+        rapidjson::Reader reader;
+        rapidjson::MemoryStream stream(buffer.data(), buffer.size());
+        RapidJsonReadHandler handler(&visitor, lifetime);
+
+        reader.Parse<ParseFlags>(stream, handler);
+        return handler.TakeOutcome();
+    }
+
+    template<int ParseFlags>
+    Visitor::Result VisitSerializedJsonInPlace(AZStd::string& buffer, Visitor& visitor)
+    {
+        static_assert((ParseFlags & rapidjson::kParseInsituFlag) != 0, "VisitSerializedJsonInPlace requires kParseInSituFlag to be set");
+
+        rapidjson::Reader reader;
+        AzStringStream stream(buffer);
+        RapidJsonReadHandler handler(&visitor, Lifetime::Persistent);
+
+        reader.Parse<ParseFlags>(stream, handler);
+        return handler.TakeOutcome();
+    }
 } // namespace AZ::Dom::Json
