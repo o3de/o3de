@@ -122,6 +122,7 @@ namespace EMotionFX
             }
             m_trajectoryHistory.Init(*m_actorInstance->GetTransformData()->GetCurrentPose(),
                 rootJointIndex,
+                m_behavior->GetTrajectoryFeature()->GetFacingAxisDir(),
                 m_trajectorySecsToTrack);
         }
 
@@ -222,7 +223,7 @@ namespace EMotionFX
             return m_lowestCostFrameIndex;
         }
 
-        void BehaviorInstance::Update(float timePassedInSeconds, const AZ::Vector3& targetPos, TrajectoryQuery::EMode mode, float pathRadius, float pathSpeed)
+        void BehaviorInstance::Update(float timePassedInSeconds, const AZ::Vector3& targetPos, const AZ::Vector3& targetFacingDir, TrajectoryQuery::EMode mode, float pathRadius, float pathSpeed)
         {
             AZ_PROFILE_SCOPE(Animation, "BehaviorInstance::Update");
 
@@ -248,6 +249,7 @@ namespace EMotionFX
                 m_trajectoryHistory,
                 mode,
                 targetPos,
+                targetFacingDir,
                 timePassedInSeconds,
                 pathRadius,
                 pathSpeed);

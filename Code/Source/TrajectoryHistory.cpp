@@ -17,12 +17,28 @@
 
 namespace EMotionFX::MotionMatching
 {
-    void TrajectoryHistory::Init(const Pose& pose, size_t jointIndex, float numSecondsToTrack)
+    TrajectoryHistory::Sample operator*(TrajectoryHistory::Sample sample, float weight)
+    {
+        return {sample.m_position * weight, sample.m_facingDirection * weight};
+    }
+
+    TrajectoryHistory::Sample operator*(float weight, TrajectoryHistory::Sample sample)
+    {
+        return {weight * sample.m_position, weight * sample.m_facingDirection};
+    }
+
+    TrajectoryHistory::Sample operator+(TrajectoryHistory::Sample lhs, const TrajectoryHistory::Sample& rhs)
+    {
+        return {lhs.m_position + rhs.m_position, lhs.m_facingDirection + rhs.m_facingDirection};
+    }
+
+    void TrajectoryHistory::Init(const Pose& pose, size_t jointIndex, const AZ::Vector3& facingAxisDir, float numSecondsToTrack)
     {
         AZ_Assert(numSecondsToTrack > 0.0f, "Number of seconds to track has to be greater than zero.");
         Clear();
-        m_numSecondsToTrack = numSecondsToTrack;
         m_jointIndex = jointIndex;
+        m_facingAxisDir = facingAxisDir;
+        m_numSecondsToTrack = numSecondsToTrack;
 
         // Pre-fill the history with samples from the current joint position.
         PrefillSamples(pose, /*timeDelta=*/1.0f / 60.0f);
@@ -30,10 +46,13 @@ namespace EMotionFX::MotionMatching
 
     void TrajectoryHistory::AddSample(const Pose& pose)
     {
-        const AZ::Vector3 position = pose.GetWorldSpaceTransform(m_jointIndex).m_position;
+        Sample sample;
+        const Transform worldSpaceTransform = pose.GetWorldSpaceTransform(m_jointIndex);
+        sample.m_position = worldSpaceTransform.m_position;
+        sample.m_facingDirection = worldSpaceTransform.TransformVector(m_facingAxisDir).GetNormalizedSafe();
 
         // The new key will be added at the end of the keytrack.
-        m_keytrack.AddKey(m_currentTime, position);
+        m_keytrack.AddKey(m_currentTime, sample);
 
         while (m_keytrack.GetNumKeys() > 2 &&
             ((m_keytrack.GetKey(m_keytrack.GetNumKeys() - 2)->GetTime() - m_keytrack.GetFirstTime()) > m_numSecondsToTrack))
@@ -64,17 +83,17 @@ namespace EMotionFX::MotionMatching
         m_currentTime += timeDelta;
     }
 
-    AZ::Vector3 TrajectoryHistory::Sample(float time) const
+    TrajectoryHistory::Sample TrajectoryHistory::Evaluate(float time) const
     {
         if (m_keytrack.GetNumKeys() == 0)
         {
-            return AZ::Vector3::CreateZero();
+            return {};
         }
 
         return m_keytrack.GetValueAtTime(m_keytrack.GetLastTime() - time);
     }
 
-    AZ::Vector3 TrajectoryHistory::SampleNormalized(float normalizedTime) const
+    TrajectoryHistory::Sample TrajectoryHistory::EvaluateNormalized(float normalizedTime) const
     {
         const float firstTime = m_keytrack.GetFirstTime();
         const float lastTime = m_keytrack.GetLastTime();
@@ -118,9 +137,12 @@ namespace EMotionFX::MotionMatching
             finalColor.SetA(finalColor.GetA() * 0.6f * normalized);
             const float markerSize = m_debugMarkerSize * 0.7f * normalized;
 
-            const AZ::Vector3 currentPosition = m_keytrack.GetKey(i)->GetValue();
+            const Sample currentSample = m_keytrack.GetKey(i)->GetValue();
             debugDisplay.SetColor(finalColor);
-            debugDisplay.DrawBall(currentPosition, markerSize, /*drawShaded=*/false);
+            debugDisplay.DrawBall(currentSample.m_position, markerSize, /*drawShaded=*/false);
+
+            const float facingDirectionLength = m_debugMarkerSize * 10.0f * normalized;
+            debugDisplay.DrawLine(currentSample.m_position, currentSample.m_position + currentSample.m_facingDirection * facingDirectionLength);
         }
     }
 
@@ -131,18 +153,19 @@ namespace EMotionFX::MotionMatching
         debugDisplay.DepthTestOff();
         debugDisplay.SetColor(color);
 
-        AZ::Vector3 lastPos = SampleNormalized(0.0f);
+        Sample lastSample = EvaluateNormalized(0.0f);
         for (size_t i = 0; i < numSamples; ++i)
         {
             const float sampleTime = i / static_cast<float>(numSamples - 1);
-            const AZ::Vector3 currentPos = SampleNormalized(sampleTime);
+            const Sample currentSample = EvaluateNormalized(sampleTime);
             if (i > 0)
             {
-                debugDisplay.DrawLine(lastPos, currentPos);
+                debugDisplay.DrawLine(lastSample.m_position, currentSample.m_position);
             }
 
-            debugDisplay.DrawBall(currentPos, m_debugMarkerSize, /*drawShaded=*/false);
-            lastPos = currentPos;
+            debugDisplay.DrawBall(currentSample.m_position, m_debugMarkerSize, /*drawShaded=*/false);
+
+            lastSample = currentSample;
         }
     }
 } // namespace EMotionFX::MotionMatching

@@ -28,17 +28,23 @@ namespace EMotionFX::MotionMatching
     class EMFX_API TrajectoryHistory
     {
     public:
-        void Init(const Pose& pose, size_t jointIndex, float numSecondsToTrack);
+        void Init(const Pose& pose, size_t jointIndex, const AZ::Vector3& facingAxisDir, float numSecondsToTrack);
         void Clear();
 
         void Update(float timeDelta);
         void AddSample(const Pose& pose);
 
+        struct EMFX_API Sample
+        {
+            AZ::Vector3 m_position = AZ::Vector3::CreateZero();
+            AZ::Vector3 m_facingDirection = AZ::Vector3::CreateZero();
+        };
+
         //! time in range [0, m_numSecondsToTrack]
-        AZ::Vector3 Sample(float time) const;
+        Sample Evaluate(float time) const;
 
         //! time in range [0, 1] where 0 is the current character position and 1 the oldest keyframe in the trajectory history
-        AZ::Vector3 SampleNormalized(float normalizedTime) const;
+        Sample EvaluateNormalized(float normalizedTime) const;
 
         float GetNumSecondsToTrack() const { return m_numSecondsToTrack; }
         float GetCurrentTime() const { return m_currentTime; }
@@ -50,10 +56,11 @@ namespace EMotionFX::MotionMatching
     private:
         void PrefillSamples(const Pose& pose, float timeDelta);
 
-        KeyTrackLinearDynamic<AZ::Vector3> m_keytrack;
+        KeyTrackLinearDynamic<Sample> m_keytrack;
         float m_numSecondsToTrack = 0.0f;
         size_t m_jointIndex = 0;
         float m_currentTime = 0.0f;
+        AZ::Vector3 m_facingAxisDir; //! Facing direction of the character asset. (e.g. 0,1,0 when it is looking towards Y-axis)
 
         static constexpr float m_debugMarkerSize = 0.02f;
     };

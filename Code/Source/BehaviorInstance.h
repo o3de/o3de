@@ -50,7 +50,7 @@ namespace EMotionFX
             void Init(const InitSettings& settings);
             void DebugDraw();
 
-            void Update(float timePassedInSeconds, const AZ::Vector3& targetPos, TrajectoryQuery::EMode mode, float pathRadius, float pathSpeed);
+            void Update(float timePassedInSeconds, const AZ::Vector3& targetPos, const AZ::Vector3& targetFacingDir, TrajectoryQuery::EMode mode, float pathRadius, float pathSpeed);
             void Output(Pose& outputPose);
 
             MotionInstance* GetMotionInstance() const { return m_motionInstance; }

@@ -50,7 +50,8 @@ namespace EMotionFX::MotionMatching
             const FeatureTrajectory* trajectoryFeature,
             const TrajectoryHistory& trajectoryHistory,
             EMode mode,
-            const AZ::Vector3& targetPos,
+            AZ::Vector3 targetPos,
+            AZ::Vector3 targetFacingDir,
             float timeDelta,
             float pathRadius,
             float pathSpeed);

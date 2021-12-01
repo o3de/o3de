@@ -33,12 +33,14 @@ namespace EMotionFX
             enum
             {
                 INPUTPORT_TARGETPOS = 0,
+                INPUTPORT_TARGETFACINGDIR = 1,
                 OUTPUTPORT_POSE = 0
             };
 
             enum
             {
                 PORTID_INPUT_TARGETPOS = 0,
+                PORTID_INPUT_TARGETFACINGDIR = 1,
                 PORTID_OUTPUT_POSE = 0
             };
 

@@ -90,7 +90,7 @@ namespace EMotionFX
             const Transform relativeToWorldTM = pose->GetWorldSpaceTransform(m_relativeToNodeIndex);
             const AZ::Vector3 jointPosition = relativeToWorldTM.TransformPoint(jointModelTM.m_position);
             const AZ::Vector3 velocityWorldSpace = relativeToWorldTM.TransformVector(velocity * scale);
-            const AZ::Vector3 arrowPosition = jointPosition + velocityWorldSpace ;
+            const AZ::Vector3 arrowPosition = jointPosition + velocityWorldSpace;
 
             debugDisplay.DepthTestOff();
             debugDisplay.SetColor(m_debugColor);
