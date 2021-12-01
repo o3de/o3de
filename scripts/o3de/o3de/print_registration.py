@@ -16,7 +16,7 @@ import urllib.parse
 
 from o3de import manifest, validation
 
-logger = logging.getLogger()
+logger = logging.getLogger('o3de.print_registration')
 logging.basicConfig()
 
 

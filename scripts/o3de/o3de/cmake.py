@@ -15,7 +15,7 @@ import pathlib
 
 from o3de import manifest
 
-logger = logging.getLogger()
+logger = logging.getLogger('o3de.cmake')
 logging.basicConfig()
 
 enable_gem_start_marker = 'set(ENABLED_GEMS'

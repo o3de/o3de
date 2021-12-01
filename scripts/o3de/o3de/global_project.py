@@ -16,11 +16,12 @@ import json
 
 from o3de import manifest, validation
 
-logger = logging.getLogger()
+logger = logging.getLogger('o3de.global_project')
 logging.basicConfig()
 
 DEFAULT_BOOTSTRAP_SETREG = pathlib.Path('~/.o3de/Registry/bootstrap.setreg').expanduser()
 PROJECT_PATH_KEY = ('Amazon', 'AzCore', 'Bootstrap', 'project_path')
+
 
 def get_json_data(input_path: pathlib.Path):
     setreg_json_data = {}

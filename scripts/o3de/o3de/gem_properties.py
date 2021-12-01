@@ -15,7 +15,7 @@ import logging
 
 from o3de import manifest, utils
 
-logger = logging.getLogger()
+logger = logging.getLogger('o3de.gem_properties')
 logging.basicConfig()
 
 

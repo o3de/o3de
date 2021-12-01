@@ -18,7 +18,7 @@ import hashlib
 
 from o3de import validation, utils
 
-logger = logging.getLogger()
+logger = logging.getLogger('o3de.manifest')
 logging.basicConfig()
 
 # Directory methods
@@ -40,6 +40,7 @@ def get_o3de_folder() -> pathlib.Path:
     o3de_folder = get_home_folder() / '.o3de'
     o3de_folder.mkdir(parents=True, exist_ok=True)
     return o3de_folder
+
 
 def get_o3de_user_folder() -> pathlib.Path:
     o3de_user_folder = get_home_folder() / 'O3DE'
@@ -177,6 +178,7 @@ def get_default_o3de_manifest_json_data() -> dict:
 
     return json_data
 
+
 def get_o3de_manifest() -> pathlib.Path:
     manifest_path = get_o3de_folder() / 'o3de_manifest.json'
     if not manifest_path.is_file():
@@ -228,11 +230,11 @@ def save_o3de_manifest(json_data: dict, manifest_path: pathlib.Path = None) -> b
 
 
 def get_gems_from_subdirectories(external_subdirs: list) -> list:
-    '''
+    """
     Helper Method for scanning a set of external subdirectories for gem.json files
-    '''
+    """
     def is_gem_subdirectory(subdir_files):
-        for name in files:
+        for name in subdir_files:
             if name == 'gem.json':
                 return True
         return False
@@ -285,13 +287,14 @@ def get_repos() -> list:
     json_data = load_o3de_manifest()
     return json_data['repos'] if 'repos' in json_data else []
 
+
 # engine.json queries
 def get_engine_projects() -> list:
     engine_path = get_this_engine_path()
     engine_object = get_engine_json_data(engine_path=engine_path)
     if engine_object:
         return list(map(lambda rel_path: (pathlib.Path(engine_path) / rel_path).as_posix(),
-                          engine_object['projects'])) if 'projects' in engine_object else []
+                        engine_object['projects'])) if 'projects' in engine_object else []
     return []
 
 
@@ -313,7 +316,7 @@ def get_engine_templates() -> list:
     engine_object = get_engine_json_data(engine_path=engine_path)
     if engine_object:
         return list(map(lambda rel_path: (pathlib.Path(engine_path) / rel_path).as_posix(),
-                          engine_object['templates'])) if 'templates' in engine_object else []
+                        engine_object['templates'])) if 'templates' in engine_object else []
     return []
 
 
@@ -335,7 +338,7 @@ def get_project_external_subdirectories(project_path: pathlib.Path) -> list:
     project_object = get_project_json_data(project_path=project_path)
     if project_object:
         return list(map(lambda rel_path: (pathlib.Path(project_path) / rel_path).as_posix(),
-                   project_object['external_subdirectories'])) if 'external_subdirectories' in project_object else []
+                        project_object['external_subdirectories'])) if 'external_subdirectories' in project_object else []
     return []
 
 
@@ -343,7 +346,7 @@ def get_project_templates(project_path: pathlib.Path) -> list:
     project_object = get_project_json_data(project_path=project_path)
     if project_object:
         return list(map(lambda rel_path: (pathlib.Path(project_path) / rel_path).as_posix(),
-                          project_object['templates'])) if 'templates' in project_object else []
+                        project_object['templates'])) if 'templates' in project_object else []
     return []
 
 
@@ -433,6 +436,7 @@ def get_templates_for_generic_creation():  # temporary until we have a better wa
 
     return list(filter(filter_project_and_gem_templates_out, get_all_templates()))
 
+
 def get_json_file_path(object_typename: str,
                        object_path: str or pathlib.Path) -> pathlib.Path:
     if not object_typename or not object_path:
@@ -467,6 +471,7 @@ def get_json_data_file(object_json: pathlib.Path,
             return object_json_data
 
     return None
+
 
 def get_json_data(object_typename: str,
                   object_path: str or pathlib.Path,
@@ -538,6 +543,7 @@ def get_restricted_json_data(restricted_name: str = None, restricted_path: str o
 
     return get_json_data('restricted', restricted_path, validation.valid_o3de_restricted_json)
 
+
 def get_repo_json_data(repo_uri: str) -> dict or None:
     if not repo_uri:
         logger.error('Must specify a Repo Uri.')
@@ -547,13 +553,15 @@ def get_repo_json_data(repo_uri: str) -> dict or None:
 
     return get_json_data_file(repo_json, "Repo", validation.valid_o3de_repo_json)
 
-def get_repo_path(repo_uri: str, cache_folder: str = None) -> pathlib.Path:
+
+def get_repo_path(repo_uri: str, cache_folder: str or pathlib.Path = None) -> pathlib.Path:
     if not cache_folder:
         cache_folder = get_o3de_cache_folder()
 
     repo_manifest = f'{repo_uri}/repo.json'
     repo_sha256 = hashlib.sha256(repo_manifest.encode())
     return cache_folder / str(repo_sha256.hexdigest() + '.json')
+
 
 def get_registered(engine_name: str = None,
                    project_name: str = None,

@@ -15,7 +15,7 @@ import hashlib
 from datetime import datetime
 from o3de import manifest, utils, validation
 
-logger = logging.getLogger()
+logger = logging.getLogger('o3de.repo')
 logging.basicConfig()
 
 
