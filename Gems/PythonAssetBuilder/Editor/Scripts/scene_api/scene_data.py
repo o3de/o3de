@@ -7,7 +7,7 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 import typing
 import json
 import azlmbr.scene as sceneApi
-from enum import Enum, IntEnum
+from enum import IntEnum
 
 
 # Wraps the AZ.SceneAPI.Containers.SceneGraph.NodeIndex internal class
