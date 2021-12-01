@@ -52,7 +52,7 @@ class WinLauncher(Launcher):
         if backupFiles:
             self.backup_settings()
 
-        # Base setup defaults to None
+        # None reverts to function default
         if launch_ap is None:
             launch_ap = True
 
@@ -176,6 +176,26 @@ class WinLauncher(Launcher):
 
 
 class DedicatedWinLauncher(WinLauncher):
+
+    def setup(self, backupFiles=True, launch_ap=False, configure_settings=True):
+        """
+        Perform setup of this launcher, must be called before launching.
+        Subclasses should call its parent's setup() before calling its own code, unless it changes configuration files
+
+        :param backupFiles: Bool to backup setup files
+        :param launch_ap: Bool to launch the asset processor
+        :param configure_settings: Bool to update settings caches
+        :return: None
+        """
+        # Backup
+        if backupFiles:
+            self.backup_settings()
+
+        # None reverts to function default
+        if launch_ap is None:
+            launch_ap = False
+
+        super(DedicatedWinLauncher, self).setup(backupFiles, launch_ap, configure_settings)
 
     def binary_path(self):
         """

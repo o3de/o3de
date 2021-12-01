@@ -52,7 +52,7 @@ class LinuxLauncher(Launcher):
         if backupFiles:
             self.backup_settings()
 
-        # Base setup defaults to None
+        # None reverts to function default
         if launch_ap is None:
             launch_ap = True
 
@@ -192,9 +192,9 @@ class DedicatedLinuxLauncher(LinuxLauncher):
         if backupFiles:
             self.backup_settings()
 
-        # Base setup defaults to None
+        # None reverts to function default
         if launch_ap is None:
-            launch_ap = True
+            launch_ap = False
 
         super(DedicatedLinuxLauncher, self).setup(backupFiles, launch_ap, configure_settings)
 
