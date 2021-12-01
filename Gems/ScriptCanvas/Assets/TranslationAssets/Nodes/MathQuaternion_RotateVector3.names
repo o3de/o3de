@@ -5,37 +5,37 @@
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "Rotate Vector3",
+                "name": "Rotate Vector 3",
                 "category": "Math/Quaternion",
                 "tooltip": "Returns a new Vector3 that is the source vector3 rotated by the given Quaternion"
             },
             "slots": [
                 {
-                    "base": "Input_In",
+                    "base": "Input_In_0",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "base": "Output_Out",
+                    "base": "Output_Out_0",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "base": "DataInput_Quaternion",
+                    "base": "DataInput_Quaternion_0",
                     "details": {
                         "name": "Quaternion"
                     }
                 },
                 {
-                    "base": "DataInput_Vector",
+                    "base": "DataInput_Vector_1",
                     "details": {
                         "name": "Vector"
                     }
                 },
                 {
-                    "base": "DataOutput_Result",
+                    "base": "DataOutput_Result_0",
                     "details": {
                         "name": "Result"
                     }
