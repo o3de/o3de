@@ -284,14 +284,34 @@ namespace Benchmark
     protected:
         using TestAllocatorType = TestAllocatorWrapper<TAllocator>;
 
-        virtual void internalSetUp(const ::benchmark::State&)
+        virtual void internalSetUp(const ::benchmark::State& state)
         {
-            TestAllocatorType::SetUp();
+            if (state.thread_index == 0) // Only setup in the first thread
+            {
+                TestAllocatorType::SetUp();
+
+                m_allocations.resize(state.threads);
+                for (auto& perThreadAllocations : m_allocations)
+                {
+                    perThreadAllocations.resize(state.range_x(), nullptr);
+                }
+            }
         }
 
-        virtual void internalTearDown(const ::benchmark::State&)
+        virtual void internalTearDown(const ::benchmark::State& state)
         {
-            TestAllocatorType::TearDown();
+            if (state.thread_index == 0) // Only setup in the first thread
+            {
+                m_allocations.clear();
+                m_allocations.shrink_to_fit();
+
+                TestAllocatorType::TearDown();
+            }
+        }
+
+        AZStd::vector<void*>& GetPerThreadAllocations(size_t threadIndex)
+        {
+            return m_allocations[threadIndex];
         }
 
     public:
@@ -312,26 +332,25 @@ namespace Benchmark
         {
             internalTearDown(state);
         }
+
+    private:
+        AZStd::vector<AZStd::vector<void*>> m_allocations;
     };
 
     template <typename TAllocator, AllocationSize TAllocationSize>
     class AllocationBenchmarkFixture
         : public AllocatorBenchmarkFixture<TAllocator>
     {
-        using TestAllocatorType = AllocatorBenchmarkFixture<TAllocator>::TestAllocatorType;
+        using base = AllocatorBenchmarkFixture<TAllocator>;
+        using TestAllocatorType = base::TestAllocatorType;
 
         void internalSetUp(const ::benchmark::State& state) override
         {
             AllocatorBenchmarkFixture<TAllocator>::internalSetUp(state);
-
-            m_allocations.resize(state.range_x(), nullptr);
         }
 
         void internalTearDown(const ::benchmark::State& state) override
         {
-            m_allocations.clear();
-            m_allocations.shrink_to_fit();
-
             AllocatorBenchmarkFixture<TAllocator>::internalTearDown(state);
         }
 
@@ -340,17 +359,19 @@ namespace Benchmark
         {
             for (auto _ : state)
             {
+                state.PauseTiming();
                 const size_t processMemoryBaseline = Platform::GetProcessMemoryUsageBytes();
 
-                const size_t numberOfAllocations = m_allocations.size();
+                AZStd::vector<void*>& perThreadAllocations = base::GetPerThreadAllocations(state.thread_index);
+                const size_t numberOfAllocations = perThreadAllocations.size();
                 for (size_t allocationIndex = 0; allocationIndex < numberOfAllocations; ++allocationIndex)
                 {
-                    state.PauseTiming();
                     const AllocationSizeArray& allocationArray = s_allocationSizes[TAllocationSize];
                     const size_t allocationSize = allocationArray[allocationIndex % allocationArray.size()];
                     
                     state.ResumeTiming();
-                    m_allocations[allocationIndex] = TestAllocatorType::Allocate(allocationSize, 0);
+                    perThreadAllocations[allocationIndex] = TestAllocatorType::Allocate(allocationSize, 0);
+                    state.PauseTiming();
                 }
 
                 state.PauseTiming();
@@ -364,8 +385,8 @@ namespace Benchmark
                 {
                     const AllocationSizeArray& allocationArray = s_allocationSizes[TAllocationSize];
                     const size_t allocationSize = allocationArray[allocationIndex % allocationArray.size()];
-                    TestAllocatorType::DeAllocate(m_allocations[allocationIndex], allocationSize);
-                    m_allocations[allocationIndex] = nullptr;
+                    TestAllocatorType::DeAllocate(perThreadAllocations[allocationIndex], allocationSize);
+                    perThreadAllocations[allocationIndex] = nullptr;
                 }
                 TestAllocatorType::GarbageCollect();
 
@@ -373,29 +394,22 @@ namespace Benchmark
                 state.ResumeTiming();
             }
         }
-
-    private:
-        AZStd::vector<void*> m_allocations;
     };
 
     template <typename TAllocator, AllocationSize TAllocationSize>
     class DeAllocationBenchmarkFixture
         : public AllocatorBenchmarkFixture<TAllocator>
     {
-        using TestAllocatorType = AllocatorBenchmarkFixture<TAllocator>::TestAllocatorType;
+        using base = AllocatorBenchmarkFixture<TAllocator>;
+        using TestAllocatorType = base::TestAllocatorType;
 
         void internalSetUp(const ::benchmark::State& state) override
         {
             AllocatorBenchmarkFixture<TAllocator>::internalSetUp(state);
-
-            m_allocations.resize(state.range_x(), nullptr);
         }
 
         void internalTearDown(const ::benchmark::State& state) override
         {
-            m_allocations.clear();
-            m_allocations.shrink_to_fit();
-
             AllocatorBenchmarkFixture<TAllocator>::internalTearDown(state);
         }
     public:
@@ -404,14 +418,15 @@ namespace Benchmark
             for (auto _ : state)
             {
                 state.PauseTiming();
+                AZStd::vector<void*>& perThreadAllocations = base::GetPerThreadAllocations(state.thread_index);
                 const size_t processMemoryBaseline = Platform::GetProcessMemoryUsageBytes();
 
-                const size_t numberOfAllocations = m_allocations.size();
+                const size_t numberOfAllocations = perThreadAllocations.size();
                 for (size_t allocationIndex = 0; allocationIndex < numberOfAllocations; ++allocationIndex)
                 {
                     const AllocationSizeArray& allocationArray = s_allocationSizes[TAllocationSize];
                     const size_t allocationSize = allocationArray[allocationIndex % allocationArray.size()];
-                    m_allocations[allocationIndex] = TestAllocatorType::Allocate(allocationSize, 0);
+                    perThreadAllocations[allocationIndex] = TestAllocatorType::Allocate(allocationSize, 0);
                 }
 
                 for (size_t allocationIndex = 0; allocationIndex < numberOfAllocations; ++allocationIndex)
@@ -419,9 +434,9 @@ namespace Benchmark
                     const AllocationSizeArray& allocationArray = s_allocationSizes[TAllocationSize];
                     const size_t allocationSize = allocationArray[allocationIndex % allocationArray.size()];
                     state.ResumeTiming();
-                    TestAllocatorType::DeAllocate(m_allocations[allocationIndex], allocationSize);
+                    TestAllocatorType::DeAllocate(perThreadAllocations[allocationIndex], allocationSize);
                     state.PauseTiming();
-                    m_allocations[allocationIndex] = nullptr;
+                    perThreadAllocations[allocationIndex] = nullptr;
                 }
 
                 state.counters[s_counterAllocatorMemoryRatio] =
@@ -437,9 +452,6 @@ namespace Benchmark
                 state.ResumeTiming();
             }
         }
-
-    private:
-        AZStd::vector<void*> m_allocations;
     };
 
     static void RunRanges(benchmark::internal::Benchmark* b)
@@ -450,14 +462,20 @@ namespace Benchmark
         }
     }
 
+    // Test under and over-subscription of threads vs the amount of CPUs available
+    static const unsigned int MaxThreadRange = 2 * AZStd::thread::hardware_concurrency();
+
 #define BM_REGISTER_TEMPLATE(FIXTURE, TESTNAME, ...) \
         BENCHMARK_TEMPLATE_DEFINE_F(FIXTURE, TESTNAME, __VA_ARGS__)(benchmark::State& state) { Benchmark(state); } \
         BENCHMARK_REGISTER_F(FIXTURE, TESTNAME)
 
+    // We test small/big/mixed allocations in single-threaded environments. For multi-threaded environments, we test mixed since
+    // the multi threaded fixture will run multiple passes (1, 2, 4, ... until 2*hardware_concurrency)
 #define BM_REGISTER_SIZE_FIXTURES(FIXTURE, TESTNAME, ALLOCATORTYPE) \
     BM_REGISTER_TEMPLATE(FIXTURE, TESTNAME##_SMALL, ALLOCATORTYPE, SMALL)->Apply(RunRanges); \
     BM_REGISTER_TEMPLATE(FIXTURE, TESTNAME##_BIG, ALLOCATORTYPE, BIG)->Apply(RunRanges); \
-    BM_REGISTER_TEMPLATE(FIXTURE, TESTNAME##_MIXED, ALLOCATORTYPE, MIXED)->Apply(RunRanges);
+    BM_REGISTER_TEMPLATE(FIXTURE, TESTNAME##_MIXED, ALLOCATORTYPE, MIXED)->Apply(RunRanges); \
+    BM_REGISTER_TEMPLATE(FIXTURE, TESTNAME##_MIXED_THREADED, ALLOCATORTYPE, MIXED)->ThreadRange(1, MaxThreadRange)->Apply(RunRanges);
 
 #define BM_REGISTER_ALLOCATOR(TESTNAME, ALLOCATORTYPE) \
     namespace TESTNAME \
