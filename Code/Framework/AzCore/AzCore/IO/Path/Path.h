@@ -78,7 +78,8 @@ namespace AZ::IO
 
         // native format observers
         //! Returns string_view stored within the PathView
-        constexpr AZStd::string_view Native() const noexcept;
+        constexpr const AZStd::string_view& Native() const noexcept;
+        constexpr AZStd::string_view& Native() noexcept;
         //! Conversion operator to retrieve string_view stored within the PathView
         constexpr explicit operator AZStd::string_view() const noexcept;
 
