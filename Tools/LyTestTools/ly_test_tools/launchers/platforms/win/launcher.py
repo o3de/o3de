@@ -44,7 +44,8 @@ class WinLauncher(Launcher):
         Subclasses should call its parent's setup() before calling its own code, unless it changes configuration files
 
         :param backupFiles: Bool to backup setup files
-        :param lauch_ap: Bool to lauch the asset processor
+        :param launch_ap: Bool to lauch the asset processor
+        :param configure_settings: Bool to update settings caches
         :return: None
         """
         # Backup
@@ -58,7 +59,7 @@ class WinLauncher(Launcher):
         # Modify and re-configure
         if configure_settings:
             self.configure_settings()
-        super(WinLauncher, self).setup(backupFiles, launch_ap)
+        super(WinLauncher, self).setup(backupFiles, launch_ap, configure_settings)
 
     def launch(self):
         """
@@ -161,7 +162,7 @@ class WinLauncher(Launcher):
 
     def configure_settings(self):
         """
-        Configures system level settings and syncs the launcher to the targeted console IP.
+        Configures system level settings
 
         :return: None
         """

@@ -162,7 +162,7 @@ class LinuxLauncher(Launcher):
 
     def configure_settings(self):
         """
-        Configures system level settings and syncs the launcher to the targeted console IP.
+        Configures system level settings
 
         :return: None
         """
@@ -170,7 +170,6 @@ class LinuxLauncher(Launcher):
         host_ip = '127.0.0.1'
         self.args.append(f'--regset="/Amazon/AzCore/Bootstrap/project_path={self.workspace.paths.project()}"')
         self.args.append(f'--regset="/Amazon/AzCore/Bootstrap/remote_ip={host_ip}"')
-        self.args.append('--regset="/Amazon/AzCore/Bootstrap/wait_for_connect=1"')
         self.args.append(f'--regset="/Amazon/AzCore/Bootstrap/allowed_list={host_ip}"')
 
         self.workspace.settings.modify_platform_setting("r_ShaderCompilerServer", host_ip)
@@ -186,11 +185,16 @@ class DedicatedLinuxLauncher(LinuxLauncher):
 
         :param backupFiles: Bool to backup setup files
         :param launch_ap: Bool to launch the asset processor
+        :param configure_settings: Bool to update settings caches
         :return: None
         """
+        # Backup
+        if backupFiles:
+            self.backup_settings()
+
         # Base setup defaults to None
         if launch_ap is None:
-            launch_ap = False
+            launch_ap = True
 
         super(DedicatedLinuxLauncher, self).setup(backupFiles, launch_ap, configure_settings)
 
