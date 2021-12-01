@@ -19,9 +19,6 @@
 
 namespace AzQtComponents
 {
-    const QColor FancyDockingDropZoneConstants::dropZoneColor =  QColor(155, 155, 155);
-    const QColor FancyDockingDropZoneConstants::dropZoneBorderColor = Qt::black;
-    const QString FancyDockingDropZoneConstants::centerDropZoneIconPath = QStringLiteral(":/stylesheet/img/UI20/docking/tabs_icon.svg");
 
     FancyDockingDropZoneWidget::FancyDockingDropZoneWidget(QMainWindow* mainWindow, QWidget* coordinatesRelativeTo, QScreen* screen, FancyDockingDropZoneState* dropZoneState)
         // NOTE: this will not work with multiple monitors if this widget has a parent. The floating drop zone

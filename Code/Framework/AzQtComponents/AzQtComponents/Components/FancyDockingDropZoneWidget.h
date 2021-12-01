@@ -28,7 +28,7 @@ class QPainter;
 
 namespace AzQtComponents
 {
-    struct AZ_QT_COMPONENTS_API FancyDockingDropZoneConstants
+    namespace FancyDockingDropZoneConstants
     {
         // Constant for the opacity of the screen grab for the dock widget being dragged
         static constexpr qreal draggingDockWidgetOpacity = 0.6;
@@ -55,10 +55,10 @@ namespace AzQtComponents
         static constexpr qreal centerTabIconScale  = 0.5;
 
         // Constant for the drop zone hotspot default color
-        static const QColor dropZoneColor;
+        static const QColor dropZoneColor = QColor(155, 155, 155);
 
         // Constant for the drop zone border color
-        static const QColor dropZoneBorderColor;
+        static const QColor dropZoneBorderColor = Qt::black;
 
         // Constant for the border width in pixels separating the drop zones
         static constexpr int dropZoneBorderInPixels  = 1;
@@ -79,11 +79,7 @@ namespace AzQtComponents
         static constexpr qreal dropZoneHoverFadeIncrement = dropZoneOpacity / (dockingTargetDelayMS / dropZoneHoverFadeUpdateIntervalMS);
 
         // Constant for the path to the center drop zone tabs icon
-        static const QString centerDropZoneIconPath;
-
-        FancyDockingDropZoneConstants() = delete;
-        FancyDockingDropZoneConstants(const FancyDockingDropZoneConstants&) = delete;
-        FancyDockingDropZoneConstants& operator=(const FancyDockingDropZoneConstants&) = delete;
+        static const QString centerDropZoneIconPath = QStringLiteral(":/stylesheet/img/UI20/docking/tabs_icon.svg");
     };
 
     class FancyDockingDropZoneState
