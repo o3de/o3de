@@ -33,7 +33,7 @@ namespace Terrain
             if (auto edit = serialize->GetEditContext())
             {
                 edit->Class<TerrainPhysicsSurfaceMaterialMapping>(
-                        "Terrain Surface Gradient Mapping", "Mapping between a surface and a physics material.")
+                        "Terrain Surface Material Mapping", "Mapping between a surface and a physics material.")
 
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
