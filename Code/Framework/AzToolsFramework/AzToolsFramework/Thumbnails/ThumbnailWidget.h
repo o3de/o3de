@@ -22,7 +22,7 @@ namespace AzToolsFramework
 {
     namespace Thumbnailer
     {
-        //! A widget used to display thumbnail. To display thumbnails within item views, use ThumbnailDelegate
+        //! A widget used to display thumbnail
         class ThumbnailWidget
             : public QWidget
         {
