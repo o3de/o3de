@@ -60,12 +60,12 @@ namespace AzToolsFramework
         auto editorEntityContextId = AzFramework::EntityContextId::CreateNull();
         EditorEntityContextRequestBus::BroadcastResult(editorEntityContextId, &EditorEntityContextRequests::GetEditorEntityContextId);
 
-        ReadOnlyEntityQueryNotificationBus::Handler::BusConnect(editorEntityContextId);
+        ReadOnlyEntityQueryRequestBus::Handler::BusConnect(editorEntityContextId);
     }
 
     ReadOnlyHandlerAlwaysTrue::~ReadOnlyHandlerAlwaysTrue()
     {
-        ReadOnlyEntityQueryNotificationBus::Handler::BusDisconnect();
+        ReadOnlyEntityQueryRequestBus::Handler::BusDisconnect();
 
         if (auto readOnlyEntityQueryInterface = AZ::Interface<ReadOnlyEntityQueryInterface>::Get())
         {
@@ -83,12 +83,12 @@ namespace AzToolsFramework
         auto editorEntityContextId = AzFramework::EntityContextId::CreateNull();
         EditorEntityContextRequestBus::BroadcastResult(editorEntityContextId, &EditorEntityContextRequests::GetEditorEntityContextId);
 
-        ReadOnlyEntityQueryNotificationBus::Handler::BusConnect(editorEntityContextId);
+        ReadOnlyEntityQueryRequestBus::Handler::BusConnect(editorEntityContextId);
     }
 
     ReadOnlyHandlerAlwaysFalse::~ReadOnlyHandlerAlwaysFalse()
     {
-        ReadOnlyEntityQueryNotificationBus::Handler::BusDisconnect();
+        ReadOnlyEntityQueryRequestBus::Handler::BusDisconnect();
 
         if (auto readOnlyEntityQueryInterface = AZ::Interface<ReadOnlyEntityQueryInterface>::Get())
         {
@@ -102,12 +102,12 @@ namespace AzToolsFramework
         auto editorEntityContextId = AzFramework::EntityContextId::CreateNull();
         EditorEntityContextRequestBus::BroadcastResult(editorEntityContextId, &EditorEntityContextRequests::GetEditorEntityContextId);
 
-        ReadOnlyEntityQueryNotificationBus::Handler::BusConnect(editorEntityContextId);
+        ReadOnlyEntityQueryRequestBus::Handler::BusConnect(editorEntityContextId);
     }
 
     ReadOnlyHandlerEntityId::~ReadOnlyHandlerEntityId()
     {
-        ReadOnlyEntityQueryNotificationBus::Handler::BusDisconnect();
+        ReadOnlyEntityQueryRequestBus::Handler::BusDisconnect();
 
         if (auto readOnlyEntityQueryInterface = AZ::Interface<ReadOnlyEntityQueryInterface>::Get())
         {

@@ -38,7 +38,7 @@ namespace AzToolsFramework
     using ReadOnlyEntityPublicNotificationBus = AZ::EBus<ReadOnlyEntityPublicNotifications>;
 
     //! Used by the ReadOnlyEntitySystemComponent to query the read-only state of entities as set by systems using the API.
-    class ReadOnlyEntityQueryNotifications
+    class ReadOnlyEntityQueryRequests
         : public AZ::EBusTraits
     {
     public:
@@ -56,8 +56,8 @@ namespace AzToolsFramework
         virtual void IsReadOnly(const AZ::EntityId& entityId, bool& isReadOnly) = 0;
 
     protected:
-        ~ReadOnlyEntityQueryNotifications() = default;
+        ~ReadOnlyEntityQueryRequests() = default;
     };
-    using ReadOnlyEntityQueryNotificationBus = AZ::EBus<ReadOnlyEntityQueryNotifications>;
+    using ReadOnlyEntityQueryRequestBus = AZ::EBus<ReadOnlyEntityQueryRequests>;
 
 } // namespace AzToolsFramework

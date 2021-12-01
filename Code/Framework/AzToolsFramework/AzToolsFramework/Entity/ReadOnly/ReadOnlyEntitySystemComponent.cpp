@@ -90,8 +90,8 @@ namespace AzToolsFramework
     {
         bool isReadOnly = false;
 
-        ReadOnlyEntityQueryNotificationBus::Broadcast(
-            &ReadOnlyEntityQueryNotificationBus::Events::IsReadOnly, entityId, isReadOnly);
+        ReadOnlyEntityQueryRequestBus::Broadcast(
+            &ReadOnlyEntityQueryRequestBus::Events::IsReadOnly, entityId, isReadOnly);
 
         m_readOnlystates[entityId] = isReadOnly;
     }

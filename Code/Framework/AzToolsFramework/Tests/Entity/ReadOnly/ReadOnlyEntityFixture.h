@@ -41,7 +41,7 @@ namespace AzToolsFramework
     };
 
     class ReadOnlyHandlerAlwaysTrue
-        : public ReadOnlyEntityQueryNotificationBus::Handler
+        : public ReadOnlyEntityQueryRequestBus::Handler
     {
     public:
         ReadOnlyHandlerAlwaysTrue();
@@ -52,7 +52,7 @@ namespace AzToolsFramework
     };
 
     class ReadOnlyHandlerAlwaysFalse
-        : public ReadOnlyEntityQueryNotificationBus::Handler
+        : public ReadOnlyEntityQueryRequestBus::Handler
     {
     public:
         ReadOnlyHandlerAlwaysFalse();
@@ -63,7 +63,7 @@ namespace AzToolsFramework
     };
 
     class ReadOnlyHandlerEntityId
-        : public ReadOnlyEntityQueryNotificationBus::Handler
+        : public ReadOnlyEntityQueryRequestBus::Handler
     {
     public:
         ReadOnlyHandlerEntityId(AZ::EntityId entityId);
