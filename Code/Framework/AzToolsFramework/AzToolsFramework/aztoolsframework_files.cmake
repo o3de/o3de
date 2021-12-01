@@ -368,8 +368,6 @@ set(FILES
     UI/PropertyEditor/QtWidgetLimits.h
     UI/PropertyEditor/DHQComboBox.hxx
     UI/PropertyEditor/DHQComboBox.cpp
-    UI/PropertyEditor/DHQSlider.hxx
-    UI/PropertyEditor/DHQSlider.cpp
     UI/PropertyEditor/EntityIdQLabel.hxx
     UI/PropertyEditor/EntityIdQLabel.cpp
     UI/PropertyEditor/EntityIdQLineEdit.h
