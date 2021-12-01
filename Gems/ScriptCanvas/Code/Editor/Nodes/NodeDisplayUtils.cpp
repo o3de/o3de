@@ -328,6 +328,7 @@ namespace ScriptCanvasEditor::Nodes
         // Set the class' name as the subtitle fallback
         details.m_subtitle = details.m_name;
 
+        AZStd::string methodContext;
         // Get the method's text data
         GraphCanvas::TranslationRequests::Details methodDetails;
         methodDetails.m_name = details.m_name; // fallback
@@ -338,14 +339,16 @@ namespace ScriptCanvasEditor::Nodes
             if (methodNode->GetMethodType() == ScriptCanvas::MethodType::Getter || methodNode->GetMethodType() == ScriptCanvas::MethodType::Free)
             {
                 updatedMethodName = "Get";
+                methodContext = "Getter";
             }
             else
             {
                 updatedMethodName = "Set";
+                methodContext = "Setter";
             }
             updatedMethodName.append(methodName);
         }
-        key << updatedMethodName;
+        key << methodContext << updatedMethodName;
         GraphCanvas::TranslationRequestBus::BroadcastResult(methodDetails, &GraphCanvas::TranslationRequests::GetDetails, key + ".details", methodDetails);
 
 

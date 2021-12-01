@@ -915,6 +915,7 @@ namespace ScriptCanvasEditorTools
             AZStd::string methodName = "Get";
             methodName.append(cleanName);
             method.m_key = methodName;
+            method.m_context = "Getter";
             method.m_details.m_name = methodName;
             method.m_details.m_tooltip = behaviorProperty->m_getter->m_debugDescription ? behaviorProperty->m_getter->m_debugDescription : "";
 
@@ -925,6 +926,8 @@ namespace ScriptCanvasEditorTools
             // We know this is a getter, so there will only be one parameter, we will use the method name as a best
             // guess for the argument name
             SplitCamelCase(cleanName);
+            method.m_arguments.push_back(); // argument 0 is reserve for a "return value" which there won't be one
+            method.m_arguments.push_back(); // adding entry for the argument name
             method.m_arguments[1].m_details.m_name = cleanName;
 
             entry->m_methods.push_back(method);
@@ -942,6 +945,7 @@ namespace ScriptCanvasEditorTools
             methodName.append(cleanName);
 
             method.m_key = methodName;
+            method.m_context = "Setter";
             method.m_details.m_name = methodName;
             method.m_details.m_tooltip = behaviorProperty->m_setter->m_debugDescription ? behaviorProperty->m_getter->m_debugDescription : "";
 
