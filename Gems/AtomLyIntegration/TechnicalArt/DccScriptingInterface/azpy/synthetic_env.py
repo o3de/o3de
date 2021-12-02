@@ -508,7 +508,7 @@ def init_ly_pyside(env_dict=_SYNTH_ENV_DICT):
     site.addsitedir(str(QTFORPYTHON_PATH))
 
     O3DE_BIN_PATH = Path.joinpath(O3DE_DEV,
-                                'windows_vs2019',
+                                'windows',
                                 'bin',
                                 'profile').resolve()
     os.environ["DYNACONF_O3DE_BIN_PATH"] = str(O3DE_BIN_PATH)

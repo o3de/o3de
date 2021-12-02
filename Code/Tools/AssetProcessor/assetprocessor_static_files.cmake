@@ -92,8 +92,6 @@ set(FILES
     native/utilities/BuilderManager.inl
     native/utilities/ByteArrayStream.cpp
     native/utilities/ByteArrayStream.h
-    native/utilities/CommunicatorTracePrinter.cpp
-    native/utilities/CommunicatorTracePrinter.h
     native/utilities/IniConfiguration.cpp
     native/utilities/IniConfiguration.h
     native/utilities/JobDiagnosticTracker.cpp

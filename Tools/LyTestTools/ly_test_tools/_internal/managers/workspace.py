@@ -119,7 +119,7 @@ class AbstractWorkspaceManager:
 
     def clear_bin(self):
         """
-        Clears the relative Bin folder (i.e. engine_root/dev/windows_vs2019/bin/profile/)
+        Clears the relative Bin folder (i.e. engine_root/dev/windows/bin/profile/)
         :return: None
         """
         if os.path.exists(self.paths.build_directory()):
