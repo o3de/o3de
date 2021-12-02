@@ -39,6 +39,10 @@ class ColliderConfiguration():
 
     ContactOffset: float
         Bodies will start to generate contacts when closer than the sum of their contact offsets.
+    Methods
+    -------
+    to_dict()
+        Converts contents to a Python dictionary
     """
     def __init__(self):
         self.Trigger = True
