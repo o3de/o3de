@@ -8,7 +8,6 @@
 
 set(FILES
     EBus.h
-    Docs.h
     GridMate.cpp
     GridMate.h
     GridMateEventsBus.h
