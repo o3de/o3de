@@ -13,7 +13,6 @@
 #include <EMotionFX/Source/ActorInstance.h>
 #include <Allocators.h>
 #include <EMotionFX/Source/Motion.h>
-#include <EMotionFX/Source/MotionInstance.h>
 #include <Behavior.h>
 #include <BehaviorInstance.h>
 #include <Feature.h>
@@ -51,8 +50,6 @@ namespace EMotionFX
                     totalNumFramesImported += numFrames;
                     totalNumFramesDiscarded += numDiscarded;
                 }
-
-                //AZ_TracePrintf("EMotionFX", "Motion matching behavior '%s' has imported %d frames from motion '%s'", RTTI_GetTypeName(), numFrames, motion->GetName());
             }
 
             if (totalNumFramesImported > 0 || totalNumFramesDiscarded > 0)

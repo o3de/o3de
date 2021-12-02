@@ -51,6 +51,7 @@ namespace EMotionFX
             void DebugDraw();
 
             void Update(float timePassedInSeconds, const AZ::Vector3& targetPos, const AZ::Vector3& targetFacingDir, TrajectoryQuery::EMode mode, float pathRadius, float pathSpeed);
+            void PostUpdate(float timeDelta);
             void Output(Pose& outputPose);
 
             MotionInstance* GetMotionInstance() const { return m_motionInstance; }
@@ -82,7 +83,7 @@ namespace EMotionFX
 
             const TrajectoryQuery& GetTrajectoryQuery() const { return m_trajectoryQuery; }
             const TrajectoryHistory& GetTrajectoryHistory() const { return m_trajectoryHistory; }
-            Transform GetMotionExtractionDelta() const { return m_motionExtractionDelta; }
+            const Transform& GetMotionExtractionDelta() const { return m_motionExtractionDelta; }
 
         private:
             MotionInstance* CreateMotionInstance() const;

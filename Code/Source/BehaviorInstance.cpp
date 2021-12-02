@@ -152,13 +152,10 @@ namespace EMotionFX
             }
         }
 
-        void BehaviorInstance::Output(Pose& outputPose)
+        void BehaviorInstance::PostUpdate([[maybe_unused]] float timeDelta)
         {
-            AZ_PROFILE_SCOPE(Animation, "BehaviorInstance::Output");
-
             if (!m_behavior)
             {
-                outputPose.InitFromBindPose(m_actorInstance);
                 m_motionExtractionDelta.Identity();
                 return;
             }
@@ -166,8 +163,28 @@ namespace EMotionFX
             const size_t lowestCostFrame = GetLowestCostFrameIndex();
             if (m_behavior->GetData().GetNumFrames() == 0 || lowestCostFrame == InvalidIndex)
             {
-                outputPose.InitFromBindPose(m_actorInstance);
                 m_motionExtractionDelta.Identity();
+                return;
+            }
+
+            // Use the motion extraction delta from the target animation.
+            m_motionInstance->ExtractMotion(m_motionExtractionDelta);
+        }
+
+        void BehaviorInstance::Output(Pose& outputPose)
+        {
+            AZ_PROFILE_SCOPE(Animation, "BehaviorInstance::Output");
+
+            if (!m_behavior)
+            {
+                outputPose.InitFromBindPose(m_actorInstance);
+                return;
+            }
+
+            const size_t lowestCostFrame = GetLowestCostFrameIndex();
+            if (m_behavior->GetData().GetNumFrames() == 0 || lowestCostFrame == InvalidIndex)
+            {
+                outputPose.InitFromBindPose(m_actorInstance);
                 return;
             }
 
@@ -180,7 +197,6 @@ namespace EMotionFX
                     SamplePose(m_motionInstance, m_blendTargetPose);
                 }
                 outputPose = m_blendTargetPose;
-                m_motionInstance->ExtractMotion(m_motionExtractionDelta);
             }
             else if (m_blendWeight > AZ::Constants::FloatEpsilon && m_blendWeight < 1.0f - AZ::Constants::FloatEpsilon)
             {
@@ -197,12 +213,6 @@ namespace EMotionFX
 
                 outputPose = m_blendSourcePose;
                 outputPose.Blend(&m_blendTargetPose, m_blendWeight);
-
-                // Blend the motion extraction delta.
-                Transform targetMotionExtractionDelta;
-                m_motionInstance->ExtractMotion(m_motionExtractionDelta);
-                m_prevMotionInstance->ExtractMotion(targetMotionExtractionDelta);
-                m_motionExtractionDelta.Blend(targetMotionExtractionDelta, m_blendWeight);
             }
             else
             {
@@ -212,10 +222,9 @@ namespace EMotionFX
                     SamplePose(m_prevMotionInstance, m_blendSourcePose);
                 }
                 outputPose = m_blendSourcePose;
-                m_prevMotionInstance->ExtractMotion(m_motionExtractionDelta);
             }
 
-            m_motionInstance->ExtractMotion(m_motionExtractionDelta);
+
         }
 
         size_t BehaviorInstance::GetLowestCostFrameIndex() const
@@ -297,19 +306,20 @@ namespace EMotionFX
 
                     // Store the current motion instance state, so we can sample this as source pose.
                     m_prevMotionInstance->SetMotion(m_motionInstance->GetMotion());
-                    m_prevMotionInstance->SetCurrentTime(m_motionInstance->GetCurrentTime(), true);
                     m_prevMotionInstance->SetMirrorMotion(m_motionInstance->GetMirrorMotion());
+                    m_prevMotionInstance->SetCurrentTime(m_motionInstance->GetCurrentTime(), true);
+                    m_prevMotionInstance->SetLastCurrentTime(m_prevMotionInstance->GetCurrentTime() - timePassedInSeconds);
 
-                    //AZ_Printf("EMotionFX", "Frame %d = %f/%f  %f/%f", lowestCostFrameIndex, lowestCostFrame.GetSampleTime(), lowestCostFrame.GetSourceMotion()->GetDuration(), newMotionTime, m_motionInstance->GetDuration());
-                    SetTimeSinceLastFrameSwitch(0.0f);
                     m_lowestCostFrameIndex = lowestCostFrameIndex;
 
-                    // Update the motion instance that will generate the target pose later on.
                     m_motionInstance->SetMotion(lowestCostFrame.GetSourceMotion());
-                    m_motionInstance->SetCurrentTime(lowestCostFrame.GetSampleTime(), true);
                     m_motionInstance->SetMirrorMotion(lowestCostFrame.GetMirrored());
 
-                    SetNewMotionTime(m_motionInstance->GetCurrentTime());
+                    // The new motion time will become the current time after this frame while the current time
+                    // becomes the last current time. As we just start playing at the search frame, calculate
+                    // the last time based on the time delta.
+                    m_motionInstance->SetCurrentTime(lowestCostFrame.GetSampleTime() - timePassedInSeconds, true);
+                    SetNewMotionTime(lowestCostFrame.GetSampleTime());
                 }
 
                 // Do this always, elsewise we search for the lowest cost frame index too many times.

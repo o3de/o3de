@@ -215,11 +215,13 @@ namespace EMotionFX
 
             MotionInstance* motionInstance = behaviorInstance->GetMotionInstance();
             motionInstance->UpdateByTimeValues(uniqueData->GetPreSyncTime(), uniqueData->GetCurrentPlayTime(), &data->GetEventBuffer());
+
             uniqueData->SetCurrentPlayTime(motionInstance->GetCurrentTime());
             data->GetEventBuffer().UpdateEmitters(this);
 
-            Transform trajectoryDelta = behaviorInstance->GetMotionExtractionDelta();
-            behaviorInstance->GetMotionInstance()->ExtractMotion(trajectoryDelta);
+            behaviorInstance->PostUpdate(timePassedInSeconds);
+
+            const Transform& trajectoryDelta = behaviorInstance->GetMotionExtractionDelta();
             data->SetTrajectoryDelta(trajectoryDelta);
             data->SetTrajectoryDeltaMirrored(trajectoryDelta); // TODO: use a real mirrored version here.
 
