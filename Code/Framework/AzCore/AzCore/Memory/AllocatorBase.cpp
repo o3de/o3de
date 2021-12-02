@@ -8,7 +8,6 @@
 
 #include <AzCore/Memory/Memory.h>
 #include <AzCore/Memory/AllocatorManager.h>
-#include <AzCore/Memory/MemoryDrillerBus.h>
 
 using namespace AZ;
 
@@ -77,6 +76,12 @@ void AllocatorBase::PostCreate()
 #if PLATFORM_MEMORY_INSTRUMENTATION_ENABLED
     m_platformMemoryInstrumentationGroupId = AZ::PlatformMemoryInstrumentation::GetNextGroupId();
     AZ::PlatformMemoryInstrumentation::RegisterGroup(m_platformMemoryInstrumentationGroupId, GetDescription(), AZ::PlatformMemoryInstrumentation::m_groupRoot);
+#else
+    const auto debugConfig = GetDebugConfig();
+    if (!debugConfig.m_excludeFromDebugging)
+    {
+        SetRecords(aznew Debug::AllocationRecords((unsigned char)debugConfig.m_stackRecordLevels, debugConfig.m_usesMemoryGuards, debugConfig.m_marksUnallocatedMemory, GetName()));
+    }
 #endif
 
     m_isReady = true;
@@ -84,6 +89,15 @@ void AllocatorBase::PostCreate()
 
 void AllocatorBase::PreDestroy()
 {
+#if !PLATFORM_MEMORY_INSTRUMENTATION_ENABLED
+    Debug::AllocationRecords* allocatorRecords = GetRecords();
+    if(allocatorRecords)
+    {
+        delete allocatorRecords;
+        SetRecords(nullptr);
+    }
+#endif
+
     if (m_registrationEnabled && AZ::AllocatorManager::IsReady())
     {
         AllocatorManager::Instance().UnRegisterAllocator(this);
@@ -133,7 +147,11 @@ void AllocatorBase::ProfileAllocation(void* ptr, size_t byteSize, size_t alignme
 #if PLATFORM_MEMORY_INSTRUMENTATION_ENABLED
         AZ::PlatformMemoryInstrumentation::Alloc(ptr, byteSize, 0, m_platformMemoryInstrumentationGroupId);
 #else
-        EBUS_EVENT(AZ::Debug::MemoryDrillerBus, RegisterAllocation, this, ptr, byteSize, alignment, name, fileName, lineNum, suppressStackRecord);
+        auto records = GetRecords();
+        if (records)
+        {
+            records->RegisterAllocation(ptr, byteSize, alignment, name, fileName, lineNum, suppressStackRecord + 1);
+        }
 #endif
     }
 }
@@ -145,21 +163,21 @@ void AllocatorBase::ProfileDeallocation(void* ptr, size_t byteSize, size_t align
 #if PLATFORM_MEMORY_INSTRUMENTATION_ENABLED
         AZ::PlatformMemoryInstrumentation::Free(ptr);
 #else
-        EBUS_EVENT(AZ::Debug::MemoryDrillerBus, UnregisterAllocation, this, ptr, byteSize, alignment, info);
+        auto records = GetRecords();
+        if (records)
+        {
+            records->UnregisterAllocation(ptr, byteSize, alignment, info);
+        }
 #endif
     }
 }
 
-void AllocatorBase::ProfileReallocationBegin(void* ptr, size_t newSize)
+void AllocatorBase::ProfileReallocationBegin([[maybe_unused]] void* ptr, [[maybe_unused]] size_t newSize)
 {
     if (m_isProfilingActive)
     {
 #if PLATFORM_MEMORY_INSTRUMENTATION_ENABLED
         AZ::PlatformMemoryInstrumentation::ReallocBegin(ptr, newSize, m_platformMemoryInstrumentationGroupId);
-#else
-        // Driller API intensionally not called, only End is required.
-        AZ_UNUSED(ptr);
-        AZ_UNUSED(newSize);
 #endif
     }
 }
@@ -171,7 +189,9 @@ void AllocatorBase::ProfileReallocationEnd(void* ptr, void* newPtr, size_t newSi
 #if PLATFORM_MEMORY_INSTRUMENTATION_ENABLED
         AZ::PlatformMemoryInstrumentation::ReallocEnd(newPtr, newSize, 0);
 #else
-        EBUS_EVENT(AZ::Debug::MemoryDrillerBus, ReallocateAllocation, this, ptr, newPtr, newSize, newAlignment);
+        Debug::AllocationInfo info;
+        ProfileDeallocation(ptr, 0, 0, &info);
+        ProfileAllocation(newPtr, newSize, newAlignment, info.m_name, info.m_fileName, info.m_lineNum, 0);
 #endif
     }
 }
@@ -185,7 +205,13 @@ void AllocatorBase::ProfileResize(void* ptr, size_t newSize)
 {
     if (newSize && m_isProfilingActive)
     {
-        EBUS_EVENT(AZ::Debug::MemoryDrillerBus, ResizeAllocation, this, ptr, newSize);
+#if !PLATFORM_MEMORY_INSTRUMENTATION_ENABLED
+        auto records = GetRecords();
+        if (records)
+        {
+            records->ResizeAllocation(ptr, newSize);
+        }
+#endif
     }
 }
 

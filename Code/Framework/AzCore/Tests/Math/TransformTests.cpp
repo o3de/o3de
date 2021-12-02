@@ -402,16 +402,18 @@ namespace UnitTest
             AllocatorsFixture::SetUp();
             AZ::ComponentApplication::Descriptor desc;
             desc.m_useExistingAllocator = true;
-            m_app.Create(desc);
+            m_app.reset(aznew AZ::ComponentApplication);
+            m_app->Create(desc);
         }
 
         void TearDown() override
         {
-            m_app.Destroy();
+            m_app->Destroy();
+            m_app.reset();
             AllocatorsFixture::TearDown();
         }
 
-        AZ::ComponentApplication m_app;
+        AZStd::unique_ptr<AZ::ComponentApplication> m_app;
     };
 
     TEST_F(MATH_TransformApplicationFixture, DeserializingOldFormat)

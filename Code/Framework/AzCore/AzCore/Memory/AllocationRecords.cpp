@@ -26,30 +26,25 @@ using namespace AZ::Debug;
 // AllocationRecords
 // [9/16/2009]
 //=========================================================================
-AllocationRecords::AllocationRecords(unsigned char stackRecordLevels, bool isMemoryGuard, bool isMarkUnallocatedMemory, const char* allocatorName)
+AllocationRecords::AllocationRecords(unsigned char stackRecordLevels, [[maybe_unused]] bool isMemoryGuard, bool isMarkUnallocatedMemory, const char* allocatorName)
     : m_mode(AllocatorManager::Instance().m_defaultTrackingRecordMode)
     , m_isAutoIntegrityCheck(false)
     , m_isMarkUnallocatedMemory(isMarkUnallocatedMemory)
     , m_saveNames(false)
     , m_decodeImmediately(false)
     , m_numStackLevels(stackRecordLevels)
+#if defined(ENABLE_MEMORY_GUARD)
+    , m_memoryGuardSize(isMemoryGuard ? sizeof(Debug::GuardValue) : 0)
+#else
+    , m_memoryGuardSize(0)
+#endif
     , m_requestedAllocs(0)
     , m_requestedBytes(0)
     , m_requestedBytesPeak(0)
     , m_allocatorName(allocatorName)
 {
-#if defined(ENABLE_MEMORY_GUARD)
-    m_memoryGuardSize = isMemoryGuard ? sizeof(Debug::GuardValue) : 0;
-#else
-    (void)isMemoryGuard;
-    m_memoryGuardSize = 0;
-#endif
-#if AZ_TRAIT_OS_HAS_CRITICAL_SECTION_SPIN_COUNT
-    SetCriticalSectionSpinCount(DrillerEBusMutex::GetMutex().native_handle(), 4000);
-#endif
-    // preallocate some buckets
-    //m_records.rehash(20000);
-};
+
+}
 
 //=========================================================================
 // ~AllocationRecords
@@ -73,7 +68,7 @@ AllocationRecords::~AllocationRecords()
 void
 AllocationRecords::lock()
 {
-    DrillerEBusMutex::GetMutex().lock();
+    m_recordsMutex.lock();
 }
 
 //=========================================================================
@@ -82,7 +77,7 @@ AllocationRecords::lock()
 //=========================================================================
 bool AllocationRecords::try_lock()
 {
-    return DrillerEBusMutex::GetMutex().try_lock();
+    return m_recordsMutex.try_lock();
 }
 
 //=========================================================================
@@ -92,7 +87,7 @@ bool AllocationRecords::try_lock()
 void
 AllocationRecords::unlock()
 {
-    DrillerEBusMutex::GetMutex().unlock();
+    m_recordsMutex.unlock();
 }
 
 //=========================================================================
@@ -117,7 +112,7 @@ AllocationRecords::RegisterAllocation(void* address, size_t byteSize, size_t ali
     {
         if (m_isAutoIntegrityCheck)
         {
-            IntegrityCheckNoLock();
+            IntegrityCheck();
         }
 
         AZ_Assert(byteSize>sizeof(Debug::GuardValue), "Did you forget to add the extra MemoryGuardSize() bytes?");
@@ -125,7 +120,11 @@ AllocationRecords::RegisterAllocation(void* address, size_t byteSize, size_t ali
         new(reinterpret_cast<char*>(address)+byteSize) Debug::GuardValue();
     }
 
-    Debug::AllocationRecordsType::pair_iter_bool iterBool = m_records.insert_key(address);
+    Debug::AllocationRecordsType::pair_iter_bool iterBool;
+    {
+        AZStd::scoped_lock lock(m_recordsMutex);
+        iterBool = m_records.insert_key(address);
+    }
     
     if (!iterBool.second)
     {
@@ -210,7 +209,15 @@ AllocationRecords::RegisterAllocation(void* address, size_t byteSize, size_t ali
 
     // statistics
     m_requestedBytes += byteSize;
-    m_requestedBytesPeak = AZStd::GetMax(m_requestedBytesPeak, m_requestedBytes);
+
+    size_t currentRequestedBytePeak;
+    size_t newRequestedBytePeak;
+    do
+    {
+        currentRequestedBytePeak = m_requestedBytesPeak.load(std::memory_order::memory_order_relaxed);
+        newRequestedBytePeak = AZStd::GetMax(currentRequestedBytePeak, m_requestedBytes.load(std::memory_order::memory_order_relaxed));
+    } while (!m_requestedBytesPeak.compare_exchange_weak(currentRequestedBytePeak, newRequestedBytePeak));
+
     ++m_requestedAllocs;
 
     return &ai;
@@ -220,8 +227,7 @@ AllocationRecords::RegisterAllocation(void* address, size_t byteSize, size_t ali
 // UnregisterAllocation
 // [9/11/2009]
 //=========================================================================
-void
-AllocationRecords::UnregisterAllocation(void* address, size_t byteSize, size_t alignment, AllocationInfo* info)
+void AllocationRecords::UnregisterAllocation(void* address, size_t byteSize, size_t alignment, AllocationInfo* info)
 {
     if (m_mode == RECORD_NO_RECORDS)
     {
@@ -232,24 +238,39 @@ AllocationRecords::UnregisterAllocation(void* address, size_t byteSize, size_t a
         return;
     }
 
-    Debug::AllocationRecordsType::iterator iter = m_records.find(address);
-
-    // We cannot assert if an allocation does not exist because our allocators start up way before the driller is started and the Allocator Records would be created.
-    // It is currently impossible to actually track all allocations that happen before a certain point
-    //AZ_Assert(iter!=m_records.end(), "Could not find address 0x%p in the allocator!", address);
-    if (iter == m_records.end())
+    AllocationInfo allocationInfo;
     {
-        return;
+        AZStd::scoped_lock lock(m_recordsMutex);
+        Debug::AllocationRecordsType::iterator iter = m_records.find(address);
+        // We cannot assert if an allocation does not exist because our allocators start up way before the driller is started and the
+        // Allocator Records would be created. It is currently impossible to actually track all allocations that happen before a certain
+        // point
+        // AZ_Assert(iter!=m_records.end(), "Could not find address 0x%p in the allocator!", address);
+        if (iter == m_records.end())
+        {
+            return;
+        }
+        allocationInfo = iter->second;
+        m_records.erase(iter);
+
+        // try to be more aggressive and keep the memory footprint low.
+        // \todo store the load factor at the last rehash to avoid unnecessary rehash
+        if (m_records.load_factor() < 0.9f)
+        {
+            m_records.rehash(0);
+        }
     }
-    AllocatorManager::Instance().DebugBreak(address, iter->second);
+
+    
+    AllocatorManager::Instance().DebugBreak(address, allocationInfo);
 
     (void)byteSize;
     (void)alignment;
-    AZ_Assert(byteSize==0||byteSize==iter->second.m_byteSize, "Mismatched byteSize at deallocation! You supplied an invalid value!");
-    AZ_Assert(alignment==0||alignment==iter->second.m_alignment, "Mismatched alignment at deallocation! You supplied an invalid value!");
+    AZ_Assert(byteSize==0||byteSize==allocationInfo.m_byteSize, "Mismatched byteSize at deallocation! You supplied an invalid value!");
+    AZ_Assert(alignment==0||alignment==allocationInfo.m_alignment, "Mismatched alignment at deallocation! You supplied an invalid value!");
 
     // statistics
-    m_requestedBytes -= iter->second.m_byteSize;
+    m_requestedBytes -= allocationInfo.m_byteSize;
     
 #if defined(ENABLE_MEMORY_GUARD)
     // memory guard
@@ -258,18 +279,18 @@ AllocationRecords::UnregisterAllocation(void* address, size_t byteSize, size_t a
         if (m_isAutoIntegrityCheck)
         {
             // full integrity check
-            IntegrityCheckNoLock();
+            IntegrityCheck();
         }
         else
         {
             // check current allocation
-            char* guardAddress = reinterpret_cast<char*>(address)+iter->second.m_byteSize;
+            char* guardAddress = reinterpret_cast<char*>(address)+allocationInfo.m_byteSize;
             Debug::GuardValue* guard = reinterpret_cast<Debug::GuardValue*>(guardAddress);
             if (!guard->Validate())
             {
                 AZ_Printf("Memory", "Memory stomp located at address %p, part of allocation:", guardAddress);
                 PrintAllocationsCB printAlloc(true);
-                printAlloc(address, iter->second, m_numStackLevels);
+                printAlloc(address, allocationInfo, m_numStackLevels);
                 AZ_Assert(false, "MEMORY STOMP DETECTED!!!");
             }
             guard->~GuardValue();
@@ -278,33 +299,26 @@ AllocationRecords::UnregisterAllocation(void* address, size_t byteSize, size_t a
 #endif
 
     // delete allocation record
-    if (iter->second.m_namesBlock)
+    if (allocationInfo.m_namesBlock)
     {
-        m_records.get_allocator().deallocate(iter->second.m_namesBlock, iter->second.m_namesBlockSize, 1);
-        iter->second.m_namesBlock = nullptr;
-        iter->second.m_namesBlockSize = 0;
-        iter->second.m_name = nullptr;
-        iter->second.m_fileName = nullptr;
+        m_records.get_allocator().deallocate(allocationInfo.m_namesBlock, allocationInfo.m_namesBlockSize, 1);
+        allocationInfo.m_namesBlock = nullptr;
+        allocationInfo.m_namesBlockSize = 0;
+        allocationInfo.m_name = nullptr;
+        allocationInfo.m_fileName = nullptr;
     }
-    if (iter->second.m_stackFrames)
+    if (allocationInfo.m_stackFrames)
     {
-        m_records.get_allocator().deallocate(iter->second.m_stackFrames, sizeof(AZ::Debug::StackFrame)*m_numStackLevels, 1);
-        iter->second.m_stackFrames = nullptr;
+        m_records.get_allocator().deallocate(allocationInfo.m_stackFrames, sizeof(AZ::Debug::StackFrame)*m_numStackLevels, 1);
+        allocationInfo.m_stackFrames = nullptr;
     }
 
     if (info)
     {
-        *info = iter->second;
+        *info = allocationInfo;
     }
 
-    m_records.erase(iter);
 
-    // try to be more aggressive and keep the memory footprint low.
-    // \todo store the load factor at the last rehash to avoid unnecessary rehash
-    if (m_records.load_factor()<0.9f)
-    {
-        m_records.rehash(0);
-    }
 
     // if requested set memory to a specific value.
     if (m_isMarkUnallocatedMemory)
@@ -325,9 +339,14 @@ AllocationRecords::ResizeAllocation(void* address, size_t newSize)
         return;
     }
 
-    Debug::AllocationRecordsType::iterator iter = m_records.find(address);
-    AZ_Assert(iter!=m_records.end(), "Could not find address 0x%p in the allocator!", address);
-    AllocatorManager::Instance().DebugBreak(address, iter->second);
+    AllocationInfo* allocationInfo;
+    {
+        AZStd::scoped_lock lock(m_recordsMutex);
+        Debug::AllocationRecordsType::iterator iter = m_records.find(address);
+        AZ_Assert(iter != m_records.end(), "Could not find address 0x%p in the allocator!", address);
+        allocationInfo = &iter->second;
+    }
+    AllocatorManager::Instance().DebugBreak(address, *allocationInfo);
     
 #if defined(ENABLE_MEMORY_GUARD)
     if (m_memoryGuardSize == sizeof(Debug::GuardValue))
@@ -335,12 +354,12 @@ AllocationRecords::ResizeAllocation(void* address, size_t newSize)
         if (m_isAutoIntegrityCheck)
         {
             // full integrity check
-            IntegrityCheckNoLock();
+            IntegrityCheck();
         }
         else
         {
             // check memory guard
-            char* guardAddress = reinterpret_cast<char*>(address)+iter->second.m_byteSize;
+            char* guardAddress = reinterpret_cast<char*>(address) + allocationInfo->m_byteSize;
             Debug::GuardValue* guard = reinterpret_cast<Debug::GuardValue*>(guardAddress);
             if (!guard->Validate())
             {
@@ -358,13 +377,19 @@ AllocationRecords::ResizeAllocation(void* address, size_t newSize)
 #endif
 
     // statistics
-    m_requestedBytes -= iter->second.m_byteSize;
+    m_requestedBytes -= allocationInfo->m_byteSize;
     m_requestedBytes += newSize;
-    m_requestedBytesPeak = AZStd::GetMax(m_requestedBytesPeak, m_requestedBytes);
+    size_t currentRequestedBytePeak;
+    size_t newRequestedBytePeak;
+    do
+    {
+        currentRequestedBytePeak = m_requestedBytesPeak.load(std::memory_order::memory_order_relaxed);
+        newRequestedBytePeak = AZStd::GetMax(currentRequestedBytePeak, m_requestedBytes.load(std::memory_order::memory_order_relaxed));
+    } while (!m_requestedBytesPeak.compare_exchange_weak(currentRequestedBytePeak, newRequestedBytePeak));
     ++m_requestedAllocs;
 
     // update allocation size
-    iter->second.m_byteSize = newSize;
+    allocationInfo->m_byteSize = newSize;
 }
 
 //=========================================================================
@@ -374,21 +399,20 @@ AllocationRecords::ResizeAllocation(void* address, size_t newSize)
 void
 AllocationRecords::SetMode(Mode mode)
 {
-    DrillerEBusMutex::GetMutex().lock();
-
-    if (mode==RECORD_NO_RECORDS)
+    if (mode == RECORD_NO_RECORDS)
     {
-        m_records.clear();
+        {
+            AZStd::scoped_lock lock(m_recordsMutex);
+            m_records.clear();
+        }
         m_requestedBytes = 0;
         m_requestedBytesPeak = 0;
         m_requestedAllocs = 0;
     }
 
-    AZ_Warning("Memory", m_mode!=RECORD_NO_RECORDS||mode==RECORD_NO_RECORDS, "Records recording was disabled and now it's enabled! You might get assert when you free memory, if a you have allocations which were not recorded!");
+    AZ_Warning("Memory", m_mode != RECORD_NO_RECORDS || mode == RECORD_NO_RECORDS, "Records recording was disabled and now it's enabled! You might get assert when you free memory, if a you have allocations which were not recorded!");
 
     m_mode = mode;
-
-    DrillerEBusMutex::GetMutex().unlock();
 }
 
 //=========================================================================
@@ -398,11 +422,14 @@ AllocationRecords::SetMode(Mode mode)
 void
 AllocationRecords::EnumerateAllocations(AllocationInfoCBType cb)
 {
-    DrillerEBusMutex::GetMutex().lock();
     // enumerate all allocations and stop if requested.
     // Since allocations can change during the iteration (code that prints out the records could allocate, which will
     // mutate m_records), we are going to make a copy and iterate the copy.
-    const Debug::AllocationRecordsType recordsCopy = m_records;
+    Debug::AllocationRecordsType recordsCopy;
+    {
+        AZStd::scoped_lock lock(m_recordsMutex);
+        recordsCopy = m_records;
+    }
     for (Debug::AllocationRecordsType::const_iterator iter = recordsCopy.begin(); iter != recordsCopy.end(); ++iter)
     {
         if (!cb(iter->first, iter->second, m_numStackLevels))
@@ -410,7 +437,6 @@ AllocationRecords::EnumerateAllocations(AllocationInfoCBType cb)
             break;
         }
     }
-    DrillerEBusMutex::GetMutex().unlock();
 }
 
 //=========================================================================
@@ -420,38 +446,29 @@ AllocationRecords::EnumerateAllocations(AllocationInfoCBType cb)
 void
 AllocationRecords::IntegrityCheck() const
 {
+#if defined(ENABLE_MEMORY_GUARD)
     if (m_memoryGuardSize == sizeof(Debug::GuardValue))
     {
-        DrillerEBusMutex::GetMutex().lock();
-
-        IntegrityCheckNoLock();
-
-        DrillerEBusMutex::GetMutex().unlock();
-    }
-}
-
-//=========================================================================
-// IntegrityCheckNoLock
-// [9/13/2011]
-//=========================================================================
-void
-AllocationRecords::IntegrityCheckNoLock() const
-{
-#if defined(ENABLE_MEMORY_GUARD)
-    for (Debug::AllocationRecordsType::const_iterator iter = m_records.begin(); iter != m_records.end(); ++iter)
-    {
-        // check memory guard
-        const char* guardAddress = reinterpret_cast<const char*>(iter->first)+ iter->second.m_byteSize;
-        if (!reinterpret_cast<const Debug::GuardValue*>(guardAddress)->Validate())
+        Debug::AllocationRecordsType recordsCopy;
         {
-            // We have to turn off the integrity check at this point if we want to succesfully report the memory
-            // stomp we just found. If we don't turn this off, the printf just winds off the stack as each memory
-            // allocation done therein recurses this same code.
-            *const_cast<bool*>(&m_isAutoIntegrityCheck) = false;
-            AZ_Printf("Memory", "Memory stomp located at address %p, part of allocation:", guardAddress);
-            PrintAllocationsCB printAlloc(true);
-            printAlloc(iter->first, iter->second, m_numStackLevels);
-            AZ_Error("Memory", false, "MEMORY STOMP DETECTED!!!");
+            AZStd::scoped_lock lock(m_recordsMutex);
+            recordsCopy = m_records;
+        }
+        for (Debug::AllocationRecordsType::const_iterator iter = recordsCopy.begin(); iter != recordsCopy.end(); ++iter)
+        {
+            // check memory guard
+            const char* guardAddress = reinterpret_cast<const char*>(iter->first)+ iter->second.m_byteSize;
+            if (!reinterpret_cast<const Debug::GuardValue*>(guardAddress)->Validate())
+            {
+                // We have to turn off the integrity check at this point if we want to succesfully report the memory
+                // stomp we just found. If we don't turn this off, the printf just winds off the stack as each memory
+                // allocation done therein recurses this same code.
+                *const_cast<bool*>(&m_isAutoIntegrityCheck) = false;
+                AZ_Printf("Memory", "Memory stomp located at address %p, part of allocation:", guardAddress);
+                PrintAllocationsCB printAlloc(true);
+                printAlloc(iter->first, iter->second, m_numStackLevels);
+                AZ_Error("Memory", false, "MEMORY STOMP DETECTED!!!");
+            }
         }
     }
 #endif
