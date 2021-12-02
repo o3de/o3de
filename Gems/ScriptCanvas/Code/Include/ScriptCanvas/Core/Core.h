@@ -306,8 +306,8 @@ namespace ScriptCanvas
 {
     class ScriptCanvasData;
 
-    using DataPtr = AZStd::shared_ptr<ScriptCanvasData>;
-    using DataPtrConst = AZStd::shared_ptr<const ScriptCanvasData>;
+    using DataPtr = AZStd::intrusive_ptr<ScriptCanvasData>;
+    using DataPtrConst = AZStd::intrusive_ptr<const ScriptCanvasData>;
 }
 
 namespace ScriptCanvasEditor
@@ -372,7 +372,7 @@ namespace ScriptCanvasEditor
 namespace ScriptCanvas
 {
     class ScriptCanvasData
-        : public AZStd::enable_shared_from_this<ScriptCanvasData>
+        : public AZStd::intrusive_refcount<AZStd::atomic_uint, AZStd::intrusive_default_delete>
     {
     public:
 

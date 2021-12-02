@@ -76,7 +76,7 @@ namespace ScriptCanvasEditor
                 AZ::SystemTickBus::QueueFunction([this, tmpFileName]()
                     {
                         FileSaveResult result;
-                        result.fileSaveError = "Failed to move updated file from temporary location to tmpFileName destination";
+                        result.fileSaveError = "Failed to move updated file from temporary location to original destination.";
                         result.tempFileRemovalError = RemoveTempFile(tmpFileName);
                         m_onComplete(result);
                     });
@@ -97,7 +97,16 @@ namespace ScriptCanvasEditor
             }
             else
             {
+                // #sc_editor_asset - skip save, narrow down the memory corruption
+                AZ::SystemTickBus::QueueFunction([this, tmpFileName]()
+                {
+                    FileSaveResult result;
+                    result.tempFileRemovalError = RemoveTempFile(tmpFileName);
+                    m_onComplete(result);
+                });
+                                
                 // the actual move attempt
+                /*
                 auto moveResult = AZ::IO::SmartMove(tmpFileName.c_str(), target.c_str());
                 if (moveResult.GetResultCode() == AZ::IO::ResultCode::Success)
                 {
@@ -105,6 +114,7 @@ namespace ScriptCanvasEditor
                     AZ::IO::FileRequestPtr flushRequest = streamer->FlushCache(target.c_str());
                     // Bump the slice asset up in the asset processor's queue.
                     AzFramework::AssetSystemRequestBus::Broadcast(&AzFramework::AssetSystem::AssetSystemRequests::EscalateAssetBySearchTerm, target.c_str());
+                    
                     AZ::SystemTickBus::QueueFunction([this, tmpFileName]()
                         {
                             FileSaveResult result;
@@ -124,6 +134,7 @@ namespace ScriptCanvasEditor
                     });
                     streamer->QueueRequest(flushRequest);
                 }
+                **/
             }
         }
 
