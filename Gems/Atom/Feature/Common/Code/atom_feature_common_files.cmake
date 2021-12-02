@@ -97,7 +97,7 @@ set(FILES
     Source/CoreLights/SimplePointLightFeatureProcessor.cpp
     Source/CoreLights/SimpleSpotLightFeatureProcessor.h
     Source/CoreLights/SimpleSpotLightFeatureProcessor.cpp
-    Source/CoreLights/Shadow.hgit 
+    Source/CoreLights/Shadow.h
     Source/CoreLights/Shadow.cpp
     Source/CoreLights/ShadowmapAtlas.h
     Source/CoreLights/ShadowmapAtlas.cpp
