@@ -416,7 +416,7 @@ namespace AZ::Dom::Json
     //
     // Serialized JSON util functions
     //
-    AZStd::unique_ptr<Visitor> GetJsonStreamWriter(AZ::IO::GenericStream& stream, OutputFormatting format)
+    AZStd::unique_ptr<Visitor> CreateJsonStreamWriter(AZ::IO::GenericStream& stream, OutputFormatting format)
     {
         if (format == OutputFormatting::MinifiedJson)
         {

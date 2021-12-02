@@ -182,7 +182,7 @@ namespace AZ::Dom::Json
     //! \param stream The stream the visitor will write to.
     //! \param format The format to write in.
     //! \return A Visitor that will write to stream when visited.
-    AZStd::unique_ptr<Visitor> GetJsonStreamWriter(
+    AZStd::unique_ptr<Visitor> CreateJsonStreamWriter(
         AZ::IO::GenericStream& stream, OutputFormatting format = OutputFormatting::PrettyPrintedJson);
     //! Reads serialized JSON from a string and applies it to a visitor.
     //! \param buffer The UTF-8 serialized JSON to read.

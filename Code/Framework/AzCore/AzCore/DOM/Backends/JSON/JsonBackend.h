@@ -32,7 +32,7 @@ namespace AZ::Dom
 
         AZStd::unique_ptr<Visitor> CreateStreamWriter(AZ::IO::GenericStream& stream) override
         {
-            return Json::GetJsonStreamWriter(stream, WriteFormat);
+            return Json::CreateJsonStreamWriter(stream, WriteFormat);
         }
     };
 } // namespace AZ::Dom
