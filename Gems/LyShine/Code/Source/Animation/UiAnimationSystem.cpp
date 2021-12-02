@@ -22,7 +22,6 @@
 #include <ISystem.h>
 #include <ILog.h>
 #include <IConsole.h>
-#include <IRenderer.h>
 
 //////////////////////////////////////////////////////////////////////////
 namespace
