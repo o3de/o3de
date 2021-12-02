@@ -37,7 +37,6 @@ namespace ScriptCanvasEditor
             QWidget* m_hostWidget = nullptr;
             CanvasWidget* m_canvasWidget = nullptr;
             Tracker::ScriptCanvasFileState m_fileState = Tracker::ScriptCanvasFileState::INVALID;
-            QString m_name;
         };
 
         class GraphTabBar

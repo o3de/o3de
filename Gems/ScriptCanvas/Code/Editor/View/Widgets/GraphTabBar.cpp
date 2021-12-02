@@ -158,8 +158,7 @@ namespace ScriptCanvasEditor
                 
                 AZStd::string tabName;
                 AzFramework::StringFunc::Path::GetFileName(assetId.Path().c_str(), tabName);
-                metaData.m_name = tabName.c_str();
-               
+
                 SetTabText(tabIndex, tabName.c_str(), fileState);
                 setTabData(tabIndex, QVariant::fromValue(metaData));
                 return tabIndex;
@@ -350,6 +349,12 @@ namespace ScriptCanvasEditor
 
         void GraphTabBar::SetTabText(int tabIndex, const QString& path, Tracker::ScriptCanvasFileState fileState)
         {
+            QString safePath = path;
+            if (path.endsWith("^") || path.endsWith("*"))
+            {
+                safePath.chop(1);
+            }
+
             if (tabIndex >= 0 && tabIndex < count())
             {
                 const char* fileStateTag = "";
@@ -366,7 +371,7 @@ namespace ScriptCanvasEditor
                     break;
                 }
 
-                setTabText(tabIndex, QString("%1%2").arg(path).arg(fileStateTag));
+                setTabText(tabIndex, QString("%1%2").arg(safePath).arg(fileStateTag));
             }
         }
 
@@ -392,7 +397,7 @@ namespace ScriptCanvasEditor
                 int index = FindTab(assetId);
                 tabData->m_fileState = fileState;
                 SetTabData(*tabData, assetId);
-                SetTabText(index, tabData->m_name, fileState);
+                SetTabText(index, tabText(index), fileState);
 
                 if (index == currentIndex())
                 {
