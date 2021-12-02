@@ -11,6 +11,7 @@
 #include <AzCore/std/smart_ptr/make_shared.h>
 
 #include <AzFramework/Input/Buses/Notifications/InputChannelNotificationBus.h>
+#include <AzFramework/Input/Buses/Notifications/InputTextNotificationBus.h>
 #include <AzFramework/Input/Buses/Requests/InputChannelRequestBus.h>
 #include <AzQtComponents/Utilities/QtWindowUtilities.h>
 
@@ -408,16 +409,67 @@ namespace AzToolsFramework
 
     void QtEventToAzInputMapper::HandleKeyEvent(QKeyEvent* keyEvent)
     {
-        // Ignore key repeat events, they're unrelated to actual physical button presses.
+        const Qt::Key key = static_cast<Qt::Key>(keyEvent->key());
+        const QEvent::Type eventType = keyEvent->type();
+
+        // special handling for text events in edit mode
+        {
+            static Qt::Key lastKey = key;
+            static bool consumeAsText = false;
+
+            QString keyText = keyEvent->text();
+            if (key == Qt::Key_Backspace)
+            {
+                keyText = "\b";
+            }
+
+            if (!keyText.isEmpty())
+            {
+                // key events are first sent as shortcuts, if accepted they are then resent as traditional key
+                // down events.  dispatching the key event as text on shortcut (and auto-repeat press) ensures
+                // all printable keys a fair chance at being consumed before processing elsewhere
+                if (eventType == QEvent::Type::ShortcutOverride ||
+                    (eventType == QEvent::Type::KeyPress && keyEvent->isAutoRepeat()))
+                {
+                    bool textConsumed = false;
+                    AzFramework::InputTextNotificationBus::Broadcast(
+                        &AzFramework::InputTextNotifications::OnInputTextEvent,
+                        AZStd::string(keyText.toUtf8().data()),
+                        textConsumed
+                    );
+                    consumeAsText = textConsumed;
+                }
+                // follow up events from accepting the previous key event also need to be accepted without
+                // dispatching the text event, otherwise the key event will be processed twice: once for the
+                // previous text event, then again as a normal key event which can lead to odd behaviour
+                // during text edit
+                else
+                {
+                    consumeAsText &= (lastKey == key);
+                }
+            }
+            else
+            {
+                consumeAsText = false;
+            }
+
+            lastKey = key;
+
+            if (consumeAsText)
+            {
+                keyEvent->accept();
+                return;
+            }
+        }
+
+        // Ignore key repeat events for non-text, they're unrelated to actual physical button presses.
         if (keyEvent->isAutoRepeat())
         {
             return;
         }
 
-        const Qt::Key key = static_cast<Qt::Key>(keyEvent->key());
-
         // For ShortcutEvent, only continue processing if we're in the HighPriorityKeys set.
-        if (keyEvent->type() != QEvent::Type::ShortcutOverride || m_highPriorityKeys.find(key) != m_highPriorityKeys.end())
+        if (eventType != QEvent::Type::ShortcutOverride || m_highPriorityKeys.find(key) != m_highPriorityKeys.end())
         {
             if (auto keyIt = m_keyMappings.find(key); keyIt != m_keyMappings.end())
             {
@@ -425,15 +477,8 @@ namespace AzToolsFramework
 
                 if (keyChannel)
                 {
-                    if (keyEvent->type() == QEvent::Type::KeyPress || keyEvent->type() == QEvent::Type::ShortcutOverride)
-                    {
-                        keyChannel->UpdateState(true);
-                    }
-                    else
-                    {
-                        keyChannel->UpdateState(false);
-                    }
-
+                    const bool isKeyPressed = (eventType == QEvent::Type::KeyPress) || (eventType == QEvent::Type::ShortcutOverride);
+                    keyChannel->UpdateState(isKeyPressed);
                     NotifyUpdateChannelIfNotIdle(keyChannel, keyEvent);
                 }
             }
