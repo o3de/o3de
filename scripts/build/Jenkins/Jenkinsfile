@@ -602,8 +602,8 @@ def CreateSingleNode(Map pipelineConfig, def platform, def build_job, Map envVar
                             CreateUploadAPLogsStage(platform.key, build_job_name, envVars['WORKSPACE'], platform.value.build_types[build_job_name].PARAMETERS).call()
                         }
                         echo '===== DEBUG ===== DO NOT SUBMIT'
-                        echo params.containsKey('CMAKE_TARGET')
-                        echo params.CMAKE_TARGET.contains("TEST_SUITE")
+                        echo "contains key: \"${params.containsKey('CMAKE_TARGET')}\""
+                        echo "contains test suite: \"${params.CMAKE_TARGET.contains("TEST_SUITE")}\""
                         // Upload test artifacts only on builds that failed and ran test suites
                         if (params.containsKey('CMAKE_TARGET') && params.CMAKE_TARGET.contains("TEST_SUITE")) {
                             CreateUploadTestArtifactStage(build_job_name, envVars['WORKSPACE'], params.OUTPUT_DIRECTORY).call()
