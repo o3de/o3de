@@ -26,10 +26,11 @@ namespace AzFramework::Terrain
                 ->Event("GetSurfaceWeights", &AzFramework::Terrain::TerrainDataRequestBus::Events::GetSurfaceWeights)
                 ->Event("GetSurfaceWeightsFromVector2",
                     &AzFramework::Terrain::TerrainDataRequestBus::Events::GetSurfaceWeightsFromVector2)
+                ->Event("GetIsHole", &AzFramework::Terrain::TerrainDataRequestBus::Events::GetIsHole)
                 ->Event("GetIsHoleFromFloats", &AzFramework::Terrain::TerrainDataRequestBus::Events::GetIsHoleFromFloats)
-                ->Event("GetSurfacePoint", &AzFramework::Terrain::TerrainDataRequestBus::Events::GetSurfacePoint)
+                ->Event("GetSurfacePoint", &AzFramework::Terrain::TerrainDataRequestBus::Events::BehaviorContextGetSurfacePoint)
                 ->Event("GetSurfacePointFromVector2",
-                    &AzFramework::Terrain::TerrainDataRequestBus::Events::GetSurfacePointFromVector2)
+                    &AzFramework::Terrain::TerrainDataRequestBus::Events::BehaviorContextGetSurfacePointFromVector2)
                 ->Event("GetTerrainAabb", &AzFramework::Terrain::TerrainDataRequestBus::Events::GetTerrainAabb)
                 ->Event("GetTerrainHeightQueryResolution",
                     &AzFramework::Terrain::TerrainDataRequestBus::Events::GetTerrainHeightQueryResolution)

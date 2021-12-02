@@ -5,7 +5,7 @@
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "BoxShapeComponentRequestsBus",
+                "name": "Box Shape Component",
                 "category": "Shape"
             },
             "methods": [

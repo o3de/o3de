@@ -6,8 +6,8 @@
             "variant": "",
             "details": {
                 "name": "From String",
-                "category": "Math/Crc32",
-                "tooltip": "Returns a Crc32 from the string"
+                "category": "Math/Tag",
+                "tooltip": "Returns a Tag from the string"
             },
             "slots": [
                 {

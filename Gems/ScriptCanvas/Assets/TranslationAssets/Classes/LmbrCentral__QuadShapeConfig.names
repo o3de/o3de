@@ -1,0 +1,103 @@
+{
+    "entries": [
+        {
+            "base": "LmbrCentral::QuadShapeConfig",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "Quad Shape Config",
+                "category": "Rendering/Shapes"
+            },
+            "methods": [
+                {
+                    "base": "GetWidth",
+                    "details": {
+                        "name": "Get Width"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{35CA7415-DB12-4630-B0D0-4A140CE1B9A7}",
+                            "details": {
+                                "name": "Configuration",
+                                "tooltip": "Quad shape configuration parameters"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetWidth",
+                    "details": {
+                        "name": "Set Width"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{35CA7415-DB12-4630-B0D0-4A140CE1B9A7}",
+                            "details": {
+                                "name": "Configuration",
+                                "tooltip": "Quad shape configuration parameters"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetHeight",
+                    "details": {
+                        "name": "Get Height"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{35CA7415-DB12-4630-B0D0-4A140CE1B9A7}",
+                            "details": {
+                                "name": "Configuration",
+                                "tooltip": "Quad shape configuration parameters"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetHeight",
+                    "details": {
+                        "name": "Set Height"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{35CA7415-DB12-4630-B0D0-4A140CE1B9A7}",
+                            "details": {
+                                "name": "Configuration",
+                                "tooltip": "Quad shape configuration parameters"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

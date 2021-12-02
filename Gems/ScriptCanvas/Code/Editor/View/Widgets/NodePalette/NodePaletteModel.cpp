@@ -611,8 +611,9 @@ namespace
                     {
                         categoryPath.append(details.m_name.c_str());
                     }
-                    else
+                    else if (categoryPath.contains("Other"))
                     {
+                        // Use the BehaviorEBus name to categorize within the 'Other' category
                         categoryPath.append(behaviorEbus.m_name.c_str());
                     }
                 }
@@ -657,8 +658,9 @@ namespace
             {
                 categoryPath.append(details.m_name.c_str());
             }
-            else
+            else if (categoryPath.contains("Other"))
             {
+                // Use the behavior EBus name to categorize within the 'Other' category
                 categoryPath.append(behaviorEbus.m_name.c_str());
             }
 

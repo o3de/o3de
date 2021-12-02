@@ -12,7 +12,7 @@
 #include <QElapsedTimer>
 #include <Atom/RPI.Public/Base.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
-#include <AzToolsFramework/Input/QtEventToAzInputManager.h>
+#include <AzToolsFramework/Input/QtEventToAzInputMapper.h>
 #include <AzFramework/Input/Events/InputChannelEventListener.h>
 #include <AzFramework/Scene/Scene.h>
 #include <AzFramework/Viewport/ViewportControllerInterface.h>
@@ -116,6 +116,7 @@ namespace AtomToolsFramework
         void ToggleFullScreenState() override;
         float GetDpiScaleFactor() const override;
         uint32_t GetSyncInterval() const override;
+        bool SetSyncInterval(uint32_t newSyncInterval) override;
         uint32_t GetDisplayRefreshRate() const override;
 
     protected:

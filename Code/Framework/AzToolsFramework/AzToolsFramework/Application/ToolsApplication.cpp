@@ -30,6 +30,7 @@
 #include <AzToolsFramework/ContainerEntity/ContainerEntitySystemComponent.h>
 #include <AzToolsFramework/Entity/EditorEntityContextComponent.h>
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
+#include <AzToolsFramework/Entity/ReadOnly/ReadOnlyEntitySystemComponent.h>
 #include <AzToolsFramework/FocusMode/FocusModeSystemComponent.h>
 #include <AzToolsFramework/Slice/SliceMetadataEntityContextComponent.h>
 #include <AzToolsFramework/Prefab/PrefabSystemComponent.h>
@@ -54,6 +55,7 @@
 #include <AzToolsFramework/API/ComponentEntityObjectBus.h>
 #include <AzToolsFramework/API/EditorCameraBus.h>
 #include <AzToolsFramework/API/ViewPaneOptions.h>
+#include <AzToolsFramework/API/ViewportEditorModeTrackerNotificationBus.h>
 #include <AzToolsFramework/Entity/EditorEntitySearchComponent.h>
 #include <AzToolsFramework/Entity/EditorEntitySortComponent.h>
 #include <AzToolsFramework/Entity/EditorEntityModelComponent.h>
@@ -267,6 +269,7 @@ namespace AzToolsFramework
                 azrtti_typeid<Components::EditorEntityUiSystemComponent>(),
                 azrtti_typeid<FocusModeSystemComponent>(),
                 azrtti_typeid<ContainerEntitySystemComponent>(),
+                azrtti_typeid<ReadOnlyEntitySystemComponent>(),
                 azrtti_typeid<SliceMetadataEntityContextComponent>(),
                 azrtti_typeid<Prefab::PrefabSystemComponent>(),
                 azrtti_typeid<EditorEntityFixupComponent>(),
@@ -385,6 +388,7 @@ namespace AzToolsFramework
         ComponentModeFramework::ComponentModeDelegate::Reflect(context);
 
         ViewportInteraction::ViewportInteractionReflect(context);
+        ViewportEditorModeNotifications::Reflect(context);
 
         Camera::EditorCameraRequests::Reflect(context);
         AzToolsFramework::EditorTransformComponentSelectionRequests::Reflect(context);
