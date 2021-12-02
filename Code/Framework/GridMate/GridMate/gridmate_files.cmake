@@ -19,7 +19,6 @@ set(FILES
     Carrier/Carrier.cpp
     Carrier/Carrier.h
     Carrier/Compressor.h
-    Carrier/Cripter.h
     Carrier/DefaultHandshake.cpp
     Carrier/DefaultHandshake.h
     Carrier/DefaultSimulator.cpp
