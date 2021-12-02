@@ -1109,11 +1109,19 @@ R"DELIMITER(<ObjectStream version="1">
         MoveEntity(entityId);
         BusConnect(entityId);
 
+        // verify that undoing/redoing move operations dispatches TransformChanged event
         Undo();
         EXPECT_TRUE(m_transformUpdated);
         m_transformUpdated = false;
 
         Redo();
         EXPECT_TRUE(m_transformUpdated);
+        m_transformUpdated = false;
+                
+        Entity* entity = nullptr;
+        ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationRequests::FindEntity, entityId);
+        entity->Deactivate();
+        entity->Activate();
+        EXPECT_FALSE(m_transformUpdated);
     }
 } // namespace UnitTest
