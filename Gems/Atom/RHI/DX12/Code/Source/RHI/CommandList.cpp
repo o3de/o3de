@@ -97,7 +97,7 @@ namespace AZ
             SetName(name);
 
             PIXBeginEvent(PIX_MARKER_CMDLIST_COL, name.GetCStr());
-            if (RHI::Factory::Get().IsPixModuleLoaded() || RHI::Factory::Get().IsRenderDocModuleLoaded())
+            if (RHI::Factory::Get().PixGpuEventsEnabled())
             {
                 PIXBeginEvent(GetCommandList(), PIX_MARKER_CMDLIST_COL, name.GetCStr());
             }
@@ -107,7 +107,7 @@ namespace AZ
         {
             FlushBarriers();
             PIXEndEvent();
-            if (RHI::Factory::Get().IsPixModuleLoaded() || RHI::Factory::Get().IsRenderDocModuleLoaded())
+            if (RHI::Factory::Get().PixGpuEventsEnabled())
             {
                 PIXEndEvent(GetCommandList());
             }

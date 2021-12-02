@@ -18,6 +18,7 @@ set(FILES
     LYTestWrappers_linux.cmake
     LYWrappers_linux.cmake
     Packaging_linux.cmake
+    PackagingCodeSign_linux.cmake
     PackagingPostBuild_linux.cmake
     PackagingPreBuild_linux.cmake
     PAL_linux.cmake

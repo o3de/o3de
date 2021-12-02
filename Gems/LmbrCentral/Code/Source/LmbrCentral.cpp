@@ -77,6 +77,7 @@
 #include "Shape/CompoundShapeComponent.h"
 #include "Shape/SplineComponent.h"
 #include "Shape/PolygonPrismShapeComponent.h"
+#include "Shape/ReferenceShapeComponent.h"
 
 namespace LmbrCentral
 {
@@ -203,6 +204,7 @@ namespace LmbrCentral
             CapsuleShapeComponent::CreateDescriptor(),
             TubeShapeComponent::CreateDescriptor(),
             CompoundShapeComponent::CreateDescriptor(),
+            ReferenceShapeComponent::CreateDescriptor(),
             SplineComponent::CreateDescriptor(),
             PolygonPrismShapeComponent::CreateDescriptor(),
             NavigationSystemComponent::CreateDescriptor(),
