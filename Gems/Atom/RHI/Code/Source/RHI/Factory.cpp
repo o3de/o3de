@@ -15,6 +15,7 @@
 #if defined(USE_RENDERDOC) || defined(USE_PIX)
 #include <AzCore/Module/DynamicModuleHandle.h>
 #include <Atom_RHI_Traits_Platform.h>
+static bool s_pixGpuMarkersEnabled = false;
 #endif
 
 #if defined(USE_RENDERDOC)
@@ -26,7 +27,6 @@ static bool s_isRenderDocDllLoaded = false;
 #if defined(USE_PIX)
 static AZStd::unique_ptr<AZ::DynamicModuleHandle> s_pixModule;
 static bool s_isPixGpuCaptureDllLoaded = false;
-static bool s_pixGpuMarkersEnabled = false;
 #endif
 
 static bool s_usingWarpDevice = false;
@@ -208,7 +208,7 @@ namespace AZ
 
         bool Factory::PixGpuEventsEnabled()
         {
-#if defined(USE_PIX)
+#if defined(USE_PIX) || defined(USE_RENDERDOC)
             return s_pixGpuMarkersEnabled;
 #else
             return false;
