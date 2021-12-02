@@ -15,6 +15,7 @@ import logging
 
 # Import LyTestTools
 import ly_test_tools.o3de.asset_processor as asset_processor_commands
+import ly_test_tools.o3de.asset_processor_utils
 
 logger = logging.getLogger(__name__)
 
@@ -36,5 +37,8 @@ def asset_processor(request: pytest.fixture, workspace: pytest.fixture) -> asset
         ap.stop()
 
     request.addfinalizer(teardown)
+    for n in ly_test_tools.o3de.asset_processor_utils.processList:
+        assert not ly_test_tools.o3de.asset_processor_utils.check_ap_running(n), f"{n} process did not shutdown correctly."
+
 
     return ap
