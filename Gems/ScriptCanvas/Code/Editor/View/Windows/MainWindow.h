@@ -43,7 +43,6 @@
 #include <ScriptCanvas/Bus/EditorScriptCanvasBus.h>
 #include <ScriptCanvas/Core/ScriptCanvasBus.h>
 #include <ScriptCanvas/Debugger/ClientTransceiver.h>
-#include <Editor/Include/ScriptCanvas/Assets/ScriptCanvasSourceFileHandle.h>
 #include <Editor/Assets/ScriptCanvasAssetHolder.h>
 #include <Editor/Undo/ScriptCanvasGraphCommand.h>
 #include <Editor/Utilities/RecentFiles.h>

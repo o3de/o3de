@@ -59,7 +59,7 @@ namespace ScriptCanvasBuilder
         PrefabIntegration,
         CorrectGraphVariableVersion,
         ReflectEntityIdNodes,
-        FixExecutionStateNodeableConstrution,
+        FixExecutionStateNodeableConstruction,
 
         // add new entries above
         Current,
