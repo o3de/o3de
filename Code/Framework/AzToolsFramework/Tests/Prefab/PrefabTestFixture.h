@@ -52,6 +52,8 @@ namespace UnitTest
 
         AZStd::unique_ptr<ToolsTestApplication> CreateTestApplication() override;
 
+        void PropagateAllTemplateChanges();
+
         AZ::Entity* CreateEntity(const char* entityName, const bool shouldActivate = true);
 
         void CompareInstances(const Instance& instanceA, const Instance& instanceB, bool shouldCompareLinkIds = true,
@@ -61,6 +63,8 @@ namespace UnitTest
 
         //! Validates that all entities within a prefab instance are in 'Active' state.
         void ValidateInstanceEntitiesActive(Instance& instance);
+
+        void AddRequiredEditorComponents(AZ::Entity* entity);
 
         PrefabSystemComponent* m_prefabSystemComponent = nullptr;
         PrefabLoaderInterface* m_prefabLoaderInterface = nullptr;
