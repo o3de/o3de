@@ -16,3 +16,8 @@ if("$ENV{O3DE_VERSION}")
     # Overriding through environment
     set(LY_VERSION_STRING "$ENV{O3DE_VERSION}")
 endif()
+
+if("$ENV{O3DE_BUILD_VERSION}")
+    # Overriding through environment
+    set(LY_VERSION_BUILD_NUMBER "$ENV{O3DE_BUILD_VERSION}")
+endif()
