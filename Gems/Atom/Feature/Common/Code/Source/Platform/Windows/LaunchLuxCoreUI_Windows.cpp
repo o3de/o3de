@@ -1,16 +1,18 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
 #include <AzCore/std/string/string.h>
-#include <windows.h>
+#include <AzCore/std/string/conversions.h>
+#include <AzCore/PlatformIncl.h>
 
 namespace LuxCoreUI
 {
-    void LaunchLuxCoreUI(const AZStd::string& luxCoreExeFullPath, AZStd::string& commandLine)
+    void LaunchLuxCoreUI(const AZStd::string& luxCoreExeFullPath, const AZStd::string& commandLine)
     {
         STARTUPINFO si;
         PROCESS_INFORMATION pi;
@@ -19,9 +21,14 @@ namespace LuxCoreUI
         si.cb = sizeof(si);
         ZeroMemory(&pi, sizeof(pi));
 
+        AZStd::wstring luxCoreExeFullPathW;
+        AZStd::to_wstring(luxCoreExeFullPathW, luxCoreExeFullPath.c_str());
+        AZStd::wstring commandLineW;
+        AZStd::to_wstring(commandLineW, commandLine.c_str());
+
         // start the program up
-        CreateProcess(luxCoreExeFullPath.data(),   // the path
-            commandLine.data(),        // Command line
+        CreateProcessW(luxCoreExeFullPathW.c_str(),   // the path
+            commandLineW.data(),        // Command line
             NULL,           // Process handle not inheritable
             NULL,           // Thread handle not inheritable
             FALSE,          // Set handle inheritance to FALSE

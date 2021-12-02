@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -71,10 +72,15 @@ namespace O3de
             return true;
         }
 #if !AZ_TRAIT_OS_PLATFORM_APPLE
-        AZ_PUSH_DISABLE_WARNING(4996, "-Wunknown-warning-option")
+    #if AZ_TRAIT_USE_SECURE_CRT_FUNCTIONS
+        char noConfirmation[64]{};
+        size_t variableSize = 0;
+        getenv_s(&variableSize, noConfirmation, AZ_ARRAY_SIZE(noConfirmation), "LY_NO_CONFIRM");
+        if (variableSize == 0)
+    #else
         const char* noConfirmation = getenv("LY_NO_CONFIRM");
-        AZ_POP_DISABLE_WARNING
         if (noConfirmation == nullptr)
+    #endif
         {
             int argCount = 0;
 

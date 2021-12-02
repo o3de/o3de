@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -77,7 +78,7 @@ namespace AZ
 
             static OutputDeviceTransformType GetOutputDeviceTransformType(RHI::Format bufferFormat);
             static void GetAcesDisplayMapperParameters(DisplayMapperParameters* displayMapperParameters, OutputDeviceTransformType odtType);
-            static ShaperParams GetShaperParameters(ShaperPresetType shaperPreset);
+            static ShaperParams GetShaperParameters(ShaperPresetType shaperPreset, float customMinEv = 0.0f, float customMaxEv = 0.0f);
             static void GetDefaultDisplayMapperConfiguration(DisplayMapperConfigurationDescriptor& config);
 
             // DisplayMapperFeatureProcessorInteface overrides...
@@ -101,8 +102,6 @@ namespace AZ
 
             static constexpr const char* FeatureProcessorName = "AcesDisplayMapperFeatureProcessor";
 
-            static const int LutSize = 32;
-            static const RHI::Format LutFormat = RHI::Format::R16G16B16A16_FLOAT;
             static const int ImagePoolBudget = 1 << 20; // 1 Megabyte
 
             // LUTs that are baked through shaders

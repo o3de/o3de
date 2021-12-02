@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -8,7 +9,6 @@
 #define GM_TRAFFIC_CONTROL_H
 
 #include <GridMate/Types.h>
-#include <GridMate/String/string.h>
 
 #include <AzCore/std/smart_ptr/intrusive_ptr.h>
 

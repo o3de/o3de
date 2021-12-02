@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -8,6 +9,7 @@
 #include <Vegetation/DynamicSliceInstanceSpawner.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Asset/AssetManager.h>
+#include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <Vegetation/Ebuses/DescriptorNotificationBus.h>

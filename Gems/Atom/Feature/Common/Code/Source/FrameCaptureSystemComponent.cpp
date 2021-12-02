@@ -1,22 +1,26 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
 #include "FrameCaptureSystemComponent.h"
 
+#include <Atom/RHI/RHIUtils.h>
+
 #include <Atom/RPI.Public/Pass/PassSystemInterface.h>
 #include <Atom/RPI.Public/Pass/PassFilter.h>
-#include <Atom/RPI.Public/Pass/RenderPass.h>
+#include <Atom/RPI.Public/Pass/Specific/ImageAttachmentPreviewPass.h>
 #include <Atom/RPI.Public/Pass/Specific/SwapChainPass.h>
 #include <Atom/RPI.Public/ViewportContextManager.h>
 
 #include <Atom/Utils/DdsFile.h>
 #include <Atom/Utils/PpmFile.h>
+#include <Atom/Utils/PngFile.h>
 
-#include <AtomCore/Serialization/Json/JsonUtils.h>
+#include <AzCore/Serialization/Json/JsonUtils.h>
 #include <AzCore/Jobs/JobFunction.h>
 #include <AzCore/Jobs/JobCompletion.h>
 
@@ -31,17 +35,13 @@
 #include <AzCore/Preprocessor/EnumReflectUtils.h>
 #include <AzCore/Console/Console.h>
 
-#if defined(OPEN_IMAGE_IO_ENABLED)
-#include <OpenImageIO/imageio.h>
-#endif
-
+#include <tiffio.h>
 namespace AZ
 {
     namespace Render
     {
         AZ_ENUM_DEFINE_REFLECT_UTILITIES(FrameCaptureResult);
 
-#if defined(OPEN_IMAGE_IO_ENABLED)
         AZ_CVAR(unsigned int,
             r_pngCompressionLevel,
             3, // A compression level of 3 seems like the best default in terms of file size and saving speeds
@@ -55,16 +55,20 @@ namespace AZ
         {
             AZStd::shared_ptr<AZStd::vector<uint8_t>> buffer = readbackResult.m_dataBuffer;
 
+            RHI::Format format = readbackResult.m_imageDescriptor.m_format;
+
             // convert bgra to rgba by swapping channels
             const int numChannels = AZ::RHI::GetFormatComponentCount(readbackResult.m_imageDescriptor.m_format);
-            if (readbackResult.m_imageDescriptor.m_format == RHI::Format::B8G8R8A8_UNORM)
+            if (format == RHI::Format::B8G8R8A8_UNORM)
             {
+                format = RHI::Format::R8G8B8A8_UNORM;
+
                 buffer = AZStd::make_shared<AZStd::vector<uint8_t>>(readbackResult.m_dataBuffer->size());
                 AZStd::copy(readbackResult.m_dataBuffer->begin(), readbackResult.m_dataBuffer->end(), buffer->begin());
 
                 AZ::JobCompletion jobCompletion;
                 const int numThreads = 8;
-                const int numPixelsPerThread = buffer->size() / numChannels / numThreads;
+                const int numPixelsPerThread = static_cast<int>(buffer->size() / numChannels / numThreads);
                 for (int i = 0; i < numThreads; ++i)
                 {
                     int startPixel = i * numPixelsPerThread;
@@ -90,28 +94,69 @@ namespace AZ
                 jobCompletion.StartAndWaitForCompletion();
             }
 
-            using namespace OIIO;
-            AZStd::unique_ptr<ImageOutput> out = ImageOutput::create(outputFilePath.c_str());
-            if (out)
-            {
-                ImageSpec spec(
-                    readbackResult.m_imageDescriptor.m_size.m_width,
-                    readbackResult.m_imageDescriptor.m_size.m_height,
-                    numChannels
-                );
-                spec.attribute("png:compressionLevel", r_pngCompressionLevel);
+            Utils::PngFile image = Utils::PngFile::Create(readbackResult.m_imageDescriptor.m_size, format, *buffer);
 
-                if (out->open(outputFilePath.c_str(), spec))
-                {
-                    out->write_image(TypeDesc::UINT8, buffer->data());
-                    out->close();
-                    return FrameCaptureOutputResult{FrameCaptureResult::Success, AZStd::nullopt};
-                }
+            Utils::PngFile::SaveSettings saveSettings;
+
+            if (auto console = AZ::Interface<AZ::IConsole>::Get(); console != nullptr)
+            {
+                console->GetCvarValue("r_pngCompressionLevel", saveSettings.m_compressionLevel);
             }
 
-            return FrameCaptureOutputResult{FrameCaptureResult::InternalError, "Unable to save frame capture output to " + outputFilePath};
+            // We should probably strip alpha to save space, especially for automated test screenshots. Alpha is left in to maintain
+            // prior behavior, changing this is out of scope for the current task. Note, it would have bit of a cascade effect where
+            // AtomSampleViewer's ScriptReporter assumes an RGBA image.
+            saveSettings.m_stripAlpha = false; 
+
+            if(image && image.Save(outputFilePath.c_str(), saveSettings))
+            {
+                return FrameCaptureOutputResult{FrameCaptureResult::Success, AZStd::nullopt};
+            }
+
+            return FrameCaptureOutputResult{FrameCaptureResult::InternalError, "Unable to save frame capture output to '" + outputFilePath + "'"};
         }
-#endif
+
+        FrameCaptureOutputResult TiffFrameCaptureOutput(
+            const AZStd::string& outputFilePath, const AZ::RPI::AttachmentReadback::ReadbackResult& readbackResult)
+        {
+            AZStd::shared_ptr<AZStd::vector<uint8_t>> buffer = readbackResult.m_dataBuffer;
+            const uint32_t width = readbackResult.m_imageDescriptor.m_size.m_width;
+            const uint32_t height = readbackResult.m_imageDescriptor.m_size.m_height;
+            const uint32_t numChannels = AZ::RHI::GetFormatComponentCount(readbackResult.m_imageDescriptor.m_format);
+            const uint32_t bytesPerChannel = AZ::RHI::GetFormatSize(readbackResult.m_imageDescriptor.m_format) / numChannels;
+            const uint32_t bitsPerChannel = bytesPerChannel * 8;
+
+            TIFF* out = TIFFOpen(outputFilePath.c_str(), "w");
+            TIFFSetField(out, TIFFTAG_IMAGEWIDTH, width);
+            TIFFSetField(out, TIFFTAG_IMAGELENGTH, height);
+            TIFFSetField(out, TIFFTAG_SAMPLESPERPIXEL, numChannels);
+            TIFFSetField(out, TIFFTAG_BITSPERSAMPLE, bitsPerChannel);
+            TIFFSetField(out, TIFFTAG_COMPRESSION, COMPRESSION_NONE);
+            TIFFSetField(out, TIFFTAG_ORIENTATION, ORIENTATION_TOPLEFT);
+            TIFFSetField(out, TIFFTAG_PLANARCONFIG, PLANARCONFIG_CONTIG);
+            TIFFSetField(out, TIFFTAG_PHOTOMETRIC, PHOTOMETRIC_RGB);
+            TIFFSetField(out, TIFFTAG_SAMPLEFORMAT, SAMPLEFORMAT_IEEEFP);   // interpret each pixel as a float
+
+            size_t pitch = width * numChannels * bytesPerChannel;
+            AZ_Assert((pitch * height) == buffer->size(), "Image buffer does not match allocated bytes for tiff saving.")
+            unsigned char* raster = (unsigned char*)_TIFFmalloc((tsize_t)(pitch * height));
+            memcpy(raster, buffer->data(), pitch * height);
+            bool success = true;
+            for (uint32_t h = 0; h < height; ++h)
+            {
+                size_t offset = h * pitch;
+                int err = TIFFWriteScanline(out, raster + offset, h, 0);
+                if (err < 0)
+                {
+                    success = false;
+                    break;
+                }
+            }
+            _TIFFfree(raster);
+            TIFFClose(out);
+            return success ? FrameCaptureOutputResult{ FrameCaptureResult::Success, AZStd::nullopt }
+                           : FrameCaptureOutputResult{ FrameCaptureResult::InternalError, "Unable to save tif frame capture output to " + outputFilePath };
+        }
 
         FrameCaptureOutputResult DdsFrameCaptureOutput(
             const AZStd::string& outputFilePath, const AZ::RPI::AttachmentReadback::ReadbackResult& readbackResult)
@@ -249,8 +294,18 @@ namespace AZ
             return AZStd::string(resolvedPath);
         }
 
+        bool FrameCaptureSystemComponent::CanCapture() const
+        {
+            return !AZ::RHI::IsNullRenderer();
+        }
+
         bool FrameCaptureSystemComponent::CaptureScreenshotForWindow(const AZStd::string& filePath, AzFramework::NativeWindowHandle windowHandle)
         {
+            if (!CanCapture())
+            {
+                return false;
+            }
+
             InitReadback();
 
             if (m_state != State::Idle)
@@ -296,6 +351,11 @@ namespace AZ
 
         bool FrameCaptureSystemComponent::CaptureScreenshotWithPreview(const AZStd::string& outputFilePath)
         {
+            if (!CanCapture())
+            {
+                return false;
+            }
+
             InitReadback();
 
             if (m_state != State::Idle)
@@ -317,34 +377,41 @@ namespace AZ
             }
             m_latestCaptureInfo.clear();
 
-            // Find the pass first
-            RPI::PassClassFilter<RPI::ImageAttachmentPreviewPass> passFilter;
-            AZStd::vector<AZ::RPI::Pass*> foundPasses = AZ::RPI::PassSystemInterface::Get()->FindPasses(passFilter);
-
-            if (foundPasses.size() == 0)
+            RPI::PassFilter passFilter = RPI::PassFilter::CreateWithPassClass<RPI::ImageAttachmentPreviewPass>();
+            AZ::RPI::ImageAttachmentPreviewPass* previewPass = azrtti_cast<AZ::RPI::ImageAttachmentPreviewPass*>(RPI::PassSystemInterface::Get()->FindFirstPass(passFilter));
+            if (!previewPass)
             {
-                AZ_Warning("FrameCaptureSystemComponent", false, "Failed to find an ImageAttachmentPreviewPass pass ");
+                AZ_Warning("FrameCaptureSystemComponent", false, "Failed to find an ImageAttachmentPreviewPass");
                 return false;
             }
 
-            AZ::RPI::ImageAttachmentPreviewPass* previewPass = azrtti_cast<AZ::RPI::ImageAttachmentPreviewPass*>(foundPasses[0]);
             bool result = previewPass->ReadbackOutput(m_readback);
             if (result)
             {
                 m_state = State::Pending;
                 m_result = FrameCaptureResult::None;
                 SystemTickBus::Handler::BusConnect();
+                return true;
             }
-            else
-            {
-                AZ_Warning("FrameCaptureSystemComponent", false, "CaptureScreenshotWithPreview. Failed to readback output from the ImageAttachmentPreviewPass");;
-            }
-            return result;
+
+            AZ_Warning("FrameCaptureSystemComponent", false, "CaptureScreenshotWithPreview. Failed to readback output from the ImageAttachmentPreviewPass");
+            return false;
         }
 
         bool FrameCaptureSystemComponent::CapturePassAttachment(const AZStd::vector<AZStd::string>& passHierarchy, const AZStd::string& slot,
             const AZStd::string& outputFilePath, RPI::PassAttachmentReadbackOption option)
         {
+            if (!CanCapture())
+            {
+                return false;
+            }
+
+            if (passHierarchy.size() == 0)
+            {                
+                AZ_Warning("FrameCaptureSystemComponent", false, "Empty data in passHierarchy");
+                return false;
+            }
+
             InitReadback();
 
             if (m_state != State::Idle)
@@ -366,17 +433,15 @@ namespace AZ
             }
             m_latestCaptureInfo.clear();
 
-            // Find the pass first
-            AZ::RPI::PassHierarchyFilter passFilter(passHierarchy);
-            AZStd::vector<AZ::RPI::Pass*> foundPasses = AZ::RPI::PassSystemInterface::Get()->FindPasses(passFilter);
+            RPI::PassFilter passFilter = RPI::PassFilter::CreateWithPassHierarchy(passHierarchy);
+            RPI::Pass* pass = RPI::PassSystemInterface::Get()->FindFirstPass(passFilter);
 
-            if (foundPasses.size() == 0)
+            if (!pass)
             {
-                AZ_Warning("FrameCaptureSystemComponent", false, "Failed to find pass from %s", passFilter.ToString().c_str());
+                AZ_Warning("FrameCaptureSystemComponent", false, "Failed to find pass from %s", passHierarchy[0].c_str());
                 return false;
             }
 
-            AZ::RPI::Pass* pass = foundPasses[0];
             if (pass->ReadbackAttachment(m_readback, Name(slot), option))
             {
                 m_state = State::Pending;
@@ -384,6 +449,7 @@ namespace AZ
                 SystemTickBus::Handler::BusConnect();
                 return true;
             }
+
             AZ_Warning("FrameCaptureSystemComponent", false, "Failed to readback the attachment bound to pass [%s] slot [%s]", pass->GetName().GetCStr(), slot.c_str());
             return false;
         }
@@ -391,6 +457,11 @@ namespace AZ
         bool FrameCaptureSystemComponent::CapturePassAttachmentWithCallback(const AZStd::vector<AZStd::string>& passHierarchy, const AZStd::string& slotName
             , RPI::AttachmentReadback::CallbackFunction callback, RPI::PassAttachmentReadbackOption option)
         {
+            if (!CanCapture())
+            {
+                return false;
+            }
+
             bool result = CapturePassAttachment(passHierarchy, slotName, "", option);
 
             // Append state change to user provided call back
@@ -470,7 +541,12 @@ namespace AZ
                         m_result = ddsFrameCapture.m_result;
                         m_latestCaptureInfo = ddsFrameCapture.m_errorMessage.value_or("");
                     }
-#if defined(OPEN_IMAGE_IO_ENABLED)
+                    else if (extension == "tiff" || extension == "tif")
+                    {
+                        const auto tifFrameCapture = TiffFrameCaptureOutput(m_outputFilePath, readbackResult);
+                        m_result = tifFrameCapture.m_result;
+                        m_latestCaptureInfo = tifFrameCapture.m_errorMessage.value_or("");
+                    }
                     else if (extension == "png")
                     {
                         if (readbackResult.m_imageDescriptor.m_format == RHI::Format::R8G8B8A8_UNORM ||
@@ -491,7 +567,6 @@ namespace AZ
                             m_result = FrameCaptureResult::UnsupportedFormat;
                         }
                     }
-#endif
                     else
                     {
                         m_latestCaptureInfo = AZStd::string::format("Only supports saving image to ppm or dds files");

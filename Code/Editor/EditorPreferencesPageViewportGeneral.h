@@ -1,21 +1,21 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #pragma once
 
 #include "Include/IPreferencesPage.h"
-#include <AzCore/Serialization/SerializeContext.h>
-#include <AzCore/Serialization/EditContext.h>
-#include <AzCore/RTTI/RTTI.h>
 #include <AzCore/Math/Color.h>
+#include <AzCore/RTTI/RTTI.h>
+#include <AzCore/Serialization/EditContext.h>
+#include <AzCore/Serialization/SerializeContext.h>
 #include <QIcon>
 
-
-class CEditorPreferencesPage_ViewportGeneral
-    : public IPreferencesPage
+class CEditorPreferencesPage_ViewportGeneral : public IPreferencesPage
 {
 public:
     AZ_RTTI(CEditorPreferencesPage_ViewportGeneral, "{8511FF7F-F774-47E1-A99B-3DE3A867E403}", IPreferencesPage)
@@ -25,12 +25,12 @@ public:
     CEditorPreferencesPage_ViewportGeneral();
     virtual ~CEditorPreferencesPage_ViewportGeneral() = default;
 
-    virtual const char* GetCategory() override { return "Viewports"; }
+    virtual const char* GetCategory() override;
     virtual const char* GetTitle() override;
     virtual QIcon& GetIcon() override;
     virtual void OnApply() override;
-    virtual void OnCancel() override {}
-    virtual bool OnQueryCancel() override { return true; }
+    virtual void OnCancel() override;
+    virtual bool OnQueryCancel() override;
 
 private:
     void InitializeSettings();
@@ -42,7 +42,8 @@ private:
         bool m_sync2DViews;
         float m_defaultFOV;
         float m_defaultAspectRatio;
-        bool m_enableContextMenu;
+        bool m_contextMenuEnabled;
+        bool m_stickySelectEnabled;
     };
 
     struct Display
@@ -105,5 +106,3 @@ private:
     SelectionPreviewColor m_selectionPreviewColor;
     QIcon m_icon;
 };
-
-

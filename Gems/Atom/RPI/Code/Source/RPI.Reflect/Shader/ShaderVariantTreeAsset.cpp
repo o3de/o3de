@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -71,8 +72,6 @@ namespace AZ
 
         ShaderVariantSearchResult ShaderVariantTreeAsset::FindVariantStableId(const ShaderOptionGroupLayout* shaderOptionGroupLayout, const ShaderVariantId& shaderVariantId) const
         {
-            AZ_PROFILE_FUNCTION(Debug::ProfileCategory::AzRender);
-
             struct NodeToVisit
             {
                 uint32_t m_branchCount; // Number of static branches
@@ -198,7 +197,6 @@ namespace AZ
                 if ((shaderVariantId.m_mask & option.GetBitMask()).any())
                 {
                     optionValues.push_back(option.DecodeBits(shaderVariantId.m_key));
-                    AZ_Assert(optionValues.back() >= 0, "Invalid shader variant key");
                 }
                 else
                 {

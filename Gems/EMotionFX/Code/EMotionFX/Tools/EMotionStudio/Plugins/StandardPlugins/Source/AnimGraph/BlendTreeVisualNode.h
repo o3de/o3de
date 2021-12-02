@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -33,11 +34,11 @@ namespace EMStudio
         ~BlendTreeVisualNode();
 
         void Sync() override;
-        uint32 GetType() const      { return BlendTreeVisualNode::TYPE_ID; }
+        uint32 GetType() const override { return BlendTreeVisualNode::TYPE_ID; }
 
         void Render(QPainter& painter, QPen* pen, bool renderShadow) override;
 
-        int32 CalcRequiredHeight() const;
+        int32 CalcRequiredHeight() const override;
 
     private:
         QColor GetPortColor(const EMotionFX::AnimGraphNode::Port& port) const;

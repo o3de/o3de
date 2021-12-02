@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -51,7 +52,6 @@ namespace AssetProcessor
         SizeType finalPosition = GenericStream::ComputeSeekPosition(bytes, mode);
 
         AZ_Assert(finalPosition < INT_MAX, "Overflow of SizeType to int in ByteArrayStream.");
-        AZ_Assert(finalPosition >= 0, "underflow in seek in ByteArrayStream");
         AZ_Assert(finalPosition <= m_activeArray->size(), "You cant seek beyond end of file");
 
         // safety clamp!

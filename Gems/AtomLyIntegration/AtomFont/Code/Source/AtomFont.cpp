@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -9,7 +10,6 @@
 // Description : AtomFont class.
 
 
-#include <AtomLyIntegration/AtomFont/AtomFont_precompiled.h>
 
 #if !defined(USE_NULLFONT_ALWAYS)
 
@@ -46,7 +46,7 @@ static void DumfontTexture(IConsoleCmdArgs* cmdArgs)
 
     if (fontName && *fontName && *fontName != '0')
     {
-        string fontFilePath("@devroot@/");
+        AZStd::string fontFilePath("@engroot@/");
         fontFilePath += fontName;
         fontFilePath += ".bmp";
 
@@ -61,7 +61,7 @@ static void DumfontTexture(IConsoleCmdArgs* cmdArgs)
 
 static void DumfontNames([[maybe_unused]] IConsoleCmdArgs* cmdArgs)
 {
-    string names = gEnv->pCryFont->GetLoadedFontNames();
+    AZStd::string names = gEnv->pCryFont->GetLoadedFontNames();
     gEnv->pLog->LogWithType(IMiniLog::eInputResponse, "Currently loaded fonts: %s", names.c_str());
 }
 
@@ -97,15 +97,15 @@ namespace
                 && !m_boldItalicFontFilename.empty();
         }
 
-        string m_lang;                      //!< Stores a comma-separated list of languages this collection of fonts applies to.
+        AZStd::string m_lang;               //!< Stores a comma-separated list of languages this collection of fonts applies to.
                                             //!< If this is an empty string, it implies that these set of fonts will be applied
                                             //!< by default (when a language is being used but no fonts in the font family are
                                             //!< mapped to that language).
 
-        string m_fontFilename;              //!< Font used when no styling is applied.
-        string m_boldFontFilename;          //!< Bold-styled font
-        string m_italicFontFilename;        //!< Italic-styled font
-        string m_boldItalicFontFilename;    //!< Bold-italic-styled font
+        AZStd::string m_fontFilename;              //!< Font used when no styling is applied.
+        AZStd::string m_boldFontFilename;          //!< Bold-styled font
+        AZStd::string m_italicFontFilename;        //!< Italic-styled font
+        AZStd::string m_boldItalicFontFilename;    //!< Bold-italic-styled font
     };
 
     //! Stores parsed font family XML data.
@@ -152,7 +152,7 @@ namespace
             return !m_fontFamilyName.empty();
         }
 
-        string m_fontFamilyName;                  //!< Value of the "name" font-family tag attribute
+        AZStd::string m_fontFamilyName;                  //!< Value of the "name" font-family tag attribute
         AZStd::list<FontTagXml> m_fontTagsXml;    //!< List of child <font> tag data.
     };
 
@@ -179,7 +179,7 @@ namespace
                 return false;
             }
 
-            string name;
+            AZStd::string name;
 
             for (int i = 0, count = node->getNumAttributes(); i < count; ++i)
             {
@@ -187,7 +187,7 @@ namespace
                 const char* value = "";
                 if (node->getAttributeByIndex(i, &key, &value))
                 {
-                    if (string(key) == "name")
+                    if (AZStd::string(key) == "name")
                     {
                         name = value;
                     }
@@ -199,7 +199,7 @@ namespace
                 }
             }
 
-            name.Trim();
+            AZ::StringFunc::TrimWhiteSpace(name, true, true);
             if (!name.empty())
             {
                 xmlData.m_fontFamilyName = name;
@@ -216,14 +216,14 @@ namespace
         {
             xmlData.m_fontTagsXml.push_back(FontTagXml());
 
-            string lang;
+            AZStd::string lang;
             for (int i = 0, count = node->getNumAttributes(); i < count; ++i)
             {
                 const char* key = "";
                 const char* value = "";
                 if (node->getAttributeByIndex(i, &key, &value))
                 {
-                    if (string(key) == "lang")
+                    if (AZStd::string(key) == "lang")
                     {
                         lang = value;
                     }
@@ -235,7 +235,7 @@ namespace
                 }
             }
 
-            lang.Trim();
+            AZ::StringFunc::TrimWhiteSpace(lang, true, true);
             if (!lang.empty())
             {
                 xmlData.m_fontTagsXml.back().m_lang = lang;
@@ -253,8 +253,8 @@ namespace
                 return false;
             }
 
-            string path;
-            string tags;
+            AZStd::string path;
+            AZStd::string tags;
 
             for (int i = 0, count = node->getNumAttributes(); i < count; ++i)
             {
@@ -262,11 +262,11 @@ namespace
                 const char* value = "";
                 if (node->getAttributeByIndex(i, &key, &value))
                 {
-                    if (string(key) == "path")
+                    if (AZStd::string(key) == "path")
                     {
                         path = value;
                     }
-                    else if (string(key) == "tags")
+                    else if (AZStd::string(key) == "tags")
                     {
                         tags = value;
                     }
@@ -278,7 +278,7 @@ namespace
                 }
             }
 
-            tags.Trim();
+            AZ::StringFunc::TrimWhiteSpace(tags, true, true);
             if (tags.empty())
             {
                 xmlData.m_fontTagsXml.back().m_fontFilename = path;
@@ -315,7 +315,7 @@ namespace
     //! when referencing font family names from font family XML files), and
     //! attempting to load the XML files directly via ISystem() methods can
     //! produce a lot of warning noise.
-    XmlNodeRef SafeLoadXmlFromFile(const string& xmlPath)
+    XmlNodeRef SafeLoadXmlFromFile(const AZStd::string& xmlPath)
     {
         if (gEnv->pCryPak->IsFileExist(xmlPath.c_str()))
         {
@@ -327,12 +327,8 @@ namespace
 
 }
 
-AZ::AtomFont::AtomFont(ISystem* system)
-    : m_system(system)
-    , m_fonts()
+AZ::AtomFont::AtomFont([[maybe_unused]] ISystem* system)
 {
-    assert(m_system);
-
     CryLogAlways("Using FreeType %d.%d.%d", FREETYPE_MAJOR, FREETYPE_MINOR, FREETYPE_PATCH);
 
     // Persist fonts for application lifetime to prevent unnecessary work
@@ -383,8 +379,8 @@ void AZ::AtomFont::Release()
 
 IFFont* AZ::AtomFont::NewFont(const char* fontName)
 {
-    string name = fontName;
-    name.MakeLower();
+    AZStd::string name = fontName;
+    AZStd::to_lower(name.begin(), name.end());
     AzFramework::FontId fontId = GetFontId(name.c_str());
 
     FontMapItor it = m_fonts.find(fontId);
@@ -404,7 +400,9 @@ IFFont* AZ::AtomFont::NewFont(const char* fontName)
 
 IFFont* AZ::AtomFont::GetFont(const char* fontName) const
 {
-    AzFramework::FontId fontId = GetFontId(string(fontName).MakeLower().c_str());
+    AZStd::string name = fontName;
+    AZStd::to_lower(name.begin(), name.end());
+    AzFramework::FontId fontId = GetFontId(name.c_str());
     FontMapConstItor it = m_fonts.find(fontId);
     return it != m_fonts.end() ? it->second : 0;
 }
@@ -423,8 +421,8 @@ AzFramework::FontDrawInterface* AZ::AtomFont::GetDefaultFontDrawInterface() cons
 FontFamilyPtr AZ::AtomFont::LoadFontFamily(const char* fontFamilyName)
 {
     FontFamilyPtr fontFamily(nullptr);
-    string fontFamilyPath;
-    string fontFamilyFullPath;
+    AZStd::string fontFamilyPath;
+    AZStd::string fontFamilyFullPath;
     
     XmlNodeRef root = LoadFontFamilyXml(fontFamilyName, fontFamilyPath, fontFamilyFullPath);
 
@@ -450,13 +448,13 @@ FontFamilyPtr AZ::AtomFont::LoadFontFamily(const char* fontFamilyName)
                 }
                 else
                 {
-                    int searchPos = 0;
-                    string langToken;
-
                     // "lang" font-tag attribute could be comma-separated
-                    while (!(langToken = fontTagXml.m_lang.Tokenize(",", searchPos)).empty())
+                    AZStd::vector<AZStd::string> tokens;
+                    AZ::StringFunc::Tokenize(fontTagXml.m_lang, tokens, ',');
+                    for(AZStd::string& langToken : tokens)
                     {
-                        if (langToken.Trim() == currentLanguage)
+                        AZ::StringFunc::TrimWhiteSpace(langToken, true, true);
+                        if (langToken == currentLanguage)
                         {
                             langSpecificFont = &fontTagXml;
                             break;
@@ -494,7 +492,7 @@ FontFamilyPtr AZ::AtomFont::LoadFontFamily(const char* fontFamilyName)
                     // Map the font family name both by path and by name defined
                     // within the Font Family XML itself. This allows font 
                     // families to also be referenced simply by name.
-                    if (!AddFontFamilyToMaps(fontFamilyFullPath, xmlData.m_fontFamilyName, fontFamily))
+                    if (!AddFontFamilyToMaps(fontFamilyFullPath.c_str(), xmlData.m_fontFamilyName.c_str(), fontFamily))
                     {
                         SAFE_RELEASE(normal);
                         SAFE_RELEASE(bold);
@@ -540,7 +538,7 @@ FontFamilyPtr AZ::AtomFont::LoadFontFamily(const char* fontFamilyName)
             // Use filepath as familyName so font loading/unloading doesn't break with duplicate file names
             fontFamily->familyName = fontFamilyName;
 
-            if (!AddFontFamilyToMaps(fontFamilyName, fontFamily->familyName, fontFamily))
+            if (!AddFontFamilyToMaps(fontFamilyName, fontFamily->familyName.c_str(), fontFamily))
             {
                 SAFE_RELEASE(font);
 
@@ -581,7 +579,9 @@ FontFamilyPtr AZ::AtomFont::GetFontFamily(const char* fontFamilyName)
     // or just the filename of a font itself. Fonts are mapped by font family
     // name or by filepath, so attempt lookup using the map first since it's
     // the fastest.
-    string loweredName = string(fontFamilyName).Trim().MakeLower();
+    AZStd::string loweredName = AZStd::string(fontFamilyName);
+    AZ::StringFunc::TrimWhiteSpace(loweredName, true, true);
+    AZStd::to_lower(loweredName.begin(), loweredName.end());
     auto it = m_fontFamilies.find(PathUtil::MakeGamePath(loweredName).c_str());
     if (it != m_fontFamilies.end())
     {
@@ -596,9 +596,9 @@ FontFamilyPtr AZ::AtomFont::GetFontFamily(const char* fontFamilyName)
         for (const auto& fontFamilyIter : m_fontFamilies)
         {
             const AZStd::string& mappedFontFamilyName = fontFamilyIter.first;
-            string mappedFilenameNoExtension = PathUtil::GetFileName(mappedFontFamilyName.c_str());
+            AZStd::string mappedFilenameNoExtension = PathUtil::GetFileName(mappedFontFamilyName.c_str());
 
-            string searchStringFilenameNoExtension = PathUtil::GetFileName(loweredName);
+            AZStd::string searchStringFilenameNoExtension = PathUtil::GetFileName(loweredName);
 
             if (mappedFilenameNoExtension == searchStringFilenameNoExtension)
             {
@@ -619,9 +619,9 @@ void AZ::AtomFont::AddCharsToFontTextures(FontFamilyPtr fontFamily, const char* 
     fontFamily->boldItalic->AddCharsToFontTexture(chars, glyphSizeX, glyphSizeY);
 }
 
-string AZ::AtomFont::GetLoadedFontNames() const
+AZStd::string AZ::AtomFont::GetLoadedFontNames() const
 {
-    string ret;
+    AZStd::string ret;
     for (FontMapConstItor it = m_fonts.begin(), itEnd = m_fonts.end(); it != itEnd; ++it)
     {
         FFont* font = it->second;
@@ -678,7 +678,9 @@ void AZ::AtomFont::ReloadAllFonts()
 
 void AZ::AtomFont::UnregisterFont(const char* fontName)
 {
-    AzFramework::FontId fontId = GetFontId(string(fontName).MakeLower().c_str());
+    AZStd::string name(fontName);
+    AZStd::to_lower(name.begin(), name.end());
+    AzFramework::FontId fontId = GetFontId(name.c_str());
     FontMapItor it = m_fonts.find(fontId);
 
 #if defined(AZ_ENABLE_TRACING)
@@ -715,10 +717,10 @@ void AZ::AtomFont::UnregisterFont(const char* fontName)
 
 IFFont* AZ::AtomFont::LoadFont(const char* fontName)
 {
-    string fontNameLower = fontName;
-    fontNameLower.MakeLower();
+    AZStd::string fontNameLower = fontName;
+    AZStd::to_lower(fontNameLower.begin(), fontNameLower.end());
 
-    IFFont* font = GetFont(fontNameLower);
+    IFFont* font = GetFont(fontNameLower.c_str());
     if (font)
     {
         font->AddRef(); // use existing loaded font
@@ -726,23 +728,17 @@ IFFont* AZ::AtomFont::LoadFont(const char* fontName)
     else
     {
         // attempt to create and load a new font, use the font pathname as the font name
-        font = NewFont(fontNameLower);
+        font = NewFont(fontNameLower.c_str());
         if (!font)
         {
-            string errorMsg = "Error creating a new font named ";
-            errorMsg += fontNameLower;
-            errorMsg += ".";
-            CryWarning(VALIDATOR_MODULE_SYSTEM, VALIDATOR_ERROR, errorMsg.c_str());
+            CryWarning(VALIDATOR_MODULE_SYSTEM, VALIDATOR_ERROR, "Error creating a new font named %s.", fontNameLower.c_str());
         }
         else
         {
             // creating font adds one to its refcount so no need for AddRef here
-            if (!font->Load(fontNameLower))
+            if (!font->Load(fontNameLower.c_str()))
             {
-                string errorMsg = "Error loading a font from ";
-                errorMsg += fontNameLower;
-                errorMsg += ".";
-                CryWarning(VALIDATOR_MODULE_SYSTEM, VALIDATOR_ERROR, errorMsg);
+                CryWarning(VALIDATOR_MODULE_SYSTEM, VALIDATOR_ERROR, "Error loading a font from %s.", fontNameLower.c_str());
                 font->Release();
                 font = nullptr;
             }
@@ -764,8 +760,9 @@ void AZ::AtomFont::ReleaseFontFamily(FontFamily* fontFamily)
     // Note that the FontFamily is mapped both by filename and by "family name"
     auto it = m_fontFamilyReverseLookup[fontFamily];
     m_fontFamilies.erase(it);
-    string familyName(fontFamily->familyName);
-    m_fontFamilies.erase(familyName.MakeLower().c_str());
+    AZStd::string familyName(fontFamily->familyName);
+    AZStd::to_lower(familyName.begin(), familyName.end());
+    m_fontFamilies.erase(familyName.c_str());
 
     // Reverse lookup is used to avoid needing to store filename path with
     // the font family, so we need to remove that entry also.
@@ -785,13 +782,11 @@ bool AZ::AtomFont::AddFontFamilyToMaps(const char* fontFamilyFilename, const cha
     }
 
     // We don't support "updating" mapped values. 
-    AZStd::string loweredFilename(PathUtil::MakeGamePath(string(fontFamilyFilename)).c_str());
+    AZStd::string loweredFilename(PathUtil::MakeGamePath(AZStd::string(fontFamilyFilename)).c_str());
     AZStd::to_lower<AZStd::string::iterator>(loweredFilename.begin(), loweredFilename.end());
     if (m_fontFamilies.find(loweredFilename) != m_fontFamilies.end())
     {
-        string warnMsg;
-        warnMsg.Format("Couldn't load Font Family '%s': already loaded", fontFamilyFilename);
-        CryWarning(VALIDATOR_MODULE_SYSTEM, VALIDATOR_WARNING, warnMsg.c_str());
+        CryWarning(VALIDATOR_MODULE_SYSTEM, VALIDATOR_WARNING, "Couldn't load Font Family '%s': already loaded", fontFamilyFilename);
         return false;
     }
 
@@ -801,9 +796,7 @@ bool AZ::AtomFont::AddFontFamilyToMaps(const char* fontFamilyFilename, const cha
     AZStd::to_lower<AZStd::string::iterator>(loweredFontFamilyName.begin(), loweredFontFamilyName.end());
     if (m_fontFamilies.find(loweredFontFamilyName) != m_fontFamilies.end())
     {
-        string warnMsg;
-        warnMsg.Format("Couldn't load Font Family '%s': already loaded", fontFamilyName);
-        CryWarning(VALIDATOR_MODULE_SYSTEM, VALIDATOR_WARNING, warnMsg.c_str());
+        CryWarning(VALIDATOR_MODULE_SYSTEM, VALIDATOR_WARNING, "Couldn't load Font Family '%s': already loaded", fontFamilyName);
         return false;
     }
 
@@ -819,7 +812,7 @@ bool AZ::AtomFont::AddFontFamilyToMaps(const char* fontFamilyFilename, const cha
     return true;
 }
 
-XmlNodeRef AZ::AtomFont::LoadFontFamilyXml(const char* fontFamilyName, string& outputDirectory, string& outputFullPath)
+XmlNodeRef AZ::AtomFont::LoadFontFamilyXml(const char* fontFamilyName, AZStd::string& outputDirectory, AZStd::string& outputFullPath)
 {
     outputFullPath = fontFamilyName;
     outputDirectory = PathUtil::GetPath(fontFamilyName);
@@ -829,8 +822,8 @@ XmlNodeRef AZ::AtomFont::LoadFontFamilyXml(const char* fontFamilyName, string& o
     // not a path, so we try to build a "best guess" path from the name.
     if (!root)
     {
-        string fileNoExtension(PathUtil::GetFileName(fontFamilyName));
-        string fileExtension(PathUtil::GetExt(fontFamilyName));
+        AZStd::string fileNoExtension(PathUtil::GetFileName(fontFamilyName));
+        AZStd::string fileExtension(PathUtil::GetExt(fontFamilyName));
 
         if (fileExtension.empty())
         {
@@ -838,14 +831,14 @@ XmlNodeRef AZ::AtomFont::LoadFontFamilyXml(const char* fontFamilyName, string& o
         }
 
         // Try: "fonts/fontName.fontfamily"
-        outputDirectory = string("fonts/");
+        outputDirectory = AZStd::string("fonts/");
         outputFullPath = outputDirectory + fileNoExtension + fileExtension;
         root = SafeLoadXmlFromFile(outputFullPath);
 
         // Finally, try: "fonts/fontName/fontName.fontfamily"
         if (!root)
         {
-            outputDirectory = string("fonts/") + fileNoExtension + "/";
+            outputDirectory = AZStd::string("fonts/") + fileNoExtension + "/";
             outputFullPath = outputDirectory + fileNoExtension + fileExtension;
             root = SafeLoadXmlFromFile(outputFullPath);
         }

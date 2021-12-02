@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -81,4 +82,18 @@ namespace PhysX
     };
 
     using EditorColliderComponentRequestBus = AZ::EBus<EditorColliderComponentRequests>;
+
+    /// <EditorColliderValidationRequests>
+    /// This is a Bus in order to communicate the status of the meshes of the collider and avoid dependencies with the rigidbody
+    /// </EditorColliderValidationRequests>
+    class EditorColliderValidationRequests : public AZ::ComponentBus
+    {
+    public:
+        /// Checks if the the mesh in the collider is correct with the current state of the Rigidbody!
+        virtual void ValidateRigidBodyMeshGeometryType() = 0;
+    };
+
+    using EditorColliderValidationRequestBus = AZ::EBus<EditorColliderValidationRequests>;
 }
+
+

@@ -1,11 +1,11 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
-#include "GradientSignal_precompiled.h"
 
 #include <AzTest/AzTest.h>
 #include <AzCore/Component/ComponentApplication.h>
@@ -40,7 +40,7 @@ namespace
 
             asset.m_imageWidth = dimensions;
             asset.m_imageHeight = dimensions;
-            asset.m_bytesPerPixel = bytesPerPixel;
+            asset.m_bytesPerPixel = static_cast<AZ::u8>(bytesPerPixel);
             asset.m_imageFormat = format;
             asset.m_imageData.resize(asset.m_bytesPerPixel * asset.m_imageWidth * asset.m_imageHeight);
 

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -87,7 +88,6 @@ namespace ScriptCanvas
             private:
 
                 bool CreateEbus();
-                bool SetupHandler();
 
                 AZ::BehaviorEBusHandler* m_handler = nullptr;
                 AZ::BehaviorEBus* m_ebus = nullptr;
@@ -101,7 +101,7 @@ namespace ScriptCanvas
 
                 Internal::ScriptEventEntry ConfigureEbusEntry(const ScriptEvents::Method& methodDefinition, const AZ::BehaviorEBusHandler::BusForwarderEvent& event, SlotIdMapping& populationMapping);
 
-                bool CreateHandler(AZ::Data::Asset<ScriptEvents::ScriptEventsAsset> asset);
+                bool InitializeDefinition(AZ::Data::Asset<ScriptEvents::ScriptEventsAsset> asset);
                 void CompleteInitialize(AZ::Data::Asset<ScriptEvents::ScriptEventsAsset> asset);
                 void PopulateAsset(AZ::Data::Asset<ScriptEvents::ScriptEventsAsset> asset, SlotIdMapping& populationMapping);
                 bool m_eventInitComplete = false;
@@ -120,7 +120,6 @@ namespace ScriptCanvas
                 bool m_autoConnectToGraphOwner = true;
 
                 bool m_connected;
-
             };
         }
     }

@@ -1,11 +1,11 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
-#include "AzToolsFramework_precompiled.h"
 
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/Debug/Profiler.h>
@@ -63,7 +63,7 @@ namespace AzToolsFramework
 
                 void Capture(const SliceTransaction::SliceAssetPtr& before, const SliceTransaction::SliceAssetPtr& after, const char* sliceAssetPath)
                 {
-                    AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+                    AZ_PROFILE_FUNCTION(AzToolsFramework);
 
                     m_sliceAssetPath = sliceAssetPath;
                     m_isNewAsset = !before.GetId().IsValid();
@@ -74,7 +74,7 @@ namespace AzToolsFramework
 
                     if (!m_isNewAsset)
                     {
-                        AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::AzToolsFramework, "SliceUtilities::Internal::SaveSliceToDiskCommand::Capture:SaveBefore");
+                        AZ_PROFILE_SCOPE(AzToolsFramework, "SliceUtilities::Internal::SaveSliceToDiskCommand::Capture:SaveBefore");
                         AZ::SliceAsset* sliceBefore = before.Get();
                         AZ::Entity* sliceEntityBefore = sliceBefore->GetEntity();
                         AZ::IO::ByteContainerStream<ByteBuffer> beforeStream(&m_sliceAssetBeforeBuffer);
@@ -82,7 +82,7 @@ namespace AzToolsFramework
                     }
 
                     {
-                        AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::AzToolsFramework, "SliceUtilities::Internal::SaveSliceToDiskCommand::Capture:SaveAfter");
+                        AZ_PROFILE_SCOPE(AzToolsFramework, "SliceUtilities::Internal::SaveSliceToDiskCommand::Capture:SaveAfter");
                         AZ::SliceAsset* sliceAfter = after.Get();
                         AZ::Entity* sliceEntityAfter = sliceAfter->GetEntity();
                         AZ::IO::ByteContainerStream<ByteBuffer> afterStream(&m_sliceAssetAfterBuffer);
@@ -105,13 +105,13 @@ namespace AzToolsFramework
 
                 void Redo() override
                 {
-                    AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+                    AZ_PROFILE_FUNCTION(AzToolsFramework);
                     m_redoResult = Internal::SaveSliceToDisk(m_sliceAssetPath.c_str(), m_sliceAssetAfterBuffer);
                 }
 
                 void Undo() override
                 {
-                    AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+                    AZ_PROFILE_FUNCTION(AzToolsFramework);
                     if (m_isNewAsset)
                     {
                         // New asset means we didn't have an existing asset, so we should instead remove the newly created asset as our undo
@@ -149,7 +149,7 @@ namespace AzToolsFramework
             AZ::SerializeContext* serializeContext,
             AZ::u32 sliceCreationFlags)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+            AZ_PROFILE_FUNCTION(AzToolsFramework);
 
             if (!serializeContext)
             {
@@ -179,7 +179,7 @@ namespace AzToolsFramework
 
         SliceTransaction::TransactionPtr SliceTransaction::BeginSliceOverwrite(const SliceAssetPtr& asset,  const AZ::SliceComponent& overwriteComponent, AZ::SerializeContext* serializeContext)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+            AZ_PROFILE_FUNCTION(AzToolsFramework);
 
             if (!serializeContext)
             {
@@ -212,7 +212,7 @@ namespace AzToolsFramework
             AZ::SerializeContext* serializeContext,
             AZ::u32 /*slicePushFlags*/)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+            AZ_PROFILE_FUNCTION(AzToolsFramework);
 
             if (!serializeContext)
             {
@@ -515,7 +515,7 @@ namespace AzToolsFramework
             SliceTransaction::PostSaveCallback postSaveCallback,
             AZ::u32 sliceCommitFlags)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+            AZ_PROFILE_FUNCTION(AzToolsFramework);
 
             // Clone asset for final modifications and save.
             // This also releases borrowed entities and slice instances.
@@ -702,7 +702,7 @@ namespace AzToolsFramework
             SliceTransaction::PostSaveCallback postSaveCallback,
             AZ::u32 sliceCommitFlags)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+            AZ_PROFILE_FUNCTION(AzToolsFramework);
 
             AZStd::string sliceAssetPath;
             AZ::Data::AssetCatalogRequestBus::BroadcastResult(sliceAssetPath, &AZ::Data::AssetCatalogRequests::GetAssetPathById, targetAssetId);
@@ -718,7 +718,7 @@ namespace AzToolsFramework
 
             if (!fullPathFound)
             {
-                assetFullPath = AZStd::string::format("@devassets@/%s", sliceAssetPath.c_str());
+                assetFullPath = AZStd::string::format("@projectroot@/%s", sliceAssetPath.c_str());
             }
 
             return Commit(assetFullPath.c_str(), preSaveCallback, postSaveCallback, sliceCommitFlags);
@@ -762,7 +762,7 @@ namespace AzToolsFramework
         //=========================================================================
         SliceTransaction::SliceAssetPtr SliceTransaction::CloneAssetForSave()
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+            AZ_PROFILE_FUNCTION(AzToolsFramework);
 
             // Move included slice instances to the target asset temporarily so that they are included in the clone
             for (auto& addedSliceInstanceIt : m_addedSliceInstances)
@@ -868,7 +868,7 @@ namespace AzToolsFramework
         //=========================================================================
         SliceTransaction::Result SliceTransaction::PreSave(const char* fullPath, SliceAssetPtr& asset, PreSaveCallback preSaveCallback, AZ::u32 /*sliceCommitFlags*/)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+            AZ_PROFILE_FUNCTION(AzToolsFramework);
 
             // Remap live Ids back to those of the asset.
             AZ::EntityUtils::SerializableEntityContainer assetEntities;
@@ -904,7 +904,7 @@ namespace AzToolsFramework
         //=========================================================================
         AZ::EntityId SliceTransaction::FindTargetAncestorAndUpdateInstanceIdMap(AZ::EntityId entityId, AZ::SliceComponent::EntityIdToEntityIdMap& liveToAssetIdMap, const AZ::SliceComponent::SliceInstanceAddress* ignoreSliceInstance) const
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+            AZ_PROFILE_FUNCTION(AzToolsFramework);
 
             AZ::SliceComponent* slice = m_targetAsset.Get()->GetComponent();
 
@@ -1020,13 +1020,13 @@ namespace AzToolsFramework
                 AZ::IO::FileIOBase* fileIO = AZ::IO::FileIOBase::GetInstance();
                 AZ_Assert(fileIO, "File IO is not initialized.");
 
-                AZStd::string devAssetPath = fileIO->GetAlias("@devassets@");
+                AZStd::string devAssetPath = fileIO->GetAlias("@projectroot@");
                 AZStd::string userPath = fileIO->GetAlias("@user@");
                 AZStd::string tempPath = fullPath;
                 EBUS_EVENT(AzFramework::ApplicationRequests::Bus, NormalizePath, devAssetPath);
                 EBUS_EVENT(AzFramework::ApplicationRequests::Bus, NormalizePath, userPath);
                 EBUS_EVENT(AzFramework::ApplicationRequests::Bus, NormalizePath, tempPath);
-                AzFramework::StringFunc::Replace(tempPath, "@devassets@", devAssetPath.c_str());
+                AzFramework::StringFunc::Replace(tempPath, "@projectroot@", devAssetPath.c_str());
                 AzFramework::StringFunc::Replace(tempPath, devAssetPath.c_str(), userPath.c_str());
                 tempPath.append(".slicetemp");
 
@@ -1036,7 +1036,7 @@ namespace AzToolsFramework
             //=========================================================================
             SliceTransaction::Result SaveSliceToDisk(const char* targetPath, AZStd::vector<AZ::u8>& sliceAssetEntityMemoryBuffer, AZ::SerializeContext* serializeContext)
             {
-                AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+                AZ_PROFILE_FUNCTION(AzToolsFramework);
 
                 AZ::IO::FileIOBase* fileIO = AZ::IO::FileIOBase::GetInstance();
                 AZ_Assert(fileIO, "File IO is not initialized.");
@@ -1058,7 +1058,7 @@ namespace AzToolsFramework
                     // Write the in-memory copy to file
                     bool savedToFile;
                     {
-                        AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::AzToolsFramework, "SliceUtilities::Internal::SaveSliceToDisk:SaveToFileStream");
+                        AZ_PROFILE_SCOPE(AzToolsFramework, "SliceUtilities::Internal::SaveSliceToDisk:SaveToFileStream");
                         memoryStream.Seek(0, AZ::IO::GenericStream::ST_SEEK_BEGIN);
                         savedToFile = fileStream.Write(memoryStream.GetLength(), memoryStream.GetData()->data()) != 0;
                     }
@@ -1066,14 +1066,14 @@ namespace AzToolsFramework
 
                     if (savedToFile)
                     {
-                        AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::AzToolsFramework, "SliceUtilities::Internal::SaveSliceToDisk:TempToTargetFileReplacement");
+                        AZ_PROFILE_SCOPE(AzToolsFramework, "SliceUtilities::Internal::SaveSliceToDisk:TempToTargetFileReplacement");
 
                         // Copy scratch file to target location.
                         const bool targetFileExists = fileIO->Exists(targetPath);
 
                         bool removedTargetFile;
                         {
-                            AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::AzToolsFramework, "SliceUtilities::Internal::SaveSliceToDisk:TempToTargetFileReplacement:RemoveTarget");
+                            AZ_PROFILE_SCOPE(AzToolsFramework, "SliceUtilities::Internal::SaveSliceToDisk:TempToTargetFileReplacement:RemoveTarget");
                             removedTargetFile = fileIO->Remove(targetPath);
                         }
 
@@ -1083,7 +1083,7 @@ namespace AzToolsFramework
                         }
 
                         {
-                            AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::AzToolsFramework, "SliceUtilities::Internal::SaveSliceToDisk:TempToTargetFileReplacement:RenameTempFile");
+                            AZ_PROFILE_SCOPE(AzToolsFramework, "SliceUtilities::Internal::SaveSliceToDisk:TempToTargetFileReplacement:RenameTempFile");
                             AZ::IO::Result renameResult = fileIO->Rename(tempFilePath.c_str(), targetPath);
                             if (!renameResult)
                             {
@@ -1093,7 +1093,7 @@ namespace AzToolsFramework
 
                         // Bump the slice asset up in the asset processor's queue.
                         {
-                            AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::AzToolsFramework, "SliceUtilities::Internal::SaveSliceToDisk:TempToTargetFileReplacement:GetAssetStatus");
+                            AZ_PROFILE_SCOPE(AzToolsFramework, "SliceUtilities::Internal::SaveSliceToDisk:TempToTargetFileReplacement:GetAssetStatus");
                             EBUS_EVENT(AzFramework::AssetSystemRequestBus, EscalateAssetBySearchTerm, targetPath);
                         }
                         return AZ::Success();

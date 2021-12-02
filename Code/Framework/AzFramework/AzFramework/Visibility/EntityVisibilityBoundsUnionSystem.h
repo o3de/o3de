@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -30,6 +31,7 @@ namespace AzFramework
         // EntityBoundsUnionRequestBus overrides ...
         void RefreshEntityLocalBoundsUnion(AZ::EntityId entityId) override;
         AZ::Aabb GetEntityLocalBoundsUnion(AZ::EntityId entityId) const override;
+        AZ::Aabb GetEntityWorldBoundsUnion(AZ::EntityId entityId) const override;
         void ProcessEntityBoundsUnionRequests() override;
         void OnTransformUpdated(AZ::Entity* entity) override;
 

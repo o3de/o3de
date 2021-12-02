@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -25,10 +26,10 @@ namespace AzToolsFramework
             TemplateInstanceMapper();
             ~TemplateInstanceMapper() override;
 
-            InstanceSetConstReference FindInstancesOwnedByTemplate(const TemplateId& templateId) const override;
+            InstanceSetConstReference FindInstancesOwnedByTemplate(TemplateId templateId) const override;
 
-            bool RegisterTemplate(const TemplateId& templateId);
-            bool UnregisterTemplate(const TemplateId& templateId);
+            bool RegisterTemplate(TemplateId templateId);
+            bool UnregisterTemplate(TemplateId templateId);
 
         protected:
             bool RegisterInstanceToTemplate(Instance& instance) override;

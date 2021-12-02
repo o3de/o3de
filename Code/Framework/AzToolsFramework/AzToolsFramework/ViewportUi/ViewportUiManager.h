@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -17,7 +18,7 @@ namespace AzToolsFramework::ViewportUi
     {
         class ButtonGroup;
         class ViewportUiDisplay;
-    }
+    } // namespace Internal
 
     class ViewportUiManager : public ViewportUiRequestBus::Handler
     {
@@ -29,8 +30,10 @@ namespace AzToolsFramework::ViewportUi
         const ClusterId CreateCluster(Alignment align) override;
         const SwitcherId CreateSwitcher(Alignment align) override;
         void SetClusterActiveButton(ClusterId clusterId, ButtonId buttonId) override;
+        void ClearClusterActiveButton(ClusterId clusterId) override;
         void SetSwitcherActiveButton(SwitcherId switcherId, ButtonId buttonId) override;
         void SetClusterButtonLocked(ClusterId clusterId, ButtonId buttonId, bool isLocked) override;
+        void SetClusterButtonTooltip(ClusterId clusterId, ButtonId buttonId, const AZStd::string& tooltip) override;
         const ButtonId CreateClusterButton(ClusterId clusterId, const AZStd::string& icon) override;
         const ButtonId CreateSwitcherButton(
             SwitcherId switcherId, const AZStd::string& icon, const AZStd::string& name = AZStd::string()) override;
@@ -38,7 +41,7 @@ namespace AzToolsFramework::ViewportUi
         void RegisterSwitcherEventHandler(SwitcherId switcherId, AZ::Event<ButtonId>::Handler& handler) override;
         void RemoveCluster(ClusterId clusterId) override;
         void RemoveSwitcher(SwitcherId switcherId) override;
-        void SetClusterVisible(ClusterId clusterId, bool visible);
+        void SetClusterVisible(ClusterId clusterId, bool visible) override;
         void SetSwitcherVisible(SwitcherId switcherId, bool visible);
         void SetClusterGroupVisible(const AZStd::vector<ClusterId>& clusterGroup, bool visible) override;
         const TextFieldId CreateTextField(
@@ -47,8 +50,9 @@ namespace AzToolsFramework::ViewportUi
         void RegisterTextFieldCallback(TextFieldId textFieldId, AZ::Event<AZStd::string>::Handler& handler) override;
         void RemoveTextField(TextFieldId textFieldId) override;
         void SetTextFieldVisible(TextFieldId textFieldId, bool visible) override;
-        void CreateComponentModeBorder(const AZStd::string& borderTitle) override;
-        void RemoveComponentModeBorder() override;
+        void CreateViewportBorder(
+            const AZStd::string& borderTitle, AZStd::optional<ViewportUiBackButtonCallback> backButtonCallback) override;
+        void RemoveViewportBorder() override;
         void PressButton(ClusterId clusterId, ButtonId buttonId) override;
         void PressButton(SwitcherId switcherId, ButtonId buttonId) override;
 

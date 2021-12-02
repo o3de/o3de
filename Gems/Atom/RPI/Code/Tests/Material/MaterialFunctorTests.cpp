@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -9,6 +10,7 @@
 #include <Common/RPITestFixture.h>
 #include <Common/JsonTestUtils.h>
 #include <Common/ErrorMessageFinder.h>
+#include <Common/ShaderAssetTestUtils.h>
 #include <Atom/RPI.Reflect/Material/MaterialFunctor.h>
 #include <Atom/RPI.Reflect/Material/MaterialTypeAsset.h>
 #include <Atom/RPI.Reflect/Material/MaterialTypeAssetCreator.h>
@@ -17,7 +19,6 @@
 #include <Atom/RPI.Public/Material/Material.h>
 #include <Material/MaterialAssetTestUtils.h>
 
-//#include <AtomCore/Serialization/Json/JsonUtils.h>
 namespace UnitTest
 {
     using namespace AZ;
@@ -40,6 +41,7 @@ namespace UnitTest
             {
             }
 
+            using MaterialFunctor::Process;
             void Process(MaterialFunctor::RuntimeContext& context) override
             {
                 m_processResult = context.SetShaderOptionValue(0, m_shaderOptionIndex, m_shaderOptionValue);
@@ -64,6 +66,7 @@ namespace UnitTest
         public:
             MOCK_METHOD0(ProcessCalled, void());
 
+            using MaterialFunctor::Process;
             void Process(RuntimeContext& context) override
             {
                 ProcessCalled();
@@ -86,6 +89,7 @@ namespace UnitTest
             : public MaterialFunctorSourceData
         {
         public:
+            using MaterialFunctorSourceData::CreateFunctor;
             FunctorResult CreateFunctor(const RuntimeContext& context) const override
             {
                 Ptr<PropertyDependencyTestFunctor> functor = aznew PropertyDependencyTestFunctor;
@@ -140,7 +144,7 @@ namespace UnitTest
         // structures that we can pass to the functors below, especially the shader with shader options.
         MaterialTypeAssetCreator materialTypeCreator;
         materialTypeCreator.Begin(Uuid::CreateRandom());
-        materialTypeCreator.AddShader(CreateTestShaderAsset(Uuid::CreateRandom(), CreateCommonTestMaterialSrgAsset(), shaderOptions));
+        materialTypeCreator.AddShader(CreateTestShaderAsset(Uuid::CreateRandom(), CreateCommonTestMaterialSrgLayout(), shaderOptions));
         // We claim ownership of options A and B, but not C. So C is a globally accessible option, not owned by the material.
         materialTypeCreator.ClaimShaderOptionOwnership(Name{"o_optionA"});
         materialTypeCreator.ClaimShaderOptionOwnership(Name{"o_optionB"});
@@ -164,7 +168,8 @@ namespace UnitTest
                 materialTypeAsset->GetMaterialPropertiesLayout(),
                 &shaderCollectionCopy,
                 unusedSrg,
-                &testFunctorSetOptionA.GetMaterialPropertyDependencies()
+                &testFunctorSetOptionA.GetMaterialPropertyDependencies(),
+                AZ::RPI::MaterialPropertyPsoHandling::Allowed
             };
             testFunctorSetOptionA.Process(runtimeContext);
             EXPECT_TRUE(testFunctorSetOptionA.GetProcessResult());
@@ -180,7 +185,8 @@ namespace UnitTest
                 materialTypeAsset->GetMaterialPropertiesLayout(),
                 &shaderCollectionCopy,
                 unusedSrg,
-                &testFunctorSetOptionB.GetMaterialPropertyDependencies()
+                &testFunctorSetOptionB.GetMaterialPropertyDependencies(),
+                AZ::RPI::MaterialPropertyPsoHandling::Allowed
             };
             testFunctorSetOptionB.Process(runtimeContext);
             EXPECT_TRUE(testFunctorSetOptionB.GetProcessResult());
@@ -197,7 +203,8 @@ namespace UnitTest
                 materialTypeAsset->GetMaterialPropertiesLayout(),
                 &shaderCollectionCopy,
                 unusedSrg,
-                &testFunctorSetOptionC.GetMaterialPropertyDependencies()
+                &testFunctorSetOptionC.GetMaterialPropertyDependencies(),
+                AZ::RPI::MaterialPropertyPsoHandling::Allowed
             };
             testFunctorSetOptionC.Process(runtimeContext);
             EXPECT_FALSE(testFunctorSetOptionC.GetProcessResult());
@@ -212,7 +219,8 @@ namespace UnitTest
                 materialTypeAsset->GetMaterialPropertiesLayout(),
                 &shaderCollectionCopy,
                 unusedSrg,
-                &testFunctorSetOptionInvalid.GetMaterialPropertyDependencies()
+                &testFunctorSetOptionInvalid.GetMaterialPropertyDependencies(),
+                AZ::RPI::MaterialPropertyPsoHandling::Allowed
             };
             testFunctorSetOptionInvalid.Process(runtimeContext);
             EXPECT_FALSE(testFunctorSetOptionInvalid.GetProcessResult());

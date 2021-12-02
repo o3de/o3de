@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -50,7 +51,7 @@ namespace AZ
             VirtualAddress Allocate(size_t byteCount, size_t byteAlignment) override;
             void DeAllocate(VirtualAddress allocation) override;
             void GarbageCollect() override;
-            void GarbageCollectForce();
+            void GarbageCollectForce() override;
             size_t GetAllocationCount() const override;
             size_t GetAllocatedByteCount() const override;
             const Descriptor& GetDescriptor() const override;

@@ -1,11 +1,10 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-
-#include "LyShine_precompiled.h"
 
 #include "LyShineTest.h"
 #include <UiSerialize.h>
@@ -25,7 +24,6 @@ namespace UnitTest
             appDesc.m_stackRecordLevels = 20;
 
             AZ::ComponentApplication::StartupParameters appStartup;
-            // Module needs to be created this way to create CryString allocator for test
             appStartup.m_createStaticModulesCallback =
                 [](AZStd::vector<AZ::Module*>& modules)
             {

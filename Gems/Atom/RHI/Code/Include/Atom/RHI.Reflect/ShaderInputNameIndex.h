@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -65,6 +66,10 @@ namespace AZ
             void AssertValid() const;
             bool IsInitialized() const;
             void AssetInialized() const;
+
+            // Retrieves the underlying name. Should only be used for debug purposes like printing the name when we fail to bind to the SRG.
+            // All regular functionality should go through the above functions.
+            const Name& GetNameForDebug() const;
 
         private:
 

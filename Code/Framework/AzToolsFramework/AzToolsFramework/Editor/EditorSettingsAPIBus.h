@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -37,6 +38,7 @@ namespace AzToolsFramework
         virtual SettingOutcome GetValue(const AZStd::string_view path) = 0;
         virtual SettingOutcome SetValue(const AZStd::string_view path, const AZStd::any& value) = 0;
         virtual ConsoleColorTheme GetConsoleColorTheme() const = 0;
+        virtual AZ::u64 GetMaxNumberOfItemsShownInSearchView() const = 0;
     };
 
     using EditorSettingsAPIBus = AZ::EBus<EditorSettingsAPIRequests>;

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -10,7 +11,7 @@
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/TickBus.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
-#include <Editor/EditorBlastSliceAssetHandler.h>
+#include <Editor/EditorBlastChunksAssetHandler.h>
 
 namespace Blast
 {
@@ -38,7 +39,7 @@ namespace Blast
             required.push_back(AZ_CRC("BlastService", 0x75beae2d));
         }
 
-        AZStd::unique_ptr<EditorBlastSliceAssetHandler> m_editorBlastSliceAssetHandler;
+        AZStd::unique_ptr<EditorBlastChunksAssetHandler> m_editorBlastChunksAssetHandler;
 
         // AZ::Component
         void Activate() override;

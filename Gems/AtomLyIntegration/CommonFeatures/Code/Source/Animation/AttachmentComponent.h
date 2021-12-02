@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -74,7 +75,7 @@ namespace AZ
 
             ////////////////////////////////////////////////////////////////////////
             // AttachmentComponentRequests
-            void Reattach(bool detachFirst);
+            void Reattach(bool detachFirst) override;
             void Attach(AZ::EntityId targetId, const char* targetBoneName, const AZ::Transform& offset) override;
             void Detach() override;
             void SetAttachmentOffset(const AZ::Transform& offset) override;

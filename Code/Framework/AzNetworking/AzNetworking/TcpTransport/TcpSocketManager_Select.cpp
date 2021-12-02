@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -41,7 +42,7 @@ namespace AzNetworking
 
     void TcpSocketManager::ProcessEvents(AZ::TimeMs maxBlockMs, const SocketEventCallback& readCallback, const SocketEventCallback& writeCallback)
     {
-        if(static_cast<int32_t>(m_maxFd) <= 0 && m_socketFds.empty())
+        if(static_cast<int32_t>(m_maxFd) <= 0 || m_socketFds.empty())
         {
             // There are no available sockets to process
             return;

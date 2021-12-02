@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -71,6 +72,7 @@ namespace AZ
             // WindowNotificationBus::Handler overrides ...
             void OnWindowResized(uint32_t width, uint32_t height) override;
             void OnWindowClosed() override;
+            void OnVsyncIntervalChanged(uint32_t interval) override;
 
             // ExclusiveFullScreenRequestBus::Handler overrides ...
             bool IsExclusiveFullScreenPreferred() const override;

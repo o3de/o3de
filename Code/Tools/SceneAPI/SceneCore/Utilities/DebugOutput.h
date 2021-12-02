@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -10,7 +11,26 @@
 #include <SceneAPI/SceneCore/SceneCoreConfiguration.h>
 #include <SceneAPI/SceneCore/DataTypes/MatrixType.h>
 #include <SceneAPI/SceneCore/Utilities/HashHelper.h>
+#include <AzCore/std/string/string.h>
+#include <AzCore/std/containers/vector.h>
+#include <AzCore/std/optional.h>
 #include <cinttypes>
+
+namespace AZ
+{
+    namespace SceneAPI
+    {
+        namespace Containers
+        {
+            class Scene;
+        }
+        namespace Events
+        {
+            struct ExportProduct;
+            class ExportProductList;
+        }
+    }
+}
 
 namespace AZ::SceneAPI::Utilities
 {
@@ -37,6 +57,8 @@ namespace AZ::SceneAPI::Utilities
         SCENE_CORE_API void Write(const char* name, AZStd::optional<AZ::Vector3> data);
 
         SCENE_CORE_API const AZStd::string& GetOutput() const;
+
+        SCENE_CORE_API static void BuildDebugSceneGraph(const char* outputFolder, AZ::SceneAPI::Events::ExportProductList& productList, const AZStd::shared_ptr<AZ::SceneAPI::Containers::Scene>& scene, AZStd::string productName);
 
     protected:
         AZStd::string m_output;

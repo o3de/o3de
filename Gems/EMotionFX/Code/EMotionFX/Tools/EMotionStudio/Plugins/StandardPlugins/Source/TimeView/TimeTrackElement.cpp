@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -20,27 +21,27 @@
 namespace EMStudio
 {
     // statics
-    QColor TimeTrackElement::mTextColor             = QColor(30, 30, 30);
-    QColor TimeTrackElement::mHighlightedTextColor  = QColor(0, 0, 0);
-    QColor TimeTrackElement::mHighlightedColor      = QColor(255, 128, 0);
-    int32  TimeTrackElement::mTickHalfWidth         = 7;
+    QColor TimeTrackElement::s_textColor             = QColor(30, 30, 30);
+    QColor TimeTrackElement::s_highlightedTextColor  = QColor(0, 0, 0);
+    QColor TimeTrackElement::s_highlightedColor      = QColor(255, 128, 0);
+    int32  TimeTrackElement::s_tickHalfWidth         = 7;
 
     // constructor
-    TimeTrackElement::TimeTrackElement(const char* name, TimeTrack* timeTrack, uint32 elementNumber, QColor color)
+    TimeTrackElement::TimeTrackElement(const char* name, TimeTrack* timeTrack, size_t elementNumber, QColor color)
     {
-        mTrack              = timeTrack;
-        mName               = name;
-        mIsSelected         = false;
-        mShowTimeHandles    = false;
-        mIsHighlighted      = false;
-        mStartTime          = 0.0;
-        mEndTime            = 0.0;
-        mColor              = color;
-        mElementNumber      = elementNumber;
-        mIsCut              = false;
+        m_track              = timeTrack;
+        m_name               = name;
+        m_isSelected         = false;
+        m_showTimeHandles    = false;
+        m_isHighlighted      = false;
+        m_startTime          = 0.0;
+        m_endTime            = 0.0;
+        m_color              = color;
+        m_elementNumber      = elementNumber;
+        m_isCut              = false;
 
         // init font
-        mFont.setPixelSize(10);
+        m_font.setPixelSize(10);
     }
 
 
@@ -53,13 +54,13 @@ namespace EMStudio
     // calculate the dimensions in pixels
     void TimeTrackElement::CalcDimensions(int32* outStartX, int32* outStartY, int32* outWidth, int32* outHeight) const
     {
-        TimeViewPlugin* plugin = mTrack->GetPlugin();
+        TimeViewPlugin* plugin = m_track->GetPlugin();
 
-        *outStartX  = aznumeric_cast<int32>(plugin->TimeToPixel(mStartTime));
-        int32 endX  = aznumeric_cast<int32>(plugin->TimeToPixel(mEndTime));
-        *outStartY  = mTrack->GetStartY() + 1;
+        *outStartX  = aznumeric_cast<int32>(plugin->TimeToPixel(m_startTime));
+        int32 endX  = aznumeric_cast<int32>(plugin->TimeToPixel(m_endTime));
+        *outStartY  = m_track->GetStartY() + 1;
         *outWidth   = (endX - *outStartX);
-        *outHeight  = mTrack->GetHeight() - 1;
+        *outHeight  = m_track->GetHeight() - 1;
     }
 
 
@@ -91,14 +92,14 @@ namespace EMStudio
         // create the rect
         QRect rect(startX, startY, width + 1, height);
 
-        QColor color        = mColor;
+        QColor color        = m_color;
         QColor borderColor(30, 30, 30);
-        QColor textColor    = mTextColor;
-        if (mIsSelected)
+        QColor textColor    = s_textColor;
+        if (m_isSelected)
         {
-            color       = mHighlightedColor;
-            borderColor = mHighlightedColor;
-            textColor   = mHighlightedTextColor;
+            color       = s_highlightedColor;
+            borderColor = s_highlightedColor;
+            textColor   = s_highlightedTextColor;
         }
 
         // in case the track is disabled
@@ -110,14 +111,14 @@ namespace EMStudio
         }
 
         // make the colors a bit lighter so that we see some highlighting effect
-        if (mIsHighlighted)
+        if (m_isHighlighted)
         {
             borderColor = borderColor.lighter(130);
             color       = color.lighter(130);
         }
 
         // in case the track is cutted
-        if (mIsCut)
+        if (m_isCut)
         {
             borderColor.setAlpha(90);
             color.setAlpha(90);
@@ -148,32 +149,32 @@ namespace EMStudio
             options.setAlignment(Qt::AlignCenter);
 
             painter.setPen(textColor);
-            painter.setFont(mFont);
+            painter.setFont(m_font);
             painter.setRenderHint(QPainter::Antialiasing);
-            painter.drawText(rect, mName, options);
+            painter.drawText(rect, m_name, options);
             painter.setRenderHint(QPainter::Antialiasing, false);
         }
         else
         {
             height--;
-            mTickPoints[0] = QPoint(startX,                 startY);
-            mTickPoints[1] = QPoint(startX + mTickHalfWidth,  startY + height / 2);
-            mTickPoints[2] = QPoint(startX + mTickHalfWidth,  startY + height);
-            mTickPoints[3] = QPoint(startX - mTickHalfWidth,  startY + height);
-            mTickPoints[4] = QPoint(startX - mTickHalfWidth,  startY + height / 2);
-            mTickPoints[5] = QPoint(startX,                 startY);
+            m_tickPoints[0] = QPoint(startX,                 startY);
+            m_tickPoints[1] = QPoint(startX + s_tickHalfWidth,  startY + height / 2);
+            m_tickPoints[2] = QPoint(startX + s_tickHalfWidth,  startY + height);
+            m_tickPoints[3] = QPoint(startX - s_tickHalfWidth,  startY + height);
+            m_tickPoints[4] = QPoint(startX - s_tickHalfWidth,  startY + height / 2);
+            m_tickPoints[5] = QPoint(startX,                 startY);
 
             painter.setPen(Qt::NoPen);
             painter.setBrush(gradient);
             //painter.setBrush( color );
             painter.setRenderHint(QPainter::Antialiasing);
-            painter.drawPolygon(mTickPoints, 5, Qt::WindingFill);
+            painter.drawPolygon(m_tickPoints, 5, Qt::WindingFill);
             painter.setRenderHint(QPainter::Antialiasing, false);
 
             painter.setBrush(Qt::NoBrush);
             painter.setPen(borderColor);
             painter.setRenderHint(QPainter::Antialiasing);
-            painter.drawPolyline(mTickPoints, 6);
+            painter.drawPolyline(m_tickPoints, 6);
             painter.setRenderHint(QPainter::Antialiasing, false);
         }
     }
@@ -194,12 +195,12 @@ namespace EMStudio
         bool isTickElement = width < 1 ? true : false;
         if (isTickElement)
         {
-            startX -= mTickHalfWidth;
-            width  += 2 * mTickHalfWidth;
+            startX -= s_tickHalfWidth;
+            width  += 2 * s_tickHalfWidth;
         }
 
         // take scrolling into account
-        startX = aznumeric_cast<int32>(startX + mTrack->GetPlugin()->GetScrollX());
+        startX = aznumeric_cast<int32>(startX + m_track->GetPlugin()->GetScrollX());
 
         // check if we're inside the area of the element
         if (MCore::InRange<int32>(x, startX, startX + width) && MCore::InRange<int32>(y, startY, startY + height))
@@ -251,15 +252,15 @@ namespace EMStudio
     void TimeTrackElement::MoveRelative(double timeDelta)
     {
         // don't allow it to start before zero
-        if (mStartTime + timeDelta < 0.0)
+        if (m_startTime + timeDelta < 0.0)
         {
-            mStartTime -= mStartTime;
-            mEndTime -= mStartTime;
+            m_startTime -= m_startTime;
+            m_endTime -= m_startTime;
         }
         else
         {
-            mStartTime  += timeDelta;
-            mEndTime    += timeDelta;
+            m_startTime  += timeDelta;
+            m_endTime    += timeDelta;
         }
     }
 
@@ -279,8 +280,8 @@ namespace EMStudio
         bool isTickElement = width < 1 ? true : false;
         if (isTickElement)
         {
-            startX -= mTickHalfWidth;
-            width  += 2 * mTickHalfWidth;
+            startX -= s_tickHalfWidth;
+            width  += 2 * s_tickHalfWidth;
         }
 
         int32 endX = startX + width;
@@ -309,14 +310,14 @@ namespace EMStudio
         // resize the start point
         case RESIZEPOINT_START:
         {
-            double newStartTime = mStartTime + timeDelta;
-            mTrack->GetPlugin()->SnapTime(&newStartTime, this, snapThreshold);
-            mStartTime = newStartTime;
+            double newStartTime = m_startTime + timeDelta;
+            m_track->GetPlugin()->SnapTime(&newStartTime, this, snapThreshold);
+            m_startTime = newStartTime;
 
-            if (newStartTime > mEndTime)
+            if (newStartTime > m_endTime)
             {
-                mStartTime  = mEndTime;
-                mEndTime    = newStartTime;
+                m_startTime  = m_endTime;
+                m_endTime    = newStartTime;
                 return RESIZEPOINT_END;
             }
 
@@ -327,14 +328,14 @@ namespace EMStudio
         // resize the end point
         case RESIZEPOINT_END:
         {
-            double newEndTime = mEndTime + timeDelta;
-            mTrack->GetPlugin()->SnapTime(&newEndTime, this, snapThreshold);
-            mEndTime = newEndTime;
+            double newEndTime = m_endTime + timeDelta;
+            m_track->GetPlugin()->SnapTime(&newEndTime, this, snapThreshold);
+            m_endTime = newEndTime;
 
-            if (newEndTime < mStartTime)
+            if (newEndTime < m_startTime)
             {
-                mEndTime    = mStartTime;
-                mStartTime  = newEndTime;
+                m_endTime    = m_startTime;
+                m_startTime  = newEndTime;
                 return RESIZEPOINT_START;
             }
 

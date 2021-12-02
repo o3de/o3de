@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -45,7 +46,7 @@ namespace EMStudio
         virtual void SetInterfaceTitle(const char* name);
         void CreateBaseInterface(const char* objectName) override;
 
-        QString GetObjectName() const override                      { AZ_Assert(!mBar.isNull(), "Unexpected null bar"); return mBar->objectName(); }
+        QString GetObjectName() const override                      { AZ_Assert(!m_bar.isNull(), "Unexpected null bar"); return m_bar->objectName(); }
         void SetObjectName(const QString& name) override            { GetToolBar()->setObjectName(name); }
 
         bool GetHasWindowWithObjectName(const AZStd::string& objectName) override;
@@ -55,7 +56,7 @@ namespace EMStudio
         QToolBar* GetToolBar();
 
     protected:
-        QPointer<QToolBar>   mBar;
+        QPointer<QToolBar>   m_bar;
     };
 }   // namespace EMStudio
 

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -22,7 +23,7 @@ namespace EMStudio
 
     NodeInfo::NodeInfo(EMotionFX::ActorInstance* actorInstance, EMotionFX::Node* node)
     {
-        const uint32 nodeIndex = node->GetNodeIndex();
+        const size_t nodeIndex = node->GetNodeIndex();
 
         EMotionFX::Actor* actor = actorInstance->GetActor();
         EMotionFX::TransformData* transformData = actorInstance->GetTransformData();
@@ -30,11 +31,11 @@ namespace EMStudio
         m_name = node->GetNameString();
 
         // transform info
-        m_position = transformData->GetCurrentPose()->GetLocalSpaceTransform(nodeIndex).mPosition;
-        m_rotation = transformData->GetCurrentPose()->GetLocalSpaceTransform(nodeIndex).mRotation;
+        m_position = transformData->GetCurrentPose()->GetLocalSpaceTransform(nodeIndex).m_position;
+        m_rotation = transformData->GetCurrentPose()->GetLocalSpaceTransform(nodeIndex).m_rotation;
 
 #ifndef EMFX_SCALE_DISABLED
-        m_scale = transformData->GetCurrentPose()->GetLocalSpaceTransform(nodeIndex).mScale;
+        m_scale = transformData->GetCurrentPose()->GetLocalSpaceTransform(nodeIndex).m_scale;
 #else
         m_scale = AZ::Vector3::CreateOne();
 #endif
@@ -52,31 +53,31 @@ namespace EMStudio
         if (actor->GetHasMirrorInfo())
         {
             const EMotionFX::Actor::NodeMirrorInfo& nodeMirrorInfo = actor->GetNodeMirrorInfo(nodeIndex);
-            if (nodeMirrorInfo.mSourceNode != MCORE_INVALIDINDEX16 && nodeMirrorInfo.mSourceNode != nodeIndex)
+            if (nodeMirrorInfo.m_sourceNode != MCORE_INVALIDINDEX16 && nodeMirrorInfo.m_sourceNode != nodeIndex)
             {
-                m_mirrorNodeName = actor->GetSkeleton()->GetNode(nodeMirrorInfo.mSourceNode)->GetNameString();
+                m_mirrorNodeName = actor->GetSkeleton()->GetNode(nodeMirrorInfo.m_sourceNode)->GetNameString();
             }
         }
 
         // children
-        const uint32 numChildren = node->GetNumChildNodes();
-        for (uint32 i = 0; i < numChildren; ++i)
+        const size_t numChildren = node->GetNumChildNodes();
+        for (size_t i = 0; i < numChildren; ++i)
         {
             EMotionFX::Node* child = actor->GetSkeleton()->GetNode(node->GetChildIndex(i));
             m_childNodeNames.emplace_back(child->GetNameString());
         }
 
         // attributes
-        const uint32 numAttributes = node->GetNumAttributes();
-        for (uint32 i = 0; i < numAttributes; ++i)
+        const size_t numAttributes = node->GetNumAttributes();
+        for (size_t i = 0; i < numAttributes; ++i)
         {
             EMotionFX::NodeAttribute* nodeAttribute = node->GetAttribute(i);
             m_attributeTypes.emplace_back(nodeAttribute->GetTypeString());
         }
 
         // meshes
-        const uint32 numLODLevels = actor->GetNumLODLevels();
-        for (uint32 i = 0; i < numLODLevels; ++i)
+        const size_t numLODLevels = actor->GetNumLODLevels();
+        for (size_t i = 0; i < numLODLevels; ++i)
         {
             EMotionFX::Mesh* mesh = actor->GetMesh(i, node->GetNodeIndex());
             if (mesh)

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -53,7 +54,7 @@ public:
     void setGeometry(const QRect& r) override { QWidget::setGeometry(r); }
 
     void SetTimeRange(const Range& r) { m_timeRange = r; }
-    void SetTimeMarker(float fTime);
+    void SetTimeMarker(float fTime) override;
     float GetTimeMarker() const { return m_fTimeMarker; }
 
     void SetZoom(float fZoom);
@@ -110,7 +111,7 @@ protected:
     void OnLButtonUp(const QPoint& point, Qt::KeyboardModifiers modifiers);
     void OnRButtonDown(const QPoint& point, Qt::KeyboardModifiers modifiers);
     void OnRButtonUp(const QPoint& point, Qt::KeyboardModifiers modifiers);
-    void keyPressEvent(QKeyEvent* event);
+    void keyPressEvent(QKeyEvent* event) override;
 
     // Drawing functions
     float  ClientToTime(int x);
@@ -133,7 +134,6 @@ protected:
     void DrawFrameTicks(QPainter* dc);
 
 private:
-    bool m_bAutoDelete;
     QRect m_rcClient;
     QRect m_rcTimeline;
     float m_fTimeMarker;

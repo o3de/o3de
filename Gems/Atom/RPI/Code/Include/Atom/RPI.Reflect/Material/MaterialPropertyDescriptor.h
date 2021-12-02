@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -102,7 +103,7 @@ namespace AZ
             AZ::TypeId GetStorageDataTypeId() const;
 
             //! Returns the value of the enum from its name. If this property is not an enum or the name is undefined, InvalidEnumValue is returned.
-            static constexpr uint32_t InvalidEnumValue = -1;
+            static constexpr uint32_t InvalidEnumValue = std::numeric_limits<uint32_t>::max();
             uint32_t GetEnumValue(const AZ::Name& enumName) const;
 
             //! Returns the unique name ID of this property

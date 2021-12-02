@@ -1,10 +1,11 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "SurfaceData_precompiled.h"
+
 #include <SurfaceData/Utility/SurfaceDataUtility.h>
 #include <Atom/RPI.Reflect/Model/ModelAssetCreator.h>
 
@@ -16,7 +17,7 @@ namespace SurfaceData
         const AZ::Vector3& rayStart, const AZ::Vector3& rayEnd, 
         AZ::Vector3& outPosition, AZ::Vector3& outNormal)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
+        AZ_PROFILE_FUNCTION(Entity);
 
         const AZ::Vector3 clampedScale = nonUniformScale.GetMax(AZ::Vector3(AZ::MinTransformScale));
 
@@ -33,7 +34,7 @@ namespace SurfaceData
         {
             // Transform everything back to world space
             outPosition = meshTransform.TransformPoint((rayStartLocal + (rayDirectionLocal * distance)) * clampedScale);
-            outNormal = meshTransform.TransformVector(normalLocal * clampedScale);
+            outNormal = meshTransform.TransformVector(normalLocal).GetNormalized();
             return true;
         }
 

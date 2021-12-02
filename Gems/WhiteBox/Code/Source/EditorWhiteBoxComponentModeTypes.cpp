@@ -1,15 +1,17 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
-#include "WhiteBox_precompiled.h"
-
 #include "EditorWhiteBoxComponentModeTypes.h"
 
+#include <AzCore/Debug/Profiler.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
+
+AZ_DECLARE_BUDGET(AzToolsFramework);
 
 namespace WhiteBox
 {
@@ -17,7 +19,7 @@ namespace WhiteBox
         AzFramework::DebugDisplayRequests& debugDisplay, const AZ::Color& color,
         const AZStd::vector<EdgeBoundWithHandle>& edgeBoundsWithHandle, const Api::EdgeHandles& excludedEdgeHandles)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         debugDisplay.SetColor(color);
         for (const EdgeBoundWithHandle& edge : edgeBoundsWithHandle)

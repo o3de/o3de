@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -124,7 +125,7 @@ SharedMemory::Close()
 bool
 SharedMemory::Map(AccessMode mode, unsigned int size)
 {
-    AZ_Assert(m_mappedBase == NULL, "We already have data mapped");
+    AZ_Assert(m_mappedBase == nullptr, "We already have data mapped");
     AZ_Assert(Platform::IsMapHandleValid(), "You must call Map() first!");
 
     bool result = Platform::Map(mode, size);
@@ -231,7 +232,7 @@ bool SharedMemory::CheckMappedBaseValid()
 // [4/29/2011]
 //=========================================================================
 SharedMemoryRingBuffer::SharedMemoryRingBuffer()
-    : m_info(NULL)
+    : m_info(nullptr)
 {}
 
 //=========================================================================
@@ -278,7 +279,7 @@ SharedMemoryRingBuffer::Map(AccessMode mode, unsigned int size)
 bool
 SharedMemoryRingBuffer::UnMap()
 {
-    m_info = NULL;
+    m_info = nullptr;
     return SharedMemory::UnMap();
 }
 
@@ -290,7 +291,7 @@ bool
 SharedMemoryRingBuffer::Write(const void* data, unsigned int dataSize)
 {
     AZ_Warning("AZSystem", !Platform::IsWaitFailed(), "You are writing the ring buffer %s while the Global lock is NOT locked! This can lead to data corruption!", m_name);
-    AZ_Assert(m_info != NULL, "You need to Create and Map the buffer first!");
+    AZ_Assert(m_info != nullptr, "You need to Create and Map the buffer first!");
     if (m_info->m_writeOffset >= m_info->m_readOffset)
     {
         unsigned int freeSpace = m_dataSize - (m_info->m_writeOffset - m_info->m_readOffset);
@@ -345,7 +346,7 @@ SharedMemoryRingBuffer::Read(void* data, unsigned int maxDataSize)
         return 0;
     }
 
-    AZ_Assert(m_info != NULL, "You need to Create and Map the buffer first!");
+    AZ_Assert(m_info != nullptr, "You need to Create and Map the buffer first!");
     unsigned int dataRead;
     if (m_info->m_writeOffset > m_info->m_readOffset)
     {

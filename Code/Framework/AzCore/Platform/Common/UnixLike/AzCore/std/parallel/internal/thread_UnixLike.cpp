@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -57,6 +58,10 @@ namespace AZStd
                 if (desc->m_priority >= sched_get_priority_min(SCHED_FIFO) && desc->m_priority <= sched_get_priority_max(SCHED_FIFO))
                 {
                     priority = desc->m_priority;
+                }
+                else
+                {
+                    priority = SCHED_OTHER;
                 }
                 if (desc->m_name)
                 {

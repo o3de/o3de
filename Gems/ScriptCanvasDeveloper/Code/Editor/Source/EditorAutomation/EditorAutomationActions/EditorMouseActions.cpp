@@ -1,10 +1,10 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "precompiled.h"
 
 #include <AzCore/PlatformIncl.h>
 
@@ -155,7 +155,6 @@ namespace ScriptCanvasDeveloper
             m_startPosition = QCursor::pos();
         }
 
-        QPointF currentPosition = QCursor::pos();
         QPointF targetPoint = m_targetPosition;
         
         float percentage = aznumeric_cast<float>(m_tickCount)/aznumeric_cast<float>(m_tickDuration);
@@ -170,12 +169,13 @@ namespace ScriptCanvasDeveloper
 
 #if defined(AZ_COMPILER_MSVC)
         INPUT osInput = { 0 };
+        QPointF currentPosition = QCursor::pos();
 
         osInput.type = INPUT_MOUSE;
         osInput.mi.mouseData = 0;
         osInput.mi.time = 0;
-        osInput.mi.dx = targetPoint.x() - currentPosition.x();
-        osInput.mi.dy = targetPoint.y() - currentPosition.y();
+        osInput.mi.dx = static_cast<LONG>(targetPoint.x() - currentPosition.x());
+        osInput.mi.dy = static_cast<LONG>(targetPoint.y() - currentPosition.y());
         osInput.mi.dwFlags = MOUSEEVENTF_MOVE;
 
         ::SendInput(1, &osInput, sizeof(osInput));

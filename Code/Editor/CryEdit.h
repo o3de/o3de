@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -84,6 +85,12 @@ public:
 
 using EditorIdleProcessingBus = AZ::EBus<EditorIdleProcessing>;
 
+enum class COpenSameLevelOptions
+{
+    ReopenLevelIfSame,
+    NotReopenIfSame
+};
+
 AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
 AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
 class SANDBOX_API CCryEditApp
@@ -134,16 +141,16 @@ public:
     virtual void AddToRecentFileList(const QString& lpszPathName);
     ECreateLevelResult CreateLevel(const QString& levelName, QString& fullyQualifiedLevelName);
     static void InitDirectory();
-    BOOL FirstInstance(bool bForceNewInstance = false);
+    bool FirstInstance(bool bForceNewInstance = false);
     void InitFromCommandLine(CEditCommandLineInfo& cmdInfo);
-    BOOL CheckIfAlreadyRunning();
+    bool CheckIfAlreadyRunning();
     //! @return successful outcome if initialization succeeded. or failed outcome with error message.
     AZ::Outcome<void, AZStd::string> InitGameSystem(HWND hwndForInputSystem);
     void CreateSplashScreen();
     void InitPlugins();
     bool InitGame();
 
-    BOOL InitConsole();
+    bool InitConsole();
     int IdleProcessing(bool bBackground);
     bool IsWindowInForeground();
     void RunInitPythonScript(CEditCommandLineInfo& cmdInfo);
@@ -170,10 +177,12 @@ public:
     // Overrides
     // ClassWizard generated virtual function overrides
 public:
-    virtual BOOL InitInstance();
+    virtual bool InitInstance();
     virtual int ExitInstance(int exitCode = 0);
-    virtual BOOL OnIdle(LONG lCount);
-    virtual CCryEditDoc* OpenDocumentFile(LPCTSTR lpszFileName);
+    virtual bool OnIdle(LONG lCount);
+    virtual CCryEditDoc* OpenDocumentFile(const char* filename,
+        bool addToMostRecentFileList=true,
+        COpenSameLevelOptions openSameLevelOptions = COpenSameLevelOptions::NotReopenIfSame);
 
     CCryDocManager* GetDocManager() { return m_pDocManager; }
 
@@ -203,16 +212,11 @@ public:
     void OnEditFetch();
     void OnFileExportToGameNoSurfaceTexture();
     void OnViewSwitchToGame();
+    void OnViewSwitchToGameFullScreen();
     void OnViewDeploy();
     void DeleteSelectedEntities(bool includeDescendants);
     void OnMoveObject();
     void OnRenameObj();
-    void OnEditmodeMove();
-    void OnEditmodeRotate();
-    void OnEditmodeScale();
-    void OnUpdateEditmodeMove(QAction* action);
-    void OnUpdateEditmodeRotate(QAction* action);
-    void OnUpdateEditmodeScale(QAction* action);
     void OnUndo();
     void OnOpenAssetImporter();
     void OnUpdateSelected(QAction* action);
@@ -352,7 +356,7 @@ private:
 // Disable warning for dll export since this member won't be used outside this class
 AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
     AZ::IO::FileDescriptorRedirector m_stdoutRedirection = AZ::IO::FileDescriptorRedirector(1); // < 1 for STDOUT
-AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING 
+AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 
 private:
     static inline constexpr const char* DefaultLevelTemplateName = "Prefabs/Default_Level.prefab";
@@ -364,7 +368,6 @@ private:
     friend struct PythonTestOutputHandler;
 
     void OpenProjectManager(const AZStd::string& screen);
-    void OnWireframe();
     void OnUpdateWireframe(QAction* action);
     void OnViewConfigureLayout();
 
@@ -400,14 +403,10 @@ private:
     void OnToolsScriptHelp();
     void OnViewCycle2dviewport();
     void OnDisplayGotoPosition();
-    void OnChangemovespeedIncrease();
-    void OnChangemovespeedDecrease();
-    void OnChangemovespeedChangestep();
     void OnFileSavelevelresources();
     void OnClearRegistryData();
     void OnValidatelevel();
     void OnToolsPreferences();
-    void OnGraphicsSettings();
     void OnSwitchToDefaultCamera();
     void OnUpdateSwitchToDefaultCamera(QAction* action);
     void OnSwitchToSequenceCamera();
@@ -420,9 +419,6 @@ private:
     void OnOpenTrackView();
     void OnOpenAudioControlsEditor();
     void OnOpenUICanvasEditor();
-    void OnChangeGameSpec(UINT nID);
-    void SetGameSpecCheck(ESystemConfigSpec spec, ESystemConfigPlatform platform, int &nCheck, bool &enable);
-    void OnUpdateGameSpec(QAction* action);
     void OnOpenQuickAccessBar();
 
 public:
@@ -433,7 +429,7 @@ public:
 };
 
 //////////////////////////////////////////////////////////////////////////
-class CCrySingleDocTemplate 
+class CCrySingleDocTemplate
     : public QObject
 {
 private:
@@ -461,9 +457,9 @@ public:
     ~CCrySingleDocTemplate() {};
     // avoid creating another CMainFrame
     // close other type docs before opening any things
-    virtual CCryEditDoc* OpenDocumentFile(LPCTSTR lpszPathName, BOOL bAddToMRU, BOOL bMakeVisible);
-    virtual CCryEditDoc* OpenDocumentFile(LPCTSTR lpszPathName, BOOL bMakeVisible = TRUE);
-    virtual Confidence MatchDocType(LPCTSTR lpszPathName, CCryEditDoc*& rpDocMatch);
+    virtual CCryEditDoc* OpenDocumentFile(const char* lpszPathName, bool addToMostRecentFileList, bool bMakeVisible);
+    virtual CCryEditDoc* OpenDocumentFile(const char* lpszPathName, bool bMakeVisible = TRUE);
+    virtual Confidence MatchDocType(const char* lpszPathName, CCryEditDoc*& rpDocMatch);
 
 private:
     const QMetaObject* m_documentClass = nullptr;
@@ -475,12 +471,13 @@ class CCryDocManager
     CCrySingleDocTemplate* m_pDefTemplate = nullptr;
 public:
     CCryDocManager();
+    virtual ~CCryDocManager() = default;
     CCrySingleDocTemplate* SetDefaultTemplate(CCrySingleDocTemplate* pNew);
     // Copied from MFC to get rid of the silly ugly unoverridable doc-type pick dialog
     virtual void OnFileNew();
-    virtual BOOL DoPromptFileName(QString& fileName, UINT nIDSTitle,
-        DWORD lFlags, BOOL bOpenFileDialog, CDocTemplate* pTemplate);
-    virtual CCryEditDoc* OpenDocumentFile(LPCTSTR lpszFileName, BOOL bAddToMRU);
+    virtual bool DoPromptFileName(QString& fileName, UINT nIDSTitle,
+        DWORD lFlags, bool bOpenFileDialog, CDocTemplate* pTemplate);
+    virtual CCryEditDoc* OpenDocumentFile(const char* filename, bool addToMostRecentFileList, COpenSameLevelOptions openSameLevelOptions = COpenSameLevelOptions::NotReopenIfSame);
 
     QVector<CCrySingleDocTemplate*> m_templateList;
 };

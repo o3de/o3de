@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -34,9 +35,6 @@ namespace PhysX
 
             static const AZ::u32 s_maxCollisionLayerNameLength = 32;
             static const AZStd::string s_defaultCollisionLayerName;
-#ifdef TOUCHBENDING_LAYER_BIT
-            static const AZStd::string s_touchBendCollisionLayerName;
-#endif
 
             explicit CollisionLayersWidget(QWidget* parent = nullptr);
 

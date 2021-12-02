@@ -1,11 +1,11 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
-#include "RHI/Atom_RHI_DX12_precompiled.h"
 #include <RHI/NsightAftermathGpuCrashTracker_Windows.h>
 
 
@@ -85,7 +85,7 @@ namespace Aftermath
 #if defined(USE_NSIGHT_AFTERMATH)
         AZStd::vector<GFSDK_Aftermath_ContextHandle> cntxtHandles = static_cast<GpuCrashTracker*>(crashTracker)->GetContextHandles();
         GFSDK_Aftermath_ContextData* outContextData = new GFSDK_Aftermath_ContextData[cntxtHandles.size()];
-        GFSDK_Aftermath_Result result = GFSDK_Aftermath_GetData(cntxtHandles.size(), cntxtHandles.data(), outContextData);
+        GFSDK_Aftermath_Result result = GFSDK_Aftermath_GetData(static_cast<uint32_t>(cntxtHandles.size()), cntxtHandles.data(), outContextData);
         AssertOnError(result);
         for (int i = 0; i < cntxtHandles.size(); i++)
         {

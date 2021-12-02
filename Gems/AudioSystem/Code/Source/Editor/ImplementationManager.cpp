@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -8,13 +9,9 @@
 
 #include <ImplementationManager.h>
 
-#include <AzFramework/Application/Application.h>
-
 #include <ATLControlsModel.h>
 #include <AudioControlsEditorPlugin.h>
 #include <IAudioSystemEditor.h>
-#include <IConsole.h>
-#include <IEditor.h>
 
 
 //-----------------------------------------------------------------------------------------------//
@@ -32,10 +29,6 @@ bool CImplementationManager::LoadImplementation()
 
         // release the loaded implementation (if any)
         Release();
-
-        const char* engineRoot = nullptr;
-        AzFramework::ApplicationRequests::Bus::BroadcastResult(engineRoot, &AzFramework::ApplicationRequests::GetEngineRoot);
-        AZ_Assert(engineRoot != nullptr, "Unable to communicate with AzFramework::ApplicationRequests::Bus");
 
         AudioControlsEditor::EditorImplPluginEventBus::Broadcast(&AudioControlsEditor::EditorImplPluginEventBus::Events::InitializeEditorImplPlugin);
     }

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -42,8 +43,7 @@ namespace Multiplayer
         //! Constructor for an entity delete message.
         //! @param entityId      the networkId of the entity being deleted
         //! @param isMigrated    whether or not the entity is being migrated or deleted
-        //! @param takeOwnership true if the remote replicator should take ownership of the entity
-        explicit NetworkEntityUpdateMessage(NetEntityId entityId, bool isMigrated, bool takeOwnership);
+        explicit NetworkEntityUpdateMessage(NetEntityId entityId, bool isMigrated);
 
         NetworkEntityUpdateMessage& operator =(NetworkEntityUpdateMessage&& rhs);
         NetworkEntityUpdateMessage& operator =(const NetworkEntityUpdateMessage& rhs);
@@ -69,10 +69,6 @@ namespace Multiplayer
         //! Returns whether or not the entity was migrated.
         //! @return whether or not the entity was migrated
         bool GetWasMigrated() const;
-
-        //! Gets the current value of TakeOwnership.
-        //! @return the current value of TakeOwnership
-        bool GetTakeOwnership() const;
 
         //! Gets the current value of HasValidPrefabId.
         //! @return the current value of HasValidPrefabId
@@ -109,7 +105,6 @@ namespace Multiplayer
         NetEntityId    m_entityId = InvalidNetEntityId;
         bool           m_isDelete = false;
         bool           m_wasMigrated = false;
-        bool           m_takeOwnership = false;
         bool           m_hasValidPrefabId = false;
         PrefabEntityId m_prefabEntityId;
 
@@ -117,4 +112,5 @@ namespace Multiplayer
         // This is to prevent blowing out stack memory if we declare an array of these EntityUpdateMessages
         AZStd::unique_ptr<AzNetworking::PacketEncodingBuffer> m_data;
     };
+    using NetworkEntityUpdateVector = AZStd::fixed_vector<NetworkEntityUpdateMessage, MaxAggregateEntityMessages>;
 }

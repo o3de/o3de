@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -12,7 +13,6 @@
 #include <limits>  // std::numeric_limits
 #include <type_traits>  // std::make_unsigned
 #include "BaseTypes.h"  // uint32, uint64
-#include "CompileTimeAssert.h"
 #include "Cry_Vector2.h"
 #include "Cry_Vector3.h"
 #include "Cry_Vector4.h"
@@ -23,10 +23,10 @@ namespace CryRandom_Internal
     template <class R, class T, size_t size>
     struct BoundedRandomUint
     {
-        COMPILE_TIME_ASSERT(std::numeric_limits<T>::is_integer);
-        COMPILE_TIME_ASSERT(!std::numeric_limits<T>::is_signed);
-        COMPILE_TIME_ASSERT(sizeof(T) == size);
-        COMPILE_TIME_ASSERT(sizeof(T) <= sizeof(uint32));
+        static_assert(std::numeric_limits<T>::is_integer);
+        static_assert(!std::numeric_limits<T>::is_signed);
+        static_assert(sizeof(T) == size);
+        static_assert(sizeof(T) <= sizeof(uint32));
 
         inline static T Get(R& randomGenerator, const T maxValue)
         {
@@ -40,9 +40,9 @@ namespace CryRandom_Internal
     template <class R, class T>
     struct BoundedRandomUint<R, T, 8>
     {
-        COMPILE_TIME_ASSERT(std::numeric_limits<T>::is_integer);
-        COMPILE_TIME_ASSERT(!std::numeric_limits<T>::is_signed);
-        COMPILE_TIME_ASSERT(sizeof(T) == sizeof(uint64));
+        static_assert(std::numeric_limits<T>::is_integer);
+        static_assert(!std::numeric_limits<T>::is_signed);
+        static_assert(sizeof(T) == sizeof(uint64));
 
         inline static T Get(R& randomGenerator, const T maxValue)
         {
@@ -64,11 +64,11 @@ namespace CryRandom_Internal
     template <class R, class T>
     struct BoundedRandom<R, T, true>
     {
-        COMPILE_TIME_ASSERT(std::numeric_limits<T>::is_integer);
+        static_assert(std::numeric_limits<T>::is_integer);
         typedef typename std::make_unsigned<T>::type UT;
-        COMPILE_TIME_ASSERT(sizeof(T) == sizeof(UT));
-        COMPILE_TIME_ASSERT(std::numeric_limits<UT>::is_integer);
-        COMPILE_TIME_ASSERT(!std::numeric_limits<UT>::is_signed);
+        static_assert(sizeof(T) == sizeof(UT));
+        static_assert(std::numeric_limits<UT>::is_integer);
+        static_assert(!std::numeric_limits<UT>::is_signed);
 
         inline static T Get(R& randomGenerator, T minValue, T maxValue)
         {
@@ -83,7 +83,7 @@ namespace CryRandom_Internal
     template <class R, class T>
     struct BoundedRandom<R, T, false>
     {
-        COMPILE_TIME_ASSERT(!std::numeric_limits<T>::is_integer);
+        static_assert(!std::numeric_limits<T>::is_integer);
 
         inline static T Get(R& randomGenerator, const T minValue, const T maxValue)
         {
@@ -138,7 +138,7 @@ namespace CryRandom_Internal
     inline VT GetRandomUnitVector(R& randomGenerator)
     {
         typedef typename VT::value_type T;
-        COMPILE_TIME_ASSERT(!std::numeric_limits<T>::is_integer);
+        static_assert(!std::numeric_limits<T>::is_integer);
 
         VT res;
         T lenSquared;

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -69,12 +70,12 @@ CTrackViewTrack* CUndoComponentEntityTrackObject::FindTrack(CTrackViewSequence* 
 
     CTrackViewTrack* track = nullptr;
     CTrackViewTrackBundle allTracks = sequence->GetAllTracks();
-    for (int trackIndex = 0; trackIndex < allTracks.GetCount(); trackIndex++)
+    for (unsigned int trackIndex = 0; trackIndex < allTracks.GetCount(); trackIndex++)
     {
         CTrackViewTrack* curTrack = allTracks.GetTrack(trackIndex);
         if (curTrack->GetAnimNode() && curTrack->GetAnimNode()->GetComponentId() == m_trackComponentId)
         {
-            if (0 == azstricmp(curTrack->GetName(), m_trackName.c_str()))
+            if (curTrack->GetName() == m_trackName)
             {
                 CTrackViewAnimNode* parentAnimNode = static_cast<CTrackViewAnimNode*>(curTrack->GetAnimNode()->GetParentNode());
                 if (parentAnimNode && parentAnimNode->GetAzEntityId() == m_entityId)

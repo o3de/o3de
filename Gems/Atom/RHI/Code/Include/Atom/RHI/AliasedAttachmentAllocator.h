@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -247,7 +248,7 @@ namespace AZ
             // The no allocation heap is used when doing a 2 pass strategy.
             Internal::NoAllocationAliasedHeap::Descriptor heapAllocator;
             heapAllocator.m_alignment = descriptor.m_alignment;
-            heapAllocator.m_budgetInBytes = ~0;
+            heapAllocator.m_budgetInBytes = std::numeric_limits<AZ::u64>::max();
             m_noAllocationHeap.Init(device, heapAllocator);
 
             typename decltype(m_garbageCollector)::Descriptor collectorDescriptor;

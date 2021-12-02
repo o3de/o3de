@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -39,13 +40,13 @@ namespace EMStudio
         void SetFind(const QString& find);
         QString GetFind() const
         {
-            return mFind;
+            return m_find;
         }
 
         void SetFilter(uint32 filter);
         uint32 GetFilter() const
         {
-            return mFilter;
+            return m_filter;
         }
 
     protected:
@@ -69,9 +70,9 @@ namespace EMStudio
         void SetColumnWidthToTakeWholeSpace();
 
     private:
-        QString mFind;
-        uint32 mFilter;
-        int mMaxSecondColumnWidth;
+        QString m_find;
+        uint32 m_filter;
+        int m_maxSecondColumnWidth;
         bool m_scrollToBottom;
     };
 } // namespace EMStudio

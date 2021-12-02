@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -15,7 +16,7 @@ namespace Benchmark
 
     BENCHMARK_DEFINE_F(BM_PrefabInstantiate, InstantiatePrefab_SingleEntityInstance)(::benchmark::State& state)
     {
-        const unsigned int numInstances = state.range();
+        const unsigned int numInstances = static_cast<unsigned int>(state.range());
 
         AZStd::unique_ptr<Instance> firstInstance = m_prefabSystemComponent->CreatePrefab(
             { CreateEntity("Entity1") },
@@ -32,7 +33,7 @@ namespace Benchmark
 
             state.ResumeTiming();
 
-            for (int instanceCounter = 0; instanceCounter < numInstances; ++instanceCounter)
+            for (unsigned int instanceCounter = 0; instanceCounter < numInstances; ++instanceCounter)
             {
                 newInstances[instanceCounter] = m_prefabSystemComponent->InstantiatePrefab(templateToInstantiateId);
             }

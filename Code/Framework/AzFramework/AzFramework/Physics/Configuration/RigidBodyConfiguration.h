@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -60,6 +61,16 @@ namespace AzPhysics
         bool m_computeCenterOfMass = true;
         bool m_computeInertiaTensor = true;
         bool m_computeMass = true;
+
+        // Flags to restrict motion along specific world-space axes.
+        bool m_lockLinearX = false;
+        bool m_lockLinearY = false;
+        bool m_lockLinearZ = false;
+
+        // Flags to restrict rotation around specific world-space axes.
+        bool m_lockAngularX = false;
+        bool m_lockAngularY = false;
+        bool m_lockAngularZ = false;
 
         //! If set, non-simulated shapes will also be included in the mass properties calculation.
         bool m_includeAllShapesInMassCalculation = false;

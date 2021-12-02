@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -31,11 +32,6 @@ namespace UnitTest
 
     void AddCommonTestMaterialProperties(AZ::RPI::MaterialTypeAssetCreator& materialTypeCreator, AZStd::string propertyGroupPrefix = "");
 
-    AZ::Data::Asset<AZ::RPI::ShaderResourceGroupAsset> CreateCommonTestMaterialSrgAsset();
+    AZ::RHI::Ptr<AZ::RHI::ShaderResourceGroupLayout> CreateCommonTestMaterialSrgLayout();
 
-    //! Utility function for creating the simplest possible ShaderAsset
-    AZ::Data::Asset<AZ::RPI::ShaderAsset> CreateTestShaderAsset(
-        const AZ::Data::AssetId& shaderAssetId,
-        AZ::Data::Asset<AZ::RPI::ShaderResourceGroupAsset> optionalMaterialSrg = {},
-        AZ::RPI::Ptr<AZ::RPI::ShaderOptionGroupLayout> optionalShaderOptions = nullptr);
-}
+} //namespace UnitTest

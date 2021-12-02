@@ -1,15 +1,14 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "RHI/Atom_RHI_DX12_precompiled.h"
 #include <RHI/CommandListPool.h>
 #include <RHI/CommandList.h>
 #include <RHI/Conversions.h>
 #include <RHI/DescriptorContext.h>
-#include <Atom/RHI/CpuProfiler.h>
 #include <AzCore/Debug/EventTrace.h>
 
 namespace AZ
@@ -138,7 +137,7 @@ namespace AZ
                 commandAllocatorPoolDescriptor.m_collectLatency = descriptor.m_frameCountMax;
                 commandAllocatorPool.Init(commandAllocatorPoolDescriptor);
 
-                m_commandListSubAllocators[queueIdx].SetInitFunction([this, &commandListPool, &commandAllocatorPool]
+                m_commandListSubAllocators[queueIdx].SetInitFunction([&commandListPool, &commandAllocatorPool]
                     (Internal::CommandListSubAllocator& subAllocator)
                 {
                     subAllocator.Init(commandAllocatorPool, commandListPool);
@@ -175,7 +174,7 @@ namespace AZ
 
         void CommandListAllocator::Collect()
         {
-            AZ_ATOM_PROFILE_FUNCTION("DX12", "CommandListAllocator: Collect");
+            AZ_PROFILE_SCOPE(RHI, "CommandListAllocator: Collect(DX12)");
             for (uint32_t queueIdx = 0; queueIdx < RHI::HardwareQueueClassCount; ++queueIdx)
             {
                 m_commandListSubAllocators[queueIdx].ForEach([](Internal::CommandListSubAllocator& commandListSubAllocator)

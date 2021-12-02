@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -14,10 +15,13 @@
 #include <AzCore/std/containers/set.h>
 #include <AzCore/Math/Color.h>
 
+#include <Atom/RPI.Public/Image/AttachmentImage.h>
 #include <Atom/RPI.Reflect/Image/Image.h>
+#include <Atom/RPI.Public/DynamicDraw/DynamicDrawContext.h>
 #include <AtomCore/Instance/Instance.h>
 
 #include "UiRenderer.h"
+#include "LyShinePass.h"
 #ifndef _RELEASE
 #include "LyShineDebug.h"
 #endif
@@ -45,7 +49,9 @@ namespace LyShine
         RenderNode(RenderNodeType type) : m_type(type) {}
         virtual ~RenderNode() {};
 
-        virtual void Render(UiRenderer* uiRenderer) = 0;
+        virtual void Render(UiRenderer* uiRenderer
+            , const AZ::Matrix4x4& modelViewProjMat
+            , AZ::RHI::Ptr<AZ::RPI::DynamicDrawContext> dynamicDraw) = 0;
 
         RenderNodeType GetType() const { return m_type; }
 
@@ -65,14 +71,16 @@ namespace LyShine
         // We use a pool allocator to keep these allocations fast.
         AZ_CLASS_ALLOCATOR(PrimitiveListRenderNode, AZ::PoolAllocator, 0);
 
-        PrimitiveListRenderNode(const AZ::Data::Instance<AZ::RPI::Image>& texture, bool isClampTextureMode, bool isTextureSRGB, bool preMultiplyAlpha, int blendModeState);
+        PrimitiveListRenderNode(const AZ::Data::Instance<AZ::RPI::Image>& texture, bool isClampTextureMode, bool isTextureSRGB, bool preMultiplyAlpha, const AZ::RHI::TargetBlendState& blendModeState);
         PrimitiveListRenderNode(const AZ::Data::Instance<AZ::RPI::Image>& texture, const AZ::Data::Instance<AZ::RPI::Image>& maskTexture,
-            bool isClampTextureMode, bool isTextureSRGB, bool preMultiplyAlpha, AlphaMaskType alphaMaskType, int blendModeState);
+            bool isClampTextureMode, bool isTextureSRGB, bool preMultiplyAlpha, AlphaMaskType alphaMaskType, const AZ::RHI::TargetBlendState& blendModeState);
         ~PrimitiveListRenderNode() override;
-        void Render(UiRenderer* uiRenderer) override;
+        void Render(UiRenderer* uiRenderer
+            , const AZ::Matrix4x4& modelViewProjMat
+            , AZ::RHI::Ptr<AZ::RPI::DynamicDrawContext> dynamicDraw) override;
 
-        void AddPrimitive(IRenderer::DynUiPrimitive* primitive);
-        IRenderer::DynUiPrimitiveList& GetPrimitives() const;
+        void AddPrimitive(DynUiPrimitive* primitive);
+        DynUiPrimitiveList& GetPrimitives() const;
 
         int GetOrAddTexture(const AZ::Data::Instance<AZ::RPI::Image>& texture, bool isClampTextureMode);
         int GetNumTextures() const { return m_numTextures; }
@@ -80,11 +88,11 @@ namespace LyShine
         bool GetTextureIsClampMode(int texIndex) const { return m_textures[texIndex].m_isClampTextureMode; }
 
         bool GetIsTextureSRGB() const { return m_isTextureSRGB; }
-        int  GetBlendModeState() const { return m_blendModeState; }
+        AZ::RHI::TargetBlendState GetBlendModeState() const { return m_blendModeState; }
         bool GetIsPremultiplyAlpha() const { return m_preMultiplyAlpha; }
         AlphaMaskType GetAlphaMaskType() const { return m_alphaMaskType; }
 
-        bool HasSpaceToAddPrimitive(IRenderer::DynUiPrimitive* primitive) const;
+        bool HasSpaceToAddPrimitive(DynUiPrimitive* primitive) const;
 
         // Search to see if this texture is already used by this texture unit, returns -1 if not used
         int FindTexture(const AZ::Data::Instance<AZ::RPI::Image>& texture, bool isClampTextureMode) const;
@@ -110,11 +118,11 @@ namespace LyShine
         bool            m_isTextureSRGB;
         bool            m_preMultiplyAlpha;
         AlphaMaskType   m_alphaMaskType;
-        int             m_blendModeState;
+        AZ::RHI::TargetBlendState m_blendModeState;
         int             m_totalNumVertices;
         int             m_totalNumIndices;
 
-        IRenderer::DynUiPrimitiveList   m_primitives;
+        DynUiPrimitiveList   m_primitives;
     };
 
     // A mask render node handles using one set of render nodes to mask another set of render nodes
@@ -127,7 +135,9 @@ namespace LyShine
         MaskRenderNode(MaskRenderNode* parentMask, bool isMaskingEnabled, bool useAlphaTest, bool drawBehind, bool drawInFront);
         ~MaskRenderNode() override;
 
-        void Render(UiRenderer* uiRenderer) override;
+        void Render(UiRenderer* uiRenderer
+            , const AZ::Matrix4x4& modelViewProjMat
+            , AZ::RHI::Ptr<AZ::RPI::DynamicDrawContext> dynamicDraw) override;
 
         AZStd::vector<RenderNode*>& GetMaskRenderNodeList() { return m_maskRenderNodes; }
         const AZStd::vector<RenderNode*>& GetMaskRenderNodeList() const { return m_maskRenderNodes; }
@@ -151,8 +161,12 @@ namespace LyShine
 #endif
 
     private: // functions
-        void SetupBeforeRenderingMask(UiRenderer* uiRenderer, bool firstPass, UiRenderer::BaseState priorBaseState);
-        void SetupAfterRenderingMask(UiRenderer* uiRenderer, bool firstPass, UiRenderer::BaseState priorBaseState);
+        void SetupBeforeRenderingMask(UiRenderer* uiRenderer,
+            AZ::RHI::Ptr<AZ::RPI::DynamicDrawContext> dynamicDraw,
+            bool firstPass, UiRenderer::BaseState priorBaseState);
+        void SetupAfterRenderingMask(UiRenderer* uiRenderer,
+            AZ::RHI::Ptr<AZ::RPI::DynamicDrawContext> dynamicDraw,
+            bool firstPass, UiRenderer::BaseState priorBaseState);
 
     private: // data
         AZStd::vector<RenderNode*>  m_maskRenderNodes;      //!< The render nodes used to render the mask shape
@@ -174,15 +188,17 @@ namespace LyShine
         // We use a pool allocator to keep these allocations fast.
         AZ_CLASS_ALLOCATOR(RenderTargetRenderNode, AZ::PoolAllocator, 0);
 
-        RenderTargetRenderNode(RenderTargetRenderNode* parentRenderTarget, int renderTargetHandle,
-            SDepthTexture* renderTargetDepthSurface,
+        RenderTargetRenderNode(RenderTargetRenderNode* parentRenderTarget,
+            AZ::Data::Instance<AZ::RPI::AttachmentImage> attachmentImage,
             const AZ::Vector2& viewportTopLeft,
             const AZ::Vector2& viewportSize,
             const AZ::Color& clearColor,
             int nestLevel);
         ~RenderTargetRenderNode() override;
 
-        void Render(UiRenderer* uiRenderer) override;
+        void Render(UiRenderer* uiRenderer
+            , const AZ::Matrix4x4& modelViewProjMat
+            , AZ::RHI::Ptr<AZ::RPI::DynamicDrawContext> dynamicDraw) override;
 
         AZStd::vector<RenderNode*>& GetChildRenderNodeList() { return m_childRenderNodes; }
         const AZStd::vector<RenderNode*>& GetChildRenderNodeList() const { return m_childRenderNodes; }
@@ -196,6 +212,9 @@ namespace LyShine
         AZ::Color GetClearColor() const { return m_clearColor; }
 
         const char* GetRenderTargetName() const;
+        int GetNestLevel() const;
+
+        const AZ::Data::Instance<AZ::RPI::AttachmentImage> GetRenderTarget() const;
 
 #ifndef _RELEASE
         // A debug-only function useful for debugging
@@ -212,13 +231,16 @@ namespace LyShine
 
         RenderTargetRenderNode* m_parentRenderTarget = nullptr;             //! Used while building the render graph.
 
-        int m_renderTargetHandle = -1;
-        SDepthTexture* m_renderTargetDepthSurface = nullptr;
+        AZ::Data::Instance<AZ::RPI::AttachmentImage> m_attachmentImage;
+
+        // Each render target requires a unique dynamic draw context to draw to the raster pass associated with the target
+        AZ::RHI::Ptr<AZ::RPI::DynamicDrawContext> m_dynamicDraw;
 
         float       m_viewportX = 0;
         float       m_viewportY = 0;
         float       m_viewportWidth = 0;
         float       m_viewportHeight = 0;
+        AZ::Matrix4x4 m_modelViewProjMat;
         AZ::Color   m_clearColor;
         int         m_nestLevel = 0;
     };
@@ -240,19 +262,13 @@ namespace LyShine
         void StartChildrenForMask() override;
         void EndMask() override;
 
+        //! Begin rendering to a texture
         void BeginRenderToTexture(int renderTargetHandle, SDepthTexture* renderTargetDepthSurface,
-            const AZ::Vector2& viewportTopLeft, const AZ::Vector2& viewportSize,
-            const AZ::Color& clearColor) override;
+            const AZ::Vector2& viewportTopLeft, const AZ::Vector2& viewportSize, const AZ::Color& clearColor) override;
+
         void EndRenderToTexture() override;
 
-        void AddPrimitive(IRenderer::DynUiPrimitive* primitive, ITexture* texture,
-            bool isClampTextureMode, bool isTextureSRGB, bool isTexturePremultipliedAlpha, BlendMode blendMode) override;
-
-        void AddAlphaMaskPrimitive(IRenderer::DynUiPrimitive* primitive,
-            ITexture* texture, ITexture* maskTexture,
-            bool isClampTextureMode, bool isTextureSRGB, bool isTexturePremultipliedAlpha, BlendMode blendMode) override;
-
-        IRenderer::DynUiPrimitive* GetDynamicQuadPrimitive(const AZ::Vector2* positions, uint32 packedColor) override;
+        DynUiPrimitive* GetDynamicQuadPrimitive(const AZ::Vector2* positions, uint32 packedColor) override;
 
         bool IsRenderingToMask() const override;
         void SetIsRenderingToMask(bool isRenderingToMask) override;
@@ -264,8 +280,22 @@ namespace LyShine
         // ~IRenderGraph
 
         // LYSHINE_ATOM_TODO - this can be renamed back to AddPrimitive after removal of IRenderer from all UI components
-        void AddPrimitiveAtom(IRenderer::DynUiPrimitive* primitive, const AZ::Data::Instance<AZ::RPI::Image>& texture,
+        void AddPrimitiveAtom(DynUiPrimitive* primitive, const AZ::Data::Instance<AZ::RPI::Image>& texture,
             bool isClampTextureMode, bool isTextureSRGB, bool isTexturePremultipliedAlpha, BlendMode blendMode);
+
+        //! Add an indexed triangle list primitive to the render graph which will use maskTexture as an alpha (gradient) mask
+        void AddAlphaMaskPrimitiveAtom(DynUiPrimitive* primitive,
+            AZ::Data::Instance<AZ::RPI::AttachmentImage> contentAttachmentImage,
+            AZ::Data::Instance<AZ::RPI::AttachmentImage> maskAttachmentImage,
+            bool isClampTextureMode,
+            bool isTextureSRGB,
+            bool isTexturePremultipliedAlpha,
+            BlendMode blendMode);
+
+        void BeginRenderToTexture(AZ::Data::Instance<AZ::RPI::AttachmentImage> attachmentImage,
+            const AZ::Vector2& viewportTopLeft,
+            const AZ::Vector2& viewportSize,
+            const AZ::Color& clearColor);
 
         //! Render the display graph
         void Render(UiRenderer* uiRenderer, const AZ::Vector2& viewportSize);
@@ -281,6 +311,8 @@ namespace LyShine
 
         //! Test whether the render graph contains any render nodes
         bool IsEmpty();
+
+        void GetRenderTargetsAndDependencies(LyShine::AttachmentImagesAndDependencies& attachmentImagesAndDependencies);
 
 #ifndef _RELEASE
         // A debug-only function useful for debugging, not called but calls can be added during debugging
@@ -302,13 +334,15 @@ namespace LyShine
         struct DynamicQuad
         {
             SVF_P2F_C4B_T2F_F4B         m_quadVerts[4];
-            IRenderer::DynUiPrimitive   m_primitive;
+            DynUiPrimitive   m_primitive;
         };
 
     protected: // member functions
 
         //! Given a blend mode and whether the shader will be outputing premultiplied alpha, return state flags
-        int GetBlendModeState(LyShine::BlendMode blendMode, bool isShaderOutputPremultAlpha) const;
+        AZ::RHI::TargetBlendState GetBlendModeState(LyShine::BlendMode blendMode, bool isShaderOutputPremultAlpha) const;
+
+        void SetRttPassesEnabled(UiRenderer* uiRenderer, bool enabled);
 
     protected:  // data
 

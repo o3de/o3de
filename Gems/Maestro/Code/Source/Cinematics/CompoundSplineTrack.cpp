@@ -1,12 +1,12 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
 
-#include "Maestro_precompiled.h"
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Math/Transform.h>
 
@@ -346,10 +346,10 @@ IAnimTrack* CCompoundSplineTrack::GetSubTrack(int nIndex) const
 }
 
 //////////////////////////////////////////////////////////////////////////
-const char* CCompoundSplineTrack::GetSubTrackName(int nIndex) const
+AZStd::string CCompoundSplineTrack::GetSubTrackName(int nIndex) const
 {
     assert(nIndex >= 0 && nIndex < m_nDimensions);
-    return m_subTrackNames[nIndex].c_str();
+    return m_subTrackNames[nIndex];
 }
 
 
@@ -457,31 +457,31 @@ void CCompoundSplineTrack::GetKeyInfo(int key, const char*& description, float& 
         {
             float dummy;
             m_subTracks[0]->GetKeyInfo(m, subDesc, dummy);
-            cry_strcat(str, subDesc);
+            azstrcat(str, AZ_ARRAY_SIZE(str), subDesc);
             break;
         }
     }
     if (m == m_subTracks[0]->GetNumKeys())
     {
-        cry_strcat(str, m_subTrackNames[0].c_str());
+        azstrcat(str, AZ_ARRAY_SIZE(str), m_subTrackNames[0].c_str());
     }
     // Tail cases
     for (int i = 1; i < GetSubTrackCount(); ++i)
     {
-        cry_strcat(str, ",");
+        azstrcat(str, AZ_ARRAY_SIZE(str), ",");
         for (m = 0; m < m_subTracks[i]->GetNumKeys(); ++m)
         {
             if (m_subTracks[i]->GetKeyTime(m) == time)
             {
                 float dummy;
                 m_subTracks[i]->GetKeyInfo(m, subDesc, dummy);
-                cry_strcat(str, subDesc);
+                azstrcat(str, AZ_ARRAY_SIZE(str), subDesc);
                 break;
             }
         }
         if (m == m_subTracks[i]->GetNumKeys())
         {
-            cry_strcat(str, m_subTrackNames[i].c_str());
+            azstrcat(str, AZ_ARRAY_SIZE(str), m_subTrackNames[i].c_str());
         }
     }
 }

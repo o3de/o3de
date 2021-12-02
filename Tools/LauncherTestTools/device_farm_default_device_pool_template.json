@@ -1,7 +1,0 @@
-[
-    {
-        "attribute": "ARN",
-        "operator": "IN",
-        "value": "[%DEVICE_ARN_LIST%]"
-    }
-]

@@ -1,10 +1,10 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "RHI/Atom_RHI_DX12_precompiled.h"
 #include <RHI/CommandList.h>
 #include <RHI/Conversions.h>
 #include <RHI/Buffer.h>
@@ -40,6 +40,8 @@
 #define DX12_COMMANDLIST_TIMER(id)
 #define DX12_COMMANDLIST_TIMER_DETAIL(id)
 #endif
+
+#define PIX_MARKER_CMDLIST_COL 0xFF0000FF
 
 namespace AZ
 {
@@ -94,16 +96,22 @@ namespace AZ
         {
             SetName(name);
 
-            PIXBeginEvent(0xFF0000FF, name.GetCStr());
-            PIXBeginEvent(GetCommandList(), 0xFF0000FF, name.GetCStr());
+            PIXBeginEvent(PIX_MARKER_CMDLIST_COL, name.GetCStr());
+            if (RHI::Factory::Get().IsPixModuleLoaded() || RHI::Factory::Get().IsRenderDocModuleLoaded())
+            {
+                PIXBeginEvent(GetCommandList(), PIX_MARKER_CMDLIST_COL, name.GetCStr());
+            }
         }
 
         void CommandList::Close()
         {
             FlushBarriers();
-
-            PIXEndEvent(GetCommandList());
             PIXEndEvent();
+            if (RHI::Factory::Get().IsPixModuleLoaded() || RHI::Factory::Get().IsRenderDocModuleLoaded())
+            {
+                PIXEndEvent(GetCommandList());
+            }
+            
 
             CommandListBase::Close();
         }

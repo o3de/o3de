@@ -1,36 +1,33 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
-#include <QApplication>
-#include <QClipboard>
-#include <QMenu>
-#include <QInputDialog>
-#include <QMessageBox>
-#include <QFileDialog>
-#include <QDesktopServices>
-
-#include <AzCore/std/string/wildcard.h>
-#include <AzQtComponents/Utilities/DesktopUtilities.h>
-
-#include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
-#include <AzToolsFramework/AssetBrowser/AssetSelectionModel.h>
-#include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
-#include <AzToolsFramework/Thumbnails/SourceControlThumbnail.h>
-#include <AtomToolsFramework/Util/Util.h>
-
 #include <Atom/RPI.Edit/Common/AssetUtils.h>
-#include <Atom/Document/MaterialDocumentSystemRequestBus.h>
-
-#include <Window/MaterialEditorBrowserInteractions.h>
-#include <Window/CreateMaterialDialog/CreateMaterialDialog.h>
-
-#include <Atom/RPI.Reflect/Material/MaterialAsset.h>
 #include <Atom/RPI.Edit/Material/MaterialSourceData.h>
 #include <Atom/RPI.Edit/Material/MaterialTypeSourceData.h>
+#include <Atom/RPI.Reflect/Material/MaterialAsset.h>
+#include <AtomToolsFramework/Document/AtomToolsDocumentSystemRequestBus.h>
+#include <AtomToolsFramework/Util/Util.h>
+#include <AzCore/std/string/wildcard.h>
+#include <AzQtComponents/Utilities/DesktopUtilities.h>
+#include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
+#include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
+#include <AzToolsFramework/AssetBrowser/AssetSelectionModel.h>
+#include <AzToolsFramework/Thumbnails/SourceControlThumbnail.h>
+#include <Window/CreateMaterialDialog/CreateMaterialDialog.h>
+#include <Window/MaterialEditorBrowserInteractions.h>
+
+#include <QApplication>
+#include <QClipboard>
+#include <QDesktopServices>
+#include <QFileDialog>
+#include <QInputDialog>
+#include <QMenu>
+#include <QMessageBox>
 
 namespace MaterialEditor
 {
@@ -65,11 +62,11 @@ namespace MaterialEditor
         if (entry->GetEntryType() == AssetBrowserEntry::AssetEntryType::Source)
         {
             const auto source = azalias_cast<const SourceAssetBrowserEntry*>(entry);
-            if (AzFramework::StringFunc::Path::IsExtension(entry->GetFullPath().c_str(), MaterialExtension))
+            if (AzFramework::StringFunc::Path::IsExtension(entry->GetFullPath().c_str(), AZ::RPI::MaterialSourceData::Extension))
             {
                 AddContextMenuActionsForMaterialSource(caller, menu, source);
             }
-            else if (AzFramework::StringFunc::Path::IsExtension(entry->GetFullPath().c_str(), MaterialTypeExtension))
+            else if (AzFramework::StringFunc::Path::IsExtension(entry->GetFullPath().c_str(), AZ::RPI::MaterialTypeSourceData::Extension))
             {
                 AddContextMenuActionsForMaterialTypeSource(caller, menu, source);
             }
@@ -109,12 +106,12 @@ namespace MaterialEditor
         menu->addAction("Create Material...", [entry]()
             {
                 const QString defaultPath = AtomToolsFramework::GetUniqueFileInfo(
-                    QString(AZ::IO::FileIOBase::GetInstance()->GetAlias("@devassets@")) +
+                    QString(AZ::IO::FileIOBase::GetInstance()->GetAlias("@projectroot@")) +
                     AZ_CORRECT_FILESYSTEM_SEPARATOR + "Materials" +
                     AZ_CORRECT_FILESYSTEM_SEPARATOR + "untitled." +
                     AZ::RPI::MaterialSourceData::Extension).absoluteFilePath();
 
-                MaterialDocumentSystemRequestBus::Broadcast(&MaterialDocumentSystemRequestBus::Events::CreateDocumentFromFile,
+                AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Broadcast(&AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Events::CreateDocumentFromFile,
                     entry->GetFullPath(), AtomToolsFramework::GetSaveFileInfo(defaultPath).absoluteFilePath().toUtf8().constData());
             });
 
@@ -128,7 +125,7 @@ namespace MaterialEditor
                 QDesktopServices::openUrl(QUrl::fromLocalFile(entry->GetFullPath().c_str()));
             });
 
-        menu->addAction("Duplicate...", [entry, caller]()
+        menu->addAction("Duplicate...", [entry]()
             {
                 const QFileInfo duplicateFileInfo(AtomToolsFramework::GetDuplicationFileInfo(entry->GetFullPath().c_str()));
                 if (!duplicateFileInfo.absoluteFilePath().isEmpty())
@@ -156,10 +153,10 @@ namespace MaterialEditor
     {
         menu->addAction("Open", [entry]()
             {
-                MaterialDocumentSystemRequestBus::Broadcast(&MaterialDocumentSystemRequestBus::Events::OpenDocument, entry->GetFullPath());
+                AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Broadcast(&AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Events::OpenDocument, entry->GetFullPath());
             });
 
-        menu->addAction("Duplicate...", [entry, caller]()
+        menu->addAction("Duplicate...", [entry]()
             {
                 const QFileInfo duplicateFileInfo(AtomToolsFramework::GetDuplicationFileInfo(entry->GetFullPath().c_str()));
                 if (!duplicateFileInfo.absoluteFilePath().isEmpty())
@@ -185,12 +182,12 @@ namespace MaterialEditor
         menu->addAction("Create Child Material...", [entry]()
             {
                 const QString defaultPath = AtomToolsFramework::GetUniqueFileInfo(
-                    QString(AZ::IO::FileIOBase::GetInstance()->GetAlias("@devassets@")) +
+                    QString(AZ::IO::FileIOBase::GetInstance()->GetAlias("@projectroot@")) +
                     AZ_CORRECT_FILESYSTEM_SEPARATOR + "Materials" +
                     AZ_CORRECT_FILESYSTEM_SEPARATOR + "untitled." +
                     AZ::RPI::MaterialSourceData::Extension).absoluteFilePath();
 
-                MaterialDocumentSystemRequestBus::Broadcast(&MaterialDocumentSystemRequestBus::Events::CreateDocumentFromFile,
+                AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Broadcast(&AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Events::CreateDocumentFromFile,
                     entry->GetFullPath(), AtomToolsFramework::GetSaveFileInfo(defaultPath).absoluteFilePath().toUtf8().constData());
             });
 
@@ -257,7 +254,7 @@ namespace MaterialEditor
                     !createDialog.m_materialFileInfo.absoluteFilePath().isEmpty() &&
                     !createDialog.m_materialTypeFileInfo.absoluteFilePath().isEmpty())
                 {
-                    MaterialDocumentSystemRequestBus::Broadcast(&MaterialDocumentSystemRequestBus::Events::CreateDocumentFromFile,
+                    AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Broadcast(&AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Events::CreateDocumentFromFile,
                         createDialog.m_materialTypeFileInfo.absoluteFilePath().toUtf8().constData(),
                         createDialog.m_materialFileInfo.absoluteFilePath().toUtf8().constData());
                 }
@@ -288,7 +285,7 @@ namespace MaterialEditor
                 });
 
             // add get latest action
-            m_getLatestAction = sourceControlMenu->addAction("Get Latest", [path, this]()
+            m_getLatestAction = sourceControlMenu->addAction("Get Latest", [path]()
                 {
                     SourceControlCommandBus::Broadcast(&SourceControlCommandBus::Events::RequestLatest, path.c_str(),
                         [](bool, const SourceControlFileInfo&) {});

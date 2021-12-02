@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -130,7 +131,7 @@ namespace ScriptCanvasDeveloper
 
         QString m_nodeName;
 
-        AutomationStateModelId m_endpointId = nullptr;
+        AutomationStateModelId m_endpointId;
 
         AutomationStateModelId m_scenePointId;
         AutomationStateModelId m_nodeOutputId;

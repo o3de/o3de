@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -50,16 +51,16 @@ namespace EMotionFX
         void OnMotionSetChanged(int index);
 
     private:
-        AZ::Outcome<uint32> GetMotionSetIndex(int comboBoxIndex) const;
+        AZ::Outcome<size_t> GetMotionSetIndex(int comboBoxIndex) const;
 
         MCORE_DEFINECOMMANDCALLBACK(UpdateMotionSetComboBoxCallback)
 
         AnimGraph*                                  m_animGraph;
         QLabel*                                     m_filenameLabel;
         AzToolsFramework::ReflectedPropertyEditor*  m_propertyEditor;
-        static const int                            m_propertyLabelWidth;
+        static const int                            s_propertyLabelWidth;
         QComboBox*                                  m_motionSetComboBox;
-        static QString                              m_lastMotionSetText;
+        static QString                              s_lastMotionSetText;
         AZStd::vector<MCore::Command::Callback*>    m_commandCallbacks;
 
     };

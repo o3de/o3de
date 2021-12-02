@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -148,7 +149,7 @@ namespace AZ
                 hider->setLayout(layout2);
                 layoutOriginal->addWidget(hider);
 
-                connect(toolButton, &QToolButton::clicked, this, [this, hider, parentWidget, toolButton]
+                connect(toolButton, &QToolButton::clicked, this, [this, hider, toolButton]
                 {
                     m_expanded = !m_expanded;
                     if (m_expanded)

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -34,8 +35,6 @@ namespace AZ
             {
                 m_viewPtr = view;
                 m_viewSrg = view->GetShaderResourceGroup();
-
-                m_exposureControlBufferInputIndex = m_viewSrg->FindShaderInputBufferIndex(Name("m_exposureControl"));
 
                 m_eyeAdaptationBuffer.Init(m_viewSrg, idNumber);
             }
@@ -108,14 +107,10 @@ namespace AZ
 
             m_eyeAdaptationBuffer.UpdateSrg();
 
-            if (m_exposureControlBufferInputIndex.IsValid())
+            m_viewSrg->SetBufferView(m_exposureControlBufferInputIndex, m_buffer->GetBufferView());
+            if (m_viewPtr)
             {
-                m_viewSrg->SetBufferView(m_exposureControlBufferInputIndex, m_buffer->GetBufferView());
-
-                if (m_viewPtr)
-                {
-                    m_viewPtr->InvalidateSrg();
-                }
+                m_viewPtr->InvalidateSrg();
             }
         }
 

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -11,6 +12,8 @@
 #include <AzCore/PlatformIncl.h>
 #include <AzCore/Debug/TraceMessageBus.h>
 #include <AzCore/Debug/TraceMessagesDrillerBus.h>
+#include <AzCore/std/string/conversions.h>
+#include <AzCore/std/string/fixed_string.h>
 
 #include <stdio.h>
 
@@ -21,7 +24,7 @@ namespace AZ
     LPTOP_LEVEL_EXCEPTION_FILTER g_previousExceptionHandler = nullptr;
 #endif
 
-    const int g_maxMessageLength = 4096;
+    constexpr int g_maxMessageLength = 4096;
 
     namespace Debug
     {
@@ -46,6 +49,45 @@ namespace AZ
                 }
             }
 
+            bool AttachDebugger()
+            {
+                if (IsDebuggerPresent())
+                {
+                    return true;
+                }
+
+                // Launch vsjitdebugger.exe, this app is always present in System32 folder
+                // with an installation of any version of visual studio.
+                // It will open a debugging dialog asking the user what debugger to use
+
+                STARTUPINFOW startupInfo = {0};
+                startupInfo.cb = sizeof(startupInfo);
+                PROCESS_INFORMATION processInfo = {0};
+
+                wchar_t cmdline[MAX_PATH];
+                swprintf_s(cmdline, L"vsjitdebugger.exe -p %li", ::GetCurrentProcessId());
+                bool success = ::CreateProcessW(
+                    NULL,           // No module name (use command line)
+                    cmdline,        // Command line
+                    NULL,           // Process handle not inheritable
+                    NULL,           // Thread handle not inheritable
+                    FALSE,          // No handle inheritance
+                    0,              // No creation flags
+                    NULL,           // Use parent's environment block
+                    NULL,           // Use parent's starting directory 
+                    &startupInfo,   // Pointer to STARTUPINFO structure
+                    &processInfo);  // Pointer to PROCESS_INFORMATION structure
+
+                if (success)
+                {
+                    ::WaitForSingleObject(processInfo.hProcess, INFINITE);
+                    ::CloseHandle(processInfo.hProcess);
+                    ::CloseHandle(processInfo.hThread);
+                    return true;
+                }
+                return false;
+            }
+
             void DebugBreak()
             {
                 __debugbreak();
@@ -57,19 +99,18 @@ namespace AZ
                 TerminateProcess(GetCurrentProcess(), exitCode);
             }
 
-            void OutputToDebugger(const char* window, const char* message)
+            void OutputToDebugger([[maybe_unused]] const char* window, const char* message)
             {
-                AZ_UNUSED(window);
-#ifdef _UNICODE
-                wchar_t messageW[g_maxMessageLength];
-                size_t numCharsConverted;
-                if (mbstowcs_s(&numCharsConverted, messageW, message, g_maxMessageLength - 1) == 0)
+                AZStd::fixed_wstring<g_maxMessageLength> tmpW;
+                if(window)
                 {
-                    OutputDebugStringW(messageW);
+                    AZStd::to_wstring(tmpW, window);
+                    tmpW += L": ";
+                    OutputDebugStringW(tmpW.c_str());
+                    tmpW.clear();
                 }
-#else // !_UNICODE
-                OutputDebugString(message);
-#endif // !_UNICODE
+                AZStd::to_wstring(tmpW, message);
+                OutputDebugStringW(tmpW.c_str());
             }
         }
     }
@@ -143,7 +184,7 @@ namespace AZ
 
         char message[g_maxMessageLength];
         Debug::Trace::Instance().Output(nullptr, "==================================================================\n");
-        azsnprintf(message, g_maxMessageLength, "Exception : 0x%X - '%s' [%p]\n", ExceptionInfo->ExceptionRecord->ExceptionCode, GetExeptionName(ExceptionInfo->ExceptionRecord->ExceptionCode), ExceptionInfo->ExceptionRecord->ExceptionAddress);
+        azsnprintf(message, g_maxMessageLength, "Exception : 0x%lX - '%s' [%p]\n", ExceptionInfo->ExceptionRecord->ExceptionCode, GetExeptionName(ExceptionInfo->ExceptionRecord->ExceptionCode), ExceptionInfo->ExceptionRecord->ExceptionAddress);
         Debug::Trace::Instance().Output(nullptr, message);
 
         EBUS_EVENT(Debug::TraceMessageDrillerBus, OnException, message);

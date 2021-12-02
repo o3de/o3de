@@ -1,5 +1,6 @@
 """
-Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+Copyright (c) Contributors to the Open 3D Engine Project.
+For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
@@ -12,15 +13,18 @@ from aws_cdk import (
 )
 
 from . import aws_metrics_constants
+from .aws_utils import resource_name_sanitizer
 
 
 class DataLakeIntegration:
     """
     Create the AWS resources including the S3 bucket, Glue database, table and crawler for data lake integration
     """
-    def __init__(self, stack: core.Construct, application_name: str) -> None:
+    def __init__(self, stack: core.Construct, application_name: str,
+                 server_access_logs_bucket: str = None) -> None:
         self._stack = stack
         self._application_name = application_name
+        self._server_access_logs_bucket = server_access_logs_bucket
 
         self._create_analytics_bucket()
         self._create_events_database()
@@ -33,24 +37,42 @@ class DataLakeIntegration:
         The bucket uses server-side encryption with a CMK managed by S3:
         https://docs.aws.amazon.com/AmazonS3/latest/userguide/UsingKMSEncryption.html
         """
+        # Enable server access logging if the server access logs bucket is provided following S3 best practices.
+        # See https://docs.aws.amazon.com/AmazonS3/latest/dev/security-best-practices.html
+        server_access_logs_bucket = s3.Bucket.from_bucket_name(
+            self._stack,
+            f'{self._stack.stack_name}-ImportedAccessLogsBucket',
+            self._server_access_logs_bucket,
+        ) if self._server_access_logs_bucket else None
+
         # Bucket name cannot contain uppercase characters
         # Do not specify the bucket name here since bucket name is required to be unique globally. If we set
         # a specific name here, only one customer can deploy the bucket successfully.
         self._analytics_bucket = s3.Bucket(
             self._stack,
-            id=f'{self._stack.stack_name}-AnalyticsBucket'.lower(),
+            id=resource_name_sanitizer.sanitize_resource_name(
+                f'{self._stack.stack_name}-AnalyticsBucket'.lower(), 's3_bucket'),
             encryption=s3.BucketEncryption.S3_MANAGED,
             block_public_access=s3.BlockPublicAccess(
                 block_public_acls=True,
                 block_public_policy=True,
                 ignore_public_acls=True,
                 restrict_public_buckets=True
-            )
+            ),
+            server_access_logs_bucket=server_access_logs_bucket,
+            server_access_logs_prefix=f'{self._stack.stack_name}-AccessLogs' if server_access_logs_bucket else None
         )
 
         # For Amazon S3 buckets, you must delete all objects in the bucket for deletion to succeed.
         cfn_bucket = self._analytics_bucket.node.find_child('Resource')
         cfn_bucket.apply_removal_policy(core.RemovalPolicy.DESTROY)
+
+        core.CfnOutput(
+            self._stack,
+            id='AnalyticsBucketName',
+            description='Name of the S3 bucket for storing metrics event data',
+            export_name=f"{self._application_name}:AnalyticsBucket",
+            value=self._analytics_bucket.bucket_name)
 
     def _create_events_database(self) -> None:
         """
@@ -67,6 +89,12 @@ class DataLakeIntegration:
                 name=f'{self._stack.stack_name}-EventsDatabase'.lower()
             )
         )
+        core.CfnOutput(
+            self._stack,
+            id='EventDatabaseName',
+            description='Glue database for metrics events.',
+            export_name=f"{self._application_name}:EventsDatabase",
+            value=self._events_database.ref)
 
     def _create_events_table(self) -> None:
         """
@@ -177,7 +205,7 @@ class DataLakeIntegration:
             configuration=aws_metrics_constants.CRAWLER_CONFIGURATION
         )
 
-        events_crawler_output = core.CfnOutput(
+        core.CfnOutput(
             self._stack,
             id='EventsCrawlerName',
             description='Glue Crawler to populate the AWS Glue Data Catalog with metrics events tables',
@@ -284,7 +312,8 @@ class DataLakeIntegration:
         self._events_crawler_role = iam.Role(
             self._stack,
             id='EventsCrawlerRole',
-            role_name=f'{self._stack.stack_name}-EventsCrawlerRole',
+            role_name=resource_name_sanitizer.sanitize_resource_name(
+                f'{self._stack.stack_name}-EventsCrawlerRole', 'iam_role'),
             assumed_by=iam.ServicePrincipal(
                 service='glue.amazonaws.com'
             ),

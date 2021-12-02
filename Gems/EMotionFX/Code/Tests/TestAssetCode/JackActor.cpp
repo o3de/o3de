@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -13,7 +14,7 @@ namespace EMotionFX
     JackNoMeshesActor::JackNoMeshesActor(const char* name)
         : Actor(name)
     {
-        uint32 nodeId = 0;
+        size_t nodeId = 0;
         auto root = AddNode(nodeId++, "jack_root");
         auto Bip01__pelvis = AddNode(nodeId++, "Bip01__pelvis", root->GetNodeIndex());
         auto l_upLeg = AddNode(nodeId++, "l_upLeg", Bip01__pelvis->GetNodeIndex());

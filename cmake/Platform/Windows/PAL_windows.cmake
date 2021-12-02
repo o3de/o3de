@@ -1,6 +1,7 @@
 #
-# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
-# 
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
@@ -16,6 +17,8 @@ ly_set(PAL_TRAIT_BUILD_UNITY_SUPPORTED TRUE)
 ly_set(PAL_TRAIT_BUILD_UNITY_EXCLUDE_EXTENSIONS)
 ly_set(PAL_TRAIT_BUILD_EXCLUDE_ALL_TEST_RUNS_FROM_IDE FALSE)
 ly_set(PAL_TRAIT_BUILD_CPACK_SUPPORTED TRUE)
+
+ly_set(PAL_TRAIT_PROF_PIX_SUPPORTED TRUE)
 
 # Test library support
 ly_set(PAL_TRAIT_TEST_GOOGLE_TEST_SUPPORTED TRUE)

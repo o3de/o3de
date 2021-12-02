@@ -1,11 +1,12 @@
 #
-# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
-# 
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
 
-set(LY_UNITY_BUILD OFF CACHE BOOL "UNITY builds")
+set(LY_UNITY_BUILD ON CACHE BOOL "UNITY builds")
 
 include(CMakeFindDependencyMacro)
 include(cmake/LyAutoGen.cmake)
@@ -28,6 +29,20 @@ define_property(TARGET PROPERTY GEM_MODULE
     ]]
 )
 
+define_property(TARGET PROPERTY RUNTIME_DEPENDENCIES_DEPENDS
+    BRIEF_DOCS "Defines the dependencies the runtime dependencies of a target has"
+    FULL_DOCS [[
+        Property which is queried through generator expressions at the moment
+        the target is declared so a custom command that will do the copies can
+        be generated later. Custom commands need to be declared in the same folder
+        the target is declared, however, runtime dependencies need all targets
+        to be declared, so it is done towards the end of CMake parsing. When 
+        runtime dependencies are processed, this target property is filled so the
+        right dependencies are set for the custom command. 
+        This property contains all the files that are going to be copied to the output
+        when the target gets built.
+    ]]
+)
 
 #! ly_add_target: adds a target and provides parameters for the common configurations.
 #
@@ -300,24 +315,65 @@ function(ly_add_target)
     # Store the target so we can walk through all of them in LocationDependencies.cmake
     set_property(GLOBAL APPEND PROPERTY LY_ALL_TARGETS ${interface_name})
 
-    # Store the aliased target into a DIRECTORY property
-    set_property(DIRECTORY APPEND PROPERTY LY_DIRECTORY_TARGETS ${interface_name})
-    # Store the directory path in a GLOBAL property so that it can be accessed
-    # in the layout install logic. Skip if the directory has already been added
-    get_property(ly_all_target_directories GLOBAL PROPERTY LY_ALL_TARGET_DIRECTORIES)
-    if(NOT CMAKE_CURRENT_SOURCE_DIR IN_LIST ly_all_target_directories)
-        set_property(GLOBAL APPEND PROPERTY LY_ALL_TARGET_DIRECTORIES ${CMAKE_CURRENT_SOURCE_DIR})
+    if(NOT ly_add_target_IMPORTED)
+        # Store the aliased target into a DIRECTORY property
+        set_property(DIRECTORY APPEND PROPERTY LY_DIRECTORY_TARGETS ${interface_name})
+
+        # Store the directory path in a GLOBAL property so that it can be accessed
+        # in the layout install logic. Skip if the directory has already been added
+        get_property(ly_all_target_directories GLOBAL PROPERTY LY_ALL_TARGET_DIRECTORIES)
+        if(NOT CMAKE_CURRENT_SOURCE_DIR IN_LIST ly_all_target_directories)
+            set_property(GLOBAL APPEND PROPERTY LY_ALL_TARGET_DIRECTORIES ${CMAKE_CURRENT_SOURCE_DIR})
+        endif()
     endif()
 
+    # Custom commands need to be declared in the same folder as the target that they use. 
+    # Not all the targets will require runtime dependencies, but we will generate at least an
+    # empty file for them.
     set(runtime_dependencies_list SHARED MODULE EXECUTABLE APPLICATION)
     if(NOT ly_add_target_IMPORTED AND linking_options IN_LIST runtime_dependencies_list)
 
-        add_custom_command(TARGET ${ly_add_target_NAME} POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -P ${CMAKE_BINARY_DIR}/runtime_dependencies/$<CONFIG>/${ly_add_target_NAME}.cmake
-            DEPENDS ${CMAKE_BINARY_DIR}/runtime_dependencies/${ly_add_target_NAME}.cmake
-            MESSAGE "Copying runtime dependencies..."
-            VERBATIM
-        )
+        get_property(is_multi_config_generator GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
+        # XCode generator doesnt support different source files per configuration, so we cannot have
+        # the runtime dependencies using file-tracking, instead, we will have them as a post build step
+        # Non-multi config generators like Ninja (not "Ninja Multi-Config"), Makefiles, etc have trouble to
+        # produce file-level dependencies per configuration, so we also default to use a post build step
+        if(NOT is_multi_config_generator OR CMAKE_GENERATOR MATCHES Xcode)
+        
+            add_custom_command(TARGET ${ly_add_target_NAME} POST_BUILD
+                COMMAND ${CMAKE_COMMAND} -P ${CMAKE_BINARY_DIR}/runtime_dependencies/$<CONFIG>/${ly_add_target_NAME}.cmake
+                COMMENT "Copying ${ly_add_target_NAME} runtime dependencies to output..."
+                DEPENDS ${CMAKE_BINARY_DIR}/runtime_dependencies/${ly_add_target_NAME}.cmake
+                COMMENT "Copying runtime dependencies..."
+                VERBATIM
+            )
+
+        else()
+
+            # the stamp file will be the one that triggers the execution of the custom rule. At the end
+            # of running the copy of runtime dependencies, the stamp file is touched so the timestamp is updated.
+            # Adding a config as part of the name since the stamp file is added to the VS project.
+            # Note the STAMP_OUTPUT_FILE need to match with the one used in runtime dependencies (e.g. RuntimeDependencies_common.cmake)
+            set(STAMP_OUTPUT_FILE ${CMAKE_BINARY_DIR}/runtime_dependencies/$<CONFIG>/${ly_add_target_NAME}.stamp)
+            add_custom_command(
+                OUTPUT ${STAMP_OUTPUT_FILE}
+                DEPENDS "$<GENEX_EVAL:$<TARGET_PROPERTY:${ly_add_target_NAME},RUNTIME_DEPENDENCIES_DEPENDS>>"
+                COMMAND ${CMAKE_COMMAND} -P ${CMAKE_BINARY_DIR}/runtime_dependencies/$<CONFIG>/${ly_add_target_NAME}.cmake
+                COMMENT "Copying ${ly_add_target_NAME} runtime dependencies to output..."
+                VERBATIM
+            )
+
+            # Unfortunately the VS generator cannot deal with generation expressions as part of the file name, wrapping the 
+            # stamp file on each configuration so it gets properly excluded by the generator
+            unset(stamp_files_per_config)
+            foreach(conf IN LISTS CMAKE_CONFIGURATION_TYPES)
+                set(stamp_file_conf ${CMAKE_BINARY_DIR}/runtime_dependencies/${conf}/${ly_add_target_NAME}.stamp)
+                set_source_files_properties(${stamp_file_conf} PROPERTIES GENERATED TRUE SKIP_AUTOGEN TRUE)
+                list(APPEND stamp_files_per_config $<$<CONFIG:${conf}>:${stamp_file_conf}>)
+            endforeach()
+            target_sources(${ly_add_target_NAME} PRIVATE ${stamp_files_per_config})
+
+        endif()
 
     endif()
 
@@ -347,7 +403,7 @@ function(ly_target_link_libraries TARGET)
         message(FATAL_ERROR "You must provide a target")
     endif()
 
-    set_property(GLOBAL APPEND PROPERTY LY_DELAYED_LINK_${TARGET} ${ARGN})
+    set_property(TARGET ${TARGET} APPEND PROPERTY LY_DELAYED_LINK ${ARGN})
     set_property(GLOBAL APPEND PROPERTY LY_DELAYED_LINK_TARGETS ${TARGET}) # to walk them at the end
 
 endfunction()
@@ -374,7 +430,7 @@ function(ly_delayed_target_link_libraries)
     get_property(delayed_targets GLOBAL PROPERTY LY_DELAYED_LINK_TARGETS)
     foreach(target ${delayed_targets})
 
-        get_property(delayed_link GLOBAL PROPERTY LY_DELAYED_LINK_${target})
+        get_property(delayed_link TARGET ${target} PROPERTY LY_DELAYED_LINK)
         if(delayed_link)
 
             cmake_parse_arguments(ly_delayed_target_link_libraries "" "" "${visibilities}" ${delayed_link})
@@ -402,7 +458,6 @@ function(ly_delayed_target_link_libraries)
 
                 endforeach()
             endforeach()
-            set_property(GLOBAL PROPERTY LY_DELAYED_LINK_${target})
 
         endif()
 
@@ -424,10 +479,22 @@ function(ly_parse_third_party_dependencies ly_THIRD_PARTY_LIBRARIES)
         if(${dependency_namespace} STREQUAL "3rdParty")
             if (NOT TARGET ${dependency})
                 list(GET dependency_list 1 dependency_package)
+                list(LENGTH dependency_list dependency_list_length)
                 ly_download_associated_package(${dependency_package})
-                find_package(${dependency_package} REQUIRED MODULE)
+                if (dependency_list_length GREATER 2)
+                    # There's an optional interface specified
+                    list(GET dependency_list 2 component)
+                    list(APPEND packages_with_components ${dependency_package})
+                    list(APPEND ${dependency_package}_components ${component})
+                else()
+                    find_package(${dependency_package} REQUIRED MODULE)
+                endif()
             endif()
         endif()
+    endforeach()
+
+    foreach(dependency IN LISTS packages_with_components)
+        find_package(${dependency} REQUIRED MODULE COMPONENTS ${${dependency}_components})
     endforeach()
 endfunction()
 

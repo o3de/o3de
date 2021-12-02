@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -30,14 +31,15 @@ namespace AZ
             void Shutdown();
 
             // DynamicDrawInterface overrides...
-            RHI::Ptr<DynamicDrawContext> CreateDynamicDrawContext(Scene* scene) override;
-            RHI::Ptr<DynamicDrawContext> CreateDynamicDrawContext(RenderPipeline* pipeline) override;
-            RHI::Ptr<DynamicBuffer> GetDynamicBuffer(uint32_t size, uint32_t alignment = 1) override;
+            RHI::Ptr<DynamicDrawContext> CreateDynamicDrawContext() override;
+            RHI::Ptr<DynamicBuffer> GetDynamicBuffer(uint32_t size, uint32_t alignment) override;
             void DrawGeometry(Data::Instance<Material> material, const GeometryData& geometry, ScenePtr scene) override;
             void AddDrawPacket(Scene* scene, AZStd::unique_ptr<const RHI::DrawPacket> drawPacket) override;
+            AZStd::vector<RHI::DrawListView> GetDrawListsForPass(const RasterPass* pass) override;
 
             // Submit draw data for selected scene and pipeline
             void SubmitDrawData(Scene* scene, AZStd::vector<ViewPtr> views);
+
         protected:
 
             void FrameEnd();

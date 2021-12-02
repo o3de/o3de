@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -51,7 +52,6 @@ namespace EMStudio
             RENDER_VERTEXNORMALS            = 6,
             RENDER_TANGENTS                 = 7,
             RENDER_AABB                     = 8,
-            RENDER_OBB                      = 9,
             RENDER_COLLISIONMESHES          = 10,
             RENDER_SKELETON                 = 11,
             RENDER_LINESKELETON             = 12,
@@ -71,16 +71,16 @@ namespace EMStudio
             NUM_RENDER_OPTIONS              = 26
         };
 
-        MCORE_INLINE bool GetRenderFlag(ERenderFlag option)     { return mActions[(uint32)option] ? mActions[(uint32)option]->isChecked() : false; }
+        MCORE_INLINE bool GetRenderFlag(ERenderFlag option)     { return m_actions[(uint32)option] ? m_actions[(uint32)option]->isChecked() : false; }
         void SetRenderFlag(ERenderFlag option, bool isEnabled);
         uint32 FindActionIndex(QAction* action);
-        RenderWidget* GetRenderWidget() const                   { return mRenderWidget; }
-        QMenu* GetCameraMenu() const                            { return mCameraMenu; }
+        RenderWidget* GetRenderWidget() const                   { return m_renderWidget; }
+        QMenu* GetCameraMenu() const                            { return m_cameraMenu; }
 
         void SaveOptions(QSettings* settings);
         void LoadOptions(QSettings* settings);
 
-        bool GetIsCharacterFollowModeActive() const             { return mFollowCharacterAction->isChecked(); }
+        bool GetIsCharacterFollowModeActive() const             { return m_followCharacterAction->isChecked(); }
         void SetCharacterFollowModeActive(bool active);
 
         void OnContextMenuEvent(QWidget* renderWidget, bool ctrlPressed, int32 localMouseX, int32 localMouseY, QPoint globalMousePos, RenderPlugin* plugin, MCommon::Camera* camera);
@@ -89,17 +89,17 @@ namespace EMStudio
 
     public slots:
         void OnOptions();
-        void OnOrbitCamera()                                    { mRenderWidget->SwitchCamera(RenderWidget::CAMMODE_ORBIT); UpdateInterface(); }
-        void OnFirstPersonCamera()                              { mRenderWidget->SwitchCamera(RenderWidget::CAMMODE_FIRSTPERSON); UpdateInterface(); }
-        void OnOrthoFrontCamera()                               { mRenderWidget->SwitchCamera(RenderWidget::CAMMODE_FRONT); UpdateInterface(); }
-        void OnOrthoBackCamera()                                { mRenderWidget->SwitchCamera(RenderWidget::CAMMODE_BACK); UpdateInterface(); }
-        void OnOrthoLeftCamera()                                { mRenderWidget->SwitchCamera(RenderWidget::CAMMODE_LEFT); UpdateInterface(); }
-        void OnOrthoRightCamera()                               { mRenderWidget->SwitchCamera(RenderWidget::CAMMODE_RIGHT); UpdateInterface(); }
-        void OnOrthoTopCamera()                                 { mRenderWidget->SwitchCamera(RenderWidget::CAMMODE_TOP); UpdateInterface(); }
-        void OnOrthoBottomCamera()                              { mRenderWidget->SwitchCamera(RenderWidget::CAMMODE_BOTTOM); UpdateInterface(); }
+        void OnOrbitCamera()                                    { m_renderWidget->SwitchCamera(RenderWidget::CAMMODE_ORBIT); UpdateInterface(); }
+        void OnFirstPersonCamera()                              { m_renderWidget->SwitchCamera(RenderWidget::CAMMODE_FIRSTPERSON); UpdateInterface(); }
+        void OnOrthoFrontCamera()                               { m_renderWidget->SwitchCamera(RenderWidget::CAMMODE_FRONT); UpdateInterface(); }
+        void OnOrthoBackCamera()                                { m_renderWidget->SwitchCamera(RenderWidget::CAMMODE_BACK); UpdateInterface(); }
+        void OnOrthoLeftCamera()                                { m_renderWidget->SwitchCamera(RenderWidget::CAMMODE_LEFT); UpdateInterface(); }
+        void OnOrthoRightCamera()                               { m_renderWidget->SwitchCamera(RenderWidget::CAMMODE_RIGHT); UpdateInterface(); }
+        void OnOrthoTopCamera()                                 { m_renderWidget->SwitchCamera(RenderWidget::CAMMODE_TOP); UpdateInterface(); }
+        void OnOrthoBottomCamera()                              { m_renderWidget->SwitchCamera(RenderWidget::CAMMODE_BOTTOM); UpdateInterface(); }
         void OnResetCamera(float flightTime = 1.0f)
         {
-            MCommon::Camera* camera = mRenderWidget->GetCamera();
+            MCommon::Camera* camera = m_renderWidget->GetCamera();
             if (camera)
             {
                 camera->Reset(flightTime);
@@ -117,15 +117,15 @@ namespace EMStudio
         QAction* AddToolBarAction(const char* entryName, const char* iconName);
         void Reset();
 
-        QToolBar*                           mToolBar;
-        QMenu*                              mCameraMenu;
-        RenderWidget*                       mRenderWidget;
-        QAction*                            mActions[NUM_RENDER_OPTIONS];
-        QAction*                            mFollowCharacterAction;
+        QToolBar*                           m_toolBar;
+        QMenu*                              m_cameraMenu;
+        RenderWidget*                       m_renderWidget;
+        QAction*                            m_actions[NUM_RENDER_OPTIONS];
+        QAction*                            m_followCharacterAction;
         AZStd::vector<AZStd::pair<QAction*, RenderWidget::CameraMode>> m_cameraModeActions;
-        QPushButton*                        mToolbarButtons[NUM_RENDER_OPTIONS];
+        QPushButton*                        m_toolbarButtons[NUM_RENDER_OPTIONS];
         AZStd::array<QAction*, RenderOptions::NUM_MODES> m_manipulatorModes;
-        RenderPlugin*                       mPlugin;
-        PreferencesWindow*                  mRenderOptionsWindow;
+        RenderPlugin*                       m_plugin;
+        PreferencesWindow*                  m_renderOptionsWindow;
     };
 } // namespace EMStudio

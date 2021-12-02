@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -38,8 +39,6 @@ namespace
     QColor COLOR_FOR_CONSOLE_COMMAND = QColor(0, 0, 255);
     QColor COLOR_FOR_TOGGLE_COMMAND = QColor(128, 0, 255);
     QColor COLOR_FOR_INVALID_COMMAND = QColor(255, 0, 0);
-
-    UINT CONSOLE_CMD_DROP_LIST_HEIGHT           = 300;
 };
 
 class IconListModel
@@ -60,8 +59,8 @@ public:
         }
         const QString iconsDir = gSettings.searchPaths[EDITOR_PATH_UI_ICONS][0];
         CFileUtil::ScanDirectory(iconsDir, "*.png", pngFiles);
-        m_iconImages.reserve(pngFiles.size());
-        m_iconFiles.reserve(pngFiles.size());
+        m_iconImages.reserve(static_cast<int>(pngFiles.size()));
+        m_iconFiles.reserve(static_cast<int>(pngFiles.size()));
         for (size_t i = 0; i < pngFiles.size(); ++i)
         {
             const QString path = Path::Make(iconsDir, pngFiles[i].filename);
@@ -108,7 +107,7 @@ private:
     QStringList m_iconFiles;
 };
 
-CIconListDialog::CIconListDialog(QWidget* pParent /* = NULL */)
+CIconListDialog::CIconListDialog(QWidget* pParent /* = nullptr */)
     : QDialog(pParent)
     , m_ui(new Ui::IconListDialog)
 {
@@ -497,7 +496,7 @@ CToolsConfigPage::CToolsConfigPage(QWidget* parent)
             QKeySequence shortcut(value);
             m_ui->m_macroShortcutKey->setKeySequence(shortcut);
         }
-        
+
         if (m_ui->m_macroShortcutKey->keySequence().count() >= 1)
         {
             m_ui->m_assignShortcut->setEnabled(true);
@@ -702,7 +701,7 @@ void CToolsConfigPage::OnAssignMacroShortcut()
 {
     auto pShortcutMgr = MainWindow::instance()->GetShortcutManager();
 
-    if (pShortcutMgr  == NULL)
+    if (pShortcutMgr  == nullptr)
     {
         return;
     }
@@ -817,12 +816,12 @@ void CToolsConfigPage::FillConsoleCmds()
 {
     QStringList commands;
     IConsole* console = GetIEditor()->GetSystem()->GetIConsole();
-    std::vector<const char*> cmds;
+    AZStd::vector<AZStd::string_view> cmds;
     cmds.resize(console->GetNumVars());
-    size_t cmdCount = console->GetSortedVars(&cmds[0], cmds.size());
+    size_t cmdCount = console->GetSortedVars(cmds);
     for (int i = 0; i < cmdCount; ++i)
     {
-        commands.push_back(cmds[i]);
+        commands.push_back(cmds[i].data());
     }
     m_completionModel->setStringList(commands);
 }
@@ -839,7 +838,7 @@ void CToolsConfigPage::FillScriptCmds()
     {
         EditorPythonConsoleInterface::GlobalFunctionCollection globalFunctionCollection;
         editorPythonConsoleInterface->GetGlobalFunctionList(globalFunctionCollection);
-        commands.reserve(globalFunctionCollection.size());
+        commands.reserve(static_cast<int>(globalFunctionCollection.size()));
         for (const EditorPythonConsoleInterface::GlobalFunction& globalFunction : globalFunctionCollection)
         {
             const QString fullCmd = QString("%1.%2()").arg(globalFunction.m_moduleName.data()).arg(globalFunction.m_functionName.data());

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -175,8 +176,7 @@ namespace AZ
                 return RHI::ResultCode::Success;
             }
 
-            // ResultCode::Unimplemented is used by Null Renderer and hence is a valid use case
-            AZ_Error("Buffer", resultCode == AZ::RHI::ResultCode::Unimplemented, "Buffer::Init() failed to initialize RHI buffer. Error code: %d", static_cast<uint32_t>(resultCode));
+            AZ_Error("Buffer", false, "Buffer::Init() failed to initialize RHI buffer. Error code: %d", static_cast<uint32_t>(resultCode));
             return resultCode;
         }
         
@@ -239,11 +239,6 @@ namespace AZ
             if (result == RHI::ResultCode::Success)
             {
                 return response.m_data;
-            }
-            else if (result == RHI::ResultCode::Unimplemented)
-            {
-                // ResultCode::Unimplemented is used by Null Renderer and hence is a valid use case
-                return nullptr;
             }
             else
             {

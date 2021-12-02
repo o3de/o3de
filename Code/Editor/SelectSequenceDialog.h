@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -29,7 +30,7 @@ protected:
     void OnInitDialog() override;
 
     // Derived Dialogs should override this
-    virtual void GetItems(std::vector<SItem>& outItems);
+    void GetItems(std::vector<SItem>& outItems) override;
 };
 
 #endif // CRYINCLUDE_EDITOR_SELECTSEQUENCEDIALOG_H

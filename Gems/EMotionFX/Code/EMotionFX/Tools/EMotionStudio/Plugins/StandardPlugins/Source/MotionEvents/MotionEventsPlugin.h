@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -55,7 +56,7 @@ namespace EMStudio
 
         void OnBeforeRemovePlugin(uint32 classID) override;
 
-        MotionEventPresetsWidget* GetPresetsWidget() const                      { return mMotionEventPresetsWidget; }
+        MotionEventPresetsWidget* GetPresetsWidget() const                      { return m_motionEventPresetsWidget; }
 
         void ValidatePluginLinks();
 
@@ -77,21 +78,20 @@ namespace EMStudio
         MCORE_DEFINECOMMANDCALLBACK(CommandSelectCallback);
         MCORE_DEFINECOMMANDCALLBACK(CommandUnselectCallback);
         MCORE_DEFINECOMMANDCALLBACK(CommandClearSelectionCallback);
-        CommandAdjustMotionCallback*    mAdjustMotionCallback;
-        CommandSelectCallback*          mSelectCallback;
-        CommandUnselectCallback*        mUnselectCallback;
-        CommandClearSelectionCallback*  mClearSelectionCallback;
+        CommandAdjustMotionCallback*    m_adjustMotionCallback;
+        CommandSelectCallback*          m_selectCallback;
+        CommandUnselectCallback*        m_unselectCallback;
+        CommandClearSelectionCallback*  m_clearSelectionCallback;
 
-        MysticQt::DialogStack*          mDialogStack;
-        MotionEventPresetsWidget*       mMotionEventPresetsWidget;
-        MotionEventWidget*              mMotionEventWidget;
+        MysticQt::DialogStack*          m_dialogStack;
+        MotionEventPresetsWidget*       m_motionEventPresetsWidget;
+        MotionEventWidget*              m_motionEventWidget;
 
-        QTableWidget*                   mMotionTable;
-        TimeViewPlugin*                 mTimeViewPlugin;
-        TrackHeaderWidget*              mTrackHeaderWidget;
-        TrackDataWidget*                mTrackDataWidget;
-        MotionWindowPlugin*             mMotionWindowPlugin;
-        MotionListWindow*               mMotionListWindow;
-        EMotionFX::Motion*              mMotion;
+        TimeViewPlugin*                 m_timeViewPlugin;
+        TrackHeaderWidget*              m_trackHeaderWidget;
+        TrackDataWidget*                m_trackDataWidget;
+        MotionWindowPlugin*             m_motionWindowPlugin;
+        MotionListWindow*               m_motionListWindow;
+        EMotionFX::Motion*              m_motion;
     };
 } // namespace EMStudio

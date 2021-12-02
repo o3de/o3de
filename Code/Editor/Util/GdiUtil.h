@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -13,16 +14,6 @@
 #define CRYINCLUDE_EDITOR_UTIL_GDIUTIL_H
 #pragma once
 
-//! function used to compute thumbs per row and spacing, used in asset browser and other tools where thumb layout is needed and maybe GDI canvas used
-//! \param aContainerWidth the thumbs' container width
-//! \param aThumbWidth the thumb image width
-//! \param aMargin the thumb default minimum horizontal margin
-//! \param aThumbCount the thumb count
-//! \param rThumbsPerRow returned thumb count per single row
-//! \param rNewMargin returned new computed margin between thumbs
-//! \note The margin between thumbs will grow/shrink dynamically to keep up with the thumb count per row
-bool ComputeThumbsLayoutInfo(float aContainerWidth, float aThumbWidth, float aMargin, UINT aThumbCount, UINT& rThumbsPerRow, float& rNewMargin);
-
 QColor ScaleColor(const QColor& coor, float aScale);
 
 //! This class loads alpha-channel bitmaps and holds a DC for use with AlphaBlend function
@@ -34,7 +25,7 @@ public:
     ~CAlphaBitmap();
 
     //! creates the bitmap from raw 32bpp data
-    //! \param pData the 32bpp raw image data, RGBA, can be NULL and it would create just an empty bitmap
+    //! \param pData the 32bpp raw image data, RGBA, can be nullptr and it would create just an empty bitmap
     //! \param aWidth the bitmap width
     //! \param aHeight the bitmap height
     bool            Create(void* pData, UINT aWidth, UINT aHeight, bool bVerticalFlip = false, bool bPremultiplyAlpha = false);

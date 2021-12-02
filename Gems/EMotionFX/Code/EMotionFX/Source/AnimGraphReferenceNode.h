@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -81,8 +82,8 @@ namespace EMotionFX
         AnimGraphReferenceNode();
         ~AnimGraphReferenceNode();
 
-        void Reinit();
-        void RecursiveReinit();
+        void Reinit() override;
+        void RecursiveReinit() override;
         bool InitAfterLoading(AnimGraph* animGraph) override;
 
         AnimGraphObjectData* CreateUniqueData(AnimGraphInstance* animGraphInstance) override { return aznew UniqueData(this, animGraphInstance); }
@@ -97,7 +98,7 @@ namespace EMotionFX
         void RecursiveCollectActiveNodes(AnimGraphInstance* animGraphInstance, AZStd::vector<AnimGraphNode*>* outNodes, const AZ::TypeId& nodeType) const override;
 
         AnimGraphPose* GetMainOutputPose(AnimGraphInstance* animGraphInstance) const override;
-        void RecursiveCollectObjects(MCore::Array<AnimGraphObject*>& outObjects) const override;
+        void RecursiveCollectObjects(AZStd::vector<AnimGraphObject*>& outObjects) const override;
         void RecursiveCollectObjectsAffectedBy(AnimGraph* animGraph, AZStd::vector<AnimGraphObject*>& outObjects) const override;
 
         bool RecursiveDetectCycles(AZStd::unordered_set<const AnimGraphNode*>& nodes) const override;

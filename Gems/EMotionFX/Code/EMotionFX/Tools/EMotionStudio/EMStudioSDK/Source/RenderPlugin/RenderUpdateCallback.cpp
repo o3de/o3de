@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -20,15 +21,15 @@ namespace EMStudio
     // constructor
     RenderUpdateCallback::RenderUpdateCallback(RenderPlugin* plugin)
     {
-        mEnableRendering    = true;
-        mPlugin             = plugin;
+        m_enableRendering    = true;
+        m_plugin             = plugin;
     }
 
 
     // enable or disable rendering
     void RenderUpdateCallback::SetEnableRendering(bool renderingEnabled)
     {
-        mEnableRendering = renderingEnabled;
+        m_enableRendering = renderingEnabled;
     }
 
 
@@ -40,7 +41,7 @@ namespace EMStudio
 
         // set to visible for the cases the active view widget is nullptr
         // this happens when call the Process() function from the render plugin before we update our view
-        RenderViewWidget* widget = mPlugin->GetActiveViewWidget();
+        RenderViewWidget* widget = m_plugin->GetActiveViewWidget();
         if (widget == nullptr)
         {
             actorInstance->SetIsVisible(true);
@@ -71,7 +72,7 @@ namespace EMStudio
         //actorInstance->UpdateTransformations( timePassedInSeconds, true);
 
         // find the corresponding trajectory trace path for the given actor instance
-        MCommon::RenderUtil::TrajectoryTracePath* trajectoryPath = mPlugin->FindTracePath(actorInstance);
+        MCommon::RenderUtil::TrajectoryTracePath* trajectoryPath = m_plugin->FindTracePath(actorInstance);
         if (trajectoryPath)
         {
             EMotionFX::Actor* actor = actorInstance->GetActor();
@@ -83,20 +84,20 @@ namespace EMStudio
                 const EMotionFX::Transform globalTM = transformData->GetCurrentPose()->GetWorldSpaceTransform(motionExtractionNode->GetNodeIndex()).ProjectedToGroundPlane();
 
                 bool distanceTraveledEnough = false;
-                if (trajectoryPath->mTraceParticles.GetIsEmpty())
+                if (trajectoryPath->m_traceParticles.empty())
                 {
                     distanceTraveledEnough = true;
                 }
                 else
                 {
-                    const uint32 numParticles = trajectoryPath->mTraceParticles.GetLength();
-                    const EMotionFX::Transform& oldGlobalTM = trajectoryPath->mTraceParticles[numParticles - 1].mWorldTM;
+                    const size_t numParticles = trajectoryPath->m_traceParticles.size();
+                    const EMotionFX::Transform& oldGlobalTM = trajectoryPath->m_traceParticles[numParticles - 1].m_worldTm;
 
-                    const AZ::Vector3& oldPos = oldGlobalTM.mPosition;
-                    const AZ::Quaternion& oldRot = oldGlobalTM.mRotation;
-                    const AZ::Quaternion rotation = globalTM.mRotation.GetNormalized();
+                    const AZ::Vector3& oldPos = oldGlobalTM.m_position;
+                    const AZ::Quaternion& oldRot = oldGlobalTM.m_rotation;
+                    const AZ::Quaternion rotation = globalTM.m_rotation.GetNormalized();
 
-                    const AZ::Vector3 deltaPos = globalTM.mPosition - oldPos;
+                    const AZ::Vector3 deltaPos = globalTM.m_position - oldPos;
                     float deltaRot = MCore::Math::Abs(rotation.Dot(oldRot));
 
                     if (MCore::SafeLength(deltaPos) > 0.0001f || deltaRot < 0.99f)
@@ -106,25 +107,25 @@ namespace EMStudio
                 }
 
                 // add the time delta to the time passed since the last add
-                trajectoryPath->mTimePassed += timePassedInSeconds;
+                trajectoryPath->m_timePassed += timePassedInSeconds;
 
                 const uint32 particleSampleRate = 30;
-                if (trajectoryPath->mTimePassed >= (1.0f / particleSampleRate) && distanceTraveledEnough)
+                if (trajectoryPath->m_timePassed >= (1.0f / particleSampleRate) && distanceTraveledEnough)
                 {
                     // create the particle, fill its data and add it to the trajectory trace path
                     MCommon::RenderUtil::TrajectoryPathParticle trajectoryParticle;
-                    trajectoryParticle.mWorldTM = globalTM;
-                    trajectoryPath->mTraceParticles.Add(trajectoryParticle);
+                    trajectoryParticle.m_worldTm = globalTM;
+                    trajectoryPath->m_traceParticles.emplace_back(trajectoryParticle);
 
                     // reset the time passed as we just added a new particle
-                    trajectoryPath->mTimePassed = 0.0f;
+                    trajectoryPath->m_timePassed = 0.0f;
                 }
             }
 
             // make sure we don't have too many items in our array
-            if (trajectoryPath->mTraceParticles.GetLength() > 50)
+            if (trajectoryPath->m_traceParticles.size() > 50)
             {
-                trajectoryPath->mTraceParticles.RemoveFirst();
+                trajectoryPath->m_traceParticles.erase(begin(trajectoryPath->m_traceParticles));
             }
         }
     }
@@ -135,19 +136,19 @@ namespace EMStudio
     {
         MCORE_UNUSED(timePassedInSeconds);
 
-        if (mEnableRendering == false)
+        if (m_enableRendering == false)
         {
             return;
         }
 
-        RenderPlugin::EMStudioRenderActor* emstudioActor = mPlugin->FindEMStudioActor(actorInstance);
+        RenderPlugin::EMStudioRenderActor* emstudioActor = m_plugin->FindEMStudioActor(actorInstance);
         if (emstudioActor == nullptr)
         {
             return;
         }
 
         // renderUtil options
-        MCommon::RenderUtil* renderUtil = mPlugin->GetRenderUtil();
+        MCommon::RenderUtil* renderUtil = m_plugin->GetRenderUtil();
         if (renderUtil == nullptr)
         {
             return;
@@ -156,28 +157,23 @@ namespace EMStudio
         actorInstance->UpdateMeshDeformers(timePassedInSeconds);
 
         // get the active widget & it's rendering options
-        RenderViewWidget*   widget          = mPlugin->GetActiveViewWidget();
-        RenderOptions*      renderOptions   = mPlugin->GetRenderOptions();
+        RenderViewWidget*   widget          = m_plugin->GetActiveViewWidget();
+        RenderOptions*      renderOptions   = m_plugin->GetRenderOptions();
 
-        const AZStd::unordered_set<AZ::u32>& visibleJointIndices = GetManager()->GetVisibleJointIndices();
-        const AZStd::unordered_set<AZ::u32>& selectedJointIndices = GetManager()->GetSelectedJointIndices();
+        const AZStd::unordered_set<size_t>& visibleJointIndices = GetManager()->GetVisibleJointIndices();
+        const AZStd::unordered_set<size_t>& selectedJointIndices = GetManager()->GetSelectedJointIndices();
 
         // render the AABBs
         if (widget->GetRenderFlag(RenderViewWidget::RENDER_AABB))
         {
             MCommon::RenderUtil::AABBRenderSettings settings;
-            settings.mNodeBasedColor          = renderOptions->GetNodeAABBColor();
-            settings.mStaticBasedColor        = renderOptions->GetStaticAABBColor();
-            settings.mMeshBasedColor          = renderOptions->GetMeshAABBColor();
-            settings.mCollisionMeshBasedColor = renderOptions->GetCollisionMeshAABBColor();
+            settings.m_nodeBasedColor          = renderOptions->GetNodeAABBColor();
+            settings.m_staticBasedColor        = renderOptions->GetStaticAABBColor();
+            settings.m_meshBasedColor          = renderOptions->GetMeshAABBColor();
 
-            renderUtil->RenderAABBs(actorInstance, settings);
+            renderUtil->RenderAabbs(actorInstance, settings);
         }
 
-        if (widget->GetRenderFlag(RenderViewWidget::RENDER_OBB))
-        {
-            renderUtil->RenderOBBs(actorInstance, &visibleJointIndices, &selectedJointIndices, renderOptions->GetOBBsColor(), renderOptions->GetSelectedObjectColor());
-        }
         if (widget->GetRenderFlag(RenderViewWidget::RENDER_LINESKELETON))
         {
             renderUtil->RenderSimpleSkeleton(actorInstance, &visibleJointIndices, &selectedJointIndices, renderOptions->GetLineSkeletonColor(), renderOptions->GetSelectedObjectColor());
@@ -189,11 +185,11 @@ namespace EMStudio
         renderUtil->EnableLighting(false); // disable lighting
         if (widget->GetRenderFlag(RenderViewWidget::RENDER_SKELETON))
         {
-            renderUtil->RenderSkeleton(actorInstance, emstudioActor->mBoneList, &visibleJointIndices, &selectedJointIndices, renderOptions->GetSkeletonColor(), renderOptions->GetSelectedObjectColor());
+            renderUtil->RenderSkeleton(actorInstance, emstudioActor->m_boneList, &visibleJointIndices, &selectedJointIndices, renderOptions->GetSkeletonColor(), renderOptions->GetSelectedObjectColor());
         }
         if (widget->GetRenderFlag(RenderViewWidget::RENDER_NODEORIENTATION))
         {
-            renderUtil->RenderNodeOrientations(actorInstance, emstudioActor->mBoneList, &visibleJointIndices, &selectedJointIndices, renderOptions->GetNodeOrientationScale(), renderOptions->GetScaleBonesOnLength());
+            renderUtil->RenderNodeOrientations(actorInstance, emstudioActor->m_boneList, &visibleJointIndices, &selectedJointIndices, renderOptions->GetNodeOrientationScale(), renderOptions->GetScaleBonesOnLength());
         }
         if (widget->GetRenderFlag(RenderViewWidget::RENDER_ACTORBINDPOSE))
         {
@@ -204,8 +200,7 @@ namespace EMStudio
         if (widget->GetRenderFlag(RenderViewWidget::RENDER_MOTIONEXTRACTION))
         {
             // render an arrow for the trajectory node
-            //renderUtil->RenderTrajectoryNode(actorInstance, renderOptions->mTrajectoryArrowInnerColor, renderOptions->mTrajectoryArrowBorderColor, emstudioActor->mCharacterHeight*0.05f);
-            renderUtil->RenderTrajectoryPath(mPlugin->FindTracePath(actorInstance), renderOptions->GetTrajectoryArrowInnerColor(), emstudioActor->mCharacterHeight * 0.05f);
+            renderUtil->RenderTrajectoryPath(m_plugin->FindTracePath(actorInstance), renderOptions->GetTrajectoryArrowInnerColor(), emstudioActor->m_characterHeight * 0.05f);
         }
         renderUtil->EnableCulling(cullingEnabled); // reset to the old state
         renderUtil->EnableLighting(lightingEnabled);
@@ -220,13 +215,12 @@ namespace EMStudio
         {
             // iterate through all enabled nodes
             const EMotionFX::Pose* pose = actorInstance->GetTransformData()->GetCurrentPose();
-            const uint32 geomLODLevel   = actorInstance->GetLODLevel();
-            const uint32 numEnabled     = actorInstance->GetNumEnabledNodes();
-            for (uint32 i = 0; i < numEnabled; ++i)
+            const size_t geomLODLevel   = actorInstance->GetLODLevel();
+            const size_t numEnabled     = actorInstance->GetNumEnabledNodes();
+            for (size_t i = 0; i < numEnabled; ++i)
             {
-                EMotionFX::Node*    node            = emstudioActor->mActor->GetSkeleton()->GetNode(actorInstance->GetEnabledNode(i));
-                EMotionFX::Mesh*    mesh            = emstudioActor->mActor->GetMesh(geomLODLevel, node->GetNodeIndex());
-                //EMotionFX::Mesh*  collisionMesh   = emstudioActor->mActor->GetCollisionMesh( geomLODLevel, node->GetNodeIndex() );
+                EMotionFX::Node*    node            = emstudioActor->m_actor->GetSkeleton()->GetNode(actorInstance->GetEnabledNode(i));
+                EMotionFX::Mesh*    mesh            = emstudioActor->m_actor->GetMesh(geomLODLevel, node->GetNodeIndex());
                 const AZ::Transform globalTM        = pose->GetWorldSpaceTransform(node->GetNodeIndex()).ToAZTransform();
 
                 renderUtil->ResetCurrentMesh();
@@ -238,10 +232,10 @@ namespace EMStudio
 
                 if (mesh->GetIsCollisionMesh() == false)
                 {
-                    renderUtil->RenderNormals(mesh, globalTM, renderVertexNormals, renderFaceNormals, renderOptions->GetVertexNormalsScale() * emstudioActor->mNormalsScaleMultiplier, renderOptions->GetFaceNormalsScale() * emstudioActor->mNormalsScaleMultiplier, renderOptions->GetVertexNormalsColor(), renderOptions->GetFaceNormalsColor());
+                    renderUtil->RenderNormals(mesh, globalTM, renderVertexNormals, renderFaceNormals, renderOptions->GetVertexNormalsScale() * emstudioActor->m_normalsScaleMultiplier, renderOptions->GetFaceNormalsScale() * emstudioActor->m_normalsScaleMultiplier, renderOptions->GetVertexNormalsColor(), renderOptions->GetFaceNormalsColor());
                     if (renderTangents)
                     {
-                        renderUtil->RenderTangents(mesh, globalTM, renderOptions->GetTangentsScale() * emstudioActor->mNormalsScaleMultiplier, renderOptions->GetTangentsColor(), renderOptions->GetMirroredBitangentsColor(), renderOptions->GetBitangentsColor());
+                        renderUtil->RenderTangents(mesh, globalTM, renderOptions->GetTangentsScale() * emstudioActor->m_normalsScaleMultiplier, renderOptions->GetTangentsColor(), renderOptions->GetMirroredBitangentsColor(), renderOptions->GetBitangentsColor());
                     }
                     if (renderWireframe)
                     {
@@ -257,10 +251,10 @@ namespace EMStudio
         }
 
         // render the selection
-        if (renderOptions->GetRenderSelectionBox() && EMotionFX::GetActorManager().GetNumActorInstances() != 1 && mPlugin->GetCurrentSelection()->CheckIfHasActorInstance(actorInstance))
+        if (renderOptions->GetRenderSelectionBox() && EMotionFX::GetActorManager().GetNumActorInstances() != 1 && m_plugin->GetCurrentSelection()->CheckIfHasActorInstance(actorInstance))
         {
-            MCore::AABB aabb = actorInstance->GetAABB();
-            aabb.Widen(aabb.CalcRadius() * 0.005f);
+            AZ::Aabb aabb = actorInstance->GetAabb();
+            aabb.Expand(aabb.GetExtents() * 0.005f);
             renderUtil->RenderSelection(aabb, renderOptions->GetSelectionColor());
         }
 

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -23,11 +24,11 @@ namespace MCore
         r |= 0x3f800000; //result is in [1,2), uniformly distributed
         union
         {
-            float f;
-            unsigned int i;
+            float m_f;
+            unsigned int m_i;
         } u;
-        u.i = r;
-        return u.f - 1.0f;
+        u.m_i = r;
+        return u.m_f - 1.0f;
     }
 
     // returns a random direction vector
@@ -689,15 +690,15 @@ namespace MCore
     HaltonSequence::HaltonSequence()
     {
         // init members
-        mDimensions = 0;
-        mNextDim    = 0;
-        mMemory     = 0;
-        mN          = 0;
-        mN0         = 0;
-        mX          = nullptr;
-        mRadical    = nullptr;
-        mBase       = nullptr;
-        mOwnBase    = false;
+        m_dimensions = 0;
+        m_nextDim    = 0;
+        m_memory     = 0;
+        m_n          = 0;
+        m_n0         = 0;
+        m_x          = nullptr;
+        m_radical    = nullptr;
+        m_base       = nullptr;
+        m_ownBase    = false;
     }
 
 
@@ -705,15 +706,15 @@ namespace MCore
     HaltonSequence::HaltonSequence(uint32 dimensions, uint32 offset, uint32* primes)
     {
         // init members
-        mDimensions = 0;
-        mNextDim    = 0;
-        mMemory     = 0;
-        mN          = 0;
-        mN0         = 0;
-        mX          = nullptr;
-        mRadical    = nullptr;
-        mBase       = nullptr;
-        mOwnBase    = false;
+        m_dimensions = 0;
+        m_nextDim    = 0;
+        m_memory     = 0;
+        m_n          = 0;
+        m_n0         = 0;
+        m_x          = nullptr;
+        m_radical    = nullptr;
+        m_base       = nullptr;
+        m_ownBase    = false;
 
         // initialize
         Init(dimensions, offset, primes);
@@ -725,33 +726,33 @@ namespace MCore
     {
         MCORE_ASSERT(dimensions > 0);
 
-        mNextDim    = 0;
-        mDimensions = dimensions;
-        mX          = (double*)MCore::Allocate(dimensions * sizeof(double), MCORE_MEMCATEGORY_HALTONSEQ);
-        mMemory     = sizeof(HaltonSequence) + dimensions * sizeof(double);
+        m_nextDim    = 0;
+        m_dimensions = dimensions;
+        m_x          = (double*)MCore::Allocate(dimensions * sizeof(double), MCORE_MEMCATEGORY_HALTONSEQ);
+        m_memory     = sizeof(HaltonSequence) + dimensions * sizeof(double);
 
-        mN          = offset;
-        mN0         = offset;
-        mRadical    = (double*)MCore::Allocate(dimensions * sizeof(double), MCORE_MEMCATEGORY_HALTONSEQ);
+        m_n          = offset;
+        m_n0         = offset;
+        m_radical    = (double*)MCore::Allocate(dimensions * sizeof(double), MCORE_MEMCATEGORY_HALTONSEQ);
 
-        mOwnBase    = (!primes);
+        m_ownBase    = (!primes);
 
-        if (mOwnBase)
+        if (m_ownBase)
         {
-            mBase = FirstPrimes((uint32)dimensions);
+            m_base = FirstPrimes((uint32)dimensions);
         }
         else
         {
-            mBase = primes;
+            m_base = primes;
         }
 
         for (uint32 j = 0; j < dimensions; ++j)
         {
-            mRadical[j] = 1.0 / (double)mBase[j];
-            mX[j] = 0.0;
+            m_radical[j] = 1.0 / (double)m_base[j];
+            m_x[j] = 0.0;
         }
 
-        SetInstance(mN0);
+        SetInstance(m_n0);
     }
 
 
@@ -764,23 +765,23 @@ namespace MCore
 
     void HaltonSequence::Release()
     {
-        if (mOwnBase && mBase)
+        if (m_ownBase && m_base)
         {
-            MCore::Free(mBase);
+            MCore::Free(m_base);
         }
-        mBase = nullptr;
+        m_base = nullptr;
 
-        if (mRadical)
+        if (m_radical)
         {
-            MCore::Free(mRadical);
+            MCore::Free(m_radical);
         }
-        mRadical = nullptr;
+        m_radical = nullptr;
 
-        if (mX)
+        if (m_x)
         {
-            MCore::Free(mX);
+            MCore::Free(m_x);
         }
-        mX = nullptr;
+        m_x = nullptr;
     }
 
 
@@ -790,49 +791,49 @@ namespace MCore
         const double one = 1.0 - 1e-10;
         double h, hh, remainder;
 
-        mN++;
+        m_n++;
 
-        if (mN & 8191)
+        if (m_n & 8191)
         {
-            for (uint32 j = 0; j < mDimensions; ++j)
+            for (uint32 j = 0; j < m_dimensions; ++j)
             {
-                remainder = one - mX[j];
+                remainder = one - m_x[j];
 
                 if (remainder < 0.0)
                 {
-                    mX[j] = 0.0;
+                    m_x[j] = 0.0;
                 }
                 else
                 {
-                    if (mRadical[j] < remainder)
+                    if (m_radical[j] < remainder)
                     {
-                        mX[j] += mRadical[j];
+                        m_x[j] += m_radical[j];
                     }
                     else
                     {
-                        h = mRadical[j];
+                        h = m_radical[j];
 
                         do
                         {
                             hh = h;
-                            h *= mRadical[j];
+                            h *= m_radical[j];
                         }
                         while (h >= remainder);
 
-                        mX[j] += hh + h - 1.0;
+                        m_x[j] += hh + h - 1.0;
                     }
                 }
             }
         }
         else
         {
-            if (mN >= 1073741824) // 2^30
+            if (m_n >= 1073741824) // 2^30
             {
                 SetInstance(0);
             }
             else
             {
-                SetInstance(mN);
+                SetInstance(m_n);
             }
         }
     }
@@ -846,16 +847,16 @@ namespace MCore
         uint32  b;
         double  fac;
 
-        mN = instance;
-        for (uint32 j = 0; j < mDimensions; ++j)
+        m_n = instance;
+        for (uint32 j = 0; j < m_dimensions; ++j)
         {
-            mX[j]   = 0.0;
-            fac     = mRadical[j];
-            b       = mBase[j];
+            m_x[j]   = 0.0;
+            fac     = m_radical[j];
+            b       = m_base[j];
 
-            for (im = mN; im > 0; im /= b, fac *= mRadical[j])
+            for (im = m_n; im > 0; im /= b, fac *= m_radical[j])
             {
-                mX[j] += fac * (double)(im % b);
+                m_x[j] += fac * (double)(im % b);
             }
         }
     }

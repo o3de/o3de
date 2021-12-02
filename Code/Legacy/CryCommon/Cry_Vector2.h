@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -294,8 +295,6 @@ struct Vec2_tpl
     {
         return sqrt_tpl((x - vec1.x) * (x - vec1.x) + (y - vec1.y) * (y - vec1.y));
     }
-
-    AUTO_STRUCT_INFO
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -303,21 +302,13 @@ struct Vec2_tpl
 ///////////////////////////////////////////////////////////////////////////////
 
 typedef Vec2_tpl<f32>    Vec2;  // always 32 bit
-typedef Vec2_tpl<f64>    Vec2d; // always 64 bit
 typedef Vec2_tpl<int32>  Vec2i;
-typedef Vec2_tpl<uint32> Vec2ui;
-typedef Vec2_tpl<real>   Vec2r; // variable float precision. depending on the target system it can be 32, 64 or 80 bit
 
-typedef Vec2_tpl<float> vector2f;
 #if defined(LINUX64)
 typedef Vec2_tpl<int>    vector2l;
 #else
 typedef Vec2_tpl<long>   vector2l;
 #endif
-typedef Vec2_tpl<float> vector2df;
-typedef Vec2_tpl<real> vector2d;
-typedef Vec2_tpl<int> vector2di;
-typedef Vec2_tpl<unsigned int> vector2dui;
 
 template<class F>
 Vec2_tpl<F> operator*(F op1, const Vec2_tpl<F>& op2) {return Vec2_tpl<F>(op1 * op2.x, op1 * op2.y); }

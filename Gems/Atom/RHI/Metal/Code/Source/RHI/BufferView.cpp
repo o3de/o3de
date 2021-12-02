@@ -1,10 +1,10 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "Atom_RHI_Metal_precompiled.h"
 
 #include <RHI/Buffer.h>
 #include <RHI/BufferView.h>
@@ -54,7 +54,7 @@ namespace AZ
                                                                              usage : textureUsage];
                 mtlTextureDesc.textureType = MTLTextureTypeTextureBuffer;
                 
-                uint32_t bytesPerRow  = viewDescriptor.m_elementCount * bytesPerPixel;
+                [[maybe_unused]] uint32_t bytesPerRow  = viewDescriptor.m_elementCount * bytesPerPixel;
                 AZ_Assert(bytesPerRow == (viewDescriptor.m_elementCount * viewDescriptor.m_elementSize), "Mismatch for bytesPerRow");
                 id<MTLTexture> mtlTexture = [mtlBuffer newTextureWithDescriptor : mtlTextureDesc
                                                                          offset : m_memoryView.GetOffset()

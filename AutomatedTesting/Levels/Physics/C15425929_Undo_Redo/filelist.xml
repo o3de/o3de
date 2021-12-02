@@ -1,6 +1,0 @@
-<download name="C15425929_Undo_Redo" type="Map">
- <index src="filelist.xml" dest="filelist.xml"/>
- <files>
-  <file src="level.pak" dest="level.pak" size="9844" md5="3f19eb731f19949cbd9ab243870cf16c"/>
- </files>
-</download>

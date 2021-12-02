@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -13,6 +14,7 @@
 
 // Editor
 #include "Settings.h"
+#include "EditorViewportSettings.h"
 
 
 
@@ -42,12 +44,16 @@ void CEditorPreferencesPage_Files::Reflect(AZ::SerializeContext& serialize)
         ->Field("MaxCount", &AutoBackup::m_maxCount)
         ->Field("RemindTime", &AutoBackup::m_remindTime);
 
+    serialize.Class<AssetBrowserSettings>()
+        ->Version(1)
+        ->Field("MaxEntriesShownCount", &AssetBrowserSettings::m_maxNumberOfItemsShownInSearch);
+
     serialize.Class<CEditorPreferencesPage_Files>()
         ->Version(1)
         ->Field("Files", &CEditorPreferencesPage_Files::m_files)
         ->Field("Editors", &CEditorPreferencesPage_Files::m_editors)
-        ->Field("AutoBackup", &CEditorPreferencesPage_Files::m_autoBackup);
-
+        ->Field("AutoBackup", &CEditorPreferencesPage_Files::m_autoBackup)
+        ->Field("AssetBrowserSettings", &CEditorPreferencesPage_Files::m_assetBrowserSettings);
 
     AZ::EditContext* editContext = serialize.GetEditContext();
     if (editContext)
@@ -79,12 +85,20 @@ void CEditorPreferencesPage_Files::Reflect(AZ::SerializeContext& serialize)
             ->Attribute(AZ::Edit::Attributes::Max, 100)
             ->DataElement(AZ::Edit::UIHandlers::SpinBox, &AutoBackup::m_remindTime, "Remind Time", "Auto Remind Every (Minutes)");
 
+         editContext->Class<AssetBrowserSettings>("Asset Browser Settings", "Asset Browser Settings")
+            ->DataElement(
+                AZ::Edit::UIHandlers::SpinBox, &AssetBrowserSettings::m_maxNumberOfItemsShownInSearch, "Maximum number of displayed items",
+                "Maximum number of items to display in the Search View.")
+            ->Attribute(AZ::Edit::Attributes::Min, 50)
+            ->Attribute(AZ::Edit::Attributes::Max, 5000);
+
         editContext->Class<CEditorPreferencesPage_Files>("File Preferences", "Class for handling File Preferences")
             ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
             ->Attribute(AZ::Edit::Attributes::Visibility, AZ_CRC("PropertyVisibility_ShowChildrenOnly", 0xef428f20))
             ->DataElement(AZ::Edit::UIHandlers::Default, &CEditorPreferencesPage_Files::m_files, "Files", "File Preferences")
             ->DataElement(AZ::Edit::UIHandlers::Default, &CEditorPreferencesPage_Files::m_editors, "External Editors", "External Editors")
-            ->DataElement(AZ::Edit::UIHandlers::Default, &CEditorPreferencesPage_Files::m_autoBackup, "Auto Backup", "Auto Backup");
+            ->DataElement(AZ::Edit::UIHandlers::Default, &CEditorPreferencesPage_Files::m_autoBackup, "Auto Backup", "Auto Backup")
+            ->DataElement(AZ::Edit::UIHandlers::Default, &CEditorPreferencesPage_Files::m_assetBrowserSettings, "Asset Browser Settings","Asset Browser Settings");
     }
 }
 
@@ -104,6 +118,7 @@ QIcon& CEditorPreferencesPage_Files::GetIcon()
 void CEditorPreferencesPage_Files::OnApply()
 {
     using namespace AzToolsFramework::SliceUtilities;
+
     auto sliceSettings = AZ::UserSettings::CreateFind<SliceUserSettings>(AZ_CRC("SliceUserSettings", 0x055b32eb), AZ::UserSettings::CT_LOCAL);
     sliceSettings->m_autoNumber = m_files.m_autoNumberSlices;
     sliceSettings->m_saveLocation = m_files.m_saveLocation;
@@ -123,6 +138,8 @@ void CEditorPreferencesPage_Files::OnApply()
     gSettings.autoBackupTime = m_autoBackup.m_timeInterval;
     gSettings.autoBackupMaxCount = m_autoBackup.m_maxCount;
     gSettings.autoRemindTime = m_autoBackup.m_remindTime;
+
+    SandboxEditor::SetMaxItemsShownInAssetBrowserSearch(m_assetBrowserSettings.m_maxNumberOfItemsShownInSearch);
 }
 
 void CEditorPreferencesPage_Files::InitializeSettings()
@@ -147,4 +164,6 @@ void CEditorPreferencesPage_Files::InitializeSettings()
     m_autoBackup.m_timeInterval = gSettings.autoBackupTime;
     m_autoBackup.m_maxCount = gSettings.autoBackupMaxCount;
     m_autoBackup.m_remindTime = gSettings.autoRemindTime;
+
+    m_assetBrowserSettings.m_maxNumberOfItemsShownInSearch = SandboxEditor::MaxItemsShownInAssetBrowserSearch();
 }

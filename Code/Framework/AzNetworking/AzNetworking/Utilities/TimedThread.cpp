@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -25,27 +26,29 @@ namespace AzNetworking
     {
         m_running = true;
         m_joinable = true;
-        m_thread = AZStd::thread([this]()
-        {
-            OnStart();
-            while (m_running)
+        m_thread = AZStd::thread(
+            m_threadDesc,
+            [this]()
             {
-                const AZ::TimeMs startTimeMs = AZ::GetElapsedTimeMs();
-                OnUpdate(m_updateRate);
-                const AZ::TimeMs updateTimeMs = AZ::GetElapsedTimeMs() - startTimeMs;
+                OnStart();
+                while (m_running)
+                {
+                    const AZ::TimeMs startTimeMs = AZ::GetElapsedTimeMs();
+                    OnUpdate(m_updateRate);
+                    const AZ::TimeMs updateTimeMs = AZ::GetElapsedTimeMs() - startTimeMs;
 
-                if (m_updateRate > updateTimeMs)
-                {
-                    AZStd::chrono::milliseconds sleepTimeMs(static_cast<int64_t>(m_updateRate - updateTimeMs));
-                    AZStd::this_thread::sleep_for(sleepTimeMs);
+                    if (m_updateRate > updateTimeMs)
+                    {
+                        AZStd::chrono::milliseconds sleepTimeMs(static_cast<int64_t>(m_updateRate - updateTimeMs));
+                        AZStd::this_thread::sleep_for(sleepTimeMs);
+                    }
+                    else if (m_updateRate < updateTimeMs)
+                    {
+                        AZLOG(NET_TimedThread, "TimedThread bled %d ms", aznumeric_cast<int32_t>(updateTimeMs - m_updateRate));
+                    }
                 }
-                else if (m_updateRate < updateTimeMs)
-                {
-                    AZLOG(NET_TimedThread, "TimedThread bled %d ms", aznumeric_cast<int32_t>(updateTimeMs - m_updateRate));
-                }
-            }
-            OnStop();
-        }, &m_threadDesc);
+                OnStop();
+            });
     }
 
     void TimedThread::Stop()

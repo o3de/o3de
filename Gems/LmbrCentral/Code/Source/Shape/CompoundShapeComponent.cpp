@@ -1,14 +1,13 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
-#include "LmbrCentral_precompiled.h"
 #include "CompoundShapeComponent.h"
 #include <AzCore/Math/Transform.h>
-#include "Cry_GeoOverlap.h"
 
 
 namespace LmbrCentral
@@ -147,7 +146,7 @@ namespace LmbrCentral
     {
         m_currentlyActiveChildren++;
         ShapeComponentNotificationsBus::MultiHandler::BusConnect(id);
-        
+
         if (ShapeComponentRequestsBus::Handler::BusIsConnected() && CompoundShapeComponentRequestsBus::Handler::BusIsConnected())
         {
             EBUS_EVENT_ID(GetEntityId(), ShapeComponentNotificationsBus, OnShapeChanged, ShapeComponentNotifications::ShapeChangeReasons::ShapeChanged);

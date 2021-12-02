@@ -1,11 +1,10 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "ComponentEntityEditorPlugin_precompiled.h"
-
 #include "OutlinerTreeView.hxx"
 #include "OutlinerListModel.hxx"
 
@@ -18,9 +17,10 @@
 #include <QDrag>
 #include <QPainter>
 #include <QHeaderView>
+#include <QMouseEvent>
 
 OutlinerTreeView::OutlinerTreeView(QWidget* pParent)
-    : QTreeView(pParent)
+    : AzQtComponents::StyledTreeView(pParent)
     , m_queuedMouseEvent(nullptr)
     , m_draggingUnselectedItem(false)
 {
@@ -135,16 +135,12 @@ void OutlinerTreeView::startDrag(Qt::DropActions supportedActions)
 
         if (!selectionModel()->isSelected(index))
         {
-            startCustomDrag({ index }, supportedActions);
+            StartCustomDrag({ index }, supportedActions);
             return;
         }
     }
 
-    if (!selectionModel()->selectedIndexes().empty())
-    {
-        startCustomDrag(selectionModel()->selectedIndexes(), supportedActions);
-        return;
-    }
+    StyledTreeView::startDrag(supportedActions);
 }
 
 void OutlinerTreeView::dragMoveEvent(QDragMoveEvent* event)
@@ -278,8 +274,8 @@ void OutlinerTreeView::drawBranches(QPainter* painter, const QRect& rect, const 
             // if the item has children offset the drawn line to compensate for drawn expander buttons
             bool hasChildren = previousIndex.model()->index(0, 0, previousIndex).isValid();
             int horizontalLineY = rect.top() + rectHalfHeight;
-            int horizontalLineLeft = rect.right() - indentation() * 1.5f;
-            int horizontalLineRight = hasChildren ? (lineBaseX - indentation()) : (lineBaseX - indentation() * 0.5f);
+            int horizontalLineLeft = static_cast<int>(rect.right() - indentation() * 1.5f);
+            int horizontalLineRight = hasChildren ? (lineBaseX - indentation()) : static_cast<int>(lineBaseX - indentation() * 0.5f);
             painter->drawLine(horizontalLineLeft, horizontalLineY, horizontalLineRight, horizontalLineY);
         }
 
@@ -288,7 +284,7 @@ void OutlinerTreeView::drawBranches(QPainter* painter, const QRect& rect, const 
         bool hasNext = previousIndex.sibling(previousIndex.row() + 1, previousIndex.column()).isValid();
         if (hasNext || previousIndex == index)
         {
-            int verticalLineX = lineBaseX - indentation() * 1.5f;
+            int verticalLineX = static_cast<int>(lineBaseX - indentation() * 1.5f);
             int verticalLineTop = rect.top();
             int verticalLineBottom = hasNext ? rect.bottom() : rect.bottom() - rectHalfHeight;
             painter->drawLine(verticalLineX, verticalLineTop, verticalLineX, verticalLineBottom);
@@ -336,14 +332,14 @@ void OutlinerTreeView::processQueuedMousePressedEvent(QMouseEvent* event)
     QTreeView::mousePressEvent(&mousePressedEvent);
 }
 
-void OutlinerTreeView::startCustomDrag(const QModelIndexList& indexList, Qt::DropActions supportedActions)
+void OutlinerTreeView::StartCustomDrag(const QModelIndexList& indexList, Qt::DropActions supportedActions)
 {
     m_draggingUnselectedItem = true;
 
     //sort by container entity depth and order in hierarchy for proper drag image and drop order
     QModelIndexList indexListSorted = indexList;
     AZStd::unordered_map<AZ::EntityId, AZStd::list<AZ::u64>> locations;
-    for (auto index : indexListSorted)
+    for (const auto& index : indexListSorted)
     {
         AZ::EntityId entityId(index.data(OutlinerListModel::EntityIdRole).value<AZ::u64>());
         AzToolsFramework::GetEntityLocationInHierarchy(entityId, locations[entityId]);
@@ -356,74 +352,7 @@ void OutlinerTreeView::startCustomDrag(const QModelIndexList& indexList, Qt::Dro
         return AZStd::lexicographical_compare(locationsE1.begin(), locationsE1.end(), locationsE2.begin(), locationsE2.end());
     });
 
-    //get the data for the unselected item(s)
-    QMimeData* mimeData = model()->mimeData(indexListSorted);
-    if (mimeData)
-    {
-        //initiate drag/drop for the item
-        QDrag* drag = new QDrag(this);
-        drag->setPixmap(QPixmap::fromImage(createDragImage(indexListSorted)));
-        drag->setMimeData(mimeData);
-        Qt::DropAction defDropAction = Qt::IgnoreAction;
-        if (defaultDropAction() != Qt::IgnoreAction && (supportedActions & defaultDropAction()))
-        {
-            defDropAction = defaultDropAction();
-        }
-        else if (supportedActions & Qt::CopyAction && dragDropMode() != QAbstractItemView::InternalMove)
-        {
-            defDropAction = Qt::CopyAction;
-        }
-        drag->exec(supportedActions, defDropAction);
-    }
-}
-
-QImage OutlinerTreeView::createDragImage(const QModelIndexList& indexList)
-{
-    //generate a drag image of the item icon and text, normally done internally, and inaccessible 
-    QRect rect(0, 0, 0, 0);
-    for (auto index : indexList)
-    {
-        if (index.column() != 0)
-        {
-            continue;
-        }
-        QRect itemRect = visualRect(index);
-        rect.setHeight(rect.height() + itemRect.height());
-        rect.setWidth(AZStd::GetMax(rect.width(), itemRect.width()));
-    }
-
-    QImage dragImage(rect.size(), QImage::Format_ARGB32_Premultiplied);
-
-    QPainter dragPainter(&dragImage);
-    dragPainter.setCompositionMode(QPainter::CompositionMode_Source);
-    dragPainter.fillRect(dragImage.rect(), Qt::transparent);
-    dragPainter.setCompositionMode(QPainter::CompositionMode_SourceOver);
-    dragPainter.setOpacity(0.35f);
-    dragPainter.fillRect(rect, QColor("#222222"));
-    dragPainter.setOpacity(1.0f);
-
-    int imageY = 0;
-    for (auto index : indexList)
-    {
-        if (index.column() != 0)
-        {
-            continue;
-        }
-
-        QRect itemRect = visualRect(index);
-        dragPainter.drawPixmap(QPoint(0, imageY),
-            model()->data(index, Qt::DecorationRole).value<QIcon>().pixmap(QSize(16, 16)));
-        dragPainter.setPen(
-            model()->data(index, Qt::ForegroundRole).value<QBrush>().color());
-        dragPainter.setFont(
-            font());
-        dragPainter.drawText(QRect(20, imageY, rect.width() - 20, rect.height()),
-            model()->data(index, Qt::DisplayRole).value<QString>());
-        imageY += itemRect.height();
-    }
-
-    dragPainter.end();
-    return dragImage;
+    StyledTreeView::StartCustomDrag(indexListSorted, supportedActions);
 }
 
 #include <UI/Outliner/moc_OutlinerTreeView.cpp>

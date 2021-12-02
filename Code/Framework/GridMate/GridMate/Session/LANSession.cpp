@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -36,7 +37,7 @@ namespace GridMate
     {
         friend class LANMemberIDMarshaler;
 
-        static LANMemberID Create(MemberIDCompact id, const string& address)
+        static LANMemberID Create(MemberIDCompact id, const AZStd::string& address)
         {
             LANMemberID mid;
             mid.m_id = id;
@@ -44,24 +45,24 @@ namespace GridMate
             return mid;
         }
 
-        void SetAddress(const string& address)
+        void SetAddress(const AZStd::string& address)
         {
             m_address = address;
         }
 
         MemberIDCompact GetID() const { return m_id; }
 
-        virtual string ToString() const
+        AZStd::string ToString() const override
         {
-            return string::format("%x", m_id);
+            return AZStd::string::format("%x", m_id);
         }
-        virtual string ToAddress() const        { return m_address; }
-        virtual MemberIDCompact Compact() const { return m_id; }
-        virtual bool IsValid() const            { return m_id != 0; }
+        AZStd::string ToAddress() const override        { return m_address; }
+        MemberIDCompact Compact() const override { return m_id; }
+        bool IsValid() const override            { return m_id != 0; }
 
     private:
         MemberIDCompact m_id;
-        string m_address;
+        AZStd::string m_address;
     };
 
     class LANMemberIDMarshaler
@@ -119,14 +120,14 @@ namespace GridMate
         /// Creates the local player.
         GridMember* CreateLocalMember(bool isHost, bool isInvited, RemotePeerMode peerMode);
         /// Creates remote player, when he wants to join.
-        GridMember* CreateRemoteMember(const string& address, ReadBuffer& data, RemotePeerMode peerMode, ConnectionID connId = InvalidConnectionID) override;
+        GridMember* CreateRemoteMember(const AZStd::string& address, ReadBuffer& data, RemotePeerMode peerMode, ConnectionID connId = InvalidConnectionID) override;
 
         /// Called when we receive the session replica. We create one and return the pointer.
         LANSessionReplica*  OnSessionReplicaArrived();
 
         /// Called when session parameters have changed.
         void OnSessionParamChanged(const GridSessionParam& param) override { (void)param; }
-        void OnSessionParamRemoved(const string& paramId) override { (void)paramId; }
+        void OnSessionParamRemoved(const AZStd::string& paramId) override { (void)paramId; }
 
     private:
         explicit LANSession(LANSessionService* service);
@@ -140,7 +141,7 @@ namespace GridMate
 
         bool    MatchMake(const LANSearchParams& sp);
 
-        string  MakeSessionId();
+        AZStd::string  MakeSessionId();
 
         Driver* m_driver;   ///< Driver for network searches
 
@@ -198,7 +199,7 @@ namespace GridMate
         : public CtorContextBase
     {
         CtorDataSet<MemberIDCompact> m_memberId;
-        CtorDataSet<string> m_memberAddress; ///< As the server/host sees it!
+        CtorDataSet<AZStd::string> m_memberAddress; ///< As the server/host sees it!
         CtorDataSet<RemotePeerMode> m_peerMode;
         CtorDataSet<bool> m_isHost;
     };
@@ -231,7 +232,7 @@ namespace GridMate
                 AZ_Assert(session, "We need to have a valid session!");
                 LANMember* member;
                 MemberIDCompact memberId = ctorContext.m_memberId.Get();
-                string memberAddress = ctorContext.m_memberAddress.Get();
+                AZStd::string memberAddress = ctorContext.m_memberAddress.Get();
                 RemotePeerMode remotePeerMode = ctorContext.m_peerMode.Get();
                 bool isMemberHost = ctorContext.m_isHost.Get();
 
@@ -284,9 +285,9 @@ namespace GridMate
         static const char* GetChunkName() { return "GridMateLANMember"; }
 
         /// return an abstracted member id. (member ID is world unique but unrelated to player ID it's related to the session).
-        virtual const MemberID& GetId() const           { return m_memberId; }
+        const MemberID& GetId() const override           { return m_memberId; }
         /// returns a base player id, it's implementation is platform dependent. (NOT supported)
-        virtual const PlayerId* GetPlayerId() const     { return nullptr; }
+        const PlayerId* GetPlayerId() const override     { return nullptr; }
 
         /// Remote member ctor.
         LANMember(ConnectionID connId, const LANMemberID& id, LANSession* session);
@@ -320,16 +321,16 @@ namespace GridMate
         friend class LANSessionService;
     public:
         GM_CLASS_ALLOCATOR(LANSearch);
-        virtual ~LANSearch();
+        ~LANSearch() override;
 
         /// Return true if the search has finished, otherwise false.
-        virtual unsigned int        GetNumResults() const                   { return static_cast<unsigned int>(m_results.size()); }
-        virtual const SearchInfo*   GetResult(unsigned int index) const     { return &m_results[index]; }
-        virtual void                AbortSearch();
+        unsigned int        GetNumResults() const override                   { return static_cast<unsigned int>(m_results.size()); }
+        const SearchInfo*   GetResult(unsigned int index) const override     { return &m_results[index]; }
+        void                AbortSearch() override;
 
     private:
         LANSearch(const LANSearchParams& searchParams, SessionService* service);
-        virtual void    Update();
+        void    Update() override;
         void            SearchDone();
 
         Driver*         m_driver;
@@ -348,7 +349,7 @@ namespace GridMate
 {
     namespace Platform
     {
-        void AssignExtendedName(GridMate::string& extendedName);
+        void AssignExtendedName(AZStd::string& extendedName);
     }
 }
 
@@ -363,7 +364,7 @@ LANMember::LANMember(const LANMemberID& id, LANSession* session)
     : GridMember(id.Compact())
     , m_memberId(id)
 {
-    string extendedName;
+    AZStd::string extendedName;
     Platform::AssignExtendedName(extendedName);
 
     m_session = session;
@@ -740,8 +741,8 @@ LANSession::CreateLocalMember(bool isHost, bool isInvited, RemotePeerMode peerMo
 {
     AZ_Assert(m_myMember == nullptr, "We already have added a local member!");
 
-    string ip = Utils::GetMachineAddress(m_carrierDesc.m_familyType);
-    string address = SocketDriverCommon::IPPortToAddressString(ip.c_str(), m_carrierDesc.m_port);
+    AZStd::string ip = Utils::GetMachineAddress(m_carrierDesc.m_familyType);
+    AZStd::string address = SocketDriverCommon::IPPortToAddressString(ip.c_str(), m_carrierDesc.m_port);
     /////////////////////////////////////////////////////////////////////////////
     // TODO: Use the UUID as an ID, we will need to add marshalers and so on
     AZ::Uuid uuid = AZ::Uuid::CreateRandom();
@@ -761,7 +762,7 @@ LANSession::CreateLocalMember(bool isHost, bool isInvited, RemotePeerMode peerMo
 // [2/2/2011]
 //==========================================================================
 GridMember*
-LANSession::CreateRemoteMember(const string& address, ReadBuffer& data, RemotePeerMode peerMode, ConnectionID connId)
+LANSession::CreateRemoteMember(const AZStd::string& address, ReadBuffer& data, RemotePeerMode peerMode, ConnectionID connId)
 {
     MemberIDCompact id;
     data.Read(id);
@@ -802,7 +803,7 @@ LANSession::OnStateCreate(AZ::HSM& sm, const AZ::HSM::Event& e)
     {
         // patch the ID if we use implicit port
         AZ_Assert(m_carrier, "Carrier must be created!");
-        string ip;
+        AZStd::string ip;
         unsigned int port;
         SocketDriverCommon::AddressStringToIPPort(m_myMember->GetId().ToAddress(), ip, port);
         AZ_Assert(port == 0 || port == m_carrier->GetPort(), "Carrier port missmatch! It should either be 0 (and patched here) in the implicit bind or the port number for explicit bind!");
@@ -880,7 +881,7 @@ LANSession::OnStateHostMigrateSession(AZ::HSM& sm, const AZ::HSM::Event& e)
                 if (m_driver->Initialize(Driver::BSD_AF_INET, nullptr, hostPort, true) != Driver::EC_OK)
                 {
                     // check the output for more info
-                    string errorMsg = string::format("Failed to initialize socket at port %d!", hostPort);
+                    AZStd::string errorMsg = AZStd::string::format("Failed to initialize socket at port %d!", hostPort);
                     EBUS_DBG_EVENT(Debug::SessionDrillerBus, OnSessionError, this, errorMsg);
                     EBUS_EVENT_ID(m_gridMate, SessionEventBus, OnSessionError, this, errorMsg);
                     // We can't be a real host if we failed to provide matching services.
@@ -898,7 +899,7 @@ LANSession::OnStateHostMigrateSession(AZ::HSM& sm, const AZ::HSM::Event& e)
 // MakeSessionId
 // [3/7/2013]
 //=========================================================================
-string
+AZStd::string
 LANSession::MakeSessionId()
 {
     char temp[64];
@@ -989,7 +990,7 @@ LANSearch::Update()
             wb.Write(m_searchParams.m_params[i].m_type);
         }
 
-        string serverAddress = m_searchParams.m_serverAddress;
+        AZStd::string serverAddress = m_searchParams.m_serverAddress;
         if (serverAddress.empty())
         {
             serverAddress = Utils::GetBroadcastAddress(m_searchParams.m_familyType);

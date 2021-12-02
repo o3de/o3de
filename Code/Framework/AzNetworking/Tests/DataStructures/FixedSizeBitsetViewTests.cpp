@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -40,5 +41,30 @@ namespace UnitTest
             bitset.SetBit(20, false);
             EXPECT_FALSE(view.GetBit(0));
         }
+    }
+
+    TEST(FixedSizeBitsetView, EmptyBitset)
+    {
+        AzNetworking::FixedSizeBitset<32> bitset;
+        AzNetworking::FixedSizeBitsetView view(bitset, 10, 0);
+        EXPECT_FALSE(view.GetBit(0));
+    }
+
+    TEST(FixedSizeBitsetView, TestAnySet)
+    {
+        const uint32_t VIEW_SIZE = 5;
+
+        AzNetworking::FixedSizeBitset<9> unusedBitTest(true);
+        AzNetworking::FixedSizeBitsetView view(unusedBitTest, 0, VIEW_SIZE);
+        for (uint32_t i = 0; i < VIEW_SIZE; ++i)
+        {
+            view.SetBit(i, false);
+        }
+        EXPECT_FALSE(view.AnySet());
+
+        view.SetBit(0, true);
+        EXPECT_TRUE(view.AnySet());
+
+        EXPECT_EQ(view.GetValidBitCount(), VIEW_SIZE);
     }
 }

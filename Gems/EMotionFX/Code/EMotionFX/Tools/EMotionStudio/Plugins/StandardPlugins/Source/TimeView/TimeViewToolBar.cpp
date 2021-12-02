@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -31,7 +32,7 @@ namespace EMStudio
     {
         setObjectName("TimeViewToolBar");
 
-        mPlugin = plugin;
+        m_plugin = plugin;
 
         m_recorderGroup = new RecorderGroup(plugin, this);
         m_playbackControls = new PlaybackControlsGroup(this);
@@ -74,7 +75,7 @@ namespace EMStudio
 
     void TimeViewToolBar::OnPlayForwardButton()
     {
-        switch (mPlugin->GetMode())
+        switch (m_plugin->GetMode())
         {
             case TimeViewMode::Motion:
             {
@@ -99,12 +100,12 @@ namespace EMStudio
                         }
 
                         const CommandSystem::SelectionList& selectionList = GetCommandManager()->GetCurrentSelection();
-                        const uint32 numSelectedMotions = selectionList.GetNumSelectedMotions();
+                        const size_t numSelectedMotions = selectionList.GetNumSelectedMotions();
 
                         AZStd::vector<EMotionFX::Motion*> motionsToPlay;
                         motionsToPlay.reserve(numSelectedMotions);
 
-                        for (uint32 i = 0; i < numSelectedMotions; ++i)
+                        for (size_t i = 0; i < numSelectedMotions; ++i)
                         {
                             EMotionFX::Motion* motion = selectionList.GetMotion(i);
 
@@ -178,11 +179,11 @@ namespace EMStudio
             const float newTime = MCore::Min<float>(EMotionFX::GetRecorder().GetCurrentPlayTime() + (1.0f / 60.0f), EMotionFX::GetRecorder().GetRecordTime());
             EMotionFX::GetRecorder().SetCurrentPlayTime(newTime);
 
-            if (mPlugin)
+            if (m_plugin)
             {
-                mPlugin->SetCurrentTime(newTime);
-                mPlugin->GetTimeInfoWidget()->update();
-                mPlugin->SetRedrawFlag();
+                m_plugin->SetCurrentTime(newTime);
+                m_plugin->GetTimeInfoWidget()->update();
+                m_plugin->SetRedrawFlag();
             }
         }
 
@@ -194,11 +195,11 @@ namespace EMStudio
         const float newTime = MCore::Max<float>(EMotionFX::GetRecorder().GetCurrentPlayTime() - (1.0f / 60.0f), 0.0f);
         EMotionFX::GetRecorder().SetCurrentPlayTime(newTime);
 
-        if (mPlugin)
+        if (m_plugin)
         {
-            mPlugin->SetCurrentTime(newTime);
-            mPlugin->GetTimeInfoWidget()->update();
-            mPlugin->SetRedrawFlag();
+            m_plugin->SetCurrentTime(newTime);
+            m_plugin->GetTimeInfoWidget()->update();
+            m_plugin->SetRedrawFlag();
         }
 
         emit RecorderStateChanged();
@@ -211,21 +212,19 @@ namespace EMStudio
         case RecorderGroup::Default:
         {
             const AZStd::vector<EMotionFX::MotionInstance*>& motionInstances = MotionWindowPlugin::GetSelectedMotionInstances();
-            const size_t numMotionInstances = motionInstances.size();
-            for (size_t i = 0; i < numMotionInstances; ++i)
+            for (EMotionFX::MotionInstance* motionInstance : motionInstances)
             {
-                EMotionFX::MotionInstance* motionInstance = motionInstances[i];
-                motionInstance->SetCurrentTime(motionInstance->GetDuration());
+                 motionInstance->SetCurrentTime(motionInstance->GetDuration());
             }
             break;
         }
         case RecorderGroup::PlaybackRecording:
         {
             EMotionFX::GetRecorder().SetCurrentPlayTime(EMotionFX::GetRecorder().GetRecordTime());
-            if (mPlugin)
+            if (m_plugin)
             {
-                mPlugin->SetCurrentTime(EMotionFX::GetRecorder().GetCurrentPlayTime());
-                mPlugin->SetRedrawFlag();
+                m_plugin->SetCurrentTime(EMotionFX::GetRecorder().GetCurrentPlayTime());
+                m_plugin->SetRedrawFlag();
             }
             break;
         }
@@ -243,21 +242,19 @@ namespace EMStudio
         case RecorderGroup::Default:
         {
             const AZStd::vector<EMotionFX::MotionInstance*>& motionInstances = MotionWindowPlugin::GetSelectedMotionInstances();
-            const size_t numMotionInstances = motionInstances.size();
-            for (size_t i = 0; i < numMotionInstances; ++i)
+            for (EMotionFX::MotionInstance* motionInstance : motionInstances)
             {
-                EMotionFX::MotionInstance* motionInstance = motionInstances[i];
-                motionInstance->Rewind();
+                 motionInstance->Rewind();
             }
             break;
         }
         case RecorderGroup::PlaybackRecording:
         {
             EMotionFX::GetRecorder().SetCurrentPlayTime(0.0f);
-            if (mPlugin)
+            if (m_plugin)
             {
-                mPlugin->SetCurrentTime(EMotionFX::GetRecorder().GetCurrentPlayTime());
-                mPlugin->SetRedrawFlag();
+                m_plugin->SetCurrentTime(EMotionFX::GetRecorder().GetCurrentPlayTime());
+                m_plugin->SetRedrawFlag();
             }
             break;
         }
@@ -275,8 +272,8 @@ namespace EMStudio
             // Check if at least one actor instance has an anim graph playing.
             bool activateAnimGraph = true;
             const CommandSystem::SelectionList& selectionList = GetCommandManager()->GetCurrentSelection();
-            const uint32 numActorInstances = selectionList.GetNumSelectedActorInstances();
-            for (uint32 i = 0; i < numActorInstances; ++i)
+            const size_t numActorInstances = selectionList.GetNumSelectedActorInstances();
+            for (size_t i = 0; i < numActorInstances; ++i)
             {
                 EMotionFX::ActorInstance* actorInstance = selectionList.GetActorInstance(i);
                 if (!actorInstance->GetIsOwnedByRuntime() && actorInstance->GetAnimGraphInstance())
@@ -297,28 +294,28 @@ namespace EMStudio
             }
 
             EMotionFX::Recorder::RecordSettings settings;
-            settings.mFPS                       = 1000000;
-            settings.mRecordTransforms          = true;
-            settings.mRecordAnimGraphStates     = true;
-            settings.mRecordNodeHistory         = true;
-            settings.mRecordScale               = true;
-            settings.mInitialAnimGraphAnimBytes = 4 * 1024 * 1024; // 4 mb
-            settings.mHistoryStatesOnly         = m_recorderGroup->GetRecordStatesOnly();
-            settings.mRecordEvents              = m_recorderGroup->GetRecordEvents();
+            settings.m_fps                       = 1000000;
+            settings.m_recordTransforms          = true;
+            settings.m_recordAnimGraphStates     = true;
+            settings.m_recordNodeHistory         = true;
+            settings.m_recordScale               = true;
+            settings.m_initialAnimGraphAnimBytes = 4 * 1024 * 1024; // 4 mb
+            settings.m_historyStatesOnly         = m_recorderGroup->GetRecordStatesOnly();
+            settings.m_recordEvents              = m_recorderGroup->GetRecordEvents();
 
             if (m_recorderGroup->GetRecordMotionsOnly())
             {
-                settings.mNodeHistoryTypes.insert(azrtti_typeid<EMotionFX::AnimGraphMotionNode>());
+                settings.m_nodeHistoryTypes.insert(azrtti_typeid<EMotionFX::AnimGraphMotionNode>());
             }
 
             EMotionFX::GetRecorder().StartRecording(settings);
 
             // reinit the time view plugin
-            if (mPlugin)
+            if (m_plugin)
             {
-                mPlugin->ReInit();
-                mPlugin->SetScale(1.0);
-                mPlugin->SetScrollX(0);
+                m_plugin->ReInit();
+                m_plugin->SetScale(1.0);
+                m_plugin->SetScrollX(0);
             }
         }
         else
@@ -329,13 +326,13 @@ namespace EMStudio
             EMotionFX::GetRecorder().SetCurrentPlayTime(0.0f);
 
             // reinit the time view plugin
-            if (mPlugin)
+            if (m_plugin)
             {
-                mPlugin->ReInit();
-                mPlugin->OnZoomAll();
-                mPlugin->SetCurrentTime(0.0f);
-                mPlugin->GetTrackDataWidget()->setFocus();
-                mPlugin->GetTrackDataHeaderWidget()->setFocus();
+                m_plugin->ReInit();
+                m_plugin->OnZoomAll();
+                m_plugin->SetCurrentTime(0.0f);
+                m_plugin->GetTrackDataWidget()->setFocus();
+                m_plugin->GetTrackDataHeaderWidget()->setFocus();
             }
         }
 
@@ -350,12 +347,12 @@ namespace EMStudio
         UpdateInterface();
 
         // reinit the time view plugin
-        if (mPlugin)
+        if (m_plugin)
         {
-            mPlugin->ReInit();
-            mPlugin->SetScale(1.0);
-            mPlugin->SetScrollX(0);
-            mPlugin->SetCurrentTime(0.0f);
+            m_plugin->ReInit();
+            m_plugin->SetScale(1.0);
+            m_plugin->SetScrollX(0);
+            m_plugin->SetCurrentTime(0.0f);
         }
 
         emit RecorderStateChanged();
@@ -369,8 +366,8 @@ namespace EMStudio
         MCore::CommandGroup commandGroup("Adjust default motion instances");
 
         // get the number of selected motions and iterate through them
-        const uint32 numMotions = selection.GetNumSelectedMotions();
-        for (uint32 i = 0; i < numMotions; ++i)
+        const size_t numMotions = selection.GetNumSelectedMotions();
+        for (size_t i = 0; i < numMotions; ++i)
         {
             MotionWindowPlugin* plugin = GetMotionWindowPlugin();
             MotionWindowPlugin::MotionTableEntry* entry = plugin ? plugin->FindMotionEntryByID(selection.GetMotion(i)->GetID()) : nullptr;
@@ -380,11 +377,11 @@ namespace EMStudio
                 continue;
             }
 
-            EMotionFX::Motion* motion = entry->mMotion;
+            EMotionFX::Motion* motion = entry->m_motion;
             EMotionFX::PlayBackInfo* playbackInfo = motion->GetDefaultPlayBackInfo();
             AZStd::string commandParameters;
 
-            if (MCore::Compare<float>::CheckIfIsClose(playbackInfo->mPlaySpeed, m_playbackOptions->GetPlaySpeed(), 0.001f) == false)
+            if (MCore::Compare<float>::CheckIfIsClose(playbackInfo->m_playSpeed, m_playbackOptions->GetPlaySpeed(), 0.001f) == false)
             {
                 commandParameters += AZStd::string::format("-playSpeed %f ", m_playbackOptions->GetPlaySpeed());
             }
@@ -400,25 +397,25 @@ namespace EMStudio
             }
 
             const bool mirrorMotion = m_playbackOptions->GetMirrorMotion();
-            if (playbackInfo->mMirrorMotion != mirrorMotion)
+            if (playbackInfo->m_mirrorMotion != mirrorMotion)
             {
                 commandParameters += AZStd::string::format("-mirrorMotion %s ", AZStd::to_string(mirrorMotion).c_str());
             }
 
             const EMotionFX::EPlayMode playMode = m_playbackOptions->GetPlayMode();
-            if (playbackInfo->mPlayMode != playMode)
+            if (playbackInfo->m_playMode != playMode)
             {
                 commandParameters += AZStd::string::format("-playMode %i ", static_cast<AZ::u8>(playMode));
             }
 
             const bool inPlace = m_playbackOptions->GetInPlace();
-            if (playbackInfo->mInPlace != inPlace)
+            if (playbackInfo->m_inPlace != inPlace)
             {
                 commandParameters += AZStd::string::format("-inPlace %s ", AZStd::to_string(inPlace).c_str());
             }
 
             const bool retarget = m_playbackOptions->GetRetarget();
-            if (playbackInfo->mRetarget != retarget)
+            if (playbackInfo->m_retarget != retarget)
             {
                 commandParameters += AZStd::string::format("-retarget %s ", AZStd::to_string(retarget).c_str());
             }
@@ -440,24 +437,24 @@ namespace EMStudio
 
     void TimeViewToolBar::UpdateInterface()
     {
-        const TimeViewMode mode = mPlugin->GetMode();
+        const TimeViewMode mode = m_plugin->GetMode();
 
         const bool playbackOptionsVisible = m_playbackOptions->UpdateInterface(mode, /*showRightSeparator=*/false);
         const bool playbackControlsVisible = m_playbackControls->UpdateInterface(mode, /*showRightSeparator=*/playbackOptionsVisible);
-        const bool recorderGroupVisible =  m_recorderGroup->UpdateInterface(mode, /*showRightSeparator=*/playbackControlsVisible);
+        m_recorderGroup->UpdateInterface(mode, /*showRightSeparator=*/playbackControlsVisible);
     }
 
     void TimeViewToolBar::OnDetailedNodes()
     {
-        mPlugin->SetRedrawFlag();
+        m_plugin->SetRedrawFlag();
 
         if (!m_recorderGroup->GetDetailedNodes())
         {
-            mPlugin->mTrackDataWidget->mNodeHistoryItemHeight = 20;
+            m_plugin->m_trackDataWidget->m_nodeHistoryItemHeight = 20;
         }
         else
         {
-            mPlugin->mTrackDataWidget->mNodeHistoryItemHeight = 35;
+            m_plugin->m_trackDataWidget->m_nodeHistoryItemHeight = 35;
         }
     }
 

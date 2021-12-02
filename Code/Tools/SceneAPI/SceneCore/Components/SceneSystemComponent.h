@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -18,8 +19,7 @@ namespace AZ
         {
             // Scene system components are components that can be used to create system components
             //      in situations where the full initialization and/or construction of regular
-            //      system components don't apply such as in the Project Configurator's advanced
-            //      settings and the ResourceCompilerScene.
+            //      system components don't apply such as in the ResourceCompilerScene.
             class SCENE_CORE_CLASS SceneSystemComponent
                 : public AZ::Component
             {

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -20,7 +21,7 @@ namespace AZ
         class WinAPIOverrunDetectionSchema : public OverrunDetectionSchema::PlatformAllocator
         {
         public:
-            virtual SystemInformation GetSystemInformation() override
+            SystemInformation GetSystemInformation() override
             {
                 SystemInformation result;
                 SYSTEM_INFO info;
@@ -31,7 +32,7 @@ namespace AZ
                 return result;
             }
 
-            virtual void* ReserveBytes(size_t amount) override
+            void* ReserveBytes(size_t amount) override
             {
                 void* result = VirtualAlloc(0, amount, MEM_RESERVE, PAGE_NOACCESS);
 
@@ -44,12 +45,12 @@ namespace AZ
                 return result;
             }
 
-            virtual void ReleaseReservedBytes(void* base) override
+            void ReleaseReservedBytes(void* base) override
             {
                 VirtualFree(base, 0, MEM_RELEASE);
             }
 
-            virtual void* CommitBytes(void* base, size_t amount) override
+            void* CommitBytes(void* base, size_t amount) override
             {
                 void* result = VirtualAlloc(base, amount, MEM_COMMIT, PAGE_READWRITE);
 
@@ -62,7 +63,7 @@ namespace AZ
                 return result;
             }
 
-            virtual void DecommitBytes(void* base, size_t amount) override
+            void DecommitBytes(void* base, size_t amount) override
             {
                 VirtualFree(base, amount, MEM_DECOMMIT);
             }

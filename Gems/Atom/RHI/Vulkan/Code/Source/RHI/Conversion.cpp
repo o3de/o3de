@@ -1,10 +1,10 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "Atom_RHI_Vulkan_precompiled.h"
 #include <RHI/Conversion.h>
 #include <Atom/RHI.Reflect/ImageDescriptor.h>
 #include <Atom/RHI.Reflect/ImageSubresource.h>
@@ -257,7 +257,7 @@ namespace AZ
             state.srcAlphaBlendFactor = ConvertBlendFactor(targetBlendState.m_blendAlphaSource);
             state.dstAlphaBlendFactor = ConvertBlendFactor(targetBlendState.m_blendAlphaDest);
             state.alphaBlendOp = ConvertBlendOp(targetBlendState.m_blendAlphaOp);
-            state.colorWriteMask = ConvertComponentFlags(targetBlendState.m_writeMask);
+            state.colorWriteMask = ConvertComponentFlags(static_cast<uint8_t>(targetBlendState.m_writeMask));
         }
 
         VkBlendFactor ConvertBlendFactor(const RHI::BlendFactor& blendFactor)
@@ -696,8 +696,7 @@ namespace AZ
                 usageFlags |=
                     VK_BUFFER_USAGE_INDEX_BUFFER_BIT |
                     VK_BUFFER_USAGE_VERTEX_BUFFER_BIT |
-                    VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_BUILD_INPUT_READ_ONLY_BIT_KHR |
-                    VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT;
+                    VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_BUILD_INPUT_READ_ONLY_BIT_KHR;
             }
 
             if (RHI::CheckBitsAny(bindFlags, BindFlags::Constant))
@@ -742,10 +741,22 @@ namespace AZ
 
             if (RHI::CheckBitsAny(bindFlags, BindFlags::RayTracingShaderTable))
             {
-                usageFlags |= VK_BUFFER_USAGE_SHADER_BINDING_TABLE_BIT_KHR | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT;
+                usageFlags |= VK_BUFFER_USAGE_SHADER_BINDING_TABLE_BIT_KHR;
+            }
+
+            if (ShouldApplyDeviceAddressBit(bindFlags))
+            {
+                usageFlags |=  VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT;
             }
 
             return usageFlags;
+        }
+
+        bool ShouldApplyDeviceAddressBit(RHI::BufferBindFlags bindFlags)
+        {
+            return RHI::CheckBitsAny(
+                bindFlags,
+                RHI::BufferBindFlags::InputAssembly | RHI::BufferBindFlags::DynamicInputAssembly | RHI::BufferBindFlags::RayTracingShaderTable);
         }
 
         VkPipelineStageFlags GetSupportedPipelineStages(RHI::PipelineStateType type)

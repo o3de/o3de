@@ -1,11 +1,11 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
-#include <ImageProcessing_precompiled.h>
 
 #include <Processing/ImageAssetProducer.h>
 #include <Processing/ImageObjectImpl.h>
@@ -97,8 +97,8 @@ namespace ImageProcessingAtom
         RHI::Format format = Utils::PixelFormatToRHIFormat(m_imageObject->GetPixelFormat(), m_imageObject->HasImageFlags(EIF_SRGBRead));
         RHI::ImageBindFlags bindFlag = RHI::ImageBindFlags::ShaderRead;
 
-        RHI::ImageDescriptor imageDesc = RHI::ImageDescriptor::Create2DArray(bindFlag, imageWidth, imageHeight, arraySize, format);
-        imageDesc.m_mipLevels = m_imageObject->GetMipCount();
+        RHI::ImageDescriptor imageDesc = RHI::ImageDescriptor::Create2DArray(bindFlag, imageWidth, imageHeight, static_cast<uint16_t>(arraySize), format);
+        imageDesc.m_mipLevels = static_cast<uint16_t>(m_imageObject->GetMipCount());
         if (m_imageObject->HasImageFlags(EIF_Cubemap))
         {
             imageDesc.m_isCubemap = true;
@@ -227,7 +227,7 @@ namespace ImageProcessingAtom
     {
         RPI::ImageMipChainAssetCreator builder;
         uint32_t arraySize = m_imageObject->HasImageFlags(EIF_Cubemap) ? 6 : 1;
-        builder.Begin(chainAssetId, mipLevels, arraySize);
+        builder.Begin(chainAssetId, static_cast<uint16_t>(mipLevels), static_cast<uint16_t>(arraySize));
 
         for (uint32_t mip = startMip; mip < startMip + mipLevels; mip++)
         {

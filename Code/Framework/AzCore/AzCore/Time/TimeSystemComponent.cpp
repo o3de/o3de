@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -34,7 +35,7 @@ namespace AZ
 
     TimeSystemComponent::TimeSystemComponent()
     {
-        m_lastInvokedTimeMs = static_cast<TimeMs>(AZStd::GetTimeNowMicroSecond() / 1000);
+        m_lastInvokedTimeUs = static_cast<TimeUs>(AZStd::GetTimeNowMicroSecond());
         AZ::Interface<ITime>::Register(this);
         ITimeRequestBus::Handler::BusConnect();
     }
@@ -57,18 +58,23 @@ namespace AZ
 
     TimeMs TimeSystemComponent::GetElapsedTimeMs() const
     {
-        TimeMs currentTime = static_cast<TimeMs>(AZStd::GetTimeNowMicroSecond() / 1000);
-        TimeMs deltaTime = currentTime - m_lastInvokedTimeMs;
+        return TimeUsToMs(GetElapsedTimeUs());
+    }
+
+    TimeUs TimeSystemComponent::GetElapsedTimeUs() const
+    {
+        TimeUs currentTime = static_cast<TimeUs>(AZStd::GetTimeNowMicroSecond());
+        TimeUs deltaTime = currentTime - m_lastInvokedTimeUs;
 
         if (t_scale != 1.0f)
         {
             float floatDelta = static_cast<float>(deltaTime) * t_scale;
-            deltaTime = static_cast<TimeMs>(static_cast<int64_t>(floatDelta));
+            deltaTime = static_cast<TimeUs>(static_cast<int64_t>(floatDelta));
         }
 
-        m_accumulatedTimeMs += deltaTime;
-        m_lastInvokedTimeMs = currentTime;
+        m_accumulatedTimeUs += deltaTime;
+        m_lastInvokedTimeUs = currentTime;
 
-        return m_accumulatedTimeMs;
+        return m_accumulatedTimeUs;
     }
 }

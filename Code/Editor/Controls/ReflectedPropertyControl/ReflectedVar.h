@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -9,10 +10,10 @@
 #define CRYINCLUDE_EDITOR_UTILS_REFLECTEDVAR_H
 #pragma once
 
-#include <AzCore/Serialization/SerializeContext.h>
 #include <algorithm>
 #include <limits>
 #include "Util/VariablePropertyType.h"
+#include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Math/Vector2.h>
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Math/Vector4.h>
@@ -264,32 +265,8 @@ public:
     AZ::Vector3 m_color;
 };
 
-//Class to hold ePropertyAnimation (IVariable::DT_ANIMATION )
-class CReflectedVarAnimation
-    : public CReflectedVar
-{
-public:
-    AZ_RTTI(CReflectedVarAnimation, "{635D982E-23EC-463F-8F33-4FC2C19D5673}", CReflectedVar)
-
-    CReflectedVarAnimation(const AZStd::string& name)
-        : CReflectedVar(name)
-        , m_entityID(0)
-    {}
-    CReflectedVarAnimation()
-        : m_entityID(0){}
-
-    AZStd::string varName() const { return m_varName; }
-    AZStd::string description() const { return m_description; }
-
-    AZStd::string m_animation;
-    AZ::EntityId m_entityID;
-};
-
 //Class to hold:
 // ePropertyTexture          (IVariable::DT_TEXTURE)
-// ePropertyMaterial         (IVariable::DT_MATERIAL)
-// ePropertyModel            (IVariable::DT_OBJECT)
-// ePropertyGeomCache        (IVariable::DT_GEOM_CACHE)
 // ePropertyAudioTrigger        (IVariable::DT_AUDIO_TRIGGER)
 // ePropertyAudioSwitch         (IVariable::DT_AUDIO_SWITCH )
 // ePropertyAudioSwitchState    (IVariable::DT_AUDIO_SWITCH_STATE)
@@ -343,7 +320,6 @@ public:
     AZStd::vector<AZStd::string> m_itemDescriptions;
 };
 
-//Class to hold ePropertyAnimation (IVariable::DT_ANIMATION )
 class CReflectedVarSpline
     : public CReflectedVar
 {

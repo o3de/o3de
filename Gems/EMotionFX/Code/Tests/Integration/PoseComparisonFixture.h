@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -17,16 +18,16 @@ namespace EMotionFX
 
     struct PoseComparisonFixtureParams
     {
-        const char* actorFile = nullptr;
-        const char* animGraphFile = nullptr;
-        const char* motionSetFile = nullptr;
-        const char* recordingFile = nullptr;
+        const char* m_actorFile = nullptr;
+        const char* m_animGraphFile = nullptr;
+        const char* m_motionSetFile = nullptr;
+        const char* m_recordingFile = nullptr;
         PoseComparisonFixtureParams(const char* actorFile, const char* animGraphFile, const char* motionSetFile, const char* recordingFile)
-            : actorFile(actorFile), animGraphFile(animGraphFile), motionSetFile(motionSetFile), recordingFile(recordingFile)
+            : m_actorFile(actorFile), m_animGraphFile(animGraphFile), m_motionSetFile(motionSetFile), m_recordingFile(recordingFile)
         {}
     };
 
-    class INTEG_PoseComparisonFixture
+    class PoseComparisonFixture
         : public SystemComponentFixture
         , public ::testing::WithParamInterface<PoseComparisonFixtureParams>
     {
@@ -46,8 +47,8 @@ namespace EMotionFX
     // This fixture exists to separate the tests that test the pose comparsion
     // functionality from the tests that use the pose comparison functionality
     // (even though it doesn't use the recording)
-    class INTEG_TestPoseComparisonFixture
-        : public INTEG_PoseComparisonFixture
+    class TestPoseComparisonFixture
+        : public PoseComparisonFixture
     {
     };
 }; // namespace EMotionFX

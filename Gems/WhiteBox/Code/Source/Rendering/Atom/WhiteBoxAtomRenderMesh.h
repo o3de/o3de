@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -90,6 +91,7 @@ namespace WhiteBox
         // TODO: LYN-784
         static constexpr AZStd::string_view TexturedMaterialPath = "materials/defaultpbr.azmaterial";
         static constexpr AZStd::string_view SolidMaterialPath = "materials/defaultpbr.azmaterial";
+        static constexpr AZ::RPI::ModelMaterialSlot::StableId OneMaterialSlotId = 0;
 
         //! White box model name.
         static constexpr AZStd::string_view ModelName = "WhiteBoxMesh";

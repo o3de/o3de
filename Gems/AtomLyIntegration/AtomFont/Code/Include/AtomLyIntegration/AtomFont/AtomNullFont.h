@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -8,9 +9,9 @@
 
 // Description : Dummy font implementation (dedicated server)
 
-
 #pragma once
 
+#define USE_NULLFONT
 
 #if defined(USE_NULLFONT)
 
@@ -41,9 +42,7 @@ namespace AZ
 
         size_t GetTextLength([[maybe_unused]] const char* str, [[maybe_unused]] const bool asciiMultiLine) const override { return 0; }
 
-        void WrapText(string& result, [[maybe_unused]] float maxWidth, const char* str, [[maybe_unused]] const TextDrawContext& ctx) override { result = str; }
-
-        void GetMemoryUsage([[maybe_unused]] ICrySizer* sizer) const override {}
+        void WrapText(AZStd::string& result, [[maybe_unused]] float maxWidth, const char* str, [[maybe_unused]] const TextDrawContext& ctx) override { result = str; }
 
         void GetGradientTextureCoord([[maybe_unused]] float& minU, [[maybe_unused]] float& minV, [[maybe_unused]] float& maxU, [[maybe_unused]] float& maxV) const override {}
 
@@ -74,8 +73,7 @@ namespace AZ
         virtual FontFamilyPtr LoadFontFamily([[maybe_unused]] const char* fontFamilyName) override { CRY_ASSERT(false); return nullptr; }
         virtual FontFamilyPtr GetFontFamily([[maybe_unused]] const char* fontFamilyName) override { CRY_ASSERT(false); return nullptr; }
         virtual void AddCharsToFontTextures([[maybe_unused]] FontFamilyPtr fontFamily, [[maybe_unused]] const char* chars, [[maybe_unused]] int glyphSizeX, [[maybe_unused]] int glyphSizeY) override {};
-        virtual void GetMemoryUsage([[maybe_unused]] ICrySizer* sizer) const override {}
-        virtual string GetLoadedFontNames() const override { return ""; }
+        virtual AZStd::string GetLoadedFontNames() const override { return ""; }
         virtual void OnLanguageChanged() override { }
         virtual void ReloadAllFonts() override { } 
 

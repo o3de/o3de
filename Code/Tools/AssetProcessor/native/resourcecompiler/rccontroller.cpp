@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -160,6 +161,11 @@ namespace AssetProcessor
     bool RCController::IsIdle()
     {
         return ((!m_RCQueueSortModel.GetNextPendingJob()) && (m_RCJobListModel.jobsInFlight() == 0));
+    }
+
+    void RCController::SetQueueSortOnDBSourceName()
+    {
+        m_RCQueueSortModel.SetQueueSortOnDBSourceName();
     }
 
     void RCController::JobSubmitted(JobDetails details)

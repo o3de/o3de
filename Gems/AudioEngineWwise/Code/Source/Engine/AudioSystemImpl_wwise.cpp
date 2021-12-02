@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -11,6 +12,7 @@
 
 #include <platform.h>
 #include <AzCore/AzCore_Traits_Platform.h>
+#include <AzCore/Debug/Profiler.h>
 #include <AzCore/std/containers/set.h>
 #include <AzCore/std/string/conversions.h>
 #include <AzCore/StringFunc/StringFunc.h>
@@ -373,7 +375,7 @@ namespace Audio
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     void CAudioSystemImpl_wwise::Update([[maybe_unused]] const float updateIntervalMS)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Audio);
+        AZ_PROFILE_FUNCTION(Audio);
 
         if (AK::SoundEngine::IsInitialized())
         {
@@ -730,7 +732,7 @@ namespace Audio
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     EAudioRequestStatus CAudioSystemImpl_wwise::UpdateAudioObject(IATLAudioObjectData* const audioObjectData)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Audio);
+        AZ_PROFILE_FUNCTION(Audio);
 
         EAudioRequestStatus result = eARS_FAILURE;
 
@@ -1778,8 +1780,8 @@ namespace Audio
             AK::MemoryMgr::CategoryStats categoryStats;
             AK::MemoryMgr::GetCategoryStats(memInfo.m_poolId, categoryStats);
 
-            memInfo.m_memoryUsed = categoryStats.uUsed;
-            memInfo.m_peakUsed = categoryStats.uPeakUsed;
+            memInfo.m_memoryUsed = static_cast<AZ::u32>(categoryStats.uUsed);
+            memInfo.m_peakUsed = static_cast<AZ::u32>(categoryStats.uPeakUsed);
             memInfo.m_numAllocs = categoryStats.uAllocs;
             memInfo.m_numFrees = categoryStats.uFrees;
         }
@@ -1788,9 +1790,9 @@ namespace Audio
         AK::MemoryMgr::GetGlobalStats(globalStats);
 
         auto& memInfo = m_debugMemoryInfo.back();
-        memInfo.m_memoryReserved = globalStats.uReserved;
-        memInfo.m_memoryUsed = globalStats.uUsed;
-        memInfo.m_peakUsed = globalStats.uMax;
+        memInfo.m_memoryReserved = static_cast<AZ::u32>(globalStats.uReserved);
+        memInfo.m_memoryUsed = static_cast<AZ::u32>(globalStats.uUsed);
+        memInfo.m_peakUsed = static_cast<AZ::u32>(globalStats.uMax);
 
         // return the memory infos...
         return m_debugMemoryInfo;
@@ -2172,16 +2174,7 @@ namespace Audio
     {
         if (language)
         {
-            AZStd::string languageSubfolder;
-
-            if (azstricmp(language, "english") == 0)
-            {
-                languageSubfolder = "english(us)";
-            }
-            else
-            {
-                languageSubfolder = language;
-            }
+            AZStd::string languageSubfolder(language);
 
             languageSubfolder += "/";
 

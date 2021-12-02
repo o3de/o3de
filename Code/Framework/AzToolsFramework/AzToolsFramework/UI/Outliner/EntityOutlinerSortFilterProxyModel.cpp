@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -10,6 +11,8 @@
 #include <AzCore/Component/ComponentApplication.h>
 #include <AzCore/Component/Entity.h>
 
+#include <AzToolsFramework/ContainerEntity/ContainerEntityInterface.h>
+
 #include "EntityOutlinerListModel.hxx"
 
 namespace AzToolsFramework
@@ -18,6 +21,10 @@ namespace AzToolsFramework
     EntityOutlinerSortFilterProxyModel::EntityOutlinerSortFilterProxyModel(QObject* pParent)
         : QSortFilterProxyModel(pParent)
     {
+        m_containerEntityInterface = AZ::Interface<ContainerEntityInterface>::Get();
+        AZ_Assert(
+            m_containerEntityInterface != nullptr,
+            "EntityOutlinerContainerProxyModel requires a ContainerEntityInterface instance on construction.");
     }
 
     void EntityOutlinerSortFilterProxyModel::UpdateFilter()
@@ -25,8 +32,24 @@ namespace AzToolsFramework
         invalidateFilter();
     }
 
+    void EntityOutlinerSortFilterProxyModel::setSourceModel(QAbstractItemModel* sourceModel)
+    {
+        QSortFilterProxyModel::setSourceModel(sourceModel);
+
+        m_listModel = qobject_cast<EntityOutlinerListModel*>(sourceModel);
+        AZ_Assert(m_listModel != nullptr, "EntityOutlinerContainerProxyModel requires an EntityOutlinerListModel as its source .");
+    }
+
     bool EntityOutlinerSortFilterProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex& sourceParent) const
     {
+        // Retrieve the entityId of the parent entity
+        AZ::EntityId parentEntityId = m_listModel->GetEntityFromIndex(sourceParent);
+
+        if(!m_containerEntityInterface->IsContainerOpen(parentEntityId))
+        {
+            return false;
+        }
+
         QModelIndex index = sourceModel()->index(sourceRow, 0, sourceParent);
         QVariant visibilityData = sourceModel()->data(index, EntityOutlinerListModel::VisibilityRole);
         return visibilityData.isValid() ? visibilityData.toBool() : true;

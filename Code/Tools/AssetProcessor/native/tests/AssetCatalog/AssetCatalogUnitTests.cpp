@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -127,7 +128,9 @@ namespace AssetProcessor
             settingsRegistry->Set(cacheRootKey, m_data->m_temporarySourceDir.absoluteFilePath("Cache").toUtf8().constData());
             auto projectPathKey =
                 AZ::SettingsRegistryInterface::FixedValueString(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey) + "/project_path";
-            settingsRegistry->Set(projectPathKey, "AutomatedTesting");
+            AZ::IO::FixedMaxPath enginePath;
+            settingsRegistry->Get(enginePath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder);
+            settingsRegistry->Set(projectPathKey, (enginePath / "AutomatedTesting").Native());
             AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(*settingsRegistry);
             AssetUtilities::ComputeProjectCacheRoot(m_data->m_cacheRootDir);
             QString normalizedCacheRoot = AssetUtilities::NormalizeDirectoryPath(m_data->m_cacheRootDir.absolutePath());
@@ -765,7 +768,7 @@ namespace AssetProcessor
     TEST_F(AssetCatalogTest_GetFullSourcePath, AliasedCachePath_ReturnsAbsolutePathToSource)
     {
         //feed it a path with alias and asset id
-        QString fileToCheck = "@assets@/subfolder3/randomfileoutput.random1";
+        QString fileToCheck = "@products@/subfolder3/randomfileoutput.random1";
         EXPECT_TRUE(TestGetFullSourcePath(fileToCheck, m_data->m_temporarySourceDir, true, "subfolder3/somerandomfile.random"));
     }
 
@@ -786,7 +789,7 @@ namespace AssetProcessor
     TEST_F(AssetCatalogTest_GetFullSourcePath, InvalidSourcePathContainingCacheAlias_ReturnsAbsolutePathToSource)
     {
         //feed it a path with alias and input name
-        QString fileToCheck = "@assets@/somerandomfile.random";
+        QString fileToCheck = "@products@/somerandomfile.random";
         EXPECT_TRUE(TestGetFullSourcePath(fileToCheck, m_data->m_temporarySourceDir, true, "subfolder3/somerandomfile.random"));
     }
 
@@ -1062,10 +1065,10 @@ namespace AssetProcessor
 
         AZStd::thread_desc threadDesc;
         threadDesc.m_name = "AssetCatalog Thread";
-        AZStd::thread catalogThread([this]()
+        AZStd::thread catalogThread(threadDesc, [this]()
             {
                 m_data->m_assetCatalog->BuildRegistry();
-            }, &threadDesc
+            }
         );
 
         AssetNotificationMessage message("some/path/image.png", AssetNotificationMessage::NotificationType::AssetChanged, AZ::Data::AssetType::CreateRandom(), "pc");

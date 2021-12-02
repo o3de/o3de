@@ -1,15 +1,19 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
 #include <AzQtComponents/Components/Widgets/TreeView.h>
 
+#include <QDrag>
 #include <QEvent>
 #include <QSettings>
 #include <QPainter>
+
+#include <AzCore/std/algorithm.h>
 
 #include <AzQtComponents/Components/Style.h>
 #include <AzQtComponents/Components/StyleManager.h>
@@ -249,6 +253,110 @@ namespace AzQtComponents
         Q_UNUSED(config);
 
         return qobject_cast<QTreeView*>(widget) && !qobject_cast<TableView*>(widget);
+    }
+
+    StyledTreeView::StyledTreeView(QWidget* parent)
+        : QTreeView(parent)
+    {
+    }
+
+    void StyledTreeView::startDrag(Qt::DropActions supportedActions)
+    {
+        if (!selectionModel()->selectedIndexes().empty())
+        {
+            StartCustomDrag(selectionModel()->selectedIndexes(), supportedActions);
+        }
+    }
+
+    void StyledTreeView::StartCustomDrag(const QModelIndexList& indexList, Qt::DropActions supportedActions)
+    {
+        StartCustomDragInternal(this, indexList, supportedActions);
+    }
+
+    void StyledTreeView::StartCustomDragInternal(QAbstractItemView* itemView, const QModelIndexList& indexList, Qt::DropActions supportedActions)
+    {
+        QMimeData* mimeData = itemView->model()->mimeData(indexList);
+        if (mimeData)
+        {
+            QDrag* drag = new QDrag(itemView);
+            drag->setPixmap(QPixmap::fromImage(CreateDragImage(itemView, indexList)));
+            drag->setMimeData(mimeData);
+
+            Qt::DropAction defDropAction = Qt::IgnoreAction;
+            if (itemView->defaultDropAction() != Qt::IgnoreAction && (supportedActions & itemView->defaultDropAction()))
+            {
+                defDropAction = itemView->defaultDropAction();
+            }
+            else if (supportedActions & Qt::CopyAction && itemView->dragDropMode() != QAbstractItemView::InternalMove)
+            {
+                defDropAction = Qt::CopyAction;
+            }
+
+            drag->exec(supportedActions, defDropAction);
+        }
+    }
+
+    QImage StyledTreeView::CreateDragImage(QAbstractItemView* itemView, const QModelIndexList& indexList)
+    {
+        // Generate a drag image of the item icon and text, normally done internally, and inaccessible
+        QRect rect(0, 0, 0, 0);
+        for (const auto& index : indexList)
+        {
+            if (index.column() != 0)
+            {
+                continue;
+            }
+
+            QRect itemRect = itemView->visualRect(index);
+            rect.setHeight(rect.height() + itemRect.height());
+            rect.setWidth(AZStd::GetMax(rect.width(), itemRect.width()));
+        }
+
+        QImage dragImage(rect.size(), QImage::Format_ARGB32_Premultiplied);
+
+        QPainter dragPainter(&dragImage);
+        dragPainter.setCompositionMode(QPainter::CompositionMode_Source);
+        dragPainter.fillRect(dragImage.rect(), Qt::transparent);
+        dragPainter.setCompositionMode(QPainter::CompositionMode_SourceOver);
+        dragPainter.setOpacity(0.35f);
+        dragPainter.fillRect(rect, QColor("#222222"));
+        dragPainter.setOpacity(1.0f);
+
+        int imageY = 0;
+        for (const auto& index : indexList)
+        {
+            if (index.column() != 0)
+            {
+                continue;
+            }
+
+            QRect itemRect = itemView->visualRect(index);
+            dragPainter.drawPixmap(QPoint(0, imageY),
+                itemView->model()->data(index, Qt::DecorationRole).value<QIcon>().pixmap(QSize(16, 16)));
+            dragPainter.setPen(
+                itemView->model()->data(index, Qt::ForegroundRole).value<QBrush>().color());
+            dragPainter.setFont(
+                itemView->font());
+            dragPainter.drawText(QRect(20, imageY, rect.width() - 20, rect.height()),
+                itemView->model()->data(index, Qt::DisplayRole).value<QString>());
+            imageY += itemRect.height();
+        }
+
+        dragPainter.end();
+        return dragImage;
+    }
+
+    StyledTreeWidget::StyledTreeWidget(QWidget* parent)
+        : QTreeWidget(parent)
+    {
+    }
+
+    void StyledTreeWidget::startDrag(Qt::DropActions supportedActions)
+    {
+        if (!selectionModel()->selectedIndexes().empty())
+        {
+            StyledTreeView::StartCustomDragInternal(this, selectionModel()->selectedIndexes(), supportedActions);
+        }
     }
 
 } // namespace AzQtComponents

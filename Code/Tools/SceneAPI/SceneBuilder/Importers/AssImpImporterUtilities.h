@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -8,12 +9,14 @@
 #pragma once
 
 #include <assimp/matrix4x4.h>
+#include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/string/string.h>
+#include <SceneAPI/SceneCore/DataTypes/MatrixType.h>
 
+struct aiBone;
 struct aiNode;
 struct aiScene;
 struct aiString;
-
 
 namespace AZ::SceneAPI::SceneBuilder
 {
@@ -29,5 +32,16 @@ namespace AZ::SceneAPI::SceneBuilder
 
     // Gets the entire, combined local transform for a node taking pivot nodes into account.  When pivot nodes are not used, this just returns the node's transform
     aiMatrix4x4 GetConcatenatedLocalTransform(const aiNode* currentNode);
+
+    DataTypes::MatrixType GetLocalSpaceBindPoseTransform(const aiScene* scene, const aiNode* node);
+
+    // Gather all bones from the scene. (Bone in AssImp corresponds to nodes that influence any of the vertices).
+    void FindAllBones(const aiScene* scene, AZStd::unordered_multimap<AZStd::string, const aiBone*>& outBoneByNameMap);
+
+    // Find the first bone with the name of the given node.
+    const aiBone* FindFirstBoneByNodeName(const aiNode* node, AZStd::unordered_multimap<AZStd::string, const aiBone*>& boneByNameMap);
+
+    // Check if the given node or any of its children, or children of children, is a bone by checking if the node name is part of the given map.
+    bool RecursiveHasChildBone(const aiNode* node, const AZStd::unordered_multimap<AZStd::string, const aiBone*>& boneByNameMap);
 } // namespace AZ
 

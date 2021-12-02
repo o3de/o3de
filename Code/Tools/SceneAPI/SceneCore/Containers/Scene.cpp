@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -44,6 +45,16 @@ namespace AZ
             const Uuid& Scene::GetSourceGuid() const
             {
                 return m_sourceGuid;
+            }
+
+            void Scene::SetWatchFolder(const AZStd::string& watchFolder)
+            {
+                m_watchFolder = watchFolder;
+            }
+
+            const AZStd::string& Scene::GetWatchFolder() const
+            {
+                return m_watchFolder;
             }
 
             void Scene::SetManifestFilename(const AZStd::string& name)
@@ -110,6 +121,7 @@ namespace AZ
                         ->Property("sourceGuid", BehaviorValueGetter(&Scene::m_sourceGuid), nullptr)
                         ->Property("graph", BehaviorValueGetter(&Scene::m_graph), nullptr)
                         ->Property("manifest", BehaviorValueGetter(&Scene::m_manifest), nullptr)
+                        ->Property("watchFolder", BehaviorValueGetter(&Scene::m_watchFolder), nullptr)
                         ->Constant("SceneOrientation_YUp", BehaviorConstant(SceneOrientation::YUp))
                         ->Constant("SceneOrientation_ZUp", BehaviorConstant(SceneOrientation::ZUp))
                         ->Constant("SceneOrientation_XUp", BehaviorConstant(SceneOrientation::XUp))

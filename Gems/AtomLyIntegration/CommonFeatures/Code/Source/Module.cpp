@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -23,6 +24,7 @@
 #include <OcclusionCullingPlane/OcclusionCullingPlaneComponent.h>
 #include <PostProcess/PostFxLayerComponent.h>
 #include <PostProcess/Bloom/BloomComponent.h>
+#include <PostProcess/ColorGrading/HDRColorGradingComponent.h>
 #include <PostProcess/DepthOfField/DepthOfFieldComponent.h>
 #include <PostProcess/DisplayMapper/DisplayMapperComponent.h>
 #include <PostProcess/ExposureControl/ExposureControlComponent.h>
@@ -56,6 +58,7 @@
 #include <OcclusionCullingPlane/EditorOcclusionCullingPlaneComponent.h>
 #include <PostProcess/EditorPostFxLayerComponent.h>
 #include <PostProcess/Bloom/EditorBloomComponent.h>
+#include <PostProcess/ColorGrading/EditorHDRColorGradingComponent.h>
 #include <PostProcess/DepthOfField/EditorDepthOfFieldComponent.h>
 #include <PostProcess/DisplayMapper/EditorDisplayMapperComponent.h>
 #include <PostProcess/ExposureControl/EditorExposureControlComponent.h>
@@ -92,6 +95,7 @@ namespace AZ
                         DecalComponent::CreateDescriptor(),
                         DirectionalLightComponent::CreateDescriptor(),
                         BloomComponent::CreateDescriptor(),
+                        HDRColorGradingComponent::CreateDescriptor(),
                         DisplayMapperComponent::CreateDescriptor(),
                         DepthOfFieldComponent::CreateDescriptor(),
                         ExposureControlComponent::CreateDescriptor(),
@@ -123,6 +127,7 @@ namespace AZ
                         EditorDecalComponent::CreateDescriptor(),
                         EditorDirectionalLightComponent::CreateDescriptor(),
                         EditorBloomComponent::CreateDescriptor(),
+                        EditorHDRColorGradingComponent::CreateDescriptor(),
                         EditorDepthOfFieldComponent::CreateDescriptor(),
                         EditorDisplayMapperComponent::CreateDescriptor(),
                         EditorExposureControlComponent::CreateDescriptor(),

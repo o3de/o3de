@@ -1,10 +1,12 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
+#include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/RPI.Public/Image/AttachmentImagePool.h>
 #include <Atom/RPI.Public/Image/ImageSystemInterface.h>
 #include <Atom/RPI.Public/RenderPipeline.h>
@@ -28,36 +30,28 @@ namespace AZ
             // create the shader resource group
             // Note: the shader may not be available on all platforms
             AZStd::string shaderFilePath = "Shaders/DiffuseGlobalIllumination/DiffuseProbeGridRender.azshader";
-            m_shader = RPI::LoadShader(shaderFilePath);
+            m_shader = RPI::LoadCriticalShader(shaderFilePath);
             if (m_shader == nullptr)
             {
                 return;
             }
 
-            m_srgAsset = m_shader->FindShaderResourceGroupAsset(RPI::SrgBindingSlot::Pass);
-            AZ_Assert(m_srgAsset->IsReady(), "[DiffuseProbeGridRenderPass '%s']: Failed to find SRG asset", GetPathName().GetCStr());
+            m_srgLayout = m_shader->FindShaderResourceGroupLayout(RPI::SrgBindingSlot::Pass);
+            AZ_Assert(m_srgLayout != nullptr, "[DiffuseProbeGridRenderPass '%s']: Failed to find SRG layout", GetPathName().GetCStr());
 
-            m_shaderResourceGroup = RPI::ShaderResourceGroup::Create(m_srgAsset);
+            m_shaderResourceGroup = RPI::ShaderResourceGroup::Create(m_shader->GetAsset(), m_shader->GetSupervariantIndex(), m_srgLayout->GetName());
             AZ_Assert(m_shaderResourceGroup, "[DiffuseProbeGridRenderPass '%s']: Failed to create SRG", GetPathName().GetCStr());
         }
 
         void DiffuseProbeGridRenderPass::FrameBeginInternal(FramePrepareParams params)
         {
+            RHI::Ptr<RHI::Device> device = RHI::RHISystemInterface::Get()->GetDevice();
             RPI::Scene* scene = m_pipeline->GetScene();
             DiffuseProbeGridFeatureProcessor* diffuseProbeGridFeatureProcessor = scene->GetFeatureProcessor<DiffuseProbeGridFeatureProcessor>();
 
             if (!diffuseProbeGridFeatureProcessor || diffuseProbeGridFeatureProcessor->GetProbeGrids().empty())
             {
                 // no diffuse probe grids
-                return;
-            }
-
-            RayTracingFeatureProcessor* rayTracingFeatureProcessor = scene->GetFeatureProcessor<RayTracingFeatureProcessor>();
-            AZ_Assert(rayTracingFeatureProcessor, "DiffuseProbeGridRenderPass requires the RayTracingFeatureProcessor");
-
-            if (!rayTracingFeatureProcessor->GetSubMeshCount())
-            {
-                // empty scene
                 return;
             }
 
@@ -75,10 +69,13 @@ namespace AZ
 
             Base::FrameBeginInternal(params);
 
-            for (auto& diffuseProbeGrid : diffuseProbeGridFeatureProcessor->GetRealTimeProbeGrids())
+            // process attachment readback for RealTime grids, if raytracing is supported on this device            
+            if (device->GetFeatures().m_rayTracing)
             {
-                // process attachment readback
-                diffuseProbeGrid->GetTextureReadback().FrameBegin(params);
+                for (auto& diffuseProbeGrid : diffuseProbeGridFeatureProcessor->GetRealTimeProbeGrids())
+                {
+                    diffuseProbeGrid->GetTextureReadback().FrameBegin(params);
+                }
             }
         }
 
@@ -89,13 +86,7 @@ namespace AZ
 
             for (auto& diffuseProbeGrid : diffuseProbeGridFeatureProcessor->GetProbeGrids())
             {
-                if (diffuseProbeGrid->GetMode() == DiffuseProbeGridMode::Baked &&
-                    !diffuseProbeGrid->HasValidBakedTextures())
-                {
-                    continue;
-                }
-
-                if (!diffuseProbeGrid->GetIsVisible())
+                if (!ShouldRender(diffuseProbeGrid))
                 {
                     continue;
                 }
@@ -181,13 +172,7 @@ namespace AZ
 
             for (auto& diffuseProbeGrid : diffuseProbeGridFeatureProcessor->GetProbeGrids())
             {
-                if (diffuseProbeGrid->GetMode() == DiffuseProbeGridMode::Baked &&
-                    !diffuseProbeGrid->HasValidBakedTextures())
-                {
-                    continue;
-                }
-
-                if (!diffuseProbeGrid->GetIsVisible())
+                if (!ShouldRender(diffuseProbeGrid))
                 {
                     continue;
                 }
@@ -200,6 +185,34 @@ namespace AZ
             }
 
             Base::CompileResources(context);
+        }
+
+        bool DiffuseProbeGridRenderPass::ShouldRender(const AZStd::shared_ptr<DiffuseProbeGrid>& diffuseProbeGrid)
+        {
+            RHI::Ptr<RHI::Device> device = RHI::RHISystemInterface::Get()->GetDevice();
+
+            // check for baked mode with no valid textures
+            if (diffuseProbeGrid->GetMode() == DiffuseProbeGridMode::Baked &&
+                !diffuseProbeGrid->HasValidBakedTextures())
+            {
+                return false;
+            }
+
+            // check for RealTime mode without ray tracing
+            if (diffuseProbeGrid->GetMode() == DiffuseProbeGridMode::RealTime &&
+                !device->GetFeatures().m_rayTracing)
+            {
+                return false;
+            }
+
+            // check if culled out
+            if (!diffuseProbeGrid->GetIsVisible())
+            {
+                return false;
+            }
+
+            // DiffuseProbeGrid should be rendered
+            return true;
         }
     } // namespace Render
 } // namespace AZ

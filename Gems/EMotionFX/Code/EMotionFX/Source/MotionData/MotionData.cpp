@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -75,13 +76,13 @@ namespace EMotionFX
     {
         auto data = AZStd::make_unique<MotionLinkData>();
         const Skeleton* skeleton = actor->GetSkeleton();
-        const AZ::u32 numJoints = skeleton->GetNumNodes();
-        AZStd::vector<AZ::u32>& jointLinks = data->GetJointDataLinks();
+        const size_t numJoints = skeleton->GetNumNodes();
+        AZStd::vector<size_t>& jointLinks = data->GetJointDataLinks();
         jointLinks.resize(numJoints);
-        for (AZ::u32 i = 0; i < numJoints; ++i)
+        for (size_t i = 0; i < numJoints; ++i)
         {
             const AZ::Outcome<size_t> findResult = FindJointIndexByNameId(skeleton->GetNode(i)->GetID());
-            jointLinks[i] = findResult.IsSuccess() ? static_cast<AZ::u32>(findResult.GetValue()) : InvalidIndex32;
+            jointLinks[i] = findResult.IsSuccess() ? findResult.GetValue() : InvalidIndex;
         }
         return AZStd::move(data);
     }
@@ -185,7 +186,7 @@ namespace EMotionFX
         return FindFloatIndexByNameId(MCore::GetStringIdPool().GenerateIdForString(name));
     }
 
-    AZ::Outcome<size_t> MotionData::FindJointIndexByNameId(AZ::u32 id) const
+    AZ::Outcome<size_t> MotionData::FindJointIndexByNameId(size_t id) const
     {
         return FindIndexIf(m_staticJointData, [id](const StaticJointData& item) { return item.m_nameId == id; });
     }
@@ -217,18 +218,18 @@ namespace EMotionFX
 
     AZ::Vector3 MotionData::GetJointStaticPosition(size_t jointDataIndex) const
     {
-        return m_staticJointData[jointDataIndex].m_staticTransform.mPosition;
+        return m_staticJointData[jointDataIndex].m_staticTransform.m_position;
     }
 
     AZ::Quaternion MotionData::GetJointStaticRotation(size_t jointDataIndex) const
     {
-        return m_staticJointData[jointDataIndex].m_staticTransform.mRotation;
+        return m_staticJointData[jointDataIndex].m_staticTransform.m_rotation;
     }
 
 #ifndef EMFX_SCALE_DISABLED
     AZ::Vector3 MotionData::GetJointStaticScale(size_t jointDataIndex) const
     {
-        return m_staticJointData[jointDataIndex].m_staticTransform.mScale;
+        return m_staticJointData[jointDataIndex].m_staticTransform.m_scale;
     }
 #endif
 
@@ -239,18 +240,18 @@ namespace EMotionFX
 
     AZ::Vector3 MotionData::GetJointBindPosePosition(size_t jointDataIndex) const
     {
-        return m_staticJointData[jointDataIndex].m_bindTransform.mPosition;
+        return m_staticJointData[jointDataIndex].m_bindTransform.m_position;
     }
 
     AZ::Quaternion MotionData::GetJointBindPoseRotation(size_t jointDataIndex) const
     {
-        return m_staticJointData[jointDataIndex].m_bindTransform.mRotation;
+        return m_staticJointData[jointDataIndex].m_bindTransform.m_rotation;
     }
 
 #ifndef EMFX_SCALE_DISABLED
     AZ::Vector3 MotionData::GetJointBindPoseScale(size_t jointDataIndex) const
     {
-        return m_staticJointData[jointDataIndex].m_bindTransform.mScale;
+        return m_staticJointData[jointDataIndex].m_bindTransform.m_scale;
     }
 #endif
 
@@ -321,18 +322,18 @@ namespace EMotionFX
 
     void MotionData::SetJointStaticPosition(size_t jointDataIndex, const AZ::Vector3& position)
     {
-        m_staticJointData[jointDataIndex].m_staticTransform.mPosition = position;
+        m_staticJointData[jointDataIndex].m_staticTransform.m_position = position;
     }
 
     void MotionData::SetJointStaticRotation(size_t jointDataIndex, const AZ::Quaternion& rotation)
     {
-        m_staticJointData[jointDataIndex].m_staticTransform.mRotation = rotation;
+        m_staticJointData[jointDataIndex].m_staticTransform.m_rotation = rotation;
     }
 
 #ifndef EMFX_SCALE_DISABLED
     void MotionData::SetJointStaticScale(size_t jointDataIndex, const AZ::Vector3& scale)
     {
-        m_staticJointData[jointDataIndex].m_staticTransform.mScale = scale;
+        m_staticJointData[jointDataIndex].m_staticTransform.m_scale = scale;
     }
 #endif
 
@@ -343,18 +344,18 @@ namespace EMotionFX
 
     void MotionData::SetJointBindPosePosition(size_t jointDataIndex, const AZ::Vector3& position)
     {
-        m_staticJointData[jointDataIndex].m_bindTransform.mPosition = position;
+        m_staticJointData[jointDataIndex].m_bindTransform.m_position = position;
     }
 
     void MotionData::SetJointBindPoseRotation(size_t jointDataIndex, const AZ::Quaternion& rotation)
     {
-        m_staticJointData[jointDataIndex].m_bindTransform.mRotation = rotation;
+        m_staticJointData[jointDataIndex].m_bindTransform.m_rotation = rotation;
     }
 
 #ifndef EMFX_SCALE_DISABLED
     void MotionData::SetJointBindPoseScale(size_t jointDataIndex, const AZ::Vector3& scale)
     {
-        m_staticJointData[jointDataIndex].m_bindTransform.mScale = scale;
+        m_staticJointData[jointDataIndex].m_bindTransform.m_scale = scale;
     }
 #endif
 
@@ -452,12 +453,12 @@ namespace EMotionFX
         m_sampleRate = 30.0f;
     }
 
-    void MotionData::BasicRetarget(const ActorInstance* actorInstance, const MotionLinkData* motionLinkData, AZ::u32 jointIndex, Transform& inOutTransform) const
+    void MotionData::BasicRetarget(const ActorInstance* actorInstance, const MotionLinkData* motionLinkData, size_t jointIndex, Transform& inOutTransform) const
     {
         AZ_Assert(motionLinkData, "Expecting valid motionLinkData pointer.");
 
         const Pose* bindPose = actorInstance->GetTransformData()->GetBindPose();
-        const AZStd::vector<AZ::u32>& jointLinks = motionLinkData->GetJointDataLinks();
+        const AZStd::vector<size_t>& jointLinks = motionLinkData->GetJointDataLinks();
 
         // Special case handling on translation of root nodes.
         // Scale the translation amount based on the height difference between the bind pose height of the
@@ -465,39 +466,39 @@ namespace EMotionFX
         // All other nodes get their translation data displaced based on the position difference between the
         // parent relative space positions in the actor instance's bind pose and the motion bind pose.
         const Actor* actor = actorInstance->GetActor();
-        const AZ::u32 retargetRootIndex = actor->GetRetargetRootNodeIndex();
+        const size_t retargetRootIndex = actor->GetRetargetRootNodeIndex();
         const Node* joint = actor->GetSkeleton()->GetNode(jointIndex);
         bool needsDisplacement = true;
-        if ((retargetRootIndex == jointIndex || joint->GetIsRootNode()) && retargetRootIndex != InvalidIndex32)
+        if ((retargetRootIndex == jointIndex || joint->GetIsRootNode()) && retargetRootIndex != InvalidIndex)
         {
-            const AZ::u32 retargetRootDataIndex = jointLinks[actor->GetRetargetRootNodeIndex()];
-            if (retargetRootDataIndex != InvalidIndex32)
+            const size_t retargetRootDataIndex = jointLinks[actor->GetRetargetRootNodeIndex()];
+            if (retargetRootDataIndex != InvalidIndex)
             {
-                const float subMotionHeight = m_staticJointData[retargetRootDataIndex].m_bindTransform.mPosition.GetZ();
+                const float subMotionHeight = m_staticJointData[retargetRootDataIndex].m_bindTransform.m_position.GetZ();
                 if (AZ::GetAbs(subMotionHeight) >= AZ::Constants::FloatEpsilon)
                 {
-                    const float heightFactor = bindPose->GetLocalSpaceTransform(retargetRootIndex).mPosition.GetZ() / subMotionHeight;
-                    inOutTransform.mPosition *= heightFactor;
+                    const float heightFactor = bindPose->GetLocalSpaceTransform(retargetRootIndex).m_position.GetZ() / subMotionHeight;
+                    inOutTransform.m_position *= heightFactor;
                     needsDisplacement = false;
                 }
             }
         }
 
-        const AZ::u16 jointDataIndex = jointLinks[jointIndex];
-        if (jointDataIndex != InvalidIndex16)
+        const size_t jointDataIndex = jointLinks[jointIndex];
+        if (jointDataIndex != InvalidIndex)
         {
             const Transform& bindPoseTransform = bindPose->GetLocalSpaceTransform(jointIndex);
             const Transform& motionBindPose = m_staticJointData[jointDataIndex].m_bindTransform;
             if (needsDisplacement)
             {
-                const AZ::Vector3 displacement = bindPoseTransform.mPosition - motionBindPose.mPosition;
-                inOutTransform.mPosition += displacement;
+                const AZ::Vector3 displacement = bindPoseTransform.m_position - motionBindPose.m_position;
+                inOutTransform.m_position += displacement;
             }
 
             EMFX_SCALECODE
             (
-                const AZ::Vector3 scaleOffset = bindPoseTransform.mScale - motionBindPose.mScale;
-                inOutTransform.mScale += scaleOffset;
+                const AZ::Vector3 scaleOffset = bindPoseTransform.m_scale - motionBindPose.m_scale;
+                inOutTransform.m_scale += scaleOffset;
             )
         }
     }
@@ -565,8 +566,8 @@ namespace EMotionFX
         // Scale the static data
         for (StaticJointData& jointData : m_staticJointData)
         {
-            jointData.m_staticTransform.mPosition *= scaleFactor;
-            jointData.m_bindTransform.mPosition *= scaleFactor;
+            jointData.m_staticTransform.m_position *= scaleFactor;
+            jointData.m_bindTransform.m_position *= scaleFactor;
         }
 
         // Scale all data stored by the inherited class.

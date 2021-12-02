@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -101,7 +102,10 @@ namespace AzNetworking
         bool SendReliablePacket(ConnectionId connectionId, const IPacket& packet) override;
         PacketId SendUnreliablePacket(ConnectionId connectionId, const IPacket& packet) override;
         bool WasPacketAcked(ConnectionId connectionId, PacketId packetId) override;
+        bool StopListening() override;
         bool Disconnect(ConnectionId connectionId, DisconnectReason reason) override;
+        void SetTimeoutMs(AZ::TimeMs timeoutMs) override;
+        AZ::TimeMs GetTimeoutMs() const override;
         //! @}
 
         //! Returns true if this is an encrypted socket, false if not.
@@ -177,6 +181,7 @@ namespace AzNetworking
         TrustZone m_trustZone;
         uint16_t m_port = 0;
         bool m_allowIncomingConnections = false;
+        AZ::TimeMs m_timeoutMs = AZ::TimeMs{ 0 };
         IConnectionListener& m_connectionListener;
         UdpConnectionSet m_connectionSet;
         TimeoutQueue m_connectionTimeoutQueue;

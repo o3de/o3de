@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -23,11 +24,11 @@ namespace EMotionFX
         const float angleY = 0.382683f; // 45 degrees
         const float twistAngle = 0.0f; // 0 degrees
 
-        mMinRotationAngles.Set(-angleX, -angleY);
-        mMaxRotationAngles.Set(angleX, angleY);
-        mMinTwist = twistAngle;
-        mMaxTwist = twistAngle;
-        mTwistAxis = AXIS_Y;
+        m_minRotationAngles.Set(-angleX, -angleY);
+        m_maxRotationAngles.Set(angleX, angleY);
+        m_minTwist = twistAngle;
+        m_maxTwist = twistAngle;
+        m_twistAxis = AXIS_Y;
     }
 
     uint32 ConstraintTransformRotationAngles::GetType() const
@@ -44,74 +45,74 @@ namespace EMotionFX
     {
         const float angleX = MCore::Math::Sin(MCore::Math::DegreesToRadians(minSwingDegrees.GetX()) * 0.5f);
         const float angleY = MCore::Math::Sin(MCore::Math::DegreesToRadians(minSwingDegrees.GetY()) * 0.5f);
-        mMinRotationAngles.Set(angleX, angleY);
+        m_minRotationAngles.Set(angleX, angleY);
     }
 
     void ConstraintTransformRotationAngles::SetMaxRotationAngles(const AZ::Vector2& maxSwingDegrees)
     {
         const float angleX = MCore::Math::Sin(MCore::Math::DegreesToRadians(maxSwingDegrees.GetX()) * 0.5f);
         const float angleY = MCore::Math::Sin(MCore::Math::DegreesToRadians(maxSwingDegrees.GetY()) * 0.5f);
-        mMaxRotationAngles.Set(angleX, angleY);
+        m_maxRotationAngles.Set(angleX, angleY);
     }
 
     void ConstraintTransformRotationAngles::SetMinTwistAngle(float minTwistDegrees)
     {
-        mMinTwist = MCore::Math::Sin(MCore::Math::DegreesToRadians(minTwistDegrees) * 0.5f);
+        m_minTwist = MCore::Math::Sin(MCore::Math::DegreesToRadians(minTwistDegrees) * 0.5f);
     }
 
     void ConstraintTransformRotationAngles::SetMaxTwistAngle(float maxTwistDegrees)
     {
-        mMaxTwist = MCore::Math::Sin(MCore::Math::DegreesToRadians(maxTwistDegrees) * 0.5f);
+        m_maxTwist = MCore::Math::Sin(MCore::Math::DegreesToRadians(maxTwistDegrees) * 0.5f);
     }
 
     void ConstraintTransformRotationAngles::SetTwistAxis(ConstraintTransformRotationAngles::EAxis axis)
     {
-        mTwistAxis = axis;
+        m_twistAxis = axis;
     }
 
     AZ::Vector2 ConstraintTransformRotationAngles::GetMinRotationAnglesDegrees() const
     {
-        return AZ::Vector2(MCore::Math::RadiansToDegrees(MCore::Math::ASin(mMinRotationAngles.GetX()) * 2.0f),
-            MCore::Math::RadiansToDegrees(MCore::Math::ASin(mMinRotationAngles.GetY()) * 2.0f));
+        return AZ::Vector2(MCore::Math::RadiansToDegrees(MCore::Math::ASin(m_minRotationAngles.GetX()) * 2.0f),
+            MCore::Math::RadiansToDegrees(MCore::Math::ASin(m_minRotationAngles.GetY()) * 2.0f));
     }
 
     AZ::Vector2 ConstraintTransformRotationAngles::GetMaxRotationAnglesDegrees() const
     {
-        return AZ::Vector2(MCore::Math::RadiansToDegrees(MCore::Math::ASin(mMaxRotationAngles.GetX()) * 2.0f),
-            MCore::Math::RadiansToDegrees(MCore::Math::ASin(mMaxRotationAngles.GetY()) * 2.0f));
+        return AZ::Vector2(MCore::Math::RadiansToDegrees(MCore::Math::ASin(m_maxRotationAngles.GetX()) * 2.0f),
+            MCore::Math::RadiansToDegrees(MCore::Math::ASin(m_maxRotationAngles.GetY()) * 2.0f));
     }
 
     AZ::Vector2 ConstraintTransformRotationAngles::GetMinRotationAnglesRadians() const
     {
-        return AZ::Vector2(MCore::Math::ASin(mMinRotationAngles.GetX()) * 2.0f,
-            MCore::Math::ASin(mMinRotationAngles.GetY()) * 2.0f);
+        return AZ::Vector2(MCore::Math::ASin(m_minRotationAngles.GetX()) * 2.0f,
+            MCore::Math::ASin(m_minRotationAngles.GetY()) * 2.0f);
     }
 
     AZ::Vector2 ConstraintTransformRotationAngles::GetMaxRotationAnglesRadians() const
     {
-        return AZ::Vector2(MCore::Math::ASin(mMaxRotationAngles.GetX()) * 2.0f,
-            MCore::Math::ASin(mMaxRotationAngles.GetY()) * 2.0f);
+        return AZ::Vector2(MCore::Math::ASin(m_maxRotationAngles.GetX()) * 2.0f,
+            MCore::Math::ASin(m_maxRotationAngles.GetY()) * 2.0f);
     }
 
     float ConstraintTransformRotationAngles::GetMinTwistAngle() const
     {
-        return MCore::Math::RadiansToDegrees(MCore::Math::ASin(mMinTwist) * 2.0f);
+        return MCore::Math::RadiansToDegrees(MCore::Math::ASin(m_minTwist) * 2.0f);
     }
 
     float ConstraintTransformRotationAngles::GetMaxTwistAngle() const
     {
-        return MCore::Math::RadiansToDegrees(MCore::Math::ASin(mMaxTwist) * 2.0f);
+        return MCore::Math::RadiansToDegrees(MCore::Math::ASin(m_maxTwist) * 2.0f);
     }
 
     ConstraintTransformRotationAngles::EAxis ConstraintTransformRotationAngles::GetTwistAxis() const
     {
-        return mTwistAxis;
+        return m_twistAxis;
     }
 
     // The main execution function, which performs the actual constraint.
     void ConstraintTransformRotationAngles::Execute()
     {
-        AZ::Quaternion q = mTransform.mRotation;
+        AZ::Quaternion q = m_transform.m_rotation;
 
         // Always keep w positive.
         if (q.GetW() < 0.0f)
@@ -122,7 +123,7 @@ namespace EMotionFX
         // Get the axes indices for swing
         uint32 swingX;
         uint32 swingY;
-        switch (mTwistAxis)
+        switch (m_twistAxis)
         {
             // Twist is the X-axis.
             case AXIS_X:
@@ -150,15 +151,15 @@ namespace EMotionFX
 
         // Calculate the twist quaternion, based on over which axis we assume there is twist.
         AZ::Quaternion twist;
-        const float twistAngle = q.GetElement(mTwistAxis);
+        const float twistAngle = q.GetElement(m_twistAxis);
         const float s = twistAngle * twistAngle + q.GetW() * q.GetW();
         if (!MCore::Math::IsFloatZero(s))
         {
             const float r = MCore::Math::InvSqrt(s);
             twist.SetElement(swingX, 0.0f);
             twist.SetElement(swingY, 0.0f);
-            twist.SetElement(mTwistAxis, MCore::Clamp(twistAngle * r, mMinTwist, mMaxTwist));
-            twist.SetW(MCore::Math::Sqrt(MCore::Max<float>(0.0f, 1.0f - twist.GetElement(mTwistAxis) * twist.GetElement(mTwistAxis))));
+            twist.SetElement(m_twistAxis, MCore::Clamp(twistAngle * r, m_minTwist, m_maxTwist));
+            twist.SetW(MCore::Math::Sqrt(MCore::Max<float>(0.0f, 1.0f - twist.GetElement(m_twistAxis) * twist.GetElement(m_twistAxis))));
         }
         else
         {
@@ -167,13 +168,13 @@ namespace EMotionFX
 
         // Remove the twist from the input rotation so that we are left with a swing and then limit the swing.
         AZ::Quaternion swing = q * twist.GetConjugate();
-        swing.SetElement(swingX, MCore::Clamp(static_cast<float>(swing.GetElement(swingX)), mMinRotationAngles.GetX(), mMaxRotationAngles.GetX()));
-        swing.SetElement(swingY, MCore::Clamp(static_cast<float>(swing.GetElement(swingY)), mMinRotationAngles.GetY(), mMaxRotationAngles.GetY()));
-        swing.SetElement(mTwistAxis, 0.0f);
+        swing.SetElement(swingX, MCore::Clamp(static_cast<float>(swing.GetElement(swingX)), m_minRotationAngles.GetX(), m_maxRotationAngles.GetX()));
+        swing.SetElement(swingY, MCore::Clamp(static_cast<float>(swing.GetElement(swingY)), m_minRotationAngles.GetY(), m_maxRotationAngles.GetY()));
+        swing.SetElement(m_twistAxis, 0.0f);
         swing.SetW(MCore::Math::Sqrt(MCore::Max<float>(0.0f, 1.0f - swing.GetElement(swingX) * swing.GetElement(swingX) - swing.GetElement(swingY) * swing.GetElement(swingY))));
 
         // Combine the limited swing and twist again into a final rotation.
-        mTransform.mRotation = swing * twist;
+        m_transform.m_rotation = swing * twist;
     }
 
     AZ::Vector3 ConstraintTransformRotationAngles::GetSphericalPos(float x, float y) const

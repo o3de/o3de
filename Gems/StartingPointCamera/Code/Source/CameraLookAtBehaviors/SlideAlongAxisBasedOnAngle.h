@@ -1,15 +1,16 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 #pragma once
-#include <CameraFramework/ICameraLookAtBehavior.h>
-#include <AzCore/Math/Transform.h>
-#include <AzCore/RTTI/ReflectContext.h>
 #include "StartingPointCamera/StartingPointCameraConstants.h"
+#include <AzCore/Math/Transform.h>
 #include <AzCore/Memory/SystemAllocator.h>
+#include <AzCore/RTTI/ReflectContext.h>
+#include <CameraFramework/ICameraLookAtBehavior.h>
 
 namespace Camera
 {
@@ -37,13 +38,19 @@ namespace Camera
         void Activate(AZ::EntityId) override {}
         void Deactivate() override {}
 
+        bool XAndYIgnored() const;
+        bool XAndZIgnored() const;
+        bool YAndZIgnored() const;
+
     private:
         //////////////////////////////////////////////////////////////////////////
         // Reflected data
         RelativeAxisType m_axisToSlideAlong = ForwardBackward;
         EulerAngleType m_angleTypeToChangeFor = Pitch;
-        VectorComponentType m_vectorComponentToIgnore = None;
         float m_maximumPositiveSlideDistance = 0.0f;
         float m_maximumNegativeSlideDistance = 0.0f;
+        bool m_ignoreX = false;
+        bool m_ignoreY = false;
+        bool m_ignoreZ = false;
     };
 } // namespace Camera

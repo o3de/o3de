@@ -1,40 +1,43 @@
 """
-Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+Copyright (c) Contributors to the Open 3D Engine Project.
+For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
-"""
-C16929880: Add Delete Components
-"""
 
-import os
-import sys
-from PySide2 import QtWidgets, QtTest, QtCore
-from PySide2.QtCore import Qt
+class Tests:
+    entity_created = (
+        "Entity created successfully",
+        "Failed to create entity"
+    )
+    box_component_added = (
+        "Box Shape component added to entity",
+        "Failed to add Box Shape component to entity"
+    )
+    mesh_component_added = (
+        "Mesh component added to entity",
+        "Failed to add Mesh component to entity"
+    )
+    mesh_component_deleted = (
+        "Mesh component removed from entity",
+        "Failed to remove Mesh component from entity"
+    )
+    mesh_component_delete_undo = (
+        "Mesh component removal was successfully undone",
+        "Failed to undo Mesh component removal"
+    )
 
-import azlmbr.legacy.general as general
-import azlmbr.bus as bus
-import azlmbr.editor as editor
-import azlmbr.entity as entity
-import azlmbr.math as math
-import azlmbr.paths
 
-sys.path.append(os.path.join(azlmbr.paths.devroot, 'AutomatedTesting', 'Gem', 'PythonTests'))
-import editor_python_test_tools.hydra_editor_utils as hydra
-import editor_python_test_tools.pyside_utils as pyside_utils
-from editor_python_test_tools.editor_test_helper import EditorTestHelper
+def ComponentCRUD_Add_Delete_Components():
 
-
-class AddDeleteComponentsTest(EditorTestHelper):
-    def __init__(self):
-        EditorTestHelper.__init__(self, log_prefix="ComponentCRUD_Add_Delete_Components", args=["level"])
+    import editor_python_test_tools.pyside_utils as pyside_utils
 
     @pyside_utils.wrap_async
-    async def run_test(self):
+    async def run_test():
         """
         Summary:
-        Add/Delete Components to an entity.
+        Add/Delete Components to/from an entity.
 
         Expected Behavior:
         1) Components can be added to an entity.
@@ -60,36 +63,43 @@ class AddDeleteComponentsTest(EditorTestHelper):
         :return: None
         """
 
+        from PySide2 import QtWidgets, QtTest, QtCore
+        from PySide2.QtCore import Qt
+
+        import azlmbr.legacy.general as general
+        import azlmbr.bus as bus
+        import azlmbr.editor as editor
+        import azlmbr.entity as entity
+        import azlmbr.math as math
+
+        import editor_python_test_tools.hydra_editor_utils as hydra
+        from editor_python_test_tools.utils import Report
+        from editor_python_test_tools.utils import TestHelper as helper
+
         async def add_component(component_name):
             pyside_utils.click_button_async(add_comp_btn)
             popup = await pyside_utils.wait_for_popup_widget()
             tree = popup.findChild(QtWidgets.QTreeView, "Tree")
             component_index = pyside_utils.find_child_by_pattern(tree, component_name)
             if component_index.isValid():
-                print(f"{component_name} found")
+                Report.info(f"{component_name} found")
             tree.expand(component_index)
             tree.setCurrentIndex(component_index)
             QtTest.QTest.keyClick(tree, Qt.Key_Enter, Qt.NoModifier)
 
-        # 1) Open level
-        self.test_success = self.create_level(
-            self.args["level"],
-            heightmap_resolution=1024,
-            heightmap_meters_per_pixel=1,
-            terrain_texture_resolution=4096,
-            use_terrain=False,
-        )
+        # 1) Open an existing simple level
+        helper.init_idle()
+        helper.open_level("Physics", "Base")
 
         # 2) Create entity
         entity_position = math.Vector3(125.0, 136.0, 32.0)
         entity_id = editor.ToolsApplicationRequestBus(
             bus.Broadcast, "CreateNewEntityAtPosition", entity_position, entity.EntityId()
         )
-        if entity_id.IsValid():
-            print("Entity Created")
+        Report.critical_result(Tests.entity_created, entity_id.IsValid())
 
         # 3) Select the newly created entity
-        general.select_object("Entity2")
+        general.select_object("Entity1")
 
         # Give the Entity Inspector time to fully create its contents
         general.idle_wait(0.5)
@@ -99,11 +109,11 @@ class AddDeleteComponentsTest(EditorTestHelper):
         entity_inspector = editor_window.findChild(QtWidgets.QDockWidget, "Entity Inspector")
         add_comp_btn = entity_inspector.findChild(QtWidgets.QPushButton, "m_addComponentButton")
         await add_component("Box Shape")
-        print(f"Box Shape Component added: {hydra.has_components(entity_id, ['Box Shape'])}")
+        Report.result(Tests.box_component_added, hydra.has_components(entity_id, ['Box Shape']))
 
         # 5) Add/verify Mesh component
         await add_component("Mesh")
-        print(f"Mesh Component added: {hydra.has_components(entity_id, ['Mesh'])}")
+        Report.result(Tests.mesh_component_added, hydra.has_components(entity_id, ['Mesh']))
 
         # 6) Delete Mesh Component
         general.idle_wait(0.5)
@@ -115,15 +125,17 @@ class AddDeleteComponentsTest(EditorTestHelper):
         QtTest.QTest.mouseClick(mesh_frame, Qt.LeftButton, Qt.NoModifier)
         QtTest.QTest.keyClick(mesh_frame, Qt.Key_Delete, Qt.NoModifier)
         success = await pyside_utils.wait_for_condition(lambda: not hydra.has_components(entity_id, ['Mesh']), 5.0)
-        if success:
-            print(f"Mesh Component deleted: {not hydra.has_components(entity_id, ['Mesh'])}")
+        Report.result(Tests.mesh_component_deleted, success)
 
         # 7) Undo deletion of component
         QtTest.QTest.keyPress(entity_inspector, Qt.Key_Z, Qt.ControlModifier)
         success = await pyside_utils.wait_for_condition(lambda: hydra.has_components(entity_id, ['Mesh']), 5.0)
-        if success:
-            print(f"Mesh Component deletion undone: {hydra.has_components(entity_id, ['Mesh'])}")
+        Report.result(Tests.mesh_component_delete_undo, success)
+
+    run_test()
 
 
-test = AddDeleteComponentsTest()
-test.run()
+if __name__ == "__main__":
+
+    from editor_python_test_tools.utils import Report
+    Report.start_test(ComponentCRUD_Add_Delete_Components)

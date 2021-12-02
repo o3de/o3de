@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -15,6 +16,7 @@
 #include <AzQtComponents/Utilities/HandleDpiAwareness.h>
 #include <AzQtComponents/Components/StyleManager.h>
 #include <AzQtComponents/Components/WindowDecorationWrapper.h>
+#include <ProjectManager_Traits_Platform.h>
 
 #include <QApplication>
 #include <QDir>
@@ -55,8 +57,6 @@ namespace O3DE::ProjectManager
         QCoreApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
         QCoreApplication::setAttribute(Qt::AA_DontCreateNativeWidgetSiblings);
 
-        QLocale::setDefault(QLocale(QLocale::English, QLocale::UnitedStates));
-
         QGuiApplication::setHighDpiScaleFactorRoundingPolicy(Qt::HighDpiScaleFactorRoundingPolicy::PassThrough);
         AzQtComponents::Utilities::HandleDpiAwareness(AzQtComponents::Utilities::SystemDpiAware);
 
@@ -69,17 +69,46 @@ namespace O3DE::ProjectManager
         }
 
         m_pythonBindings = AZStd::make_unique<PythonBindings>(GetEngineRoot());
-        if (!m_pythonBindings || !m_pythonBindings->PythonStarted())
+        AZ_Assert(m_pythonBindings, "Failed to create PythonBindings");
+        if (!m_pythonBindings->PythonStarted())
         {
-            if (interactive)
+            if (!interactive)
             {
-                QMessageBox::critical(nullptr, QObject::tr("Failed to start Python"),
-                    QObject::tr("This tool requires an O3DE engine with a Python runtime, "
-                        "but either Python is missing or mis-configured. Please rename "
-                        "your python/runtime folder to python/runtime_bak, then run "
-                        "python/get_python.bat to restore the Python runtime folder."));
+                return false;
             }
-            return false;
+
+            int result = QMessageBox::warning(nullptr, QObject::tr("Failed to start Python"),
+                QObject::tr("This tool requires an O3DE engine with a Python runtime, "
+                            "but either Python is missing or mis-configured.<br><br>Press 'OK' to "
+                            "run the %1 script automatically, or 'Cancel' "
+                            " if you want to manually resolve the issue by renaming your "
+                            " python/runtime folder and running %1 yourself.")
+                            .arg(GetPythonScriptPath),
+                QMessageBox::Cancel, QMessageBox::Ok);
+            if (result == QMessageBox::Ok)
+            {
+                auto getPythonResult = ProjectUtils::RunGetPythonScript(GetEngineRoot());
+                if (!getPythonResult.IsSuccess())
+                {
+                    QMessageBox::critical(
+                        nullptr, QObject::tr("Failed to run %1 script").arg(GetPythonScriptPath),
+                        QObject::tr("The %1 script failed, was canceled, or could not be run.  "
+                                    "Please rename your python/runtime folder and then run "
+                                    "<pre>%1</pre>").arg(GetPythonScriptPath));
+                }
+                else if (!m_pythonBindings->StartPython())
+                {
+                    QMessageBox::critical(
+                        nullptr, QObject::tr("Failed to start Python"),
+                        QObject::tr("Failed to start Python after running %1")
+                                    .arg(GetPythonScriptPath));
+                }
+            }
+
+            if (!m_pythonBindings->PythonStarted())
+            {
+                return false;
+            }
         }
 
         const AZ::CommandLine* commandLine = GetCommandLine();
@@ -166,11 +195,20 @@ namespace O3DE::ProjectManager
         // set stylesheet after creating the main window or their styles won't get updated
         AzQtComponents::StyleManager::setStyleSheet(m_mainWindow.data(), QStringLiteral("style:ProjectManager.qss"));
 
-        // the decoration wrapper is intended to remember window positioning and sizing 
+        // the decoration wrapper is intended to remember window positioning and sizing
+#if AZ_TRAIT_PROJECT_MANAGER_CUSTOM_TITLEBAR
         auto wrapper = new AzQtComponents::WindowDecorationWrapper();
+#else
+        auto wrapper = new AzQtComponents::WindowDecorationWrapper(AzQtComponents::WindowDecorationWrapper::OptionDisabled);
+#endif
         wrapper->setGuest(m_mainWindow.data());
-        wrapper->show();
+
+        // show the main window here to apply the stylesheet before restoring geometry or we
+        // can end up with empty white space at the bottom of the window until the frame is resized again
         m_mainWindow->show();
+
+        wrapper->enableSaveRestoreGeometry("O3DE", "ProjectManager", "mainWindowGeometry");
+        wrapper->showFromSettings();
 
         qApp->setQuitOnLastWindowClosed(true);
 

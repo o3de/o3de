@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -11,7 +12,6 @@
 #include <ISystem.h>
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/Math/Transform.h>
-#include <IStereoRenderer.h>
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Math/Quaternion.h>
 #include <AzCore/RTTI/ReflectContext.h>
@@ -35,7 +35,7 @@ namespace AZ
             * Event triggered when an HMD initializes successfully
             */
             virtual void OnHMDInitialized() {}
-            
+
             /**
             * Event triggered when an HMD shuts down
             */
@@ -55,7 +55,7 @@ namespace AZ
             virtual ~HMDInitBus() {}
 
             ///
-            /// Attempt to initialize this device. If initialization is initially successful (device exists and is able to startup) then this device should connect to the 
+            /// Attempt to initialize this device. If initialization is initially successful (device exists and is able to startup) then this device should connect to the
             /// HMDDeviceRequestBus in order to be used as an HMD from the main Open 3D Engine system.
             ///
             /// @return If true, initialization fully succeeded.
@@ -119,21 +119,10 @@ namespace AZ
             };
 
             ///
-            /// Get per-eye camera info from the device. The specific info to get is defined in the EyeCameraInfo struct. This function can be used to setup
-            /// rendering cameras per-eye. Note that each eye may have different projection matrix information.
-            ///
-            /// @param eye The specific eye to get camera data for.
-            /// @param nearPlane Near distance for the main render camera.
-            /// @param farPlane Far distance for the main render camera.
-            /// @param cameraInfo Returned camera information for this particular eye.
-            ///
-            virtual void GetPerEyeCameraInfo([[maybe_unused]] const EStereoEye eye, [[maybe_unused]] const float nearPlane, [[maybe_unused]] const float farPlane, [[maybe_unused]] PerEyeCameraInfo& cameraInfo) {}
-            
-            /// 
             /// Update the HMD's internal state and handle events
             /// This is NOT where tracking is updated. This is for game-time
             /// events such as controllers connecting/disconnecting or
-            /// certain compositor events being triggered. 
+            /// certain compositor events being triggered.
             ///
             virtual void UpdateInternalState() {}
 
@@ -163,9 +152,9 @@ namespace AZ
             ///
             /// Retrieve the latest tracking state that was cached since the last call
             /// to UpdateTrackingStates.
-            /// 
-            /// TODO: Differentiate between tracking states viable for rendering and 
-            /// tracking states viable for game simulation. 
+            ///
+            /// TODO: Differentiate between tracking states viable for rendering and
+            /// tracking states viable for game simulation.
             ///
             virtual TrackingState* GetTrackingState() { return nullptr; }
 
@@ -195,7 +184,7 @@ namespace AZ
 
             ///
             /// Set the current tracking level of the HMD. Supported tracking levels are defined in struct TrackingLevel.
-            /// 
+            ///
             /// @param level The tracking level we want to use with this HMD
             ///
             virtual void SetTrackingLevel([[maybe_unused]] const AZ::VR::HMDTrackingLevel level) {}
@@ -208,7 +197,7 @@ namespace AZ
             ///
             /// Enable/disable debugging for this device. The device can decide what the most appropriate debugging information is
             /// displayed to the user (e.g. HMD position, performance info, latency timing, etc.).
-            /// 
+            ///
             /// @param enable Set to true to enable debugging
             ///
             virtual void EnableDebugging([[maybe_unused]] bool enable) {}
@@ -229,16 +218,16 @@ namespace AZ
             virtual HMDDeviceInfo* GetDeviceInfo() { return nullptr; }
 
             ///
-            /// Get whether or not the HMD has been initialized. The HMD has been initialized when it has fully established an interface 
-            /// with its necessary SDK and is ready to be used. 
-            /// 
+            /// Get whether or not the HMD has been initialized. The HMD has been initialized when it has fully established an interface
+            /// with its necessary SDK and is ready to be used.
+            ///
             /// @return True if the device has been initialized and is usable
             ///
             virtual bool IsInitialized() { return false; }
 
             ///
             /// Get the play space of the device, if exists
-            /// 
+            ///
             /// @return True if the device has been initialized and is usable
             ///
             virtual const Playspace* GetPlayspace() { return nullptr; }
@@ -250,21 +239,13 @@ namespace AZ
             ///
             virtual void UpdateTrackingStates() {}
 
-            ///
-            /// Retrieves the current index into the VR system's swapchain that should be used. 
-            /// This only really need to be overridden by VR implementations that keep track
-            /// of an internal swapchain like Oculus. OpenVR will handle swapchains 
-            /// internally and can just return 0.
-            ///
-            virtual AZ::u32 GetSwapchainIndex([[maybe_unused]] const EStereoEye& eye) { return 0; }
-
         protected:
         };
 
         using HMDDeviceRequestBus = AZ::EBus<HMDDeviceBus>;
 
         ///
-        /// Bus to define HMD debugging. This includes visualization of any HMD-specific objects as well as any 
+        /// Bus to define HMD debugging. This includes visualization of any HMD-specific objects as well as any
         /// VR performance metrics displayed in the HMD.
         ///
         class HMDDebuggerBus

@@ -1,14 +1,15 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
 #pragma once
 
-#include <Atom/RPI.Reflect/Shader/ShaderResourceGroupAsset.h>
 #include <AzCore/Asset/AssetCommon.h>
+#include <AzCore/Name/Name.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/string/string.h>
 
@@ -25,6 +26,9 @@ namespace AZ
 
             //! List of feature processors which the scene will initially enable.
             AZStd::vector<AZStd::string> m_featureProcessorNames;
+
+            //! A name used as scene id. It can be used to search a registered scene via RPISystemInterface::GetScene()
+            AZ::Name m_nameId;
         };
     } // namespace RPI
 } // namespace AZ

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -158,12 +159,13 @@ namespace AZ
         
         enum class ContinuationFlags
         {
-            None = 0,                   //! No extra flags.
-            ResolvePointer = 1 << 0,    //! The pointer passed in contains a pointer. The (de)serializer will attempt to resolve to an instance.
-            ReplaceDefault = 1 << 1,    //! The default value provided for storing will be replaced with a newly created one.
-            LoadAsNewInstance = 1 << 2  //! Treats the value as if it's a newly created instance. This may trigger serializers marked with
-                                        //! OperationFlags::InitializeNewInstance. Used for instance by pointers or new instances added to
-                                        //! an array.
+            None = 0,                       //! No extra flags.
+            ResolvePointer = 1 << 0,        //! The pointer passed in contains a pointer. The (de)serializer will attempt to resolve to an instance.
+            ReplaceDefault = 1 << 1,        //! The default value provided for storing will be replaced with a newly created one.
+            LoadAsNewInstance = 1 << 2,     //! Treats the value as if it's a newly created instance. This may trigger serializers marked with
+                                            //! OperationFlags::InitializeNewInstance. Used for instance by pointers or new instances added to
+                                            //! an array.
+            IgnoreTypeSerializer =  1 << 3, //! Ignore the custom/specific serializer for the TypeId
         };
 
         enum class OperationFlags

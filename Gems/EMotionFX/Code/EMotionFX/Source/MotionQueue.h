@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -11,7 +12,7 @@
 #include "EMotionFXConfig.h"
 #include "BaseObject.h"
 #include "PlayBackInfo.h"
-#include <MCore/Source/Array.h>
+#include <AzCore/std/containers/vector.h>
 
 
 namespace EMotionFX
@@ -42,17 +43,17 @@ namespace EMotionFX
         class QueueEntry
         {
         public:
-            MotionInstance* mMotion;            /**< The motion instance we want to play. */
-            PlayBackInfo    mPlayInfo;          /**< The motion playback settings. */
+            MotionInstance* m_motion;            /**< The motion instance we want to play. */
+            PlayBackInfo    m_playInfo;          /**< The motion playback settings. */
 
             /// The default constructor
             QueueEntry()
-                : mMotion(nullptr) {}
+                : m_motion(nullptr) {}
 
             /// The extended constructor.
             QueueEntry(MotionInstance* motion, class PlayBackInfo* info)
-                : mMotion(motion)
-                , mPlayInfo(*info) {}
+                : m_motion(motion)
+                , m_playInfo(*info) {}
         };
 
         /**
@@ -78,7 +79,7 @@ namespace EMotionFX
          * Get the number of entries currently in the queue.
          * @result The number of entries currently scheduled in the queue.
          */
-        uint32 GetNumEntries() const;
+        size_t GetNumEntries() const;
 
         /**
          * Get the first entry.
@@ -98,13 +99,13 @@ namespace EMotionFX
          * @param nr The queue entry number to get.
          * @result A reference to the queue entry, with write access.
          */
-        QueueEntry& GetEntry(uint32 nr);
+        QueueEntry& GetEntry(size_t nr);
 
         /**
          * Remove a given entry from the queue.
          * @param nr The entry number to remove from the queue.
          */
-        void RemoveEntry(uint32 nr);
+        void RemoveEntry(size_t nr);
 
         /**
          * Updates the motion queue.
@@ -132,9 +133,9 @@ namespace EMotionFX
         void PlayNextMotion();
 
     private:
-        MCore::Array<QueueEntry>    mEntries;           /**< The motion queue entries. */
-        MotionSystem*               mMotionSystem;      /**< Motion system access pointer. */
-        ActorInstance*              mActorInstance;     /**< The actor instance where this queue works on. */
+        AZStd::vector<QueueEntry>    m_entries;           /**< The motion queue entries. */
+        MotionSystem*               m_motionSystem;      /**< Motion system access pointer. */
+        ActorInstance*              m_actorInstance;     /**< The actor instance where this queue works on. */
 
         /**
          * Constructor.

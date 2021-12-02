@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -29,6 +30,9 @@ namespace AZ
 
             static RHI::Ptr<ShaderResourceGroupPool> Create();
 
+            //! Re-Update the descriptor tables for all the cbv/srv/uav views (direct and via unbounded array)
+            RHI::ResultCode UpdateDescriptorTableAfterCompaction(RHI::ShaderResourceGroup& groupBase, const RHI::ShaderResourceGroupData& groupData);
+
         private:
             ShaderResourceGroupPool() = default;
 
@@ -50,6 +54,21 @@ namespace AZ
             void UpdateSamplersDescriptorTable(DescriptorTable descriptorTable, const RHI::ShaderResourceGroupData& groupData);
             void UpdateUnboundedArrayDescriptorTables(ShaderResourceGroup& group, const RHI::ShaderResourceGroupData& groupData);
 
+            //! Update all the buffer views for the unbounded array
+            void UpdateUnboundedBuffersDescTable(
+                DescriptorTable descriptorTable,
+                const RHI::ShaderResourceGroupData& groupData,
+                uint32_t shaderInputIndex,
+                RHI::ShaderInputBufferAccess bufferAccess);
+
+            //! Update all the image views for the unbounded array
+            void UpdateUnboundedImagesDescTable(
+                DescriptorTable descriptorTable,
+                const RHI::ShaderResourceGroupData& groupData,
+                uint32_t shaderInputIndex,
+                RHI::ShaderInputImageAccess imageAccess,
+                RHI::ShaderInputImageType imageType);
+
             void UpdateDescriptorTableRange(
                 DescriptorTable descriptorTable,
                 const AZStd::vector<DescriptorHandle>& descriptors,
@@ -65,6 +84,9 @@ namespace AZ
                 RHI::ShaderInputSamplerIndex samplerIndex,
                 AZStd::array_view<RHI::SamplerState> samplerStates);
 
+            //Cache all the gpu handles for the Descriptor tables related to all the views
+            void CacheGpuHandlesForViews(ShaderResourceGroup& group);
+
             DescriptorTable GetBufferTable(DescriptorTable descriptorTable, RHI::ShaderInputBufferIndex bufferIndex) const;
             DescriptorTable GetBufferTableUnbounded(DescriptorTable descriptorTable, RHI::ShaderInputBufferIndex bufferIndex) const;
             DescriptorTable GetImageTable(DescriptorTable descriptorTable, RHI::ShaderInputImageIndex imageIndex) const;
@@ -78,7 +100,6 @@ namespace AZ
 
             AZStd::vector<DescriptorHandle> GetCBVsFromBufferViews(const AZStd::array_view<RHI::ConstPtr<RHI::BufferView>>& bufferViews);
 
-            AZStd::mutex m_constantAllocatorMutex;
             MemoryPoolSubAllocator m_constantAllocator;
             DescriptorContext* m_descriptorContext = nullptr;
             uint32_t m_constantBufferSize = 0;

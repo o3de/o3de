@@ -1,11 +1,13 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
 #include <Atom/Feature/Utils/LightingPreset.h>
+#include <Atom/RPI.Edit/Common/AssetUtils.h>
 #include <Atom/Viewport/MaterialViewportRequestBus.h>
 #include <AtomToolsFramework/Util/Util.h>
 #include <AzFramework/Application/Application.h>
@@ -26,13 +28,16 @@ namespace MaterialEditor
         MaterialViewportRequestBus::BroadcastResult(presets, &MaterialViewportRequestBus::Events::GetLightingPresets);
         AZStd::sort(presets.begin(), presets.end(), [](const auto& a, const auto& b) { return a->m_displayName < b->m_displayName; });
 
+        const int itemSize = aznumeric_cast<int>(
+            AtomToolsFramework::GetSettingOrDefault<AZ::u64>("/O3DE/Atom/MaterialEditor/PresetBrowserDialog/LightingItemSize", 180));
+
         QListWidgetItem* selectedItem = nullptr;
         for (const auto& preset : presets)
         {
-            QImage image;
-            MaterialViewportRequestBus::BroadcastResult(image, &MaterialViewportRequestBus::Events::GetLightingPresetPreview, preset);
-
-            QListWidgetItem* item = CreateListItem(preset->m_displayName.c_str(), image);
+            AZStd::string path;
+            MaterialViewportRequestBus::BroadcastResult(path, &MaterialViewportRequestBus::Events::GetLightingPresetLastSavePath, preset);
+            QListWidgetItem* item = CreateListItem(
+                preset->m_displayName.c_str(), AZ::RPI::AssetUtils::MakeAssetId(path, 0).GetValue(), QSize(itemSize, itemSize));
 
             m_listItemToPresetMap[item] = preset;
 

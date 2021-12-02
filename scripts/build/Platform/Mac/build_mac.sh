@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 #
-# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
-# 
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
@@ -16,7 +17,10 @@ SOURCE_DIRECTORY=${PWD}
 pushd $OUTPUT_DIRECTORY
 
 LAST_CONFIGURE_CMD_FILE=ci_last_configure_cmd.txt
-CONFIGURE_CMD="cmake ${SOURCE_DIRECTORY} ${CMAKE_OPTIONS} ${EXTRA_CMAKE_OPTIONS} -DLY_3RDPARTY_PATH=${LY_3RDPARTY_PATH} -DLY_PROJECTS='${CMAKE_LY_PROJECTS}'"
+CONFIGURE_CMD="cmake ${SOURCE_DIRECTORY} ${CMAKE_OPTIONS} ${EXTRA_CMAKE_OPTIONS} -DLY_3RDPARTY_PATH=${LY_3RDPARTY_PATH}"
+if [[ -n "$CMAKE_LY_PROJECTS" ]]; then
+    CONFIGURE_CMD="${CONFIGURE_CMD} -DLY_PROJECTS='${CMAKE_LY_PROJECTS}'"
+fi
 if [[ ! -e "CMakeCache.txt" ]]; then
     echo [ci_build] First run, generating
     RUN_CONFIGURE=1

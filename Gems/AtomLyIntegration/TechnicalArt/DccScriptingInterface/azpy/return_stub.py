@@ -1,8 +1,9 @@
 # coding:utf-8
 #!/usr/bin/python
 #
-# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
-# 
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
@@ -18,7 +19,7 @@ import logging as _logging
 
 # -------------------------------------------------------------------------
 #  global space debug flag, no fancy stuff here we use in bootstrap
-_G_DEBUG = False  # manually enable to debug this file
+_DCCSI_GDEBUG = False  # manually enable to debug this file
 
 _PACKAGENAME = __name__
 if _PACKAGENAME is '__main__':
@@ -43,7 +44,7 @@ def return_stub(stub):
                 break
             if (len(tail) == 0):
                 path = ""
-                if _G_DEBUG:
+                if _DCCSI_GDEBUG:
                     _LOGGER.debug('~ Debug Message:  I was not able to find the '
                                   'path to that file (stub) in a walk-up '
                                   'from currnet path')

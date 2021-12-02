@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -26,12 +27,12 @@ namespace EMotionFX
 
     void BlendTreeSmoothingNode::UniqueData::Update()
     {
-        BlendTreeSmoothingNode* smoothingNode = azdynamic_cast<BlendTreeSmoothingNode*>(mObject);
+        BlendTreeSmoothingNode* smoothingNode = azdynamic_cast<BlendTreeSmoothingNode*>(m_object);
         AZ_Assert(smoothingNode, "Unique data linked to incorrect node type.");
 
         if (!smoothingNode->GetInputNode(BlendTreeSmoothingNode::INPUTPORT_DEST))
         {
-            mCurrentValue = 0.0f;
+            m_currentValue = 0.0f;
         }
     }
 
@@ -90,7 +91,7 @@ namespace EMotionFX
         UniqueData* uniqueData = static_cast<UniqueData*>(FindOrCreateUniqueNodeData(animGraphInstance));
 
         // if there are no incoming connections, there is nothing to do
-        if (mConnections.size() == 0)
+        if (m_connections.size() == 0)
         {
             GetOutputFloat(animGraphInstance, OUTPUTPORT_RESULT)->SetValue(0.0f);
             return;
@@ -99,29 +100,29 @@ namespace EMotionFX
         // if we are disabled, output the dest value directly
         //OutputIncomingNode( animGraphInstance, GetInputNode(INPUTPORT_DEST) );
         const float destValue = GetInputNumberAsFloat(animGraphInstance, INPUTPORT_DEST);
-        if (mDisabled)
+        if (m_disabled)
         {
             GetOutputFloat(animGraphInstance, OUTPUTPORT_RESULT)->SetValue(destValue);
             return;
         }
 
         // perform interpolation
-        const float sourceValue = uniqueData->mCurrentValue;
-        const float interpolationSpeed = m_interpolationSpeed * uniqueData->mFrameDeltaTime * 10.0f;
+        const float sourceValue = uniqueData->m_currentValue;
+        const float interpolationSpeed = m_interpolationSpeed * uniqueData->m_frameDeltaTime * 10.0f;
         const float interpolationResult = (interpolationSpeed < 0.99999f) ? MCore::LinearInterpolate<float>(sourceValue, destValue, interpolationSpeed) : destValue;
         // If the interpolation result is close to the dest value within the tolerance, snap to the destination value.
         if (AZ::IsClose((interpolationResult - destValue), 0.0f, m_snapTolerance))
         {
-            uniqueData->mCurrentValue = destValue;
+            uniqueData->m_currentValue = destValue;
         }
         else
         {
             // pass the interpolated result to the output port and the current value of the unique data
-            uniqueData->mCurrentValue = interpolationResult;
+            uniqueData->m_currentValue = interpolationResult;
         }
         GetOutputFloat(animGraphInstance, OUTPUTPORT_RESULT)->SetValue(interpolationResult);
 
-        uniqueData->mFrameDeltaTime = timePassedInSeconds;
+        uniqueData->m_frameDeltaTime = timePassedInSeconds;
     }
 
 
@@ -134,13 +135,13 @@ namespace EMotionFX
         // check if the current value needs to be reset to the input or the start value when rewinding the node
         if (m_useStartValue)
         {
-            uniqueData->mCurrentValue = m_startValue;
+            uniqueData->m_currentValue = m_startValue;
         }
         else
         {
             // set the current value to the current input value
             UpdateAllIncomingNodes(animGraphInstance, 0.0f);
-            uniqueData->mCurrentValue = GetInputNumberAsFloat(animGraphInstance, INPUTPORT_DEST);
+            uniqueData->m_currentValue = GetInputNumberAsFloat(animGraphInstance, INPUTPORT_DEST);
         }
     }
 

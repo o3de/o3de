@@ -1,14 +1,15 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
-
-#include "EMotionFX_precompiled.h"
-
 #include <Integration/Assets/MotionAsset.h>
+#include <EMotionFX/Source/EMotionFXManager.h>
+#include <EMotionFX/Source/Importer/Importer.h>
+#include <EMotionFX/Source/Motion.h>
 
 namespace EMotionFX
 {

@@ -1,10 +1,10 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "ScriptedEntityTweener_precompiled.h"
 
 #include <ScriptedEntityTweener/ScriptedEntityTweenerBus.h>
 
@@ -15,7 +15,7 @@ namespace ScriptedEntityTweener
     const AZStd::any ScriptedEntityTweenerTask::QueuedSubtaskInfo::m_emptyInitialValue;
 
     const float AnimationProperties::UninitializedParamFloat = FLT_MIN;
-    const unsigned int AnimationProperties::InvalidCallbackId = 0;
+    const int AnimationProperties::InvalidCallbackId = 0;
     const unsigned int AnimationProperties::InvalidTimelineId = 0;
 
     ScriptedEntityTweenerTask::ScriptedEntityTweenerTask(AZ::EntityId id)

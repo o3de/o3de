@@ -1,9 +1,12 @@
 #
-# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
-# 
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
+
+ly_get_list_relative_pal_filename(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME})
 
 add_subdirectory(XML)
 
@@ -12,16 +15,19 @@ ly_add_target(
     NAMESPACE Legacy
     FILES_CMAKE
         crysystem_files.cmake
+        ${pal_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake # Required for restricted platforms
+    PLATFORM_INCLUDE_FILES
+        ${pal_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}.cmake # Required for restricted platforms
     INCLUDE_DIRECTORIES
         PUBLIC
             .
+            ${pal_dir} # Required for restricted platforms
     BUILD_DEPENDENCIES
         PRIVATE
             3rdParty::expat
             3rdParty::lz4
             3rdParty::md5
-            3rdParty::tiff
-            3rdParty::zlib
+            3rdParty::TIFF
             3rdParty::zstd
             Legacy::CryCommon
             Legacy::CrySystem.XMLBinary

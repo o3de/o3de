@@ -1,11 +1,10 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-
-#include <PhysX_precompiled.h>
 
 #include <Editor/CollisionFilteringWidget.h>
 #include <Editor/CollisionLayersWidget.h>
@@ -19,7 +18,7 @@ namespace PhysX
     namespace Editor
     {
         static const char* const s_collisionFilteringLink = "Learn more about <a href=%1>configuring collision filtering.</a>";
-        static const char* const s_collisionFilteringAddress = "configuration/collision";
+        static const char* const s_collisionFilteringAddress = "configuring/configuration-collision-layers";
 
         CollisionFilteringWidget::CollisionFilteringWidget(QWidget* parent)
             : QWidget(parent)

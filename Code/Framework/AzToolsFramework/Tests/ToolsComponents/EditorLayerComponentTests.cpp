@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -248,8 +249,6 @@ namespace AzToolsFramework
             
             m_app.Stop();
             AZ::Debug::TraceMessageBus::Handler::BusDisconnect();
-
-            
         }
 
         // A few tests save a layer and want to check the state after saving.
@@ -402,7 +401,7 @@ namespace AzToolsFramework
 
     TEST_F(EditorLayerComponentTest, LayerTests_TwoLayersUniqueNames_LayerNameIsValid)
     {
-        EntityAndLayerComponent secondLayer = CreateEntityWithLayer("UniqueLayerName");
+        CreateEntityWithLayer("UniqueLayerName");
         bool isLayerNameValid = true;
         AzToolsFramework::Layers::EditorLayerComponentRequestBus::EventResult(
             isLayerNameValid,
@@ -413,7 +412,7 @@ namespace AzToolsFramework
 
     TEST_F(EditorLayerComponentTest, LayerTests_TwoLayersConflictingNames_LayerNameIsNotValid)
     {
-        EntityAndLayerComponent secondLayer = CreateEntityWithLayer(m_entityName);
+        CreateEntityWithLayer(m_entityName);
         bool isLayerNameValid = true;
         AzToolsFramework::Layers::EditorLayerComponentRequestBus::EventResult(
             isLayerNameValid,

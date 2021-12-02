@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -24,25 +25,25 @@ namespace XMLBinary
     {
     public:
         CXMLBinaryWriter();
-        bool WriteNode(IDataWriter* pFile, XmlNodeRef node, bool bNeedSwapEndian, XMLBinary::IFilter* pFilter, string& error);
+        bool WriteNode(IDataWriter* pFile, XmlNodeRef node, XMLBinary::IFilter* pFilter, AZStd::string & error);
 
     private:
-        bool CompileTables(XmlNodeRef node, XMLBinary::IFilter* pFilter, string& error);
+        bool CompileTables(XmlNodeRef node, XMLBinary::IFilter* pFilter, AZStd::string& error);
 
-        bool CompileTablesForNode(XmlNodeRef node, int nParentIndex, XMLBinary::IFilter* pFilter, string& error);
-        bool CompileChildTable(XmlNodeRef node, XMLBinary::IFilter* pFilter, string& error);
+        bool CompileTablesForNode(XmlNodeRef node, int nParentIndex, XMLBinary::IFilter* pFilter, AZStd::string& error);
+        bool CompileChildTable(XmlNodeRef node, XMLBinary::IFilter* pFilter, AZStd::string& error);
         int AddString(const XmlString& sString);
 
     private:
         // tables.
         typedef std::map<IXmlNode*, int> NodesMap;
-        typedef std::map<string, uint> StringMap;
+        typedef std::map<AZStd::string, uint> StringMap;
 
         std::vector<Node> m_nodes;
         NodesMap m_nodesMap;
         std::vector<Attribute> m_attributes;
         std::vector<NodeIndex> m_childs;
-        std::vector<string> m_strings;
+        std::vector<AZStd::string> m_strings;
         StringMap m_stringMap;
 
         uint m_nStringDataSize;

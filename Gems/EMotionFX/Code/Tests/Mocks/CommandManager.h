@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -10,7 +11,7 @@ namespace MCore
     class CommandManager
     {
     public:
-        //virtual ~CommandManager();
+        virtual ~CommandManager() = default;
 
         //bool ExecuteCommand(const char* command, AZStd::string& outCommandResult, bool addToHistory = true, Command** outExecutedCommand = nullptr, CommandLine* outExecutedParamters = nullptr, bool callFromCommandGroup = false, bool clearErrors = true, bool handleErrors = true);
         //bool ExecuteCommand(const AZStd::string& command, AZStd::string& outCommandResult, bool addToHistory = true, Command** outExecutedCommand = nullptr, CommandLine* outExecutedParamters = nullptr, bool callFromCommandGroup = false, bool clearErrors = true, bool handleErrors = true);

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -144,7 +145,7 @@ bool UserPopupWidgetHandler::ReadValuesIntoGUI(size_t index, UserPropertyEditor*
 QWidget* FloatCurveHandler::CreateGUI(QWidget *pParent)
 {
     CSplineCtrl *cSpline = new CSplineCtrl(pParent);
-    cSpline->SetUpdateCallback(AZStd::bind(&FloatCurveHandler::OnSplineChange, this, AZStd::placeholders::_1));
+    cSpline->SetUpdateCallback([this](CSplineCtrl* spl) { OnSplineChange(spl); });
     cSpline->SetTimeRange(0, 1);
     cSpline->SetValueRange(0, 1);
     cSpline->SetGrid(12, 12);
@@ -169,30 +170,3 @@ bool FloatCurveHandler::ReadValuesIntoGUI([[maybe_unused]] size_t index, CSpline
     GUI->SetSpline(reinterpret_cast<ISplineInterpolator*>(instance.m_spline));
     return false;
 }
-
-
-QWidget* ColorCurveHandler::CreateGUI(QWidget *pParent)
-{
-    CColorGradientCtrl* gradientCtrl = new CColorGradientCtrl(pParent);
-    //connect(gradientCtrl, &CColorGradientCtrl::change, [gradientCtrl]()
-    //{
-    //    EBUS_EVENT(AzToolsFramework::PropertyEditorGUIMessages::Bus, RequestWrite, gradientCtrl);
-    //});
-    gradientCtrl->SetTimeRange(0, 1);
-    gradientCtrl->setFixedHeight(36);
-    return gradientCtrl;
-
-}
-
-void ColorCurveHandler::ConsumeAttribute(CColorGradientCtrl*, AZ::u32, AzToolsFramework::PropertyAttributeReader*, const char*)
-{}
-
-void ColorCurveHandler::WriteGUIValuesIntoProperty([[maybe_unused]] size_t index, [[maybe_unused]] CColorGradientCtrl* GUI, [[maybe_unused]] property_t& instance, [[maybe_unused]] AzToolsFramework::InstanceDataNode* node)
-{}
-
-bool ColorCurveHandler::ReadValuesIntoGUI([[maybe_unused]] size_t index, CColorGradientCtrl* GUI, const property_t& instance, [[maybe_unused]] AzToolsFramework::InstanceDataNode* node)
-{
-    GUI->SetSpline(reinterpret_cast<ISplineInterpolator*>(instance.m_spline));
-    return false;
-}
-

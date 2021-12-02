@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -33,7 +34,32 @@ namespace AZ
 
         bool SsaoParentPass::IsEnabled() const
         {
-            return ParentPass::IsEnabled();
+            if (!ParentPass::IsEnabled())
+            {
+                return false;
+            }
+            const RPI::Scene* scene = GetScene();
+            if (!scene)
+            {
+                return false;
+            }
+            PostProcessFeatureProcessor* fp = scene->GetFeatureProcessor<PostProcessFeatureProcessor>();
+            const RPI::ViewPtr view = GetRenderPipeline()->GetDefaultView();
+            if (!fp)
+            {
+                return true;
+            }
+            PostProcessSettings* postProcessSettings = fp->GetLevelSettingsFromView(view);
+            if (!postProcessSettings)
+            {
+                return true;
+            }
+            const SsaoSettings* ssaoSettings = postProcessSettings->GetSsaoSettings();
+            if (!ssaoSettings)
+            {
+                return true;
+            }
+            return ssaoSettings->GetEnabled();
         }
 
         void SsaoParentPass::InitializeInternal()

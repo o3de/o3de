@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -96,7 +97,7 @@ namespace AZ
                         }
                         Pending pending;
                         pending.m_bone = bone;
-                        pending.m_numVertices = totalVertices;
+                        pending.m_numVertices = static_cast<unsigned int>(totalVertices);
                         pending.m_skinWeightData = skinWeightData;
                         pending.m_vertOffset = vertexCount;
                         m_pendingSkinWeights.push_back(pending);

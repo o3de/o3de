@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -151,7 +152,7 @@ namespace GridMate
     //-----------------------------------------------------------------------------
     PrepareDataResult ReplicaChunkBase::PrepareData(EndianType endianType, AZ::u32 marshalFlags)
     {
-        //AZ_PROFILE_TIMER("GridMate");
+        //AZ_PROFILE_SCOPE("GridMate");
 
         PrepareDataResult pdr(false, false, false, false);
         bool forceDatasetsReliable = !!(marshalFlags & ReplicaMarshalFlags::ForceReliable);
@@ -249,7 +250,7 @@ namespace GridMate
     //-----------------------------------------------------------------------------
     bool ReplicaChunkBase::ShouldSendToPeer(ReplicaPeer* peer) const
     {
-        //AZ_PROFILE_TIMER("GridMate");
+        //AZ_PROFILE_SCOPE("GridMate");
 
         // Only send chunks to the same zone as the peer
         return !!(peer->GetZoneMask() & GetDescriptor()->GetZoneMask());
@@ -257,7 +258,7 @@ namespace GridMate
     //-----------------------------------------------------------------------------
     void ReplicaChunkBase::Marshal(MarshalContext& mc, AZ::u32 chunkIndex)
     {
-        //AZ_PROFILE_TIMER("GridMate");
+        //AZ_PROFILE_SCOPE("GridMate");
 
         SafeGuardWrite(mc.m_outBuffer, [this, &mc, &chunkIndex]()
         {
@@ -268,7 +269,7 @@ namespace GridMate
     //-----------------------------------------------------------------------------
     void ReplicaChunkBase::Unmarshal(UnmarshalContext& mc, AZ::u32 chunkIndex)
     {
-        AZ_PROFILE_TIMER("GridMate");
+        AZ_PROFILE_FUNCTION(GridMate);
 
         SafeGuardRead(mc.m_iBuf, [this, &mc, &chunkIndex]()
         {
@@ -333,7 +334,7 @@ namespace GridMate
     //-----------------------------------------------------------------------------
     void ReplicaChunkBase::MarshalDataSets(MarshalContext& mc, AZ::u32 chunkIndex)
     {
-        //AZ_PROFILE_TIMER("GridMate");
+        //AZ_PROFILE_SCOPE("GridMate");
         AZ::u32 dirtyDataSetMask = CalculateDirtyDataSetMask(mc);
         AZStd::bitset<GM_MAX_DATASETS_IN_CHUNK> changebits(dirtyDataSetMask);
         ReplicaChunkDescriptor* descriptor = GetDescriptor();
@@ -350,7 +351,7 @@ namespace GridMate
                 DataSetBase* dataset = descriptor->GetDataSet(this, i);
                 if (!dataset)
                 {
-                    AZ_Assert(false, "How can we have a dirty dataset that doesn't exist?")
+                    AZ_Assert(false, "How can we have a dirty dataset that doesn't exist?");
                     continue;
                 }
 
@@ -381,7 +382,7 @@ namespace GridMate
     //-----------------------------------------------------------------------------
     void ReplicaChunkBase::UnmarshalDataSets(UnmarshalContext& mc, AZ::u32 chunkIndex)
     {
-        AZ_PROFILE_TIMER("GridMate");
+        AZ_PROFILE_FUNCTION(GridMate);
 
         AZStd::bitset<GM_MAX_DATASETS_IN_CHUNK> changebits;
         if (!mc.m_iBuf->Read(*changebits.data(), VlqU32Marshaler()))
@@ -437,7 +438,7 @@ namespace GridMate
     //-----------------------------------------------------------------------------
     void ReplicaChunkBase::MarshalRpcs(MarshalContext& mc, AZ::u32 chunkIndex)
     {
-        //AZ_PROFILE_TIMER("GridMate");
+        //AZ_PROFILE_SCOPE("GridMate");
 
         bool isAuthoritative = (mc.m_marshalFlags & ReplicaMarshalFlags::Authoritative) == ReplicaMarshalFlags::Authoritative;
         bool isReliable = (mc.m_marshalFlags & ReplicaMarshalFlags::Reliable) == ReplicaMarshalFlags::Reliable;
@@ -495,7 +496,7 @@ namespace GridMate
     //-----------------------------------------------------------------------------
     void ReplicaChunkBase::UnmarshalRpcs(UnmarshalContext& mc, AZ::u32 chunkIndex)
     {
-        AZ_PROFILE_TIMER("GridMate");
+        AZ_PROFILE_FUNCTION(GridMate);
 
         // Unmarshal RPCs
         AZ::u32 rpcCount;
@@ -628,7 +629,7 @@ namespace GridMate
     //-----------------------------------------------------------------------------
     bool ReplicaChunkBase::ProcessRPCs(const ReplicaContext& rc)
     {
-        AZ_PROFILE_TIMER("GridMate");
+        AZ_PROFILE_FUNCTION(GridMate);
 
         // Process incoming RPCs
         for (RPCQueue::iterator iRPC = m_rpcQueue.begin(); iRPC != m_rpcQueue.end(); )
@@ -732,7 +733,7 @@ namespace GridMate
     //-----------------------------------------------------------------------------
     void ReplicaChunkBase::AttachedToReplica(Replica* replica)
     {
-        AZ_PROFILE_TIMER("GridMate");
+        AZ_PROFILE_FUNCTION(GridMate);
 
         AZ_Assert(!m_replica, "Should not be attached to a replica");
 
@@ -747,7 +748,7 @@ namespace GridMate
     //-----------------------------------------------------------------------------
     void ReplicaChunkBase::DetachedFromReplica()
     {
-        AZ_PROFILE_TIMER("GridMate");
+        AZ_PROFILE_FUNCTION(GridMate);
 
         AZ_Assert(m_replica, "Should be attached to a replica");
         EBUS_EVENT(Debug::ReplicaDrillerBus, OnDetachReplicaChunk, this);

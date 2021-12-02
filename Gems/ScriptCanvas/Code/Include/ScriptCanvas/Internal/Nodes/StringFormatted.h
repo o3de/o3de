@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -39,7 +40,7 @@ namespace ScriptCanvas
                     return true;
                 }
 
-                AZ::Outcome<DependencyReport, void> GetDependencies() const
+                AZ::Outcome<DependencyReport, void> GetDependencies() const override
                 {
                     return AZ::Success(DependencyReport{});
                 }
@@ -47,8 +48,6 @@ namespace ScriptCanvas
                 AZ_INLINE Data::StringType GetRawString() const { return *m_stringInterface.GetPropertyData(); }
                 AZ_INLINE const NamedSlotIdMap& GetNamedSlotIdMap() const { return m_formatSlotMap; }
                 AZ_INLINE const int GetPostDecimalPrecision() const { return m_numericPrecision; }
-
-                
 
             protected:
 

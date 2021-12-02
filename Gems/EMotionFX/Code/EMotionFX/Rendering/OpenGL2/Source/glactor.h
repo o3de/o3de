@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -46,52 +47,52 @@ namespace RenderGL
 
         bool Init(EMotionFX::Actor* actor, const char* texturePath, bool gpuSkinning = true, bool removeGPUSkinnedMeshes = true);
 
-        MCORE_INLINE EMotionFX::Actor* GetActor() { return mActor; }
-        MCORE_INLINE const AZStd::string& GetTexturePath() const { return mTexturePath; }
+        MCORE_INLINE EMotionFX::Actor* GetActor() { return m_actor; }
+        MCORE_INLINE const AZStd::string& GetTexturePath() const { return m_texturePath; }
 
         void Render(EMotionFX::ActorInstance* actorInstance, uint32 renderFlags = RENDER_LIGHTING | RENDER_TEXTURING);
 
-        const MCore::RGBAColor& GetSkyColor() const                 { return mSkyColor; }
-        const MCore::RGBAColor& GetGroundColor() const              { return mGroundColor; }
-        void SetGroundColor(const MCore::RGBAColor& color)        { mGroundColor = color; }
-        void SetSkyColor(const MCore::RGBAColor& color)           { mSkyColor = color; }
+        const MCore::RGBAColor& GetSkyColor() const                 { return m_skyColor; }
+        const MCore::RGBAColor& GetGroundColor() const              { return m_groundColor; }
+        void SetGroundColor(const MCore::RGBAColor& color)        { m_groundColor = color; }
+        void SetSkyColor(const MCore::RGBAColor& color)           { m_skyColor = color; }
 
     private:
         struct RENDERGL_API MaterialPrimitives
         {
-            Material*               mMaterial;
-            MCore::Array<Primitive> mPrimitives[3];
+            Material*               m_material;
+            AZStd::vector<Primitive> m_primitives[3];
 
-            MaterialPrimitives()              { mMaterial = nullptr; mPrimitives[0].Reserve(64); mPrimitives[1].Reserve(64); mPrimitives[2].Reserve(64); }
-            MaterialPrimitives(Material* mat) { mMaterial = mat; mPrimitives[0].Reserve(64); mPrimitives[1].Reserve(64); mPrimitives[2].Reserve(64); }
+            MaterialPrimitives()              { m_material = nullptr; m_primitives[0].reserve(64); m_primitives[1].reserve(64); m_primitives[2].reserve(64); }
+            MaterialPrimitives(Material* mat) { m_material = mat; m_primitives[0].reserve(64); m_primitives[1].reserve(64); m_primitives[2].reserve(64); }
         };
 
-        AZStd::string                   mTexturePath;
-        EMotionFX::Actor*               mActor;
-        bool                            mEnableGPUSkinning;
+        AZStd::string                   m_texturePath;
+        EMotionFX::Actor*               m_actor;
+        bool                            m_enableGpuSkinning;
 
         void Cleanup();
 
         void RenderMeshes(EMotionFX::ActorInstance* actorInstance, EMotionFX::Mesh::EMeshType meshType, uint32 renderFlags);
         void RenderShadowMap(EMotionFX::Mesh::EMeshType meshType);
-        void InitMaterials(uint32 lodLevel);
+        void InitMaterials(size_t lodLevel);
         Material* InitMaterial(EMotionFX::Material* emfxMaterial);
-        void FillIndexBuffers(uint32 lodLevel);
-        void FillStaticVertexBuffers(uint32 lodLevel);
-        void FillGPUSkinnedVertexBuffers(uint32 lodLevel);
+        void FillIndexBuffers(size_t lodLevel);
+        void FillStaticVertexBuffers(size_t lodLevel);
+        void FillGPUSkinnedVertexBuffers(size_t lodLevel);
 
         void UpdateDynamicVertices(EMotionFX::ActorInstance* actorInstance);
 
-        EMotionFX::Mesh::EMeshType ClassifyMeshType(EMotionFX::Node* node, EMotionFX::Mesh* mesh, uint32 lodLevel);
+        EMotionFX::Mesh::EMeshType ClassifyMeshType(EMotionFX::Node* node, EMotionFX::Mesh* mesh, size_t lodLevel);
 
-        MCore::Array< MCore::Array<MaterialPrimitives*> >  mMaterials;
-        MCore::Array2D<uint32>          mDynamicNodes;
-        MCore::Array2D<Primitive>       mPrimitives[3];
-        MCore::Array<bool>              mHomoMaterials;
-        MCore::Array<VertexBuffer*>     mVertexBuffers[3];
-        MCore::Array<IndexBuffer*>      mIndexBuffers[3];
-        MCore::RGBAColor                mGroundColor;
-        MCore::RGBAColor                mSkyColor;
+        AZStd::vector< AZStd::vector<MaterialPrimitives*> >  m_materials;
+        MCore::Array2D<size_t>          m_dynamicNodes;
+        MCore::Array2D<Primitive>       m_primitives[3];
+        AZStd::vector<bool>              m_homoMaterials;
+        AZStd::vector<VertexBuffer*>     m_vertexBuffers[3];
+        AZStd::vector<IndexBuffer*>      m_indexBuffers[3];
+        MCore::RGBAColor                m_groundColor;
+        MCore::RGBAColor                m_skyColor;
 
         GLActor();
         ~GLActor();

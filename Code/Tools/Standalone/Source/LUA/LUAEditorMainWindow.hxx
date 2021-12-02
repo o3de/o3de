@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -85,14 +86,14 @@ namespace LUAEditor
     public:
         AZ_CLASS_ALLOCATOR(LUAEditorMainWindow,AZ::SystemAllocator,0);
         LUAEditorMainWindow(QStandardItemModel* dataModel, bool connectedState, QWidget* parent = NULL, Qt::WindowFlags flags = Qt::WindowFlags());
-        virtual ~LUAEditorMainWindow(void);
+        virtual ~LUAEditorMainWindow();
 
         bool OnGetPermissionToShutDown();
 
         //////////////////////////////////////////////////////////////////////////
         // Qt Events
     private:
-        virtual void closeEvent(QCloseEvent* event);
+        void closeEvent(QCloseEvent* event) override;
 
         Ui::LUAEditorMainWindow* m_gui;
         AzToolsFramework::TargetSelectorButtonAction* m_pTargetButton;
@@ -203,7 +204,7 @@ namespace LUAEditor
         AZStd::string m_lastOpenFilePath;
 
         AZStd::vector<FindResultsBlockInfo> m_dProcessFindListClicked;
-        void OnDataLoadedAndSet(const DocumentInfo& info, LUAViewWidget* pLUAViewWidget);
+        void OnDataLoadedAndSet(const DocumentInfo& info, LUAViewWidget* pLUAViewWidget) override;
 
         AzToolsFramework::AssetBrowser::AssetBrowserFilterModel* m_filterModel;
         QSharedPointer<AzToolsFramework::AssetBrowser::CompositeFilter> CreateFilter();
@@ -242,18 +243,18 @@ namespace LUAEditor
         // LUAEditorMainWindow Messages.
     public:
         virtual void OnCloseView(const AZStd::string& assetId);
-        virtual void OnFocusInEvent(const AZStd::string& assetId);
-        virtual void OnFocusOutEvent(const AZStd::string& assetId);
-        virtual void OnRequestCheckOut(const AZStd::string& assetId);
-        virtual void OnConnectedToTarget();
-        virtual void OnDisconnectedFromTarget();
-        virtual void OnConnectedToDebugger();
-        virtual void OnDisconnectedFromDebugger();
+        void OnFocusInEvent(const AZStd::string& assetId) override;
+        void OnFocusOutEvent(const AZStd::string& assetId) override;
+        void OnRequestCheckOut(const AZStd::string& assetId) override;
+        void OnConnectedToTarget() override;
+        void OnDisconnectedFromTarget() override;
+        void OnConnectedToDebugger() override;
+        void OnDisconnectedFromDebugger() override;
         void Repaint() override;
         //////////////////////////////////////////////////////////////////////////
 
-        virtual void dragEnterEvent(QDragEnterEvent *pEvent);
-        virtual void dropEvent(QDropEvent *pEvent);
+        void dragEnterEvent(QDragEnterEvent *pEvent) override;
+        void dropEvent(QDropEvent *pEvent) override;
 
         void IgnoreFocusEvents(bool ignore) { m_bIgnoreFocusRequests = ignore; }
 
@@ -326,7 +327,7 @@ namespace LUAEditor
         // support for windows-ish Ctrl+Tab cycling through documents via the above Tab actions
         typedef AZStd::list<AZStd::string> TrackedLUACtrlTabOrder;
         TrackedLUACtrlTabOrder m_CtrlTabOrder;
-        bool eventFilter(QObject *obj, QEvent *event);
+        bool eventFilter(QObject *obj, QEvent *event) override;
         AZStd::string m_StoredTabAssetId;
 
         bool m_bIgnoreFocusRequests;
@@ -337,10 +338,10 @@ namespace LUAEditor
 
         //////////////////////////////////////////////////////////////////////////
         //Debugger Messages, from the LUAEditor::LUABreakpointTrackerMessages::Bus
-        virtual void BreakpointsUpdate(const LUAEditor::BreakpointMap& uniqueBreakpoints);
-        virtual void BreakpointHit(const LUAEditor::Breakpoint& breakpoint);
-        virtual void BreakpointResume();
-        virtual void OnExecuteScriptResult(bool success);
+        void BreakpointsUpdate(const LUAEditor::BreakpointMap& uniqueBreakpoints) override;
+        void BreakpointHit(const LUAEditor::Breakpoint& breakpoint) override;
+        void BreakpointResume() override;
+        void OnExecuteScriptResult(bool success) override;
 
         //////////////////////////////////////////////////////////////////////////
         // track activity and synchronize the appropriate widgets' states to match
@@ -432,7 +433,7 @@ namespace LUAEditor
         bool m_bAutoReloadUnmodifiedFiles = false;
 
         LUAEditorMainWindowSavedState() {}
-        void Init(const QByteArray& windowState,const QByteArray& windowGeom)
+        void Init(const QByteArray& windowState,const QByteArray& windowGeom) override
         {
              AzToolsFramework::MainWindowSavedState::Init(windowState, windowGeom);
         }

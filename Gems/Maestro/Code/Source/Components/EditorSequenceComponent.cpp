@@ -1,10 +1,10 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "Maestro_precompiled.h"
 #include "EditorSequenceComponent.h"
 #include "EditorSequenceAgentComponent.h"
 
@@ -29,7 +29,7 @@ namespace Maestro
 {
     /*static*/ AZ::ScriptTimePoint EditorSequenceComponent::s_lastPropertyRefreshTime;
     /*static*/ const double        EditorSequenceComponent::s_refreshPeriodMilliseconds = 200.0;  // 5 Hz refresh rate
-    /*static*/ const int           EditorSequenceComponent::s_invalidSequenceId = -1;
+    /*static*/ const uint32        EditorSequenceComponent::s_invalidSequenceId = std::numeric_limits<uint32>::max();
 
     namespace ClassConverters
     {

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -30,7 +31,7 @@ public:
     static void Record(IUndoObject* undo);
 
 private:
-    static const uint32 scDescSize = 256;
+    static const AZ::u32 scDescSize = 256;
     char m_description[scDescSize];
     bool m_bCancelled;
     bool m_bStartedRecord;

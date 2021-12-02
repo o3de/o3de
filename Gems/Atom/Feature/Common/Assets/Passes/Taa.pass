@@ -87,7 +87,7 @@
             "PassData": {
                 "$type": "TaaPassData",
                 "ShaderAsset": {
-                    "FilePath": "Shaders/Postprocessing/Taa.shader"
+                    "FilePath": "Shaders/PostProcessing/Taa.shader"
                 },
                 "Make Fullscreen Pass": true,
                 "ShaderDataMappings": {

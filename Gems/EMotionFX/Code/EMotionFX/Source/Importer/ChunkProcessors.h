@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -8,15 +9,13 @@
 #pragma once
 
 #include "../EMotionFXConfig.h"
-#include <MCore/Source/Array.h>
+#include <AzCore/std/containers/vector.h>
 #include <MCore/Source/CompressedQuaternion.h>
 #include "../MemoryCategories.h"
 #include "../BaseObject.h"
 #include "SharedFileFormatStructs.h"
 #include "ActorFileFormat.h"
 #include "MotionFileFormat.h"
-#include "AnimGraphFileFormat.h"
-#include "MotionSetFileFormat.h"
 #include "NodeMapFileFormat.h"
 #include "Importer.h"
 #include <AzCore/std/containers/map.h>
@@ -30,7 +29,6 @@ namespace EMotionFX
     class Motion;
     class Importer;
     class AnimGraphNode;
-
 
     /**
      * Shared importer data class.
@@ -56,19 +54,10 @@ namespace EMotionFX
         virtual void Reset() {}
 
     protected:
-        /**
-         * The constructor.
-         */
         SharedData()
             : BaseObject() {}
-
-        /**
-         * The destructor.
-         */
         virtual ~SharedData() { Reset(); }
     };
-
-
 
     /**
      * Helper class for reading strings from files and file information storage.
@@ -105,36 +94,14 @@ namespace EMotionFX
          * @param endianType The endian type to read the string in.
          * @return The actual string.
          */
-        static const char* ReadString(MCore::Stream* file, MCore::Array<SharedData*>* sharedData, MCore::Endian::EEndianType endianType);
-
-        /**
-         * Get the array of currently loaded anim graph nodes.
-         * @param sharedData The array which holds the shared data objects.
-         * @result The array of currently loaded anim graph nodes.
-         */
-        static MCore::Array<AnimGraphNode*>& GetBlendNodes(MCore::Array<SharedData*>* sharedData);
-
-        /**
-        * Get the table to look up a state machine that needs an entry state as they are created.
-        * @param sharedData The array which holds the shared data objects.
-        * @result The map whose keys are the indices of entry states and the values are the IDs of the state machines that need those as entry states.
-        */
-        static AZStd::map<AZ::u64, uint32>& GetEntryStateToStateMachineTable(MCore::Array<SharedData*>* sharedData);
-
-        /**
-         * Checks if the strings in the file are encoded using unicode or multi-byte based on the exporter date.
-         * The first official EMotion FX version to use unicode was compiled on 26th November 2012.
-         */
-        static bool GetIsUnicodeFile(const char* dateString, MCore::Array<SharedData*>* sharedData);
+        static const char* ReadString(MCore::Stream* file, AZStd::vector<SharedData*>* sharedData, MCore::Endian::EEndianType endianType);
 
     public:
-        uint32          mFileHighVersion;           /**< The high file version. For example 3 in case of v3.10. */
-        uint32          mFileLowVersion;            /**< The low file version. For example 10 in case of v3.10. */
-        uint32          mStringStorageSize;         /**< The size of the string buffer. */
-        bool            mIsUnicodeFile;             /**< True in case strings in the file are saved using unicode character set, false in case they are saved using multi-byte. */
-        char*           mStringStorage;             /**< The shared string buffer. */
-        MCore::Array<AnimGraphNode*> mBlendNodes;  /**< Array of read anim graph nodes. */
-        AZStd::map<AZ::u64, uint32>  m_entryNodeIndexToStateMachineIdLookupTable;
+        uint32          m_fileHighVersion;           /**< The high file version. For example 3 in case of v3.10. */
+        uint32          m_fileLowVersion;            /**< The low file version. For example 10 in case of v3.10. */
+        uint32          m_stringStorageSize;         /**< The size of the string buffer. */
+        bool            m_isUnicodeFile;             /**< True in case strings in the file are saved using unicode character set, false in case they are saved using multi-byte. */
+        char*           m_stringStorage;             /**< The shared string buffer. */
     protected:
         /**
          * The constructor.
@@ -246,12 +213,12 @@ namespace EMotionFX
             // rmalize and make sure their w components are positive
             for (uint32 i = 0; i < count; ++i)
             {
-                if (value[i].mW < 0)
+                if (value[i].m_w < 0)
                 {
-                    value[i].mX = -value[i].mX;
-                    value[i].mY = -value[i].mY;
-                    value[i].mZ = -value[i].mZ;
-                    value[i].mW = -value[i].mW;
+                    value[i].m_x = -value[i].m_x;
+                    value[i].m_y = -value[i].m_y;
+                    value[i].m_z = -value[i].m_z;
+                    value[i].m_w = -value[i].m_w;
                 }
             }
         }
@@ -271,9 +238,9 @@ namespace EMotionFX
         }
 
     protected:
-        uint32                      mChunkID;       /**< The id of the chunk processor. */
-        uint32                      mVersion;       /**< The version number of the chunk processor, to provide backward compatibility. */
-        bool                        mLoggingActive; /**< When set to true the processor chunk will log events, otherwise no logging will be performed. */
+        uint32                      m_chunkId;       /**< The id of the chunk processor. */
+        uint32                      m_version;       /**< The version number of the chunk processor, to provide backward compatibility. */
+        bool                        m_loggingActive; /**< When set to true the processor chunk will log events, otherwise no logging will be performed. */
 
         /**
          * The constructor.
@@ -288,7 +255,6 @@ namespace EMotionFX
          */
         virtual ~ChunkProcessor();
     };
-
 
     //-------------------------------------------------------------------------------------------------
 
@@ -320,7 +286,7 @@ namespace EMotionFX
     EMFX_CHUNKPROCESSOR(ChunkProcessorActorInfo3,                FileFormat::ACTOR_CHUNK_INFO,                 3)
     EMFX_CHUNKPROCESSOR(ChunkProcessorActorProgMorphTarget,      FileFormat::ACTOR_CHUNK_STDPROGMORPHTARGET,   1)
     EMFX_CHUNKPROCESSOR(ChunkProcessorActorNodeGroups,           FileFormat::ACTOR_CHUNK_NODEGROUPS,           1)
-    EMFX_CHUNKPROCESSOR(ChunkProcessorActorNodes,                FileFormat::ACTOR_CHUNK_NODES,                1)
+    EMFX_CHUNKPROCESSOR(ChunkProcessorActorNodes2,               FileFormat::ACTOR_CHUNK_NODES,                2)
     EMFX_CHUNKPROCESSOR(ChunkProcessorActorProgMorphTargets,     FileFormat::ACTOR_CHUNK_STDPMORPHTARGETS,     1)
     EMFX_CHUNKPROCESSOR(ChunkProcessorActorProgMorphTargets2,    FileFormat::ACTOR_CHUNK_STDPMORPHTARGETS,     2)
     EMFX_CHUNKPROCESSOR(ChunkProcessorActorNodeMotionSources,    FileFormat::ACTOR_CHUNK_NODEMOTIONSOURCES,    1)
@@ -337,22 +303,6 @@ namespace EMotionFX
     EMFX_CHUNKPROCESSOR(ChunkProcessorMotionMorphSubMotions,          FileFormat::MOTION_CHUNK_MORPHSUBMOTIONS,      1)
     EMFX_CHUNKPROCESSOR(ChunkProcessorMotionData,                     FileFormat::MOTION_CHUNK_MOTIONDATA,           1)
 
-    // Anim graph file format chunk processors
-    EMFX_CHUNKPROCESSOR(ChunkProcessorAnimGraphStateTransitions,         FileFormat::ANIMGRAPH_CHUNK_STATETRANSITIONS,         1)
-    EMFX_CHUNKPROCESSOR(ChunkProcessorAnimGraphNodeConnections,          FileFormat::ANIMGRAPH_CHUNK_NODECONNECTIONS,          1)
-    EMFX_CHUNKPROCESSOR(ChunkProcessorAnimGraphParameters,               FileFormat::ANIMGRAPH_CHUNK_PARAMETERS,               1)
-    EMFX_CHUNKPROCESSOR(ChunkProcessorAnimGraphNodeGroups,               FileFormat::ANIMGRAPH_CHUNK_NODEGROUPS,               1)
-    EMFX_CHUNKPROCESSOR(ChunkProcessorAnimGraphGroupParameters,          FileFormat::ANIMGRAPH_CHUNK_GROUPPARAMETERS,          1)
-    EMFX_CHUNKPROCESSOR(ChunkProcessorAnimGraphGameControllerSettings,   FileFormat::ANIMGRAPH_CHUNK_GAMECONTROLLERSETTINGS,   1)
-    EMFX_CHUNKPROCESSOR(ChunkProcessorAnimGraphNode,                     FileFormat::ANIMGRAPH_CHUNK_BLENDNODE,                1)
-    EMFX_CHUNKPROCESSOR(ChunkProcessorAnimGraphAdditionalInfo,           FileFormat::ANIMGRAPH_CHUNK_ADDITIONALINFO,           1)
-
-    // motion set file format chunk processors
-    EMFX_CHUNKPROCESSOR(ChunkProcessorMotionSet,                   FileFormat::CHUNK_MOTIONSET,    1)
-
     // node map file format chunk processors
     EMFX_CHUNKPROCESSOR(ChunkProcessorNodeMap,                     FileFormat::CHUNK_NODEMAP,      1)
-
-
-    //-------------------------------------------------------------------------------------------------
 } // namespace EMotionFX

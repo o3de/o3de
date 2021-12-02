@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -19,7 +20,7 @@ namespace AZ
     {
         struct TransientAttachmentPoolBudgets
         {
-            AZ_TYPE_INFO(TransientAttachmentPoolBudgets, "{CE39BBEF-C9CD-4B9A-BA41-C886D9F063BC}");
+            AZ_TYPE_INFO(AZ::RHI::TransientAttachmentPoolBudgets, "{CE39BBEF-C9CD-4B9A-BA41-C886D9F063BC}");
             static void Reflect(AZ::ReflectContext* context);
 
             //! Defines the maximum amount of memory the pool is allowed to consume for transient buffers.
@@ -52,8 +53,8 @@ namespace AZ
             : public AZStd::intrusive_base
         {
         public:
-            AZ_RTTI(PlatformLimitsDescriptor, "{3A7B2BE4-0337-4F59-B4FC-B7E529EBE6C5}");
-            AZ_CLASS_ALLOCATOR(PlatformLimitsDescriptor, AZ::SystemAllocator, 0);
+            AZ_RTTI(AZ::RHI::PlatformLimitsDescriptor, "{3A7B2BE4-0337-4F59-B4FC-B7E529EBE6C5}");
+            AZ_CLASS_ALLOCATOR(AZ::RHI::PlatformLimitsDescriptor, AZ::SystemAllocator, 0);
             static void Reflect(AZ::ReflectContext* context);
             static RHI::Ptr<PlatformLimitsDescriptor> Create();
 
@@ -66,13 +67,15 @@ namespace AZ
             HeapPagingParameters m_pagingParameters;
             HeapMemoryHintParameters m_usageHintParameters;
             HeapAllocationStrategy m_heapAllocationStrategy = HeapAllocationStrategy::MemoryHint;
+
+            virtual void LoadPlatformLimitsDescriptor(const char* rhiName);
         };
 
         class PlatformLimits final
         {
         public:
-            AZ_RTTI(PlatformLimits, "{48158F25-5044-441C-A2B2-2D3E9255B0C3}");
-            AZ_CLASS_ALLOCATOR(PlatformLimits, AZ::SystemAllocator, 0);
+            AZ_RTTI(AZ::RHI::PlatformLimits, "{48158F25-5044-441C-A2B2-2D3E9255B0C3}");
+            AZ_CLASS_ALLOCATOR(AZ::RHI::PlatformLimits, AZ::SystemAllocator, 0);
             static void Reflect(AZ::ReflectContext* context);
 
             Ptr<PlatformLimitsDescriptor> m_platformLimitsDescriptor = nullptr;

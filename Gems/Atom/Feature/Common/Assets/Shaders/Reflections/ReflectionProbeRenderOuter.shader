@@ -1,5 +1,5 @@
 { 
-    "Source" : "ReflectionProbeRenderOuter",
+    "Source" : "ReflectionProbeRenderOuter.azsl",
 
     "RasterState" :
     {
@@ -49,5 +49,14 @@
                 "type": "Fragment"
             }
         ]
-    }
+    },
+
+    "Supervariants":
+    [
+        {
+            "Name": "NoMSAA",
+            "PlusArguments": "--no-ms",
+            "MinusArguments": ""
+        }
+    ]
 }

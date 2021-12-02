@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -53,8 +54,8 @@ namespace EMotionFX
             AZ::Vector3 m_force = AZ::Vector3::CreateZero(); /**< The internal force, which contains the gravity and other pulling and pushing forces. */
             AZ::Vector3 m_externalForce = AZ::Vector3::CreateZero(); /**< A user defined external force, which is added on top of the internal force. Can be used to simulate wind etc. */
             AZ::Vector3 m_limitDir = AZ::Vector3::CreateZero(); /**< The joint limit direction vector, used for the cone angle limit. This is the center direction of the cone. */
-            AZStd::vector<AZ::u32> m_colliderExclusions; /**< Index values inside the collider array. Colliders listed in this list should be ignored durin collision detection. */
-            AZ::u32 m_parentParticleIndex = ~0U; /**< The parent particle index. */
+            AZStd::vector<size_t> m_colliderExclusions; /**< Index values inside the collider array. Colliders listed in this list should be ignored durin collision detection. */
+            size_t m_parentParticleIndex = InvalidIndex; /**< The parent particle index. */
         };
 
         class EMFX_API CollisionObject
@@ -75,7 +76,7 @@ namespace EMotionFX
 
         private:
             CollisionType m_type = CollisionType::Sphere; /**< The collision primitive type (a sphere, or capsule, etc). */
-            AZ::u32 m_jointIndex = ~0U; /**< The joint index to attach to, or ~0 for non-attached. */
+            size_t m_jointIndex = InvalidIndex; /**< The joint index to attach to, or ~0 for non-attached. */
             AZ::Vector3 m_globalStart = AZ::Vector3::CreateZero(); /**< The world space start position, or the world space center in case of a sphere. */
             AZ::Vector3 m_globalEnd = AZ::Vector3::CreateZero(); /**< The world space end position. This is ignored in case of a sphere. */
             AZ::Vector3 m_start = AZ::Vector3::CreateZero(); /**< The start of the primitive. In case of a sphere the center, in case of a capsule the start of the capsule. */
@@ -107,7 +108,7 @@ namespace EMotionFX
 
         AZ_INLINE Particle& GetParticle(size_t index) { return m_particles[index]; }
         AZ_INLINE size_t GetNumParticles() const { return m_particles.size(); }
-        AZ_INLINE Spring& GetSpring(AZ::u32 index) { return m_springs[index]; }
+        AZ_INLINE Spring& GetSpring(size_t index) { return m_springs[index]; }
         AZ_INLINE size_t GetNumSprings() const { return m_springs.size(); }
 
         void SetParentParticle(size_t parentParticleIndex) { m_parentParticle = parentParticleIndex; }
@@ -118,12 +119,12 @@ namespace EMotionFX
         size_t GetNumIterations() const;
 
         Particle* AddJoint(const SimulatedJoint* joint);
-        bool AddSupportSpring(AZ::u32 nodeA, AZ::u32 nodeB, float restLength = -1.0f);
+        bool AddSupportSpring(size_t nodeA, size_t nodeB, float restLength = -1.0f);
         bool AddSupportSpring(AZStd::string_view nodeNameA, AZStd::string_view nodeNameB, float restLength = -1.0f);
 
-        bool RemoveJoint(AZ::u32 jointIndex);
+        bool RemoveJoint(size_t jointIndex);
         bool RemoveJoint(AZStd::string_view nodeName);
-        bool RemoveSupportSpring(AZ::u32 jointIndexA, AZ::u32 jointIndexB);
+        bool RemoveSupportSpring(size_t jointIndexA, size_t jointIndexB);
         bool RemoveSupportSpring(AZStd::string_view nodeNameA, AZStd::string_view nodeNameB);
 
         void SetStiffnessFactor(float factor) { m_stiffnessFactor = factor; }
@@ -134,19 +135,19 @@ namespace EMotionFX
         float GetGravityFactor() const { return m_gravityFactor; }
         float GetDampingFactor() const { return m_dampingFactor; }
 
-        size_t FindParticle(AZ::u32 jointIndex) const;
+        size_t FindParticle(size_t jointIndex) const;
         Particle* FindParticle(AZStd::string_view nodeName);
 
         AZ_INLINE void RemoveCollisionObject(size_t index) { m_collisionObjects.erase(m_collisionObjects.begin() + index); }
         AZ_INLINE void RemoveAllCollisionObjects() { m_collisionObjects.clear(); }
-        AZ_INLINE CollisionObject& GetCollisionObject(AZ::u32 index) { return m_collisionObjects[index]; }
+        AZ_INLINE CollisionObject& GetCollisionObject(size_t index) { return m_collisionObjects[index]; }
         AZ_INLINE size_t GetNumCollisionObjects() const { return m_collisionObjects.size(); }
         AZ_INLINE bool GetCollisionEnabled() const { return m_collisionDetection; }
         AZ_INLINE void SetCollisionEnabled(bool enabled) { m_collisionDetection = enabled; }
 
     private:
         void InitColliders(const InitSettings& initSettings);
-        void CreateCollider(AZ::u32 skeletonJointIndex, const AzPhysics::ShapeColliderPair& shapePair);
+        void CreateCollider(size_t skeletonJointIndex, const AzPhysics::ShapeColliderPair& shapePair);
         void InitColliderFromColliderSetupShape(CollisionObject& collider);
         void InitCollidersFromColliderSetupShapes();
         bool RecursiveAddJoint(const SimulatedJoint* joint, size_t parentParticleIndex);
@@ -165,7 +166,7 @@ namespace EMotionFX
         bool PerformCollision(AZ::Vector3& inOutPos, float jointRadius, const Particle& particle);
         void PerformConeLimit(Particle& particleA, Particle& particleB, const AZ::Vector3& inputDir);
         bool CheckIsJointInsideCollider(const CollisionObject& colObject, const Particle& particle) const;
-        void CheckAndExcludeCollider(AZ::u32 colliderIndex, const SimulatedJoint* joint);
+        void CheckAndExcludeCollider(size_t colliderIndex, const SimulatedJoint* joint);
         void UpdateFixedParticles(const Pose& pose);
         void Stabilize(const Pose& inputPose, Pose& pose, size_t numFrames=5);
         void InitAutoColliderExclusion();

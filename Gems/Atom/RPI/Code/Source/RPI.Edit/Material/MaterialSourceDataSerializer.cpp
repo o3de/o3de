@@ -1,15 +1,18 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
 #include <Atom/RPI.Edit/Material/MaterialSourceDataSerializer.h>
 #include <Atom/RPI.Edit/Material/MaterialTypeSourceData.h>
+#include <Atom/RPI.Edit/Material/MaterialPropertyValueSerializer.h>
 #include <Atom/RPI.Edit/Common/AssetUtils.h>
 #include <Atom/RPI.Edit/Common/JsonFileLoadContext.h>
-#include <AtomCore/Serialization/Json/JsonUtils.h>
+#include <Atom/RPI.Edit/Common/JsonUtils.h>
+#include <AzCore/Serialization/Json/JsonUtils.h>
 
 #include <AzCore/Serialization/Json/BaseJsonSerializer.h>
 #include <AzCore/Serialization/Json/JsonSerializationResult.h>
@@ -43,9 +46,9 @@ namespace AZ
             }
 
             result.Combine(ContinueLoadingFromJsonObjectField(&materialSourceData->m_description, azrtti_typeid<AZStd::string>(), inputValue, "description", context));
-            result.Combine(ContinueLoadingFromJsonObjectField(&materialSourceData->m_materialType, azrtti_typeid<AZStd::string>(), inputValue, "materialType", context));
             result.Combine(ContinueLoadingFromJsonObjectField(&materialSourceData->m_parentMaterial, azrtti_typeid<AZStd::string>(), inputValue, "parentMaterial", context));
-            result.Combine(ContinueLoadingFromJsonObjectField(&materialSourceData->m_propertyLayoutVersion, azrtti_typeid<uint32_t>(), inputValue, "propertyLayoutVersion", context));
+            result.Combine(ContinueLoadingFromJsonObjectField(&materialSourceData->m_materialType, azrtti_typeid<AZStd::string>(), inputValue, "materialType", context));
+            result.Combine(ContinueLoadingFromJsonObjectField(&materialSourceData->m_materialTypeVersion, azrtti_typeid<uint32_t>(), inputValue, "materialTypeVersion", context));
 
             if (materialSourceData->m_materialType.empty())
             {
@@ -66,7 +69,7 @@ namespace AZ
             {
                 AZStd::string materialTypePath = AssetUtils::ResolvePathReference(jsonFileLoadContext->GetFilePath(), materialSourceData->m_materialType);
 
-                auto materialTypeJson = JsonSerializationUtils::ReadJsonFile(materialTypePath);
+                auto materialTypeJson = JsonSerializationUtils::ReadJsonFile(materialTypePath, AZ::RPI::JsonUtils::DefaultMaxFileSize);
                 if (!materialTypeJson.IsSuccess())
                 {
                     AZStd::string failureMessage;
@@ -116,6 +119,10 @@ namespace AZ
 
             context.GetMetadata().Add(AZStd::move(materialTypeData));
 
+            JsonMaterialPropertyValueSerializer::LoadContext materialPropertyValueLoadContext;
+            materialPropertyValueLoadContext.m_materialTypeVersion = materialSourceData->m_materialTypeVersion;
+            context.GetMetadata().Add(materialPropertyValueLoadContext);
+
             result.Combine(ContinueLoadingFromJsonObjectField(&materialSourceData->m_properties, azrtti_typeid<MaterialSourceData::PropertyGroupMap>(), inputValue, "properties", context));
 
             if (result.GetProcessing() == JsonSerializationResult::Processing::Completed)
@@ -144,9 +151,9 @@ namespace AZ
 
             JSR::ResultCode resultCode(JSR::Tasks::ReadField);
             resultCode.Combine(ContinueStoringToJsonObjectField(outputValue, "description",  &materialSourceData->m_description, nullptr, azrtti_typeid<AZStd::string>(), context));
-            resultCode.Combine(ContinueStoringToJsonObjectField(outputValue, "materialType", &materialSourceData->m_materialType, nullptr, azrtti_typeid<AZStd::string>(), context));
             resultCode.Combine(ContinueStoringToJsonObjectField(outputValue, "parentMaterial", &materialSourceData->m_parentMaterial, nullptr, azrtti_typeid<AZStd::string>(), context));
-            resultCode.Combine(ContinueStoringToJsonObjectField(outputValue, "propertyLayoutVersion", &materialSourceData->m_propertyLayoutVersion, nullptr, azrtti_typeid<uint32_t>(), context));
+            resultCode.Combine(ContinueStoringToJsonObjectField(outputValue, "materialType", &materialSourceData->m_materialType, nullptr, azrtti_typeid<AZStd::string>(), context));
+            resultCode.Combine(ContinueStoringToJsonObjectField(outputValue, "materialTypeVersion", &materialSourceData->m_materialTypeVersion, nullptr, azrtti_typeid<uint32_t>(), context));
             resultCode.Combine(ContinueStoringToJsonObjectField(outputValue, "properties", &materialSourceData->m_properties, nullptr, azrtti_typeid<MaterialSourceData::PropertyGroupMap>(), context));
 
             return context.Report(resultCode, "Processed material.");

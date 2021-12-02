@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -27,7 +28,7 @@ namespace UnitTest
     public:
         ViewportUiDisplayTestFixture() = default;
 
-        void SetUp()
+        void SetUp() override
         {
             m_buttonGroup = AZStd::make_shared<ButtonGroup>();
             m_buttonGroup->AddButton("");
@@ -35,7 +36,7 @@ namespace UnitTest
             m_mockRenderOverlay = new QWidget();
         }
 
-        void TearDown()
+        void TearDown() override
         {
             m_buttonGroup.reset();
             delete m_parentWidget;

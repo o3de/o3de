@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -38,9 +39,9 @@ namespace AZ
                 return AZStd::hash<AZStd::string_view>{}(key);
             }
         };
-        typedef AZStd::basic_string<char, AZStd::char_traits<char>, AZStdIAllocator> AMString;
-        typedef AZStd::unordered_map<AMString, IAllocator*, AMStringHasher, AZStd::equal_to<>, AZStdIAllocator> AllocatorNameMap;
-        typedef AZStd::unordered_map<AMString, AMString, AMStringHasher, AZStd::equal_to<>, AZStdIAllocator> AllocatorRemappings;
+        using AMString = AZStd::basic_string<char, AZStd::char_traits<char>, AZStdIAllocator>;
+        using AllocatorNameMap = AZStd::unordered_map<AMString, IAllocator*, AMStringHasher, AZStd::equal_to<>, AZStdIAllocator>;
+        using AllocatorRemappings = AZStd::unordered_map<AMString, AMString, AMStringHasher, AZStd::equal_to<>, AZStdIAllocator>;
 
         // For allocators that are created before we have an environment, we keep some module-local data for them so that we can register them 
         // properly once the environment is attached.
@@ -402,7 +403,7 @@ AllocatorManager::AddOutOfMemoryListener(const OutOfMemoryCBType& cb)
 void
 AllocatorManager::RemoveOutOfMemoryListener()
 {
-    m_outOfMemoryListener = 0;
+    m_outOfMemoryListener = nullptr;
 }
 
 //=========================================================================
@@ -659,13 +660,13 @@ void AllocatorManager::GetAllocatorStats(size_t& allocatedBytes, size_t& capacit
 //=========================================================================
 AllocatorManager::MemoryBreak::MemoryBreak()
 {
-    addressStart = NULL;
-    addressEnd = NULL;
+    addressStart = nullptr;
+    addressEnd = nullptr;
     byteSize = 0;
     alignment = static_cast<size_t>(0xffffffff);
-    name = NULL;
+    name = nullptr;
 
-    fileName = NULL;
+    fileName = nullptr;
     lineNum = -1;
 }
 
@@ -728,14 +729,14 @@ AllocatorManager::DebugBreak(void* address, const Debug::AllocationInfo& info)
 
                 AZ_Assert(!(m_memoryBreak[i].alignment == info.m_alignment), "User triggered breakpoint - alignment (%d)", info.m_alignment);
                 AZ_Assert(!(m_memoryBreak[i].byteSize == info.m_byteSize), "User triggered breakpoint - allocation size (%d)", info.m_byteSize);
-                AZ_Assert(!(info.m_name != NULL && m_memoryBreak[i].name != NULL && strcmp(m_memoryBreak[i].name, info.m_name) == 0), "User triggered breakpoint - name \"%s\"", info.m_name);
+                AZ_Assert(!(info.m_name != nullptr && m_memoryBreak[i].name != nullptr && strcmp(m_memoryBreak[i].name, info.m_name) == 0), "User triggered breakpoint - name \"%s\"", info.m_name);
                 if (m_memoryBreak[i].lineNum != 0)
                 {
-                    AZ_Assert(!(info.m_fileName != NULL && m_memoryBreak[i].fileName != NULL && strcmp(m_memoryBreak[i].fileName, info.m_fileName) == 0 && m_memoryBreak[i].lineNum == info.m_lineNum), "User triggered breakpoint - file/line number : %s(%d)", info.m_fileName, info.m_lineNum);
+                    AZ_Assert(!(info.m_fileName != nullptr && m_memoryBreak[i].fileName != nullptr && strcmp(m_memoryBreak[i].fileName, info.m_fileName) == 0 && m_memoryBreak[i].lineNum == info.m_lineNum), "User triggered breakpoint - file/line number : %s(%d)", info.m_fileName, info.m_lineNum);
                 }
                 else
                 {
-                    AZ_Assert(!(info.m_fileName != NULL && m_memoryBreak[i].fileName != NULL && strcmp(m_memoryBreak[i].fileName, info.m_fileName) == 0), "User triggered breakpoint - file name \"%s\"", info.m_fileName);
+                    AZ_Assert(!(info.m_fileName != nullptr && m_memoryBreak[i].fileName != nullptr && strcmp(m_memoryBreak[i].fileName, info.m_fileName) == 0), "User triggered breakpoint - file name \"%s\"", info.m_fileName);
                 }
             }
         }

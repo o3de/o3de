@@ -1,11 +1,11 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
-#include "precompiled.h"
 
 #include <Asset/AssetDescription.h>
 #include <AssetBuilderSDK/SerializationDependencies.h>
@@ -97,7 +97,7 @@ namespace ScriptCanvasBuilder
         bool pathFound = false;
         AZStd::string relativePath;
         AzToolsFramework::AssetSystemRequestBus::BroadcastResult
-        (pathFound
+            ( pathFound
             , &AzToolsFramework::AssetSystem::AssetSystemRequest::GetRelativeProductPathFromFullSourceOrProductPath
             , fullPath.c_str(), relativePath);
 
@@ -110,13 +110,12 @@ namespace ScriptCanvasBuilder
         const ScriptCanvas::Translation::Result translationResult = TranslateToLua(request);
 
         auto isSuccessOutcome = translationResult.IsSuccess(ScriptCanvas::Translation::TargetFlags::Lua);
-
         if (!isSuccessOutcome.IsSuccess())
         {
             return AZ::Failure(isSuccessOutcome.TakeError());
         }
-        auto& translation = translationResult.m_translations.find(ScriptCanvas::Translation::TargetFlags::Lua)->second;
 
+        auto& translation = translationResult.m_translations.find(ScriptCanvas::Translation::TargetFlags::Lua)->second;
         AZ::Data::Asset<AZ::ScriptAsset> asset;
         scriptAssetId.m_subId = AZ::ScriptAsset::CompiledAssetSubId;
         asset.Create(scriptAssetId);
@@ -481,12 +480,12 @@ namespace ScriptCanvasBuilder
             buildEntity->Activate();
         }
 
+        AZ_Assert(buildEntity->GetState() == AZ::Entity::State::Active, "build entity not active");
         return sourceGraph;
     }
 
     AZ::Outcome<void, AZStd::string> ProcessTranslationJob(ProcessTranslationJobInput& input)
     {
-        const bool saveRawLua{ true };
         auto sourceGraph = PrepareSourceGraph(input.buildEntity);
 
         auto version = sourceGraph->GetVersion();
@@ -651,11 +650,6 @@ namespace ScriptCanvasBuilder
 
         for (const auto& assetDependency : runtimeData.m_requiredAssets)
         {
-            auto filterScripts = [](const AZ::Data::Asset<AZ::Data::AssetData>& asset)
-            {
-                return asset.GetType() != azrtti_typeid<AZ::ScriptAsset>();
-            };
-
             if (AZ::Data::AssetManager::Instance().GetAsset(assetDependency.GetId(), assetDependency.GetType(), AZ::Data::AssetLoadBehavior::PreLoad))
             {
                 jobProduct.m_dependencies.push_back({ assetDependency.GetId(), {} });

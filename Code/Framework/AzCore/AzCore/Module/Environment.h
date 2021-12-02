@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -199,6 +200,11 @@ namespace AZ
         class EnvironmentVariableHolderBase
         {
             friend class EnvironmentImpl;
+        protected:
+            enum class DestroyTarget {
+                Member,
+                Self
+            };
         public:
             EnvironmentVariableHolderBase(u32 guid, AZ::Internal::EnvironmentInterface* environmentOwner, bool canOwnershipTransfer, Environment::AllocatorInterface* allocator)
                 : m_environmentOwner(environmentOwner)
@@ -216,12 +222,21 @@ namespace AZ
                 return m_isConstructed;
             }
 
+            bool IsOwner() const
+            {
+                return m_moduleOwner == Environment::GetModuleId();
+            }
+
             u32 GetId() const
             {
                 return m_guid;
             }
-
         protected:
+            using DestructFunc = void (*)(EnvironmentVariableHolderBase *, DestroyTarget);
+            // Assumes the m_mutex is already locked.
+            // On return m_mutex is in an unlocked state.
+            void UnregisterAndDestroy(DestructFunc destruct, bool moduleRelease);
+
             AZ::Internal::EnvironmentInterface* m_environmentOwner; ///< Used to know which environment we should use to free the variable if we can't transfer ownership
             void* m_moduleOwner; ///< Used when the variable can't transfered across module and we need to destruct the variable when the module is going away
             bool m_canTransferOwnership; ///< True if variable can be allocated in one module and freed in other. Usually true for POD types when they share allocator.
@@ -236,46 +251,35 @@ namespace AZ
         class EnvironmentVariableHolder
             : public EnvironmentVariableHolderBase
         {
-            void ConstructImpl(const AZStd::true_type& /* AZStd::has_trivial_constructor<T> */)
+            template<class... Args>
+            void ConstructImpl(Args&&... args)
             {
-                memset(&m_value, 0, sizeof(T));
+                // Use std::launder to ensure that the compiler treats the T* reinterpret_cast as a new object
+            #if __cpp_lib_launder
+                AZStd::construct_at(std::launder(reinterpret_cast<T*>(&m_value)), AZStd::forward<Args>(args)...);
+            #else
+                AZStd::construct_at(reinterpret_cast<T*>(&m_value), AZStd::forward<Args>(args)...);
+            #endif
             }
-
-            template <class... Args>
-            void ConstructImpl(const AZStd::false_type& /* AZStd::has_trivial_constructor<T> */, Args&&... args)
+            static void DestructDispatchNoLock(EnvironmentVariableHolderBase *base, DestroyTarget selfDestruct)
             {
-                // Construction of non-trivial types is left up to the type's constructor.
-                new(&m_value) T(AZStd::forward<Args>(args)...);
-            }
-
-            void DestructImpl(const AZStd::true_type& /* AZStd::is_trivially_destructible<T> */)
-            {
-                // do nothing
-            }
-
-            void DestructImpl(const AZStd::false_type& /* AZStd::is_trivially_destructible<T> */)
-            {
-                reinterpret_cast<T*>(&m_value)->~T();
-            }
-
-            // Assumes the lock is already held
-            void UnregisterAndDestruct()
-            {
-                // if the environment that created us is gone the owner can be null
-                // which means (assuming intermodule allocator) that the variable is still alive
-                // but can't be found as it's not part of any environment.
-                if (m_environmentOwner)
+                auto *self = reinterpret_cast<EnvironmentVariableHolder *>(base);
+                if (selfDestruct == DestroyTarget::Self)
                 {
-                    m_environmentOwner->RemoveVariable(m_guid);
-                    m_environmentOwner = nullptr;
+                    self->~EnvironmentVariableHolder();
+                    return;
                 }
 
-                if (m_isConstructed)
-                {
-                    DestructNoLock();
-                }
+                AZ_Assert(self->m_isConstructed, "Variable is not constructed. Please check your logic and guard if needed!");
+                self->m_isConstructed = false;
+                self->m_moduleOwner = nullptr;
+                // Use std::launder to ensure that the compiler treats the T* reinterpret_cast as a new object
+            #if __cpp_lib_launder
+                AZStd::destroy_at(std::launder(reinterpret_cast<T*>(&self->m_value)));
+            #else
+                AZStd::destroy_at(reinterpret_cast<T*>(&self->m_value));
+            #endif
             }
-
         public:
             EnvironmentVariableHolder(u32 guid, bool isOwnershipTransfer, Environment::AllocatorInterface* allocator)
                 : EnvironmentVariableHolderBase(guid, Environment::GetInstance(), isOwnershipTransfer, allocator)
@@ -286,12 +290,6 @@ namespace AZ
             {
                 AZ_Assert(!m_isConstructed, "To get the destructor we should have already destructed the variable!");
             }
-
-            bool IsOwner() const
-            {
-                return m_moduleOwner == Environment::GetModuleId();
-            }
-
             void AddRef()
             {
                 AZStd::lock_guard<AZStd::spin_mutex> lock(m_mutex);
@@ -302,41 +300,8 @@ namespace AZ
             void Release()
             {
                 m_mutex.lock();
-
-                if (--s_moduleUseCount == 0)
-                {
-                    if (!m_canTransferOwnership && m_moduleOwner == AZ::Environment::GetModuleId())
-                    {
-                        UnregisterAndDestruct();
-                    }
-                }
-
-                if (--m_useCount == 0)
-                {
-                    UnregisterAndDestruct();
-
-                    // unlock before this is deleted
-                    m_mutex.unlock();
-
-                    Environment::AllocatorInterface* allocator = m_allocator;
-                    // Call dtor and clear the memory
-                    this->~EnvironmentVariableHolder();
-                    allocator->DeAllocate(this);
-                    return;
-                }
-                
-                m_mutex.unlock();
-            }
-
-            void Construct()
-            {
-                AZStd::lock_guard<AZStd::spin_mutex> lock(m_mutex);
-                if (!m_isConstructed)
-                {
-                    ConstructImpl(AZStd::is_trivially_constructible<T>{});
-                    m_isConstructed = true;
-                    m_moduleOwner = Environment::GetModuleId();
-                }
+                const bool moduleRelease = (--s_moduleUseCount == 0);
+                UnregisterAndDestroy(DestructDispatchNoLock, moduleRelease);
             }
 
             template <class... Args>
@@ -345,28 +310,20 @@ namespace AZ
                 AZStd::lock_guard<AZStd::spin_mutex> lock(m_mutex);
                 if (!m_isConstructed)
                 {
-                    ConstructImpl(typename AZStd::false_type(), AZStd::forward<Args>(args)...);
+                    ConstructImpl(AZStd::forward<Args>(args)...);
                     m_isConstructed = true;
                     m_moduleOwner = Environment::GetModuleId();
                 }
             }
 
-            void DestructNoLock()
-            {
-                AZ_Assert(m_isConstructed, "Variable is not constructed. Please check your logic and guard if needed!");
-                m_isConstructed = false;
-                m_moduleOwner = nullptr;
-                DestructImpl(typename AZStd::is_trivially_destructible<T>::type());
-            }
-
             void Destruct()
             {
                 AZStd::lock_guard<AZStd::spin_mutex> lock(m_mutex);
-                DestructNoLock();
+                DestructDispatchNoLock(this, DestroyTarget::Member);
             }
 
             // variable storage
-            typename AZStd::aligned_storage<sizeof(T), AZStd::alignment_of<T>::value>::type m_value;
+            AZStd::aligned_storage_for_t<T> m_value;
             static int s_moduleUseCount;
         };
 
@@ -499,6 +456,11 @@ namespace AZ
         void Set(const T& value)
         {
             Get() = value;
+        }
+
+        void Set(T&& value)
+        {
+            Get() = AZStd::move(value);
         }
 
         explicit operator bool() const

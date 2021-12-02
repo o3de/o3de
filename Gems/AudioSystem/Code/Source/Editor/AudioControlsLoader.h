@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -9,11 +10,10 @@
 #pragma once
 
 #include <AzCore/std/containers/set.h>
+#include <AzCore/XML/rapidxml.h>
 
 #include <ACETypes.h>
 #include <AudioControl.h>
-
-#include <IXml.h>
 
 #include <QString>
 
@@ -37,11 +37,11 @@ namespace AudioControls
 
     private:
         void LoadAllLibrariesInFolder(const AZStd::string_view folderPath, const AZStd::string_view level);
-        void LoadControlsLibrary(XmlNodeRef rootNode, const AZStd::string_view filePath, const AZStd::string_view level, const AZStd::string_view fileName);
-        CATLControl* LoadControl(XmlNodeRef node, QStandardItem* folderItem, const AZStd::string_view scope);
+        void LoadControlsLibrary(const AZ::rapidxml::xml_node<char>* rootNode, const AZStd::string_view filePath, const AZStd::string_view level, const AZStd::string_view fileName);
+        CATLControl* LoadControl(AZ::rapidxml::xml_node<char>* node, QStandardItem* folderItem, const AZStd::string_view scope);
 
-        void LoadPreloadConnections(XmlNodeRef node, CATLControl* control);
-        void LoadConnections(XmlNodeRef rootNode, CATLControl* control);
+        void LoadPreloadConnections(AZ::rapidxml::xml_node<char>* node, CATLControl* control);
+        void LoadConnections(AZ::rapidxml::xml_node<char>* rootNode, CATLControl* control);
 
         void CreateDefaultControls();
         QStandardItem* AddControl(CATLControl* control, QStandardItem* folderItem);

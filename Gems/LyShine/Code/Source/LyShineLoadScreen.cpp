@@ -1,11 +1,11 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
-#include "LyShine_precompiled.h"
 #include "LyShineLoadScreen.h"
 
 #if AZ_LOADSCREENCOMPONENT_ENABLED
@@ -61,8 +61,11 @@ namespace LyShine
         {
             return false;
         }
-
-        if (!gEnv || !gEnv->pRenderer || !gEnv->pLyShine)
+        //TODO: gEnv->pRenderer is always null, fix the logic below
+        AZ_ErrorOnce(nullptr, false, "NotifyGameLoadStart needs to be removed/ported to use Atom");
+        return false;
+#if 0
+        if (!gEnv || gEnv->pRenderer || !gEnv->pLyShine)
         {
             return false;
         }
@@ -87,6 +90,7 @@ namespace LyShine
         }
 
         return m_isPlaying;
+#endif
     }
 
     bool LyShineLoadScreenComponent::NotifyLevelLoadStart(bool usingLoadingThread)
@@ -97,7 +101,11 @@ namespace LyShine
             return false;
         }
 
-        if (!gEnv || !gEnv->pRenderer || !gEnv->pLyShine)
+        AZ_ErrorOnce(nullptr, false, "NotifyLevelLoadStart needs to be removed/ported to use Atom");
+        return false;
+        //TODO: gEnv->pRenderer is always null, fix the logic below
+#if 0
+        if (!gEnv || gEnv->pRenderer || !gEnv->pLyShine)
         {
             return false;
         }
@@ -123,6 +131,7 @@ namespace LyShine
         }
 
         return m_isPlaying;
+#endif
     }
 
     void LyShineLoadScreenComponent::NotifyLoadEnd()
@@ -130,10 +139,13 @@ namespace LyShine
         Reset();
     }
 
-    void LyShineLoadScreenComponent::UpdateAndRender(float deltaTimeInSeconds)
+    void LyShineLoadScreenComponent::UpdateAndRender([[maybe_unused]] float deltaTimeInSeconds)
     {
         AZ_Assert(m_isPlaying, "LyShineLoadScreenComponent should not be connected to LoadScreenUpdateNotificationBus while not playing");
+        AZ_ErrorOnce(nullptr, m_isPlaying && gEnv && gEnv->pLyShine, "UpdateAndRender needs to be removed/ported to use Atom");
 
+        //TODO: gEnv->pRenderer is always null, fix the logic below
+#if 0
         if (m_isPlaying && gEnv && gEnv->pLyShine && gEnv->pRenderer)
         {
             AZ_Assert(GetCurrentThreadId() == gEnv->mMainThreadId, "UpdateAndRender should only be called from the main thread");
@@ -148,6 +160,7 @@ namespace LyShine
             gEnv->pLyShine->Render();
             gEnv->pRenderer->EndFrame();
         }
+#endif
     }
 
     void LyShineLoadScreenComponent::LoadThreadUpdate([[maybe_unused]] float deltaTimeInSeconds)
@@ -215,7 +228,7 @@ namespace LyShine
     AZ::EntityId LyShineLoadScreenComponent::loadFromCfg(const char* pathVarName, const char* autoPlayVarName)
     {
         ICVar* pathVar = gEnv->pConsole->GetCVar(pathVarName);
-        string path = pathVar ? pathVar->GetString() : "";
+        AZStd::string path = pathVar ? pathVar->GetString() : "";
         if (path.empty())
         {
             // No canvas specified.
@@ -238,7 +251,7 @@ namespace LyShine
         EBUS_EVENT_ID(canvasId, UiCanvasBus, SetDrawOrder, std::numeric_limits<int>::max());
 
         ICVar* autoPlayVar = gEnv->pConsole->GetCVar(autoPlayVarName);
-        string sequence = autoPlayVar ? autoPlayVar->GetString() : "";
+        AZStd::string sequence = autoPlayVar ? autoPlayVar->GetString() : "";
         if (sequence.empty())
         {
             // Nothing to auto-play.
@@ -253,7 +266,7 @@ namespace LyShine
             return canvasId;
         }
 
-        animSystem->PlaySequence(sequence, nullptr, false, false);
+        animSystem->PlaySequence(sequence.c_str(), nullptr, false, false);
 
         return canvasId;
     }

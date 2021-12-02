@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -14,28 +15,27 @@
 
 namespace MCore
 {
-    CommandManager::CommandHistoryEntry::CommandHistoryEntry(CommandGroup* group, Command* command, const CommandLine& parameters, AZ::u32 historyItemNr)
+    CommandManager::CommandHistoryEntry::CommandHistoryEntry(CommandGroup* group, Command* command, const CommandLine& parameters, size_t historyItemNr)
     {
-        mCommandGroup       = group;
-        mExecutedCommand    = command;
-        mParameters         = parameters;
+        m_commandGroup       = group;
+        m_executedCommand    = command;
+        m_parameters         = parameters;
         m_historyItemNr     = historyItemNr;
     }
 
     CommandManager::CommandHistoryEntry::~CommandHistoryEntry()
     {
-        // remark: the mCommand and mCommandGroup are automatically deleted after popping from the history
     }
 
-    AZStd::string CommandManager::CommandHistoryEntry::ToString(CommandGroup* group, Command* command, AZ::u32 historyItemNr)
+    AZStd::string CommandManager::CommandHistoryEntry::ToString(CommandGroup* group, Command* command, size_t historyItemNr)
     {
         if (group)
         {
-            return AZStd::string::format("%.3d - %s", historyItemNr, group->GetGroupName());
+            return AZStd::string::format("%.3zu - %s", historyItemNr, group->GetGroupName());
         }
         else if (command)
         {
-            return AZStd::string::format("%.3d - %s", historyItemNr, command->GetHistoryName());
+            return AZStd::string::format("%.3zu - %s", historyItemNr, command->GetHistoryName());
         }
 
         return "";
@@ -43,38 +43,38 @@ namespace MCore
 
     AZStd::string CommandManager::CommandHistoryEntry::ToString() const
     {
-        return ToString(mCommandGroup, mExecutedCommand, m_historyItemNr);
+        return ToString(m_commandGroup, m_executedCommand, m_historyItemNr);
     }
 
     CommandManager::CommandManager()
     {
-        mCommands.reserve(128);
+        m_commands.reserve(128);
 
         // set default values
-        mMaxHistoryEntries      = 100;
-        mHistoryIndex           = -1;
+        m_maxHistoryEntries      = 100;
+        m_historyIndex           = -1;
         m_totalNumHistoryItems   = 0;
 
         // preallocate history entries
-        mCommandHistory.reserve(mMaxHistoryEntries);
+        m_commandHistory.reserve(m_maxHistoryEntries);
 
         m_commandsInExecution = 0;
     }
 
     CommandManager::~CommandManager()
     {
-        for (auto element : mRegisteredCommands)
+        for (auto element : m_registeredCommands)
         {
             Command* command = element.second;
             delete command;
         }
-        mRegisteredCommands.clear();
+        m_registeredCommands.clear();
 
         // remove all callbacks
         RemoveCallbacks();
 
         // destroy the command history
-        while (!mCommandHistory.empty())
+        while (!m_commandHistory.empty())
         {
             PopCommandHistory();
         }
@@ -84,93 +84,93 @@ namespace MCore
     void CommandManager::PushCommandHistory(CommandGroup* commandGroup)
     {
         // if we reached the maximum number of history entries remove the oldest one
-        if (mCommandHistory.size() >= mMaxHistoryEntries)
+        if (m_commandHistory.size() >= m_maxHistoryEntries)
         {
             PopCommandHistory();
-            mHistoryIndex = static_cast<int32>(mCommandHistory.size()) - 1;
+            m_historyIndex = static_cast<ptrdiff_t>(m_commandHistory.size()) - 1;
         }
 
-        if (!mCommandHistory.empty())
+        if (!m_commandHistory.empty())
         {
             // remove unneeded commandsnumToRemove
-            const size_t numToRemove = mCommandHistory.size() - mHistoryIndex - 1;
-            for (CommandManagerCallback* managerCallback : mCallbacks)
+            const size_t numToRemove = m_commandHistory.size() - m_historyIndex - 1;
+            for (CommandManagerCallback* managerCallback : m_callbacks)
             {
                 for (size_t a = 0; a < numToRemove; ++a)
                 {
-                    managerCallback->OnRemoveCommand(mHistoryIndex + 1);
+                    managerCallback->OnRemoveCommand(m_historyIndex + 1);
                 }
             }
 
             for (size_t a = 0; a < numToRemove; ++a)
             {
-                delete mCommandHistory[mHistoryIndex + 1].mExecutedCommand;
-                delete mCommandHistory[mHistoryIndex + 1].mCommandGroup;
-                mCommandHistory.erase(mCommandHistory.begin() + mHistoryIndex + 1);
+                delete m_commandHistory[m_historyIndex + 1].m_executedCommand;
+                delete m_commandHistory[m_historyIndex + 1].m_commandGroup;
+                m_commandHistory.erase(m_commandHistory.begin() + m_historyIndex + 1);
             }
         }
 
         // resize the command history
-        mCommandHistory.resize(mHistoryIndex + 1);
+        m_commandHistory.resize(m_historyIndex + 1);
 
         // add a command history entry
         m_totalNumHistoryItems++;
-        mCommandHistory.push_back(CommandHistoryEntry(commandGroup, nullptr, CommandLine(), m_totalNumHistoryItems));
+        m_commandHistory.push_back(CommandHistoryEntry(commandGroup, nullptr, CommandLine(), m_totalNumHistoryItems));
 
         // increase the history index
-        mHistoryIndex++;
+        m_historyIndex++;
 
         // perform callbacks
-        for (CommandManagerCallback* managerCallback : mCallbacks)
+        for (CommandManagerCallback* managerCallback : m_callbacks)
         {
-            managerCallback->OnAddCommandToHistory(mHistoryIndex, commandGroup, nullptr, CommandLine());
+            managerCallback->OnAddCommandToHistory(m_historyIndex, commandGroup, nullptr, CommandLine());
         }
     }
 
     // save command in the history
     void CommandManager::PushCommandHistory(Command* command, const CommandLine& parameters)
     {
-        if (!mCommandHistory.empty())
+        if (!m_commandHistory.empty())
         {
             // if we reached the maximum number of history entries remove the oldest one
-            if (mCommandHistory.size() >= mMaxHistoryEntries)
+            if (m_commandHistory.size() >= m_maxHistoryEntries)
             {
                 PopCommandHistory();
-                mHistoryIndex = static_cast<int32>(mCommandHistory.size()) - 1;
+                m_historyIndex = static_cast<ptrdiff_t>(m_commandHistory.size()) - 1;
             }
 
             // remove unneeded commands
-            const size_t numToRemove = mCommandHistory.size() - mHistoryIndex - 1;
-            for (CommandManagerCallback* managerCallback : mCallbacks)
+            const size_t numToRemove = m_commandHistory.size() - m_historyIndex - 1;
+            for (CommandManagerCallback* managerCallback : m_callbacks)
             {
                 for (size_t a = 0; a < numToRemove; ++a)
                 {
-                    managerCallback->OnRemoveCommand(mHistoryIndex + 1);
+                    managerCallback->OnRemoveCommand(m_historyIndex + 1);
                 }
             }
 
             for (size_t a = 0; a < numToRemove; ++a)
             {
-                delete mCommandHistory[mHistoryIndex + 1].mExecutedCommand;
-                delete mCommandHistory[mHistoryIndex + 1].mCommandGroup;
-                mCommandHistory.erase(mCommandHistory.begin() + mHistoryIndex + 1);
+                delete m_commandHistory[m_historyIndex + 1].m_executedCommand;
+                delete m_commandHistory[m_historyIndex + 1].m_commandGroup;
+                m_commandHistory.erase(m_commandHistory.begin() + m_historyIndex + 1);
             }
         }
 
         // resize the command history
-        mCommandHistory.resize(mHistoryIndex + 1);
+        m_commandHistory.resize(m_historyIndex + 1);
 
         // add a command history entry
         m_totalNumHistoryItems++;
-        mCommandHistory.push_back(CommandHistoryEntry(nullptr, command, parameters, m_totalNumHistoryItems));
+        m_commandHistory.push_back(CommandHistoryEntry(nullptr, command, parameters, m_totalNumHistoryItems));
 
         // increase the history index
-        mHistoryIndex++;
+        m_historyIndex++;
 
         // perform callbacks
-        for (CommandManagerCallback* managerCallback : mCallbacks)
+        for (CommandManagerCallback* managerCallback : m_callbacks)
         {
-            managerCallback->OnAddCommandToHistory(mHistoryIndex, nullptr, command, parameters);
+            managerCallback->OnAddCommandToHistory(m_historyIndex, nullptr, command, parameters);
         }
     }
 
@@ -178,23 +178,23 @@ namespace MCore
     void CommandManager::PopCommandHistory()
     {
         // perform callbacks
-        for (CommandManagerCallback* managerCallback : mCallbacks)
+        for (CommandManagerCallback* managerCallback : m_callbacks)
         {
             managerCallback->OnRemoveCommand(0);
         }
 
         // destroy the command and remove it from the command history
-        Command* command = mCommandHistory.front().mExecutedCommand;
+        Command* command = m_commandHistory.front().m_executedCommand;
         if (command)
         {
             delete command;
         }
         else
         {
-            delete mCommandHistory.front().mCommandGroup;
+            delete m_commandHistory.front().m_commandGroup;
         }
 
-        mCommandHistory.erase(mCommandHistory.begin());
+        m_commandHistory.erase(m_commandHistory.begin());
     }
 
     bool CommandManager::ExecuteCommand(const AZStd::string& command, AZStd::string& outCommandResult, bool addToHistory, Command** outExecutedCommand, CommandLine* outExecutedParameters, bool callFromCommandGroup, bool clearErrors, bool handleErrors)
@@ -455,7 +455,7 @@ namespace MCore
         ++m_commandsInExecution;
 
         // execute command manager callbacks
-        for (CommandManagerCallback* managerCallback : mCallbacks)
+        for (CommandManagerCallback* managerCallback : m_callbacks)
         {
             managerCallback->OnPreExecuteCommandGroup(&commandGroup, false);
         }
@@ -539,7 +539,7 @@ namespace MCore
                             break;
                         }
                     }
-                    if (static_cast<int32>(i) < relativeIndex)
+                    if (static_cast<ptrdiff_t>(i) < relativeIndex)
                     {
                         MCore::LogError("Execution of command '%s' failed, command trying to access results from %d commands back, but there are only %d", commandString.c_str(), relativeIndex, i - 1);
                         hadError = true;
@@ -580,25 +580,25 @@ namespace MCore
                         delete newGroup;
 
                         // execute command manager callbacks
-                        for (CommandManagerCallback* managerCallback : mCallbacks)
+                        for (CommandManagerCallback* managerCallback : m_callbacks)
                         {
                             managerCallback->OnPostExecuteCommandGroup(&commandGroup, false);
                         }
 
                         // Let the callbacks handle error reporting (e.g. show an error report window).
-                        if (handleErrors && !mErrors.empty())
+                        if (handleErrors && !m_errors.empty())
                         {
                             // Execute error report callbacks.
-                            for (CommandManagerCallback* managerCallback : mCallbacks)
+                            for (CommandManagerCallback* managerCallback : m_callbacks)
                             {
-                                managerCallback->OnShowErrorReport(mErrors);
+                                managerCallback->OnShowErrorReport(m_errors);
                             }
                         }
 
                         // Clear errors after reporting if specified.
                         if (clearErrors)
                         {
-                            mErrors.clear();
+                            m_errors.clear();
                         }
 
                         --m_commandsInExecution;
@@ -641,19 +641,19 @@ namespace MCore
         }
 
         // execute command manager callbacks
-        for (CommandManagerCallback* managerCallback : mCallbacks)
+        for (CommandManagerCallback* managerCallback : m_callbacks)
         {
             managerCallback->OnPostExecuteCommandGroup(&commandGroup, true);
         }
 
         // Let the callbacks handle error reporting (e.g. show an error report window).
-        const bool errorsOccured = !mErrors.empty();
+        const bool errorsOccured = !m_errors.empty();
         if (handleErrors && errorsOccured)
         {
             // Execute error report callbacks.
-            for (CommandManagerCallback* managerCallback : mCallbacks)
+            for (CommandManagerCallback* managerCallback : m_callbacks)
             {
-                managerCallback->OnShowErrorReport(mErrors);
+                managerCallback->OnShowErrorReport(m_errors);
             }
         }
 
@@ -664,7 +664,7 @@ namespace MCore
         // Clear errors after reporting if specified.
         if (clearErrors)
         {
-            mErrors.clear();
+            m_errors.clear();
         }
 
         --m_commandsInExecution;
@@ -688,18 +688,18 @@ namespace MCore
     void CommandManager::ExecuteUndoCallbacks(Command* command, const CommandLine& parameters, bool preUndo)
     {
         Command*    orgCommand  = command->GetOriginalCommand();
-        uint32      numFailed   = 0;
+        size_t      numFailed   = 0;
 
         // get the number of callbacks and iterate through them
-        const uint32 numCommandCallbacks = orgCommand->GetNumCallbacks();
-        for (uint32 i = 0; i < numCommandCallbacks; ++i)
+        const size_t numCommandCallbacks = orgCommand->GetNumCallbacks();
+        for (size_t i = 0; i < numCommandCallbacks; ++i)
         {
             // get the current callback
             Command::Callback* callback = orgCommand->GetCallback(i);
 
             if (preUndo)
             {
-                for (CommandManagerCallback* managerCallback : mCallbacks)
+                for (CommandManagerCallback* managerCallback : m_callbacks)
                 {
                     managerCallback->OnPreUndoCommand(command, parameters);
                 }
@@ -716,7 +716,7 @@ namespace MCore
 
             if (!preUndo)
             {
-                for (CommandManagerCallback* managerCallback : mCallbacks)
+                for (CommandManagerCallback* managerCallback : m_callbacks)
                 {
                     managerCallback->OnPostUndoCommand(command, parameters);
                 }
@@ -733,11 +733,11 @@ namespace MCore
     void CommandManager::ExecuteCommandCallbacks(Command* command, const CommandLine& parameters, bool preCommand)
     {
         Command*    orgCommand  = command->GetOriginalCommand();
-        uint32      numFailed   = 0;
+        size_t      numFailed   = 0;
 
         // get the number of callbacks and iterate through them
-        const uint32 numCommandCallbacks = orgCommand->GetNumCallbacks();
-        for (uint32 i = 0; i < numCommandCallbacks; ++i)
+        const size_t numCommandCallbacks = orgCommand->GetNumCallbacks();
+        for (size_t i = 0; i < numCommandCallbacks; ++i)
         {
             // get the current callback
             Command::Callback* callback = orgCommand->GetCallback(i);
@@ -761,15 +761,15 @@ namespace MCore
     bool CommandManager::Undo(AZStd::string& outCommandResult)
     {
         // check if we can undo
-        if (mCommandHistory.empty() && mHistoryIndex >= 0)
+        if (m_commandHistory.empty() && m_historyIndex >= 0)
         {
             outCommandResult = "Cannot undo command. The command history is empty";
             return false;
         }
 
         // get the last called command from the command history
-        const CommandHistoryEntry& lastEntry = mCommandHistory[mHistoryIndex];
-        Command* command = lastEntry.mExecutedCommand;
+        const CommandHistoryEntry& lastEntry = m_commandHistory[m_historyIndex];
+        Command* command = lastEntry.m_executedCommand;
 
         ++m_commandsInExecution;
 
@@ -778,28 +778,28 @@ namespace MCore
         if (command)
         {
             // execute pre-undo callbacks
-            ExecuteUndoCallbacks(command, lastEntry.mParameters, true);
+            ExecuteUndoCallbacks(command, lastEntry.m_parameters, true);
 
             // undo the command, get the result and reset it
-            result = command->Undo(lastEntry.mParameters, outCommandResult);
+            result = command->Undo(lastEntry.m_parameters, outCommandResult);
 
             // execute post-undo callbacks
-            ExecuteUndoCallbacks(command, lastEntry.mParameters, false);
+            ExecuteUndoCallbacks(command, lastEntry.m_parameters, false);
         }
         // we are dealing with a command group
         else
         {
-            CommandGroup* group = lastEntry.mCommandGroup;
+            CommandGroup* group = lastEntry.m_commandGroup;
             MCORE_ASSERT(group);
 
             // perform callbacks
-            for (CommandManagerCallback* managerCallback : mCallbacks)
+            for (CommandManagerCallback* managerCallback : m_callbacks)
             {
                 managerCallback->OnPreExecuteCommandGroup(group, true);
             }
 
-            const int32 numCommands = static_cast<int32>(group->GetNumCommands() - 1);
-            for (int32 g = numCommands; g >= 0; --g)
+            const ptrdiff_t numCommands = static_cast<ptrdiff_t>(group->GetNumCommands()) - 1;
+            for (ptrdiff_t g = numCommands; g >= 0; --g)
             {
                 Command* groupCommand = group->GetCommand(g);
                 if (groupCommand == nullptr)
@@ -826,29 +826,29 @@ namespace MCore
             }
 
             // perform callbacks
-            for (CommandManagerCallback* managerCallback : mCallbacks)
+            for (CommandManagerCallback* managerCallback : m_callbacks)
             {
                 managerCallback->OnPostExecuteCommandGroup(group, result);
             }
         }
 
         // go one step back in the command history
-        mHistoryIndex--;
+        m_historyIndex--;
 
         // perform callbacks
-        for (CommandManagerCallback* managerCallback : mCallbacks)
+        for (CommandManagerCallback* managerCallback : m_callbacks)
         {
-            managerCallback->OnSetCurrentCommand(mHistoryIndex);
+            managerCallback->OnSetCurrentCommand(m_historyIndex);
         }
 
         // Let the callbacks handle error reporting (e.g. show an error report window).
-        if (!mErrors.empty())
+        if (!m_errors.empty())
         {
-            for (CommandManagerCallback* managerCallback : mCallbacks)
+            for (CommandManagerCallback* managerCallback : m_callbacks)
             {
-                managerCallback->OnShowErrorReport(mErrors);
+                managerCallback->OnShowErrorReport(m_errors);
             }
-            mErrors.clear();
+            m_errors.clear();
         }
 
         --m_commandsInExecution;
@@ -859,23 +859,16 @@ namespace MCore
     // redo the last undoed command
     bool CommandManager::Redo(AZStd::string& outCommandResult)
     {
-        /*  // check if there are still commands to undo in the history
-            if (mHistoryIndex >= mCommandHistory.GetLength())
-            {
-                outCommandResult = "Cannot redo command. Either the history is empty or the history index is out of range.";
-                return false;
-            }*/
-
         // get the last called command from the command history
-        const CommandHistoryEntry& lastEntry = mCommandHistory[mHistoryIndex + 1];
+        const CommandHistoryEntry& lastEntry = m_commandHistory[m_historyIndex + 1];
 
         // if we just redo one single command
         bool result = true;
-        if (lastEntry.mExecutedCommand)
+        if (lastEntry.m_executedCommand)
         {
             // redo the command, get the result and reset it
-            result = ExecuteCommand(lastEntry.mExecutedCommand,
-                lastEntry.mParameters,
+            result = ExecuteCommand(lastEntry.m_executedCommand,
+                lastEntry.m_parameters,
                 outCommandResult,
                 /*addToHistory=*/false,
                 /*callFromCommandGroup=*/false,
@@ -887,10 +880,10 @@ namespace MCore
         else
         {
             ++m_commandsInExecution;
-            CommandGroup* group = lastEntry.mCommandGroup;
+            CommandGroup* group = lastEntry.m_commandGroup;
             AZ_Assert(group, "Cannot redo. Command group is not valid.");
 
-            for (CommandManagerCallback* managerCallback : mCallbacks)
+            for (CommandManagerCallback* managerCallback : m_callbacks)
             {
                 managerCallback->OnPreExecuteCommandGroup(group, false);
             }
@@ -916,29 +909,29 @@ namespace MCore
             }
             --m_commandsInExecution;
 
-            for (CommandManagerCallback* managerCallback : mCallbacks)
+            for (CommandManagerCallback* managerCallback : m_callbacks)
             {
                 managerCallback->OnPostExecuteCommandGroup(group, result);
             }
         }
 
         // go one step forward in the command history
-        mHistoryIndex++;
+        m_historyIndex++;
 
         // perform callbacks
-        for (CommandManagerCallback* managerCallback : mCallbacks)
+        for (CommandManagerCallback* managerCallback : m_callbacks)
         {
-            managerCallback->OnSetCurrentCommand(mHistoryIndex);
+            managerCallback->OnSetCurrentCommand(m_historyIndex);
         }
 
         // Let the callbacks handle error reporting (e.g. show an error report window).
-        if (!mErrors.empty())
+        if (!m_errors.empty())
         {
-            for (CommandManagerCallback* managerCallback : mCallbacks)
+            for (CommandManagerCallback* managerCallback : m_callbacks)
             {
-                managerCallback->OnShowErrorReport(mErrors);
+                managerCallback->OnShowErrorReport(m_errors);
             }
-            mErrors.clear();
+            m_errors.clear();
         }
 
         return result;
@@ -969,17 +962,17 @@ namespace MCore
         }
 
         // add the command to the hash table
-        mRegisteredCommands.insert(AZStd::make_pair<AZStd::string, Command*>(command->GetNameString(), command));
+        m_registeredCommands.insert(AZStd::make_pair<AZStd::string, Command*>(command->GetNameString(), command));
 
         // we're going to insert the command in a sorted way now
         bool found = false;
-        const size_t numCommands = mCommands.size();
+        const size_t numCommands = m_commands.size();
         for (size_t i = 0; i < numCommands; ++i)
         {
-            if (azstricmp(mCommands[i]->GetName(), command->GetName()) > 0)
+            if (azstricmp(m_commands[i]->GetName(), command->GetName()) > 0)
             {
                 found = true;
-                mCommands.insert(mCommands.begin() + i, command);
+                m_commands.insert(m_commands.begin() + i, command);
                 break;
             }
         }
@@ -987,7 +980,7 @@ namespace MCore
         // if no insert location has been found, add it to the back of the array
         if (!found)
         {
-            mCommands.push_back(command);
+            m_commands.push_back(command);
         }
 
         // initialize the command syntax
@@ -999,8 +992,8 @@ namespace MCore
 
     Command* CommandManager::FindCommand(const AZStd::string& commandName)
     {
-        auto iterator = mRegisteredCommands.find(commandName);
-        if (iterator == mRegisteredCommands.end())
+        auto iterator = m_registeredCommands.find(commandName);
+        if (iterator == m_registeredCommands.end())
         {
             return nullptr;
         }
@@ -1045,7 +1038,7 @@ namespace MCore
         }
 
         // execute command manager callbacks
-        for (CommandManagerCallback* managerCallback : mCallbacks)
+        for (CommandManagerCallback* managerCallback : m_callbacks)
         {
             managerCallback->OnPreExecuteCommand(nullptr, command, commandLine);
         }
@@ -1080,25 +1073,25 @@ namespace MCore
         }
 
         // execute all post execute callbacks
-        for (CommandManagerCallback* managerCallback : mCallbacks)
+        for (CommandManagerCallback* managerCallback : m_callbacks)
         {
             managerCallback->OnPostExecuteCommand(nullptr, command, commandLine, result, outCommandResult);
         }
 
         // Let the callbacks handle error reporting (e.g. show an error report window).
-        if (handleErrors && !mErrors.empty())
+        if (handleErrors && !m_errors.empty())
         {
             // Execute error report callbacks.
-            for (CommandManagerCallback* managerCallback : mCallbacks)
+            for (CommandManagerCallback* managerCallback : m_callbacks)
             {
-                managerCallback->OnShowErrorReport(mErrors);
+                managerCallback->OnShowErrorReport(m_errors);
             }
         }
 
         // Clear errors after reporting if specified.
         if (clearErrors)
         {
-            mErrors.clear();
+            m_errors.clear();
         }
 
 #ifdef MCORE_COMMANDMANAGER_PERFORMANCE
@@ -1123,14 +1116,14 @@ namespace MCore
         LogDetailedInfo("----------------------------------");
 
         // get the number of entries in the command history
-        const size_t numHistoryEntries = mCommandHistory.size();
+        const size_t numHistoryEntries = m_commandHistory.size();
         LogDetailedInfo("Command History (%d entries) - oldest (top entry) to newest (bottom entry):", numHistoryEntries);
 
         // print the command history entries
         for (size_t i = 0; i < numHistoryEntries; ++i)
         {
-            AZStd::string text = AZStd::string::format("%.3zu: name='%s', num parameters=%u", i, mCommandHistory[i].mExecutedCommand->GetName(), mCommandHistory[i].mParameters.GetNumParameters());
-            if (i == (uint32)mHistoryIndex)
+            AZStd::string text = AZStd::string::format("%.3zu: name='%s', num parameters=%zu", i, m_commandHistory[i].m_executedCommand->GetName(), m_commandHistory[i].m_parameters.GetNumParameters());
+            if (i == static_cast<size_t>(m_historyIndex))
             {
                 LogDetailedInfo("-> %s", text.c_str());
             }
@@ -1145,22 +1138,22 @@ namespace MCore
 
     void CommandManager::RemoveCallbacks()
     {
-        for (CommandManagerCallback* managerCallback : mCallbacks)
+        for (CommandManagerCallback* managerCallback : m_callbacks)
         {
             delete managerCallback;
         }
 
-        mCallbacks.clear();
+        m_callbacks.clear();
     }
 
     void CommandManager::RegisterCallback(CommandManagerCallback* callback)
     {
-        mCallbacks.push_back(callback);
+        m_callbacks.push_back(callback);
     }
 
     void CommandManager::RemoveCallback(CommandManagerCallback* callback, bool delFromMem)
     {
-        mCallbacks.erase(AZStd::remove(mCallbacks.begin(), mCallbacks.end(), callback), mCallbacks.end());
+        m_callbacks.erase(AZStd::remove(m_callbacks.begin(), m_callbacks.end(), callback), m_callbacks.end());
 
         if (delFromMem)
         {
@@ -1170,83 +1163,83 @@ namespace MCore
 
     size_t CommandManager::GetNumCallbacks() const
     {
-        return mCallbacks.size();
+        return m_callbacks.size();
     }
 
     CommandManagerCallback* CommandManager::GetCallback(size_t index)
     {
-        return mCallbacks[index];
+        return m_callbacks[index];
     }
 
     // set the max num history items
-    void CommandManager::SetMaxHistoryItems(uint32 maxItems)
+    void CommandManager::SetMaxHistoryItems(size_t maxItems)
     {
-        maxItems = AZStd::max(1u, maxItems);
-        mMaxHistoryEntries = maxItems;
+        maxItems = AZStd::max(size_t{1}, maxItems);
+        m_maxHistoryEntries = maxItems;
 
-        while (mCommandHistory.size() > mMaxHistoryEntries)
+        while (m_commandHistory.size() > m_maxHistoryEntries)
         {
             PopCommandHistory();
-            mHistoryIndex = static_cast<int32>(mCommandHistory.size()) - 1;
+            m_historyIndex = static_cast<ptrdiff_t>(m_commandHistory.size()) - 1;
         }
     }
 
     size_t CommandManager::GetMaxHistoryItems() const
     {
-        return mMaxHistoryEntries;
+        return m_maxHistoryEntries;
     }
 
-    int32 CommandManager::GetHistoryIndex() const
+    ptrdiff_t CommandManager::GetHistoryIndex() const
     {
-        return mHistoryIndex;
+        return m_historyIndex;
     }
 
     size_t CommandManager::GetNumHistoryItems() const
     {
-        return mCommandHistory.size();
+        return m_commandHistory.size();
     }
 
     const CommandManager::CommandHistoryEntry& CommandManager::GetHistoryItem(size_t index) const
     {
-        return mCommandHistory[index];
+        return m_commandHistory[index];
     }
 
     Command* CommandManager::GetHistoryCommand(size_t historyIndex)
     {
-        return mCommandHistory[historyIndex].mExecutedCommand;
+        return m_commandHistory[historyIndex].m_executedCommand;
     }
 
     void CommandManager::ClearHistory()
     {
         // clear the command history
-        while (!mCommandHistory.empty())
+        while (!m_commandHistory.empty())
         {
             PopCommandHistory();
         }
 
         // reset the history index
-        mHistoryIndex = -1;
+        m_historyIndex = -1;
     }
 
-    const CommandLine& CommandManager::GetHistoryCommandLine(uint32 historyIndex) const
+    const CommandLine& CommandManager::GetHistoryCommandLine(size_t historyIndex) const
     {
-        return mCommandHistory[historyIndex].mParameters;
+        return m_commandHistory[historyIndex].m_parameters;
     }
 
     size_t CommandManager::GetNumRegisteredCommands() const
     {
-        return mCommands.size();
+        return m_commands.size();
     }
 
     Command* CommandManager::GetCommand(size_t index)
     {
-        return mCommands[index];
+        return m_commands[index];
     }
 
     // delete the given callback from all commands
     void CommandManager::RemoveCommandCallback(Command::Callback* callback, bool delFromMem)
     {
-        for (Command* command : mCommands)
+        for (Command* command : m_commands)
         {
             command->RemoveCallback(callback, false); // false = don't delete from memory
         }
@@ -1296,18 +1289,18 @@ namespace MCore
     bool CommandManager::ShowErrorReport()
     {
         // Let the callbacks handle error reporting (e.g. show an error report window).
-        const bool errorsOccured = !mErrors.empty();
+        const bool errorsOccured = !m_errors.empty();
         if (errorsOccured)
         {
             // Execute error report callbacks.
-            for (CommandManagerCallback* managerCallback : mCallbacks)
+            for (CommandManagerCallback* managerCallback : m_callbacks)
             {
-                managerCallback->OnShowErrorReport(mErrors);
+                managerCallback->OnShowErrorReport(m_errors);
             }
         }
 
         // clear errors after reporting
-        mErrors.clear();
+        m_errors.clear();
 
         return errorsOccured;
     }

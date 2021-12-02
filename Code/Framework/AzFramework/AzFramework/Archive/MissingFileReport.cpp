@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -93,7 +94,7 @@ namespace AZ::IO::Internal
         }
 
         AZStd::smatch matches;
-        const AZStd::regex lodRegex("@assets@\\\\(.*)_lod[0-9]+(\\.cgfm?)");
+        const AZStd::regex lodRegex("@products@\\\\(.*)_lod[0-9]+(\\.cgfm?)");
         if (!AZStd::regex_match(szPath, matches, lodRegex) || matches.size() != 3)
         {
             // The current file is not a valid LOD file

@@ -1,12 +1,11 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
-
-#include "UiCanvasEditor_precompiled.h"
 
 #include "EditorDefs.h"
 #include "UiEditorAnimationBus.h"
@@ -24,7 +23,6 @@
 #include "Animation/UiAnimViewDialog.h"
 #include "Animation/UiAnimViewUndo.h"
 
-#include "RenderViewport.h"
 #include "Viewport.h"
 #include "ViewManager.h"
 
@@ -523,7 +521,7 @@ void CUiAnimationContext::OnEditorNotifyEvent(EEditorNotifyEvent event)
     case eNotify_OnBeginLayerExport:
         if (m_pSequence)
         {
-            m_sequenceName = m_pSequence->GetName();
+            m_sequenceName = QString::fromUtf8(m_pSequence->GetName().c_str());
         }
         else
         {

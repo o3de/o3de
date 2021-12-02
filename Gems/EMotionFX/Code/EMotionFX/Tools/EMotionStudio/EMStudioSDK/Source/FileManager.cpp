@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -8,7 +9,6 @@
 #include "FileManager.h"
 #include <MCore/Source/LogManager.h>
 #include <MCore/Source/FileSystem.h>
-#include <QFileDialog>
 #include <QString>
 #include <QTranslator>
 #include <QMessageBox>
@@ -35,6 +35,8 @@
 #include <Source/Integration/Assets/MotionSetAsset.h>
 #include <Source/Integration/Assets/AnimGraphAsset.h>
 
+#include <AzQtComponents/Components/Widgets/FileDialog.h>
+
 #include <AzToolsFramework/AssetBrowser/AssetSelectionModel.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
@@ -45,11 +47,11 @@ namespace EMStudio
     FileManager::FileManager(QWidget* parent)
         : QObject(parent)
     {
-        mLastActorFolder        = EMotionFX::GetEMotionFX().GetAssetSourceFolder().c_str();
-        mLastMotionSetFolder    = EMotionFX::GetEMotionFX().GetAssetSourceFolder().c_str();
-        mLastAnimGraphFolder    = EMotionFX::GetEMotionFX().GetAssetSourceFolder().c_str();
-        mLastWorkspaceFolder    = EMotionFX::GetEMotionFX().GetAssetSourceFolder().c_str();
-        mLastNodeMapFolder      = EMotionFX::GetEMotionFX().GetAssetSourceFolder().c_str();
+        m_lastActorFolder        = EMotionFX::GetEMotionFX().GetAssetSourceFolder().c_str();
+        m_lastMotionSetFolder    = EMotionFX::GetEMotionFX().GetAssetSourceFolder().c_str();
+        m_lastAnimGraphFolder    = EMotionFX::GetEMotionFX().GetAssetSourceFolder().c_str();
+        m_lastWorkspaceFolder    = EMotionFX::GetEMotionFX().GetAssetSourceFolder().c_str();
+        m_lastNodeMapFolder      = EMotionFX::GetEMotionFX().GetAssetSourceFolder().c_str();
 
         // Connect to the asset catalog bus for product asset changes.
         AzFramework::AssetCatalogEventBus::Handler::BusConnect();
@@ -70,13 +72,13 @@ namespace EMStudio
     {
         AZStd::string filename;
 
-        AZStd::string assetCachePath = AZ::IO::FileIOBase::GetInstance()->GetAlias("@assets@");
+        AZStd::string assetCachePath = AZ::IO::FileIOBase::GetInstance()->GetAlias("@products@");
         AzFramework::StringFunc::AssetDatabasePath::Normalize(assetCachePath);
 
         AZStd::string relativePath;
         EBUS_EVENT_RESULT(relativePath, AZ::Data::AssetCatalogRequestBus, GetAssetPathById, assetId);
         AzFramework::StringFunc::AssetDatabasePath::Join(assetCachePath.c_str(), relativePath.c_str(), filename);
-        
+
         return filename;
     }
 
@@ -88,8 +90,8 @@ namespace EMStudio
 
         if (AzFramework::StringFunc::Equal(extension.c_str(), "motion"))
         {
-            const AZ::u32 motionCount = EMotionFX::GetMotionManager().GetNumMotions();
-            for (AZ::u32 i = 0; i < motionCount; ++i)
+            const size_t motionCount = EMotionFX::GetMotionManager().GetNumMotions();
+            for (size_t i = 0; i < motionCount; ++i)
             {
                 EMotionFX::Motion* motion = EMotionFX::GetMotionManager().GetMotion(i);
                 if (motion->GetIsOwnedByRuntime())
@@ -106,14 +108,10 @@ namespace EMStudio
 
         if (AzFramework::StringFunc::Equal(extension.c_str(), "actor"))
         {
-            const AZ::u32 actorCount = EMotionFX::GetActorManager().GetNumActors();
-            for (AZ::u32 i = 0; i < actorCount; ++i)
+            const size_t actorCount = EMotionFX::GetActorManager().GetNumActors();
+            for (size_t i = 0; i < actorCount; ++i)
             {
                 EMotionFX::Actor* actor = EMotionFX::GetActorManager().GetActor(i);
-                if (actor->GetIsOwnedByRuntime())
-                {
-                    continue;
-                }
 
                 if (AzFramework::StringFunc::Equal(filename, actor->GetFileName()))
                 {
@@ -201,8 +199,8 @@ namespace EMStudio
 
         if (AzFramework::StringFunc::Equal(extension.c_str(), "motionset"))
         {
-            const AZ::u32 motionSetCount = EMotionFX::GetMotionManager().GetNumMotionSets();
-            for (AZ::u32 i = 0; i < motionSetCount; ++i)
+            const size_t motionSetCount = EMotionFX::GetMotionManager().GetNumMotionSets();
+            for (size_t i = 0; i < motionSetCount; ++i)
             {
                 EMotionFX::MotionSet* motionSet = EMotionFX::GetMotionManager().GetMotionSet(i);
                 if (motionSet->GetIsOwnedByRuntime())
@@ -219,8 +217,8 @@ namespace EMStudio
 
         if (AzFramework::StringFunc::Equal(extension.c_str(), "animgraph"))
         {
-            const AZ::u32 animGraphCount = EMotionFX::GetAnimGraphManager().GetNumAnimGraphs();
-            for (AZ::u32 i = 0; i < animGraphCount; ++i)
+            const size_t animGraphCount = EMotionFX::GetAnimGraphManager().GetNumAnimGraphs();
+            for (size_t i = 0; i < animGraphCount; ++i)
             {
                 EMotionFX::AnimGraph* animGraph = EMotionFX::GetAnimGraphManager().GetAnimGraph(i);
                 if (animGraph->GetIsOwnedByRuntime())
@@ -241,7 +239,7 @@ namespace EMStudio
     void FileManager::SourceFileChanged(AZStd::string relativePath, AZStd::string scanFolder, [[maybe_unused]] AZ::TypeId sourceTypeId)
     {
         AZStd::string filename;
-        AZStd::string assetSourcePath = AZ::IO::FileIOBase::GetInstance()->GetAlias("@devassets@");
+        AZStd::string assetSourcePath = AZ::IO::FileIOBase::GetInstance()->GetAlias("@projectroot@");
         AzFramework::StringFunc::AssetDatabasePath::Normalize(assetSourcePath);
         AzFramework::StringFunc::AssetDatabasePath::Join(assetSourcePath.c_str(), relativePath.c_str(), filename);
 
@@ -371,7 +369,7 @@ namespace EMStudio
                 const ProductAssetBrowserEntry* product = azrtti_cast<const ProductAssetBrowserEntry*>(assetBrowserEntry);
 
                 filename.clear();
-                AZStd::string cachePath = AZ::IO::FileIOBase::GetInstance()->GetAlias("@assets@");
+                AZStd::string cachePath = AZ::IO::FileIOBase::GetInstance()->GetAlias("@products@");
                 AzFramework::StringFunc::AssetDatabasePath::Normalize(cachePath);
                 AzFramework::StringFunc::AssetDatabasePath::Join(cachePath.c_str(), product->GetRelativePath().c_str(), filename);
 
@@ -393,7 +391,7 @@ namespace EMStudio
         {
             return AZStd::string();
         }
-     
+
         return filenames[0];
     }
 
@@ -411,18 +409,16 @@ namespace EMStudio
     {
         GetManager()->SetAvoidRendering(true);
 
-        QFileDialog::Options options;
         QString selectedFilter;
-        const AZStd::string filename = QFileDialog::getSaveFileName(parent,                                 // parent
+        const AZStd::string filename = AzQtComponents::FileDialog::GetSaveFileName(parent,                                 // parent
                                                                     "Save",                                 // caption
-                                                                    GetLastUsedFolder(mLastActorFolder),    // directory
+                                                                    GetLastUsedFolder(m_lastActorFolder),    // directory
                                                                     "EMotion FX Actor Files (*.actor)",
-                                                                    &selectedFilter,
-                                                                    options).toUtf8().data();
+                                                                    &selectedFilter).toUtf8().data();
 
         GetManager()->SetAvoidRendering(false);
 
-        UpdateLastUsedFolder(filename.c_str(), mLastActorFolder);
+        UpdateLastUsedFolder(filename.c_str(), m_lastActorFolder);
 
         return filename;
     }
@@ -435,12 +431,12 @@ namespace EMStudio
         AZStd::string result;
         if (EMStudio::GetCommandManager()->ExecuteCommand(command, result))
         {
-            GetNotificationWindowManager()->CreateNotificationWindow(NotificationWindow::TYPE_SUCCESS, 
+            GetNotificationWindowManager()->CreateNotificationWindow(NotificationWindow::TYPE_SUCCESS,
                 "Actor <font color=green>successfully</font> saved");
         }
         else
         {
-            GetNotificationWindowManager()->CreateNotificationWindow(NotificationWindow::TYPE_ERROR, 
+            GetNotificationWindowManager()->CreateNotificationWindow(NotificationWindow::TYPE_ERROR,
                 AZStd::string::format("Actor <font color=red>failed</font> to save<br/><br/>%s", result.c_str()).c_str());
         }
     }
@@ -455,12 +451,12 @@ namespace EMStudio
         QString selectedFilter;
         AZStd::string filename = QFileDialog::getOpenFileName(parent,                                                   // parent
                                                               "Open",                                                   // caption
-                                                              GetLastUsedFolder(mLastWorkspaceFolder),                  // directory
+                                                              GetLastUsedFolder(m_lastWorkspaceFolder),                  // directory
                                                               "EMotionFX Editor Workspace Files (*.emfxworkspace);;All Files (*)",
                                                               &selectedFilter,
                                                               options).toUtf8().data();
 
-        UpdateLastUsedFolder(filename.c_str(), mLastWorkspaceFolder);
+        UpdateLastUsedFolder(filename.c_str(), m_lastWorkspaceFolder);
         GetManager()->SetAvoidRendering(false);
         return filename;
     }
@@ -470,14 +466,12 @@ namespace EMStudio
     {
         GetManager()->SetAvoidRendering(true);
 
-        QFileDialog::Options options;
         QString selectedFilter;
-        AZStd::string filename = QFileDialog::getSaveFileName(parent,                                       // parent
+        AZStd::string filename = AzQtComponents::FileDialog::GetSaveFileName(parent,                                       // parent
                                                               "Save",                                       // caption
-                                                              GetLastUsedFolder(mLastWorkspaceFolder),      // directory
+                                                              GetLastUsedFolder(m_lastWorkspaceFolder),      // directory
                                                               "EMotionFX Editor Workspace Files (*.emfxworkspace)",
-                                                              &selectedFilter,
-                                                              options).toUtf8().data();
+                                                              &selectedFilter).toUtf8().data();
 
         GetManager()->SetAvoidRendering(false);
 
@@ -487,7 +481,7 @@ namespace EMStudio
             return AZStd::string();
         }
 
-        UpdateLastUsedFolder(filename.c_str(), mLastWorkspaceFolder);
+        UpdateLastUsedFolder(filename.c_str(), m_lastWorkspaceFolder);
         return filename;
     }
 
@@ -552,24 +546,22 @@ namespace EMStudio
     {
         GetManager()->SetAvoidRendering(true);
 
-        QFileDialog::Options options;
         QString selectedFilter;
-        AZStd::string filename = QFileDialog::getSaveFileName(parent,                                       // parent
+        AZStd::string filename = AzQtComponents::FileDialog::GetSaveFileName(parent,                                       // parent
                                                               "Save",                                       // caption
-                                                              GetLastUsedFolder(mLastMotionSetFolder),      // directory
+                                                              GetLastUsedFolder(m_lastMotionSetFolder),      // directory
                                                               "EMotion FX Motion Set Files (*.motionset)",
-                                                              &selectedFilter,
-                                                              options).toUtf8().data();
+                                                              &selectedFilter).toUtf8().data();
 
         GetManager()->SetAvoidRendering(false);
 
-        UpdateLastUsedFolder(filename.c_str(), mLastMotionSetFolder);
+        UpdateLastUsedFolder(filename.c_str(), m_lastMotionSetFolder);
 
         return filename;
     }
 
 
-    void FileManager::SaveMotionSet(const char* filename, EMotionFX::MotionSet* motionSet, MCore::CommandGroup* commandGroup)
+    void FileManager::SaveMotionSet(const char* filename, const EMotionFX::MotionSet* motionSet, MCore::CommandGroup* commandGroup)
     {
         const AZStd::string command = AZStd::string::format("SaveMotionSet -motionSetID %i -filename \"%s\"", motionSet->GetID(), filename);
 
@@ -578,12 +570,12 @@ namespace EMStudio
             AZStd::string result;
             if (GetCommandManager()->ExecuteCommand(command, result) == false)
             {
-                GetNotificationWindowManager()->CreateNotificationWindow(NotificationWindow::TYPE_ERROR, 
+                GetNotificationWindowManager()->CreateNotificationWindow(NotificationWindow::TYPE_ERROR,
                     AZStd::string::format("MotionSet <font color=red>failed</font> to save<br/><br/>%s", result.c_str()).c_str());
             }
             else
             {
-                GetNotificationWindowManager()->CreateNotificationWindow(NotificationWindow::TYPE_SUCCESS, 
+                GetNotificationWindowManager()->CreateNotificationWindow(NotificationWindow::TYPE_SUCCESS,
                     "MotionSet <font color=green>successfully</font> saved");
             }
         }
@@ -594,7 +586,7 @@ namespace EMStudio
     }
 
 
-    void FileManager::SaveMotionSet(QWidget* parent, EMotionFX::MotionSet* motionSet, MCore::CommandGroup* commandGroup)
+    void FileManager::SaveMotionSet(QWidget* parent, const EMotionFX::MotionSet* motionSet, MCore::CommandGroup* commandGroup)
     {
         AZStd::string filename = motionSet->GetFilename();
 
@@ -612,7 +604,7 @@ namespace EMStudio
     }
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    
+
     AZStd::string FileManager::LoadAnimGraphFileDialog([[maybe_unused]] QWidget* parent)
     {
         GetManager()->SetAvoidRendering(true);
@@ -622,7 +614,7 @@ namespace EMStudio
         {
             return AZStd::string();
         }
-        
+
         return filenames[0];
     }
 
@@ -631,18 +623,16 @@ namespace EMStudio
     {
         GetManager()->SetAvoidRendering(true);
 
-        QFileDialog::Options options;
         QString selectedFilter;
-        AZStd::string filename = QFileDialog::getSaveFileName(parent,                                                   // parent
+        AZStd::string filename = AzQtComponents::FileDialog::GetSaveFileName(parent,                                                   // parent
                                                               "Save",                                                   // caption
-                                                              GetLastUsedFolder(mLastAnimGraphFolder),                 // directory
+                                                              GetLastUsedFolder(m_lastAnimGraphFolder),                 // directory
                                                               "EMotion FX Anim Graph Files (*.animgraph);;All Files (*)",
-                                                              &selectedFilter,
-                                                              options).toUtf8().data();
+                                                              &selectedFilter).toUtf8().data();
 
         GetManager()->SetAvoidRendering(false);
 
-        UpdateLastUsedFolder(filename.c_str(), mLastAnimGraphFolder);
+        UpdateLastUsedFolder(filename.c_str(), m_lastAnimGraphFolder);
 
         return filename;
     }
@@ -657,14 +647,14 @@ namespace EMStudio
         QString selectedFilter;
         const AZStd::string filename = QFileDialog::getOpenFileName(parent,                                         // parent
                                                                     "Open",                                         // caption
-                                                                    GetLastUsedFolder(mLastNodeMapFolder),          // directory
+                                                                    GetLastUsedFolder(m_lastNodeMapFolder),          // directory
                                                                     "Node Map Files (*.nodeMap);;All Files (*)",
                                                                     &selectedFilter,
                                                                     options).toUtf8().data();
 
         GetManager()->SetAvoidRendering(false);
 
-        UpdateLastUsedFolder(filename.c_str(), mLastNodeMapFolder);
+        UpdateLastUsedFolder(filename.c_str(), m_lastNodeMapFolder);
         return filename;
     }
 
@@ -674,18 +664,16 @@ namespace EMStudio
     {
         GetManager()->SetAvoidRendering(true);
 
-        QFileDialog::Options options;
         QString selectedFilter;
-        const AZStd::string filename = QFileDialog::getSaveFileName(parent,                                         // parent
+        const AZStd::string filename = AzQtComponents::FileDialog::GetSaveFileName(parent,                                         // parent
                                                                     "Save",                                         // caption
-                                                                    GetLastUsedFolder(mLastNodeMapFolder),          // directory
+                                                                    GetLastUsedFolder(m_lastNodeMapFolder),          // directory
                                                                     "Node Map Files (*.nodeMap);;All Files (*)",
-                                                                    &selectedFilter,
-                                                                    options).toUtf8().data();
+                                                                    &selectedFilter).toUtf8().data();
 
         GetManager()->SetAvoidRendering(false);
 
-        UpdateLastUsedFolder(filename.c_str(), mLastNodeMapFolder);
+        UpdateLastUsedFolder(filename.c_str(), m_lastNodeMapFolder);
         return filename;
     }
 
@@ -736,14 +724,12 @@ namespace EMStudio
 
         GetManager()->SetAvoidRendering(true);
 
-        QFileDialog::Options options;
         QString selectedFilter;
-        QString filename = QFileDialog::getSaveFileName(parent,                                                 // parent
+        QString filename = AzQtComponents::FileDialog::GetSaveFileName(parent,                                                 // parent
                                                         "Save",                                                 // caption
                                                         dir.c_str(),                                           // directory
                                                         "EMotion FX Blend Config Files (*.cfg);;All Files (*)",
-                                                        &selectedFilter,
-                                                        options);
+                                                        &selectedFilter);
 
         GetManager()->SetAvoidRendering(false);
 

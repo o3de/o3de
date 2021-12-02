@@ -1,13 +1,14 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
 #pragma once
 
-// include the Core system
+#include <MCore/Source/AABB.h>
 #include <MCore/Source/Vector.h>
 #include <MCore/Source/Ray.h>
 #include "MCommonConfig.h"
@@ -89,31 +90,31 @@ namespace MCommon
 
     protected:
         // scale vectors
-        AZ::Vector3             mScaleDirection;
-        AZ::Vector3             mScale;
+        AZ::Vector3             m_scaleDirection;
+        AZ::Vector3             m_scale;
 
         // bounding volumes for the axes
-        MCore::AABB             mXAxisAABB;
-        MCore::AABB             mYAxisAABB;
-        MCore::AABB             mZAxisAABB;
-        MCore::AABB             mXYPlaneAABB;
-        MCore::AABB             mXZPlaneAABB;
-        MCore::AABB             mYZPlaneAABB;
-        MCore::AABB             mXYZBoxAABB;
+        MCore::AABB             m_xAxisAabb;
+        MCore::AABB             m_yAxisAabb;
+        MCore::AABB             m_zAxisAabb;
+        MCore::AABB             m_xyPlaneAabb;
+        MCore::AABB             m_xzPlaneAabb;
+        MCore::AABB             m_yzPlaneAabb;
+        MCore::AABB             m_xyzBoxAabb;
 
         // size properties of the scale manipulator
-        float                   mSize;
-        AZ::Vector3             mScaledSize;
-        float                   mDiagScale;
-        float                   mArrowLength;
-        float                   mBaseRadius;
-        AZ::Vector3             mFirstPlaneSelectorPos;
-        AZ::Vector3             mSecPlaneSelectorPos;
-        float                   mSignX;
-        float                   mSignY;
-        float                   mSignZ;
-        bool                    mXAxisVisible;
-        bool                    mYAxisVisible;
-        bool                    mZAxisVisible;
+        float                   m_size;
+        AZ::Vector3             m_scaledSize;
+        float                   m_diagScale;
+        float                   m_arrowLength;
+        float                   m_baseRadius;
+        AZ::Vector3             m_firstPlaneSelectorPos;
+        AZ::Vector3             m_secPlaneSelectorPos;
+        float                   m_signX;
+        float                   m_signY;
+        float                   m_signZ;
+        bool                    m_xAxisVisible;
+        bool                    m_yAxisVisible;
+        bool                    m_zAxisVisible;
     };
 } // namespace MCommon

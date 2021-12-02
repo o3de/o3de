@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -77,6 +78,8 @@ namespace ScriptCanvas
                         variableIds.insert(scopedVariableId->m_identifier);
                     }
                 }
+                
+                Node::CollectVariableReferences(variableIds);
             }
 
             bool EBusEventHandler::ContainsReferencesToVariables(const AZStd::unordered_set< ScriptCanvas::VariableId >& variableIds) const
@@ -89,11 +92,14 @@ namespace ScriptCanvas
 
                     if (scopedVariableId)
                     {
-                        return variableIds.find(scopedVariableId->m_identifier) != variableIds.end();
+                        if(variableIds.find(scopedVariableId->m_identifier) != variableIds.end())
+                        {
+                            return true;
+                        }
                     }
                 }
 
-                return false;
+                return Node::ContainsReferencesToVariables(variableIds);
             }
 
             size_t EBusEventHandler::GenerateFingerprint() const
@@ -601,14 +607,23 @@ namespace ScriptCanvas
                 }
             }
 
-            void EBusEventHandler::OnWriteEnd()
+            void EBusEventHandler::OnDeserialize()
             {
                 AZStd::lock_guard<AZStd::recursive_mutex> lock(m_mutex);
-                if (!m_ebus)
+                if (!m_ebus && !m_ebusName.empty())
                 {
                     CreateHandler(m_ebusName);
                 }
+
+                Node::OnDeserialize();
             }
+
+#if defined(OBJECT_STREAM_EDITOR_ASSET_LOADING_SUPPORT_ENABLED)////
+            void EBusEventHandler::OnWriteEnd()
+            {
+                OnDeserialize();
+            }
+#endif//defined(OBJECT_STREAM_EDITOR_ASSET_LOADING_SUPPORT_ENABLED)
 
             NodeTypeIdentifier EBusEventHandler::GetOutputNodeType(const SlotId& slotId) const
             {

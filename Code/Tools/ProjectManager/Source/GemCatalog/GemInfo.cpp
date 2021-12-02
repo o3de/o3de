@@ -1,11 +1,14 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
 #include "GemInfo.h"
+
+#include <QObject>
 
 namespace O3DE::ProjectManager
 {
@@ -28,17 +31,17 @@ namespace O3DE::ProjectManager
         switch (platform)
         {
         case Android:
-            return "Android";
+            return QObject::tr("Android");
         case iOS:
-            return "iOS";
+            return QObject::tr("iOS");
         case Linux:
-            return "Linux";
+            return QObject::tr("Linux");
         case macOS:
-            return "macOS";
+            return QObject::tr("macOS");
         case Windows:
-            return "Windows";
+            return QObject::tr("Windows");
         default:
-            return "<Unknown Platform>";
+            return QObject::tr("<Unknown Platform>");
         }
     }
 
@@ -47,13 +50,13 @@ namespace O3DE::ProjectManager
         switch (type)
         {
         case Asset:
-            return "Asset";
+            return QObject::tr("Asset");
         case Code:
-            return "Code";
+            return QObject::tr("Code");
         case Tool:
-            return "Tool";
+            return QObject::tr("Tool");
         default:
-            return "<Unknown Type>";
+            return QObject::tr("<Unknown Type>");
         }
     }
 
@@ -61,14 +64,32 @@ namespace O3DE::ProjectManager
     {
         switch (origin)
         {
-        case Open3DEEngine:
-            return "Open 3D Engine";
+        case Open3DEngine:
+            return QObject::tr("Open 3D Engine");
         case Local:
-            return "Local";
+            return QObject::tr("Local");
+        case Remote:
+            return QObject::tr("Remote");
         default:
-            return "<Unknown Gem Origin>";
+            return QObject::tr("<Unknown Gem Origin>");
         }
     }
+
+    QString GemInfo::GetDownloadStatusString(DownloadStatus status)
+    {
+        switch (status)
+        {
+        case NotDownloaded:
+            return QObject::tr("Not Downloaded");
+        case Downloading:
+            return QObject::tr("Downloading");
+        case Downloaded:
+            return QObject::tr("Downloaded");
+        case UnknownDownloadStatus:
+        default:
+            return QObject::tr("<Unknown Download Status>");
+        }
+    };
 
     bool GemInfo::IsPlatformSupported(Platform platform) const
     {

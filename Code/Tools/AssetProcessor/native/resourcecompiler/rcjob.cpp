@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -21,7 +22,6 @@
 
 namespace
 {
-    unsigned long s_jobSerial = 1;
     bool s_typesRegistered = false;
     // You have up to 60 minutes to finish processing an asset.
     // This was increased from 10 to account for PVRTC compression

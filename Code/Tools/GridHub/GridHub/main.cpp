@@ -1,13 +1,14 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
 // windows include must be first so we get the full version (AZCore bring the trimmed one)
 #ifdef _WIN32
-#include <Windows.h>
+#include <AzCore/PlatformIncl.h>
 #include <winnls.h>
 #include <shobjidl.h>
 #include <objbase.h>
@@ -15,7 +16,6 @@
 #include <shlguid.h>
 #include <shlobj.h>
 #include <shlwapi.h>
-#include <tchar.h>
 #endif
 
 #include "gridhub.hxx"
@@ -38,6 +38,7 @@ AZ_POP_DISABLE_WARNING
 #include <AzCore/Math/Crc.h>
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/std/parallel/mutex.h>
+#include <AzCore/Utils/Utils.h>
 
 #ifdef AZ_PLATFORM_WINDOWS
 #include <Shlwapi.h>
@@ -52,9 +53,9 @@ AZ_POP_DISABLE_WARNING
 #endif
 
 #ifdef AZ_PLATFORM_WINDOWS
-#define GRIDHUB_TSR_SUFFIX _T("_copyapp_")
-#define GRIDHUB_TSR_NAME _T("GridHub_copyapp_.exe")
-#define GRIDHUB_IMAGE_NAME _T("GridHub.exe")
+#define GRIDHUB_TSR_SUFFIX L"_copyapp_"
+#define GRIDHUB_TSR_NAME L"GridHub_copyapp_.exe"
+#define GRIDHUB_IMAGE_NAME L"GridHub.exe"
 #else
 #define GRIDHUB_TSR_SUFFIX "_copyapp_"
 #define GRIDHUB_TSR_NAME "GridHub_copyapp_"
@@ -139,7 +140,7 @@ protected:
      * ComponentApplication::RegisterCoreComponents and then register the application
      * specific core components.
      */
-     virtual void RegisterCoreComponents();
+     void RegisterCoreComponents() override;
 
      /**
           AZ::SystemTickBus::Handler
@@ -187,11 +188,10 @@ protected:
      {
          ComponentApplication::SetSettingsRegistrySpecializations(specializations);
          specializations.Append("tools");
-         specializations.Append("editor");
          specializations.Append("gridhub");
      }
 
-    QString         m_originalExeFileName;
+     QString        m_originalExeFileName;
      QDateTime      m_originalExeLastModified;
      bool           m_monitorForExeChanges;
      bool           m_needToRelaunch;
@@ -220,7 +220,7 @@ public:
     }
 
     //virtual bool QGridHubApplication::winEventFilter( MSG *msg , long *result)
-    virtual bool nativeEventFilter(const QByteArray &eventType, void *message, [[maybe_unused]] long *result)
+    bool nativeEventFilter(const QByteArray &eventType, void *message, [[maybe_unused]] long *result) override
     {
 #ifdef AZ_PLATFORM_WINDOWS
         if ((eventType == "windows_generic_MSG")||(eventType == "windows_dispatcher_MSG"))
@@ -305,22 +305,22 @@ public:
     {
 #ifdef AZ_PLATFORM_WINDOWS
         HRESULT hres;
-        TCHAR startupFolder[MAX_PATH] = {0};
-        TCHAR fullLinkName[MAX_PATH] = {0};
+        wchar_t startupFolder[MAX_PATH] = {0};
+        wchar_t fullLinkName[MAX_PATH] = {0};
 
         LPITEMIDLIST pidlFolder = NULL;
         hres = SHGetFolderLocation(0,/*CSIDL_COMMON_STARTUP all users required admin access*/CSIDL_STARTUP,NULL,0,&pidlFolder);
         if (SUCCEEDED(hres))
         {
-            if( SHGetPathFromIDList(pidlFolder,startupFolder) )
+            if (SHGetPathFromIDList(pidlFolder, startupFolder))
             {
-                _tcscat_s(fullLinkName,startupFolder);
-                _tcscat_s(fullLinkName,"\\Amazon Grid Hub.lnk");
+                wcscat_s(fullLinkName, startupFolder);
+                wcscat_s(fullLinkName, L"\\Amazon Grid Hub.lnk");
             }
             CoTaskMemFree(pidlFolder);
         }
 
-        if( moduleFilename.isEmpty() || _tcslen(fullLinkName) == 0 )
+        if( moduleFilename.isEmpty() || wcslen(fullLinkName) == 0 )
             return;
 
         // for development, never autoadd to startup
@@ -342,8 +342,8 @@ public:
                 IPersistFile* ppf;
 
                 // Set the path to the shortcut target and add the description.
-                psl->SetPath(moduleFilename.toUtf8().data());
-                psl->SetDescription("Amazon Grid Hub");
+                psl->SetPath(moduleFilename.toStdWString().c_str());
+                psl->SetDescription(L"Amazon Grid Hub");
 
                 // Query IShellLink for the IPersistFile interface, used for saving the
                 // shortcut in persistent storage.
@@ -351,16 +351,8 @@ public:
 
                 if (SUCCEEDED(hres))
                 {
-                    WCHAR wsz[MAX_PATH];
-
-                    // Ensure that the string is Unicode.
-                    MultiByteToWideChar(CP_ACP, 0, fullLinkName, -1, wsz, MAX_PATH);
-
-                    // Add code here to check return value from MultiByteWideChar
-                    // for success.
-
                     // Save the link by calling IPersistFile::Save.
-                    hres = ppf->Save(wsz, TRUE);
+                    hres = ppf->Save(fullLinkName, TRUE);
                     ppf->Release();
                 }
                 psl->Release();
@@ -369,7 +361,7 @@ public:
         else
         {
             // remove from start up folder
-            DeleteFile(fullLinkName);
+            DeleteFileW(fullLinkName);
         }
 #endif
 #if AZ_TRAIT_OS_PLATFORM_APPLE
@@ -412,13 +404,17 @@ GridHubApplication::Create(const Descriptor& descriptor, const StartupParameters
     {
         bool isError = false;
 #ifdef AZ_PLATFORM_WINDOWS
-        TCHAR originalExeFileName[MAX_PATH];
-        if (GetModuleFileName(NULL, originalExeFileName, AZ_ARRAY_SIZE(originalExeFileName)))
+        char originalExeFileName[MAX_PATH];
+        if (AZ::Utils::GetExecutablePath(originalExeFileName, AZ_ARRAY_SIZE(originalExeFileName)).m_pathStored == AZ::Utils::ExecutablePathResult::Success)
         {
-            PathRemoveFileSpec(originalExeFileName);
-            PathAppend(originalExeFileName, GRIDHUB_IMAGE_NAME);
+            wchar_t originalExeFileNameW[MAX_PATH];
+            AZStd::to_wstring(originalExeFileNameW, MAX_PATH, originalExeFileName);
+            PathRemoveFileSpec(originalExeFileNameW);
+            PathAppend(originalExeFileNameW, GRIDHUB_IMAGE_NAME);
 
-            m_originalExeFileName = originalExeFileName;
+            AZStd::string finalExeFileName;
+            AZStd::to_string(finalExeFileName, originalExeFileNameW);
+            m_originalExeFileName = finalExeFileName.c_str();
 
             m_originalExeLastModified = QFileInfo(m_originalExeFileName).lastModified();
         }
@@ -489,18 +485,20 @@ void GridHubApplication::RegisterCoreComponents()
 void CopyAndRun(bool failSilently)
 {
 #ifdef AZ_PLATFORM_WINDOWS
-    TCHAR myFileName[MAX_PATH] = { _T(0) };
-    if (GetModuleFileName(NULL, myFileName, MAX_PATH ))
+    char myFileName[MAX_PATH] = { 0 };
+    if (AZ::Utils::GetExecutablePath(myFileName, MAX_PATH).m_pathStored == AZ::Utils::ExecutablePathResult::Success)
     {
-        TCHAR sourceProcPath[MAX_PATH] = { _T(0) };
-        TCHAR targetProcPath[MAX_PATH] = { _T(0) };
-        TCHAR procDrive[MAX_PATH] = { _T(0) };
-        TCHAR procDir[MAX_PATH] = { _T(0) };
-        TCHAR procFname[MAX_PATH] = { _T(0) };
-        TCHAR procExt[MAX_PATH] = { _T(0) };
-        _tsplitpath_s(myFileName, procDrive, procDir, procFname, procExt);
-        _tmakepath_s(sourceProcPath, procDrive, procDir, GRIDHUB_IMAGE_NAME, NULL);
-        _tmakepath_s(targetProcPath, procDrive, procDir, GRIDHUB_TSR_NAME, NULL);
+        wchar_t myFileNameW[MAX_PATH] = { 0 };
+        AZStd::to_wstring(myFileNameW, MAX_PATH, myFileName);
+        wchar_t sourceProcPath[MAX_PATH] = { 0 };
+        wchar_t targetProcPath[MAX_PATH] = { 0 };
+        wchar_t procDrive[MAX_PATH] = { 0 };
+        wchar_t procDir[MAX_PATH] = { 0 };
+        wchar_t procFname[MAX_PATH] = { 0 };
+        wchar_t procExt[MAX_PATH] = { 0 };
+        _wsplitpath_s(myFileNameW, procDrive, procDir, procFname, procExt);
+        _wmakepath_s(sourceProcPath, procDrive, procDir, GRIDHUB_IMAGE_NAME, NULL);
+        _wmakepath_s(targetProcPath, procDrive, procDir, GRIDHUB_TSR_NAME, NULL);
         if (CopyFileEx(sourceProcPath, targetProcPath, NULL, NULL, NULL, 0))
         {
             STARTUPINFO si;
@@ -527,9 +525,9 @@ void CopyAndRun(bool failSilently)
         {
             if (!failSilently)
             {
-                TCHAR errorMsg[1024] = { _T(0) };
-                _stprintf_s(errorMsg, _T("Failed to copy GridHub. Make sure that %s%s is writable!"), procFname, procExt);
-                MessageBox(NULL, errorMsg, NULL, MB_ICONSTOP|MB_OK);
+                wchar_t errorMsg[1024] = { 0 };
+                swprintf_s(errorMsg, L"Failed to copy GridHub. Make sure that %s%s is writable!", procFname, procExt);
+                MessageBoxW(NULL, errorMsg, NULL, MB_ICONSTOP|MB_OK);
             }
         }
     }
@@ -565,16 +563,18 @@ void CopyAndRun(bool failSilently)
 void RelaunchImage()
 {
 #ifdef AZ_PLATFORM_WINDOWS
-    TCHAR myFileName[MAX_PATH] = { _T(0) };
-    if (GetModuleFileName(NULL, myFileName, MAX_PATH))
+    char myFileName[MAX_PATH] = { 0 };
+    if (AZ::Utils::GetExecutablePath(myFileName, MAX_PATH).m_pathStored == AZ::Utils::ExecutablePathResult::Success)
     {
-        TCHAR targetProcPath[MAX_PATH] = { _T(0) };
-        TCHAR procDrive[MAX_PATH] = { _T(0) };
-        TCHAR procDir[MAX_PATH] = { _T(0) };
-        TCHAR procFname[MAX_PATH] = { _T(0) };
-        TCHAR procExt[MAX_PATH] = { _T(0) };
-        _tsplitpath_s(myFileName, procDrive, procDir, procFname, procExt);
-        _tmakepath_s(targetProcPath, procDrive, procDir, GRIDHUB_IMAGE_NAME, NULL);
+        wchar_t myFileNameW[MAX_PATH] = { 0 };
+        AZStd::to_wstring(myFileNameW, MAX_PATH, myFileName);
+        wchar_t targetProcPath[MAX_PATH] = { 0 };
+        wchar_t procDrive[MAX_PATH] = { 0 };
+        wchar_t procDir[MAX_PATH] = { 0 };
+        wchar_t procFname[MAX_PATH] = { 0 };
+        wchar_t procExt[MAX_PATH] = { 0 };
+        _wsplitpath_s(myFileNameW, procDrive, procDir, procFname, procExt);
+        _wmakepath_s(targetProcPath, procDrive, procDir, GRIDHUB_IMAGE_NAME, NULL);
 
         STARTUPINFO si;
         PROCESS_INFORMATION pi;
@@ -635,8 +635,8 @@ int main(int argc, char *argv[])
     {
 
 #ifdef AZ_PLATFORM_WINDOWS
-        TCHAR exeFileName[MAX_PATH];
-        if( GetModuleFileName(NULL,exeFileName,AZ_ARRAY_SIZE(exeFileName)) )
+        char exeFileName[MAX_PATH];
+        if (AZ::Utils::GetExecutablePath(exeFileName, AZ_ARRAY_SIZE(exeFileName)).m_pathStored == AZ::Utils::ExecutablePathResult::Success)
 #elif defined AZ_PLATFORM_LINUX
         //KDAB_TODO
         char exeFileName[MAXPATHLEN];
@@ -661,7 +661,7 @@ int main(int argc, char *argv[])
         {
 #ifdef AZ_PLATFORM_WINDOWS
             // Create a OS named mutex while the OS is running
-            HANDLE hInstanceMutex = CreateMutex(NULL,TRUE,"Global\\GridHub-Instance");
+            HANDLE hInstanceMutex = CreateMutex(NULL, TRUE, L"Global\\GridHub-Instance");
             AZ_Assert(hInstanceMutex!=NULL,"Failed to create OS mutex [GridHub-Instance]\n");
             if( hInstanceMutex != NULL && GetLastError() == ERROR_ALREADY_EXISTS)
             {

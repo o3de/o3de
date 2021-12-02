@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -18,7 +19,7 @@ AZ_POP_DISABLE_WARNING
 
 
 
-CNewTerrainDialog::CNewTerrainDialog(QWidget* pParent /*=NULL*/)
+CNewTerrainDialog::CNewTerrainDialog(QWidget* pParent /*=nullptr*/)
     : QDialog(pParent)
     , m_terrainResolutionIndex(0)
     , m_terrainUnitsIndex(0)

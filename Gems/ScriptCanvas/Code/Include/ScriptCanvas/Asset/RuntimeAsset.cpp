@@ -1,5 +1,6 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
  *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -8,6 +9,7 @@
 #include "RuntimeAsset.h"
 
 #include <AzCore/Component/Entity.h>
+#include <AzCore/Asset/AssetSerializer.h>
 
 namespace ScriptCanvasRuntimeAssetCpp
 {
@@ -57,6 +59,7 @@ namespace ScriptCanvas
             m_script = AZStd::move(other.m_script);
             m_requiredAssets = AZStd::move(other.m_requiredAssets);
             m_requiredScriptEvents = AZStd::move(other.m_requiredScriptEvents);
+            m_areStaticsInitialized = AZStd::move(other.m_areStaticsInitialized);
         }
 
         return *this;

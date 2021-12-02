@@ -1,6 +1,7 @@
 #
-# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
-# 
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
@@ -46,6 +47,10 @@ ly_add_target(
             AZ::AssetBundlerBatch.Static
 )
 
+# Adds a specialized .setreg to identify gems enabled in the active project.
+# This associates the AssetBundlerBatch target with the .Builders gem variants.
+ly_set_gem_variant_to_load(TARGETS AssetBundlerBatch VARIANTS Builders)
+
 # AssetBundler - Qt GUI Application
 ly_add_target(
     NAME AssetBundler ${PAL_TRAIT_BUILD_ASSETBUNDLER_APPLICATION_TYPE}
@@ -71,6 +76,10 @@ ly_add_target(
             AZ::AssetBundlerBatch.Static
             ${additional_dependencies}
 )
+
+# Adds a specialized .setreg to identify gems enabled in the active project.
+# This associates the AssetBundler target with the .Builders gem variants.
+ly_set_gem_variant_to_load(TARGETS AssetBundler VARIANTS Builders)
 
 if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
 

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -11,21 +12,6 @@ namespace AZ
 {
     namespace SDKMaterial
     {
-        MaterialWrapper::MaterialWrapper(aiMaterial* assImpMaterial)
-            : m_assImpMaterial(assImpMaterial)
-        {
-        }
-
-        MaterialWrapper::~MaterialWrapper()
-        {
-            m_assImpMaterial = nullptr;
-        }
-
-        aiMaterial* MaterialWrapper::GetAssImpMaterial()
-        {
-            return m_assImpMaterial;
-        }
-
         AZStd::string MaterialWrapper::GetName() const
         {
             return AZStd::string();

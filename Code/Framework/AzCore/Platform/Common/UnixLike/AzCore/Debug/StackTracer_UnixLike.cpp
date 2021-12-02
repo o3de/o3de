@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -56,7 +57,7 @@ StackRecorder::Record(StackFrame* frames, unsigned int maxNumOfFrames, unsigned 
     int skip = static_cast<int>((suppressCount == 0) ? 1 : suppressCount); // Skip at least this function
     while ((unw_step(&cursor) > 0) && (count < maxNumOfFrames))
     {
-        unw_word_t offset, pc;
+        unw_word_t pc;
         unw_get_reg(&cursor, UNW_REG_IP, &pc);
         if (pc == 0)
         {
@@ -75,6 +76,12 @@ StackRecorder::Record(StackFrame* frames, unsigned int maxNumOfFrames, unsigned 
     }
 
     return count;
+}
+
+unsigned int StackConverter::FromNative([[maybe_unused]] StackFrame* frames, [[maybe_unused]] unsigned int maxNumOfFrames, [[maybe_unused]] void* nativeContext)
+{
+    AZ_Assert(false, "StackConverter::FromNative() is not supported for UnixLike platform yet");
+    return 0;
 }
 
 void

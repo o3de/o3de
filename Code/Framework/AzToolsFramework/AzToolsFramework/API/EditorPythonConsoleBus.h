@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -63,11 +64,18 @@ namespace AzToolsFramework
         //! Signal the Python handler to stop
         virtual bool StopPython(bool silenceWarnings = false) = 0;
 
+        //! Query to determine if the Python VM has been initialized indicating an active state 
+        virtual bool IsPythonActive() = 0;
+
         //! Determines if the caller needs to wait for the Python VM to initialize (non-main thread only)
         virtual void WaitForInitialization() {}
 
-        //! Acquires the Python global interpreter lock (GIL) and executed the callback
+        //! Acquires the Python global interpreter lock (GIL) and execute the callback
         virtual void ExecuteWithLock(AZStd::function<void()> executionCallback) = 0;
+
+        //! Tries to acquire the Python global interpreter lock (GIL) and execute the callback.
+        //! @return Whether it was able to lock the mutex or not.
+        virtual bool TryExecuteWithLock(AZStd::function<void()> executionCallback) = 0;
     };
 
     //! A bus to handle post notifications to the console views of Python output

@@ -1,10 +1,10 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "AzToolsFramework_precompiled.h"
 #include "PropertyCRCCtrl.h"
 #include "PropertyQTConstants.h"
 #include <QRegExp>
@@ -14,6 +14,7 @@ AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option") // 4251: 'QLayoutItem:
 #include <QHBoxLayout>
 AZ_POP_DISABLE_WARNING
 #include <QString>
+#include <QtCore/QEvent>
 
 namespace AzToolsFramework
 {
@@ -136,7 +137,7 @@ namespace AzToolsFramework
         Q_UNUSED(debugName)
     }
 
-    AZ::u32 U32CRCHandler::GetHandlerName(void) const
+    AZ::u32 U32CRCHandler::GetHandlerName() const
     {
         return AZ::Edit::UIHandlers::Crc;
     }
@@ -172,16 +173,16 @@ namespace AzToolsFramework
 
     void U32CRCHandler::WriteGUIValuesIntoProperty(size_t index, PropertyCRCCtrl* GUI, AZ::u32& instance, InstanceDataNode* node)
     {
-        (int)index;
-        (void)node;
+        AZ_UNUSED(index);
+        AZ_UNUSED(node);
         AZ::u32 val = GUI->value();
         instance = static_cast<property_t>(val);
     }
 
     bool U32CRCHandler::ReadValuesIntoGUI(size_t index, PropertyCRCCtrl* GUI, const AZ::u32& instance, InstanceDataNode* node)
     {
-        (int)index;
-        (void)node;
+        AZ_UNUSED(index);
+        AZ_UNUSED(node);
         GUI->setValue(instance);
         return false;
     }

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -13,7 +14,10 @@
 #define CRYINCLUDE_EDITOR_INCLUDE_IEDITORCLASSFACTORY_H
 #pragma once
 
+#include <CryCommon/platform.h>
 #include <vector>
+#include <QtCore/QString>
+#include <AzCore/Math/Guid.h>
 
 #define DEFINE_UUID(l, w1, w2, b1, b2, b3, b4, b5, b6, b7, b8) \
 static const GUID uuid() { return { l, w1, w2, { b1, b2,  b3,  b4,  b5,  b6,  b7,  b8 } }; }
@@ -32,7 +36,7 @@ struct IUnknown
 #endif
 #define __uuidof(T) T::uuid()
 
-#if defined(AZ_PLATFORM_LINUX)
+#if defined(AZ_PLATFORM_LINUX) || defined(AZ_PLATFORM_MAC)
 
 # ifndef _REFGUID_DEFINED
 # define _REFGUID_DEFINED
@@ -63,12 +67,11 @@ enum
 };
 #endif
 
-#endif  // defined(AZ_PLATFORM_LINUX)
+#endif  // defined(AZ_PLATFORM_LINUX) || defined(AZ_PLATFORM_MAC)
 
 #include "SandboxAPI.h"
 
 class QObject;
-class QString;
 
 
 //! System class IDs
@@ -120,19 +123,9 @@ struct IClassDesc
     //! create panel.
     virtual QString Category() = 0;
 
-#ifdef QSTRING_H
     virtual QString MenuSuggestion() { return QString(); }
     virtual QString Tooltip() { return QString(); }
     virtual QString Description() { return QString(); }
-#else
-    //! This method returns the desired menu in which this plugin class would like to be placed in the editor.
-    //! It is up to the editor to determine if it can and wants to fulfill this request.
-    virtual QString MenuSuggestion();
-    //! This method returns the tooltip for the pane
-    virtual QString Tooltip();
-    //! This method returns the description for the pane
-    virtual QString Description();
-#endif
 
     //! This method returns if the plugin should have a menu item for its pane.
     virtual bool ShowInMenu() const { return true; }

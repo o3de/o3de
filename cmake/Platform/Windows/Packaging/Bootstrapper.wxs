@@ -5,7 +5,7 @@
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi"
     xmlns:bal="http://schemas.microsoft.com/wix/BalExtension">
 
-    <Bundle Name="$(var.CPACK_PACKAGE_NAME) [Developer Preview]"
+    <Bundle Name="$(var.CPACK_PACKAGE_NAME) [Stable]"
         Version="$(var.CPACK_PACKAGE_VERSION)"
         Manufacturer="$(var.CPACK_PACKAGE_VENDOR)"
         UpgradeCode="$(var.CPACK_BOOTSTRAP_UPGRADE_GUID)"
@@ -20,7 +20,7 @@
         <!-- special variable name that auto maps to a WixStandardBootstrapperApplication attribute of the same name -->
         <Variable Name="LaunchTarget"
             Type="string"
-            Value="[InstallFolder]\bin\Windows\profile\o3de.exe"/>
+            Value="[InstallFolder]\bin\Windows\profile\Default\o3de.exe"/>
 
         <PayloadGroup Id="Images">
             <Payload Id="warning.png" SourceFile="$(var.CPACK_RESOURCE_PATH)/warning.png" Compressed="yes"/>
@@ -33,6 +33,7 @@
                     LogoFile="$(var.CPACK_WIX_PRODUCT_LOGO)"
                     ThemeFile="$(var.CPACK_BOOTSTRAP_THEME_FILE).xml"
                     LocalizationFile="$(var.CPACK_BOOTSTRAP_THEME_FILE).wxl"
+                    ShowFilesInUse="yes"
                     ShowVersion="yes" />
 
                 <PayloadGroupRef Id="Images"/>
@@ -44,6 +45,7 @@
                     LogoFile="$(var.CPACK_WIX_PRODUCT_LOGO)"
                     ThemeFile="$(var.CPACK_BOOTSTRAP_THEME_FILE).xml"
                     LocalizationFile="$(var.CPACK_BOOTSTRAP_THEME_FILE).wxl"
+                    ShowFilesInUse="yes"
                     ShowVersion="yes" />
 
                 <PayloadGroupRef Id="Images"/>

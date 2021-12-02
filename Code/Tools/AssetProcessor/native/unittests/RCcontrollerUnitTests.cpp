@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -46,7 +47,7 @@ void RCcontrollerUnitTests::Reset()
     m_rcController.m_RCJobListModel.m_jobs.clear();
     m_rcController.m_RCJobListModel.m_jobsInFlight.clear();
     m_rcController.m_RCJobListModel.m_jobsInQueueLookup.clear();
-    
+
     m_rcController.m_pendingCriticalJobsPerPlatform.clear();
     m_rcController.m_jobsCountPerPlatform.clear();
 
@@ -55,7 +56,7 @@ void RCcontrollerUnitTests::Reset()
     m_rcController.m_RCQueueSortModel.AttachToModel(&m_rcController.m_RCJobListModel);
     m_rcController.m_RCQueueSortModel.m_currentJobRunKeyToJobEntries.clear();
     m_rcController.m_RCQueueSortModel.m_currentlyConnectedPlatforms.clear();
-} 
+}
 
 void RCcontrollerUnitTests::StartTest()
 {
@@ -146,7 +147,7 @@ void RCcontrollerUnitTests::RunRCControllerTests()
 
     if (returnedCount != expectedCount)
     {
-        Q_EMIT UnitTestFailed("RCJobListModel has " + QString(returnedCount) + " elements, which is invalid. Expected " + expectedCount);
+        Q_EMIT UnitTestFailed("RCJobListModel has " + QString(returnedCount) + " elements, which is invalid. Expected " + QString(expectedCount));
         return;
     }
 
@@ -182,11 +183,11 @@ void RCcontrollerUnitTests::RunRCControllerTests()
     QStringList tempJobNames;
 
     // Note that while this is an OS-SPECIFIC path, this test does not actually invoke the file system
-    // or file operators, so is purely doing in-memory testing.  So the path does not actually matter and the 
+    // or file operators, so is purely doing in-memory testing.  So the path does not actually matter and the
     // test should function on other operating systems too.
 
     // test - exact match
-    tempJobNames << "c:/somerandomfolder/dev/blah/test.dds"; 
+    tempJobNames << "c:/somerandomfolder/dev/blah/test.dds";
     tempJobNames << "c:/somerandomfolder/dev/blah/test.cre"; // must not match
 
     // test - NO MATCH
@@ -217,7 +218,7 @@ void RCcontrollerUnitTests::RunRCControllerTests()
 
     QList<RCJob*> createdJobs;
 
-    
+
 
     for (QString name : tempJobNames)
     {
@@ -269,7 +270,7 @@ void RCcontrollerUnitTests::RunRCControllerTests()
 
     // EXACT MATCH TEST (with prefixes and such)
     NetworkRequestID requestID(1, 1234);
-    m_rcController.OnRequestCompileGroup(requestID, "pc", "@assets@/blah/test.dds", AZ::Data::AssetId());
+    m_rcController.OnRequestCompileGroup(requestID, "pc", "@products@/blah/test.dds", AZ::Data::AssetId());
     QCoreApplication::processEvents(QEventLoop::AllEvents);
 
     // this should have matched exactly one item, and when we finish that item, it should terminate:
@@ -603,14 +604,14 @@ void RCcontrollerUnitTests::RunRCControllerTests()
     m_rcController.m_RCJobListModel.addNewJob(jobA);
 
     bool beginWorkA = false;
-    QObject::connect(jobA, &RCJob::BeginWork, this, [this, &beginWorkA]()
+    QObject::connect(jobA, &RCJob::BeginWork, this, [&beginWorkA]()
     {
         beginWorkA = true;
     }
     );
 
     bool jobFinishedA = false;
-    QObject::connect(jobA, &RCJob::JobFinished, this, [this, &jobFinishedA](AssetBuilderSDK::ProcessJobResponse /*result*/)
+    QObject::connect(jobA, &RCJob::JobFinished, this, [&jobFinishedA](AssetBuilderSDK::ProcessJobResponse /*result*/)
     {
         jobFinishedA = true;
     }
@@ -625,9 +626,9 @@ void RCcontrollerUnitTests::RunRCControllerTests()
     jobdetailsB.m_jobEntry.m_watchFolderPath = scanFolderInfo.ScanPath();
     jobdetailsB.m_jobEntry.m_jobKey = "TestJobB";
     jobdetailsB.m_jobEntry.m_builderGuid = builderUuid;
-    
+
     jobdetailsB.m_critical = true; //make jobB critical so that it will be analyzed first even though we want JobA to run first
-    
+
     AssetBuilderSDK::SourceFileDependency sourceFileBDependency;
     sourceFileBDependency.m_sourceFileDependencyPath = "fileB.txt";
 
@@ -654,7 +655,7 @@ void RCcontrollerUnitTests::RunRCControllerTests()
     );
 
     bool jobFinishedB = false;
-    QObject::connect(jobB, &RCJob::JobFinished, this, [this, &jobFinishedB](AssetBuilderSDK::ProcessJobResponse /*result*/)
+    QObject::connect(jobB, &RCJob::JobFinished, this, [&jobFinishedB](AssetBuilderSDK::ProcessJobResponse /*result*/)
     {
         jobFinishedB = true;
     }
@@ -693,10 +694,10 @@ void RCcontrollerUnitTests::RunRCControllerTests()
 
     m_rcController.DispatchJobs();
     UNIT_TEST_EXPECT_TRUE(UnitTestUtils::BlockUntil(allJobsCompleted, 5000));
-    UNIT_TEST_EXPECT_TRUE(jobFinishedB); 
+    UNIT_TEST_EXPECT_TRUE(jobFinishedB);
 
-    // Now test the use case where we have a cyclic dependency, 
-    // although the order in which these job will start is not defined but we can ensure that 
+    // Now test the use case where we have a cyclic dependency,
+    // although the order in which these job will start is not defined but we can ensure that
     // all the job finishes and RCController goes Idle
     allJobsCompleted = false;
     Reset();
@@ -727,8 +728,8 @@ void RCcontrollerUnitTests::RunRCControllerTests()
     jobdetailsD.m_jobEntry.m_builderGuid = builderUuid;
     AssetBuilderSDK::SourceFileDependency sourceFileDDependency;
     sourceFileDDependency.m_sourceFileDependencyPath = "fileD.txt";
-    
-    //creating cyclic job order dependencies i.e  JobC and JobD have order job dependency on each other 
+
+    //creating cyclic job order dependencies i.e  JobC and JobD have order job dependency on each other
     AssetBuilderSDK::JobDependency jobDependencyC("TestJobC", "pc", AssetBuilderSDK::JobDependencyType::Order, sourceFileCDependency);
     AssetBuilderSDK::JobDependency jobDependencyD("TestJobD", "pc", AssetBuilderSDK::JobDependencyType::Order, sourceFileDDependency);
     jobdetailsC.m_jobDependencyList.push_back({ jobDependencyD });

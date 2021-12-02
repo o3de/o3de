@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -53,7 +54,7 @@ namespace EMotionFX
         for (size_t i = 0; i < numTags; ++i)
         {
             // Search for the parameter with the name of the tag and save the index.
-            const AZ::Outcome<size_t> parameterIndex = mAnimGraph->FindValueParameterIndexByName(m_tags[i]);
+            const AZ::Outcome<size_t> parameterIndex = m_animGraph->FindValueParameterIndexByName(m_tags[i]);
             if (parameterIndex.IsSuccess())
             {
                 // Cache the parameter index to avoid string lookups at runtime.

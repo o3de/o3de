@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -63,56 +64,56 @@ namespace EMotionFX
          * The size of the returned array is equal to the amount of nodes in the actor or the value returned by GetNumTransforms()
          * @result The array of skinning matrices.
          */
-        MCORE_INLINE AZ::Matrix3x4* GetSkinningMatrices() { return mSkinningMatrices; }
+        MCORE_INLINE AZ::Matrix3x4* GetSkinningMatrices() { return m_skinningMatrices; }
 
         /**
          * Get the skinning matrices (offset from the pose), in read-only (const) mode.
          * The size of the returned array is equal to the amount of nodes in the actor or the value returned by GetNumTransforms()
          * @result The array of skinning matrices.
          */
-        MCORE_INLINE const AZ::Matrix3x4* GetSkinningMatrices() const { return mSkinningMatrices; }
+        MCORE_INLINE const AZ::Matrix3x4* GetSkinningMatrices() const { return m_skinningMatrices; }
 
-        MCORE_INLINE Pose* GetBindPose() const                                                          { return mBindPose; }
-        MCORE_INLINE const Pose* GetCurrentPose() const                                                 { return &mPose; }
-        MCORE_INLINE Pose* GetCurrentPose()                                                             { return &mPose; }
+        MCORE_INLINE Pose* GetBindPose() const                                                          { return m_bindPose; }
+        MCORE_INLINE const Pose* GetCurrentPose() const                                                 { return &m_pose; }
+        MCORE_INLINE Pose* GetCurrentPose()                                                             { return &m_pose; }
 
         /**
          * Reset the local space transform of a given node to its bind pose local space transform.
          * @param nodeIndex The node number, which must be in range of [0..GetNumTransforms()-1].
          */
-        void ResetToBindPoseTransformation(uint32 nodeIndex)                                            { mPose.SetLocalSpaceTransform(nodeIndex, mBindPose->GetLocalSpaceTransform(nodeIndex)); }
+        void ResetToBindPoseTransformation(size_t nodeIndex)                                            { m_pose.SetLocalSpaceTransform(nodeIndex, m_bindPose->GetLocalSpaceTransform(nodeIndex)); }
 
         /**
          * Reset all local space transforms to the local space transforms of the bind pose.
          */
         void ResetToBindPoseTransformations()
         {
-            for (uint32 i = 0; i < mNumTransforms; ++i)
+            for (size_t i = 0; i < m_numTransforms; ++i)
             {
-                mPose.SetLocalSpaceTransform(i, mBindPose->GetLocalSpaceTransform(i));
+                m_pose.SetLocalSpaceTransform(i, m_bindPose->GetLocalSpaceTransform(i));
             }
         }
 
         EMFX_SCALECODE
         (
-            void SetBindPoseLocalScaleInherit(uint32 nodeIndex, const AZ::Vector3& scale);
-            void SetBindPoseLocalScale(uint32 nodeIndex, const AZ::Vector3& scale);
+            void SetBindPoseLocalScaleInherit(size_t nodeIndex, const AZ::Vector3& scale);
+            void SetBindPoseLocalScale(size_t nodeIndex, const AZ::Vector3& scale);
         )
 
-        MCORE_INLINE const ActorInstance* GetActorInstance() const      { return mPose.GetActorInstance(); }
-        MCORE_INLINE uint32 GetNumTransforms() const                    { return mNumTransforms; }
+        MCORE_INLINE const ActorInstance* GetActorInstance() const      { return m_pose.GetActorInstance(); }
+        MCORE_INLINE size_t GetNumTransforms() const                    { return m_numTransforms; }
 
         void MakeBindPoseTransformsUnique();
 
-        void SetNumMorphWeights(uint32 numMorphWeights);
+        void SetNumMorphWeights(size_t numMorphWeights);
 
 
     private:
-        Pose            mPose;                  /**< The current pose. */
-        Pose*           mBindPose;              /**< The bind pose, which can be unique or point to the bind pose in the actor. */
-        AZ::Matrix3x4*  mSkinningMatrices;      /**< The matrices used for skinning. They are the offset to the bind pose. */
-        uint32          mNumTransforms;         /**< The number of transforms, which is equal to the number of nodes in the linked actor instance. */
-        bool            mHasUniqueBindPose;     /**< Do we have a unique bind pose (when set to true) or do we use the one from the Actor object (when set to false)? */
+        Pose            m_pose;                  /**< The current pose. */
+        Pose*           m_bindPose;              /**< The bind pose, which can be unique or point to the bind pose in the actor. */
+        AZ::Matrix3x4*  m_skinningMatrices;      /**< The matrices used for skinning. They are the offset to the bind pose. */
+        size_t          m_numTransforms;         /**< The number of transforms, which is equal to the number of nodes in the linked actor instance. */
+        bool            m_hasUniqueBindPose;     /**< Do we have a unique bind pose (when set to true) or do we use the one from the Actor object (when set to false)? */
 
         /**
          * The constructor.

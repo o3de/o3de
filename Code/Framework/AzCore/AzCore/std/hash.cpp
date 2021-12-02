@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -20,6 +21,7 @@ namespace AZStd
         1610612741ul, 3221225473ul, 4294967291ul
     };
 
+    // Bucket size suitable to hold n elements.
     AZStd::size_t hash_next_bucket_size(AZStd::size_t n)
     {
         const AZStd::size_t* first = prime_list;

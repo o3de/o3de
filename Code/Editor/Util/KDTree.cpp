@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -16,9 +17,9 @@ class KDTreeNode
 public:
     KDTreeNode()
     {
-        pChildren[0] = NULL;
-        pChildren[1] = NULL;
-        pVertexIndices = NULL;
+        pChildren[0] = nullptr;
+        pChildren[1] = nullptr;
+        pVertexIndices = nullptr;
     }
     ~KDTreeNode()
     {
@@ -75,13 +76,13 @@ public:
     }
     bool IsLeaf() const
     {
-        return pChildren[0] == NULL && pChildren[1] == NULL;
+        return pChildren[0] == nullptr && pChildren[1] == nullptr;
     }
     KDTreeNode* GetChild(uint32 nIndex) const
     {
         if (nIndex > 1)
         {
-            return NULL;
+            return nullptr;
         }
         return pChildren[nIndex];
     }
@@ -189,7 +190,7 @@ bool SearchForBestSplitPos(CKDTree::ESplitAxis axis, const std::vector<CKDTree::
 
     outBestSplitPos = 0;
 
-    int nSizeOfIndices(indices.size());
+    int nSizeOfIndices = static_cast<int>(indices.size());
 
     for (int i = 0; i < nSizeOfIndices; ++i)
     {
@@ -199,7 +200,7 @@ bool SearchForBestSplitPos(CKDTree::ESplitAxis axis, const std::vector<CKDTree::
         const CKDTree::SStatObj* pObj = &statObjList[nObjIndex];
 
         const IIndexedMesh* pMesh = pObj->pStatObj->GetIndexedMesh();
-        if (pMesh == NULL)
+        if (pMesh == nullptr)
         {
             continue;
         }
@@ -255,7 +256,7 @@ bool SplitNode(const std::vector<CKDTree::SStatObj>& statObjList, const AABB& bo
         const CKDTree::SStatObj* pObj = &statObjList[nObjIndex];
 
         const IIndexedMesh* pMesh = pObj->pStatObj->GetIndexedMesh();
-        if (pMesh == NULL)
+        if (pMesh == nullptr)
         {
             return false;
         }
@@ -294,7 +295,7 @@ bool SplitNode(const std::vector<CKDTree::SStatObj>& statObjList, const AABB& bo
 
 CKDTree::CKDTree()
 {
-    m_pRootNode = NULL;
+    m_pRootNode = nullptr;
 }
 
 CKDTree::~CKDTree()
@@ -307,7 +308,7 @@ CKDTree::~CKDTree()
 
 bool CKDTree::Build(IStatObj* pStatObj)
 {
-    if (pStatObj == NULL)
+    if (pStatObj == nullptr)
     {
         return false;
     }
@@ -328,10 +329,10 @@ bool CKDTree::Build(IStatObj* pStatObj)
     entireBoundBox.Reset();
 
     std::vector<uint32> indices;
-    for (int i = 0, iStatObjSize(m_StatObjectList.size()); i < iStatObjSize; ++i)
+    for (int i = 0, iStatObjSize = static_cast<uint32>(m_StatObjectList.size()); i < iStatObjSize; ++i)
     {
         IIndexedMesh* pMesh = m_StatObjectList[i].pStatObj->GetIndexedMesh(true);
-        if (pMesh == NULL)
+        if (pMesh == nullptr)
         {
             continue;
         }
@@ -397,7 +398,7 @@ void CKDTree::BuildRecursively(KDTreeNode* pNode, const AABB& boundbox, std::vec
 
 void CKDTree::ConstructStatObjList(IStatObj* pStatObj, const Matrix34& matParent)
 {
-    if (pStatObj == NULL)
+    if (pStatObj == nullptr)
     {
         return;
     }
@@ -466,12 +467,12 @@ bool CKDTree::FindNearestVertexRecursively(KDTreeNode* pNode, const Vec3& raySrc
             uint32 nVertexIndex = pNode->GetVertexIndex(i);
             uint32 nObjIndex = pNode->GetObjIndex(i);
 
-            assert(nObjIndex < m_StatObjectList.size() && nObjIndex >= 0);
+            assert(nObjIndex < m_StatObjectList.size());
 
             const SStatObj* pStatObjInfo = &(m_StatObjectList[nObjIndex]);
 
             IIndexedMesh* pMesh = m_StatObjectList[nObjIndex].pStatObj->GetIndexedMesh();
-            if (pMesh == NULL)
+            if (pMesh == nullptr)
             {
                 continue;
             }

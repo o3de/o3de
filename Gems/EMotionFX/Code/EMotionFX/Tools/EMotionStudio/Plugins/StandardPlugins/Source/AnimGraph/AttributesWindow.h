@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -81,9 +82,9 @@ namespace EMStudio
         virtual ~PasteConditionsWindow();
         bool GetIsConditionSelected(size_t index) const;
     private:
-        QPushButton*                mOKButton;
-        QPushButton*                mCancelButton;
-        AZStd::vector<QCheckBox*>   mCheckboxes;
+        QPushButton*                m_okButton;
+        QPushButton*                m_cancelButton;
+        AZStd::vector<QCheckBox*>   m_checkboxes;
     };
 
 
@@ -101,9 +102,9 @@ namespace EMStudio
         // copy & paste
         struct CopyPasteConditionObject
         {
-            AZStd::string   mContents;
-            AZStd::string   mSummary;
-            AZ::TypeId      mConditionType;
+            AZStd::string   m_contents;
+            AZStd::string   m_summary;
+            AZ::TypeId      m_conditionType;
         };
 
         struct CopyPasteClipboard
@@ -151,12 +152,12 @@ namespace EMStudio
         void OnDataChanged(const QModelIndex& topLeft, const QModelIndex& bottomRight, const QVector<int>& roles);
     private:
         AddConditionButton* m_addConditionButton = nullptr;
-        void contextMenuEvent(QContextMenuEvent* event);
+        void contextMenuEvent(QContextMenuEvent* event) override;
 
         void PasteTransition(bool pasteTransitionProperties, bool pasteConditions);
 
-        AnimGraphPlugin*                        mPlugin;
-        QScrollArea*                            mScrollArea;
+        AnimGraphPlugin*                        m_plugin;
+        QScrollArea*                            m_scrollArea;
         QPersistentModelIndex                   m_displayingModelIndex;
 
         QWidget*                                m_mainReflectedWidget;
@@ -186,7 +187,7 @@ namespace EMStudio
         QLayout*                                m_actionsLayout;
         AZStd::vector<CachedWidgets>            m_actionsCachedWidgets;
 
-        PasteConditionsWindow*                  mPasteConditionsWindow;
+        PasteConditionsWindow*                  m_pasteConditionsWindow;
 
         CopyPasteClipboard                      m_copyPasteClipboard;        
 

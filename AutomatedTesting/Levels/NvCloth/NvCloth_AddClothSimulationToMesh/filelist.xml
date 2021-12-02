@@ -1,0 +1,6 @@
+<download name="C18977329_NvCloth_AddClothSimulationToMesh" type="Map">
+ <index src="filelist.xml" dest="filelist.xml"/>
+ <files>
+  <file src="level.pak" dest="level.pak" size="969F" md5="82f4dd8bb6fb27325a4e237e8d22b8d3"/>
+ </files>
+</download>

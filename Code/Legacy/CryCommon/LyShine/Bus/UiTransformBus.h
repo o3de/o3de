@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -428,26 +429,26 @@ inline AZ::Vector2 UiTransformInterface::RectPoints::GetAxisAlignedSize() const
 
 inline AZ::Vector2 UiTransformInterface::RectPoints::GetAxisAlignedTopLeft() const
 {
-    return AZ::Vector2(min(min(min(TopLeft().GetX(), TopRight().GetX()), BottomRight().GetX()), BottomLeft().GetX()),
-        min(min(min(TopLeft().GetY(), TopRight().GetY()), BottomRight().GetY()), BottomLeft().GetY()));
+    return AZ::Vector2(AZStd::min(AZStd::min(AZStd::min(TopLeft().GetX(), TopRight().GetX()), BottomRight().GetX()), BottomLeft().GetX()),
+        AZStd::min(AZStd::min(AZStd::min(TopLeft().GetY(), TopRight().GetY()), BottomRight().GetY()), BottomLeft().GetY()));
 }
 
 inline AZ::Vector2 UiTransformInterface::RectPoints::GetAxisAlignedTopRight() const
 {
-    return AZ::Vector2(max(max(max(TopLeft().GetX(), TopRight().GetX()), BottomRight().GetX()), BottomLeft().GetX()),
-        min(min(min(TopLeft().GetY(), TopRight().GetY()), BottomRight().GetY()), BottomLeft().GetY()));
+    return AZ::Vector2(AZStd::max(AZStd::max(AZStd::max(TopLeft().GetX(), TopRight().GetX()), BottomRight().GetX()), BottomLeft().GetX()),
+        AZStd::min(AZStd::min(AZStd::min(TopLeft().GetY(), TopRight().GetY()), BottomRight().GetY()), BottomLeft().GetY()));
 }
 
 inline AZ::Vector2 UiTransformInterface::RectPoints::GetAxisAlignedBottomRight() const
 {
-    return AZ::Vector2(max(max(max(TopLeft().GetX(), TopRight().GetX()), BottomRight().GetX()), BottomLeft().GetX()),
-        max(max(max(TopLeft().GetY(), TopRight().GetY()), BottomRight().GetY()), BottomLeft().GetY()));
+    return AZ::Vector2(AZStd::max(AZStd::max(AZStd::max(TopLeft().GetX(), TopRight().GetX()), BottomRight().GetX()), BottomLeft().GetX()),
+        AZStd::max(AZStd::max(AZStd::max(TopLeft().GetY(), TopRight().GetY()), BottomRight().GetY()), BottomLeft().GetY()));
 }
 
 inline AZ::Vector2 UiTransformInterface::RectPoints::GetAxisAlignedBottomLeft() const
 {
-    return AZ::Vector2(min(min(min(TopLeft().GetX(), TopRight().GetX()), BottomRight().GetX()), BottomLeft().GetX()),
-        max(max(max(TopLeft().GetY(), TopRight().GetY()), BottomRight().GetY()), BottomLeft().GetY()));
+    return AZ::Vector2(AZStd::min(AZStd::min(AZStd::min(TopLeft().GetX(), TopRight().GetX()), BottomRight().GetX()), BottomLeft().GetX()),
+        AZStd::max(AZStd::max(AZStd::max(TopLeft().GetY(), TopRight().GetY()), BottomRight().GetY()), BottomLeft().GetY()));
 }
 
 inline void UiTransformInterface::RectPoints::SetAxisAligned(float left, float right, float top, float bottom)

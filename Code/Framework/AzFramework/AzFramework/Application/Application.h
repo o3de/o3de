@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -94,8 +95,6 @@ namespace AzFramework
 
         //////////////////////////////////////////////////////////////////////////
         //! ApplicationRequests::Bus::Handler
-        const char* GetEngineRoot() const override { return m_engineRoot.c_str(); }
-        const char* GetAppRoot() const override;
         void ResolveEnginePath(AZStd::string& engineRelativePath) const override;
         void CalculateBranchTokenForEngineRoot(AZStd::string& token) const override;
         bool IsPrefabSystemEnabled() const override;
@@ -145,8 +144,6 @@ namespace AzFramework
          */
         void SetFileIOAliases();
 
-        void PreModuleLoad() override;
-
         //////////////////////////////////////////////////////////////////////////
         //! AZ::ComponentApplication
         void RegisterCoreComponents() override;
@@ -180,13 +177,9 @@ namespace AzFramework
         bool m_ownsConsole = false;
 
         bool m_exitMainLoopRequested = false;
-        
-        enum class RootPathType
-        {
-            AppRoot,
-            EngineRoot
-        };
-        void SetRootPath(RootPathType type, const char* source);
+
     };
 } // namespace AzFramework
+
+AZ_DECLARE_BUDGET(AzFramework);
 

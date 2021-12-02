@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -98,10 +99,22 @@ float3 YCoCgToRgb(float3 yCoCg)
 // This function samples a 4x4 neighborhood around the uv. By taking advantage of bilinear filtering this can be
 // done with only 9 taps on the edges between pixels. The cost is further reduced by dropping the 4 diagonal
 // samples as their influence is negligible.
-float4 SampleCatmullRom5Tap(Texture2D<float4> texture, SamplerState linearSampler, float2 uv, float2 textureSize, float2 rcpTextureSize, float sharpness)
+float3 SampleCatmullRom5Tap(Texture2D<float4> texture, SamplerState linearSampler, float2 uv, float2 textureSize, float2 rcpTextureSize, float sharpness)
 {
     // Think of sample locations in the 4x4 neighborhood as having a top left coordinate of 0,0 and
     // a bottom right coordinate of 3,3.
+
+    // Due to Catmull-Rom's use of negative weights, it's possible to have a very high value
+    // neighbor sample that turns into a large negative value when multiplied by its weight.
+    // This can completely overwhelm the final result leading to negative output. To fix this,
+    // use the local area green value as a measurement of luminance, and tweak the sharpness
+    // based on the difference between the max and min values. This will reduce the contribution
+    // of negative weights in high contrast areas and help prevent ringing artifacts.
+    float4 gatheredGreen = texture.GatherGreen(linearSampler, uv, int2(0, 0));
+    float minGreen = min(gatheredGreen.x, min(gatheredGreen.y, min(gatheredGreen.z, gatheredGreen.w)));
+    float maxGreen = max(gatheredGreen.x, max(gatheredGreen.y, max(gatheredGreen.z, gatheredGreen.w)));
+    float diff = maxGreen - minGreen;
+    sharpness = sharpness / (diff + 1.0);
 
     // Find the position in texture space then round it to get the center of the 1,1 pixel (tc1)
     float2 texelPos = uv * textureSize;
@@ -116,7 +129,6 @@ float4 SampleCatmullRom5Tap(Texture2D<float4> texture, SamplerState linearSample
     float2 w1 = 1.0 + f * f * (c -3.0 + (2.0 - c) * f);
     float2 w2 = f * (c + f * ((3.0 - 2.0 * c) - (2.0 - c) * f));
     float2 w3 = f * f * (c * f - c);
-    
     float2 w12 = w1 + w2;
 
     // Compute uv coordinates for sampling the texture
@@ -134,12 +146,12 @@ float4 SampleCatmullRom5Tap(Texture2D<float4> texture, SamplerState linearSample
     // total weight of samples to normalize result.
     float totalWeight = sw0 + sw1 + sw2 + sw3 + sw4;
 
-    float4 result = 0.0f;
-    result += texture.SampleLevel(linearSampler, float2(tc12.x,  tc0.y), 0.0) * sw0;
-    result += texture.SampleLevel(linearSampler, float2( tc0.x, tc12.y), 0.0) * sw1;
-    result += texture.SampleLevel(linearSampler, float2(tc12.x, tc12.y), 0.0) * sw2;
-    result += texture.SampleLevel(linearSampler, float2( tc3.x, tc12.y), 0.0) * sw3;
-    result += texture.SampleLevel(linearSampler, float2(tc12.x,  tc3.y), 0.0) * sw4;
+    float3 result = 0.0;
+    result += texture.SampleLevel(linearSampler, float2(tc12.x,  tc0.y), 0.0).rgb * sw0;
+    result += texture.SampleLevel(linearSampler, float2( tc0.x, tc12.y), 0.0).rgb * sw1;
+    result += texture.SampleLevel(linearSampler, float2(tc12.x, tc12.y), 0.0).rgb * sw2;
+    result += texture.SampleLevel(linearSampler, float2( tc3.x, tc12.y), 0.0).rgb * sw3;
+    result += texture.SampleLevel(linearSampler, float2(tc12.x,  tc3.y), 0.0).rgb * sw4;
 
     return result / totalWeight;
 }
@@ -216,7 +228,7 @@ void MainCS(
     float2 previousPositionOffsetInPixels = float2(PassSrg::m_constantData.m_inputColorSize) * previousPositionOffset;
     
     // Sample the last frame using a 5-tap Catmull-Rom
-    float3 lastFrameColor = SampleCatmullRom5Tap(PassSrg::m_lastFrameAccumulation, PassSrg::LinearSampler, uvOld, PassSrg::m_constantData.m_inputColorSize, PassSrg::m_constantData.m_inputColorRcpSize, 0.5).rgb;
+    float3 lastFrameColor = SampleCatmullRom5Tap(PassSrg::m_lastFrameAccumulation, PassSrg::LinearSampler, uvOld, PassSrg::m_constantData.m_inputColorSize, PassSrg::m_constantData.m_inputColorRcpSize, 0.5);
     lastFrameColor = RgbToYCoCg(lastFrameColor);
 
     // Last frame color relative to mean
@@ -249,8 +261,8 @@ void MainCS(
 
     // Blend should be in perceptual space, so tonemap first
     float luminance = GetLuminance(thisFrameColor);
-    thisFrameColor = thisFrameColor / (1 + luminance);
-    lastFrameClampedColor = lastFrameClampedColor / (1 + luminance);
+    thisFrameColor = thisFrameColor / (1.0 + luminance);
+    lastFrameClampedColor = lastFrameClampedColor / (1.0 + luminance);
 
     // Blend color with history
     float3 color = lerp(lastFrameClampedColor, thisFrameColor, currentFrameWeight);

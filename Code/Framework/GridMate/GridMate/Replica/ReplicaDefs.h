@@ -1,14 +1,13 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef GM_REPLICADEFS_H
-#define GM_REPLICADEFS_H
+#pragma once
 
-/// \file ReplicaChunk.h
-
+#include <AzCore/Debug/Budget.h>
 #include <AzCore/Math/Crc.h>
 
 namespace GridMate
@@ -79,4 +78,5 @@ namespace GridMate
     static const ZoneMask ZoneMask_All = (ZoneMask) - 1;
 }   // namespace Gridmate
 
-#endif // GM_REPLICADEFS_H
+AZ_DECLARE_BUDGET(GridMate);
+

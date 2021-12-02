@@ -1,21 +1,21 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
-#include <PhysX_precompiled.h>
-
 #include "EditorSystemComponent.h"
 #include <AzCore/Interface/Interface.h>
+#include <AzCore/IO/Path/Path.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzFramework/Physics/SystemBus.h>
 #include <AzFramework/Physics/Collision/CollisionEvents.h>
 #include <AzFramework/Physics/Common/PhysicsSimulatedBody.h>
 
 #include <IEditor.h>
-#include <ISurfaceType.h>
 
 #include <Editor/ConfigStringLineEditCtrl.h>
 #include <Editor/EditorJointConfiguration.h>
@@ -25,7 +25,7 @@
 
 namespace PhysX
 {
-    constexpr const char* DefaultAssetFilename = "SurfaceTypeMaterialLibrary";
+    constexpr const char* DefaultAssetFilePath = "Assets/Physics/SurfaceTypeMaterialLibrary";
     constexpr const char* TemplateAssetFilename = "PhysX/TemplateMaterialLibrary";
 
     static AZStd::optional<AZ::Data::Asset<AZ::Data::AssetData>> GetMaterialLibraryTemplate()
@@ -69,7 +69,7 @@ namespace PhysX
                 assetId, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetIdByPath, relativePath.c_str(), assetType, true /*autoRegisterIfNotFound*/);
 
             AZ::Data::Asset<AZ::Data::AssetData> newAsset =
-                AZ::Data::AssetManager::Instance().GetAsset(assetId, assetType, AZ::Data::AssetLoadBehavior::Default);
+                AZ::Data::AssetManager::Instance().FindOrCreateAsset(assetId, assetType, AZ::Data::AssetLoadBehavior::Default);
 
             if (auto* newMaterialLibraryData = azrtti_cast<Physics::MaterialLibraryAsset*>(newAsset.GetData()))
             {
@@ -140,6 +140,14 @@ namespace PhysX
                     if (auto retrievedMaterialLibrary = RetrieveDefaultMaterialLibrary())
                     {
                         physxSystem->UpdateMaterialLibrary(retrievedMaterialLibrary.value());
+
+                        // After setting the default material library, save the physx configuration.
+                        auto saveCallback = []([[maybe_unused]] const PhysXSystemConfiguration& config, [[maybe_unused]] PhysXSettingsRegistryManager::Result result)
+                        {
+                            AZ_Warning("PhysX", result == PhysXSettingsRegistryManager::Result::Success,
+                                "Unable to save the PhysX configuration after setting default material library.");
+                        };
+                        physxSystem->GetSettingsRegistryManager().SaveSystemConfiguration(physxSystem->GetPhysXConfiguration(), saveCallback);
                     }
                 }
             }
@@ -228,7 +236,7 @@ namespace PhysX
             const AZStd::string& assetExtension = assetTypeExtensions[0];
 
             // Use the path relative to the asset root to avoid hardcoding full path in the configuration
-            AZStd::string relativePath = DefaultAssetFilename;
+            AZStd::string relativePath = DefaultAssetFilePath;
             AzFramework::StringFunc::Path::ReplaceExtension(relativePath, assetExtension.c_str());
 
             // Try to find an already existing material library
@@ -238,11 +246,15 @@ namespace PhysX
             if (!resultAssetId.IsValid())
             {
                 // No file for the default material library, create it
-                const char* assetRoot = AZ::IO::FileIOBase::GetInstance()->GetAlias("@devassets@");
-                AZStd::string fullPath;
-                AzFramework::StringFunc::Path::ConstructFull(assetRoot, DefaultAssetFilename, assetExtension.c_str(), fullPath);
+                AZ::IO::Path fullPath;
+                if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
+                {
+                    settingsRegistry->Get(fullPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_ProjectPath);
+                }
+                fullPath /= DefaultAssetFilePath;
+                fullPath.ReplaceExtension(AZ::IO::PathView(assetExtension));
 
-                if (auto materialLibraryOpt = CreateMaterialLibrary(fullPath, relativePath))
+                if (auto materialLibraryOpt = CreateMaterialLibrary(fullPath.Native(), relativePath))
                 {
                     return materialLibraryOpt;
                 }

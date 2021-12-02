@@ -1,0 +1,19 @@
+{
+    "Amazon": {
+        "AssetProcessor": {
+            "Settings": {
+                "RC cgf": {
+                    "ignore": true
+                },
+                "RC fbx": {
+                    "ignore": true
+                },
+                "ScanFolder AtomTestData": {
+                    "watch": "@ENGINEROOT@/Gems/Atom/TestData",
+                    "recursive": 1,
+                    "order": 1000
+                }
+            }
+        }
+    }
+}

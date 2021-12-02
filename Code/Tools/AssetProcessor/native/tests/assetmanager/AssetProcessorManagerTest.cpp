@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -8,6 +9,7 @@
 #include "AssetProcessorManagerTest.h"
 #include "native/AssetManager/PathDependencyManager.h"
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
+#include <AzToolsFramework/Asset/AssetProcessorMessages.h>
 #include <AzToolsFramework/ToolsFileUtils/ToolsFileUtils.h>
 
 #include <AzTest/AzTest.h>
@@ -75,6 +77,7 @@ public:
     friend class GTEST_TEST_CLASS_NAME_(ModtimeScanningTest, ModtimeSkipping_ModifyMetadataFile);
     friend class GTEST_TEST_CLASS_NAME_(ModtimeScanningTest, ModtimeSkipping_DeleteFile);
     friend class GTEST_TEST_CLASS_NAME_(DeleteTest, DeleteFolderSharedAcrossTwoScanFolders_CorrectFileAndFolderAreDeletedFromCache);
+    friend class GTEST_TEST_CLASS_NAME_(MetadataFileTest, MetadataFile_SourceFileExtensionDifferentCase);
 
     friend class AssetProcessorManagerTest;
     friend struct ModtimeScanningTest;
@@ -189,7 +192,9 @@ void AssetProcessorManagerTest::SetUp()
     registry->Set(cacheRootKey, tempPath.absoluteFilePath("Cache").toUtf8().constData());
     auto projectPathKey =
         AZ::SettingsRegistryInterface::FixedValueString(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey) + "/project_path";
-    registry->Set(projectPathKey, "AutomatedTesting");
+    AZ::IO::FixedMaxPath enginePath;
+    registry->Get(enginePath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder);
+    registry->Set(projectPathKey, (enginePath / "AutomatedTesting").Native());
     AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(*registry);
 
     m_data->m_databaseLocationListener.BusConnect();
@@ -238,7 +243,7 @@ void AssetProcessorManagerTest::SetUp()
     m_mockApplicationManager->BusConnect();
 
     m_assetProcessorManager.reset(new AssetProcessorManager_Test(m_config.get()));
-    m_assertAbsorber.Clear();
+    m_errorAbsorber->Clear();
 
     m_isIdling = false;
 
@@ -329,9 +334,9 @@ TEST_F(AssetProcessorManagerTest, UnitTestForGettingJobInfoBySourceUUIDSuccess)
     EXPECT_STRCASEEQ(relFileName.toUtf8().data(), response.m_jobList[0].m_sourceFile.c_str());
     EXPECT_STRCASEEQ(tempPath.filePath("subfolder1").toUtf8().data(), response.m_jobList[0].m_watchFolder.c_str());
 
-    ASSERT_EQ(m_assertAbsorber.m_numWarningsAbsorbed, 0);
-    ASSERT_EQ(m_assertAbsorber.m_numErrorsAbsorbed, 0);
-    ASSERT_EQ(m_assertAbsorber.m_numAssertsAbsorbed, 0);
+    ASSERT_EQ(m_errorAbsorber->m_numWarningsAbsorbed, 0);
+    ASSERT_EQ(m_errorAbsorber->m_numErrorsAbsorbed, 0);
+    ASSERT_EQ(m_errorAbsorber->m_numAssertsAbsorbed, 0);
 }
 
 TEST_F(AssetProcessorManagerTest, WarningsAndErrorsReported_SuccessfullySavedToDatabase)
@@ -383,9 +388,9 @@ TEST_F(AssetProcessorManagerTest, WarningsAndErrorsReported_SuccessfullySavedToD
     ASSERT_EQ(response.m_jobList[0].m_warningCount, 11);
     ASSERT_EQ(response.m_jobList[0].m_errorCount, 22);
 
-    ASSERT_EQ(m_assertAbsorber.m_numWarningsAbsorbed, 0);
-    ASSERT_EQ(m_assertAbsorber.m_numErrorsAbsorbed, 0);
-    ASSERT_EQ(m_assertAbsorber.m_numAssertsAbsorbed, 0);
+    ASSERT_EQ(m_errorAbsorber->m_numWarningsAbsorbed, 0);
+    ASSERT_EQ(m_errorAbsorber->m_numErrorsAbsorbed, 0);
+    ASSERT_EQ(m_errorAbsorber->m_numAssertsAbsorbed, 0);
 }
 
 
@@ -1307,8 +1312,8 @@ void PathDependencyTest::SetUp()
 
 void PathDependencyTest::TearDown()
 {
-    ASSERT_EQ(m_assertAbsorber.m_numAssertsAbsorbed, 0);
-    ASSERT_EQ(m_assertAbsorber.m_numErrorsAbsorbed, 0);
+    ASSERT_EQ(m_errorAbsorber->m_numAssertsAbsorbed, 0);
+    ASSERT_EQ(m_errorAbsorber->m_numErrorsAbsorbed, 0);
 
     AssetProcessorManagerTest::TearDown();
 }
@@ -1612,7 +1617,7 @@ TEST_F(PathDependencyTest, AssetProcessed_Impl_SelfReferrentialProductDependency
     mainFile.m_products.push_back(productAssetId);
 
     // tell the APM that the asset has been processed and allow it to bubble through its event queue:
-    m_assertAbsorber.Clear();
+    m_errorAbsorber->Clear();
     m_assetProcessorManager->AssetProcessed(jobDetails.m_jobEntry, processJobResponse);
     ASSERT_TRUE(BlockUntilIdle(5000));
 
@@ -1622,8 +1627,8 @@ TEST_F(PathDependencyTest, AssetProcessed_Impl_SelfReferrentialProductDependency
     ASSERT_TRUE(dependencyContainer.empty());
 
     // We are testing 2 different dependencies, so we should get 2 warnings
-    ASSERT_EQ(m_assertAbsorber.m_numWarningsAbsorbed, 2);
-    m_assertAbsorber.Clear();
+    ASSERT_EQ(m_errorAbsorber->m_numWarningsAbsorbed, 2);
+    m_errorAbsorber->Clear();
 }
 
 // This test shows the process of deferring resolution of a path dependency works.
@@ -1940,8 +1945,8 @@ TEST_F(PathDependencyTest, WildcardDependencies_ExcludePathsExisting_ResolveCorr
     );
 
     // Test asset PrimaryFile1 has 4 conflict dependencies
-    ASSERT_EQ(m_assertAbsorber.m_numErrorsAbsorbed, 4);
-    m_assertAbsorber.Clear();
+    ASSERT_EQ(m_errorAbsorber->m_numErrorsAbsorbed, 4);
+    m_errorAbsorber->Clear();
 }
 
 TEST_F(PathDependencyTest, WildcardDependencies_Deferred_ResolveCorrectly)
@@ -2088,8 +2093,8 @@ TEST_F(PathDependencyTest, WildcardDependencies_ExcludedPathDeferred_ResolveCorr
     // Test asset PrimaryFile1 has 4 conflict dependencies
     // After test assets dep2 and dep3 are processed,
     // another 2 errors will be raised because of the confliction
-    ASSERT_EQ(m_assertAbsorber.m_numErrorsAbsorbed, 6);
-    m_assertAbsorber.Clear();
+    ASSERT_EQ(m_errorAbsorber->m_numErrorsAbsorbed, 6);
+    m_errorAbsorber->Clear();
 }
 
 void PathDependencyTest::RunWildcardTest(bool useCorrectDatabaseSeparator, AssetBuilderSDK::ProductPathDependencyType pathDependencyType, bool buildDependenciesFirst)
@@ -3498,7 +3503,6 @@ TEST_F(AssetProcessorManagerTest, JobDependencyOrderOnce_MultipleJobs_EmitOK)
     using namespace AssetProcessor;
     using namespace AssetBuilderSDK;
 
-    AZ::Uuid dummyBuilderUUID = AZ::Uuid::CreateRandom();
     QDir tempPath(m_tempDir.path());
     QString watchFolderPath = tempPath.absoluteFilePath("subfolder1");
     const ScanFolderInfo* scanFolder = m_config->GetScanFolderByPath(watchFolderPath);
@@ -4129,11 +4133,29 @@ struct LockedFileTest
     MOCK_METHOD2(SendResponse, size_t (unsigned, const AzFramework::AssetSystem::BaseAssetProcessorMessage&));
     MOCK_METHOD1(RemoveResponseHandler, void (unsigned));
 
-    size_t Send(unsigned, const AzFramework::AssetSystem::BaseAssetProcessorMessage&) override
+    size_t Send(unsigned, const AzFramework::AssetSystem::BaseAssetProcessorMessage& message) override
     {
-        if(m_callback)
+        using SourceFileNotificationMessage = AzToolsFramework::AssetSystem::SourceFileNotificationMessage;
+        switch (message.GetMessageType())
         {
-            m_callback();
+        case SourceFileNotificationMessage::MessageType:
+            if (const auto sourceFileMessage = azrtti_cast<const SourceFileNotificationMessage*>(&message); sourceFileMessage != nullptr &&
+                sourceFileMessage->m_type == SourceFileNotificationMessage::NotificationType::FileRemoved)
+            {
+                // The File Remove message will occur before an attempt to delete the file
+                // Wait for more than 1 File Remove message.
+                // This indicates the AP has attempted to delete the file once, failed to do so and is now retrying
+                ++m_deleteCounter;
+
+                if(m_deleteCounter > 1 && m_callback)
+                {
+                    m_callback();
+                    m_callback = {}; // Unset it to be safe, we only intend to run the callback once
+                }
+            }
+            break;
+        default:
+            break;
         }
 
         return 0;
@@ -4153,6 +4175,7 @@ struct LockedFileTest
         ModtimeScanningTest::TearDown();
     }
 
+    AZStd::atomic_int m_deleteCounter{ 0 };
     AZStd::function<void()> m_callback;
 };
 
@@ -4192,6 +4215,10 @@ TEST_F(LockedFileTest, DeleteFile_LockedProduct_DeleteFails)
 
 TEST_F(LockedFileTest, DeleteFile_LockedProduct_DeletesWhenReleased)
 {
+    // This test is intended to verify the AP will successfully retry deleting a source asset
+    // when one of its product assets is locked temporarily
+    // We'll lock the file by holding it open
+
     auto theFile = m_data->m_absolutePath[1].toUtf8();
     const char* theFileString = theFile.constData();
     auto [sourcePath, productPath] = *m_data->m_productPaths.find(theFileString);
@@ -4204,19 +4231,22 @@ TEST_F(LockedFileTest, DeleteFile_LockedProduct_DeletesWhenReleased)
     ASSERT_GT(m_data->m_productPaths.size(), 0);
     QFile product(productPath);
 
+    // Open the file and keep it open to lock it
+    // We'll start a thread later to unlock the file
+    // This will allow us to test how AP handles trying to delete a locked file
     ASSERT_TRUE(product.open(QIODevice::ReadOnly));
 
     // Check if we can delete the file now, if we can't, proceed with the test
     // If we can, it means the OS running this test doesn't lock open files so there's nothing to test
     if (!AZ::IO::SystemFile::Delete(productPath.toUtf8().constData()))
     {
-        AZStd::thread workerThread;
+        m_deleteCounter = 0;
 
-        m_callback = [&product, &workerThread]() {
-            workerThread = AZStd::thread([&product]() {
-                AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(60));
-                product.close();
-            });
+        // Set up a callback which will fire after at least 1 retry
+        // Unlock the file at that point so AP can successfully delete it
+        m_callback = [&product]()
+        {
+            product.close();
         };
 
         QMetaObject::invokeMethod(
@@ -4226,8 +4256,9 @@ TEST_F(LockedFileTest, DeleteFile_LockedProduct_DeletesWhenReleased)
 
         EXPECT_FALSE(QFile::exists(productPath));
         EXPECT_EQ(m_data->m_deletedSources.size(), 1);
-
-        workerThread.join();
+        
+        EXPECT_GT(m_deleteCounter, 1); // Make sure the AP tried more than once to delete the file
+        m_errorAbsorber->ExpectAsserts(0);
     }
     else
     {
@@ -5239,4 +5270,60 @@ void DuplicateProcessTest::SetUp()
 
     m_sharedConnection = m_assetProcessorManager->m_stateData.get();
     ASSERT_TRUE(m_sharedConnection);
+}
+
+void MetadataFileTest::SetUp()
+{
+    AssetProcessorManagerTest::SetUp();
+    m_config->AddMetaDataType("foo", "txt");
+}
+
+TEST_F(MetadataFileTest, MetadataFile_SourceFileExtensionDifferentCase)
+{
+
+    using namespace AzToolsFramework::AssetSystem;
+    using namespace AssetProcessor;
+
+    QDir tempPath(m_tempDir.path());
+
+    QString relFileName("Dummy.TXT");
+    QString absPath(tempPath.absoluteFilePath("subfolder1/Dummy.TXT"));
+    QString watchFolder = tempPath.absoluteFilePath("subfolder1");
+    UnitTestUtils::CreateDummyFile(absPath, "dummy");
+
+    JobEntry entry;
+    entry.m_watchFolderPath = watchFolder;
+    entry.m_databaseSourceName = entry.m_pathRelativeToWatchFolder = relFileName;
+    entry.m_jobKey = "txt";
+    entry.m_platformInfo = { "pc", {"host", "renderer", "desktop"} };
+    entry.m_jobRunKey = 1;
+
+    QString productPath(m_normalizedCacheRootDir.absoluteFilePath("outputfile.TXT"));
+    UnitTestUtils::CreateDummyFile(productPath);
+
+    AssetBuilderSDK::ProcessJobResponse jobResponse;
+    jobResponse.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
+    jobResponse.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(productPath.toUtf8().data()));
+
+    QMetaObject::invokeMethod(m_assetProcessorManager.get(), "AssetProcessed", Qt::QueuedConnection, Q_ARG(JobEntry, entry), Q_ARG(AssetBuilderSDK::ProcessJobResponse, jobResponse));
+
+    ASSERT_TRUE(BlockUntilIdle(5000));
+
+    // Creating a metadata file for the source assets
+    // APM should process the source asset if a metadafile is detected
+    // We are intentionally having a source file with a different file extension casing than the one specified in the metadata rule.
+    QString metadataFile(tempPath.absoluteFilePath("subfolder1/Dummy.foo"));
+    UnitTestUtils::CreateDummyFile(metadataFile, "dummy");
+
+    // Capture the job details as the APM inspects the file.
+    JobDetails jobDetails;
+    auto connection = QObject::connect(m_assetProcessorManager.get(), &AssetProcessorManager::AssetToProcess, [&jobDetails](JobDetails job)
+        {
+            jobDetails = job;
+        });
+
+    m_assetProcessorManager->AssessAddedFile(tempPath.absoluteFilePath(metadataFile));
+
+    ASSERT_TRUE(BlockUntilIdle(5000));
+    ASSERT_EQ(jobDetails.m_jobEntry.m_pathRelativeToWatchFolder, relFileName);
 }

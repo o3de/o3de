@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -30,6 +31,13 @@ namespace LmbrCentral
     {
     public:
         AZ_CLASS_ALLOCATOR_DECL
+
+        /// Data required per TubeShape manipulator.
+        struct TubeManipulatorState
+        {
+            AZ::SplineAddress m_splineAddress;
+            AZ::u64 m_vertIndex;
+        };
 
         EditorTubeShapeComponentMode(
             const AZ::EntityComponentIdPair& entityComponentIdPair, AZ::Uuid componentType);
@@ -64,18 +72,11 @@ namespace LmbrCentral
 
         void RefreshManipulatorsLocal(AZ::EntityId entityId);
 
-        /// Data required per TubeShape manipulator.
-        struct TubeManipulatorState
-        {
-            AZ::SplineAddress m_splineAddress;
-            AZ::u64 m_vertIndex;
-        };
-
-        /// For a given Tube + Spline combo, generate data required for each manipulator at
-        /// each vertex required for modifying the tube.
-        AZStd::vector<TubeManipulatorState> GenerateTubeManipulatorStates(const AZ::Spline& spline);
-
         AZ::Transform m_currentTransform; ///< The current localToWorld transform of the TubeShape.
         AZStd::vector<AZStd::shared_ptr<AzToolsFramework::LinearManipulator>> m_radiusManipulators; ///< Manipulators to control the radius (volume) of the tube at each vertex.
     };
+
+    /// For a given Tube + Spline combo, generate data required for each manipulator at
+    /// each vertex required for modifying the tube.
+    AZStd::vector<EditorTubeShapeComponentMode::TubeManipulatorState> GenerateTubeManipulatorStates(const AZ::Spline& spline);
 } // namespace LmbrCentral

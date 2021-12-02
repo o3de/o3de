@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -229,7 +230,7 @@ namespace AZ
     void DebugConsole::BrowseInputHistory(ImGuiInputTextCallbackData* data)
     {
         const int previousHistoryIndex = m_currentHistoryIndex;
-        const int maxHistoryIndex = m_textInputHistory.size() - 1;
+        const int maxHistoryIndex = static_cast<int>(m_textInputHistory.size() - 1);
         switch (data->EventKey)
         {
             // Browse backwards through the history.

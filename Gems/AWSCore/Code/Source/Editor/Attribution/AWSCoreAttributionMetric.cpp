@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -9,8 +10,7 @@
 #include <Editor/Attribution/AWSCoreAttributionConstant.h>
 #include <Framework/JsonWriter.h>
 #include <sstream>
-
-#pragma warning(disable : 4996)
+#include <time.h>
 
 namespace AWSCore
 {
@@ -95,7 +95,13 @@ namespace AWSCore
         time_t now;
         time(&now);
         char buffer[50];
-        strftime(buffer, sizeof(buffer), "%FT%TZ", gmtime(&now));
+        tm time;
+#if AZ_TRAIT_USE_SECURE_CRT_FUNCTIONS
+        gmtime_s(&time, &now);
+#else
+        time = *gmtime(&now);
+#endif
+        strftime(buffer, sizeof(buffer), "%FT%TZ", &time);
 
         return buffer;
     }

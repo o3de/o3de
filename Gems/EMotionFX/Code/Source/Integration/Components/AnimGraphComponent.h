@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -103,15 +104,15 @@ namespace EMotionFX
             //////////////////////////////////////////////////////////////////////////
             // AnimGraphComponentRequestBus::Handler
             EMotionFX::AnimGraphInstance* GetAnimGraphInstance() override;
-            AZ::u32 FindParameterIndex(const char* parameterName) override;
-            const char* FindParameterName(AZ::u32 parameterIndex) override;
-            void SetParameterFloat(AZ::u32 parameterIndex, float value) override;
-            void SetParameterBool(AZ::u32 parameterIndex, bool value) override;
-            void SetParameterString(AZ::u32 parameterIndex, const char* value) override;
-            void SetParameterVector2(AZ::u32 parameterIndex, const AZ::Vector2& value) override;
-            void SetParameterVector3(AZ::u32 parameterIndex, const AZ::Vector3& value) override;
-            void SetParameterRotationEuler(AZ::u32 parameterIndex, const AZ::Vector3& value) override;
-            void SetParameterRotation(AZ::u32 parameterIndex, const AZ::Quaternion& value) override;
+            size_t FindParameterIndex(const char* parameterName) override;
+            const char* FindParameterName(size_t parameterIndex) override;
+            void SetParameterFloat(size_t parameterIndex, float value) override;
+            void SetParameterBool(size_t parameterIndex, bool value) override;
+            void SetParameterString(size_t parameterIndex, const char* value) override;
+            void SetParameterVector2(size_t parameterIndex, const AZ::Vector2& value) override;
+            void SetParameterVector3(size_t parameterIndex, const AZ::Vector3& value) override;
+            void SetParameterRotationEuler(size_t parameterIndex, const AZ::Vector3& value) override;
+            void SetParameterRotation(size_t parameterIndex, const AZ::Quaternion& value) override;
             void SetNamedParameterFloat(const char* parameterName, float value) override;
             void SetNamedParameterBool(const char* parameterName, bool value) override;
             void SetNamedParameterString(const char* parameterName, const char* value) override;
@@ -120,13 +121,13 @@ namespace EMotionFX
             void SetNamedParameterRotationEuler(const char* parameterName, const AZ::Vector3& value) override;
             void SetNamedParameterRotation(const char* parameterName, const AZ::Quaternion& value) override;
             void SetVisualizeEnabled(bool enabled) override;
-            float GetParameterFloat(AZ::u32 parameterIndex) override;
-            bool GetParameterBool(AZ::u32 parameterIndex) override;
-            AZStd::string GetParameterString(AZ::u32 parameterIndex) override;
-            AZ::Vector2 GetParameterVector2(AZ::u32 parameterIndex) override;
-            AZ::Vector3 GetParameterVector3(AZ::u32 parameterIndex) override;
-            AZ::Vector3 GetParameterRotationEuler(AZ::u32 parameterIndex) override;
-            AZ::Quaternion GetParameterRotation(AZ::u32 parameterIndex) override;
+            float GetParameterFloat(size_t parameterIndex) override;
+            bool GetParameterBool(size_t parameterIndex) override;
+            AZStd::string GetParameterString(size_t parameterIndex) override;
+            AZ::Vector2 GetParameterVector2(size_t parameterIndex) override;
+            AZ::Vector3 GetParameterVector3(size_t parameterIndex) override;
+            AZ::Vector3 GetParameterRotationEuler(size_t parameterIndex) override;
+            AZ::Quaternion GetParameterRotation(size_t parameterIndex) override;
             float GetNamedParameterFloat(const char* parameterName) override;
             bool GetNamedParameterBool(const char* parameterName) override;
             AZStd::string GetNamedParameterString(const char* parameterName) override;

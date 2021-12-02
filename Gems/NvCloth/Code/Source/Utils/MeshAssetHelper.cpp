@@ -1,11 +1,13 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
 #include <AtomLyIntegration/CommonFeatures/Mesh/MeshComponentBus.h>
+#include <Atom/RPI.Reflect/Model/ModelAsset.h>
 
 #include <NvCloth/ITangentSpaceHelper.h>
 
@@ -65,7 +67,7 @@ namespace NvCloth
         MeshNodeInfo& meshNodeInfo,
         MeshClothInfo& meshClothInfo)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Cloth);
+        AZ_PROFILE_FUNCTION(Cloth);
 
         AZ::Data::Asset<AZ::RPI::ModelAsset> modelDataAsset;
         AZ::Render::MeshComponentRequestBus::EventResult(

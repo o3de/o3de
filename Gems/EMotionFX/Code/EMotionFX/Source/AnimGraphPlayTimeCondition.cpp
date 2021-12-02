@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -55,7 +56,7 @@ namespace EMotionFX
             return;
         }
 
-        m_node = mAnimGraph->RecursiveFindNodeById(m_nodeId);
+        m_node = m_animGraph->RecursiveFindNodeById(m_nodeId);
     }
 
 
@@ -180,7 +181,7 @@ namespace EMotionFX
     void AnimGraphPlayTimeCondition::SetNodeId(AnimGraphNodeId nodeId)
     {
         m_nodeId = nodeId;
-        if (mAnimGraph)
+        if (m_animGraph)
         {
             Reinit();
         }

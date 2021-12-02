@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -38,7 +39,7 @@ namespace AzToolsFramework
         //      the TraceContextLogFormatter.
         //
         //      Usage example:
-        //          const char* gameFolder = m_context.pRC->GetSystemEnvironment()->pFileIO->GetAlias("@devassets@");
+        //          const char* gameFolder = m_context.pRC->GetSystemEnvironment()->pFileIO->GetAlias("@projectroot@");
         //          AZ_TraceContext("Game folder", gameFolder);
         //
         //          for (int i=0; i<subMeshCount; ++i)

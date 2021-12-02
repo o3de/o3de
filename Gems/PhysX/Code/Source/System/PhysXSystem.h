@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -20,6 +21,7 @@
 #include <System/PhysXSdkCallbacks.h>
 
 #include <PhysX/Configuration/PhysXConfiguration.h>
+#include <System/PhysXJointInterface.h>
 
 namespace physx
 {
@@ -123,6 +125,7 @@ namespace PhysX
         Debug::PhysXDebug m_physXDebug; //! Handler for the PhysXDebug Interface.
         PhysXSettingsRegistryManager& m_registryManager; //! Handles all settings registry interactions.
         PhysXSceneInterface m_sceneInterface; //! Implemented the Scene Az::Interface.
+        PhysXJointHelpersInterface m_jointHelperInterface; //! Implementation of the JointHelpersInterface.
 
         class MaterialLibraryAssetHelper
             : private AZ::Data::AssetBus::Handler

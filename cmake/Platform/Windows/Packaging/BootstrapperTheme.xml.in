@@ -70,6 +70,21 @@
         <Button Name="ProgressCancelButton" X="-22" Y="-10" Width="80" Height="24" TabStop="yes" FontId="2">#(loc.ProgressCancelButton)</Button>
     </Page>
 
+    <!-- files in use page (action blocking) -->
+    <Page Name="FilesInUse">
+      <Text X="38" Y="142" Width="-42" Height="34" FontId="0" DisablePrefix="yes">#(loc.FilesInUseHeader)</Text>
+
+      <Text X="42" Y="202" Width="-42" Height="18" FontId="1" DisablePrefix="yes">#(loc.FilesInUseLabel)</Text>
+      <Richedit Name="FilesInUseText" X="42" Y="230" Width="-42" Height="-104" FontId="1" DisablePrefix="yes" HexStyle="0x800000" />
+
+      <Button Name="FilesInUseCloseRadioButton" X="42" Y="-76" Width="-42" Height="18" TabStop="yes" FontId="2" HideWhenDisabled="yes" HexStyle="0x000009">#(loc.FilesInUseCloseRadioButton)</Button>
+      <Button Name="FilesInUseDontCloseRadioButton" X="42" Y="-56" Width="-42" Height="18" TabStop="yes" FontId="2" HideWhenDisabled="yes" HexStyle="0x000009">#(loc.FilesInUseDontCloseRadioButton)</Button>
+
+      <Text X="0" Y="426" Width="672" Height="46" FontId="3" HideWhenDisabled="yes" />
+      <Button Name="FilesInUseOkButton" X="-106" Y="-10" Width="80" Height="24" TabStop="yes" FontId="2" HideWhenDisabled="yes">#(loc.FilesInUseOkButton)</Button>
+      <Button Name="FilesInUseCancelButton" X="-22" Y="-10" Width="80" Height="24" TabStop="yes" FontId="2">#(loc.FilesInUseCancelButton)</Button>
+    </Page>
+
     <!-- final page (success state) -->
     <Page Name="Success">
         <Text Name="SuccessHeader" X="38" Y="142" Width="-42" Height="34" FontId="0" HideWhenDisabled="yes" DisablePrefix="yes">#(loc.SuccessHeader)</Text>

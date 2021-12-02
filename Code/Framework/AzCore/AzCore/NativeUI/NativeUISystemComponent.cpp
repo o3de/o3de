@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -40,11 +41,17 @@ namespace AZ::NativeUI
         AZStd::string result = DisplayBlockingDialog("Assert Failed!", message, options);
 
         if (result.compare(buttonNames[0]) == 0)
+        {
             return AssertAction::IGNORE_ASSERT;
+        }
         else if (result.compare(buttonNames[1]) == 0)
+        {
             return AssertAction::IGNORE_ALL_ASSERTS;
+        }
         else if (result.compare(buttonNames[2]) == 0)
+        {
             return AssertAction::BREAK;
+        }
 
         return AssertAction::NONE;
     }

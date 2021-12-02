@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -45,9 +46,9 @@ namespace MCore
          * @param z The compressed z component.
          */
         MCORE_INLINE TCompressedVector3(StorageType x, StorageType y, StorageType z)
-            : mX(x)
-            , mY(y)
-            , mZ(z) {}
+            : m_x(x)
+            , m_y(y)
+            , m_z(z) {}
 
         /**
          * Create a compressed vector from an uncompressed one.
@@ -77,7 +78,7 @@ namespace MCore
 
 
     public:
-        StorageType mX, mY, mZ; /**< The compressed/packed vector components. */
+        StorageType m_x, m_y, m_z; /**< The compressed/packed vector components. */
 
         // the number of steps within the specified range
         enum

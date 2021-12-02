@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -71,7 +72,7 @@ bool CryAssert(const char* szCondition, const char* szFile, unsigned int line, b
 
     static const int max_len = 4096;
     static char gs_command_str[4096];
-    static CryLockT<CRYLOCK_RECURSIVE> lock;
+    static AZStd::recursive_mutex lock;
 
     gEnv->pSystem->OnAssert(szCondition, gs_szMessage, szFile, line);
 
@@ -79,7 +80,7 @@ bool CryAssert(const char* szCondition, const char* szFile, unsigned int line, b
 
     if (!gEnv->bNoAssertDialog && !gEnv->bIgnoreAllAsserts)
     {
-        CryAutoLock< CryLockT<CRYLOCK_RECURSIVE> > lk (lock);
+        AZStd::scoped_lock lk(lock);
         snprintf(gs_command_str, max_len, "xterm -geometry 100x20 -n 'Assert Dialog [Linux Launcher]' -T 'Assert Dialog [Linux Launcher]' -e 'BinLinux/assert_term \"%s\" \"%s\" %d \"%s\"; echo \"$?\" > .assert_return'",
             szCondition, (file_len > 60) ? szFile + (file_len - 61) : szFile, line, gs_szMessage);
         int ret = system(gs_command_str);

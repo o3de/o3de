@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -30,7 +31,7 @@ namespace AzToolsFramework
 
             void AppendEntityAliasToPatchPaths(PrefabDom& providedPatch, const AZ::EntityId& entityId) override;
 
-            InstanceOptionalReference GetTopMostInstanceInHierarchy(AZ::EntityId entityId);
+            InstanceOptionalReference GetTopMostInstanceInHierarchy(AZ::EntityId entityId) override;
 
             bool PatchTemplate(PrefabDomValue& providedPatch, TemplateId templateId, InstanceOptionalReference instanceToExclude = AZStd::nullopt) override;
 

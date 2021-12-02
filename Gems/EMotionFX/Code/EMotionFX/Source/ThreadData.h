@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -12,7 +13,7 @@
 #include "BaseObject.h"
 #include "AnimGraphPosePool.h"
 #include "AnimGraphRefCountedDataPool.h"
-#include <MCore/Source/Array.h>
+#include <AzCore/std/containers/vector.h>
 
 
 namespace EMotionFX
@@ -33,16 +34,16 @@ namespace EMotionFX
         void SetThreadIndex(uint32 index);
         uint32 GetThreadIndex() const;
 
-        MCORE_INLINE const AnimGraphPosePool& GetPosePool() const                          { return mPosePool; }
-        MCORE_INLINE AnimGraphPosePool& GetPosePool()                                      { return mPosePool; }
+        MCORE_INLINE const AnimGraphPosePool& GetPosePool() const                          { return m_posePool; }
+        MCORE_INLINE AnimGraphPosePool& GetPosePool()                                      { return m_posePool; }
 
-        MCORE_INLINE AnimGraphRefCountedDataPool& GetRefCountedDataPool()                  { return mRefCountedDataPool; }
-        MCORE_INLINE const AnimGraphRefCountedDataPool& GetRefCountedDataPool() const      { return mRefCountedDataPool; }
+        MCORE_INLINE AnimGraphRefCountedDataPool& GetRefCountedDataPool()                  { return m_refCountedDataPool; }
+        MCORE_INLINE const AnimGraphRefCountedDataPool& GetRefCountedDataPool() const      { return m_refCountedDataPool; }
 
     private:
-        uint32                          mThreadIndex;
-        AnimGraphPosePool              mPosePool;
-        AnimGraphRefCountedDataPool    mRefCountedDataPool;
+        uint32                          m_threadIndex;
+        AnimGraphPosePool              m_posePool;
+        AnimGraphRefCountedDataPool    m_refCountedDataPool;
 
         ThreadData();
         ThreadData(uint32 threadIndex);

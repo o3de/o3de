@@ -1,10 +1,12 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 #include <AzCore/Asset/AssetManager.h>
+#include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/IO/SystemFile.h>
@@ -71,7 +73,7 @@ namespace UnitTest
                     });
 
             ON_CALL(m_mockStreamer, GetRequestStatus(_))
-                .WillByDefault([this]([[maybe_unused]] FileRequestHandle request)
+                .WillByDefault([]([[maybe_unused]] FileRequestHandle request)
                     {
                         // Return whatever request status has been set in this class
                         return IO::IStreamerTypes::RequestStatus::Completed;
@@ -419,7 +421,7 @@ namespace UnitTest
         AZ::Data::AssetHandler::LoadResult LoadAssetData(
             [[maybe_unused]] const AZ::Data::Asset<AZ::Data::AssetData>& asset,
             [[maybe_unused]] AZStd::shared_ptr<AZ::Data::AssetDataStream> stream,
-            [[maybe_unused]] const AZ::Data::AssetFilterCB& assetLoadFilterCB)
+            [[maybe_unused]] const AZ::Data::AssetFilterCB& assetLoadFilterCB) override
         {
             return AZ::Data::AssetHandler::LoadResult::LoadComplete;
         }

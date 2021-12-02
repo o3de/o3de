@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -103,7 +104,7 @@ namespace AZ::IO::ZipDir::ZipDirStructuresInternal
             if (*pReturnCode == Z_BUF_ERROR)
             {
                 // As long as we consumed something, keep going. Only fail permanently if we've stalled.
-                if (nAvailIn != pZStream->avail_in || nAvailOut != pZStream->avail_out)
+                if (nAvailIn != static_cast<int>(pZStream->avail_in) || nAvailOut != static_cast<int>(pZStream->avail_out))
                 {
                     *pReturnCode = Z_OK;
                 }
@@ -186,8 +187,7 @@ namespace AZ::IO::ZipDir::ZipDirStructuresInternal
 
         // If src/dst overlap (in place decompress), then inflate in chunks, copying src locally to ensure
         // pointers don't foul each other.
-        bool bIndependantBlocks = ((pInput + nInputLen) <= pOutput) || (pInput >= (pOutput + nOutputLen));
-        if (bIndependantBlocks)
+        if ((pInput + nInputLen) <= pOutput || pInput >= (pOutput + nOutputLen))
         {
             pZStream->next_in = (Bytef*)pInput;
             pZStream->avail_in = aznumeric_cast<uint32_t>(nInputLen);
@@ -259,8 +259,7 @@ namespace AZ::IO::ZipDir::ZipDirStructuresInternal
 
         // If src/dst overlap (in place decompress), then inflate in chunks, copying src locally to ensure
         // pointers don't foul each other.
-        bool bIndependantBlocks = ((pIn + nIn) <= stream.next_out) || (pIn >= (stream.next_out + stream.avail_out));
-        if (bIndependantBlocks)
+        if ((pIn + nIn) <= stream.next_out || pIn >= (stream.next_out + stream.avail_out))
         {
             stream.next_in = pIn;
             stream.avail_in = nIn;
@@ -337,14 +336,15 @@ namespace AZ::IO::ZipDir
             else
             {
                 AZ::IO::HandleType realFileHandle = m_fileHandle;
-                size_t nFileSize = ~0;
 
                 AZ::u64 fileSize = 0;
                 if (!m_fileIOBase->Size(realFileHandle, fileSize))
                 {
-                    goto error;
+                    // Error
+                    m_nSize = 0;
+                    return;
                 }
-                nFileSize = static_cast<size_t>(fileSize);
+                const size_t nFileSize = static_cast<size_t>(fileSize);
 
                 m_pInMemoryData = ZipDirStructuresInternal::CreateMemoryBlock(nFileSize, szUsage);
 
@@ -352,16 +352,18 @@ namespace AZ::IO::ZipDir
 
                 if (!m_fileIOBase->Seek(realFileHandle, 0, AZ::IO::SeekType::SeekFromStart))
                 {
-                    goto error;
+                    // Error
+                    m_nSize = 0;
+                    return;
                 }
                 if (!m_fileIOBase->Read(realFileHandle, m_pInMemoryData->m_address.get(), nFileSize, true))
                 {
-                    goto error;
+                    // Error
+                    m_nSize = 0;
+                    return;
                 }
 
                 return;
-            error:
-                m_nSize = 0;
             }
         }
     }
@@ -415,9 +417,9 @@ namespace AZ::IO::ZipDir
         }
 
         // defining file attributes for opening files using constants to avoid the need to include windows headers
-        constexpr int FileFlagNoBufferinf = 0x20000000;
+        constexpr int FileFlagNoBuffering = 0x20000000;
         constexpr int FileAttributeNormal = 0x00000080;
-        if (m_unbufferedFile.Open(filename, AZ::IO::SystemFile::OpenMode::SF_OPEN_READ_ONLY, FileAttributeNormal | FileAttributeNormal))
+        if (m_unbufferedFile.Open(filename, AZ::IO::SystemFile::OpenMode::SF_OPEN_READ_ONLY, FileFlagNoBuffering | FileAttributeNormal))
         {
             m_nSize = aznumeric_cast<int64_t>(m_unbufferedFile.Length());
             return true;
@@ -428,18 +430,18 @@ namespace AZ::IO::ZipDir
 
     bool CZipFile::EvaluateSectorSize(const char* filename)
     {
-        char volume[AZ_MAX_PATH_LEN];
+        AZ::IO::FixedMaxPath volume;
 
-        if (AZ::StringFunc::Path::IsRelative(filename))
+        if (AZ::IO::PathView(filename).IsRelative())
         {
-            AZ::IO::FileIOBase::GetDirectInstance()->ResolvePath(filename, volume, AZ_ARRAY_SIZE(volume));
+            AZ::IO::FileIOBase::GetDirectInstance()->ResolvePath(volume, filename);
         }
         else
         {
-            azstrcpy(volume, AZ_ARRAY_SIZE(volume), filename);
+            volume = filename;
         }
 
-        AZStd::fixed_string<AZ::IO::MaxPathLength> drive{ AZ::IO::PathView(volume).RootName().Native() };
+        AZ::IO::FixedMaxPath drive = volume.RootName();
         if (drive.empty())
         {
             return false;
@@ -494,18 +496,18 @@ namespace AZ::IO::ZipDir
     //////////////////////////////////////////////////////////////////////////
     FileEntryBase::FileEntryBase(const ZipFile::CDRFileHeader& header, const SExtraZipFileData& extra)
     {
-        this->desc = header.desc;
-        this->nFileHeaderOffset = header.lLocalHeaderOffset;
-        //this->nFileDataOffset   = INVALID_DATA_OFFSET; // we don't know yet
-        this->nMethod = header.nMethod;
-        this->nNameOffset = 0; // we don't know yet
-        this->nLastModTime = header.nLastModTime;
-        this->nLastModDate = header.nLastModDate;
-        this->nNTFS_LastModifyTime = extra.nLastModifyTime;
+        desc = header.desc;
+        nFileHeaderOffset = header.lLocalHeaderOffset;
+
+        nMethod = header.nMethod;
+        nNameOffset = 0; // we don't know yet
+        nLastModTime = header.nLastModTime;
+        nLastModDate = header.nLastModDate;
+        nNTFS_LastModifyTime = extra.nLastModifyTime;
 
         // make an estimation (at least this offset should be there), but we don't actually know yet
-        this->nFileDataOffset = header.lLocalHeaderOffset + sizeof(ZipFile::LocalFileHeader) + header.nFileNameLength;
-        this->nEOFOffset = header.lLocalHeaderOffset + sizeof(ZipFile::LocalFileHeader) + header.nFileNameLength + header.desc.lSizeCompressed;
+        nFileDataOffset = header.lLocalHeaderOffset + sizeof(ZipFile::LocalFileHeader) + header.nFileNameLength + header.nExtraFieldLength;
+        nEOFOffset = nFileDataOffset + header.desc.lSizeCompressed;
     }
 
     // Uncompresses raw (without wrapping) data that is compressed with method 8 (deflated) in the Zip file
@@ -662,7 +664,9 @@ namespace AZ::IO::ZipDir
             DirEntry* pEnd = pBegin + this->numDirs;
             DirEntry* pEntry = AZStd::lower_bound(pBegin, pEnd, szName, pred);
 #if AZ_TRAIT_LEGACY_CRYPAK_UNIX_LIKE_FILE_SYSTEM
-            if (pEntry != pEnd && !azstrnicmp(szName.data(), pEntry->GetName(pNamePool), szName.size()))
+            AZ::IO::PathView searchPath(szName, AZ::IO::WindowsPathSeparator);
+            AZ::IO::PathView entryPath(pEntry->GetName(pNamePool), AZ::IO::WindowsPathSeparator);
+            if (pEntry != pEnd && searchPath == entryPath)
 #else
             if (pEntry != pEnd && szName == pEntry->GetName(pNamePool))
 #endif
@@ -686,7 +690,9 @@ namespace AZ::IO::ZipDir
             FileEntry* pEnd = pBegin + this->numFiles;
             FileEntry* pEntry = AZStd::lower_bound(pBegin, pEnd, szName, pred);
 #if AZ_TRAIT_LEGACY_CRYPAK_UNIX_LIKE_FILE_SYSTEM
-            if (pEntry != pEnd && !azstrnicmp(szName.data(), pEntry->GetName(pNamePool), szName.size()))
+            AZ::IO::PathView searchPath(szName, AZ::IO::WindowsPathSeparator);
+            AZ::IO::PathView entryPath(pEntry->GetName(pNamePool), AZ::IO::WindowsPathSeparator);
+            if (pEntry != pEnd && searchPath == entryPath)
 #else
             if (pEntry != pEnd && szName == pEntry->GetName(pNamePool))
 #endif
@@ -809,8 +815,6 @@ namespace AZ::IO::ZipDir
         header.nFileNameLength = aznumeric_cast<uint16_t>(nFileNameLength);
         header.nExtraFieldLength = 0;
 
-        pFileEntry->nFileDataOffset = pFileEntry->nFileHeaderOffset + sizeof(header) + header.nFileNameLength;
-        pFileEntry->nEOFOffset = pFileEntry->nFileDataOffset + pFileEntry->desc.lSizeCompressed;
         if (!AZ::IO::FileIOBase::GetDirectInstance()->Write(fileHandle, &header, sizeof(header)))
         {
             return ZD_ERROR_IO_FAILED;
@@ -831,18 +835,18 @@ namespace AZ::IO::ZipDir
     // conversion routines for the date/time fields used in Zip
     uint16_t DOSDate(tm* t)
     {
-        return
+        return static_cast<uint16_t>(
             ((t->tm_year - 80) << 9)
             | (t->tm_mon << 5)
-            | t->tm_mday;
+            | t->tm_mday);
     }
 
     uint16_t DOSTime(tm* t)
     {
-        return
+        return static_cast<uint16_t>(
             ((t->tm_hour) << 11)
             | ((t->tm_min) << 5)
-            | ((t->tm_sec) >> 1);
+            | ((t->tm_sec) >> 1));
     }
 
     // sets the current time to modification time
@@ -871,7 +875,7 @@ namespace AZ::IO::ZipDir
         // we'll need CRC32 of the file to pack it
         this->desc.lCRC32 = AZ::Crc32(pUncompressed, nSize);
 
-        this->nMethod = nCompressionMethod;
+        this->nMethod = static_cast<uint16_t>(nCompressionMethod);
     }
 
     uint64_t FileEntry::GetModificationTime()
@@ -986,13 +990,6 @@ namespace AZ::IO::ZipDir
     }
 
     //////////////////////////////////////////////////////////////////////////
-    uint32_t FileNameHash(AZStd::string_view filename)
-    {
-        AZ::IO::StackString pathname{ filename };
-        AZStd::replace(AZStd::begin(pathname), AZStd::end(pathname), AZ_WRONG_DATABASE_SEPARATOR, AZ_CORRECT_DATABASE_SEPARATOR);
-
-        return AZ::Crc32(pathname);
-    }
 
     int64_t FSeek(CZipFile* file, int64_t origin, int command)
     {

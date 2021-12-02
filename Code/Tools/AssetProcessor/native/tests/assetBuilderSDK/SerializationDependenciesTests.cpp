@@ -1,11 +1,13 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
 #include <AzTest/AzTest.h>
+#include <AzCore/Asset/AssetSerializer.h>
 #include <AssetBuilderSDK/SerializationDependencies.h>
 #include <Tests/SerializeContextFixture.h>
 
@@ -94,7 +96,7 @@ namespace SerializationDependencyTests
             // Use an arbitrary ID for the asset type.
             return AZ::Data::AssetType("{03FD33E2-DA2F-4021-A266-0DC9714FF84D}");
         }
-        virtual const char* GetFileFilter() const
+        const char* GetFileFilter() const override
         {
             return nullptr;
         }

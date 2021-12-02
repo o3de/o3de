@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -12,7 +13,6 @@
 #include <AzTest/GemTestEnvironment.h>
 #include <QApplication>
 #include <Multiplayer/Components/NetBindComponent.h>
-#include <Source/Pipeline/NetBindMarkerComponent.h>
 #include <Source/Pipeline/NetworkSpawnableHolderComponent.h>
 #include <UnitTest/ToolsTestApplication.h>
 
@@ -29,7 +29,6 @@ namespace Multiplayer
         {
             AZStd::vector<AZ::ComponentDescriptor*> descriptors({
                 NetBindComponent::CreateDescriptor(),
-                NetBindMarkerComponent::CreateDescriptor(),
                 NetworkSpawnableHolderComponent::CreateDescriptor()
             });
 

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -12,8 +13,8 @@
 #pragma once
 
 #include <IConsole.h>
-#include <CryCrc32.h>
 #include "Timer.h"
+#include <CryCommon/StlUtils.h>
 #include <AzFramework/Components/ConsoleBus.h>
 #include <AzFramework/CommandLine/CommandRegistrationBus.h>
 
@@ -21,10 +22,12 @@
 #include <AzFramework/Input/Events/InputChannelEventListener.h>
 #include <AzFramework/Input/Events/InputTextEventListener.h>
 
+#include <list>
+#include <map>
 //forward declaration
 struct INetwork;
 class CSystem;
-
+struct IFFont;
 
 #define MAX_HISTORY_ENTRIES 50
 #define LINE_BORDER 10
@@ -41,23 +44,17 @@ enum ScrollDir
 //////////////////////////////////////////////////////////////////////////
 struct CConsoleCommand
 {
-    string m_sName;            // Console command name
-    string m_sCommand;         // lua code that is executed when this command is invoked
-    string m_sHelp;            // optional help string - can be shown in the console with "<commandname> ?"
-    int    m_nFlags;           // bitmask consist of flag starting with VF_ e.g. VF_CHEAT
-    ConsoleCommandFunc m_func; // Pointer to console command.
+    AZStd::string m_sName;            // Console command name
+    AZStd::string m_sCommand;         // lua code that is executed when this command is invoked
+    AZStd::string m_sHelp;            // optional help string - can be shown in the console with "<commandname> ?"
+    int    m_nFlags;                  // bitmask consist of flag starting with VF_ e.g. VF_CHEAT
+    ConsoleCommandFunc m_func;        // Pointer to console command.
 
     //////////////////////////////////////////////////////////////////////////
     CConsoleCommand()
-        : m_func(0)
+        : m_func(nullptr)
         , m_nFlags(0) {}
     size_t sizeofThis () const {return sizeof(*this) + m_sName.capacity() + 1 + m_sCommand.capacity() + 1; }
-    void GetMemoryUsage (class ICrySizer* pSizer) const
-    {
-        pSizer->AddObject(m_sName);
-        pSizer->AddObject(m_sCommand);
-        pSizer->AddObject(m_sHelp);
-    }
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -66,53 +63,39 @@ struct CConsoleCommand
 struct CConsoleCommandArgs
     : public IConsoleCmdArgs
 {
-    CConsoleCommandArgs(string& line, std::vector<string>& args)
+    CConsoleCommandArgs(AZStd::string& line, std::vector<AZStd::string>& args)
         : m_line(line)
         , m_args(args) {};
-    virtual int GetArgCount() const { return m_args.size(); };
+    int GetArgCount() const override { return static_cast<int>(m_args.size()); };
     // Get argument by index, nIndex must be in 0 <= nIndex < GetArgCount()
-    virtual const char* GetArg(int nIndex) const
+    const char* GetArg(int nIndex) const override
     {
         assert(nIndex >= 0 && nIndex < GetArgCount());
         if (!(nIndex >= 0 && nIndex < GetArgCount()))
         {
-            return NULL;
+            return nullptr;
         }
         return m_args[nIndex].c_str();
     }
-    virtual const char* GetCommandLine() const
+    const char* GetCommandLine() const override
     {
         return m_line.c_str();
     }
 
 private:
-    std::vector<string>& m_args;
-    string& m_line;
+    std::vector<AZStd::string>& m_args;
+    AZStd::string& m_line;
 };
 
 
 
 struct string_nocase_lt
 {
-    bool operator()(const char* s1, const char* s2) const
+    bool operator()(const AZStd::string& s1, const AZStd::string& s2) const
     {
-        return azstricmp(s1, s2) < 0;
+        return azstricmp(s1.c_str(), s2.c_str()) < 0;
     }
 };
-
-/* - very dangerous to use with STL containers
-struct string_nocase_lt
-{
-    bool operator()( const char *s1,const char *s2 ) const
-    {
-        return _stricmp(s1,s2) < 0;
-    }
-    bool operator()( const string &s1,const string &s2 ) const
-    {
-        return _stricmp(s1.c_str(),s2.c_str()) < 0;
-    }
-};
-*/
 
 //forward declarations
 class ITexture;
@@ -131,9 +114,9 @@ class CXConsole
     , public AzFramework::CommandRegistrationBus::Handler
 {
 public:
-    typedef std::deque<string> ConsoleBuffer;
-    typedef ConsoleBuffer::iterator ConsoleBufferItor;
-    typedef ConsoleBuffer::reverse_iterator ConsoleBufferRItor;
+    using ConsoleBuffer = std::deque<AZStd::string>;
+    using ConsoleBufferItor = ConsoleBuffer::iterator;
+    using ConsoleBufferRItor = ConsoleBuffer::reverse_iterator;
 
     // constructor
     CXConsole();
@@ -149,76 +132,68 @@ public:
     void Paste();
 
     // interface IConsole ---------------------------------------------------------
-    virtual void Release();
+    void Release() override;
 
-    virtual void Init(ISystem* pSystem);
-    virtual ICVar* RegisterString(const char* sName, const char* sValue, int nFlags, const char* help = "", ConsoleVarFunc pChangeFunc = 0);
-    virtual ICVar* RegisterInt(const char* sName, int iValue, int nFlags, const char* help = "", ConsoleVarFunc pChangeFunc = 0);
-    virtual ICVar* RegisterInt64(const char* sName, int64 iValue, int nFlags, const char* help = "", ConsoleVarFunc pChangeFunc = 0);
-    virtual ICVar* RegisterFloat(const char* sName, float fValue, int nFlags, const char* help = "", ConsoleVarFunc pChangeFunc = 0);
-    virtual ICVar* Register(const char* name, float* src, float defaultvalue, int flags = 0, const char* help = "", ConsoleVarFunc pChangeFunc = 0, bool allowModify = true);
-    virtual ICVar* Register(const char* name, int* src, int defaultvalue, int flags = 0, const char* help = "", ConsoleVarFunc pChangeFunc = 0, bool allowModify = true);
-    virtual ICVar* Register(const char* name, const char** src, const char* defaultvalue, int flags = 0, const char* help = "", ConsoleVarFunc pChangeFunc = 0, bool allowModify = true);
-    virtual ICVar* Register(ICVar* pVar) { RegisterVar(pVar); return pVar; }
+    void Init(ISystem* pSystem) override;
+    ICVar* RegisterString(const char* sName, const char* sValue, int nFlags, const char* help = "", ConsoleVarFunc pChangeFunc = 0) override;
+    ICVar* RegisterInt(const char* sName, int iValue, int nFlags, const char* help = "", ConsoleVarFunc pChangeFunc = 0) override;
+    ICVar* RegisterFloat(const char* sName, float fValue, int nFlags, const char* help = "", ConsoleVarFunc pChangeFunc = 0) override;
+    ICVar* Register(const char* name, float* src, float defaultvalue, int flags = 0, const char* help = "", ConsoleVarFunc pChangeFunc = 0, bool allowModify = true) override;
+    ICVar* Register(const char* name, int* src, int defaultvalue, int flags = 0, const char* help = "", ConsoleVarFunc pChangeFunc = 0, bool allowModify = true) override;
+    ICVar* Register(const char* name, const char** src, const char* defaultvalue, int flags = 0, const char* help = "", ConsoleVarFunc pChangeFunc = 0, bool allowModify = true) override;
 
-    virtual void UnregisterVariable(const char* sVarName, bool bDelete = false);
-    virtual void SetScrollMax(int value);
-    virtual void AddOutputPrintSink(IOutputPrintSink* inpSink);
-    virtual void RemoveOutputPrintSink(IOutputPrintSink* inpSink);
-    virtual void ShowConsole(bool show, int iRequestScrollMax = -1);
-    virtual void DumpCVars(ICVarDumpSink* pCallback, unsigned int nFlagsFilter = 0);
-    virtual void DumpKeyBinds(IKeyBindDumpSink* pCallback);
-    virtual void CreateKeyBind(const char* sCmd, const char* sRes);
-    virtual const char* FindKeyBind(const char* sCmd) const;
-    virtual void    SetImage(ITexture* pImage, bool bDeleteCurrent);
-    virtual inline ITexture* GetImage() { return m_pImage; }
-    virtual void StaticBackground(bool bStatic) { m_bStaticBackground = bStatic; }
-    virtual bool GetLineNo(int indwLineNo, char* outszBuffer, int indwBufferSize) const;
-    virtual int GetLineCount() const;
-    virtual ICVar* GetCVar(const char* name);
-    virtual char* GetVariable(const char* szVarName, const char* szFileName, const char* def_val);
-    virtual float GetVariable(const char* szVarName, const char* szFileName, float def_val);
-    virtual void PrintLine(const char* s);
-    virtual void PrintLinePlus(const char* s);
-    virtual bool GetStatus();
-    virtual void Clear();
-    virtual void Update();
-    virtual void Draw();
-    virtual bool AddCommand(const char* sCommand, ConsoleCommandFunc func, int nFlags = 0, const char* sHelp = NULL);
-    virtual bool AddCommand(const char* sName, const char* sScriptFunc, int nFlags = 0, const char* sHelp = NULL);
-    virtual void RemoveCommand(const char* sName);
-    virtual void ExecuteString(const char* command, bool bSilentMode, bool bDeferExecution = false);
-    virtual void ExecuteConsoleCommand(const char* command) override;
-    virtual void ResetCVarsToDefaults() override;
-    virtual void Exit(const char* command, ...) PRINTF_PARAMS(2, 3);
-    virtual bool IsOpened();
-    virtual int GetNumVars();
-    virtual int GetNumVisibleVars();
-    virtual size_t GetSortedVars(const char** pszArray, size_t numItems, const char* szPrefix = 0);
-    virtual int GetNumCheatVars();
-    virtual void SetCheatVarHashRange(size_t firstVar, size_t lastVar);
-    virtual void CalcCheatVarHash();
-    virtual bool IsHashCalculated();
-    virtual uint64 GetCheatVarHash();
-    virtual void FindVar(const char* substr);
-    virtual const char* AutoComplete(const char* substr);
-    virtual const char* AutoCompletePrev(const char* substr);
-    virtual const char* ProcessCompletion(const char* szInputBuffer);
-    virtual void RegisterAutoComplete(const char* sVarOrCommand, IConsoleArgumentAutoComplete* pArgAutoComplete);
-    virtual void UnRegisterAutoComplete(const char* sVarOrCommand);
-    virtual void ResetAutoCompletion();
-    virtual void GetMemoryUsage (ICrySizer* pSizer) const;
-    virtual void ResetProgressBar(int nProgressRange);
-    virtual void TickProgressBar();
-    virtual void SetLoadingImage(const char* szFilename);
-    virtual void AddConsoleVarSink(IConsoleVarSink* pSink);
-    virtual void RemoveConsoleVarSink(IConsoleVarSink* pSink);
-    virtual const char* GetHistoryElement(bool bUpOrDown);
-    virtual void AddCommandToHistory(const char* szCommand);
-    virtual void SetInputLine(const char* szLine);
-    virtual void LoadConfigVar(const char* sVariable, const char* sValue);
-    virtual void EnableActivationKey(bool bEnable);
-    virtual void SetClientDataProbeString(const char* pName, const char* pValue);
+    void UnregisterVariable(const char* sVarName, bool bDelete = false) override;
+    void SetScrollMax(int value) override;
+    void AddOutputPrintSink(IOutputPrintSink* inpSink) override;
+    void RemoveOutputPrintSink(IOutputPrintSink* inpSink) override;
+    void ShowConsole(bool show, int iRequestScrollMax = -1) override;
+    void DumpCVars(ICVarDumpSink* pCallback, unsigned int nFlagsFilter = 0) override;
+    void DumpKeyBinds(IKeyBindDumpSink* pCallback) override;
+    void CreateKeyBind(const char* sCmd, const char* sRes) override;
+    const char* FindKeyBind(const char* sCmd) const override;
+    void    SetImage(ITexture* pImage, bool bDeleteCurrent) override;
+    inline ITexture* GetImage() override { return m_pImage; }
+    void StaticBackground(bool bStatic) override { m_bStaticBackground = bStatic; }
+    bool GetLineNo(int indwLineNo, char* outszBuffer, int indwBufferSize) const override;
+    int GetLineCount() const override;
+    ICVar* GetCVar(const char* name) override;
+    char* GetVariable(const char* szVarName, const char* szFileName, const char* def_val) override;
+    float GetVariable(const char* szVarName, const char* szFileName, float def_val) override;
+    void PrintLine(const char* s) override;
+    void PrintLinePlus(const char* s) override;
+    bool GetStatus() override;
+    void Clear() override;
+    void Update() override;
+    void Draw() override;
+    bool AddCommand(const char* sCommand, ConsoleCommandFunc func, int nFlags = 0, const char* sHelp = NULL) override;
+    bool AddCommand(const char* sName, const char* sScriptFunc, int nFlags = 0, const char* sHelp = NULL) override;
+    void RemoveCommand(const char* sName) override;
+    void ExecuteString(const char* command, bool bSilentMode, bool bDeferExecution = false) override;
+    void ExecuteConsoleCommand(const char* command) override;
+    void ResetCVarsToDefaults() override;
+    void Exit(const char* command, ...) override PRINTF_PARAMS(2, 3);
+    bool IsOpened() override;
+    int GetNumVars() override;
+    int GetNumVisibleVars() override;
+    size_t GetSortedVars(AZStd::vector<AZStd::string_view>& pszArray, const char* szPrefix = 0) override;
+    void FindVar(const char* substr);
+    const char* AutoComplete(const char* substr) override;
+    const char* AutoCompletePrev(const char* substr) override;
+    const char* ProcessCompletion(const char* szInputBuffer) override;
+    void RegisterAutoComplete(const char* sVarOrCommand, IConsoleArgumentAutoComplete* pArgAutoComplete) override;
+    void UnRegisterAutoComplete(const char* sVarOrCommand) override;
+    void ResetAutoCompletion() override;
+    void ResetProgressBar(int nProgressRange) override;
+    void TickProgressBar() override;
+    void SetLoadingImage(const char* szFilename) override;
+    void AddConsoleVarSink(IConsoleVarSink* pSink) override;
+    void RemoveConsoleVarSink(IConsoleVarSink* pSink) override;
+    const char* GetHistoryElement(bool bUpOrDown) override;
+    void AddCommandToHistory(const char* szCommand) override;
+    void SetInputLine(const char* szLine) override;
+    void LoadConfigVar(const char* sVariable, const char* sValue) override;
+    void EnableActivationKey(bool bEnable) override;
+    void SetClientDataProbeString(const char* pName, const char* pValue) override;
 
     // InputChannelEventListener / InputTextEventListener
     bool OnInputChannelEventFiltered(const AzFramework::InputChannel& inputChannel) override;
@@ -226,7 +201,7 @@ public:
 
     // interface IRemoteConsoleListener ------------------------------------------------------------------
 
-    virtual void OnConsoleCommand(const char* cmd);
+    void OnConsoleCommand(const char* cmd) override;
 
     // interface IConsoleVarSink ----------------------------------------------------------------------
 
@@ -240,20 +215,13 @@ public:
 
     //////////////////////////////////////////////////////////////////////////
 
-    // Returns
-    //   0 if the operation failed
-    ICVar* RegisterCVarGroup(const char* sName, const char* szFileName);
-
-    virtual void PrintCheatVars(bool bUseLastHashRange);
-    virtual char* GetCheatVarAt(uint32 nOffset);
-
     void SetProcessingGroup(bool isGroup) { m_bIsProcessingGroup = isGroup; }
-    bool GetIsProcessingGroup(void) const { return m_bIsProcessingGroup; }
+    bool GetIsProcessingGroup() const { return m_bIsProcessingGroup; }
 
 protected: // ----------------------------------------------------------------------------------------
     void DrawBuffer(int nScrollPos, const char* szEffect);
 
-    void RegisterVar(ICVar* pCVar, ConsoleVarFunc pChangeFunc = 0);
+    void RegisterVar(ICVar* pCVar, ConsoleVarFunc pChangeFunc = nullptr);
 
     bool ProcessInput(const AzFramework::InputChannel& inputChannel);
     void AddLine(const char* inputStr);
@@ -261,7 +229,7 @@ protected: // ------------------------------------------------------------------
     void AddInputUTF8(const AZStd::string& textUTF8);
     void RemoveInputChar(bool bBackSpace);
     void ExecuteInputBuffer();
-    void ExecuteCommand(CConsoleCommand& cmd, string& params, bool bIgnoreDevMode = false);
+    void ExecuteCommand(CConsoleCommand& cmd, AZStd::string& params, bool bIgnoreDevMode = false);
 
     void ScrollConsole();
 
@@ -293,60 +261,56 @@ protected: // ------------------------------------------------------------------
 
     // Arguments:
     //   bFromConsole - true=from console, false=from outside
-    void SplitCommands(const char* line, std::list<string>& split);
+    void SplitCommands(const char* line, std::list<AZStd::string>& split);
     void ExecuteStringInternal(const char* command, const bool bFromConsole, const bool bSilentMode = false);
     void ExecuteDeferredCommands();
 
     static const char* GetFlagsString(const uint32 dwFlags);
-
-    static void CmdDumpAllAnticheatVars(IConsoleCmdArgs* pArgs);
-    static void CmdDumpLastHashedAnticheatVars(IConsoleCmdArgs* pArgs);
 
 private: // ----------------------------------------------------------
 
     typedef std::map<const char*, ICVar*, string_nocase_lt> ConsoleVariablesMap;        // key points into string stored in ICVar or in .exe/.dll
     typedef ConsoleVariablesMap::iterator ConsoleVariablesMapItor;
 
-    typedef std::vector<std::pair<const char*, ICVar*> > ConsoleVariablesVector;
+    using ConsoleVariablesVector = std::vector<std::pair<const char*, ICVar*> >;
 
     void LogChangeMessage(const char* name, const bool isConst, const bool isCheat, const bool isReadOnly, const bool isDeprecated,
         const char* oldValue, const char* newValue, const bool isProcessingGroup, const bool allowChange);
 
     void AddCheckedCVar(ConsoleVariablesVector& vector, const ConsoleVariablesVector::value_type& value);
     void RemoveCheckedCVar(ConsoleVariablesVector& vector, const ConsoleVariablesVector::value_type& value);
-    static void AddCVarsToHash(ConsoleVariablesVector::const_iterator begin, ConsoleVariablesVector::const_iterator end, CCrc32& runningNameCrc32, CCrc32& runningNameValueCrc32);
     static bool CVarNameLess(const std::pair<const char*, ICVar*>& lhs, const std::pair<const char*, ICVar*>& rhs);
 
     void PostLine(const char* lineOfText, size_t len);
 
-    typedef std::map<string, CConsoleCommand, string_nocase_lt> ConsoleCommandsMap;
+    typedef std::map<AZStd::string, CConsoleCommand, string_nocase_lt> ConsoleCommandsMap;
     typedef ConsoleCommandsMap::iterator ConsoleCommandsMapItor;
 
-    typedef std::map<string, string> ConsoleBindsMap;
+    typedef std::map<AZStd::string, AZStd::string> ConsoleBindsMap;
     typedef ConsoleBindsMap::iterator ConsoleBindsMapItor;
 
-    typedef std::map<string, IConsoleArgumentAutoComplete*, stl::less_stricmp<string> > ArgumentAutoCompleteMap;
+    typedef std::map<AZStd::string, IConsoleArgumentAutoComplete*, stl::less_stricmp<AZStd::string> > ArgumentAutoCompleteMap;
 
     struct SConfigVar
     {
-        string m_value;
+        AZStd::string m_value;
         bool m_partOfGroup;
     };
-    typedef std::map<string, SConfigVar, string_nocase_lt> ConfigVars;
+    typedef std::map<AZStd::string, SConfigVar, string_nocase_lt> ConfigVars;
 
     struct SDeferredCommand
     {
-        string  command;
+        AZStd::string  command;
         bool        silentMode;
 
-        SDeferredCommand(const string& _command, bool _silentMode)
+        SDeferredCommand(const AZStd::string& _command, bool _silentMode)
             : command(_command)
             , silentMode(_silentMode)
         {}
     };
-    typedef std::list<SDeferredCommand> TDeferredCommandList;
+    using TDeferredCommandList = std::list<SDeferredCommand>;
 
-    typedef std::list<IConsoleVarSink*> ConsoleVarSinks;
+    using ConsoleVarSinks = std::list<IConsoleVarSink*>;
 
     // --------------------------------------------------------------------------------
 
@@ -358,10 +322,10 @@ private: // ----------------------------------------------------------
     int                                                         m_nProgress;
     int                                                         m_nProgressRange;
 
-    string                                                  m_sInputBuffer;
-    string                          m_sReturnString;
+    AZStd::string                                                  m_sInputBuffer;
+    AZStd::string                          m_sReturnString;
 
-    string                                                  m_sPrevTab;
+    AZStd::string                                                  m_sPrevTab;
     int                                                         m_nTabCount;
 
     ConsoleCommandsMap                          m_mapCommands;                      //

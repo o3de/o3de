@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -113,7 +114,7 @@ public:
 
     void Rescan();
 
-    bool IsAssetProcessorManagerIdle() const;
+    bool IsAssetProcessorManagerIdle() const override;
     bool CheckFullIdle();
 Q_SIGNALS:
     void CheckAssetProcessorManagerIdleState();
@@ -234,6 +235,11 @@ protected:
     QAtomicInt m_connectionsAwaitingAssetCatalogSave = 0;
     int m_remainingAPMJobs = 0;
     bool m_assetProcessorManagerIsReady = false;
+
+    // When job priority and escalation is equal, jobs sort in order by job key.
+    // This switches that behavior to instead sort by the DB source name, which
+    // allows automated tests to get deterministic behavior out of Asset Processor.
+    bool m_sortJobsByDBSourceName = false;
 
     unsigned int m_highestConnId = 0;
     AzToolsFramework::Ticker* m_ticker = nullptr; // for ticking the tickbus.

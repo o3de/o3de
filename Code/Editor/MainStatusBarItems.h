@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -69,4 +70,18 @@ public:
 
 private:
     void updateStatus();
+};
+
+class GameInfoItem
+    : public StatusBarItem
+{
+    Q_OBJECT
+public:
+    GameInfoItem(QString name, MainStatusBar* parent);
+
+private Q_SLOTS:
+    void OnShowContextMenu(const QPoint& pos);
+
+private:
+    QString m_projectPath;
 };

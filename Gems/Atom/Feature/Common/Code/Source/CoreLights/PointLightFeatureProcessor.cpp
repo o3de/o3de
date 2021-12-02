@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -15,7 +16,6 @@
 #include <Atom/Feature/CoreLights/CoreLightsConstants.h>
 
 #include <Atom/RHI/Factory.h>
-#include <Atom/RHI/CpuProfiler.h>
 
 #include <Atom/RPI.Public/ColorManagement/TransformColor.h>
 #include <Atom/RPI.Public/RPISystemInterface.h>
@@ -55,7 +55,7 @@ namespace AZ
             desc.m_bufferSrgName = "m_pointLights";
             desc.m_elementCountSrgName = "m_pointLightCount";
             desc.m_elementSize = sizeof(PointLightData);
-            desc.m_srgLayout = RPI::RPISystemInterface::Get()->GetViewSrgAsset()->GetLayout();
+            desc.m_srgLayout = RPI::RPISystemInterface::Get()->GetViewSrgLayout().get();
             m_shadowFeatureProcessor = GetParentScene()->GetFeatureProcessor<ProjectedShadowFeatureProcessor>();
 
             m_lightBufferHandler = GpuBufferHandler(desc);
@@ -118,7 +118,7 @@ namespace AZ
 
         void PointLightFeatureProcessor::Simulate(const FeatureProcessor::SimulatePacket& packet)
         {
-            AZ_ATOM_PROFILE_FUNCTION("RPI", "PointLightFeatureProcessor: Simulate");
+            AZ_PROFILE_SCOPE(RPI, "PointLightFeatureProcessor: Simulate");
             AZ_UNUSED(packet);
 
             if (m_deviceBufferNeedsUpdate)
@@ -130,7 +130,7 @@ namespace AZ
 
         void PointLightFeatureProcessor::Render(const PointLightFeatureProcessor::RenderPacket& packet)
         {
-            AZ_ATOM_PROFILE_FUNCTION("RPI", "PointLightFeatureProcessor: Render");
+            AZ_PROFILE_SCOPE(RPI, "PointLightFeatureProcessor: Render");
 
             for (const RPI::ViewPtr& view : packet.m_views)
             {
@@ -276,6 +276,11 @@ namespace AZ
                 }
             }
         }
+        
+        void PointLightFeatureProcessor::SetShadowBias(LightHandle handle, float bias)
+        {
+            SetShadowSetting(handle, &ProjectedShadowFeatureProcessor::SetShadowBias, bias);
+        }
 
         void PointLightFeatureProcessor::SetShadowmapMaxResolution(LightHandle handle, ShadowmapSize shadowmapSize)
         {
@@ -287,29 +292,19 @@ namespace AZ
             SetShadowSetting(handle, &ProjectedShadowFeatureProcessor::SetShadowFilterMethod, method);
         }
 
-        void PointLightFeatureProcessor::SetSofteningBoundaryWidthAngle(LightHandle handle, float boundaryWidthRadians)
-        {
-            SetShadowSetting(handle, &ProjectedShadowFeatureProcessor::SetSofteningBoundaryWidthAngle, boundaryWidthRadians);
-        }
-
-        void PointLightFeatureProcessor::SetPredictionSampleCount(LightHandle handle, uint16_t count)
-        {
-            SetShadowSetting(handle, &ProjectedShadowFeatureProcessor::SetPredictionSampleCount, count);
-        }
-
         void PointLightFeatureProcessor::SetFilteringSampleCount(LightHandle handle, uint16_t count)
         {
             SetShadowSetting(handle, &ProjectedShadowFeatureProcessor::SetFilteringSampleCount, count);
         }
 
-        void PointLightFeatureProcessor::SetPcfMethod(LightHandle handle, PcfMethod method)
-        {
-            SetShadowSetting(handle, &ProjectedShadowFeatureProcessor::SetPcfMethod, method);
-        }
-
         void PointLightFeatureProcessor::SetEsmExponent(LightHandle handle, float esmExponent)
         {
             SetShadowSetting(handle, &ProjectedShadowFeatureProcessor::SetEsmExponent, esmExponent);
+        }
+
+        void PointLightFeatureProcessor::SetNormalShadowBias(LightHandle handle, float bias)
+        {
+            SetShadowSetting(handle, &ProjectedShadowFeatureProcessor::SetNormalShadowBias, bias);
         }
 
     } // namespace Render

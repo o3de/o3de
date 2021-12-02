@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -363,8 +364,6 @@ namespace EMStudio
 
         const int rectLeft = m_drawRect.left();
         const int rectRight = m_drawRect.right();
-        const int rectBottom = m_drawRect.bottom();
-        const int xValueTop = rectBottom + 4;
         const int xAxisLabelTop = m_drawCenterY + 15;
         const char numFormat = 'g';
         const int  numPrecision = 4;

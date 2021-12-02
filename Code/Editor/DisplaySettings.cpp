@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -45,7 +46,7 @@ void CDisplaySettings::SaveRegistry()
     SaveValue("Settings", "RenderFlags", m_renderFlags);
     SaveValue("Settings", "DisplayFlags", m_flags & SETTINGS_SERIALIZABLE_FLAGS_MASK);
     SaveValue("Settings", "DebugFlags", m_debugFlags);
-    SaveValue("Settings", "LabelsDistance", m_labelsDistance);
+    SaveValue("Settings", "LabelsDistance", static_cast<int>(m_labelsDistance));
 }
 
 void CDisplaySettings::LoadRegistry()
@@ -55,9 +56,9 @@ void CDisplaySettings::LoadRegistry()
     LoadValue("Settings", "DisplayFlags", m_flags);
     m_flags &= SETTINGS_SERIALIZABLE_FLAGS_MASK;
     LoadValue("Settings", "DebugFlags", m_debugFlags);
-    int temp = m_labelsDistance;
+    int temp = static_cast<int>(m_labelsDistance);
     LoadValue("Settings", "LabelsDistance", temp);
-    m_labelsDistance = temp;
+    m_labelsDistance = static_cast<float>(temp);
 
     gSettings.objectHideMask = m_objectHideMask;
 }

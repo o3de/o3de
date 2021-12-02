@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -8,8 +9,8 @@
 #pragma once
 
 #include <AzManipulatorTestFramework/AzManipulatorTestFramework.h>
-#include <AzToolsFramework/ViewportSelection/EditorInteractionSystemViewportSelectionRequestBus.h>
 #include <AzToolsFramework/ViewportSelection/EditorDefaultSelection.h>
+#include <AzToolsFramework/ViewportSelection/EditorInteractionSystemViewportSelectionRequestBus.h>
 
 namespace AzManipulatorTestFramework
 {
@@ -17,13 +18,12 @@ namespace AzManipulatorTestFramework
     class IndirectCallManipulatorManager;
 
     //! Implementation of manipulator viewport interaction that manipulates the manager indirectly via bus calls.
-    class IndirectCallManipulatorViewportInteraction
-        : public ManipulatorViewportInteraction
+    class IndirectCallManipulatorViewportInteraction : public ManipulatorViewportInteraction
     {
     public:
         IndirectCallManipulatorViewportInteraction();
         ~IndirectCallManipulatorViewportInteraction();
-        
+
         // ManipulatorViewportInteractionInterface ...
         const ViewportInteractionInterface& GetViewportInteraction() const override;
         const ManipulatorManagerInterface& GetManipulatorManager() const override;

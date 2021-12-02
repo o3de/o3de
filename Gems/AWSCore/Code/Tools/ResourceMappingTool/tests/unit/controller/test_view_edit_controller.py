@@ -1,5 +1,6 @@
 """
-Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+Copyright (c) Contributors to the Open 3D Engine Project.
+For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
@@ -21,6 +22,8 @@ class TestViewEditController(TestCase):
     TODO: add test cases once error handling is ready
     """
     _expected_account_id: str = "1234567890"
+    _expected_account_id_attribute_name = "AccountId"
+    _expected_account_id_template_vale: str = "EMPTY"
     _expected_region: str = "aws-global"
     _expected_config_directory: str = "dummy/directory/"
     _expected_config_file_name: str = "dummy.json"
@@ -97,8 +100,6 @@ class TestViewEditController(TestCase):
             self._test_view_edit_controller._filter_based_on_search_text)
         self._mocked_view_edit_page.cancel_button.clicked.connect.assert_called_once_with(
             self._test_view_edit_controller._cancel)
-        self._mocked_view_edit_page.create_new_button.clicked.connect.assert_called_once_with(
-            self._test_view_edit_controller._create_new_config_file)
         self._mocked_view_edit_page.rescan_button.clicked.connect.assert_called_once_with(
             self._test_view_edit_controller._rescan_config_directory)
 
@@ -300,6 +301,7 @@ class TestViewEditController(TestCase):
             expected_new_config_directory, constants.RESOURCE_MAPPING_CONFIG_FILE_NAME_SUFFIX)
         assert self._mocked_configuration_manager.configuration.config_files == []
         self._mocked_view_edit_page.set_config_files.assert_called_with([])
+        self._mocked_view_edit_page.set_config_location.assert_called_with(expected_new_config_directory)
         self._test_view_edit_controller.set_notification_page_frame_text_sender.emit.assert_called_once_with(
             notification_label_text.NOTIFICATION_LOADING_MESSAGE)
 
@@ -417,13 +419,64 @@ class TestViewEditController(TestCase):
             self, mock_json_utils: MagicMock, mock_file_utils: MagicMock) -> None:
         self._mocked_view_edit_page.config_file_combobox.currentText.return_value = \
             TestViewEditController._expected_config_file_name
-        expected_json_dict: Dict[str, any] = {"dummyKey": "dummyValue"}
+        expected_json_dict: Dict[str, any] = {
+            "dummyKey": "dummyValue"
+        }
         mock_json_utils.validate_resources_according_to_json_schema.return_value = []
         mock_json_utils.convert_resources_to_json_dict.return_value = expected_json_dict
         mock_file_utils.join_path.return_value = TestViewEditController._expected_config_file_full_path
         mocked_call_args: call = self._mocked_view_edit_page.save_changes_button.clicked.connect.call_args[0]
 
         mocked_call_args[0]()  # triggering save_changes_button connected function
+        mock_json_utils.convert_resources_to_json_dict.assert_called_once()
+        mock_json_utils.write_into_json_file.assert_called_once_with(
+            TestViewEditController._expected_config_file_full_path, expected_json_dict)
+        self._mocked_proxy_model.override_all_resources_status.assert_called_once_with(
+            ResourceMappingAttributesStatus(ResourceMappingAttributesStatus.SUCCESS_STATUS_VALUE,
+                                            [ResourceMappingAttributesStatus.SUCCESS_STATUS_VALUE]))
+
+    @patch("controller.view_edit_controller.file_utils")
+    @patch("controller.view_edit_controller.json_utils")
+    def test_page_save_changes_button_json_file_saved_and_template_account_id_unchanged(
+            self, mock_json_utils: MagicMock, mock_file_utils: MagicMock) -> None:
+        self._mocked_view_edit_page.config_file_combobox.currentText.return_value = \
+            TestViewEditController._expected_config_file_name
+        expected_json_dict: Dict[str, any] = {
+            self._expected_account_id_attribute_name: self._expected_account_id_template_vale
+        }
+        mock_json_utils.RESOURCE_MAPPING_ACCOUNTID_JSON_KEY_NAME = self._expected_account_id_attribute_name
+        mock_json_utils.RESOURCE_MAPPING_ACCOUNTID_TEMPLATE_VALUE = self._expected_account_id_template_vale
+        mock_json_utils.validate_resources_according_to_json_schema.return_value = []
+        mock_json_utils.convert_resources_to_json_dict.return_value = expected_json_dict
+        mock_file_utils.join_path.return_value = TestViewEditController._expected_config_file_full_path
+        mocked_call_args: call = self._mocked_view_edit_page.save_changes_button.clicked.connect.call_args[0]
+
+        mocked_call_args[0]()  # triggering save_changes_button connected function
+        assert expected_json_dict[mock_json_utils.RESOURCE_MAPPING_ACCOUNTID_JSON_KEY_NAME] == self._expected_account_id_template_vale
+        mock_json_utils.convert_resources_to_json_dict.assert_called_once()
+        mock_json_utils.write_into_json_file.assert_called_once_with(
+            TestViewEditController._expected_config_file_full_path, expected_json_dict)
+        self._mocked_proxy_model.override_all_resources_status.assert_called_once_with(
+            ResourceMappingAttributesStatus(ResourceMappingAttributesStatus.SUCCESS_STATUS_VALUE,
+                                            [ResourceMappingAttributesStatus.SUCCESS_STATUS_VALUE]))
+
+    @patch("controller.view_edit_controller.file_utils")
+    @patch("controller.view_edit_controller.json_utils")
+    def test_page_save_changes_button_json_file_saved_and_empty_account_id_unchanged(
+            self, mock_json_utils: MagicMock, mock_file_utils: MagicMock) -> None:
+        self._mocked_view_edit_page.config_file_combobox.currentText.return_value = \
+            TestViewEditController._expected_config_file_name
+        expected_json_dict: Dict[str, any] = {
+            self._expected_account_id_attribute_name: ''
+        }
+        mock_json_utils.RESOURCE_MAPPING_ACCOUNTID_JSON_KEY_NAME = self._expected_account_id_attribute_name
+        mock_json_utils.validate_resources_according_to_json_schema.return_value = []
+        mock_json_utils.convert_resources_to_json_dict.return_value = expected_json_dict
+        mock_file_utils.join_path.return_value = TestViewEditController._expected_config_file_full_path
+        mocked_call_args: call = self._mocked_view_edit_page.save_changes_button.clicked.connect.call_args[0]
+
+        mocked_call_args[0]()  # triggering save_changes_button connected function
+        assert expected_json_dict[mock_json_utils.RESOURCE_MAPPING_ACCOUNTID_JSON_KEY_NAME] == ''
         mock_json_utils.convert_resources_to_json_dict.assert_called_once()
         mock_json_utils.write_into_json_file.assert_called_once_with(
             TestViewEditController._expected_config_file_full_path, expected_json_dict)
@@ -466,36 +519,6 @@ class TestViewEditController(TestCase):
 
         mocked_call_args[0]()  # triggering cancel_button connected function
         mock_application.instance.return_value.quit.assert_called_once()
-
-    @patch("controller.view_edit_controller.file_utils")
-    @patch("controller.view_edit_controller.json_utils")
-    def test_page_create_new_button_invoke_view_edit_page_set_config_files_with_expected_config_files(
-            self, mock_json_utils: MagicMock, mock_file_utils: MagicMock) -> None:
-        expected_config_files: List[str] = ["dummyfile"]
-        mock_file_utils.find_files_with_suffix_under_directory.return_value = expected_config_files
-        mocked_call_args: call = \
-            self._mocked_view_edit_page.create_new_button.clicked.connect.call_args[0]
-
-        mocked_call_args[0]()  # triggering create_new_button connected function
-        mock_file_utils.join_path.assert_called_once()
-        mock_json_utils.create_empty_resource_mapping_file.assert_called_once()
-        mock_file_utils.find_files_with_suffix_under_directory.assert_called_once()
-        self._mocked_view_edit_page.set_config_files.assert_called_with(expected_config_files)
-
-    @patch("controller.view_edit_controller.file_utils")
-    @patch("controller.view_edit_controller.json_utils")
-    def test_page_create_new_button_post_notification_when_create_file_throw_exception(
-            self, mock_json_utils: MagicMock, mock_file_utils: MagicMock) -> None:
-        expected_config_files: List[str] = ["dummyfile"]
-        mock_json_utils.create_empty_resource_mapping_file.side_effect = IOError("dummy IO error")
-        mocked_call_args: call = \
-            self._mocked_view_edit_page.create_new_button.clicked.connect.call_args[0]
-
-        mocked_call_args[0]()  # triggering create_new_button connected function
-        mock_file_utils.join_path.assert_called_once()
-        mock_json_utils.create_empty_resource_mapping_file.assert_called_once()
-        mock_file_utils.find_files_with_suffix_under_directory.assert_not_called()
-        self._test_view_edit_controller.set_notification_frame_text_sender.emit.assert_called_once()
 
     @patch("controller.view_edit_controller.file_utils")
     def test_page_rescan_button_post_notification_when_find_files_throw_exception(

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -47,18 +48,18 @@ namespace EMStudio
         NodeGraphWidget(AnimGraphPlugin* plugin, NodeGraph* activeGraph = nullptr, QWidget* parent = nullptr);
         virtual ~NodeGraphWidget();
 
-        AnimGraphPlugin* GetPlugin() { return mPlugin; }
+        AnimGraphPlugin* GetPlugin() { return m_plugin; }
 
         void SetActiveGraph(NodeGraph* graph);
         NodeGraph* GetActiveGraph() const;
 
         void SetCallback(GraphWidgetCallback* callback);
-        MCORE_INLINE GraphWidgetCallback* GetCallback()                 { return mCallback; }
-        MCORE_INLINE const QPoint& GetMousePos() const                  { return mMousePos; }
-        MCORE_INLINE void SetMousePos(const QPoint& pos)                { mMousePos = pos; }
-        MCORE_INLINE void SetShowFPS(bool showFPS)                      { mShowFPS = showFPS; }
+        MCORE_INLINE GraphWidgetCallback* GetCallback()                 { return m_callback; }
+        MCORE_INLINE const QPoint& GetMousePos() const                  { return m_mousePos; }
+        MCORE_INLINE void SetMousePos(const QPoint& pos)                { m_mousePos = pos; }
+        MCORE_INLINE void SetShowFPS(bool showFPS)                      { m_showFps = showFPS; }
 
-        uint32 CalcNumSelectedNodes() const;
+        size_t CalcNumSelectedNodes() const;
 
         QPoint LocalToGlobal(const QPoint& inPoint) const;
         QPoint GlobalToLocal(const QPoint& inPoint) const;
@@ -68,7 +69,7 @@ namespace EMStudio
 
         virtual bool PreparePainting() { return true; }
 
-        virtual bool CheckIfIsCreateConnectionValid(uint32 portNr, GraphNode* portNode, NodePort* port, bool isInputPort);
+        virtual bool CheckIfIsCreateConnectionValid(AZ::u16 portNr, GraphNode* portNode, NodePort* port, bool isInputPort);
         virtual bool CheckIfIsValidTransition(GraphNode* sourceState, GraphNode* targetState);
         virtual bool CheckIfIsValidTransitionSource(GraphNode* sourceState);
         virtual bool CreateConnectionMustBeCurved() { return true; }
@@ -79,7 +80,7 @@ namespace EMStudio
         virtual void OnMoveStart()                                                      {}
         virtual void OnMoveNode(GraphNode* node, int32 x, int32 y)                      { MCORE_UNUSED(node); MCORE_UNUSED(x); MCORE_UNUSED(y); }
         virtual void OnMoveEnd()                                                        {}
-        virtual void OnCreateConnection(uint32 sourcePortNr, GraphNode* sourceNode, bool sourceIsInputPort, uint32 targetPortNr, GraphNode* targetNode, bool targetIsInputPort, const QPoint& startOffset, const QPoint& endOffset);
+        virtual void OnCreateConnection(AZ::u16 sourcePortNr, GraphNode* sourceNode, bool sourceIsInputPort, AZ::u16 targetPortNr, GraphNode* targetNode, bool targetIsInputPort, const QPoint& startOffset, const QPoint& endOffset);
         virtual void OnNodeCollapsed(GraphNode* node, bool isCollapsed)                 { MCORE_UNUSED(node); MCORE_UNUSED(isCollapsed); }
         virtual void OnShiftClickedNode(GraphNode* node)                                { MCORE_UNUSED(node); }
         virtual void OnVisualizeToggle(GraphNode* node, bool visualizeEnabled)          { MCORE_UNUSED(node); MCORE_UNUSED(visualizeEnabled); }
@@ -124,35 +125,35 @@ namespace EMStudio
         GraphNode* UpdateMouseCursor(const QPoint& localMousePos, const QPoint& globalMousePos);
 
     protected:
-        AnimGraphPlugin*            mPlugin;
-        bool                        mShowFPS;
-        QPoint                      mMousePos;
-        QPoint                      mMouseLastPos;
-        QPoint                      mMouseLastPressPos;
-        QPoint                      mSelectStart;
-        QPoint                      mSelectEnd;
-        int                         mPrevWidth;
-        int                         mPrevHeight;
-        int                         mCurWidth;
-        int                         mCurHeight;
-        GraphNode*                  mMoveNode;  // the node we're moving
-        NodeGraph*                  mActiveGraph = nullptr;
-        GraphWidgetCallback*        mCallback;
-        QFont                       mFont;
-        QFontMetrics*               mFontMetrics;
-        AZ::Debug::Timer            mRenderTimer;
-        AZStd::string               mTempString;
-        AZStd::string               mFullActorName;
-        AZStd::string               mActorName;
-        bool                        mAllowContextMenu;
-        bool                        mLeftMousePressed;
-        bool                        mMiddleMousePressed;
-        bool                        mRightMousePressed;
-        bool                        mPanning;
-        bool                        mRectSelecting;
-        bool                        mShiftPressed;
-        bool                        mControlPressed;
-        bool                        mAltPressed;
+        AnimGraphPlugin*            m_plugin;
+        bool                        m_showFps;
+        QPoint                      m_mousePos;
+        QPoint                      m_mouseLastPos;
+        QPoint                      m_mouseLastPressPos;
+        QPoint                      m_selectStart;
+        QPoint                      m_selectEnd;
+        int                         m_prevWidth;
+        int                         m_prevHeight;
+        int                         m_curWidth;
+        int                         m_curHeight;
+        GraphNode*                  m_moveNode;  // the node we're moving
+        NodeGraph*                  m_activeGraph = nullptr;
+        GraphWidgetCallback*        m_callback;
+        QFont                       m_font;
+        QFontMetrics*               m_fontMetrics;
+        AZ::Debug::Timer            m_renderTimer;
+        AZStd::string               m_tempString;
+        AZStd::string               m_fullActorName;
+        AZStd::string               m_actorName;
+        bool                        m_allowContextMenu;
+        bool                        m_leftMousePressed;
+        bool                        m_middleMousePressed;
+        bool                        m_rightMousePressed;
+        bool                        m_panning;
+        bool                        m_rectSelecting;
+        bool                        m_shiftPressed;
+        bool                        m_controlPressed;
+        bool                        m_altPressed;
         bool                        m_borderOverwrite = false;
         QColor                      m_borderOverwriteColor;
         float                       m_borderOverwriteWidth;

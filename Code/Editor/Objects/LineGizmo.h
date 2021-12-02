@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -29,10 +30,10 @@ public:
     //////////////////////////////////////////////////////////////////////////
     // Ovverides from CGizmo
     //////////////////////////////////////////////////////////////////////////
-    virtual void SetName(const char* sName);
-    virtual void GetWorldBounds(AABB& bbox);
-    virtual void Display(DisplayContext& dc);
-    virtual bool HitTest(HitContext& hc);
+    void SetName(const char* sName) override;
+    void GetWorldBounds(AABB& bbox) override;
+    void Display(DisplayContext& dc) override;
+    bool HitTest(HitContext& hc) override;
 
     //////////////////////////////////////////////////////////////////////////
     void SetObjects(CBaseObject* pObject1, CBaseObject* pObject2, const QString& boneName = "");

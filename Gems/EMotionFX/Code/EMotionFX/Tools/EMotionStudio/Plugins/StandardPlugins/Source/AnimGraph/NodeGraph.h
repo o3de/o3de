@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -48,56 +49,56 @@ namespace EMStudio
 
         bool IsInReferencedGraph() const { return m_parentReferenceNode.isValid(); }
 
-        const QTransform& GetTransform() const         { return mTransform; }
-        float GetScale() const                         { return mScale; }
-        void SetScale(float scale)                     { mScale = scale; }
-        const QPoint& GetScrollOffset() const          { return mScrollOffset; }
-        void SetScrollOffset(const QPoint& offset)     { mScrollOffset = offset; }
-        void SetScalePivot(const QPoint& pivot)        { mScalePivot = pivot; }
+        const QTransform& GetTransform() const         { return m_transform; }
+        float GetScale() const                         { return m_scale; }
+        void SetScale(float scale)                     { m_scale = scale; }
+        const QPoint& GetScrollOffset() const          { return m_scrollOffset; }
+        void SetScrollOffset(const QPoint& offset)     { m_scrollOffset = offset; }
+        void SetScalePivot(const QPoint& pivot)        { m_scalePivot = pivot; }
         float GetLowestScale() const                   { return sLowestScale; }
-        bool GetIsCreatingConnection() const           { return (mConNode && mRelinkConnection == nullptr); }
-        bool GetIsRelinkingConnection() const          { return (mConNode && mRelinkConnection); }
-        void SetCreateConnectionIsValid(bool isValid)  { mConIsValid = isValid; }
-        bool GetIsCreateConnectionValid() const        { return mConIsValid; }
-        void SetTargetPort(NodePort* port)             { mTargetPort = port; }
-        NodePort* GetTargetPort()                      { return mTargetPort; }
-        float GetDashOffset() const                    { return mDashOffset; }
-        QColor GetErrorBlinkColor() const              { int32 red = aznumeric_cast<int32>(160 + ((0.5f + 0.5f * MCore::Math::Cos(mErrorBlinkOffset)) * 96)); red = MCore::Clamp<int32>(red, 0, 255); return QColor(red, 0, 0); }
+        bool GetIsCreatingConnection() const;
+        bool GetIsRelinkingConnection() const;
+        void SetCreateConnectionIsValid(bool isValid)  { m_conIsValid = isValid; }
+        bool GetIsCreateConnectionValid() const        { return m_conIsValid; }
+        void SetTargetPort(NodePort* port)             { m_targetPort = port; }
+        NodePort* GetTargetPort()                      { return m_targetPort; }
+        float GetDashOffset() const                    { return m_dashOffset; }
+        QColor GetErrorBlinkColor() const              { int32 red = aznumeric_cast<int32>(160 + ((0.5f + 0.5f * MCore::Math::Cos(m_errorBlinkOffset)) * 96)); red = MCore::Clamp<int32>(red, 0, 255); return QColor(red, 0, 0); }
 
-        bool GetIsRepositioningTransitionHead() const               { return (mReplaceTransitionHead); }
-        bool GetIsRepositioningTransitionTail() const               { return (mReplaceTransitionTail); }
-        NodeConnection* GetRepositionedTransitionHead() const       { return mReplaceTransitionHead; }
-        NodeConnection* GetRepositionedTransitionTail() const       { return mReplaceTransitionTail; }
+        bool GetIsRepositioningTransitionHead() const               { return (m_replaceTransitionHead); }
+        bool GetIsRepositioningTransitionTail() const               { return (m_replaceTransitionTail); }
+        NodeConnection* GetRepositionedTransitionHead() const       { return m_replaceTransitionHead; }
+        NodeConnection* GetRepositionedTransitionTail() const       { return m_replaceTransitionTail; }
 
         void StartReplaceTransitionHead(NodeConnection* connection, QPoint startOffset, QPoint endOffset, GraphNode* sourceNode, GraphNode* targetNode);
         void StartReplaceTransitionTail(NodeConnection* connection, QPoint startOffset, QPoint endOffset, GraphNode* sourceNode, GraphNode* targetNode);
         void GetReplaceTransitionInfo(NodeConnection** outConnection, QPoint* outOldStartOffset, QPoint* outOldEndOffset, GraphNode** outOldSourceNode, GraphNode** outOldTargetNode);
         void StopReplaceTransitionHead();
         void StopReplaceTransitionTail();
-        void SetReplaceTransitionValid(bool isValid)                        { mReplaceTransitionValid = isValid; }
-        bool GetReplaceTransitionValid() const                              { return mReplaceTransitionValid; }
+        void SetReplaceTransitionValid(bool isValid)                        { m_replaceTransitionValid = isValid; }
+        bool GetReplaceTransitionValid() const                              { return m_replaceTransitionValid; }
         void RenderReplaceTransition(QPainter& painter);
 
-        GraphNode* GetCreateConnectionNode()                   { return mConNode; }
-        NodeConnection* GetRelinkConnection()                  { return mRelinkConnection; }
-        uint32 GetCreateConnectionPortNr() const               { return mConPortNr; }
-        bool GetCreateConnectionIsInputPort() const            { return mConIsInputPort; }
-        const QPoint& GetCreateConnectionStartOffset() const   { return mConStartOffset; }
-        const QPoint& GetCreateConnectionEndOffset() const     { return mConEndOffset; }
-        void SetCreateConnectionEndOffset(const QPoint& offset){ mConEndOffset = offset; }
+        GraphNode* GetCreateConnectionNode() const;
+        NodeConnection* GetRelinkConnection()                  { return m_relinkConnection; }
+        AZ::u16 GetCreateConnectionPortNr() const              { return m_conPortNr; }
+        bool GetCreateConnectionIsInputPort() const            { return m_conIsInputPort; }
+        const QPoint& GetCreateConnectionStartOffset() const   { return m_conStartOffset; }
+        const QPoint& GetCreateConnectionEndOffset() const     { return m_conEndOffset; }
+        void SetCreateConnectionEndOffset(const QPoint& offset){ m_conEndOffset = offset; }
 
-        bool CheckIfHasConnection(GraphNode* sourceNode, uint32 outputPortNr, GraphNode* targetNode, uint32 inputPortNr) const;
-        NodeConnection* FindInputConnection(GraphNode* targetNode, uint32 targetPortNr) const;
+        bool CheckIfHasConnection(GraphNode* sourceNode, AZ::u16 outputPortNr, GraphNode* targetNode, AZ::u16 inputPortNr) const;
+        NodeConnection* FindInputConnection(GraphNode* targetNode, AZ::u16 targetPortNr) const;
         NodeConnection* FindConnection(const QPoint& mousePos);
 
         void SelectAllNodes();
         void UnselectAllNodes();
 
-        uint32 CalcNumSelectedNodes() const;
+        size_t CalcNumSelectedNodes() const;
 
         GraphNode* FindNode(const QPoint& globalPoint);
-        void StartCreateConnection(uint32 portNr, bool isInputPort, GraphNode* portNode, NodePort* port, const QPoint& startOffset);
-        void StartRelinkConnection(NodeConnection* connection, uint32 portNr, GraphNode* node);
+        void StartCreateConnection(AZ::u16 portNr, bool isInputPort, GraphNode* portNode, NodePort* port, const QPoint& startOffset);
+        void StartRelinkConnection(NodeConnection* connection, AZ::u16 portNr, GraphNode* node);
         void StopCreateConnection();
         void StopRelinkConnection();
 
@@ -117,10 +118,10 @@ namespace EMStudio
         void SelectConnectionCloseTo(const QPoint& point, bool overwriteCurSelection = true, bool toggle = false);
         QRect CalcRectFromSelection(bool includeConnections = true) const;
         QRect CalcRectFromGraph() const;
-        NodePort* FindPort(int32 x, int32 y, GraphNode** outNode, uint32* outPortNr, bool* outIsInputPort, bool includeInputPorts = true);
+        NodePort* FindPort(int32 x, int32 y, GraphNode** outNode, AZ::u16* outPortNr, bool* outIsInputPort, bool includeInputPorts = true);
 
         // entry state helper functions
-        void SetEntryNode(GraphNode* entryNode)                                        { mEntryNode = entryNode; }
+        void SetEntryNode(GraphNode* entryNode)                                        { m_entryNode = entryNode; }
         static void RenderEntryPoint(QPainter& painter, GraphNode* node);
 
         void FitGraphOnScreen(int32 width, int32 height, const QPoint& mousePos, bool animate = true);
@@ -139,8 +140,8 @@ namespace EMStudio
         static bool LineIntersectsRect(const QRect& b, float x1, float y1, float x2, float y2, double* outX = nullptr, double* outY = nullptr);
         void DrawOverlay(QPainter& painter);
 
-        bool GetUseAnimation() const                       { return mUseAnimation; }
-        void SetUseAnimation(bool useAnim)                 { mUseAnimation = useAnim; }
+        bool GetUseAnimation() const                       { return m_useAnimation; }
+        void SetUseAnimation(bool useAnim)                 { m_useAnimation = useAnim; }
 
         // These methods are not slots, they are  being called from BlendGraphWidget
         void OnRowsAboutToBeRemoved(const QModelIndexList& modelIndexes);
@@ -156,7 +157,7 @@ namespace EMStudio
 
         void UpdateVisualGraphFlags();
 
-        static bool CheckIfIsRelinkConnectionValid(NodeConnection* connection, GraphNode* newTargetNode, uint32 newTargetPortNr, bool isTargetInput);
+        static bool CheckIfIsRelinkConnectionValid(NodeConnection* connection, GraphNode* newTargetNode, AZ::u16 newTargetPortNr, bool isTargetInput);
 
         void RecursiveSetOpacity(EMotionFX::AnimGraphNode* startNode, float opacity);
 
@@ -174,55 +175,55 @@ namespace EMStudio
         using GraphNodeByModelIndex = AZStd::unordered_map<QPersistentModelIndex, AZStd::unique_ptr<GraphNode>, QPersistentModelIndexHash>;
         GraphNodeByModelIndex m_graphNodeByModelIndex;
 
-        GraphNode*                  mEntryNode;
-        QTransform                  mTransform;
-        float                       mScale;
+        GraphNode*                  m_entryNode;
+        QTransform                  m_transform;
+        float                       m_scale;
         static float                sLowestScale;
-        int32                       mMinStepSize;
-        int32                       mMaxStepSize;
-        QPoint                      mScrollOffset;
-        QPoint                      mScalePivot;
+        int32                       m_minStepSize;
+        int32                       m_maxStepSize;
+        QPoint                      m_scrollOffset;
+        QPoint                      m_scalePivot;
 
-        QPointF                     mTargetScrollOffset;
-        QPointF                     mStartScrollOffset;
-        QTimer                      mScrollTimer;
-        AZ::Debug::Timer            mScrollPreciseTimer;
+        QPointF                     m_targetScrollOffset;
+        QPointF                     m_startScrollOffset;
+        QTimer                      m_scrollTimer;
+        AZ::Debug::Timer            m_scrollPreciseTimer;
 
-        float                       mTargetScale;
-        float                       mStartScale;
-        QTimer                      mScaleTimer;
-        AZ::Debug::Timer            mScalePreciseTimer;
+        float                       m_targetScale;
+        float                       m_startScale;
+        QTimer                      m_scaleTimer;
+        AZ::Debug::Timer            m_scalePreciseTimer;
 
         // connection info
-        QPoint                      mConStartOffset;
-        QPoint                      mConEndOffset;
-        uint32                      mConPortNr;
-        bool                        mConIsInputPort;
-        GraphNode*                  mConNode;       // nullptr when no connection is being created
-        NodeConnection*             mRelinkConnection; // nullptr when not relinking a connection
-        NodePort*                   mConPort;
-        NodePort*                   mTargetPort;
-        bool                        mConIsValid;
-        float                       mDashOffset;
-        float                       mErrorBlinkOffset;
-        bool                        mUseAnimation;
+        QPoint                      m_conStartOffset;
+        QPoint                      m_conEndOffset;
+        AZ::u16                     m_conPortNr;
+        bool                        m_conIsInputPort;
+        QModelIndex                 m_conNodeIndex;
+        NodeConnection*             m_relinkConnection; // nullptr when not relinking a connection
+        NodePort*                   m_conPort;
+        NodePort*                   m_targetPort;
+        bool                        m_conIsValid;
+        float                       m_dashOffset;
+        float                       m_errorBlinkOffset;
+        bool                        m_useAnimation;
 
-        NodeConnection*             mReplaceTransitionHead; // nullptr when not replacing a transition head
-        NodeConnection*             mReplaceTransitionTail; // nullptr when not replacing a transition tail
-        QPoint                      mReplaceTransitionStartOffset;
-        QPoint                      mReplaceTransitionEndOffset;
-        GraphNode*                  mReplaceTransitionSourceNode;
-        GraphNode*                  mReplaceTransitionTargetNode;
-        bool                        mReplaceTransitionValid;
+        NodeConnection*             m_replaceTransitionHead; // nullptr when not replacing a transition head
+        NodeConnection*             m_replaceTransitionTail; // nullptr when not replacing a transition tail
+        QPoint                      m_replaceTransitionStartOffset;
+        QPoint                      m_replaceTransitionEndOffset;
+        GraphNode*                  m_replaceTransitionSourceNode;
+        GraphNode*                  m_replaceTransitionTargetNode;
+        bool                        m_replaceTransitionValid;
 
-        QPen                        mSubgridPen;
-        QPen                        mGridPen;
+        QPen                        m_subgridPen;
+        QPen                        m_gridPen;
 
         // Overlay drawing
-        QFont                       mFont;
-        QString                     mQtTempString;
-        QTextOption                 mTextOptions;
-        QFontMetrics*               mFontMetrics;
+        QFont                       m_font;
+        QString                     m_qtTempString;
+        QTextOption                 m_textOptions;
+        QFontMetrics*               m_fontMetrics;
         AZStd::string               m_tempStringA;
         AZStd::string               m_tempStringB;
         AZStd::string               m_tempStringC;

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -260,7 +261,6 @@ private: // data
     AZStd::string m_cursorStr;
     QCursor m_cursorRotate;
     
-    bool m_inObjectPickMode = false;
     ViewportInteraction::InteractionMode m_interactionModeBeforePickMode;
     AZ::EntityId m_hoverElement;
     bool m_entityPickedOnMousePress; // used to ignore mouse move/release events if element was picked on the mouse press

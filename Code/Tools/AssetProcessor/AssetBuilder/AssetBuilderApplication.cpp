@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -35,6 +36,7 @@
 #include <AssetBuilderComponent.h>
 #include <AssetBuilderInfo.h>
 #include <AzCore/Interface/Interface.h>
+#include <Entity/EntityUtilityComponent.h>
 
 namespace AssetBuilder
 {
@@ -79,6 +81,7 @@ AZ::ComponentTypeList AssetBuilderApplication::GetRequiredSystemComponents() con
         azrtti_typeid<AzToolsFramework::Components::EditorEntityModelComponent>(),
         azrtti_typeid<AzToolsFramework::EditorEntityContextComponent>(),
         azrtti_typeid<AzToolsFramework::Prefab::PrefabSystemComponent>(),
+        azrtti_typeid<AzToolsFramework::EntityUtilityComponent>(),
         });
 
     return components;

@@ -1,12 +1,14 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
 #include <AzCore/base.h>
 #include <AzCore/EBus/EBus.h>
+#include <AzCore/std/containers/unordered_set.h>
 #include <AzCore/UserSettings/UserSettings.h>
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Memory/SystemAllocator.h>

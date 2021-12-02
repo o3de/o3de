@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -41,7 +42,7 @@ namespace EMotionFX
          * Clone the node attribute.
          * @result Returns a pointer to a newly created exact copy of the node attribute.
          */
-        virtual NodeAttribute* Clone() = 0;
+        virtual NodeAttribute* Clone() const = 0;
 
     protected:
         /**

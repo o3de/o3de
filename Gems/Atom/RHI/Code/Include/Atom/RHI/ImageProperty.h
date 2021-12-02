@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -182,7 +183,7 @@ namespace AZ
                     else
                     {
                         // Insert intervals by mip level.
-                        for (uint32_t mipLevel = subResourceRange.m_mipSliceMin; mipLevel <= subResourceRange.m_mipSliceMax; ++mipLevel)
+                        for (uint16_t mipLevel = subResourceRange.m_mipSliceMin; mipLevel <= subResourceRange.m_mipSliceMax; ++mipLevel)
                         {
                             m_intervalMap.assign(
                                 ConvertSubresourceToIndex(aspect, mipLevel, subResourceRange.m_arraySliceMin),
@@ -272,7 +273,7 @@ namespace AZ
                     else
                     {
                         // Traverse one mip level at a time.
-                        for (uint32_t mipLevel = subResourceRange.m_mipSliceMin; mipLevel <= subResourceRange.m_mipSliceMax; ++mipLevel)
+                        for (uint16_t mipLevel = subResourceRange.m_mipSliceMin; mipLevel <= subResourceRange.m_mipSliceMax; ++mipLevel)
                         {
                             getIntervals(
                                 ConvertSubresourceToIndex(aspect, mipLevel, subResourceRange.m_arraySliceMin),
@@ -331,8 +332,8 @@ namespace AZ
         {
             const uint32_t subresourcesPerAspect = m_imageDescriptor.m_mipLevels * m_imageDescriptor.m_arraySize;
             return ImageSubresource(
-                (index % subresourcesPerAspect) / m_imageDescriptor.m_arraySize,
-                (index % subresourcesPerAspect) % m_imageDescriptor.m_arraySize,
+                static_cast<uint16_t>((index % subresourcesPerAspect) / m_imageDescriptor.m_arraySize),
+                static_cast<uint16_t>((index % subresourcesPerAspect) % m_imageDescriptor.m_arraySize),
                 static_cast<ImageAspect>(index/ subresourcesPerAspect));
         }
 

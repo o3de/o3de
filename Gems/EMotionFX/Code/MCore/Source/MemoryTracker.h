@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -40,9 +41,9 @@ namespace MCore
          */
         struct MCORE_API Allocation
         {
-            void*   mMemAddress;            /**< The memory address of the allocation. */
-            size_t  mNumBytes;              /**< The number of bytes allocated at this address. */
-            uint32  mCategoryID;            /**< The memory category of this allocation. */
+            void*   m_memAddress;            /**< The memory address of the allocation. */
+            size_t  m_numBytes;              /**< The number of bytes allocated at this address. */
+            uint32  m_categoryId;            /**< The memory category of this allocation. */
         };
 
         /**
@@ -50,11 +51,11 @@ namespace MCore
          */
         struct MCORE_API GlobalStats
         {
-            size_t  mCurrentNumBytes;       /**< Current number of bytes allocated. */
-            uint32  mCurrentNumAllocs;      /**< The current number of allocations. */
-            uint32  mTotalNumAllocs;        /**< Total number of allocations ever made. */
-            uint32  mTotalNumReallocs;      /**< Total number of reallocations ever made. */
-            uint32  mTotalNumFrees;         /**< Total number of frees ever made. */
+            size_t  m_currentNumBytes;       /**< Current number of bytes allocated. */
+            uint32  m_currentNumAllocs;      /**< The current number of allocations. */
+            uint32  m_totalNumAllocs;        /**< Total number of allocations ever made. */
+            uint32  m_totalNumReallocs;      /**< Total number of reallocations ever made. */
+            uint32  m_totalNumFrees;         /**< Total number of frees ever made. */
 
             GlobalStats();
         };
@@ -64,12 +65,12 @@ namespace MCore
          */
         struct MCORE_API CategoryStats
         {
-            size_t  mCurrentNumBytes;       /**< Current number of bytes allocated. */
-            uint32  mCurrentNumAllocs;      /**< Current number of allocations active. */
-            uint32  mTotalNumAllocs;        /**< Total number of allocations ever made in this category. */
-            uint32  mTotalNumReallocs;      /**< Total number of reallocations ever made in this category. */
-            uint32  mTotalNumFrees;         /**< Total number of frees ever made in this category. */
-            std::string mName;              /**< The name of the category, can be empty if not registered with RegisterCategory. */
+            size_t  m_currentNumBytes;       /**< Current number of bytes allocated. */
+            uint32  m_currentNumAllocs;      /**< Current number of allocations active. */
+            uint32  m_totalNumAllocs;        /**< Total number of allocations ever made in this category. */
+            uint32  m_totalNumReallocs;      /**< Total number of reallocations ever made in this category. */
+            uint32  m_totalNumFrees;         /**< Total number of frees ever made in this category. */
+            std::string m_name;              /**< The name of the category, can be empty if not registered with RegisterCategory. */
 
             CategoryStats();
         };
@@ -79,11 +80,11 @@ namespace MCore
          */
         struct MCORE_API GroupStats
         {
-            size_t  mCurrentNumBytes;
-            uint32  mCurrentNumAllocs;
-            uint32  mTotalNumAllocs;        /**< Total number of allocations ever made in this category. */
-            uint32  mTotalNumReallocs;      /**< Total number of reallocations ever made in this category. */
-            uint32  mTotalNumFrees;         /**< Total number of frees ever made in this category. */
+            size_t  m_currentNumBytes;
+            uint32  m_currentNumAllocs;
+            uint32  m_totalNumAllocs;        /**< Total number of allocations ever made in this category. */
+            uint32  m_totalNumReallocs;      /**< Total number of reallocations ever made in this category. */
+            uint32  m_totalNumFrees;         /**< Total number of frees ever made in this category. */
 
             GroupStats();
         };
@@ -93,9 +94,9 @@ namespace MCore
          */
         struct MCORE_API Group
         {
-            std::set<uint32>    mCategories;    /**< The ID values of the categories that are part of this group. */
-            std::string         mName;          /**< The name of the category. */
-            GroupStats          mStats;         /**< The statistics. */
+            std::set<uint32>    m_categories;    /**< The ID values of the categories that are part of this group. */
+            std::string         m_name;          /**< The name of the category. */
+            GroupStats          m_stats;         /**< The statistics. */
         };
 
         //--------------------------------
@@ -253,11 +254,11 @@ namespace MCore
         void Unlock();
 
     private:
-        std::unordered_map<void*, Allocation>   mAllocs;            /**< The unordered map of allocations, with the memory address as key. */
-        std::unordered_map<uint32, Group>       mGroups;            /**< The groups, with the group ID as key.*/
-        std::map<uint32, CategoryStats>         mCategories;        /**< The ordered map of categories, with the category ID as key. */
-        GlobalStats                             mGlobalStats;       /**< The global memory statistics. */
-        mutable Mutex                           mMutex;             /**< The multithread mutex used to lock and unlock. */
+        std::unordered_map<void*, Allocation>   m_allocs;            /**< The unordered map of allocations, with the memory address as key. */
+        std::unordered_map<uint32, Group>       m_groups;            /**< The groups, with the group ID as key.*/
+        std::map<uint32, CategoryStats>         m_categories;        /**< The ordered map of categories, with the category ID as key. */
+        GlobalStats                             m_globalStats;       /**< The global memory statistics. */
+        mutable Mutex                           m_mutex;             /**< The multithread mutex used to lock and unlock. */
 
         /**
          * Register a given memory allocation.

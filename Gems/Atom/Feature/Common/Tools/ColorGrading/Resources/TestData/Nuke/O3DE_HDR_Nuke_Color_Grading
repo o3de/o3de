@@ -1,0 +1,57 @@
+#! C:/Program Files/Nuke13.0v3/nuke-13.0.3.dll -nx
+version 13.0 v3
+define_window_layout_xml {<?xml version="1.0" encoding="UTF-8"?>
+<layout version="1.0">
+    <window x="108" y="0" w="1864" h="1047" screen="0">
+        <splitter orientation="1">
+            <split size="40"/>
+            <dock id="" hideTitles="1" activePageId="Toolbar.1">
+                <page id="Toolbar.1"/>
+            </dock>
+            <split size="1201" stretch="1"/>
+            <splitter orientation="2">
+                <split size="590"/>
+                <dock id="" activePageId="Viewer.1">
+                    <page id="Viewer.1"/>
+                </dock>
+                <split size="415"/>
+                <dock id="" activePageId="DAG.1">
+                    <page id="DAG.1"/>
+                    <page id="Curve Editor.1"/>
+                    <page id="DopeSheet.1"/>
+                </dock>
+            </splitter>
+            <split size="615"/>
+            <dock id="" activePageId="Properties.1" focus="true">
+                <page id="Properties.1"/>
+                <page id="uk.co.thefoundry.backgroundrenderview.1"/>
+            </dock>
+        </splitter>
+    </window>
+</layout>
+}
+Root {
+ inputs 0
+ name C:/Depot/o3de-engine/Gems/AtomLyIntegration/CommonFeatures/Tools/ColorGrading/TestData/Nuke/O3DE_HDR_Nuke_Color_Grading
+ project_directory "\[python \{nuke.script_directory()\}]"
+ label "This is a Nuke project template used to validate HDR / ACES color grading workflow in Nuke to generate 'Look Modification' (LMT) Luts for Oopen 3D Engine."
+ format "2048 1556 0 0 2048 1556 1 2K_Super_35(full-ap)"
+ proxy_type scale
+ proxy_format "1024 778 0 0 1024 778 1 1K_Super_35(full-ap)"
+ colorManagement Nuke
+ workingSpaceLUT linear
+ monitorLut sRGB
+ monitorOutLUT rec709
+ int8Lut sRGB
+ int16Lut sRGB
+ logLut Cineon
+ floatLut linear
+}
+Viewer {
+ inputs 0
+ frame 1
+ frame_range 1-100
+ name Viewer1
+ xpos -40
+ ypos -9
+}

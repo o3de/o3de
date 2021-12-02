@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -19,7 +20,7 @@ namespace EMotionFX
     enum EMotionExtractionFlags : uint8;
 
 
-    class EMFX_API MCORE_ALIGN_PRE(16) Transform
+    class EMFX_API alignas(16) Transform
     {
         MCORE_MEMORYOBJECTCATEGORY(Transform, MCore::MCORE_SIMD_ALIGNMENT, EMFX_MEMCATEGORY_TRANSFORM);
 
@@ -136,11 +137,10 @@ namespace EMotionFX
         bool        operator != (const Transform& right) const;
 
     public:
-        AZ::Quaternion   mRotation;             /**< The rotation. */
-        AZ::Vector3      mPosition;             /**< The position. */
+        AZ::Quaternion   m_rotation;             /**< The rotation. */
+        AZ::Vector3      m_position;             /**< The position. */
         #ifndef EMFX_SCALE_DISABLED
-            AZ::Vector3  mScale;                /**< The scale. */
+            AZ::Vector3  m_scale;                /**< The scale. */
         #endif
-    }
-    MCORE_ALIGN_POST(16);
+    };
 }   // namespace EMotionFX

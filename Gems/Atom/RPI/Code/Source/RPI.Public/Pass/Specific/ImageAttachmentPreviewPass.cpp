@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -13,14 +14,13 @@
 #include <Atom/RPI.Public/Buffer/Buffer.h>
 #include <Atom/RPI.Public/Image/AttachmentImagePool.h>
 #include <Atom/RPI.Public/Image/ImageSystemInterface.h>
-#include <Atom/RPI.Public/Pass/RenderPass.h>
+#include <Atom/RPI.Public/Pass/AttachmentReadback.h>
 #include <Atom/RPI.Public/Pass/Specific/ImageAttachmentPreviewPass.h>
 #include <Atom/RPI.Public/Pass/ParentPass.h>
 #include <Atom/RPI.Public/RenderPipeline.h>
 #include <Atom/RPI.Public/RPIUtils.h>
 
 #include <Atom/RPI.Reflect/Shader/ShaderOptionGroup.h>
-#include <Atom/RPI.Reflect/Shader/ShaderResourceGroupAsset.h>
 
 namespace AZ
 {
@@ -131,7 +131,7 @@ namespace AZ
             Data::AssetBus::Handler::BusDisconnect();
         }
 
-        void ImageAttachmentPreviewPass::PreviewImageAttachmentForPass(RenderPass* pass, const PassAttachment* passAttachment)
+        void ImageAttachmentPreviewPass::PreviewImageAttachmentForPass(Pass* pass, const PassAttachment* passAttachment)
         {
             if (passAttachment->GetAttachmentType() != RHI::AttachmentType::Image)
             {
@@ -231,7 +231,7 @@ namespace AZ
 
         void ImageAttachmentPreviewPass::OnAssetReloaded(Data::Asset<Data::AssetData> asset)
         {
-            Data::Asset<ShaderAsset> shaderAsset = { asset.GetAs<ShaderAsset>(), AZ::Data::AssetLoadBehavior::PreLoad };
+            Data::Asset<ShaderAsset> shaderAsset = Data::static_pointer_cast<ShaderAsset>(asset);
             if (shaderAsset)
             {
                 m_needsShaderLoad = true;
@@ -254,10 +254,10 @@ namespace AZ
             }
 
             // Load SRG
-            const Data::Asset<ShaderResourceGroupAsset>& srgAsset = m_shader->FindShaderResourceGroupAsset(Name{ "PassSrg" });
-            if (srgAsset)
+            const auto srgLayout = m_shader->FindShaderResourceGroupLayout(SrgBindingSlot::Pass);
+            if (srgLayout)
             {
-                m_passSrg = ShaderResourceGroup::Create(srgAsset);
+                m_passSrg = ShaderResourceGroup::Create(shaderAsset, m_shader->GetSupervariantIndex(), srgLayout->GetName());
 
                 if (!m_passSrg)
                 {

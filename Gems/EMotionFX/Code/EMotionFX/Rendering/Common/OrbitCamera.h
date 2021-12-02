@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -75,27 +76,27 @@ namespace MCommon
         void ViewCloseup(const MCore::AABB& boundingBox, float flightTime) override;
 
         void StartFlight(float distance, const AZ::Vector3& position, float alpha, float beta, float flightTime);
-        bool GetIsFlightActive() const                                  { return mFlightActive; }
-        void SetFlightTargetPosition(const AZ::Vector3& targetPos)      { mFlightTargetPosition = targetPos; }
+        bool GetIsFlightActive() const                                  { return m_flightActive; }
+        void SetFlightTargetPosition(const AZ::Vector3& targetPos)      { m_flightTargetPosition = targetPos; }
         float FlightTimeLeft() const
         {
-            if (mFlightActive == false)
+            if (m_flightActive == false)
             {
                 return 0.0f;
             }
-            return mFlightMaxTime - mFlightCurrentTime;
+            return m_flightMaxTime - m_flightCurrentTime;
         }
 
-        MCORE_INLINE float GetCurrentDistance() const                   { return mCurrentDistance; }
-        void SetCurrentDistance(float distance)                         { mCurrentDistance = distance; }
+        MCORE_INLINE float GetCurrentDistance() const                   { return m_currentDistance; }
+        void SetCurrentDistance(float distance)                         { m_currentDistance = distance; }
 
-        MCORE_INLINE float GetAlpha() const                             { return mAlpha; }
+        MCORE_INLINE float GetAlpha() const                             { return m_alpha; }
         static float GetDefaultAlpha()                                  { return 110.0f; }
-        void SetAlpha(float alpha)                                      { mAlpha = alpha; }
+        void SetAlpha(float alpha)                                      { m_alpha = alpha; }
 
-        MCORE_INLINE float GetBeta() const                              { return mBeta; }
+        MCORE_INLINE float GetBeta() const                              { return m_beta; }
         static float GetDefaultBeta()                                   { return 20.0f; }
-        void SetBeta(float beta)                                        { mBeta = beta; }
+        void SetBeta(float beta)                                        { m_beta = beta; }
 
         // automatically updates the camera afterwards
         void Set(float alpha, float beta, float currentDistance, const AZ::Vector3& target);
@@ -104,24 +105,24 @@ namespace MCommon
 
 
     private:
-        AZ::Vector2     mPositionDelta;     /**< The position delta which will be applied to the camera position when calling update. After adjusting the position it will be reset again. */
-        float           mMinDistance;       /**< The minimum distance from the orbit camera to its target in the orbit sphere. */
-        float           mMaxDistance;       /**< The maximum distance from the orbit camera to its target in the orbit sphere. */
-        float           mCurrentDistance;   /**< The current distance from the orbit camera to its target in the orbit sphere. */
-        float           mAlpha;             /**< The horizontal angle in our orbit sphere. */
-        float           mBeta;              /**< The vertical angle in our orbit sphere. */
+        AZ::Vector2     m_positionDelta;     /**< The position delta which will be applied to the camera position when calling update. After adjusting the position it will be reset again. */
+        float           m_minDistance;       /**< The minimum distance from the orbit camera to its target in the orbit sphere. */
+        float           m_maxDistance;       /**< The maximum distance from the orbit camera to its target in the orbit sphere. */
+        float           m_currentDistance;   /**< The current distance from the orbit camera to its target in the orbit sphere. */
+        float           m_alpha;             /**< The horizontal angle in our orbit sphere. */
+        float           m_beta;              /**< The vertical angle in our orbit sphere. */
 
-        bool            mFlightActive;
-        float           mFlightMaxTime;
-        float           mFlightCurrentTime;
-        float           mFlightSourceDistance;
-        float           mFlightTargetDistance;
-        AZ::Vector3     mFlightSourcePosition;
-        AZ::Vector3     mFlightTargetPosition;
-        float           mFlightSourceAlpha;
-        float           mFlightTargetAlpha;
-        float           mFlightSourceBeta;
-        float           mFlightTargetBeta;
+        bool            m_flightActive;
+        float           m_flightMaxTime;
+        float           m_flightCurrentTime;
+        float           m_flightSourceDistance;
+        float           m_flightTargetDistance;
+        AZ::Vector3     m_flightSourcePosition;
+        AZ::Vector3     m_flightTargetPosition;
+        float           m_flightSourceAlpha;
+        float           m_flightTargetAlpha;
+        float           m_flightSourceBeta;
+        float           m_flightTargetBeta;
     };
 } // namespace MCommon
 

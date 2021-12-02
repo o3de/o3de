@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -154,13 +155,13 @@ namespace EMotionFX
     void BlendTreeRotationLimitNode::ExecuteMathLogic(EMotionFX::AnimGraphInstance * animGraphInstance)
     {
         // If there are no incoming connections, there is nothing to do
-        if (mConnections.empty())
+        if (m_connections.empty())
         {
             return;
         }
 
         m_constraintTransformRotationAngles.SetTwistAxis(m_twistAxis);
-        m_constraintTransformRotationAngles.GetTransform().mRotation = GetInputQuaternion(animGraphInstance, INPUTPORT_ROTATION)->GetValue();
+        m_constraintTransformRotationAngles.GetTransform().m_rotation = GetInputQuaternion(animGraphInstance, INPUTPORT_ROTATION)->GetValue();
 
         m_constraintTransformRotationAngles.SetMaxRotationAngles(AZ::Vector2(GetRotationLimitY().m_max, GetRotationLimitX().m_max));
         m_constraintTransformRotationAngles.SetMinRotationAngles(AZ::Vector2(GetRotationLimitY().m_min, GetRotationLimitX().m_min));
@@ -168,7 +169,7 @@ namespace EMotionFX
         m_constraintTransformRotationAngles.SetMaxTwistAngle(GetRotationLimitZ().m_max);
         m_constraintTransformRotationAngles.Execute();
 
-        GetOutputQuaternion(animGraphInstance, OUTPUTPORT_RESULT_QUATERNION)->SetValue(m_constraintTransformRotationAngles.GetTransform().mRotation);
+        GetOutputQuaternion(animGraphInstance, OUTPUTPORT_RESULT_QUATERNION)->SetValue(m_constraintTransformRotationAngles.GetTransform().m_rotation);
     }
 
     void BlendTreeRotationLimitNode::Reflect(AZ::ReflectContext* context)

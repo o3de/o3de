@@ -1,5 +1,5 @@
 {
-    "Source": "DecomposeMsImage",
+    "Source": "DecomposeMsImage.azsl",
 
     "ProgramSettings":
     {

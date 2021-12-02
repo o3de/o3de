@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -9,7 +10,6 @@
 
 #include <AzCore/std/base.h>
 #include <AzCore/std/ratio.h>
-#include <AzCore/std/utils.h>
 #include <AzCore/std/typetraits/common_type.h>
 #include <AzCore/std/typetraits/is_convertible.h>
 #include <AzCore/std/typetraits/is_floating_point.h>
@@ -210,7 +210,7 @@ namespace AZStd
             // 20.9.3.2, observer:
             constexpr rep count() const { return m_rep; }
             // 20.9.3.3, arithmetic:
-            constexpr duration operator+() const { *this; }
+            constexpr duration operator+() const { return *this; }
             constexpr duration operator-() const { return duration(-m_rep); }
             constexpr duration& operator++() { ++m_rep; return *this; }
             constexpr duration operator++(int) { return duration(m_rep++); }

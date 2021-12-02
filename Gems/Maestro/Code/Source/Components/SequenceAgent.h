@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -19,6 +20,8 @@ namespace Maestro
         friend class AZ::SerializeContext;
         
     protected:
+        virtual ~SequenceAgent() = default;
+
         // This pure virtual is required for the Editor and RunTime to find the componentTypeId - in the Editor
         // it accounts for the GenericComponentWrapper component
         virtual const AZ::Uuid& GetComponentTypeUuid(const AZ::Component& component) const = 0;

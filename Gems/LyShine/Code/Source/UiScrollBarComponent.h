@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -52,7 +53,7 @@ public: // member functions
 
     // UiScrollerInterface
     Orientation GetOrientation() override;
-    void SetOrientation(Orientation orientation);
+    void SetOrientation(Orientation orientation) override;
     AZ::EntityId GetScrollableEntity() override;
     void SetScrollableEntity(AZ::EntityId entityId) override;
     float GetValue() override;

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -80,7 +81,7 @@ namespace GridMate
 #define GM_ENABLE_PROFILE_USER_CALLBACKS 1
 
 #if (GM_ENABLE_PROFILE_USER_CALLBACKS)
-#define GM_PROFILE_USER_CALLBACK(callback) AZ_PROFILE_TIMER("GridMate User Code", callback);
+#define GM_PROFILE_USER_CALLBACK(callback) AZ_PROFILE_SCOPE(GridMate, "GridMate User Code: %s", callback);
 #else
 #define GM_PROFILE_USER_CALLBACK(callback)
 #endif

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -302,7 +303,6 @@ namespace AZ
                 TYPED_TEST_P(SceneGraphDownwardsIteratorContext, Algorithms_FindIf_FindsValue3InNodeAdotC)
                 {
                     using Traversal = typename SceneGraphDownwardsIteratorContext<TypeParam>::Traversal;
-                    SceneGraph::NodeIndex index = this->m_graph.Find("A.C");
                     auto sceneView = MakeSceneGraphDownwardsView<Traversal>(this->m_graph, this->m_graph.GetContentStorage().begin());
                     auto result = AZStd::find_if(sceneView.begin(), sceneView.end(),
                         [](const AZStd::shared_ptr<DataTypes::IGraphObject>& object) -> bool

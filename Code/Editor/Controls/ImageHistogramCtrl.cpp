@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -29,12 +30,6 @@ namespace ImageHistogram
     const QColor    kGreenSectionColor = QColor(220, 255, 220);
     const QColor    kBlueSectionColor = QColor(220, 220, 255);
     const QColor    kSplitSeparatorColor = QColor(100, 100, 0);
-    const QColor    kButtonBackColor = QColor(20, 20, 20);
-    const QColor    kBtnLightColor(200, 200, 200);
-    const QColor    kBtnShadowColor(50, 50, 50);
-    const int       kButtonWidth = 40;
-    const QColor    kButtonTextColor(255, 255, 0);
-    const int       kTextLeftSpacing = 4;
     const int       kTextFontSize = 70;
     const char*     kTextFontFace = "Arial";
     const QColor    kTextColor(255, 255, 255);
@@ -174,7 +169,7 @@ void CImageHistogramDisplay::paintEvent([[maybe_unused]] QPaintEvent* event)
     penSpikes = penColor;
     painter.setPen(Qt::black);
     painter.setBrush(Qt::white);
-    rcGraph = QRect(QPoint(m_graphMargin, m_graphMargin), QPoint(abs(rc.width() - m_graphMargin), abs(rc.height() * m_graphHeightPercent)));
+    rcGraph = QRect(QPoint(m_graphMargin, m_graphMargin), QPoint(abs(rc.width() - m_graphMargin), static_cast<int>(abs(rc.height() * m_graphHeightPercent))));
     painter.drawRect(rcGraph);
     painter.setPen(penSpikes);
 
@@ -192,8 +187,8 @@ void CImageHistogramDisplay::paintEvent([[maybe_unused]] QPaintEvent* event)
         {
             float scale = 0;
 
-            i = ((float)x / graphWidth) * (kNumColorLevels - 1);
-            i = CLAMP(i, 0, kNumColorLevels - 1);
+            i = static_cast<int>(((float)x / graphWidth) * (kNumColorLevels - 1));
+            i = AZStd::clamp(i, 0, kNumColorLevels - 1);
 
             switch (m_drawMode)
             {
@@ -243,8 +238,8 @@ void CImageHistogramDisplay::paintEvent([[maybe_unused]] QPaintEvent* event)
             }
             }
 
-            crtX = rcGraph.left() + x + 1;
-            painter.drawLine(crtX, graphBottom, crtX, graphBottom - scale * graphHeight);
+            crtX = static_cast<int>(rcGraph.left() + x + 1);
+            painter.drawLine(crtX, graphBottom, crtX, static_cast<int>(graphBottom - scale * graphHeight));
         }
     }
     else
@@ -257,9 +252,9 @@ void CImageHistogramDisplay::paintEvent([[maybe_unused]] QPaintEvent* event)
 
         for (size_t x = 0, xCount = abs(rcGraph.width()); x < xCount; ++x)
         {
-            i = ((float)x / graphWidth) * (kNumColorLevels - 1);
-            i = CLAMP(i, 0, kNumColorLevels - 1);
-            crtX = rcGraph.left() + x + 1;
+            i = static_cast<int>(((float)x / graphWidth) * (kNumColorLevels - 1));
+            i = AZStd::clamp(i, 0, kNumColorLevels - 1);
+            crtX = static_cast<UINT>(rcGraph.left() + x + 1);
             scaleR = scaleG = scaleB = scaleA = 0;
 
             if (m_maxCount[0])
@@ -282,10 +277,10 @@ void CImageHistogramDisplay::paintEvent([[maybe_unused]] QPaintEvent* event)
                 scaleA = (float)m_count[3][i] / m_maxCount[3];
             }
 
-            heightR = graphBottom - scaleR * graphHeight;
-            heightG = graphBottom - scaleG * graphHeight;
-            heightB = graphBottom - scaleB * graphHeight;
-            heightA = graphBottom - scaleA * graphHeight;
+            heightR = static_cast<int>(graphBottom - scaleR * graphHeight);
+            heightG = static_cast<int>(graphBottom - scaleG * graphHeight);
+            heightB = static_cast<int>(graphBottom - scaleB * graphHeight);
+            heightA = static_cast<int>(graphBottom - scaleA * graphHeight);
 
             if (lastHeight[0] == INT_MAX)
             {
@@ -349,8 +344,8 @@ void CImageHistogramDisplay::paintEvent([[maybe_unused]] QPaintEvent* event)
         for (size_t x = 0, xCount = abs(rcGraph.width()); x < xCount; ++x)
         {
             pos = (float)x / graphWidth;
-            i = (float)((int)(pos * kNumColorLevels) % aThirdOfNumColorLevels) / aThirdOfNumColorLevels * kNumColorLevels;
-            i = CLAMP(i, 0, kNumColorLevels - 1);
+            i = static_cast<int>((float)((int)(pos * kNumColorLevels) % aThirdOfNumColorLevels) / aThirdOfNumColorLevels * kNumColorLevels);
+            i = AZStd::clamp(i, 0, kNumColorLevels - 1);
             scale = 0;
 
             // R
@@ -384,7 +379,7 @@ void CImageHistogramDisplay::paintEvent([[maybe_unused]] QPaintEvent* event)
             }
 
             painter.setPen(pPen);
-            painter.drawLine(rcGraph.left() + x + 1, graphBottom, rcGraph.left() + x + 1, graphBottom - scale * graphHeight);
+            painter.drawLine(rcGraph.left() + static_cast<int>(x) + 1, graphBottom, rcGraph.left() + static_cast<int>(x) + 1, static_cast<int>(graphBottom - scale * graphHeight));
         }
 
         // then draw 3 lines so we separate the channels

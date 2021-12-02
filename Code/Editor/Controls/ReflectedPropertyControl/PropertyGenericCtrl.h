@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -95,15 +96,6 @@ public:
     }
 };
 
-class ReverbPresetPropertyEditor
-    : public GenericPopupPropertyEditor
-{
-public:
-    ReverbPresetPropertyEditor(QWidget* pParent = nullptr)
-        : GenericPopupPropertyEditor(pParent){}
-    void onEditClicked() override;
-};
-
 class MissionObjPropertyEditor
     : public GenericPopupPropertyEditor
 {
@@ -154,7 +146,6 @@ public:
 // So we use our own
 #define CONST_AZ_CRC(name, value) AZ::u32(value)
 
-using ReverbPresetPropertyHandler = GenericPopupWidgetHandler<ReverbPresetPropertyEditor, CONST_AZ_CRC("ePropertyReverbPreset", 0x51469f38)>;
 using MissionObjPropertyHandler = GenericPopupWidgetHandler<MissionObjPropertyEditor, CONST_AZ_CRC("ePropertyMissionObj", 0x4a2d0dc8)>;
 using SequencePropertyHandler = GenericPopupWidgetHandler<SequencePropertyEditor, CONST_AZ_CRC("ePropertySequence", 0xdd1c7d44)>;
 using SequenceIdPropertyHandler = GenericPopupWidgetHandler<SequenceIdPropertyEditor, CONST_AZ_CRC("ePropertySequenceId", 0x05983dcc)>;

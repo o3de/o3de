@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -39,7 +40,7 @@ namespace AZ::SceneAPI::SceneBuilder
         // This code re-combines them to match previous FBX SDK behavior,
         // so they can be separated by engine code instead.
         int vertOffset = 0;
-        for (int m = 0; m < currentNode->mNumMeshes; ++m)
+        for (unsigned int m = 0; m < currentNode->mNumMeshes; ++m)
         {
             const aiMesh* mesh = scene->mMeshes[currentNode->mMeshes[m]];
 
@@ -49,7 +50,7 @@ namespace AZ::SceneAPI::SceneBuilder
                 assImpMatIndexToLYIndex.insert(AZStd::pair<int, int>(mesh->mMaterialIndex, lyMeshIndex++));
             }
 
-            for (int vertIdx = 0; vertIdx < mesh->mNumVertices; ++vertIdx)
+            for (unsigned int vertIdx = 0; vertIdx < mesh->mNumVertices; ++vertIdx)
             {
                 AZ::Vector3 vertex(mesh->mVertices[vertIdx].x, mesh->mVertices[vertIdx].y, mesh->mVertices[vertIdx].z);
 
@@ -67,7 +68,7 @@ namespace AZ::SceneAPI::SceneBuilder
                 }
             }
 
-            for (int faceIdx = 0; faceIdx < mesh->mNumFaces; ++faceIdx)
+            for (unsigned int faceIdx = 0; faceIdx < mesh->mNumFaces; ++faceIdx)
             {
                 aiFace face = mesh->mFaces[faceIdx];
                 AZ::SceneAPI::DataTypes::IMeshData::Face meshFace;
@@ -81,7 +82,7 @@ namespace AZ::SceneAPI::SceneBuilder
                         face.mNumIndices);
                     continue;
                 }
-                for (int idx = 0; idx < face.mNumIndices; ++idx)
+                for (unsigned int idx = 0; idx < face.mNumIndices; ++idx)
                 {
                     meshFace.vertexIndex[idx] = face.mIndices[idx] + vertOffset;
                 }

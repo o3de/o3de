@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -279,6 +280,9 @@ namespace AzToolsFramework
             product->m_assetType = productWithUuidDatabaseEntry.second.m_assetType;
             product->m_assetType.ToString(product->m_assetTypeString);
             AZ::Data::AssetCatalogRequestBus::BroadcastResult(product->m_relativePath, &AZ::Data::AssetCatalogRequests::GetAssetPathById, assetId);
+            QString displayPath = QString::fromUtf8(product->m_relativePath.c_str());
+            displayPath.remove(QString(AZ_CORRECT_DATABASE_SEPARATOR + QString::fromUtf8(product->m_name.c_str())));
+            product->m_displayPath = displayPath;
             EntryCache::GetInstance()->m_productAssetIdMap[assetId] = product;
 
             if (needsAdd)

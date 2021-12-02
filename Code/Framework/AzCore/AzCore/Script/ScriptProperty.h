@@ -1,11 +1,11 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef AZCORE_SCRIPT_SCRIPTPROPERTY_H
-#define AZCORE_SCRIPT_SCRIPTPROPERTY_H
+#pragma once
 
 #include <AzCore/Component/EntityId.h>
 #include <AzCore/Memory/SystemAllocator.h>
@@ -487,35 +487,6 @@ namespace AZ
     protected:
         void CloneDataFrom(const AZ::ScriptProperty* scriptProperty) override;
     };
-
-    class ScriptPropertyEntityRef
-        : public ScriptProperty
-    {
-    public:
-        AZ_CLASS_ALLOCATOR(ScriptPropertyEntityRef, AZ::SystemAllocator, 0);
-        AZ_RTTI(AZ::ScriptPropertyEntityRef, "{68EDE6C3-0A89-4C50-A86E-06C058C9F862}", ScriptProperty);
-        
-        static void Reflect(AZ::ReflectContext* reflection);
-
-        ScriptPropertyEntityRef() {}
-        ScriptPropertyEntityRef(const char* name)
-            : ScriptProperty(name) {}
-        virtual ~ScriptPropertyEntityRef() = default;
-        const void* GetDataAddress() const override { return &m_value; }
-        const AZ::Uuid& GetDataTypeUuid() const override;
-
-        bool DoesTypeMatch(AZ::ScriptDataContext& context, int valueIndex) const override;
-
-        ScriptPropertyEntityRef* Clone(const char* name = nullptr) const override;
-
-        bool Write(AZ::ScriptContext& context) override;
-
-        AZ::EntityId m_value;
-
-    protected:
-        void CloneDataFrom(const AZ::ScriptProperty* scriptProperty) override;
-    };
 }
 
-#endif
 

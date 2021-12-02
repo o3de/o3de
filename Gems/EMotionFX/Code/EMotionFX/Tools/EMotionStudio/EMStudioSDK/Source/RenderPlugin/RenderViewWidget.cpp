@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -25,12 +26,12 @@ namespace EMStudio
     {
         for (uint32 i = 0; i < NUM_RENDER_OPTIONS; ++i)
         {
-            mToolbarButtons[i] = nullptr;
-            mActions[i] = nullptr;
+            m_toolbarButtons[i] = nullptr;
+            m_actions[i] = nullptr;
         }
 
-        mRenderOptionsWindow    = nullptr;
-        mPlugin                 = parentPlugin;
+        m_renderOptionsWindow    = nullptr;
+        m_plugin                 = parentPlugin;
 
         // create the vertical layout with the menu and the gl widget as entries
         QVBoxLayout* verticalLayout = new QVBoxLayout(this);
@@ -39,14 +40,14 @@ namespace EMStudio
         verticalLayout->setMargin(0);
 
         // create toolbar
-        mToolBar = new QToolBar(this);
-        mToolBar->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+        m_toolBar = new QToolBar(this);
+        m_toolBar->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
 
         // add the toolbar to the vertical layout
-        verticalLayout->addWidget(mToolBar);
+        verticalLayout->addWidget(m_toolBar);
 
         QWidget* renderWidget = nullptr;
-        mPlugin->CreateRenderWidget(this, &mRenderWidget, &renderWidget);
+        m_plugin->CreateRenderWidget(this, &m_renderWidget, &renderWidget);
         verticalLayout->addWidget(renderWidget);
 
         new QActionGroup(this);
@@ -64,14 +65,14 @@ namespace EMStudio
             group->addAction(action);
         }
 
-        mToolBar->addSeparator();
+        m_toolBar->addSeparator();
 
         QAction* layoutsAction = AddToolBarAction("Layouts", "Layout_category.svg");
         {
             QMenu* contextMenu = new QMenu(this);
 
-            const AZStd::vector<RenderPlugin::Layout*>& layouts = mPlugin->GetLayouts();
-            const RenderPlugin::Layout* currentLayout = mPlugin->GetCurrentLayout();
+            const AZStd::vector<RenderPlugin::Layout*>& layouts = m_plugin->GetLayouts();
+            const RenderPlugin::Layout* currentLayout = m_plugin->GetCurrentLayout();
             for (RenderPlugin::Layout* layout : layouts)
             {
                 QAction* layoutAction = contextMenu->addAction(layout->GetName());
@@ -79,15 +80,15 @@ namespace EMStudio
                 layoutAction->setCheckable(true);
                 layoutAction->setChecked(layout == currentLayout);
 
-                connect(layoutAction, &QAction::triggered, mPlugin, [this, layout](){
-                    mPlugin->LayoutButtonPressed(layout->GetName());
+                connect(layoutAction, &QAction::triggered, m_plugin, [this, layout](){
+                    m_plugin->LayoutButtonPressed(layout->GetName());
                 });
             }
 
             connect(layoutsAction, &QAction::toggled, contextMenu, &QMenu::show);
             layoutsAction->setMenu(contextMenu);
 
-            auto widgetForAction = qobject_cast<QToolButton*>(mToolBar->widgetForAction(layoutsAction));
+            auto widgetForAction = qobject_cast<QToolButton*>(m_toolBar->widgetForAction(layoutsAction));
             if (widgetForAction)
             {
                 connect(layoutsAction, &QAction::triggered, widgetForAction, &QToolButton::showMenu);
@@ -107,7 +108,6 @@ namespace EMStudio
             CreateViewOptionEntry(contextMenu, "Face Normals", RENDER_FACENORMALS);
             CreateViewOptionEntry(contextMenu, "Tangents", RENDER_TANGENTS);
             CreateViewOptionEntry(contextMenu, "Actor Bounding Boxes", RENDER_AABB);
-            CreateViewOptionEntry(contextMenu, "Joint OBBs", RENDER_OBB, false);
             CreateViewOptionEntry(contextMenu, "Collision Meshes", RENDER_COLLISIONMESHES, false);
             contextMenu->addSeparator();
             CreateViewOptionEntry(contextMenu, "Line Skeleton", RENDER_LINESKELETON);
@@ -131,7 +131,7 @@ namespace EMStudio
 
             viewOptionsAction->setMenu(contextMenu);
 
-            auto widgetForAction = qobject_cast<QToolButton*>(mToolBar->widgetForAction(viewOptionsAction));
+            auto widgetForAction = qobject_cast<QToolButton*>(m_toolBar->widgetForAction(viewOptionsAction));
             if (widgetForAction)
             {
                 connect(viewOptionsAction, &QAction::triggered, widgetForAction, &QToolButton::showMenu);
@@ -155,37 +155,37 @@ namespace EMStudio
             cameraMenu->addAction("Reset Camera",      [this]() { this->OnResetCamera(); });
 
             QAction* showSelectedAction = cameraMenu->addAction("Show Selected", this, &RenderViewWidget::OnShowSelected);
-            showSelectedAction->setShortcut(Qt::Key_S);
+            showSelectedAction->setShortcut(QKeySequence(Qt::Key_S + Qt::SHIFT));
             GetMainWindow()->GetShortcutManager()->RegisterKeyboardShortcut(showSelectedAction, RenderPlugin::s_renderWindowShortcutGroupName, true);
             addAction(showSelectedAction);
 
             QAction* showEntireSceneAction = cameraMenu->addAction("Show Entire Scene", this, &RenderViewWidget::OnShowEntireScene);
-            showEntireSceneAction->setShortcut(Qt::Key_A);
+            showEntireSceneAction->setShortcut(QKeySequence(Qt::Key_A + Qt::SHIFT));
             GetMainWindow()->GetShortcutManager()->RegisterKeyboardShortcut(showEntireSceneAction, RenderPlugin::s_renderWindowShortcutGroupName, true);
             addAction(showEntireSceneAction);
 
             cameraMenu->addSeparator();
 
-            mFollowCharacterAction = cameraMenu->addAction(tr("Follow Character"));
-            mFollowCharacterAction->setCheckable(true);
-            mFollowCharacterAction->setChecked(true);
-            connect(mFollowCharacterAction, &QAction::triggered, this, &RenderViewWidget::OnFollowCharacter);
+            m_followCharacterAction = cameraMenu->addAction(tr("Follow Character"));
+            m_followCharacterAction->setCheckable(true);
+            m_followCharacterAction->setChecked(true);
+            connect(m_followCharacterAction, &QAction::triggered, this, &RenderViewWidget::OnFollowCharacter);
 
             cameraOptionsAction->setMenu(cameraMenu);
             
-            mCameraMenu = cameraMenu;
+            m_cameraMenu = cameraMenu;
 
-            auto widgetForAction = qobject_cast<QToolButton*>(mToolBar->widgetForAction(cameraOptionsAction));
+            auto widgetForAction = qobject_cast<QToolButton*>(m_toolBar->widgetForAction(cameraOptionsAction));
             if (widgetForAction)
             {
                 connect(cameraOptionsAction, &QAction::triggered, widgetForAction, &QToolButton::showMenu);
             }
         }
 
-        connect(m_manipulatorModes[RenderOptions::SELECT], &QAction::triggered, mPlugin, &RenderPlugin::SetSelectionMode);
-        connect(m_manipulatorModes[RenderOptions::TRANSLATE], &QAction::triggered, mPlugin, &RenderPlugin::SetTranslationMode);
-        connect(m_manipulatorModes[RenderOptions::ROTATE], &QAction::triggered, mPlugin, &RenderPlugin::SetRotationMode);
-        connect(m_manipulatorModes[RenderOptions::SCALE], &QAction::triggered, mPlugin, &RenderPlugin::SetScaleMode);
+        connect(m_manipulatorModes[RenderOptions::SELECT], &QAction::triggered, m_plugin, &RenderPlugin::SetSelectionMode);
+        connect(m_manipulatorModes[RenderOptions::TRANSLATE], &QAction::triggered, m_plugin, &RenderPlugin::SetTranslationMode);
+        connect(m_manipulatorModes[RenderOptions::ROTATE], &QAction::triggered, m_plugin, &RenderPlugin::SetRotationMode);
+        connect(m_manipulatorModes[RenderOptions::SCALE], &QAction::triggered, m_plugin, &RenderPlugin::SetScaleMode);
 
         QAction* toggleSelectionBoxRendering = new QAction(
             "Toggle Selection Box Rendering",
@@ -195,7 +195,7 @@ namespace EMStudio
         GetMainWindow()->GetShortcutManager()->RegisterKeyboardShortcut(toggleSelectionBoxRendering, RenderPlugin::s_renderWindowShortcutGroupName, true);
         connect(toggleSelectionBoxRendering, &QAction::triggered, this, [this]
         {
-            mPlugin->GetRenderOptions()->SetRenderSelectionBox(mPlugin->GetRenderOptions()->GetRenderSelectionBox() ^ true);
+            m_plugin->GetRenderOptions()->SetRenderSelectionBox(m_plugin->GetRenderOptions()->GetRenderSelectionBox() ^ true);
         });
         addAction(toggleSelectionBoxRendering);
 
@@ -232,7 +232,6 @@ namespace EMStudio
         SetRenderFlag(RENDER_TANGENTS, false);
 
         SetRenderFlag(RENDER_AABB, false);
-        SetRenderFlag(RENDER_OBB, false);
         SetRenderFlag(RENDER_COLLISIONMESHES, false);
         SetRenderFlag(RENDER_RAGDOLL_COLLIDERS, true);
         SetRenderFlag(RENDER_RAGDOLL_JOINTLIMITS, true);
@@ -258,13 +257,13 @@ namespace EMStudio
     {
         const uint32 optionIndex = (uint32)option;
 
-        if (mToolbarButtons[optionIndex])
+        if (m_toolbarButtons[optionIndex])
         {
-            mToolbarButtons[optionIndex]->setChecked(isEnabled);
+            m_toolbarButtons[optionIndex]->setChecked(isEnabled);
         }
-        if (mActions[optionIndex])
+        if (m_actions[optionIndex])
         {
-            mActions[optionIndex]->setChecked(isEnabled);
+            m_actions[optionIndex]->setChecked(isEnabled);
         }
     }
 
@@ -281,7 +280,7 @@ namespace EMStudio
 
         if (actionIndex >= 0)
         {
-            mActions[actionIndex] = action;
+            m_actions[actionIndex] = action;
         }
     }
 
@@ -291,7 +290,7 @@ namespace EMStudio
         iconFileName += iconName;
         const QIcon& icon = MysticQt::GetMysticQt()->FindIcon(iconFileName.c_str());
 
-        QAction* action = mToolBar->addAction(icon, entryName);
+        QAction* action = m_toolBar->addAction(icon, entryName);
 
         return action;
     }
@@ -300,22 +299,22 @@ namespace EMStudio
     // destructor
     RenderViewWidget::~RenderViewWidget()
     {
-        mPlugin->RemoveViewWidget(this);
+        m_plugin->RemoveViewWidget(this);
     }
 
 
     // show the global rendering options dialog
     void RenderViewWidget::OnOptions()
     {
-        if (mRenderOptionsWindow == nullptr)
+        if (m_renderOptionsWindow == nullptr)
         {
-            mRenderOptionsWindow = new PreferencesWindow(this);
-            mRenderOptionsWindow->Init();
+            m_renderOptionsWindow = new PreferencesWindow(this);
+            m_renderOptionsWindow->Init();
 
-            AzToolsFramework::ReflectedPropertyEditor* generalPropertyWidget = mRenderOptionsWindow->FindPropertyWidgetByName("General");
+            AzToolsFramework::ReflectedPropertyEditor* generalPropertyWidget = m_renderOptionsWindow->FindPropertyWidgetByName("General");
             if (!generalPropertyWidget)
             {
-                generalPropertyWidget = mRenderOptionsWindow->AddCategory("General");
+                generalPropertyWidget = m_renderOptionsWindow->AddCategory("General");
                 generalPropertyWidget->ClearInstances();
                 generalPropertyWidget->InvalidateAll();
             }
@@ -328,7 +327,7 @@ namespace EMStudio
                 return;
             }
 
-            PluginOptions* pluginOptions = mPlugin->GetOptions();
+            PluginOptions* pluginOptions = m_plugin->GetOptions();
             AZ_Assert(pluginOptions, "Expected options in render plugin");
             generalPropertyWidget->AddInstance(pluginOptions, azrtti_typeid(pluginOptions));
 
@@ -340,25 +339,25 @@ namespace EMStudio
             generalPropertyWidget->InvalidateAll();
         }
 
-        mRenderOptionsWindow->show();
+        m_renderOptionsWindow->show();
     }
 
 
     void RenderViewWidget::OnShowSelected()
     {
-        mRenderWidget->ViewCloseup(true, DEFAULT_FLIGHT_TIME);
+        m_renderWidget->ViewCloseup(true, DEFAULT_FLIGHT_TIME);
     }
 
 
     void RenderViewWidget::OnShowEntireScene()
     {
-        mRenderWidget->ViewCloseup(false, DEFAULT_FLIGHT_TIME);
+        m_renderWidget->ViewCloseup(false, DEFAULT_FLIGHT_TIME);
     }
 
 
     void RenderViewWidget::SetCharacterFollowModeActive(bool active)
     {
-        mFollowCharacterAction->setChecked(active);
+        m_followCharacterAction->setChecked(active);
     }
 
 
@@ -367,9 +366,9 @@ namespace EMStudio
         CommandSystem::SelectionList& selectionList = GetCommandManager()->GetCurrentSelection();
         EMotionFX::ActorInstance* followInstance = selectionList.GetFirstActorInstance();
 
-        if (followInstance && GetIsCharacterFollowModeActive() && mRenderWidget)
+        if (followInstance && GetIsCharacterFollowModeActive() && m_renderWidget)
         {
-            mRenderWidget->ViewCloseup(true, DEFAULT_FLIGHT_TIME, 1);
+            m_renderWidget->ViewCloseup(true, DEFAULT_FLIGHT_TIME, 1);
         }
     }
 
@@ -380,7 +379,7 @@ namespace EMStudio
         {
             QAction* action = actionModePair.first;
             action->setCheckable(true);
-            action->setChecked(mRenderWidget->GetCameraMode() == actionModePair.second);
+            action->setChecked(m_renderWidget->GetCameraMode() == actionModePair.second);
         }
     }
 
@@ -390,10 +389,10 @@ namespace EMStudio
         for (uint32 i = 0; i < numRenderOptions; ++i)
         {
             QString name = QString(i);
-            settings->setValue(name, mActions[i] ? mActions[i]->isChecked() : false);
+            settings->setValue(name, m_actions[i] ? m_actions[i]->isChecked() : false);
         }
 
-        settings->setValue("CameraMode", (int32)mRenderWidget->GetCameraMode());
+        settings->setValue("CameraMode", (int32)m_renderWidget->GetCameraMode());
         settings->setValue("CharacterFollowMode", GetIsCharacterFollowModeActive());
     }
 
@@ -404,17 +403,16 @@ namespace EMStudio
         for (uint32 i = 0; i < numRenderOptions; ++i)
         {
             QString name = QString(i);
-            const bool isEnabled = settings->value(name, mActions[i] ? mActions[i]->isChecked() : false).toBool();
+            const bool isEnabled = settings->value(name, m_actions[i] ? m_actions[i]->isChecked() : false).toBool();
             SetRenderFlag((ERenderFlag)i, isEnabled);
         }
 
         // Override some settings as we removed those from the menu.
-        SetRenderFlag(RENDER_OBB, false);
         SetRenderFlag(RENDER_COLLISIONMESHES, false);
         SetRenderFlag(RENDER_TEXTURING, false);
 
-        RenderWidget::CameraMode cameraMode = (RenderWidget::CameraMode)settings->value("CameraMode", (int32)mRenderWidget->GetCameraMode()).toInt();
-        mRenderWidget->SwitchCamera(cameraMode);
+        RenderWidget::CameraMode cameraMode = (RenderWidget::CameraMode)settings->value("CameraMode", (int32)m_renderWidget->GetCameraMode()).toInt();
+        m_renderWidget->SwitchCamera(cameraMode);
 
         const bool followMode = settings->value("CharacterFollowMode", GetIsCharacterFollowModeActive()).toBool();
         SetCharacterFollowModeActive(followMode);
@@ -428,7 +426,7 @@ namespace EMStudio
         const uint32 numRenderOptions = NUM_RENDER_OPTIONS;
         for (uint32 i = 0; i < numRenderOptions; ++i)
         {
-            if (mActions[i] == action)
+            if (m_actions[i] == action)
             {
                 return i;
             }

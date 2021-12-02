@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -22,11 +23,7 @@
 #define ILINE __forceinline
 #endif
 
-#define DEBUG_BREAK _asm { int 3 }
-#define RC_EXECUTABLE "rc.exe"
 #define DEPRECATED __declspec(deprecated)
-#define TYPENAME(x) typeid(x).name()
-#define SIZEOF_PTR 4
 
 #ifndef _WIN32_WINNT
 # define _WIN32_WINNT 0x501
@@ -53,8 +50,6 @@
 // Define platform independent types.
 //////////////////////////////////////////////////////////////////////////
 #include "BaseTypes.h"
-
-#define THREADID_NULL -1
 
 typedef unsigned char BYTE;
 typedef unsigned int threadID;
@@ -106,17 +101,10 @@ int64 CryGetTicksPerSec();
 }
 #endif
 
-#define _MS_ALIGN(num) __declspec(align(num))
-
-#define DEFINE_ALIGNED_DATA(type, name, alignment) _declspec(align(alignment)) type name;
-#define DEFINE_ALIGNED_DATA_STATIC(type, name, alignment) static _declspec(align(alignment)) type name;
-#define DEFINE_ALIGNED_DATA_CONST(type, name, alignment) const _declspec(align(alignment)) type name;
-
 #ifndef FILE_ATTRIBUTE_NORMAL
     #define FILE_ATTRIBUTE_NORMAL 0x00000080
 #endif
 
-#define FP16_TERRAIN
 #define TARGET_DEFAULT_ALIGN (0x4U)
 
 

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -47,6 +48,7 @@ namespace SurfaceData
 
     private:
 
+        void LoadAsset(const AZ::Data::AssetId& assetId);
         void AddAsset(AZ::Data::Asset<AZ::Data::AssetData>& asset);
 
         ////////////////////////////////////////////////////////////////////////
@@ -62,7 +64,6 @@ namespace SurfaceData
         ////////////////////////////////////////////////////////////////////////
         // AzFramework::AssetCatalogEventBus
         void OnCatalogLoaded(const char* /*catalogFile*/) override;
-        void OnCatalogAssetChanged(const AZ::Data::AssetId& assetId) override;
         void OnCatalogAssetAdded(const AZ::Data::AssetId& assetId) override;
         void OnCatalogAssetRemoved(const AZ::Data::AssetId& assetId, const AZ::Data::AssetInfo& assetInfo) override;
 

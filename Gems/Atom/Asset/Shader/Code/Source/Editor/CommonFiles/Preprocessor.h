@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -12,6 +13,18 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/RTTI/ReflectContext.h>
 #include <AzCore/Serialization/DataPatch.h>
+
+#define MCPP_DLL_IMPORT 1
+#define MCPP_DONT_USE_SHORT_NAMES 1
+#include <mcpp_lib.h>
+#undef MCPP_DLL_IMPORT
+
+#include <sstream>
+
+namespace UnitTest
+{
+    class McppBinderTests;
+}
 
 namespace AZ
 {
@@ -91,6 +104,65 @@ namespace AZ
         void MutateLineDirectivesFileOrigin(
             AZStd::string& sourceCode,
             AZStd::string newFileOrigin);
+
+        //! Binder helper to Matsui C-Pre-Processor library
+        class McppBinder
+        {
+        public:
+            McppBinder(PreprocessorData& out, bool plugERR)
+                : m_outputData(out)
+                , m_plugERR(plugERR)
+            {
+                // single live instance
+                s_mcppExclusiveProtection.lock();
+                s_currentInstance = this;
+                SetupMcppCallbacks();
+            }
+            ~McppBinder()
+            {
+                s_currentInstance = nullptr;
+                s_mcppExclusiveProtection.unlock();
+            }
+
+            // This constant is in the header so McppBinderTests can see it.
+            static constexpr int DefaultFprintfBufferSize = 256;
+
+            bool StartPreprocessWithCommandLine(int argc, const char* argv[]);
+
+        private:
+            friend class ::UnitTest::McppBinderTests;
+
+            // ====== C-API compatible "Static Hinges" (plain free functions) ======
+            // : capturing-lambdas, function-objects, bind-expression; can't be decayed to function pointers,
+            // because they hold runtime-dynamic type-erased states. So we need intermediates
+
+            // entry point from mcpp. hijacking its output
+            static int Putc_StaticHinge(int c, MCPP_OUTDEST od);
+
+            // entry point from mcpp. hijacking its output
+            static int Fputs_StaticHinge(const char* s, MCPP_OUTDEST od);
+
+            // entry point from mcpp. hijacking its output
+            static int Fprintf_StaticHinge(MCPP_OUTDEST od, const char* format, ...);
+
+            static void IncludeReport_StaticHinge(FILE*, const char*, const char*, const char* path);
+
+            // ====== utility methods =====
+
+            static bool OkToLog(MCPP_OUTDEST od);
+
+            static void SetupMcppCallbacks();
+
+            // ====== instance data ======
+            PreprocessorData& m_outputData;
+            std::ostringstream m_outStream, m_errStream;
+            bool m_plugERR;
+
+            // ======  shared data  ======
+            // MCPP is a library with tons of non TLS global states, it can only be accessed by one client at a time.
+            static AZStd::mutex s_mcppExclusiveProtection;
+            static McppBinder* s_currentInstance;
+        };
 
     } // ShaderBuilder
 } // AZ

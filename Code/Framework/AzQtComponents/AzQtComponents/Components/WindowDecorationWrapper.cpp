@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -64,7 +65,6 @@ namespace AzQtComponents
                 return false;
             }
 
-            const quint16 currentMajorVersion = 2;
             quint16 majorVersion = 0;
             quint16 minorVersion = 0;
 
@@ -239,15 +239,51 @@ namespace AzQtComponents
 
             // Center within the parent
             QRect geo = geometry();
+
+            // If the base size of the guest widget is larger than the screen,
+            // then we need to resize it so that it will fit by either using
+            // the minimum size (if one is set), or fallback to the screen size.
+            if (m_guestWidget)
+            {
+                if (auto screen = m_guestWidget->screen())
+                {
+                    const QRect screenGeometry = screen->availableGeometry();
+                    if (geo.width() > screenGeometry.width())
+                    {
+                        auto guestMinimumWidth = m_guestWidget->minimumWidth();
+                        if (guestMinimumWidth && guestMinimumWidth <= screenGeometry.width())
+                        {
+                            geo.setWidth(guestMinimumWidth);
+                        }
+                        else
+                        {
+                            geo.setWidth(screenGeometry.width());
+                        }
+                    }
+                    if (geo.height() > screenGeometry.height())
+                    {
+                        auto guestMinimumHeight = m_guestWidget->minimumHeight();
+                        if (guestMinimumHeight && guestMinimumHeight <= screenGeometry.height())
+                        {
+                            geo.setHeight(guestMinimumHeight);
+                        }
+                        else
+                        {
+                            geo.setHeight(screenGeometry.height());
+                        }
+                    }
+                }
+            }
+
             geo.moveCenter(parentWindowCenter);
 
-            QWindow *w = topLevelWidget->windowHandle();
+            QWindow* w = topLevelWidget->windowHandle();
             if (!w)
             {
                 return;
             }
 
-            QScreen *screen = w->screen();
+            QScreen* screen = w->screen();
             if (!screen)
             {
                 // defensive, shouldn't happen
@@ -660,6 +696,10 @@ namespace AzQtComponents
         if (!restoreGeometryFromSettings())
         {
             show();
+
+            // If we failed to restore from settings (the first time this window is loaded),
+            // then center it on the screen by default
+            centerOnScreen(this);
         }
     }
 

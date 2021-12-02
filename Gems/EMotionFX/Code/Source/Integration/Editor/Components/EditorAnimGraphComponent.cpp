@@ -1,14 +1,13 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
-
-#include "EMotionFX_precompiled.h"
-
 #include <AzCore/Asset/AssetManager.h>
+#include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Script/ScriptProperty.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
@@ -21,6 +20,7 @@
 #include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/MainWindow.h>
 #include <Integration/ActorComponentBus.h>
 #include <Integration/Editor/Components/EditorAnimGraphComponent.h>
+#include <EMotionFX/Source/MotionSet.h>
 
 #include <QApplication>
 
@@ -62,10 +62,10 @@ namespace EMotionFX
                             ->Attribute(AZ::Edit::Attributes::Category, "Animation")
                             ->Attribute(AZ::Edit::Attributes::Icon, ":/EMotionFX/AnimGraphComponent.svg")
                             ->Attribute(AZ::Edit::Attributes::PrimaryAssetType, azrtti_typeid<AnimGraphAsset>())
-                            ->Attribute(AZ::Edit::Attributes::ViewportIcon, ":/EMotionFX/AnimGraphComponent.svg")
+                            ->Attribute(AZ::Edit::Attributes::ViewportIcon, ":/EMotionFX/Viewport/AnimGraphComponent.svg")
                             ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                            ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/animgraph/")
+                            ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/animation/animgraph/")
                         ->DataElement(AZ::Edit::UIHandlers::Default, &EditorAnimGraphComponent::m_motionSetAsset,
                             "Motion set asset", "EMotion FX motion set asset to be loaded for this actor.")
                             ->Attribute("EditButton", "")
@@ -118,15 +118,15 @@ namespace EMotionFX
 
         void EditorAnimGraphComponent::LaunchAnimationEditor(const AZ::Data::AssetId& assetId, [[maybe_unused]] const AZ::Data::AssetType& assetType)
         {
+            // call to open must be done before LoadCharacter
+            const char* panelName = EMStudio::MainWindow::GetEMotionFXPaneName();
+            EBUS_EVENT(AzToolsFramework::EditorRequests::Bus, OpenViewPane, panelName);
+
             if (assetId.IsValid())
             {
                 AZ::Data::AssetId actorAssetId;
                 actorAssetId.SetInvalid();
                 EditorActorComponentRequestBus::EventResult(actorAssetId, GetEntityId(), &EditorActorComponentRequestBus::Events::GetActorAssetId);
-
-                // call to open must be done before LoadCharacter
-                const char* panelName = EMStudio::MainWindow::GetEMotionFXPaneName();
-                EBUS_EVENT(AzToolsFramework::EditorRequests::Bus, OpenViewPane, panelName);
 
                 EMStudio::MainWindow* mainWindow = EMStudio::GetMainWindow();
                 if (mainWindow)

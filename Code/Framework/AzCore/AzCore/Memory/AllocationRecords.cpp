@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -10,6 +11,7 @@
 #include <AzCore/Memory/AllocatorManager.h>
 #include <AzCore/Driller/DrillerBus.h>
 
+#include <AzCore/std/time.h>
 #include <AzCore/std/parallel/mutex.h>
 
 #include <AzCore/Debug/StackTracer.h>
@@ -167,7 +169,7 @@ AllocationRecords::RegisterAllocation(void* address, size_t byteSize, size_t ali
     ai.m_timeStamp = AZStd::GetTimeNowMicroSecond();
 
     // if we don't have a fileName,lineNum record the stack or if the user requested it.
-    if ((fileName == 0 && m_mode == RECORD_STACK_IF_NO_FILE_LINE) || m_mode == RECORD_FULL)
+    if ((fileName == nullptr && m_mode == RECORD_STACK_IF_NO_FILE_LINE) || m_mode == RECORD_FULL)
     {
         ai.m_stackFrames = m_numStackLevels ? reinterpret_cast<AZ::Debug::StackFrame*>(m_records.get_allocator().allocate(sizeof(AZ::Debug::StackFrame)*m_numStackLevels, 1)) : nullptr;
         if (ai.m_stackFrames)

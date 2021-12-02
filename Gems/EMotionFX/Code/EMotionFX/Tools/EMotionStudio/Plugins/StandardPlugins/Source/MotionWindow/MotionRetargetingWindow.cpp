@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -25,9 +26,8 @@ namespace EMStudio
     MotionRetargetingWindow::MotionRetargetingWindow(QWidget* parent, MotionWindowPlugin* motionWindowPlugin)
         : QWidget(parent)
     {
-        mMotionWindowPlugin         = motionWindowPlugin;
-        mMotionRetargetingButton    = nullptr;
-        //mRenderMotionBindPose       = nullptr;
+        m_motionWindowPlugin         = motionWindowPlugin;
+        m_motionRetargetingButton    = nullptr;
     }
 
 
@@ -43,18 +43,11 @@ namespace EMStudio
         QGridLayout* layout = new QGridLayout();
         setLayout(layout);
 
-        mMotionRetargetingButton = new QCheckBox();
-        AzQtComponents::CheckBox::applyToggleSwitchStyle(mMotionRetargetingButton);
+        m_motionRetargetingButton = new QCheckBox();
+        AzQtComponents::CheckBox::applyToggleSwitchStyle(m_motionRetargetingButton);
         layout->addWidget(new QLabel(tr("Use Motion Retargeting")), 0, 0);
-        layout->addWidget(mMotionRetargetingButton, 0, 1);
-        connect(mMotionRetargetingButton, &QCheckBox::clicked, this, &MotionRetargetingWindow::UpdateMotions);
-
-        //mRenderMotionBindPose = new QCheckBox();
-        //AzQtComponents::CheckBox::applyToggleSwitchStyle(mRenderMotionBindPose);
-        //mRenderMotionBindPose->setToolTip("Render motion bind pose of the currently selected motion for the selected actor instances");
-        //mRenderMotionBindPose->setChecked(false);
-        //layout->addWidget(new QLabel(tr("Render Motion Bind Pose")), 1, 0);
-        //layout->addWidget(mRenderMotionBindPose, 1, 1);
+        layout->addWidget(m_motionRetargetingButton, 0, 1);
+        connect(m_motionRetargetingButton, &QCheckBox::clicked, this, &MotionRetargetingWindow::UpdateMotions);
     }
 
 
@@ -66,24 +59,24 @@ namespace EMStudio
         MCore::CommandGroup commandGroup("Adjust default motion instances");
 
         // get the number of selected motions and iterate through them
-        const uint32 numMotions = selection.GetNumSelectedMotions();
-        for (uint32 i = 0; i < numMotions; ++i)
+        const size_t numMotions = selection.GetNumSelectedMotions();
+        for (size_t i = 0; i < numMotions; ++i)
         {
-            MotionWindowPlugin::MotionTableEntry* entry = mMotionWindowPlugin->FindMotionEntryByID(selection.GetMotion(i)->GetID());
+            MotionWindowPlugin::MotionTableEntry* entry = m_motionWindowPlugin->FindMotionEntryByID(selection.GetMotion(i)->GetID());
             if (entry == nullptr)
             {
                 MCore::LogError("Cannot find motion table entry for the given motion.");
                 continue;
             }
 
-            EMotionFX::Motion*          motion              = entry->mMotion;
+            EMotionFX::Motion*          motion              = entry->m_motion;
             EMotionFX::PlayBackInfo*    playbackInfo        = motion->GetDefaultPlayBackInfo();
 
             AZStd::string commandParameters;
 
-            if (playbackInfo->mRetarget != mMotionRetargetingButton->isChecked())
+            if (playbackInfo->m_retarget != m_motionRetargetingButton->isChecked())
             {
-                commandParameters += AZStd::string::format("-retarget %s ", AZStd::to_string(mMotionRetargetingButton->isChecked()).c_str());
+                commandParameters += AZStd::string::format("-retarget %s ", AZStd::to_string(m_motionRetargetingButton->isChecked()).c_str());
             }
 
             // in case the command parameters are empty it means nothing changed, so we can skip this command
@@ -107,11 +100,10 @@ namespace EMStudio
         const CommandSystem::SelectionList& selection = CommandSystem::GetCommandManager()->GetCurrentSelection();
 
         // check if there actually is any motion selected
-        const uint32 numSelectedMotions = selection.GetNumSelectedMotions();
+        const size_t numSelectedMotions = selection.GetNumSelectedMotions();
         const bool isEnabled = (numSelectedMotions != 0);
 
-        mMotionRetargetingButton->setEnabled(isEnabled);
-        //mRenderMotionBindPose->setEnabled(isEnabled);
+        m_motionRetargetingButton->setEnabled(isEnabled);
 
         if (isEnabled == false)
         {
@@ -119,19 +111,19 @@ namespace EMStudio
         }
 
         // iterate through the selected motions
-        for (uint32 i = 0; i < numSelectedMotions; ++i)
+        for (size_t i = 0; i < numSelectedMotions; ++i)
         {
-            MotionWindowPlugin::MotionTableEntry* entry = mMotionWindowPlugin->FindMotionEntryByID(selection.GetMotion(i)->GetID());
+            MotionWindowPlugin::MotionTableEntry* entry = m_motionWindowPlugin->FindMotionEntryByID(selection.GetMotion(i)->GetID());
             if (entry == nullptr)
             {
                 MCore::LogWarning("Cannot find motion table entry for the given motion.");
                 continue;
             }
 
-            EMotionFX::Motion*          motion              = entry->mMotion;
+            EMotionFX::Motion*          motion              = entry->m_motion;
             EMotionFX::PlayBackInfo*    defaultPlayBackInfo = motion->GetDefaultPlayBackInfo();
 
-            mMotionRetargetingButton->setChecked(defaultPlayBackInfo->mRetarget);
+            m_motionRetargetingButton->setChecked(defaultPlayBackInfo->m_retarget);
         }
     }
 } // namespace EMStudio

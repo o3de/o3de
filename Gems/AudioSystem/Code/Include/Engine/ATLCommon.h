@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -46,6 +47,7 @@ namespace Audio
         static constexpr const char* ATLInternalNameAttribute = "atl_internal_name";
         static constexpr const char* ATLTypeAttribute = "atl_type";
         static constexpr const char* ATLConfigGroupAttribute = "atl_config_group_name";
+        static constexpr const char* ATLPathAttribute = "path";
 
         static constexpr const char* ATLDataLoadType = "AutoLoad";
 

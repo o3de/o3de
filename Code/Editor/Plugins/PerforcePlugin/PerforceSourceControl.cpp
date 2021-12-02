@@ -1,12 +1,12 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
-
-#include "PerforcePlugin_precompiled.h"
+#include <AzCore/PlatformIncl.h>
 #include "CryFile.h"
 #include "PerforceSourceControl.h"
 #include "PasswordDlg.h"
@@ -23,7 +23,7 @@
 
 namespace
 {
-    CryCriticalSection g_cPerforceValues;
+    AZStd::mutex g_cPerforceValues;
 }
 
 ////////////////////////////////////////////////////////////
@@ -31,9 +31,9 @@ ULONG STDMETHODCALLTYPE CPerforceSourceControl::Release()
 {
     if ((--m_ref) == 0)
     {
-        g_cPerforceValues.Lock();
+        g_cPerforceValues.lock();
         delete this;
-        g_cPerforceValues.Unlock();
+        g_cPerforceValues.unlock();
         return 0;
     }
     else
@@ -57,7 +57,7 @@ void CPerforceSourceControl::ShowSettings()
 
 void CPerforceSourceControl::SetSourceControlState(SourceControlState state)
 {
-    AUTO_LOCK(g_cPerforceValues);
+    AZStd::scoped_lock lock(g_cPerforceValues);
 
     switch (state)
     {

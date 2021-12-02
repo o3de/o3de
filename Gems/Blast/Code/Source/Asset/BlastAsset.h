@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -23,6 +24,8 @@ namespace Blast
         AZ_CLASS_ALLOCATOR(BlastAsset, AZ::SystemAllocator, 0);
 
         BlastAsset(Nv::Blast::ExtPxAsset* pxAsset = nullptr, NvBlastExtDamageAccelerator* damageAccelerator = nullptr);
+
+        static void Reflect(AZ::ReflectContext* context);
 
         bool LoadFromBuffer(void* buffer, size_t bytesSize);
 

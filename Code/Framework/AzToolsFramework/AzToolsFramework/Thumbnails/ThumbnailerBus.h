@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -89,7 +90,7 @@ namespace AzToolsFramework
             typedef SharedThumbnailKey BusIdType;
 
             //! notify product thumbnail that the data is ready
-            virtual void ThumbnailRendered(QPixmap& thumbnailImage) = 0;
+            virtual void ThumbnailRendered(const QPixmap& thumbnailImage) = 0;
             //! notify product thumbnail that the thumbnail failed to render
             virtual void ThumbnailFailedToRender() = 0;
         };

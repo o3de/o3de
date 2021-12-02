@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -261,11 +262,10 @@ namespace UnitTestUtils
 
             AZ::IO::FileIOBase::SetInstance(m_localFileIO);
 
-            m_localFileIO->SetAlias("@assets@", (newDir + QString("/ALIAS/assets")).toUtf8().constData());
+            m_localFileIO->SetAlias("@products@", (newDir + QString("/ALIAS/assets")).toUtf8().constData());
             m_localFileIO->SetAlias("@log@", (newDir + QString("/ALIAS/logs")).toUtf8().constData());
             m_localFileIO->SetAlias("@usercache@", (newDir + QString("/ALIAS/cache")).toUtf8().constData());
             m_localFileIO->SetAlias("@user@", (newDir + QString("/ALIAS/user")).toUtf8().constData());
-            m_localFileIO->SetAlias("@root@", (newDir + QString("/ALIAS/root")).toUtf8().constData());
         }
 
         ~ScopedDir()

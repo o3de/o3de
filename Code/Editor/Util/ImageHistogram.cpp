@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -104,7 +105,7 @@ void CImageHistogram::ComputeHistogram(BYTE* pImageData, UINT aWidth, UINT aHeig
         ++m_count[3][a];
 
         lumIndex = (r + b + g) / 3;
-        lumIndex = CLAMP(lumIndex, 0, kNumColorLevels - 1);
+        lumIndex = AZStd::clamp(lumIndex, 0, kNumColorLevels - 1);
         ++m_lumCount[lumIndex];
 
         if (m_maxCount[0] < m_count[0][r])
@@ -219,5 +220,5 @@ void CImageHistogram::ComputeStatisticsForChannel(int aIndex)
         }
     }
 
-    m_median[aIndex] = median;
+    m_median[aIndex] = static_cast<float>(median);
 }

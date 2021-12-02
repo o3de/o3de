@@ -1,10 +1,10 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "AzToolsFramework_precompiled.h"
 #include "PropertyBoolComboBoxCtrl.hxx"
 #include "PropertyQTConstants.h"
 #include "DHQComboBox.hxx"
@@ -93,24 +93,24 @@ namespace AzToolsFramework
 
     void BoolPropertyComboBoxHandler::ConsumeAttribute(PropertyBoolComboBoxCtrl* GUI, AZ::u32 attrib, PropertyAttributeReader* attrValue, const char* debugName)
     {
-        (void)GUI;
-        (void)attrib;
-        (void)attrValue;
-        (void)debugName;
+        AZ_UNUSED(GUI);
+        AZ_UNUSED(attrib);
+        AZ_UNUSED(attrValue);
+        AZ_UNUSED(debugName);
     }
 
     void BoolPropertyComboBoxHandler::WriteGUIValuesIntoProperty(size_t index, PropertyBoolComboBoxCtrl* GUI, property_t& instance, InstanceDataNode* node)
     {
-        (int)index;
-        (void)node;
+        AZ_UNUSED(index);
+        AZ_UNUSED(node);
         bool val = GUI->value();
         instance = static_cast<property_t>(val);
     }
 
     bool BoolPropertyComboBoxHandler::ReadValuesIntoGUI(size_t index, PropertyBoolComboBoxCtrl* GUI, const property_t& instance, InstanceDataNode* node)
     {
-        (int)index;
-        (void)node;
+        AZ_UNUSED(index);
+        AZ_UNUSED(node);
         bool val = instance;
         GUI->setValue(val);
         return false;

@@ -1,5 +1,6 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
  *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  */
@@ -64,7 +65,7 @@ struct HotKey
         int size = (m_catSize < o_catSize) ? m_catSize : o_catSize;
 
         //sort categories to keep them together
-        for (unsigned int i = 0; i < size; i++)
+        for (int i = 0; i < size; i++)
         {
             if (m_categories[i] < o_categories[i])
             {

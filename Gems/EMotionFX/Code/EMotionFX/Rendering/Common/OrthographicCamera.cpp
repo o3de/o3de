@@ -1,11 +1,13 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
 #include "OrthographicCamera.h"
+#include <MCore/Source/AABB.h>
 #include <MCore/Source/Compare.h>
 #include <MCore/Source/Distance.h>
 #include <EMotionFX/Source/EMotionFXManager.h>
@@ -19,7 +21,7 @@ namespace MCommon
     {
         Reset();
         SetMode(viewMode);
-        mProjectionMode = PROJMODE_ORTHOGRAPHIC;
+        m_projectionMode = PROJMODE_ORTHOGRAPHIC;
     }
 
 
@@ -32,50 +34,50 @@ namespace MCommon
     // update the camera position, orientation and it's matrices
     void OrthographicCamera::Update(float timeDelta)
     {
-        if (mFlightActive)
+        if (m_flightActive)
         {
-            mFlightCurrentTime += timeDelta;
+            m_flightCurrentTime += timeDelta;
 
-            const float normalizedTime      = mFlightCurrentTime / mFlightMaxTime;
+            const float normalizedTime      = m_flightCurrentTime / m_flightMaxTime;
             const float interpolatedTime    = MCore::CosineInterpolate<float>(0.0f, 1.0f, normalizedTime);
 
-            mPosition           = mFlightSourcePosition + (mFlightTargetPosition - mFlightSourcePosition) * interpolatedTime;
-            mCurrentDistance    = mFlightSourceDistance + (mFlightTargetDistance - mFlightSourceDistance) * interpolatedTime;
+            m_position           = m_flightSourcePosition + (m_flightTargetPosition - m_flightSourcePosition) * interpolatedTime;
+            m_currentDistance    = m_flightSourceDistance + (m_flightTargetDistance - m_flightSourceDistance) * interpolatedTime;
 
-            if (mFlightCurrentTime >= mFlightMaxTime)
+            if (m_flightCurrentTime >= m_flightMaxTime)
             {
-                mFlightActive       = false;
-                mPosition           = mFlightTargetPosition;
-                mCurrentDistance    = mFlightTargetDistance;
+                m_flightActive       = false;
+                m_position           = m_flightTargetPosition;
+                m_currentDistance    = m_flightTargetDistance;
             }
         }
 
         // HACK TODO REMOVEME !!!
         const float scale = 1.0f;
-        mCurrentDistance *= scale;
+        m_currentDistance *= scale;
 
-        if (mCurrentDistance <= mMinDistance * scale)
+        if (m_currentDistance <= m_minDistance * scale)
         {
-            mCurrentDistance = mMinDistance * scale;
+            m_currentDistance = m_minDistance * scale;
         }
 
-        if (mCurrentDistance >= mMaxDistance * scale)
+        if (m_currentDistance >= m_maxDistance * scale)
         {
-            mCurrentDistance = mMaxDistance * scale;
+            m_currentDistance = m_maxDistance * scale;
         }
 
         // fake zoom the orthographic camera
         const float orthoScale  = scale * 0.001f;
-        const float deltaX      = mCurrentDistance * mScreenWidth * orthoScale;
-        const float deltaY      = mCurrentDistance * mScreenHeight * orthoScale;
+        const float deltaX      = m_currentDistance * m_screenWidth * orthoScale;
+        const float deltaY      = m_currentDistance * m_screenHeight * orthoScale;
         SetOrthoClipDimensions(AZ::Vector2(deltaX, deltaY));
 
         // adjust the mouse delta movement so that one pixel mouse movement is exactly one pixel on screen
-        mPositionDelta.SetX(mPositionDelta.GetX() * mCurrentDistance * orthoScale);
-        mPositionDelta.SetY(mPositionDelta.GetY() * mCurrentDistance * orthoScale);
+        m_positionDelta.SetX(m_positionDelta.GetX() * m_currentDistance * orthoScale);
+        m_positionDelta.SetY(m_positionDelta.GetY() * m_currentDistance * orthoScale);
 
         AZ::Vector3 xAxis, yAxis, zAxis;
-        switch (mMode)
+        switch (m_mode)
         {
         case VIEWMODE_FRONT:
         {
@@ -84,11 +86,11 @@ namespace MCommon
             zAxis = AZ::Vector3(0.0f, 1.0f, 0.0f);       // depth axis
 
             // translate the camera
-            mPosition += xAxis * -mPositionDelta.GetX();
-            mPosition += yAxis * mPositionDelta.GetY();
+            m_position += xAxis * -m_positionDelta.GetX();
+            m_position += yAxis * m_positionDelta.GetY();
 
             // setup the view matrix
-            MCore::LookAtRH(mViewMatrix, mPosition + zAxis * mCurrentDistance, mPosition, yAxis);
+            MCore::LookAtRH(m_viewMatrix, m_position + zAxis * m_currentDistance, m_position, yAxis);
             break;
         }
 
@@ -99,11 +101,11 @@ namespace MCommon
             zAxis = AZ::Vector3(0.0f, -1.0f, 0.0f);      // depth axis
 
             // translate the camera
-            mPosition += xAxis * -mPositionDelta.GetX();
-            mPosition += yAxis * mPositionDelta.GetY();
+            m_position += xAxis * -m_positionDelta.GetX();
+            m_position += yAxis * m_positionDelta.GetY();
 
             // setup the view matrix
-            MCore::LookAtRH(mViewMatrix, mPosition + zAxis * mCurrentDistance, mPosition, yAxis);
+            MCore::LookAtRH(m_viewMatrix, m_position + zAxis * m_currentDistance, m_position, yAxis);
             break;
         }
 
@@ -115,11 +117,11 @@ namespace MCommon
             zAxis = AZ::Vector3(-1.0f, 0.0f, 0.0f);      // depth axis
 
             // translate the camera
-            mPosition += xAxis * mPositionDelta.GetX();
-            mPosition += yAxis * mPositionDelta.GetY();
+            m_position += xAxis * m_positionDelta.GetX();
+            m_position += yAxis * m_positionDelta.GetY();
 
             // setup the view matrix
-            MCore::LookAtRH(mViewMatrix, mPosition + zAxis * mCurrentDistance, mPosition, yAxis);
+            MCore::LookAtRH(m_viewMatrix, m_position + zAxis * m_currentDistance, m_position, yAxis);
             break;
         }
 
@@ -130,11 +132,11 @@ namespace MCommon
             zAxis = AZ::Vector3(1.0f, 0.0f, 0.0f);       // depth axis
 
             // translate the camera
-            mPosition += xAxis * mPositionDelta.GetX();
-            mPosition += yAxis * mPositionDelta.GetY();
+            m_position += xAxis * m_positionDelta.GetX();
+            m_position += yAxis * m_positionDelta.GetY();
 
             // setup the view matrix
-            MCore::LookAtRH(mViewMatrix, mPosition + zAxis * mCurrentDistance, mPosition, yAxis);
+            MCore::LookAtRH(m_viewMatrix, m_position + zAxis * m_currentDistance, m_position, yAxis);
             break;
         }
 
@@ -145,11 +147,11 @@ namespace MCommon
             zAxis = AZ::Vector3(0.0f, 0.0f, 1.0f);       // depth axis
 
             // translate the camera
-            mPosition += -xAxis* mPositionDelta.GetX();
-            mPosition += yAxis * mPositionDelta.GetY();
+            m_position += -xAxis* m_positionDelta.GetX();
+            m_position += yAxis * m_positionDelta.GetY();
 
             // setup the view matrix
-            MCore::LookAtRH(mViewMatrix, mPosition + zAxis * mCurrentDistance, mPosition, yAxis);
+            MCore::LookAtRH(m_viewMatrix, m_position + zAxis * m_currentDistance, m_position, yAxis);
             break;
         }
 
@@ -160,18 +162,18 @@ namespace MCommon
             zAxis = AZ::Vector3(0.0f, 0.0f, -1.0f);       // depth axis
 
             // translate the camera
-            mPosition += -xAxis* mPositionDelta.GetX();
-            mPosition += yAxis * mPositionDelta.GetY();
+            m_position += -xAxis* m_positionDelta.GetX();
+            m_position += yAxis * m_positionDelta.GetY();
 
             // setup the view matrix
-            MCore::LookAtRH(mViewMatrix, mPosition + zAxis * mCurrentDistance, mPosition, yAxis);
+            MCore::LookAtRH(m_viewMatrix, m_position + zAxis * m_currentDistance, m_position, yAxis);
             break;
         }
         }
         ;
 
         // reset the position delta
-        mPositionDelta = AZ::Vector2(0.0f, 0.0f);
+        m_positionDelta = AZ::Vector2(0.0f, 0.0f);
 
         // update our base camera
         Camera::Update();
@@ -187,8 +189,8 @@ namespace MCommon
         // zoom camera in or out
         if (leftButtonPressed == false && rightButtonPressed && middleButtonPressed == false)
         {
-            const float distanceScale = mCurrentDistance * 0.002f;
-            mCurrentDistance += (float)-mouseMovementY * distanceScale;
+            const float distanceScale = m_currentDistance * 0.002f;
+            m_currentDistance += (float)-mouseMovementY * distanceScale;
         }
 
         // is middle (or left+right) mouse button pressed?
@@ -196,8 +198,8 @@ namespace MCommon
         if ((leftButtonPressed == false && rightButtonPressed == false && middleButtonPressed) ||
             (leftButtonPressed && rightButtonPressed && middleButtonPressed == false))
         {
-            mPositionDelta.SetX((float)mouseMovementX);
-            mPositionDelta.SetY((float)mouseMovementY);
+            m_positionDelta.SetX((float)mouseMovementX);
+            m_positionDelta.SetY((float)mouseMovementY);
         }
     }
 
@@ -205,41 +207,41 @@ namespace MCommon
     // reset the camera attributes
     void OrthographicCamera::Reset(float flightTime)
     {
-        mPositionDelta      = AZ::Vector2(0.0f, 0.0f);
-        mMinDistance        = MCore::Math::epsilon;
-        mMaxDistance        = mFarClipDistance * 0.5f;
+        m_positionDelta      = AZ::Vector2(0.0f, 0.0f);
+        m_minDistance        = MCore::Math::epsilon;
+        m_maxDistance        = m_farClipDistance * 0.5f;
 
         AZ::Vector3 resetPosition(0.0f, 0.0f, 0.0f);
-        switch (mMode)
+        switch (m_mode)
         {
         case VIEWMODE_FRONT:
         {
-            resetPosition.SetY(mCurrentDistance);
+            resetPosition.SetY(m_currentDistance);
             break;
         }
         case VIEWMODE_BACK:
         {
-            resetPosition.SetY(-mCurrentDistance);
+            resetPosition.SetY(-m_currentDistance);
             break;
         }
         case VIEWMODE_LEFT:
         {
-            resetPosition.SetX(-mCurrentDistance);
+            resetPosition.SetX(-m_currentDistance);
             break;
         }
         case VIEWMODE_RIGHT:
         {
-            resetPosition.SetX(mCurrentDistance);
+            resetPosition.SetX(m_currentDistance);
             break;
         }
         case VIEWMODE_TOP:
         {
-            resetPosition.SetZ(mCurrentDistance);
+            resetPosition.SetZ(m_currentDistance);
             break;
         }
         case VIEWMODE_BOTTOM:
         {
-            resetPosition.SetZ(-mCurrentDistance);
+            resetPosition.SetZ(-m_currentDistance);
             break;
         }
         }
@@ -247,19 +249,19 @@ namespace MCommon
 
         if (flightTime < MCore::Math::epsilon)
         {
-            mFlightActive           = false;
-            mCurrentDistance        = (float)MCore::Distance::ConvertValue(5.0f, MCore::Distance::UNITTYPE_METERS, EMotionFX::GetEMotionFX().GetUnitType());
-            mPosition               = resetPosition;
+            m_flightActive           = false;
+            m_currentDistance        = (float)MCore::Distance::ConvertValue(5.0f, MCore::Distance::UNITTYPE_METERS, EMotionFX::GetEMotionFX().GetUnitType());
+            m_position               = resetPosition;
         }
         else
         {
-            mFlightActive           = true;
-            mFlightMaxTime          = flightTime;
-            mFlightCurrentTime      = 0.0f;
-            mFlightSourceDistance   = mCurrentDistance;
-            mFlightTargetDistance   = (float)MCore::Distance::ConvertValue(5.0f, MCore::Distance::UNITTYPE_METERS, EMotionFX::GetEMotionFX().GetUnitType());
-            mFlightSourcePosition   = mPosition;
-            mFlightTargetPosition   = resetPosition;
+            m_flightActive           = true;
+            m_flightMaxTime          = flightTime;
+            m_flightCurrentTime      = 0.0f;
+            m_flightSourceDistance   = m_currentDistance;
+            m_flightTargetDistance   = (float)MCore::Distance::ConvertValue(5.0f, MCore::Distance::UNITTYPE_METERS, EMotionFX::GetEMotionFX().GetUnitType());
+            m_flightSourcePosition   = m_position;
+            m_flightTargetPosition   = resetPosition;
         }
 
         // reset the base class attributes
@@ -269,22 +271,22 @@ namespace MCommon
 
     void OrthographicCamera::StartFlight(float distance, const AZ::Vector3& position, float flightTime)
     {
-        mFlightMaxTime          = flightTime;
-        mFlightCurrentTime      = 0.0f;
-        mFlightSourceDistance   = mCurrentDistance;
-        mFlightSourcePosition   = mPosition;
+        m_flightMaxTime          = flightTime;
+        m_flightCurrentTime      = 0.0f;
+        m_flightSourceDistance   = m_currentDistance;
+        m_flightSourcePosition   = m_position;
 
         if (flightTime < MCore::Math::epsilon)
         {
-            mFlightActive           = false;
-            mCurrentDistance        = distance;
-            mPosition               = position;
+            m_flightActive           = false;
+            m_currentDistance        = distance;
+            m_position               = position;
         }
         else
         {
-            mFlightActive           = true;
-            mFlightTargetDistance   = distance;
-            mFlightTargetPosition   = position;
+            m_flightActive           = true;
+            m_flightTargetDistance   = distance;
+            m_flightTargetPosition   = position;
         }
     }
 
@@ -292,14 +294,14 @@ namespace MCommon
     // closeup view of the given bounding box
     void OrthographicCamera::ViewCloseup(const MCore::AABB& boundingBox, float flightTime)
     {
-        mFlightMaxTime          = flightTime;
-        mFlightCurrentTime      = 0.0f;
-        mFlightSourceDistance   = mCurrentDistance;
-        mFlightSourcePosition   = mPosition;
+        m_flightMaxTime          = flightTime;
+        m_flightCurrentTime      = 0.0f;
+        m_flightSourceDistance   = m_currentDistance;
+        m_flightSourcePosition   = m_position;
 
         float boxWidth = 0.0f;
         float boxHeight = 0.0f;
-        switch (mMode)
+        switch (m_mode)
         {
         case VIEWMODE_FRONT:
         {
@@ -341,32 +343,32 @@ namespace MCommon
         ;
 
         const float orthoScale  = 0.001f;
-        assert(mScreenWidth != 0 && mScreenHeight != 0);
-        const float distanceX = (boxWidth) / (mScreenWidth * orthoScale);
-        const float distanceY = (boxHeight) / (mScreenHeight * orthoScale);
+        assert(m_screenWidth != 0 && m_screenHeight != 0);
+        const float distanceX = (boxWidth) / (m_screenWidth * orthoScale);
+        const float distanceY = (boxHeight) / (m_screenHeight * orthoScale);
         //LOG("box: x=%f y=%f, boxAspect=%f, orthoAspect=%f, distX=%f, distY=%f", boxWidth, boxHeight, boxAspect, orthoAspect, distanceX, distanceY);
 
         if (flightTime < MCore::Math::epsilon)
         {
-            mFlightActive           = false;
-            mCurrentDistance        = MCore::Max(distanceX, distanceY) * 1.1f;
-            mPosition               = boundingBox.CalcMiddle();
+            m_flightActive           = false;
+            m_currentDistance        = MCore::Max(distanceX, distanceY) * 1.1f;
+            m_position               = boundingBox.CalcMiddle();
         }
         else
         {
-            mFlightActive           = true;
-            mFlightTargetDistance = MCore::Max(distanceX, distanceY) * 1.1f;
-            mFlightTargetPosition = boundingBox.CalcMiddle();
+            m_flightActive           = true;
+            m_flightTargetDistance = MCore::Max(distanceX, distanceY) * 1.1f;
+            m_flightTargetPosition = boundingBox.CalcMiddle();
         }
 
         // make sure the target flight distance is in range
-        if (mFlightTargetDistance < mMinDistance)
+        if (m_flightTargetDistance < m_minDistance)
         {
-            mFlightTargetDistance = mMinDistance;
+            m_flightTargetDistance = m_minDistance;
         }
-        if (mFlightTargetDistance > mMaxDistance)
+        if (m_flightTargetDistance > m_maxDistance)
         {
-            mFlightTargetDistance = mMaxDistance;
+            m_flightTargetDistance = m_maxDistance;
         }
     }
 
@@ -374,7 +376,7 @@ namespace MCommon
     // get the type identification string
     const char* OrthographicCamera::GetTypeString() const
     {
-        switch (mMode)
+        switch (m_mode)
         {
         case VIEWMODE_FRONT:
         {
@@ -417,8 +419,8 @@ namespace MCommon
     // unproject screen coordinates to a ray
     MCore::Ray OrthographicCamera::Unproject(int32 screenX, int32 screenY)
     {
-        AZ::Vector3  start = MCore::UnprojectOrtho(static_cast<float>(screenX), static_cast<float>(screenY), static_cast<float>(mScreenWidth), static_cast<float>(mScreenHeight), -1.0f, mProjectionMatrix, mViewMatrix);
-        AZ::Vector3  end = MCore::UnprojectOrtho(static_cast<float>(screenX), static_cast<float>(screenY), static_cast<float>(mScreenWidth), static_cast<float>(mScreenHeight), 1.0f, mProjectionMatrix, mViewMatrix);
+        AZ::Vector3  start = MCore::UnprojectOrtho(static_cast<float>(screenX), static_cast<float>(screenY), static_cast<float>(m_screenWidth), static_cast<float>(m_screenHeight), -1.0f, m_projectionMatrix, m_viewMatrix);
+        AZ::Vector3  end = MCore::UnprojectOrtho(static_cast<float>(screenX), static_cast<float>(screenY), static_cast<float>(m_screenWidth), static_cast<float>(m_screenHeight), 1.0f, m_projectionMatrix, m_viewMatrix);
 
         return MCore::Ray(start, end);
     }
@@ -427,7 +429,7 @@ namespace MCommon
     // update limits
     void OrthographicCamera::AutoUpdateLimits()
     {
-        mMinDistance    = mNearClipDistance;
-        mMaxDistance    = mFarClipDistance * 0.5f;
+        m_minDistance    = m_nearClipDistance;
+        m_maxDistance    = m_farClipDistance * 0.5f;
     }
 } // namespace MCommon

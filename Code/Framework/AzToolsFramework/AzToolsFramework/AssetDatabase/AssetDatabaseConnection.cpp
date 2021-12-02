@@ -1,11 +1,11 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
-#include "AzToolsFramework_precompiled.h"
 #include <AzToolsFramework/AssetDatabase/AssetDatabaseConnection.h>
 
 #include <sqlite3.h>
@@ -850,6 +850,32 @@ namespace AzToolsFramework
                 "SELECT * FROM ProductDependencies WHERE UnresolvedPath LIKE \":%\"";
             static const auto s_queryProductDependencyExclusions = MakeSqlQuery(GET_PRODUCT_DEPENDENCY_EXCLUSIONS, GET_PRODUCT_DEPENDENCY_EXCLUSIONS_STATEMENT, LOG_NAME);
 
+            static const char* CREATE_UNRESOLVED_PRODUCT_DEPENDENCIES_TEMP_TABLE =
+                "AssetProcessor::CreateUnresolvedProductDependenciesTempTable";
+            static const char* CREATE_UNRESOLVED_PRODUCT_DEPENDENCIES_TEMP_TABLE_STATEMENT =
+                "CREATE TEMPORARY TABLE QueryProductDependenciesUnresolvedAdvanced(search)";
+            static const auto s_createUnresolvedProductDependenciesTempTable = MakeSqlQuery(
+                CREATE_UNRESOLVED_PRODUCT_DEPENDENCIES_TEMP_TABLE, CREATE_UNRESOLVED_PRODUCT_DEPENDENCIES_TEMP_TABLE_STATEMENT, LOG_NAME);
+
+            static const char* INSERT_PRODUCT_DEPENDENCY_TEMP_TABLE_VALUES = "AssetProcessor::InsertProductDependencyTempTableValues";
+            static const char* INSERT_PRODUCT_DEPENDENCY_TEMP_TABLE_VALUES_STATEMENT =
+                "INSERT INTO QueryProductDependenciesUnresolvedAdvanced VALUES (:filename)";
+            static const auto s_queryInsertProductDependencyTempTableValues = MakeSqlQuery(
+                INSERT_PRODUCT_DEPENDENCY_TEMP_TABLE_VALUES,
+                INSERT_PRODUCT_DEPENDENCY_TEMP_TABLE_VALUES_STATEMENT,
+                LOG_NAME,
+                SqlParam<const char*>(":filename"));
+
+            static const char* GET_UNRESOLVED_PRODUCT_DEPENDENCIES_USING_TEMP_TABLE =
+                "AssetProcessor::GetUnresolvedProductDependenciesUsingTempTable";
+            static const char* GET_UNRESOLVED_PRODUCT_DEPENDENCIES_USING_TEMP_TABLE_STATEMENT =
+                "SELECT * FROM ProductDependencies INNER JOIN QueryProductDependenciesUnresolvedAdvanced "
+                "ON (UnresolvedPath LIKE \"%*%\" AND search LIKE REPLACE(UnresolvedPath, \"*\", \"%\")) OR search = UnresolvedPath";
+            static const auto s_queryGetUnresolvedProductDependenciesUsingTempTable = MakeSqlQuery(
+                GET_UNRESOLVED_PRODUCT_DEPENDENCIES_USING_TEMP_TABLE,
+                GET_UNRESOLVED_PRODUCT_DEPENDENCIES_USING_TEMP_TABLE_STATEMENT,
+                LOG_NAME);
+
             // lookup by primary key
             static const char* QUERY_FILE_BY_FILEID = "AzToolsFramework::AssetDatabase::QueryFileByFileID";
             static const char* QUERY_FILE_BY_FILEID_STATEMENT =
@@ -913,6 +939,34 @@ namespace AzToolsFramework
                 jobinfo.m_warningCount = jobDatabaseEntry.m_warningCount;
                 jobinfo.m_errorCount = jobDatabaseEntry.m_errorCount;
             }
+
+            bool GetDatabaseInfoResult(const char* callName, SQLite::Statement* statement, AssetDatabaseConnection::databaseInfoHandler handler);
+            bool GetScanFolderResult(const char* callName, SQLite::Statement* statement, AssetDatabaseConnection::scanFolderHandler handler);
+            bool GetSourceResult(const char* callName, SQLite::Statement* statement, AssetDatabaseConnection::sourceHandler handler);
+            bool GetSourceAndScanfolderResult(const char* callName, SQLite::Statement* statement, AssetDatabaseConnection::combinedSourceScanFolderHandler handler);
+            bool GetSourceDependencyResult(const char* callName, SQLite::Statement* statement, AssetDatabaseConnection::sourceFileDependencyHandler handler);
+            bool GetJobResultSimple(const char* name, SQLite::Statement* statement, AssetDatabaseConnection::jobHandler handler);
+            bool GetJobResult(
+                const char* callName,
+                SQLite::Statement* statement,
+                AssetDatabaseConnection::jobHandler handler,
+                AZ::Uuid builderGuid = AZ::Uuid::CreateNull(),
+                const char* jobKey = nullptr,
+                AssetSystem::JobStatus status = AssetSystem::JobStatus::Any);
+            bool GetProductResultSimple(const char* name, SQLite::Statement* statement, AssetDatabaseConnection::productHandler handler);
+            bool GetProductResult(
+                const char* callName,
+                SQLite::Statement* statement,
+                AssetDatabaseConnection::productHandler handler,
+                AZ::Uuid builderGuid = AZ::Uuid::CreateNull(),
+                const char* jobKey = nullptr,
+                AssetSystem::JobStatus status = AssetSystem::JobStatus::Any);
+            bool GetLegacySubIDsResult(const char* callname, SQLite::Statement* statement, AssetDatabaseConnection::legacySubIDsHandler handler);
+            bool GetProductDependencyResult(const char* callName, SQLite::Statement* statement, AssetDatabaseConnection::productDependencyHandler handler);
+            bool GetProductDependencyAndPathResult(const char* callName, SQLite::Statement* statement, AssetDatabaseConnection::productDependencyAndPathHandler handler);
+            bool GetMissingProductDependencyResult(const char* callName, SQLite::Statement* statement, AssetDatabaseConnection::missingProductDependencyHandler handler);
+            bool GetCombinedDependencyResult(const char* callName, SQLite::Statement* statement, AssetDatabaseConnection::combinedProductDependencyHandler handler);
+            bool GetFileResult(const char* callName, SQLite::Statement* statement, AssetDatabaseConnection::fileHandler handler);
         }
         
         //////////////////////////////////////////////////////////////////////////
@@ -1814,6 +1868,9 @@ namespace AzToolsFramework
             AddStatement(m_databaseConnection, s_queryAllProductdependencies);
             AddStatement(m_databaseConnection, s_queryUnresolvedProductDependencies);
             AddStatement(m_databaseConnection, s_queryProductDependencyExclusions);
+            AddStatement(m_databaseConnection, s_createUnresolvedProductDependenciesTempTable);
+            AddStatement(m_databaseConnection, s_queryInsertProductDependencyTempTableValues);
+            AddStatement(m_databaseConnection, s_queryGetUnresolvedProductDependenciesUsingTempTable);
 
             AddStatement(m_databaseConnection, s_queryFileByFileid);
             AddStatement(m_databaseConnection, s_queryFilesByFileName);
@@ -2480,88 +2537,26 @@ namespace AzToolsFramework
             return s_queryProductDependencyExclusions.BindAndQuery(*m_databaseConnection, handler, &GetProductDependencyResult);
         }
 
-        bool AssetDatabaseConnection::QueryProductDependenciesUnresolvedAdvanced(const AZStd::vector<AZStd::string>& searchPaths, productDependencyAndPathHandler handler)
+        bool AssetDatabaseConnection::QueryProductDependenciesUnresolvedAdvanced(
+            const AZStd::vector<AZStd::string>& searchPaths, productDependencyAndPathHandler handler)
         {
-            AZStd::string sql = R"END(select c.*, b.search FROM (select REPLACE(UnresolvedPath, "*", "%") as search, ProductDependencyID from ProductDependencies where UnresolvedPath LIKE "%*%") as a, ()END";
+            ScopedTransaction transaction(m_databaseConnection);
 
-            bool first = true;
+            bool result = s_createUnresolvedProductDependenciesTempTable.BindAndStep(*m_databaseConnection);
 
-            for(int i = 0; i < searchPaths.size(); ++i)
+            for (auto&& path : searchPaths)
             {
-                if(first)
-                {
-                    sql += "SELECT ? as search ";
-                    first = false;
-                }
-                else
-                {
-                    sql += "UNION SELECT ? ";
-                }
+                result = s_queryInsertProductDependencyTempTableValues.BindAndStep(*m_databaseConnection, path.c_str()) && result;
             }
 
-            sql += R"END() as b
-            INNER JOIN ProductDependencies as c ON c.ProductDependencyID = a.ProductDependencyID
-            WHERE b.search LIKE a.search
-            UNION SELECT p.*, UnresolvedPath
-            FROM ProductDependencies as p
-            WHERE UnresolvedPath != ""
-            )END";
+            result = s_queryGetUnresolvedProductDependenciesUsingTempTable.BindAndQuery(
+                         *m_databaseConnection, handler, &GetProductDependencyAndPathResult) &&
+                result;
 
-            first = true;
+            result = m_databaseConnection->ExecuteRawSqlQuery("DROP TABLE QueryProductDependenciesUnresolvedAdvanced", nullptr, nullptr) &&
+                result;
 
-            for (int i = 0; i < searchPaths.size(); ++i)
-            {
-                if(first)
-                {
-                    sql += " AND ";
-                    first = false;
-                }
-                else
-                {
-                    sql += " OR ";
-                }
-
-                sql += "UnresolvedPath = ?";
-            }
-
-            bool result = m_databaseConnection->ExecuteRawSqlQuery(sql, [handler](sqlite3_stmt* statement)
-            {
-                ProductDependencyDatabaseEntry entry;
-
-                entry.m_productDependencyID = SQLite::GetColumnInt64(statement, 0);
-                entry.m_productPK = SQLite::GetColumnInt64(statement, 1);
-                entry.m_dependencySourceGuid = SQLite::GetColumnUuid(statement, 2);
-                entry.m_dependencySubID = GetColumnInt(statement, 3);
-                entry.m_platform = GetColumnText(statement, 4);
-                entry.m_dependencyFlags = GetColumnInt64(statement, 5);
-                entry.m_unresolvedPath = GetColumnText(statement, 6);
-                entry.m_dependencyType = static_cast<ProductDependencyDatabaseEntry::DependencyType>(GetColumnInt(statement, 7));
-                entry.m_fromAssetId = sqlite3_column_int(statement, 8);
-
-                AZStd::string matchedPath = GetColumnText(statement, 9);
-
-                handler(entry, matchedPath);
-
-                return true;
-            }, [&searchPaths](sqlite3_stmt* statement)
-            {
-                int index = 1;
-
-                for (const auto& path : searchPaths)
-                {
-                    [[maybe_unused]] int res = sqlite3_bind_text(statement, index, path.c_str(), static_cast<int>(path.size()), nullptr);
-                    AZ_Assert(res == SQLITE_OK, "Statement::BindValueText: failed to bind!");
-                    ++index;
-                }
-
-                // Bind the same ones again since we looped this twice when making the query above
-                for (const auto& path : searchPaths)
-                {
-                    [[maybe_unused]] int res = sqlite3_bind_text(statement, index, path.c_str(), static_cast<int>(path.size()), nullptr);
-                    AZ_Assert(res == SQLITE_OK, "Statement::BindValueText: failed to bind!");
-                    ++index;
-                }
-            });
+            transaction.Commit();
 
             return result;
         }
@@ -2874,6 +2869,46 @@ namespace AzToolsFramework
             bool GetProductDependencyResult(const char* callName, Statement* statement, AssetDatabaseConnection::productDependencyHandler handler)
             {
                 return GetResult(callName, statement, handler);
+            }
+
+            bool GetProductDependencyAndPathResult(
+                [[maybe_unused]] const char* callName,
+                Statement* statement,
+                AssetDatabaseConnection::productDependencyAndPathHandler handler)
+            {
+                Statement::SqlStatus result = statement->Step();
+
+                ProductDependencyDatabaseEntry productDependency;
+
+                AZStd::string relativeSearchPath;
+                auto boundColumns = CombineColumns(productDependency.GetColumns(), MakeColumns(MakeColumn("search", relativeSearchPath)));
+
+                bool validResult = result == Statement::SqlDone;
+                while (result == Statement::SqlOK)
+                {
+                    if (!boundColumns.Fetch(statement))
+                    {
+                        return false;
+                    }
+
+                    if (handler(productDependency, relativeSearchPath))
+                    {
+                        result = statement->Step();
+                    }
+                    else
+                    {
+                        result = Statement::SqlDone;
+                    }
+                    validResult = true;
+                }
+
+                if (result == Statement::SqlError)
+                {
+                    AZ_Warning(LOG_NAME, false, "Error occurred while stepping %s", callName);
+                    return false;
+                }
+
+                return validResult;
             }
 
             bool GetMissingProductDependencyResult(const char* callName, SQLite::Statement* statement, AssetDatabaseConnection::missingProductDependencyHandler handler)

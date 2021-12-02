@@ -1,10 +1,12 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
+#include "AzCore/std/limits.h"
 #include <EMotionFX/CommandSystem/Source/CommandManager.h>
 #include <EMotionFX/CommandSystem/Source/MotionCommands.h>
 #include <EMotionFX/Source/MotionManager.h>
@@ -38,7 +40,7 @@ namespace EMStudio
 
     public:
         SaveDirtyMotionFilesCallback(MotionWindowPlugin* plugin)
-            : SaveDirtyFilesCallback() { mPlugin = plugin; }
+            : SaveDirtyFilesCallback() { m_plugin = plugin; }
         ~SaveDirtyMotionFilesCallback()                                                     {}
 
         enum
@@ -52,8 +54,8 @@ namespace EMStudio
         void GetDirtyFileNames(AZStd::vector<AZStd::string>* outFileNames, AZStd::vector<ObjectPointer>* outObjects) override
         {
             // get the number of motions and iterate through them
-            const uint32 numMotions = EMotionFX::GetMotionManager().GetNumMotions();
-            for (uint32 i = 0; i < numMotions; ++i)
+            const size_t numMotions = EMotionFX::GetMotionManager().GetNumMotions();
+            for (size_t i = 0; i < numMotions; ++i)
             {
                 EMotionFX::Motion* motion = EMotionFX::GetMotionManager().GetMotion(i);
 
@@ -70,7 +72,7 @@ namespace EMStudio
 
                     // add the link to the actual object
                     ObjectPointer objPointer;
-                    objPointer.mMotion = motion;
+                    objPointer.m_motion = motion;
                     outObjects->push_back(objPointer);
                 }
             }
@@ -85,13 +87,13 @@ namespace EMStudio
             {
                 // get the current object pointer and skip directly if the type check fails
                 ObjectPointer objPointer = objects[i];
-                if (objPointer.mMotion == nullptr)
+                if (objPointer.m_motion == nullptr)
                 {
                     continue;
                 }
 
-                EMotionFX::Motion* motion = objPointer.mMotion;
-                if (mPlugin->SaveDirtyMotion(motion, commandGroup, false) == DirtyFileManager::CANCELED)
+                EMotionFX::Motion* motion = objPointer.m_motion;
+                if (m_plugin->SaveDirtyMotion(motion, commandGroup, false) == DirtyFileManager::CANCELED)
                 {
                     return DirtyFileManager::CANCELED;
                 }
@@ -108,31 +110,31 @@ namespace EMStudio
         }
 
     private:
-        MotionWindowPlugin* mPlugin;
+        MotionWindowPlugin* m_plugin;
     };
 
 
-    AZStd::vector<EMotionFX::MotionInstance*> MotionWindowPlugin::mInternalMotionInstanceSelection;
+    AZStd::vector<EMotionFX::MotionInstance*> MotionWindowPlugin::s_internalMotionInstanceSelection;
 
 
     MotionWindowPlugin::MotionWindowPlugin()
         : EMStudio::DockWidgetPlugin()
     {
-        mDialogStack                        = nullptr;
-        mMotionListWindow                   = nullptr;
-        mMotionPropertiesWindow             = nullptr;
-        mMotionExtractionWindow             = nullptr;
-        mMotionRetargetingWindow            = nullptr;
-        mDirtyFilesCallback                 = nullptr;
-        mAddMotionsAction                   = nullptr;
-        mSaveAction                         = nullptr;
-        mMotionNameLabel                    = nullptr;
+        m_dialogStack                        = nullptr;
+        m_motionListWindow                   = nullptr;
+        m_motionPropertiesWindow             = nullptr;
+        m_motionExtractionWindow             = nullptr;
+        m_motionRetargetingWindow            = nullptr;
+        m_dirtyFilesCallback                 = nullptr;
+        m_addMotionsAction                   = nullptr;
+        m_saveAction                         = nullptr;
+        m_motionNameLabel                    = nullptr;
     }
 
 
     MotionWindowPlugin::~MotionWindowPlugin()
     {
-        delete mDialogStack;
+        delete m_dialogStack;
         ClearMotionEntries();
 
         // unregister the command callbacks and get rid of the memory
@@ -142,19 +144,19 @@ namespace EMStudio
         }
         m_callbacks.clear();
 
-        GetMainWindow()->GetDirtyFileManager()->RemoveCallback(mDirtyFilesCallback, false);
-        delete mDirtyFilesCallback;
+        GetMainWindow()->GetDirtyFileManager()->RemoveCallback(m_dirtyFilesCallback, false);
+        delete m_dirtyFilesCallback;
     }
 
 
     void MotionWindowPlugin::ClearMotionEntries()
     {
-        const size_t numEntries = mMotionEntries.size();
+        const size_t numEntries = m_motionEntries.size();
         for (size_t i = 0; i < numEntries; ++i)
         {
-            delete mMotionEntries[i];
+            delete m_motionEntries[i];
         }
-        mMotionEntries.clear();
+        m_motionEntries.clear();
     }
 
 
@@ -178,9 +180,9 @@ namespace EMStudio
         GetCommandManager()->RegisterCommandCallback<CommandScaleMotionDataCallback>("ScaleMotionData", m_callbacks, false);
         GetCommandManager()->RegisterCommandCallback<CommandSelectCallback>("Select", m_callbacks, false);
 
-        QWidget* container = new QWidget(mDock);
+        QWidget* container = new QWidget(m_dock);
         container->setLayout(new QVBoxLayout);
-        mDock->setWidget(container);
+        m_dock->setWidget(container);
 
         QToolBar* toolBar = new QToolBar(container);
         container->layout()->addWidget(toolBar);
@@ -192,73 +194,73 @@ namespace EMStudio
         container->layout()->addWidget(splitterWidget);
 
         // create the motion list stack window
-        mMotionListWindow = new MotionListWindow(splitterWidget, this);
-        mMotionListWindow->Init();
-        connect(mMotionListWindow, &MotionListWindow::SaveRequested, this, &MotionWindowPlugin::OnSave);
-        connect(mMotionListWindow, &MotionListWindow::RemoveMotionsRequested, this, &MotionWindowPlugin::OnRemoveMotions);
-        splitterWidget->addWidget(mMotionListWindow);
+        m_motionListWindow = new MotionListWindow(splitterWidget, this);
+        m_motionListWindow->Init();
+        connect(m_motionListWindow, &MotionListWindow::SaveRequested, this, &MotionWindowPlugin::OnSave);
+        connect(m_motionListWindow, &MotionListWindow::RemoveMotionsRequested, this, &MotionWindowPlugin::OnRemoveMotions);
+        splitterWidget->addWidget(m_motionListWindow);
 
         // reinitialize the motion table entries
         ReInit();
 
-        mAddMotionsAction    = toolBar->addAction(MysticQt::GetMysticQt()->FindIcon("Images/Icons/Plus.svg"), tr("Load motions"), this, &MotionWindowPlugin::OnAddMotions);
-        mSaveAction          = toolBar->addAction(MysticQt::GetMysticQt()->FindIcon("Images/Menu/FileSave.svg"), tr("Save selected motions"), this, &MotionWindowPlugin::OnSave);
+        m_addMotionsAction    = toolBar->addAction(MysticQt::GetMysticQt()->FindIcon("Images/Icons/Plus.svg"), tr("Load motions"), this, &MotionWindowPlugin::OnAddMotions);
+        m_saveAction          = toolBar->addAction(MysticQt::GetMysticQt()->FindIcon("Images/Menu/FileSave.svg"), tr("Save selected motions"), this, &MotionWindowPlugin::OnSave);
 
         toolBar->addSeparator();
         AzQtComponents::FilteredSearchWidget* searchWidget = new AzQtComponents::FilteredSearchWidget(toolBar);
-        connect(searchWidget, &AzQtComponents::FilteredSearchWidget::TextFilterChanged, mMotionListWindow, &MotionListWindow::OnTextFilterChanged);
+        connect(searchWidget, &AzQtComponents::FilteredSearchWidget::TextFilterChanged, m_motionListWindow, &MotionListWindow::OnTextFilterChanged);
         toolBar->addWidget(searchWidget);
 
         // create the dialog stack
-        assert(mDialogStack == nullptr);
-        mDialogStack = new MysticQt::DialogStack(splitterWidget);
-        mDialogStack->setMinimumWidth(279);
-        splitterWidget->addWidget(mDialogStack);
+        assert(m_dialogStack == nullptr);
+        m_dialogStack = new MysticQt::DialogStack(splitterWidget);
+        m_dialogStack->setMinimumWidth(279);
+        splitterWidget->addWidget(m_dialogStack);
 
         // add the motion properties stack window
-        mMotionPropertiesWindow = new MotionPropertiesWindow(mDialogStack, this);
-        mMotionPropertiesWindow->Init();
-        mDialogStack->Add(mMotionPropertiesWindow, "Motion Properties", false, true);
+        m_motionPropertiesWindow = new MotionPropertiesWindow(m_dialogStack, this);
+        m_motionPropertiesWindow->Init();
+        m_dialogStack->Add(m_motionPropertiesWindow, "Motion Properties", false, true);
 
         // add the motion name label
         QWidget* motionName = new QWidget();
         QBoxLayout* motionNameLayout = new QHBoxLayout(motionName);
-        mMotionNameLabel = new QLabel();
+        m_motionNameLabel = new QLabel();
         QLabel* label = new QLabel(tr("Motion name"));
         motionNameLayout->addWidget(label);
-        motionNameLayout->addWidget(mMotionNameLabel);
+        motionNameLayout->addWidget(m_motionNameLabel);
         motionNameLayout->setStretchFactor(label, 3);
-        motionNameLayout->setStretchFactor(mMotionNameLabel, 2);
-        mMotionPropertiesWindow->layout()->addWidget(motionName);
+        motionNameLayout->setStretchFactor(m_motionNameLabel, 2);
+        m_motionPropertiesWindow->layout()->addWidget(motionName);
 
         // add the motion extraction stack window
-        mMotionExtractionWindow = new MotionExtractionWindow(mDialogStack, this);
-        mMotionExtractionWindow->Init();
-        mMotionPropertiesWindow->AddSubProperties(mMotionExtractionWindow);
+        m_motionExtractionWindow = new MotionExtractionWindow(m_dialogStack, this);
+        m_motionExtractionWindow->Init();
+        m_motionPropertiesWindow->AddSubProperties(m_motionExtractionWindow);
 
         // add the motion retargeting stack window
-        mMotionRetargetingWindow = new MotionRetargetingWindow(mDialogStack, this);
-        mMotionRetargetingWindow->Init();
-        mMotionPropertiesWindow->AddSubProperties(mMotionRetargetingWindow);
+        m_motionRetargetingWindow = new MotionRetargetingWindow(m_dialogStack, this);
+        m_motionRetargetingWindow->Init();
+        m_motionPropertiesWindow->AddSubProperties(m_motionRetargetingWindow);
 
-        mMotionPropertiesWindow->FinalizeSubProperties();
+        m_motionPropertiesWindow->FinalizeSubProperties();
 
         // connect the window activation signal to refresh if reactivated
-        connect(mDock, &QDockWidget::visibilityChanged, this, &MotionWindowPlugin::VisibilityChanged);
+        connect(m_dock, &QDockWidget::visibilityChanged, this, &MotionWindowPlugin::VisibilityChanged);
 
         // update the new interface and return success
         UpdateInterface();
 
         // initialize the dirty files callback
-        mDirtyFilesCallback = new SaveDirtyMotionFilesCallback(this);
-        GetMainWindow()->GetDirtyFileManager()->AddCallback(mDirtyFilesCallback);
+        m_dirtyFilesCallback = new SaveDirtyMotionFilesCallback(this);
+        GetMainWindow()->GetDirtyFileManager()->AddCallback(m_dirtyFilesCallback);
 
         return true;
     }
 
     void MotionWindowPlugin::OnAddMotions()
     {
-        const AZStd::vector<AZStd::string> filenames = GetMainWindow()->GetFileManager()->LoadMotionsFileDialog(mMotionListWindow);
+        const AZStd::vector<AZStd::string> filenames = GetMainWindow()->GetFileManager()->LoadMotionsFileDialog(m_motionListWindow);
         CommandSystem::LoadMotionsCommand(filenames);
     }
 
@@ -271,11 +273,11 @@ namespace EMStudio
         }
 
         // iterate through the motions and put them into some array
-        const uint32 numMotions = EMotionFX::GetMotionManager().GetNumMotions();
+        const size_t numMotions = EMotionFX::GetMotionManager().GetNumMotions();
         AZStd::vector<EMotionFX::Motion*> motionsToRemove;
         motionsToRemove.reserve(numMotions);
 
-        for (uint32 i = 0; i < numMotions; ++i)
+        for (size_t i = 0; i < numMotions; ++i)
         {
             EMotionFX::Motion* motion = EMotionFX::GetMotionManager().GetMotion(i);
             if (motion->GetIsOwnedByRuntime())
@@ -292,7 +294,7 @@ namespace EMStudio
         // show the window if at least one failed remove motion
         if (!failedRemoveMotions.empty())
         {
-            MotionListRemoveMotionsFailedWindow removeMotionsFailedWindow(mMotionListWindow, failedRemoveMotions);
+            MotionListRemoveMotionsFailedWindow removeMotionsFailedWindow(m_motionListWindow, failedRemoveMotions);
             removeMotionsFailedWindow.exec();
         }
     }
@@ -302,7 +304,7 @@ namespace EMStudio
         const CommandSystem::SelectionList& selection = GetCommandManager()->GetCurrentSelection();
 
         // get the number of selected motions
-        const uint32 numMotions = selection.GetNumSelectedMotions();
+        const size_t numMotions = selection.GetNumSelectedMotions();
         if (numMotions == 0)
         {
             return;
@@ -326,7 +328,7 @@ namespace EMStudio
 
         // Save all dirty motion files.
         EMotionFX::MotionManager& motionManager = EMotionFX::GetMotionManager();
-        for (uint32 i = 0; i < numMotions; ++i)
+        for (size_t i = 0; i < numMotions; ++i)
         {
             // Look up the motion by ID, using our backup seleciton list.
             // So even if our selection list in EMotion FX gets modified, we still iterate over the original selection now.
@@ -352,15 +354,11 @@ namespace EMStudio
         }
 
         // find the lowest row selected
-        uint32 lowestRowSelected = MCORE_INVALIDINDEX32;
-        const QList<QTableWidgetItem*> selectedItems = mMotionListWindow->GetMotionTable()->selectedItems();
-        const int numSelectedItems = selectedItems.size();
-        for (int i = 0; i < numSelectedItems; ++i)
+        int lowestRowSelected = AZStd::numeric_limits<int>::max();
+        const QList<QTableWidgetItem*> selectedItems = m_motionListWindow->GetMotionTable()->selectedItems();
+        for (const QTableWidgetItem* selectedItem : selectedItems)
         {
-            if ((uint32)selectedItems[i]->row() < lowestRowSelected)
-            {
-                lowestRowSelected = (uint32)selectedItems[i]->row();
-            }
+            lowestRowSelected = AZStd::min(lowestRowSelected, selectedItem->row());
         }
 
         // construct the command group and remove the selected motions
@@ -368,19 +366,19 @@ namespace EMStudio
         CommandSystem::RemoveMotions(motionsToRemove, &failedRemoveMotions);
 
         // selected the next row
-        if (lowestRowSelected > ((uint32)mMotionListWindow->GetMotionTable()->rowCount() - 1))
+        if (lowestRowSelected > (m_motionListWindow->GetMotionTable()->rowCount() - 1))
         {
-            mMotionListWindow->GetMotionTable()->selectRow(lowestRowSelected - 1);
+            m_motionListWindow->GetMotionTable()->selectRow(lowestRowSelected - 1);
         }
         else
         {
-            mMotionListWindow->GetMotionTable()->selectRow(lowestRowSelected);
+            m_motionListWindow->GetMotionTable()->selectRow(lowestRowSelected);
         }
 
         // show the window if at least one failed remove motion
         if (!failedRemoveMotions.empty())
         {
-            MotionListRemoveMotionsFailedWindow removeMotionsFailedWindow(mMotionListWindow, failedRemoveMotions);
+            MotionListRemoveMotionsFailedWindow removeMotionsFailedWindow(m_motionListWindow, failedRemoveMotions);
             removeMotionsFailedWindow.exec();
         }
     }
@@ -388,7 +386,7 @@ namespace EMStudio
     void MotionWindowPlugin::OnSave()
     {
         const CommandSystem::SelectionList& selectionList = GetCommandManager()->GetCurrentSelection();
-        const AZ::u32 numMotions = selectionList.GetNumSelectedMotions();
+        const size_t numMotions = selectionList.GetNumSelectedMotions();
         if (numMotions == 0)
         {
             return;
@@ -397,7 +395,7 @@ namespace EMStudio
         // Collect motion ids of the motion to be saved.
         AZStd::vector<AZ::u32> motionIds;
         motionIds.reserve(numMotions);
-        for (AZ::u32 i = 0; i < numMotions; ++i)
+        for (size_t i = 0; i < numMotions; ++i)
         {
             const EMotionFX::Motion* motion = selectionList.GetMotion(i);
             motionIds.push_back(motion->GetID());
@@ -424,8 +422,8 @@ namespace EMStudio
             {
                 if (!motion->GetIsOwnedByRuntime())
                 {
-                    mMotionEntries.push_back(new MotionTableEntry(motion));
-                    return mMotionListWindow->AddMotionByID(motionID);
+                    m_motionEntries.push_back(new MotionTableEntry(motion));
+                    return m_motionListWindow->AddMotionByID(motionID);
                 }
             }
         }
@@ -436,21 +434,21 @@ namespace EMStudio
 
     bool MotionWindowPlugin::RemoveMotionByIndex(size_t index)
     {
-        const uint32 motionID = mMotionEntries[index]->mMotionID;
+        const uint32 motionID = m_motionEntries[index]->m_motionId;
 
-        delete mMotionEntries[index];
-        mMotionEntries.erase(mMotionEntries.begin() + index);
+        delete m_motionEntries[index];
+        m_motionEntries.erase(m_motionEntries.begin() + index);
 
-        return mMotionListWindow->RemoveMotionByID(motionID);
+        return m_motionListWindow->RemoveMotionByID(motionID);
     }
 
 
     bool MotionWindowPlugin::RemoveMotionById(uint32 motionID)
     {
-        const size_t numMotionEntries = mMotionEntries.size();
+        const size_t numMotionEntries = m_motionEntries.size();
         for (size_t i = 0; i < numMotionEntries; ++i)
         {
-            if (mMotionEntries[i]->mMotionID == motionID)
+            if (m_motionEntries[i]->m_motionId == motionID)
             {
                 return RemoveMotionByIndex(i);
             }
@@ -461,11 +459,9 @@ namespace EMStudio
 
     void MotionWindowPlugin::ReInit()
     {
-        uint32 i;
-
         // get the number of motions in the motion library and iterate through them
-        const uint32 numLibraryMotions = EMotionFX::GetMotionManager().GetNumMotions();
-        for (i = 0; i < numLibraryMotions; ++i)
+        const size_t numLibraryMotions = EMotionFX::GetMotionManager().GetNumMotions();
+        for (size_t i = 0; i < numLibraryMotions; ++i)
         {
             // check if we have already added this motion, if not add it
             EMotionFX::Motion* motion = EMotionFX::GetMotionManager().GetMotion(i);
@@ -475,45 +471,38 @@ namespace EMStudio
             }
             if (FindMotionEntryByID(motion->GetID()) == nullptr)
             {
-                mMotionEntries.push_back(new MotionTableEntry(motion));
+                m_motionEntries.push_back(new MotionTableEntry(motion));
             }
         }
 
         // iterate through all motions inside the motion window plugin
-        i = 0;
-        while (i < mMotionEntries.size())
+        AZStd::erase_if(m_motionEntries, [](MotionTableEntry* entry)
         {
-            MotionTableEntry*   entry   = mMotionEntries[i];
             // check if the motion still is in the motion library, if not also remove it from the motion window plugin
-            if (EMotionFX::GetMotionManager().FindMotionIndexByID(entry->mMotionID) == MCORE_INVALIDINDEX32)
+            if (EMotionFX::GetMotionManager().FindMotionIndexByID(entry->m_motionId) == InvalidIndex)
             {
-                delete mMotionEntries[i];
-                mMotionEntries.erase(mMotionEntries.begin() + i);
+                delete entry;
+                return true;
             }
-            else
-            {
-                i++;
-            }
-        }
+            return false;
+        });
 
         // update the motion list window
-        mMotionListWindow->ReInit();
+        m_motionListWindow->ReInit();
     }
 
 
     void MotionWindowPlugin::UpdateMotions()
     {
-        mMotionRetargetingWindow->UpdateMotions();
+        m_motionRetargetingWindow->UpdateMotions();
     }
 
 
     void MotionWindowPlugin::UpdateInterface()
     {
         AZStd::vector<EMotionFX::MotionInstance*>& motionInstances = GetSelectedMotionInstances();
-        const size_t numMotionInstances = motionInstances.size();
-        for (size_t i = 0; i < numMotionInstances; ++i)
+        for (EMotionFX::MotionInstance* motionInstance : motionInstances)
         {
-            EMotionFX::MotionInstance* motionInstance = motionInstances[i];
             EMotionFX::Motion* motion = motionInstance->GetMotion();
             motionInstance->InitFromPlayBackInfo(*motion->GetDefaultPlayBackInfo(), false);
 
@@ -529,93 +518,80 @@ namespace EMStudio
         const CommandSystem::SelectionList& selection = GetCommandManager()->GetCurrentSelection();
         const bool hasSelectedMotions = selection.GetNumSelectedMotions() > 0;
 
-        if (mMotionNameLabel)
+        if (m_motionNameLabel)
         {
             MotionTableEntry* entry = hasSelectedMotions ? FindMotionEntryByID(selection.GetMotion(0)->GetID()) : nullptr;
-            EMotionFX::Motion* motion = entry ? entry->mMotion : nullptr;
-            mMotionNameLabel->setText(motion ? motion->GetName() : nullptr);
+            EMotionFX::Motion* motion = entry ? entry->m_motion : nullptr;
+            m_motionNameLabel->setText(motion ? motion->GetName() : nullptr);
         }
 
-        const uint32 numMotions = EMotionFX::GetMotionManager().GetNumMotions();
-
-        if (mSaveAction)
+        if (m_saveAction)
         {
             // related to the selected motions
-            mSaveAction->setEnabled(hasSelectedMotions);
+            m_saveAction->setEnabled(hasSelectedMotions);
         }
 
-        if (mMotionListWindow)
+        if (m_motionListWindow)
         {
-            mMotionListWindow->UpdateInterface();
+            m_motionListWindow->UpdateInterface();
         }
-        if (mMotionExtractionWindow)
+        if (m_motionExtractionWindow)
         {
-            mMotionExtractionWindow->UpdateInterface();
+            m_motionExtractionWindow->UpdateInterface();
         }
-        if (mMotionRetargetingWindow)
+        if (m_motionRetargetingWindow)
         {
-            mMotionRetargetingWindow->UpdateInterface();
+            m_motionRetargetingWindow->UpdateInterface();
         }
     }
 
 
 
-    void MotionWindowPlugin::VisibilityChanged(bool visible)
+    void MotionWindowPlugin::VisibilityChanged([[maybe_unused]] bool visible)
     {
-        if (visible)
-        {
-            //mMotionRetargetingWindow->UpdateSelection();
-            //mMotionExtractionWindow->UpdateExtractionNodeLabel();
-        }
     }
 
 
     AZStd::vector<EMotionFX::MotionInstance*>& MotionWindowPlugin::GetSelectedMotionInstances()
     {
         const CommandSystem::SelectionList& selectionList               = CommandSystem::GetCommandManager()->GetCurrentSelection();
-        const uint32                        numSelectedActorInstances   = selectionList.GetNumSelectedActorInstances();
-        const uint32                        numSelectedMotions          = selectionList.GetNumSelectedMotions();
+        const size_t                        numSelectedActorInstances   = selectionList.GetNumSelectedActorInstances();
+        const size_t                        numSelectedMotions          = selectionList.GetNumSelectedMotions();
 
-        mInternalMotionInstanceSelection.clear();
+        s_internalMotionInstanceSelection.clear();
 
-        for (uint32 i = 0; i < numSelectedActorInstances; ++i)
+        for (size_t i = 0; i < numSelectedActorInstances; ++i)
         {
             EMotionFX::ActorInstance*   actorInstance       = selectionList.GetActorInstance(i);
             EMotionFX::MotionSystem*    motionSystem        = actorInstance->GetMotionSystem();
-            const uint32    numMotionInstances  = motionSystem->GetNumMotionInstances();
+            const size_t    numMotionInstances  = motionSystem->GetNumMotionInstances();
 
-            for (uint32 j = 0; j < numSelectedMotions; ++j)
+            for (size_t j = 0; j < numSelectedMotions; ++j)
             {
                 EMotionFX::Motion* motion = selectionList.GetMotion(j);
 
-                for (uint32 k = 0; k < numMotionInstances; ++k)
+                for (size_t k = 0; k < numMotionInstances; ++k)
                 {
                     EMotionFX::MotionInstance* motionInstance = motionSystem->GetMotionInstance(k);
                     if (motionInstance->GetMotion() == motion)
                     {
-                        mInternalMotionInstanceSelection.push_back(motionInstance);
+                        s_internalMotionInstanceSelection.push_back(motionInstance);
                     }
                 }
             }
         }
 
-        return mInternalMotionInstanceSelection;
+        return s_internalMotionInstanceSelection;
     }
 
 
     MotionWindowPlugin::MotionTableEntry* MotionWindowPlugin::FindMotionEntryByID(uint32 motionID)
     {
-        const size_t numMotionEntries = mMotionEntries.size();
-        for (size_t i = 0; i < numMotionEntries; ++i)
+        const auto foundEntry = AZStd::find_if(begin(m_motionEntries), end(m_motionEntries), [motionID](const MotionTableEntry* entry)
         {
-            MotionTableEntry* entry = mMotionEntries[i];
-            if (entry->mMotionID == motionID)
-            {
-                return entry;
-            }
-        }
-
-        return nullptr;
+            return entry->m_motionId == motionID;
+        });
+        return foundEntry != end(m_motionEntries) ? *foundEntry : nullptr;
     }
 
 
@@ -632,16 +608,14 @@ namespace EMStudio
         AZStd::string command, commandParameters;
         MCore::CommandGroup commandGroup("Play motions");
 
-        const size_t numMotions = motions.size();
-        for (size_t i = 0; i < numMotions; ++i)
+        for (EMotionFX::Motion* motion : motions)
         {
-            EMotionFX::Motion*                      motion              = motions[i];
             EMotionFX::PlayBackInfo*                defaultPlayBackInfo = motion->GetDefaultPlayBackInfo();
 
             // Don't blend in and out of the for previewing animations. We might only see a short bit of it for animations smaller than the blend in/out time.
-            defaultPlayBackInfo->mBlendInTime = 0.0f;
-            defaultPlayBackInfo->mBlendOutTime = 0.0f;
-            defaultPlayBackInfo->mFreezeAtLastFrame = (defaultPlayBackInfo->mNumLoops != EMFX_LOOPFOREVER);
+            defaultPlayBackInfo->m_blendInTime = 0.0f;
+            defaultPlayBackInfo->m_blendOutTime = 0.0f;
+            defaultPlayBackInfo->m_freezeAtLastFrame = (defaultPlayBackInfo->m_numLoops != EMFX_LOOPFOREVER);
 
             commandParameters = CommandSystem::CommandPlayMotion::PlayBackInfoToCommandParameters(defaultPlayBackInfo);
 
@@ -662,17 +636,17 @@ namespace EMStudio
         const CommandSystem::SelectionList& selection = CommandSystem::GetCommandManager()->GetCurrentSelection();
 
         // get the number of selected motions
-        const uint32 numMotions = selection.GetNumSelectedMotions();
+        const size_t numMotions = selection.GetNumSelectedMotions();
         if (numMotions == 0)
         {
             return;
         }
 
         // create our remove motion command group
-        MCore::CommandGroup commandGroup(AZStd::string::format("Stop %u motion instances", numMotions).c_str());
+        MCore::CommandGroup commandGroup(AZStd::string::format("Stop %zu motion instances", numMotions).c_str());
 
         AZStd::string command;
-        for (uint32 i = 0; i < numMotions; ++i)
+        for (size_t i = 0; i < numMotions; ++i)
         {
             MotionWindowPlugin::MotionTableEntry* entry = FindMotionEntryByID(selection.GetMotion(i)->GetID());
             if (entry == nullptr)
@@ -681,7 +655,7 @@ namespace EMStudio
                 continue;
             }
 
-            command = AZStd::string::format("StopMotionInstances -filename \"%s\"", entry->mMotion->GetFileName());
+            command = AZStd::string::format("StopMotionInstances -filename \"%s\"", entry->m_motion->GetFileName());
             commandGroup.AddCommandString(command);
         }
 
@@ -695,76 +669,21 @@ namespace EMStudio
 
     void MotionWindowPlugin::Render(RenderPlugin* renderPlugin, EMStudioPlugin::RenderInfo* renderInfo)
     {
-        MCommon::RenderUtil* renderUtil = renderInfo->mRenderUtil;
+        MCommon::RenderUtil* renderUtil = renderInfo->m_renderUtil;
 
         // make sure the render objects are valid
         if (renderPlugin == nullptr || renderUtil == nullptr)
         {
             return;
         }
-        /*
-        if (mMotionRetargetingWindow->GetRenderMotionBindPose())
-        {
-            const CommandSystem::SelectionList& selection = CommandSystem::GetCommandManager()->GetCurrentSelection();
-
-            // get the number of selected actor instances and iterate through them
-            const uint32 numActorInstances = selection.GetNumSelectedActorInstances();
-            for (uint32 j = 0; j < numActorInstances; ++j)
-            {
-                EMotionFX::ActorInstance*   actorInstance   = selection.GetActorInstance(j);
-                EMotionFX::Actor*           actor           = actorInstance->GetActor();
-
-                // get the number of selected motions and iterate through them
-                const uint32 numMotions = selection.GetNumSelectedMotions();
-                for (uint32 i = 0; i < numMotions; ++i)
-                {
-                    EMotionFX::Motion* motion = selection.GetMotion(i);
-                    if (motion->GetType() == EMotionFX::SkeletalMotion::TYPE_ID)
-                    {
-                        EMotionFX::SkeletalMotion* skeletalMotion = (EMotionFX::SkeletalMotion*)motion;
-
-                        EMotionFX::AnimGraphPosePool& posePool = EMotionFX::GetEMotionFX().GetThreadData(0)->GetPosePool();
-                        EMotionFX::AnimGraphPose* pose = posePool.RequestPose(m_actorInstance);
-
-                        skeletalMotion->CalcMotionBindPose(actor, pose->GetPose());
-
-                        // for all nodes in the actor
-                        const uint32 numNodes = actorInstance->GetNumEnabledNodes();
-                        for (uint32 n = 0; n < numNodes; ++n)
-                        {
-                            EMotionFX::Node* curNode = actor->GetSkeleton()->GetNode(actorInstance->GetEnabledNode(n));
-
-                            // skip root nodes, you could also use curNode->IsRootNode()
-                            // but we use the parent index here, as we will reuse it
-                            uint32 parentIndex = curNode->GetParentIndex();
-                            if (parentIndex == MCORE_INVALIDINDEX32)
-                            {
-                                AZ::Vector3 startPos = mGlobalMatrices[curNode->GetNodeIndex()].GetTranslation();
-                                AZ::Vector3 endPos   = startPos + AZ::Vector3(0.0f, 3.0f, 0.0f);
-                                renderUtil->RenderLine(startPos, endPos, MCore::RGBAColor(0.0f, 1.0f, 1.0f));
-                            }
-                            else
-                            {
-                                AZ::Vector3 startPos = mGlobalMatrices[curNode->GetNodeIndex()].GetTranslation();
-                                AZ::Vector3 endPos   = mGlobalMatrices[parentIndex].GetTranslation();
-                                renderUtil->RenderLine(startPos, endPos, MCore::RGBAColor(0.0f, 1.0f, 1.0f));
-                            }
-                        }
-
-                        posePool.FreePose(pose);
-                    }
-                }
-            }
-        }
-        */
     }
 
 
     // constructor
     MotionWindowPlugin::MotionTableEntry::MotionTableEntry(EMotionFX::Motion* motion)
     {
-        mMotionID           = motion->GetID();
-        mMotion             = motion;
+        m_motionId           = motion->GetID();
+        m_motion             = motion;
     }
 
 
@@ -910,7 +829,7 @@ namespace EMStudio
     {
         MCORE_UNUSED(commandLine);
         CommandSystem::CommandImportMotion* importMotionCommand = static_cast<CommandSystem::CommandImportMotion*>(command);
-        return CallbackAddMotionByID(importMotionCommand->mOldMotionID);
+        return CallbackAddMotionByID(importMotionCommand->m_oldMotionId);
     }
 
 
@@ -928,7 +847,7 @@ namespace EMStudio
     {
         MCORE_UNUSED(commandLine);
         CommandSystem::CommandRemoveMotion* removeMotionCommand = static_cast<CommandSystem::CommandRemoveMotion*>(command);
-        return CallbackRemoveMotion(removeMotionCommand->mOldMotionID);
+        return CallbackRemoveMotion(removeMotionCommand->m_oldMotionId);
     }
 
 

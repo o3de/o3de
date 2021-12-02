@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -32,6 +33,7 @@ namespace AzToolsFramework
     {
         class ProductAssetBrowserEntry;
         class AssetBrowserFilterModel;
+        class AssetBrowserTableModel;
         class AssetBrowserModel;
         class AssetSelectionModel;
 
@@ -44,6 +46,9 @@ namespace AzToolsFramework
             explicit AssetPickerDialog(AssetSelectionModel& selection, QWidget* parent = nullptr);
             virtual ~AssetPickerDialog();
 
+        Q_SIGNALS:
+            void SizeChangedSignal(int newWidth);
+
         protected:
             //////////////////////////////////////////////////////////////////////////
             // QDialog
@@ -51,6 +56,7 @@ namespace AzToolsFramework
             void accept() override;
             void reject() override;
             void keyPressEvent(QKeyEvent* e) override;
+            void resizeEvent(QResizeEvent* resizeEvent) override;
 
         private Q_SLOTS:
             void DoubleClickedSlot(const QModelIndex& index);
@@ -68,6 +74,7 @@ namespace AzToolsFramework
             QScopedPointer<Ui::AssetPickerDialogClass> m_ui;
             AssetBrowserModel* m_assetBrowserModel = nullptr;
             QScopedPointer<AssetBrowserFilterModel> m_filterModel;
+            QScopedPointer<AssetBrowserTableModel> m_tableModel;
             AssetSelectionModel& m_selection;
             bool m_hasFilter;
             AZStd::unique_ptr<TreeViewState> m_filterStateSaver;

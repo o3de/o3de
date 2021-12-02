@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -34,8 +35,6 @@ struct IDisplayViewport
     */
     virtual float GetDistanceToLine(const Vec3& lineP1, const Vec3& lineP2, const QPoint& point) const = 0;
 
-    virtual CBaseObjectsCache* GetVisibleObjectsCache() = 0;
-
     enum EAxis
     {
         AXIS_NONE,
@@ -48,7 +47,6 @@ struct IDisplayViewport
     virtual const Matrix34& GetViewTM() const = 0;
     virtual const Matrix34& GetScreenTM() const = 0;
     virtual QPoint WorldToView(const Vec3& worldPoint) const = 0;
-    virtual QPoint WorldToViewParticleEditor(const Vec3& worldPoint, int width, int height) const = 0;
     virtual Vec3 WorldToView3D(const Vec3& worldPoint, int flags = 0) const = 0;
     virtual Vec3 ViewToWorld(const QPoint& vp, bool* collideWithTerrain = nullptr, bool onlyTerrain = false, bool bSkipVegetation = false, bool bTestRenderMesh = false, bool* collideWithObject = nullptr) const = 0;
     virtual void ViewToWorldRay(const QPoint& vp, Vec3& raySrc, Vec3& rayDir) const = 0;

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -30,7 +31,7 @@ namespace AZStd
         AZ_REGEX_CHAR_CLASS_NAME("upper", RegexTraits<char>::Ch_upper),
         AZ_REGEX_CHAR_CLASS_NAME("w", RegexTraits<char>::Ch_invalid),
         AZ_REGEX_CHAR_CLASS_NAME("xdigit", RegexTraits<char>::Ch_xdigit),
-        {0, 0, 0},
+        {nullptr, 0, 0},
     };
 
     template<>
@@ -51,7 +52,7 @@ namespace AZStd
         AZ_REGEX_CHAR_CLASS_NAME(L"upper", RegexTraits<wchar_t>::Ch_upper),
         AZ_REGEX_CHAR_CLASS_NAME(L"w", RegexTraits<char>::Ch_invalid),
         AZ_REGEX_CHAR_CLASS_NAME(L"xdigit", RegexTraits<wchar_t>::Ch_xdigit),
-        {0, 0, 0},
+        {nullptr, 0, 0},
     };
     #undef AZ_REGEX_CHAR_CLASS_NAME
 } // namespace AZStd

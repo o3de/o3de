@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -60,7 +61,7 @@ namespace MaterialEditor
         auto presetItr = AZStd::find(m_presets.begin(), m_presets.end(), preset);
         if (presetItr != m_presets.end())
         {
-            setCurrentIndex(AZStd::distance(m_presets.begin(), presetItr));
+            setCurrentIndex(static_cast<int>(AZStd::distance(m_presets.begin(), presetItr)));
         }
     }
 
@@ -79,7 +80,7 @@ namespace MaterialEditor
             auto presetItr = AZStd::find(m_presets.begin(), m_presets.end(), preset);
             if (presetItr != m_presets.end())
             {
-                setItemText(AZStd::distance(m_presets.begin(), presetItr), preset->m_displayName.c_str());
+                setItemText(static_cast<int>(AZStd::distance(m_presets.begin(), presetItr)), preset->m_displayName.c_str());
             }
             else
             {

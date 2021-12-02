@@ -1,18 +1,22 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
-#include "EditorAssetImporter_precompiled.h"
+#include <AzCore/Debug/Profiler.h>
+#include <AzCore/IO/Path/Path.h>
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/std/algorithm.h>
 #include <AzCore/std/string/conversions.h>
+#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/Debug/TraceContext.h>
 #include <SceneAPI/SceneCore/Events/AssetImportRequest.h>
+#include <SceneAPI/SceneCore/Components/LoadingComponent.h>
 #include <SceneAPI/SceneCore/Utilities/Reporting.h>
 #include <SceneSerializationHandler.h>
 
@@ -36,7 +40,7 @@ namespace AZ
     AZStd::shared_ptr<SceneAPI::Containers::Scene> SceneSerializationHandler::LoadScene(
         const AZStd::string& filePath, Uuid sceneSourceGuid)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Editor);
+        AZ_PROFILE_FUNCTION(Editor);
         namespace Utilities = AZ::SceneAPI::Utilities;
         using AZ::SceneAPI::Events::AssetImportRequest;
 
@@ -48,22 +52,15 @@ namespace AZ
             return nullptr;
         }
 
-        AZStd::string cleanPath = filePath;
-        if (AzFramework::StringFunc::Path::IsRelative(filePath.c_str()))
+        AZ::IO::Path enginePath;
+        if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
         {
-            const char* absolutePath = nullptr;
-            AzToolsFramework::AssetSystemRequestBus::BroadcastResult(absolutePath, 
-                &AzToolsFramework::AssetSystemRequestBus::Events::GetAbsoluteDevRootFolderPath);
-            AZ_Assert(absolutePath, "Unable to retrieve the dev folder path");
-            AzFramework::StringFunc::Path::Join(absolutePath, cleanPath.c_str(), cleanPath);
-        }
-        else
-        {
-            // Normalizing is not needed if the path is relative as Join(...) will also normalize.
-            AzFramework::StringFunc::Path::Normalize(cleanPath);
+            settingsRegistry->Get(enginePath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder);
         }
 
-        auto sceneIt = m_scenes.find(cleanPath);
+        AZ::IO::Path cleanPath = (enginePath / filePath).LexicallyNormal();
+
+        auto sceneIt = m_scenes.find(cleanPath.Native());
         if (sceneIt != m_scenes.end())
         {
             AZStd::shared_ptr<SceneAPI::Containers::Scene> scene = sceneIt->second.lock();
@@ -96,14 +93,14 @@ namespace AZ
         }
 
         AZStd::shared_ptr<SceneAPI::Containers::Scene> scene = 
-            AssetImportRequest::LoadSceneFromVerifiedPath(cleanPath, sceneSourceGuid, AssetImportRequest::RequestingApplication::Editor);
+            AssetImportRequest::LoadSceneFromVerifiedPath(cleanPath.Native(), sceneSourceGuid, AssetImportRequest::RequestingApplication::Editor, SceneAPI::SceneCore::LoadingComponent::TYPEINFO_Uuid());
         if (!scene)
         {
             AZ_TracePrintf(Utilities::ErrorWindow, "Failed to load the requested scene.");
             return nullptr;
         }
 
-        m_scenes.emplace(AZStd::move(cleanPath), scene);
+        m_scenes.emplace(AZStd::move(cleanPath.Native()), scene);
         
         return scene;
     }

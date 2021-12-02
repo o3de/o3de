@@ -1,11 +1,22 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
 #include "DebugOutput.h"
+#include <AzCore/std/optional.h>
+
+#include <AzCore/IO/SystemFile.h>
+#include <AzFramework/StringFunc/StringFunc.h>
+#include <SceneAPI/SceneCore/Containers/Scene.h>
+#include <SceneAPI/SceneCore/Containers/Views/PairIterator.h>
+#include <SceneAPI/SceneCore/Containers/Views/SceneGraphDownwardsIterator.h>
+#include <SceneAPI/SceneCore/DataTypes/IGraphObject.h>
+#include <SceneAPI/SceneCore/Events/ExportProductList.h>
+#include <SceneAPI/SceneCore/Utilities/Reporting.h>
 
 namespace AZ::SceneAPI::Utilities
 {
@@ -115,5 +126,64 @@ namespace AZ::SceneAPI::Utilities
     const AZStd::string& DebugOutput::GetOutput() const
     {
         return m_output;
+    }
+
+    void WriteAndLog(AZ::IO::SystemFile& dbgFile, const char* strToWrite)
+    {
+        AZ_TracePrintf(AZ::SceneAPI::Utilities::LogWindow, "%s", strToWrite);
+        dbgFile.Write(strToWrite, strlen(strToWrite));
+        dbgFile.Write("\n", strlen("\n"));
+    }
+
+    void DebugOutput::BuildDebugSceneGraph(const char* outputFolder, AZ::SceneAPI::Events::ExportProductList& productList, const AZStd::shared_ptr<AZ::SceneAPI::Containers::Scene>& scene, AZStd::string productName)
+    {
+        const int debugSceneGraphVersion = 1;
+        AZStd::string debugSceneFile;
+
+        AzFramework::StringFunc::Path::ConstructFull(outputFolder, productName.c_str(), debugSceneFile);
+        AZ_TracePrintf(AZ::SceneAPI::Utilities::LogWindow, "outputFolder %s, name %s.\n", outputFolder, productName.c_str());
+        
+        AZ::IO::SystemFile dbgFile;
+        if (dbgFile.Open(debugSceneFile.c_str(), AZ::IO::SystemFile::SF_OPEN_CREATE | AZ::IO::SystemFile::SF_OPEN_WRITE_ONLY))
+        {
+            WriteAndLog(dbgFile, AZStd::string::format("ProductName: %s", productName.c_str()).c_str());
+            WriteAndLog(dbgFile, AZStd::string::format("debugSceneGraphVersion: %d", debugSceneGraphVersion).c_str());
+            WriteAndLog(dbgFile, scene->GetName().c_str());
+
+            const AZ::SceneAPI::Containers::SceneGraph& sceneGraph = scene->GetGraph();
+            auto names = sceneGraph.GetNameStorage();
+            auto content = sceneGraph.GetContentStorage();
+            auto pairView = AZ::SceneAPI::Containers::Views::MakePairView(names, content);
+            auto view = AZ::SceneAPI::Containers::Views::MakeSceneGraphDownwardsView<
+                AZ::SceneAPI::Containers::Views::BreadthFirst>(
+                    sceneGraph, sceneGraph.GetRoot(), pairView.cbegin(), true);
+
+            for (auto&& viewIt : view)
+            {
+                if (viewIt.second == nullptr)
+                {
+                    continue;
+                }
+
+                AZ::SceneAPI::DataTypes::IGraphObject* graphObject = const_cast<AZ::SceneAPI::DataTypes::IGraphObject*>(viewIt.second.get());
+                
+                WriteAndLog(dbgFile, AZStd::string::format("Node Name: %s", viewIt.first.GetName()).c_str());
+                WriteAndLog(dbgFile, AZStd::string::format("Node Path: %s", viewIt.first.GetPath()).c_str());
+                WriteAndLog(dbgFile, AZStd::string::format("Node Type: %s", graphObject->RTTI_GetTypeName()).c_str());
+
+                AZ::SceneAPI::Utilities::DebugOutput debugOutput;
+                viewIt.second->GetDebugOutput(debugOutput);
+
+                if (!debugOutput.GetOutput().empty())
+                {
+                    WriteAndLog(dbgFile, debugOutput.GetOutput().c_str());
+                }
+            }
+            dbgFile.Close();
+
+            static const AZ::Data::AssetType dbgSceneGraphAssetType("{07F289D1-4DC7-4C40-94B4-0A53BBCB9F0B}");
+            productList.AddProduct(productName, AZ::Uuid::CreateName(productName.c_str()), dbgSceneGraphAssetType,
+                AZStd::nullopt, AZStd::nullopt);
+        }
     }
 }

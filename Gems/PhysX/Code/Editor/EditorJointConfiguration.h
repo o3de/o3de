@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -10,7 +11,7 @@
 #include <AzCore/Component/EntityId.h>
 #include <AzCore/Serialization/SerializeContext.h>
 
-#include <Source/Joint.h>
+#include <Source/JointComponent.h>
 
 namespace PhysX
 {
@@ -63,7 +64,7 @@ namespace PhysX
         static void Reflect(AZ::ReflectContext* context);
 
         bool IsLimited() const;
-        GenericJointLimitsConfiguration ToGameTimeConfig() const;
+        JointLimitProperties ToGameTimeConfig() const;
 
         EditorJointLimitConfig m_standardLimitConfig;
         float m_limitPositive = 45.0f;
@@ -82,7 +83,7 @@ namespace PhysX
         static void Reflect(AZ::ReflectContext* context);
 
         bool IsLimited() const;
-        GenericJointLimitsConfiguration ToGameTimeConfig() const;
+        JointLimitProperties ToGameTimeConfig() const;
 
         EditorJointLimitConfig m_standardLimitConfig;
         float m_limitY = 45.0f;
@@ -99,11 +100,21 @@ namespace PhysX
         AZ_TYPE_INFO(EditorJointConfig, "{8A966D65-CA97-4786-A13C-ACAA519D97EA}");
         static void Reflect(AZ::ReflectContext* context);
 
+        enum class DisplaySetupState : AZ::u8
+        {
+            Never = 0,
+            Selected,
+            Always
+        };
+
         void SetLeadEntityId(AZ::EntityId leadEntityId);
-        GenericJointConfiguration ToGameTimeConfig() const;
+        JointGenericProperties ToGenericProperties() const;
+        JointComponentConfiguration ToGameTimeConfig() const;
+
+        bool ShowSetupDisplay() const;
 
         bool m_breakable = false;
-        bool m_displayJointSetup = false;
+        DisplaySetupState m_displayJointSetup = DisplaySetupState::Selected;
         bool m_inComponentMode = false;
         bool m_selectLeadOnSnap = true;
         bool m_selfCollide = false;
@@ -127,3 +138,8 @@ namespace PhysX
     };
 
 } // namespace PhysX
+
+namespace AZ
+{
+    AZ_TYPE_INFO_SPECIALIZE(PhysX::EditorJointConfig::DisplaySetupState, "{17EBE6BD-289A-4326-8A24-DCE3B7FEC51E}");
+} // namespace AZ

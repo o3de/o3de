@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -404,5 +405,71 @@ namespace AZ
             AZ_Assert(m_layout, "Constants layout is null");
             return m_layout.get();
         }
+
+        bool ConstantsData::ConstantIsEqual(const ConstantsData& other, ShaderInputConstantIndex inputIndex) const
+        {
+            AZStd::array_view<uint8_t> myConstant = GetConstantRaw(inputIndex);
+            AZStd::array_view<uint8_t> otherConstant = other.GetConstantRaw(inputIndex);
+
+            // If they point to the same data, they are equal
+            if (myConstant == otherConstant)
+            {
+                return true;
+            }
+
+            // If they point to data of different size, they are not equal
+            if (myConstant.size() != otherConstant.size())
+            {
+                return false;
+            }
+
+            // If they point to differing data of same size, compare the data
+            // Note: due to small size of data this loop will be faster than a mem compare
+            for(uint32_t i = 0; i < myConstant.size(); ++i)
+            {
+                if (myConstant[i] != otherConstant[i])
+                {
+                    return false;
+                }
+            }
+
+            // Arrays point to different locations in memory but all bytes match, return true
+            return true;
+        }
+
+        AZStd::vector<ShaderInputConstantIndex> ConstantsData::GetIndicesOfDifferingConstants(const ConstantsData& other) const
+        {
+            AZStd::vector<ShaderInputConstantIndex> differingIndices;
+
+            if (m_layout == nullptr || other.m_layout == nullptr)
+            {
+                return differingIndices;
+            }
+
+            AZStd::array_view<ShaderInputConstantDescriptor> myShaderInputs = m_layout->GetShaderInputList();
+            AZStd::array_view<ShaderInputConstantDescriptor> otherShaderInputs = other.m_layout->GetShaderInputList();
+
+            size_t minSize = AZStd::min(myShaderInputs.size(), otherShaderInputs.size());
+            size_t maxSize = AZStd::max(myShaderInputs.size(), otherShaderInputs.size());
+
+            for (size_t idx = 0; idx < minSize; ++idx)
+            {
+                const ShaderInputConstantIndex inputIndex(idx);
+                if (!ConstantIsEqual(other, inputIndex))
+                {
+                    differingIndices.push_back(inputIndex);
+                }
+            }
+
+            // If sizes are different, add difference at the end
+            for (size_t idx = minSize; idx < maxSize; ++idx)
+            {
+                const ShaderInputConstantIndex inputIndex(idx);
+                differingIndices.push_back(inputIndex);
+            }
+
+            return differingIndices;
+        }
+
     }
 }

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -9,6 +10,7 @@
 
 #include <AzCore/Debug/StackTracer.h>
 #include <AzCore/IO/SystemFile.h> // for AZ_MAX_PATH_LEN
+#include <AzCore/Math/Vector2.h>
 
 #include <CryLibrary.h>
 
@@ -108,3 +110,5 @@ int main(int argc, char** argv)
 
     return static_cast<int>(status);
 }
+
+void CVar_OnViewportPosition([[maybe_unused]] const AZ::Vector2& value) {}

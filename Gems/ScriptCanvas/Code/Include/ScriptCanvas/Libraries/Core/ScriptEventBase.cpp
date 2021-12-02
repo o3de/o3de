@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -121,11 +122,8 @@ namespace ScriptCanvas
 
                 void ScriptEventBase::OnActivate()
                 {
-                    if (!m_asset || m_asset.GetStatus() == AZ::Data::AssetData::AssetStatus::NotLoaded)
-                    {
-                        m_asset = AZ::Data::AssetManager::Instance().GetAsset<ScriptEvents::ScriptEventsAsset>(m_scriptEventAssetId, AZ::Data::AssetLoadBehavior::PreLoad);
-                        m_asset.BlockUntilLoadComplete();
-                    }
+                    m_asset = AZ::Data::AssetManager::Instance().GetAsset<ScriptEvents::ScriptEventsAsset>(m_scriptEventAssetId, AZ::Data::AssetLoadBehavior::PreLoad);
+                    m_asset.BlockUntilLoadComplete();
                 }
 
                 void ScriptEventBase::OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset)

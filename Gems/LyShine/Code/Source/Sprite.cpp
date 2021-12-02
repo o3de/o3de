@@ -1,10 +1,10 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "LyShine_precompiled.h"
 #include "Sprite.h"
 #include <CryPath.h>
 #include <IRenderer.h>
@@ -146,9 +146,9 @@ namespace
     {
         if (ser.IsReading())
         {
-            string stringVal;
+            AZStd::string stringVal;
             ser.Value(attributeName, stringVal);
-            stringVal.replace(',', ' ');
+            AZ::StringFunc::Replace(stringVal, ',', ' ');
             char* pEnd = nullptr;
             float uVal = strtof(stringVal.c_str(), &pEnd);
             float vVal = strtof(pEnd, nullptr);
@@ -202,13 +202,13 @@ CSprite::~CSprite()
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-const string& CSprite::GetPathname() const
+const AZStd::string& CSprite::GetPathname() const
 {
     return m_pathname;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-const string& CSprite::GetTexturePathname() const
+const AZStd::string& CSprite::GetTexturePathname() const
 {
     return m_texturePathname;
 }
@@ -273,7 +273,7 @@ void CSprite::Serialize(TSerialize ser)
 
     if (hasSpriteSheetCells && ser.BeginOptionalGroup("SpriteSheet", true))
     {
-        const int numSpriteSheetCells = ser.IsReading() ? m_numSpriteSheetCellTags : GetSpriteSheetCells().size();
+        const int numSpriteSheetCells = static_cast<int>(ser.IsReading() ? m_numSpriteSheetCellTags : GetSpriteSheetCells().size());
         for (int i = 0; i < numSpriteSheetCells; ++i)
         {
             ser.BeginOptionalGroup("Cell", true);
@@ -283,7 +283,7 @@ void CSprite::Serialize(TSerialize ser)
                 m_spriteSheetCells.push_back(SpriteSheetCell());
             }
 
-            string aliasTemp;
+            AZStd::string aliasTemp;
             if (ser.IsReading())
             {
                 ser.Value("alias", aliasTemp);
@@ -318,7 +318,7 @@ void CSprite::Serialize(TSerialize ser)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-bool CSprite::SaveToXml(const string& pathname)
+bool CSprite::SaveToXml(const AZStd::string& pathname)
 {
     // NOTE: The input pathname has to be a path that can used to save - so not an Asset ID
     // because of this we do not store the pathname
@@ -331,7 +331,7 @@ bool CSprite::SaveToXml(const string& pathname)
     ser.Value(spriteVersionNumberTag, spriteFileVersionNumber);
     Serialize(ser);
 
-    return root->saveToFile(pathname);
+    return root->saveToFile(pathname.c_str());
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -368,7 +368,7 @@ AZ::Vector2 CSprite::GetSize()
         }
 
         AZ::RHI::Size size = image->GetRHIImage()->GetDescriptor().m_size;
-        return AZ::Vector2(size.m_width, size.m_height);
+        return AZ::Vector2(static_cast<float>(size.m_width), static_cast<float>(size.m_height));
     }
     else
     {
@@ -509,20 +509,16 @@ ISprite::Borders CSprite::GetTextureSpaceCellUvBorders(int cellIndex) const
     if (CellIndexWithinRange(cellIndex))
     {
         const float cellWidth = GetCellUvSize(cellIndex).GetX();
-        const float cellMinUCoord = GetCellUvCoords(cellIndex).TopLeft().GetX();
         const float cellNormalizedLeftBorder = GetCellUvBorders(cellIndex).m_left * cellWidth;
         textureSpaceBorders.m_left = cellNormalizedLeftBorder;
 
-        const float cellMaxUCoord = GetCellUvCoords(cellIndex).TopRight().GetX();
         const float cellNormalizedRightBorder = GetCellUvBorders(cellIndex).m_right * cellWidth;
         textureSpaceBorders.m_right = cellNormalizedRightBorder;
 
         const float cellHeight = GetCellUvSize(cellIndex).GetY();
-        const float cellMinVCoord = GetCellUvCoords(cellIndex).TopLeft().GetY();
         const float cellNormalizedTopBorder = GetCellUvBorders(cellIndex).m_top * cellHeight;
         textureSpaceBorders.m_top = cellNormalizedTopBorder;
 
-        const float cellMaxVCoord = GetCellUvCoords(cellIndex).BottomLeft().GetY();
         const float cellNormalizedBottomBorder = GetCellUvBorders(cellIndex).m_bottom * cellHeight;
         textureSpaceBorders.m_bottom = cellNormalizedBottomBorder;
     }
@@ -629,7 +625,7 @@ void CSprite::Shutdown()
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-CSprite* CSprite::LoadSprite(const string& pathname)
+CSprite* CSprite::LoadSprite(const AZStd::string& pathname)
 {
     AZStd::string spritePath;
     AZStd::string texturePath;
@@ -691,7 +687,7 @@ CSprite* CSprite::LoadSprite(const string& pathname)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-CSprite* CSprite::CreateSprite(const string& renderTargetName)
+CSprite* CSprite::CreateSprite(const AZStd::string& renderTargetName)
 {
     // test if the sprite is already loaded, if so return loaded sprite
     auto result = s_loadedSprites->find(renderTargetName);
@@ -859,7 +855,8 @@ bool CSprite::LoadImage(const AZStd::string& nameTex, AZ::Data::Instance<AZ::RPI
     image = AZ::RPI::StreamingImage::FindOrCreate(streamingImageAsset);
     if (!image)
     {
-        AZ_Error("CSprite", false, "Failed to find or create an image instance from image asset '%s'", streamingImageAsset.GetHint().c_str());
+        AZ_Error("CSprite", false, "Failed to find or create an image instance from image asset '%s', ID %s",
+            streamingImageAsset.GetHint().c_str(), streamingImageAsset.GetId().ToString<AZStd::string>().c_str());
         return false;
     }
 

@@ -1,13 +1,14 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
 #include <Atom/RHI.Edit/Utils.h>
 
-#include <AtomCore/Serialization/Json/JsonUtils.h>
+#include <AzCore/Serialization/Json/JsonUtils.h>
 
 #include <AzFramework/Process/ProcessCommunicator.h>
 #include <AzFramework/Process/ProcessWatcher.h>
@@ -29,7 +30,7 @@ namespace AZ
     namespace RHI
     {
         static AZStd::mutex s_profilingMutex;
-        static constexpr char ShaderPlatformInterfaceName[] = "ShaderPlatformInterface";
+        [[maybe_unused]] static constexpr char ShaderPlatformInterfaceName[] = "ShaderPlatformInterface";
 
         void ShaderCompilerProfiling::Entry::Reflect(ReflectContext* context)
         {
@@ -303,7 +304,7 @@ namespace AZ
             uint32_t exitCode = 0;
             bool timedOut = false;
 
-            const AZStd::sys_time_t maxWaitTimeSeconds = 120;
+            const AZStd::sys_time_t maxWaitTimeSeconds = 300;
             const AZStd::sys_time_t startTimeSeconds = AZStd::GetTimeNowSecond();
             const AZStd::sys_time_t startTime = AZStd::GetTimeNowTicks();
 
@@ -329,7 +330,7 @@ namespace AZ
             // Pump one last time to make sure the streams have been flushed
             pumpOuputStreams();
 
-            const bool reportedErrors = ReportErrorMessages(toolNameForLog, errorMessages);
+            const bool reportedErrors = ReportMessages(toolNameForLog, errorMessages, exitCode != 0);
 
             if (timedOut)
             {
@@ -366,32 +367,20 @@ namespace AZ
             return true;
         }
 
-        bool ReportErrorMessages([[maybe_unused]] AZStd::string_view window, AZStd::string_view errorMessages)
+        bool ReportMessages([[maybe_unused]] AZStd::string_view window, AZStd::string_view errorMessages, bool reportAsErrors)
         {
-            // There are more efficient ways to do this, but this approach is simple and gets us moving for now.
-            AZStd::vector<AZStd::string> lines;
-            AzFramework::StringFunc::Tokenize(errorMessages.data(), lines, "\n\r");
-
-            bool foundErrors = false;
-            
-            for (auto& line : lines)
+            if (reportAsErrors)
             {
-                if (AZStd::string::npos != AzFramework::StringFunc::Find(line, "error"))
-                {
-                    AZ_Error(window.data(), false, "%s", line.data());
-                    foundErrors = true;
-                }
-                else if (AZStd::string::npos != AzFramework::StringFunc::Find(line, "warning"))
-                {
-                    AZ_Warning(window.data(), false, "%s", line.data());
-                }
-                else 
-                {
-                    AZ_TracePrintf(window.data(), "%s", line.data());
-                }
+                AZ_Error(window.data(), false, "%.*s", aznumeric_cast<int>(errorMessages.size()), errorMessages.data());
             }
-
-            return foundErrors;
+            else
+            {
+                // Using AZ_Warning instead of AZ_TracePrintf because this function is commonly
+                // used to report messages from stderr when executing applications. Applications
+                // when ran successfully, only output to stderr for errors or warnings.
+                AZ_Warning(window.data(), false, "%.*s", aznumeric_cast<int>(errorMessages.size()), errorMessages.data());
+            }
+            return AZStd::string::npos != AzFramework::StringFunc::Find(errorMessages, "error");
         }
 
         ShaderStage ToRHIShaderStage(ShaderHardwareStage stageType)

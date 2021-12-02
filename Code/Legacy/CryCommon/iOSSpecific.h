@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -33,10 +34,6 @@
 #define PLATFORM_64BIT
 #endif
 
-#if defined(_CPU_ARM) && defined(PLATFORM_64BIT)
-#   define INTERLOCKED_COMPARE_EXCHANGE_128_NOT_SUPPORTED
-#endif // defined(_CPU_ARM) && defined(PLATFORM_64BIT)
-
 #ifndef MOBILE
 #define MOBILE
 #endif
@@ -50,11 +47,9 @@
 #define VK_SCROLL       0
 
 
-//#define USE_CRT 1
 #if !defined(PLATFORM_64BIT)
 #error "IOS build only supports the 64bit architecture"
 #else
-#define SIZEOF_PTR 8
 typedef uint64_t threadID;
 #endif
 

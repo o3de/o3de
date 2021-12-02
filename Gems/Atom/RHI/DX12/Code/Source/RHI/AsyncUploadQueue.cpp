@@ -1,11 +1,11 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
-#include "RHI/Atom_RHI_DX12_precompiled.h"
 #include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/RHI.Reflect/PlatformLimitsDescriptor.h>
 #include <RHI/AsyncUploadQueue.h>
@@ -33,12 +33,20 @@ namespace AZ
             ID3D12DeviceX* dx12Device = device.GetDevice();
 
             m_copyQueue = CommandQueue::Create();
-            
+
+            // The async upload queue should always use the primary copy queue,
+            // but because this change is being made in the stabilization branch
+            // we will put it behind a define out of an abundance of caution, and
+            // change it to always do this once the change gets back to development.
+        #if defined(AZ_DX12_USE_PRIMARY_COPY_QUEUE_FOR_ASYNC_UPLOAD_QUEUE)
+            m_copyQueue = &device.GetCommandQueueContext().GetCommandQueue(RHI::HardwareQueueClass::Copy);
+        #else
             // Make a secondary Copy queue, the primary queue is owned by the CommandQueueContext
             CommandQueueDescriptor commandQueueDesc;
             commandQueueDesc.m_hardwareQueueClass = RHI::HardwareQueueClass::Copy;
             commandQueueDesc.m_hardwareQueueSubclass = HardwareQueueSubclass::Secondary;
             m_copyQueue->Init(device, commandQueueDesc);
+        #endif // defined(AZ_DX12_ASYNC_UPLOAD_QUEUE_USE_PRIMARY_COPY_QUEUE)
             m_uploadFence.Init(dx12Device, RHI::FenceState::Signaled);
 
             for (size_t i = 0; i < descriptor.m_frameCount; ++i)
@@ -47,11 +55,6 @@ namespace AZ
 
                 FramePacket& framePacket = m_framePackets.back();
                 framePacket.m_fence.Init(dx12Device, RHI::FenceState::Signaled);
-
-                Microsoft::WRL::ComPtr<ID3D12CommandAllocator> commandAllocator;
-                AssertSuccess(dx12Device->CreateCommandAllocator(
-                    D3D12_COMMAND_LIST_TYPE_COPY,
-                    IID_GRAPHICS_PPV_ARGS(commandAllocator.GetAddressOf())));
 
                 CD3DX12_HEAP_PROPERTIES heapProperties(D3D12_HEAP_TYPE_UPLOAD);
                 CD3DX12_RESOURCE_DESC bufferDesc = CD3DX12_RESOURCE_DESC::Buffer(descriptor.m_stagingSizeInBytes);
@@ -65,22 +68,28 @@ namespace AZ
                     nullptr,
                     IID_GRAPHICS_PPV_ARGS(stagingResource.GetAddressOf())));
 
-                framePacket.m_commandAllocator = commandAllocator.Get();
                 framePacket.m_stagingResource = stagingResource.Get();
                 CD3DX12_RANGE readRange(0, 0);
                 framePacket.m_stagingResource->Map(0, &readRange, reinterpret_cast<void**>(&framePacket.m_stagingResourceData));
+
+                
+                Microsoft::WRL::ComPtr<ID3D12CommandAllocator> commandAllocator;
+                AssertSuccess(dx12Device->CreateCommandAllocator(
+                    D3D12_COMMAND_LIST_TYPE_COPY,
+                    IID_GRAPHICS_PPV_ARGS(commandAllocator.GetAddressOf())));
+                framePacket.m_commandAllocator = commandAllocator.Get();
+
+                Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> commandList;
+                AssertSuccess(dx12Device->CreateCommandList(
+                    0,
+                    D3D12_COMMAND_LIST_TYPE_COPY,
+                    framePacket.m_commandAllocator.get(),
+                    nullptr,
+                    IID_GRAPHICS_PPV_ARGS(commandList.GetAddressOf())));
+
+                framePacket.m_commandList = commandList.Get();
+                AssertSuccess(framePacket.m_commandList->Close());
             }
-
-            Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> commandList;
-            AssertSuccess(dx12Device->CreateCommandList(
-                0,
-                D3D12_COMMAND_LIST_TYPE_COPY,
-                m_framePackets.front().m_commandAllocator.get(),
-                nullptr,
-                IID_GRAPHICS_PPV_ARGS(commandList.GetAddressOf())));
-
-            m_commandList = commandList.Get();
-            AssertSuccess(m_commandList->Close());
         }
 
         void AsyncUploadQueue::Shutdown()
@@ -90,11 +99,12 @@ namespace AZ
                 m_copyQueue->Shutdown();
                 m_copyQueue = nullptr;
             }
-            m_commandList = nullptr;
 
             for (auto& framePacket : m_framePackets)
             {
                 framePacket.m_fence.Shutdown();
+                framePacket.m_commandList = nullptr;
+                framePacket.m_commandAllocator = nullptr;
             }
             m_framePackets.clear();
             m_uploadFence.Shutdown();
@@ -152,25 +162,25 @@ namespace AZ
 
             m_copyQueue->QueueCommand([=](void* commandQueue)
             {
-                AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::AzRender, "Upload Buffer");
+                AZ_PROFILE_SCOPE(RHI, "Upload Buffer");
                 size_t pendingByteOffset = 0;
                 size_t pendingByteCount = byteCount;
                 ID3D12CommandQueue* dx12CommandQueue = static_cast<ID3D12CommandQueue*>(commandQueue);
 
                 while (pendingByteCount > 0)
                 {
-                    AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::AzRender, "Upload Buffer Chunk");
+                    AZ_PROFILE_SCOPE(RHI, "Upload Buffer Chunk");
 
                     FramePacket* framePacket = BeginFramePacket();
 
                     const size_t bytesToCopy = AZStd::min(pendingByteCount, m_descriptor.m_stagingSizeInBytes);
 
                     {
-                        AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::AzRender, "Copy CPU buffer");
+                        AZ_PROFILE_SCOPE(RHI, "Copy CPU buffer");
                         memcpy(framePacket->m_stagingResourceData, sourceData + pendingByteOffset, bytesToCopy);
                     }
 
-                    m_commandList->CopyBufferRegion(
+                    framePacket->m_commandList->CopyBufferRegion(
                         dx12Buffer.get(),
                         byteOffset + pendingByteOffset,
                         framePacket->m_stagingResource.get(),
@@ -196,7 +206,7 @@ namespace AZ
 
         AsyncUploadQueue::FramePacket* AsyncUploadQueue::BeginFramePacket()
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzRender);
+            AZ_PROFILE_SCOPE(RHI, "AsyncUploadQueue: BeginFramePacket");
             AZ_Assert(!m_recordingFrame, "The previous frame packet isn't ended");
 
             FramePacket* framePacket = &m_framePackets[m_frameIndex];
@@ -204,7 +214,9 @@ namespace AZ
             framePacket->m_fence.Increment();
             framePacket->m_dataOffset = 0;
 
-            AssertSuccess(m_commandList->Reset(framePacket->m_commandAllocator.get(), nullptr));
+            AssertSuccess(framePacket->m_commandAllocator->Reset());
+            AssertSuccess(framePacket->m_commandList->Reset(framePacket->m_commandAllocator.get(), nullptr));
+
             m_recordingFrame = true;
 
             return framePacket;
@@ -212,14 +224,15 @@ namespace AZ
 
         void AsyncUploadQueue::EndFramePacket(ID3D12CommandQueue* commandQueue)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzRender);
+            AZ_PROFILE_SCOPE(RHI, "AsyncUploadQueue: EndFramePacket");
             AZ_Assert(m_recordingFrame, "The frame packet wasn't started. You need to call StartFramePacket first.");
 
-            AssertSuccess(m_commandList->Close());
-            ID3D12CommandList* commandLists[] = { m_commandList.get() };
+            FramePacket& framePacket = m_framePackets[m_frameIndex];
+
+            AssertSuccess(framePacket.m_commandList->Close());
+            ID3D12CommandList* commandLists[] = { framePacket.m_commandList.get() };
             commandQueue->ExecuteCommandLists(1, commandLists);
 
-            FramePacket& framePacket = m_framePackets[m_frameIndex];
             commandQueue->Signal(framePacket.m_fence.Get(), framePacket.m_fence.GetPendingValue());
 
             m_frameIndex = (m_frameIndex + 1) % m_descriptor.m_frameCount;
@@ -229,7 +242,7 @@ namespace AZ
         // [GFX TODO][ATOM-4205] Stage/Upload 3D streaming images more efficiently.
         uint64_t AsyncUploadQueue::QueueUpload(const RHI::StreamingImageExpandRequest& request, uint32_t residentMip)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzRender);
+            AZ_PROFILE_SCOPE(RHI, "AsyncUploadQueue: QueueUpload");
 
             uint64_t fenceValue = m_uploadFence.Increment();
 
@@ -243,7 +256,7 @@ namespace AZ
 
             m_copyQueue->QueueCommand([=](void* commandQueue)
             {
-                AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::AzRender, "Upload Image");
+                AZ_PROFILE_SCOPE(RHI, "Upload Image");
                 ID3D12CommandQueue* dx12CommandQueue = static_cast<ID3D12CommandQueue*>(commandQueue);
                 FramePacket* framePacket = BeginFramePacket();
 
@@ -314,7 +327,7 @@ namespace AZ
 
                                 // Copy subresource data to staging memory.
                                 {
-                                    AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::AzRender, "Copy CPU image");
+                                    AZ_PROFILE_SCOPE(RHI, "Copy CPU image");
 
                                     uint8_t* stagingDataStart = framePacket->m_stagingResourceData + framePacket->m_dataOffset;
                                     const uint8_t* subresourceSliceDataStart = static_cast<const uint8_t*>(subresource.m_data) + (depth * subresourceSlicePitch);
@@ -344,7 +357,7 @@ namespace AZ
                                 const uint32_t subresourceIdx = D3D12CalcSubresource(curMip, arraySlice, 0, imageMipLevels, arraySize);
                                 CD3DX12_TEXTURE_COPY_LOCATION destLocation(imageMemory, subresourceIdx);
 
-                                m_commandList->CopyTextureRegion(
+                                framePacket->m_commandList->CopyTextureRegion(
                                     &destLocation,
                                     0, 0, depth,
                                     &sourceLocation,
@@ -378,14 +391,13 @@ namespace AZ
                                     }
 
                                     const uint32_t endRow = AZStd::GetMin(startRow + rowsPerSplit, subresourceLayout.m_rowCount);
-                                    const uint32_t numRowsToCopy = endRow - startRow;
 
                                     // Calculate the blocksize for BC formatted images; the copy command works in texels.
                                     uint32_t heightToCopy = (endRow - startRow) * compressedTexelBlockSizeHeight;
 
                                     // Copy subresource data to staging memory
                                     {
-                                        AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::AzRender, "Copy CPU image");
+                                        AZ_PROFILE_SCOPE(RHI, "Copy CPU image");
                                         for (uint32_t row = startRow; row < endRow; row++)
                                         {
                                             uint8_t* stagingDataStart = framePacket->m_stagingResourceData + framePacket->m_dataOffset;
@@ -418,7 +430,7 @@ namespace AZ
                                     footprint.Offset = framePacket->m_dataOffset;
                                     CD3DX12_TEXTURE_COPY_LOCATION sourceLocation(framePacket->m_stagingResource.get(), footprint);
 
-                                    m_commandList->CopyTextureRegion(
+                                    framePacket->m_commandList->CopyTextureRegion(
                                         &destLocation,
                                         0, destHeight, depth,
                                         &sourceLocation,
@@ -476,7 +488,7 @@ namespace AZ
 
         void AsyncUploadQueue::WaitForUpload(uint64_t fenceValue)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzRender);
+            AZ_PROFILE_SCOPE(RHI, "AsyncUploadQueue: WaitForUpload");
 
             if (!IsUploadFinished(fenceValue))
             {
@@ -490,7 +502,7 @@ namespace AZ
 
         void AsyncUploadQueue::ProcessCallbacks(uint64_t fenceValue)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzRender);
+            AZ_PROFILE_SCOPE(RHI, "AsyncUploadQueue: ProcessCallbacks");
             AZStd::lock_guard<AZStd::mutex> lock(m_callbackMutex);
             while (m_callbacks.size() > 0 && m_callbacks.front().second <= fenceValue)
             {
@@ -504,7 +516,7 @@ namespace AZ
         {
             m_copyQueue->QueueCommand([=](void* commandQueue)
             {
-                AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::AzRender, "QueueTileMapping");
+                AZ_PROFILE_SCOPE(RHI, "QueueTileMapping");
 
                 ID3D12CommandQueue* dx12CommandQueue = static_cast<ID3D12CommandQueue*>(commandQueue);
                 const uint32_t tileCount = request.m_sourceRegionSize.NumTiles;

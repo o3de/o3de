@@ -1,12 +1,13 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "RHI/Atom_RHI_DX12_precompiled.h"
 #include <RHI/MemoryView.h>
 
+#include <AzCore/Casting/numeric_cast.h>
 #include <AzCore/Debug/EventTrace.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/string/conversions.h>
@@ -94,8 +95,18 @@ namespace AZ
             if (m_memoryAllocation.m_memory)
             {
                 AZStd::wstring wname;
-                AZStd::to_wstring(wname, name.data(), name.size());
-                m_memoryAllocation.m_memory->SetName(wname.data());
+                AZStd::to_wstring(wname, name);
+                m_memoryAllocation.m_memory->SetPrivateData(
+                    WKPDID_D3DDebugObjectNameW, aznumeric_cast<unsigned int>(wname.size() * sizeof(wchar_t)), wname.data());
+            }
+        }
+
+        void MemoryView::SetName(const AZStd::wstring_view& name)
+        {
+            if (m_memoryAllocation.m_memory)
+            {
+                m_memoryAllocation.m_memory->SetPrivateData(
+                    WKPDID_D3DDebugObjectNameW, aznumeric_cast<unsigned int>(name.size() * sizeof(wchar_t)), name.data());
             }
         }
 

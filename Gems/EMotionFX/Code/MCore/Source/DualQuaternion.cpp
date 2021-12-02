@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -15,12 +16,12 @@ namespace MCore
     // calculate the inverse
     DualQuaternion& DualQuaternion::Inverse()
     {
-        const float realLength = mReal.GetLength();
-        const float dotProduct = mReal.Dot(mDual);
+        const float realLength = m_real.GetLength();
+        const float dotProduct = m_real.Dot(m_dual);
         const float dualFactor = realLength - 2.0f * dotProduct;
 
-        mReal.Set(-mReal.GetX() * realLength, -mReal.GetY() * realLength, -mReal.GetZ() * realLength, mReal.GetW() * realLength);
-        mDual.Set(-mDual.GetX() * dualFactor, -mDual.GetY() * dualFactor, -mDual.GetZ() * dualFactor, mDual.GetW() * dualFactor);
+        m_real.Set(-m_real.GetX() * realLength, -m_real.GetY() * realLength, -m_real.GetZ() * realLength, m_real.GetW() * realLength);
+        m_dual.Set(-m_dual.GetX() * dualFactor, -m_dual.GetY() * dualFactor, -m_dual.GetZ() * dualFactor, m_dual.GetW() * dualFactor);
 
         return *this;
     }
@@ -29,26 +30,26 @@ namespace MCore
     // calculate the inversed version
     DualQuaternion DualQuaternion::Inversed() const
     {
-        const float realLength = mReal.GetLength();
-        const float dotProduct = mReal.Dot(mDual);
+        const float realLength = m_real.GetLength();
+        const float dotProduct = m_real.Dot(m_dual);
         const float dualFactor = realLength - 2.0f * dotProduct;
-        return DualQuaternion(AZ::Quaternion(-mReal.GetX() * realLength, -mReal.GetY() * realLength, -mReal.GetZ() * realLength, mReal.GetW() * realLength),
-            AZ::Quaternion(-mDual.GetX() * dualFactor, -mDual.GetY() * dualFactor, -mDual.GetZ() * dualFactor, mDual.GetW() * dualFactor));
+        return DualQuaternion(AZ::Quaternion(-m_real.GetX() * realLength, -m_real.GetY() * realLength, -m_real.GetZ() * realLength, m_real.GetW() * realLength),
+            AZ::Quaternion(-m_dual.GetX() * dualFactor, -m_dual.GetY() * dualFactor, -m_dual.GetZ() * dualFactor, m_dual.GetW() * dualFactor));
     }
 
 
     // convert the dual quaternion to a matrix
     AZ::Transform DualQuaternion::ToTransform() const
     {
-        const float sqLen   = mReal.Dot(mReal);
-        const float x       = mReal.GetX();
-        const float y       = mReal.GetY();
-        const float z       = mReal.GetZ();
-        const float w       = mReal.GetW();
-        const float t0      = mDual.GetW();
-        const float t1      = mDual.GetX();
-        const float t2      = mDual.GetY();
-        const float t3      = mDual.GetZ();
+        const float sqLen   = m_real.Dot(m_real);
+        const float x       = m_real.GetX();
+        const float y       = m_real.GetY();
+        const float z       = m_real.GetZ();
+        const float w       = m_real.GetW();
+        const float t0      = m_dual.GetW();
+        const float t1      = m_dual.GetX();
+        const float t2      = m_dual.GetY();
+        const float t3      = m_dual.GetZ();
 
         AZ::Matrix3x3 matrix3x3;
         matrix3x3.SetElement(0, 0, w * w + x * x - y * y - z * z);
@@ -84,12 +85,12 @@ namespace MCore
     // normalizes the dual quaternion
     DualQuaternion& DualQuaternion::Normalize()
     {
-        const float length = mReal.GetLength();
+        const float length = m_real.GetLength();
         const float invLength = 1.0f / length;
 
-        mReal.Set(mReal.GetX() * invLength, mReal.GetY() * invLength, mReal.GetZ() * invLength, mReal.GetW() * invLength);
-        mDual.Set(mDual.GetX() * invLength, mDual.GetY() * invLength, mDual.GetZ() * invLength, mDual.GetW() * invLength);
-        mDual += mReal * (mReal.Dot(mDual) * -1.0f);
+        m_real.Set(m_real.GetX() * invLength, m_real.GetY() * invLength, m_real.GetZ() * invLength, m_real.GetW() * invLength);
+        m_dual.Set(m_dual.GetX() * invLength, m_dual.GetY() * invLength, m_dual.GetZ() * invLength, m_dual.GetW() * invLength);
+        m_dual += m_real * (m_real.Dot(m_dual) * -1.0f);
         return *this;
     }
 
@@ -97,11 +98,11 @@ namespace MCore
     // convert back into rotation and translation
     void DualQuaternion::ToRotationTranslation(AZ::Quaternion* outRot, AZ::Vector3* outPos) const
     {
-        const float invLength = 1.0f / mReal.GetLength();
-        *outRot = mReal * invLength;
-        outPos->Set(2.0f * (-mDual.GetW() * mReal.GetX() + mDual.GetX() * mReal.GetW() - mDual.GetY() * mReal.GetZ() + mDual.GetZ() * mReal.GetY()) * invLength,
-            2.0f * (-mDual.GetW() * mReal.GetY() + mDual.GetX() * mReal.GetZ() + mDual.GetY() * mReal.GetW() - mDual.GetZ() * mReal.GetX()) * invLength,
-            2.0f * (-mDual.GetW() * mReal.GetZ() - mDual.GetX() * mReal.GetY() + mDual.GetY() * mReal.GetX() + mDual.GetZ() * mReal.GetW()) * invLength);
+        const float invLength = 1.0f / m_real.GetLength();
+        *outRot = m_real * invLength;
+        outPos->Set(2.0f * (-m_dual.GetW() * m_real.GetX() + m_dual.GetX() * m_real.GetW() - m_dual.GetY() * m_real.GetZ() + m_dual.GetZ() * m_real.GetY()) * invLength,
+            2.0f * (-m_dual.GetW() * m_real.GetY() + m_dual.GetX() * m_real.GetZ() + m_dual.GetY() * m_real.GetW() - m_dual.GetZ() * m_real.GetX()) * invLength,
+            2.0f * (-m_dual.GetW() * m_real.GetZ() - m_dual.GetX() * m_real.GetY() + m_dual.GetY() * m_real.GetX() + m_dual.GetZ() * m_real.GetW()) * invLength);
     }
 
 
@@ -109,10 +110,10 @@ namespace MCore
     // only works with normalized dual quaternions
     void DualQuaternion::NormalizedToRotationTranslation(AZ::Quaternion* outRot, AZ::Vector3* outPos) const
     {
-        *outRot = mReal;
-        outPos->Set(2.0f * (-mDual.GetW() * mReal.GetX() + mDual.GetX() * mReal.GetW() - mDual.GetY() * mReal.GetZ() + mDual.GetZ() * mReal.GetY()),
-            2.0f * (-mDual.GetW() * mReal.GetY() + mDual.GetX() * mReal.GetZ() + mDual.GetY() * mReal.GetW() - mDual.GetZ() * mReal.GetX()),
-            2.0f * (-mDual.GetW() * mReal.GetZ() - mDual.GetX() * mReal.GetY() + mDual.GetY() * mReal.GetX() + mDual.GetZ() * mReal.GetW()));
+        *outRot = m_real;
+        outPos->Set(2.0f * (-m_dual.GetW() * m_real.GetX() + m_dual.GetX() * m_real.GetW() - m_dual.GetY() * m_real.GetZ() + m_dual.GetZ() * m_real.GetY()),
+            2.0f * (-m_dual.GetW() * m_real.GetY() + m_dual.GetX() * m_real.GetZ() + m_dual.GetY() * m_real.GetW() - m_dual.GetZ() * m_real.GetX()),
+            2.0f * (-m_dual.GetW() * m_real.GetZ() - m_dual.GetX() * m_real.GetY() + m_dual.GetY() * m_real.GetX() + m_dual.GetZ() * m_real.GetW()));
     }
 
 

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -27,28 +28,28 @@ namespace EMotionFX
     BlendTreeAccumTransformNode::UniqueData::UniqueData(AnimGraphNode* node, AnimGraphInstance* animGraphInstance)
         : AnimGraphNodeData(node, animGraphInstance)
     {
-        mAdditiveTransform.Identity();
-        EMFX_SCALECODE(mAdditiveTransform.mScale.CreateZero();)
+        m_additiveTransform.Identity();
+        EMFX_SCALECODE(m_additiveTransform.m_scale.CreateZero();)
         SetHasError(true);
     }
 
     void BlendTreeAccumTransformNode::UniqueData::Update()
     {
-        BlendTreeAccumTransformNode* accumTransformNode = azdynamic_cast<BlendTreeAccumTransformNode*>(mObject);
+        BlendTreeAccumTransformNode* accumTransformNode = azdynamic_cast<BlendTreeAccumTransformNode*>(m_object);
         AZ_Assert(accumTransformNode, "Unique data linked to incorrect node type.");
 
-        const ActorInstance* actorInstance = mAnimGraphInstance->GetActorInstance();
+        const ActorInstance* actorInstance = m_animGraphInstance->GetActorInstance();
         const Actor* actor = actorInstance->GetActor();
         const Skeleton* skeleton = actor->GetSkeleton();
         const Node* node = skeleton->FindNodeByName(accumTransformNode->GetTargetNodeName().c_str());
         if (node)
         {
-            mNodeIndex = node->GetNodeIndex();
+            m_nodeIndex = node->GetNodeIndex();
             SetHasError(false);
         }
         else
         {
-            mNodeIndex = InvalidIndex32;
+            m_nodeIndex = InvalidIndex;
             SetHasError(true);
         }
     }
@@ -136,7 +137,7 @@ namespace EMotionFX
 
 
         // make sure we have at least an input pose, otherwise output the bind pose
-        if (GetInputPort(INPUTPORT_POSE).mConnection == nullptr)
+        if (GetInputPort(INPUTPORT_POSE).m_connection == nullptr)
         {
             RequestPoses(animGraphInstance);
             outputPose = GetOutputPose(animGraphInstance, OUTPUTPORT_RESULT)->GetValue();
@@ -153,12 +154,12 @@ namespace EMotionFX
 
         // get the local transform from our node
         Transform inputTransform;
-        outputPose->GetPose().GetLocalSpaceTransform(uniqueData->mNodeIndex, &inputTransform);
+        outputPose->GetPose().GetLocalSpaceTransform(uniqueData->m_nodeIndex, &inputTransform);
 
         Transform outputTransform = inputTransform;
 
         // process the rotation
-        if (GetInputPort(INPUTPORT_ROTATE_AMOUNT).mConnection)
+        if (GetInputPort(INPUTPORT_ROTATE_AMOUNT).m_connection)
         {
             OutputIncomingNode(animGraphInstance, GetInputNode(INPUTPORT_ROTATE_AMOUNT));
 
@@ -187,15 +188,15 @@ namespace EMotionFX
             }
 
             const AZ::Quaternion targetRot = MCore::CreateFromAxisAndAngle(axis, MCore::Math::DegreesToRadians(360.0f * (inputAmount - 0.5f) * invertFactor));
-            AZ::Quaternion deltaRot = MCore::LinearInterpolate<AZ::Quaternion>(AZ::Quaternion::CreateIdentity(), targetRot, uniqueData->mDeltaTime * factor);
+            AZ::Quaternion deltaRot = MCore::LinearInterpolate<AZ::Quaternion>(AZ::Quaternion::CreateIdentity(), targetRot, uniqueData->m_deltaTime * factor);
             deltaRot.Normalize();
-            uniqueData->mAdditiveTransform.mRotation = uniqueData->mAdditiveTransform.mRotation * deltaRot;
-            outputTransform.mRotation = (inputTransform.mRotation * uniqueData->mAdditiveTransform.mRotation);
-            outputTransform.mRotation.Normalize();
+            uniqueData->m_additiveTransform.m_rotation = uniqueData->m_additiveTransform.m_rotation * deltaRot;
+            outputTransform.m_rotation = (inputTransform.m_rotation * uniqueData->m_additiveTransform.m_rotation);
+            outputTransform.m_rotation.Normalize();
         }
 
         // process the translation
-        if (GetInputPort(INPUTPORT_TRANSLATE_AMOUNT).mConnection)
+        if (GetInputPort(INPUTPORT_TRANSLATE_AMOUNT).m_connection)
         {
             OutputIncomingNode(animGraphInstance, GetInputNode(INPUTPORT_TRANSLATE_AMOUNT));
 
@@ -224,15 +225,15 @@ namespace EMotionFX
             }
 
             axis *= (inputAmount - 0.5f) * invertFactor;
-            uniqueData->mAdditiveTransform.mPosition += MCore::LinearInterpolate<AZ::Vector3>(AZ::Vector3::CreateZero(), axis, uniqueData->mDeltaTime * factor);
-            outputTransform.mPosition = inputTransform.mPosition + uniqueData->mAdditiveTransform.mPosition;
+            uniqueData->m_additiveTransform.m_position += MCore::LinearInterpolate<AZ::Vector3>(AZ::Vector3::CreateZero(), axis, uniqueData->m_deltaTime * factor);
+            outputTransform.m_position = inputTransform.m_position + uniqueData->m_additiveTransform.m_position;
         }
 
 
         // process the scale
         EMFX_SCALECODE
         (
-            if (GetInputPort(INPUTPORT_SCALE_AMOUNT).mConnection)
+            if (GetInputPort(INPUTPORT_SCALE_AMOUNT).m_connection)
             {
                 OutputIncomingNode(animGraphInstance, GetInputNode(INPUTPORT_SCALE_AMOUNT));
 
@@ -264,18 +265,18 @@ namespace EMotionFX
                 }
 
                 axis *= (inputAmount - 0.5f) * invertFactor;
-                uniqueData->mAdditiveTransform.mScale += MCore::LinearInterpolate<AZ::Vector3>(AZ::Vector3::CreateZero(), axis, uniqueData->mDeltaTime * factor);
-                outputTransform.mScale = inputTransform.mScale + uniqueData->mAdditiveTransform.mScale;
+                uniqueData->m_additiveTransform.m_scale += MCore::LinearInterpolate<AZ::Vector3>(AZ::Vector3::CreateZero(), axis, uniqueData->m_deltaTime * factor);
+                outputTransform.m_scale = inputTransform.m_scale + uniqueData->m_additiveTransform.m_scale;
             }
         )
 
         // update the transformation of the node
-        outputPose->GetPose().SetLocalSpaceTransform(uniqueData->mNodeIndex, outputTransform);
+        outputPose->GetPose().SetLocalSpaceTransform(uniqueData->m_nodeIndex, outputTransform);
 
         // visualize it
         if (GetEMotionFX().GetIsInEditorMode() && GetCanVisualize(animGraphInstance))
         {
-            animGraphInstance->GetActorInstance()->DrawSkeleton(outputPose->GetPose(), mVisualizeColor);
+            animGraphInstance->GetActorInstance()->DrawSkeleton(outputPose->GetPose(), m_visualizeColor);
         }
     }
 
@@ -287,21 +288,21 @@ namespace EMotionFX
 
         // store the passed time
         UniqueData* uniqueData = static_cast<UniqueData*>(FindOrCreateUniqueNodeData(animGraphInstance));
-        uniqueData->mDeltaTime = timePassedInSeconds;
+        uniqueData->m_deltaTime = timePassedInSeconds;
     }
 
 
     void BlendTreeAccumTransformNode::OnAxisChanged()
     {
-        if (!mAnimGraph)
+        if (!m_animGraph)
         {
             return;
         }
 
-        const size_t numInstances = mAnimGraph->GetNumAnimGraphInstances();
+        const size_t numInstances = m_animGraph->GetNumAnimGraphInstances();
         for (size_t i = 0; i < numInstances; ++i)
         {
-            AnimGraphInstance* animGraphInstance = mAnimGraph->GetAnimGraphInstance(i);
+            AnimGraphInstance* animGraphInstance = m_animGraph->GetAnimGraphInstance(i);
 
             UniqueData* uniqueData = static_cast<UniqueData*>(animGraphInstance->FindOrCreateUniqueNodeData(this));
             if (!uniqueData)
@@ -309,8 +310,8 @@ namespace EMotionFX
                 continue;
             }
 
-            uniqueData->mAdditiveTransform.Identity();
-            EMFX_SCALECODE(uniqueData->mAdditiveTransform.mScale.CreateZero();)
+            uniqueData->m_additiveTransform.Identity();
+            EMFX_SCALECODE(uniqueData->m_additiveTransform.m_scale.CreateZero();)
 
             InvalidateUniqueData(animGraphInstance);
         }

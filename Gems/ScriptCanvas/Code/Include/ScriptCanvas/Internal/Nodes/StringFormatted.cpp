@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -11,6 +12,8 @@
 #include <AzCore/Serialization/Utils.h>
 
 #include <ScriptCanvas/Core/Graph.h>
+
+AZ_DECLARE_BUDGET(ScriptCanvas);
 
 namespace ScriptCanvas
 {
@@ -190,7 +193,7 @@ namespace ScriptCanvas
 
             AZStd::string StringFormatted::ProcessFormat()
             {
-                AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::ScriptCanvas, "ScriptCanvas::StringFormatted::ProcessFormat");
+                AZ_PROFILE_SCOPE(ScriptCanvas, "ScriptCanvas::StringFormatted::ProcessFormat");
 
                 AZStd::string text;
 

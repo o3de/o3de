@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -287,6 +288,21 @@ namespace AZ
             AZStd::string completeCommand = console->AutoCompleteCommand("testVec3");
             AZ_TEST_ASSERT(completeCommand == "testVec3");
         }
+
+        // Duplicate names
+        {
+            // Register two cvars with the same name
+            auto id = AZ::TypeId();
+            auto flag = AZ::ConsoleFunctorFlags::Null;
+            auto signature = AZ::ConsoleFunctor<void, false>::FunctorSignature();
+            AZ::ConsoleFunctor<void, false> cvarOne(*console, "testAutoCompleteDuplication", "", flag, id, signature);
+            AZ::ConsoleFunctor<void, false> cvarTwo(*console, "testAutoCompleteDuplication", "", flag, id, signature);
+
+            // Autocomplete given name expecting one match (not two)
+            AZStd::vector<AZStd::string> matches;
+            AZStd::string completeCommand = console->AutoCompleteCommand("testAutoCompleteD", &matches);
+            AZ_TEST_ASSERT(matches.size() == 1 && completeCommand == "testAutoCompleteDuplication");
+        }
     }
 
     TEST_F(ConsoleTests, ConsoleFunctor_FreeFunctorExecutionTest)
@@ -503,6 +519,70 @@ namespace ConsoleSettingsRegistryTests
         EXPECT_DOUBLE_EQ(2, AZ::testDouble);
         EXPECT_STREQ("Stable", static_cast<AZ::CVarFixedString>(AZ::testString).c_str());
         EXPECT_EQ(3, m_stringArgCount);
+        AZ::Interface<AZ::IConsole>::Unregister(&testConsole);
+    }
+
+    template<typename T>
+    using ConsoleDataWrapper = AZ::ConsoleDataWrapper<T, ConsoleThreadSafety<T>>;
+    TEST_P(ConsoleSettingsRegistryFixture, Console_RecordsUnregisteredCommands_And_IsAbleToDeferDispatchCommand_Successfully)
+    {
+        AZ::Console testConsole(*m_registry);
+        AZ::Interface<AZ::IConsole>::Register(&testConsole);
+        // GetDeferredHead is invoked for the side effect of to set the s_deferredHeadInvoked value to true
+        // This allows scoped console variables to be attached immediately
+        [[maybe_unused]] auto deferredHead = AZ::ConsoleFunctorBase::GetDeferredHead();
+
+
+        ConsoleDataWrapper<int32_t> localTestInit{ {}, nullptr, "testInit", "", AZ::ConsoleFunctorFlags::Null };
+        ConsoleDataWrapper<char> localTestChar{ {}, nullptr, "testChar", "", AZ::ConsoleFunctorFlags::Null };
+        ConsoleDataWrapper<bool> localTestBool{ {}, nullptr, "testBool", "", AZ::ConsoleFunctorFlags::Null };
+
+        s_consoleFreeFunctionInvoked = false;
+
+        // Invoke the Commands for Scoped CVar variables above
+        auto configFileParams = GetParam();
+        auto testFilePath = m_testFolder / configFileParams.m_testConfigFileName;
+        EXPECT_TRUE(AZ::IO::SystemFile::Exists(testFilePath.c_str()));
+        testConsole.ExecuteConfigFile(testFilePath.Native());
+
+        EXPECT_EQ(3, localTestInit);
+        EXPECT_TRUE(static_cast<bool>(localTestBool));
+        EXPECT_EQ('Q', localTestChar);
+
+        // The following commands from the config files should have been deferred
+        ConsoleDataWrapper<int8_t> localTestInt8{ {}, nullptr, "testInt8", "", AZ::ConsoleFunctorFlags::Null };
+        ConsoleDataWrapper<int16_t> localTestInt16{ {}, nullptr, "testInt16", "", AZ::ConsoleFunctorFlags::Null };
+        ConsoleDataWrapper<int32_t> localTestInt32{ {}, nullptr, "testInt32", "", AZ::ConsoleFunctorFlags::Null };
+        ConsoleDataWrapper<int64_t> localTestInt64{ {}, nullptr, "testInt64", "", AZ::ConsoleFunctorFlags::Null };
+        ConsoleDataWrapper<uint8_t> localTestUInt8{ {}, nullptr, "testUInt8", "", AZ::ConsoleFunctorFlags::Null };
+        ConsoleDataWrapper<uint16_t> localTestUInt16{ {}, nullptr, "testUInt16", "", AZ::ConsoleFunctorFlags::Null };
+        ConsoleDataWrapper<uint32_t> localTestUInt32{ {}, nullptr, "testUInt32", "", AZ::ConsoleFunctorFlags::Null };
+        ConsoleDataWrapper<uint64_t> localTestUInt64{ {}, nullptr, "testUInt64", "", AZ::ConsoleFunctorFlags::Null };
+        ConsoleDataWrapper<float> localTestFloat{ {}, nullptr, "testFloat", "", AZ::ConsoleFunctorFlags::Null };
+        ConsoleDataWrapper<double> localTestDouble{ {}, nullptr, "testDouble", "", AZ::ConsoleFunctorFlags::Null };
+        ConsoleDataWrapper<AZ::CVarFixedString> localTestString{ {}, nullptr, "testString", "", AZ::ConsoleFunctorFlags::Null };
+
+
+        // The scoped cvars just above should have all been deferred for execution
+        // Each of them should have executed resulting in the expected return value
+        EXPECT_TRUE(testConsole.ExecuteDeferredConsoleCommands());
+
+        EXPECT_EQ(24, localTestInt8);
+        EXPECT_EQ(-32, localTestInt16);
+        EXPECT_EQ(41, localTestInt32);
+        EXPECT_EQ(-51, localTestInt64);
+        EXPECT_EQ(3, localTestUInt8);
+        EXPECT_EQ(5, localTestUInt16);
+        EXPECT_EQ(6, localTestUInt32);
+        EXPECT_EQ(0xFFFF'FFFF'FFFF'FFFF, localTestUInt64);
+        EXPECT_FLOAT_EQ(1.0f, localTestFloat);
+        EXPECT_DOUBLE_EQ(2, localTestDouble);
+        EXPECT_STREQ("Stable", static_cast<AZ::CVarFixedString>(localTestString).c_str());
+
+        // All of the deferred console commands should have executed at this point
+        // Therefore this invocation should return false
+        EXPECT_FALSE(testConsole.ExecuteDeferredConsoleCommands());
+
         AZ::Interface<AZ::IConsole>::Unregister(&testConsole);
     }
 

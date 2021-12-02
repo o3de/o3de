@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -14,6 +15,11 @@ namespace AZ
         unsigned int StackRecorder::Record(StackFrame*, unsigned int, unsigned int, void*) 
         { 
             return false; 
+        }
+
+        unsigned int StackConverter::FromNative(StackFrame*, unsigned int, void*)
+        {
+            return 0;
         }
 
         void SymbolStorage::LoadModuleData(const void*, unsigned int)

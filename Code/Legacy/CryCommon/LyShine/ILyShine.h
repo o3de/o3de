@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -45,7 +46,7 @@ public:
     virtual AZ::EntityId CreateCanvas() = 0;
 
     //! Load a UI Canvas from in-game
-    virtual AZ::EntityId LoadCanvas(const string& assetIdPathname) = 0;
+    virtual AZ::EntityId LoadCanvas(const AZStd::string& assetIdPathname) = 0;
 
     //! Create an empty UI Canvas (for the UI editor)
     //
@@ -53,7 +54,7 @@ public:
     virtual AZ::EntityId CreateCanvasInEditor(UiEntityContext* entityContext) = 0;
 
     //! Load a UI Canvas from the UI editor
-    virtual AZ::EntityId LoadCanvasInEditor(const string& assetIdPathname, const string& sourceAssetPathname, UiEntityContext* entityContext) = 0;
+    virtual AZ::EntityId LoadCanvasInEditor(const AZStd::string& assetIdPathname, const AZStd::string& sourceAssetPathname, UiEntityContext* entityContext) = 0;
 
     //! Reload a UI Canvas from xml. For use in the editor for the undo system only
     virtual AZ::EntityId ReloadCanvasFromXml(const AZStd::string& xmlString, UiEntityContext* entityContext) = 0;
@@ -64,7 +65,7 @@ public:
 
     //! Get a loaded canvas by path name
     //! NOTE: this only searches canvases loaded in the game (not the editor)
-    virtual AZ::EntityId FindLoadedCanvasByPathName(const string& assetIdPathname) = 0;
+    virtual AZ::EntityId FindLoadedCanvasByPathName(const AZStd::string& assetIdPathname) = 0;
 
     //! Release a canvas from use either in-game or in editor, destroy UI Canvas if no longer used in either
     virtual void ReleaseCanvas(AZ::EntityId canvas, bool forEditor = false) = 0;
@@ -73,10 +74,10 @@ public:
     virtual void ReleaseCanvasDeferred(AZ::EntityId canvas) = 0;
 
     //! Load a sprite object.
-    virtual ISprite* LoadSprite(const string& pathname) = 0;
+    virtual ISprite* LoadSprite(const AZStd::string& pathname) = 0;
 
     //! Create a sprite that references the specified render target
-    virtual ISprite* CreateSprite(const string& renderTargetName) = 0;
+    virtual ISprite* CreateSprite(const AZStd::string& renderTargetName) = 0;
 
     //! Check if a sprite's texture asset exists. The .sprite sidecar file is optional and is not checked
     virtual bool DoesSpriteTextureAssetExist(const AZStd::string& pathname) = 0;

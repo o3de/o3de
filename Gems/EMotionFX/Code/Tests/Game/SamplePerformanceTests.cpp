@@ -1,7 +1,8 @@
 
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -301,7 +302,7 @@ namespace EMotionFX
             GetEMotionFX().SetMediaRootFolder(assetFolder.c_str());
             GetEMotionFX().InitAssetFolderPaths();
 
-            const char* actorFilename  = "@assets@\\animationsamples\\advanced_rinlocomotion\\actor\\rinactor.actor";
+            const char* actorFilename  = "@products@\\animationsamples\\advanced_rinlocomotion\\actor\\rinactor.actor";
 
             Importer* importer = GetEMotionFX().GetImporter();
             importer->SetLoggingEnabled(false);
@@ -401,9 +402,9 @@ namespace EMotionFX
 
         // This path points to assets in the advance rin demo.
         // To test different assets, change the path here.
-        const char* actorFilename     = "@assets@\\AnimationSamples\\Advanced_RinLocomotion\\Actor\\rinActor.actor";
-        const char* motionSetFilename = "@assets@\\AnimationSamples\\Advanced_RinLocomotion\\AnimationEditorFiles\\Advanced_RinLocomotion.motionset";
-        const char* animGraphFilename = "@assets@\\AnimationSamples\\Advanced_RinLocomotion\\AnimationEditorFiles\\Advanced_RinLocomotion.animgraph";
+        const char* actorFilename     = "@products@\\AnimationSamples\\Advanced_RinLocomotion\\Actor\\rinActor.actor";
+        const char* motionSetFilename = "@products@\\AnimationSamples\\Advanced_RinLocomotion\\AnimationEditorFiles\\Advanced_RinLocomotion.motionset";
+        const char* animGraphFilename = "@products@\\AnimationSamples\\Advanced_RinLocomotion\\AnimationEditorFiles\\Advanced_RinLocomotion.animgraph";
 
         Importer* importer = GetEMotionFX().GetImporter();
         importer->SetLoggingEnabled(false);
@@ -713,9 +714,9 @@ namespace EMotionFX
 
         // This path points to assets in the advance rin demo.
         // To test different assets, change the path here.
-        const char* actorFilename     = "@assets@\\AnimationSamples\\Advanced_RinLocomotion\\Actor\\rinActor.actor";
-        const char* motionSetFilename = "@assets@\\AnimationSamples\\Advanced_RinLocomotion\\AnimationEditorFiles\\Advanced_RinLocomotion.motionset";
-        const char* animGraphFilename = "@assets@\\AnimationSamples\\Advanced_RinLocomotion\\AnimationEditorFiles\\Advanced_RinLocomotion.animgraph";
+        const char* actorFilename     = "@products@\\AnimationSamples\\Advanced_RinLocomotion\\Actor\\rinActor.actor";
+        const char* motionSetFilename = "@products@\\AnimationSamples\\Advanced_RinLocomotion\\AnimationEditorFiles\\Advanced_RinLocomotion.motionset";
+        const char* animGraphFilename = "@products@\\AnimationSamples\\Advanced_RinLocomotion\\AnimationEditorFiles\\Advanced_RinLocomotion.animgraph";
 
         Importer* importer = GetEMotionFX().GetImporter();
         importer->SetLoggingEnabled(false);
@@ -771,13 +772,13 @@ namespace EMotionFX
     TEST_F(PerformanceTestFixture, DISABLED_MotionSamplingPerformanceNonUniform)
     {
         // Make sure that the motion is set to use NonUniform sampling! Change this in the scene settings! Otherwise you get wrong results.
-        TestMotionSamplingPerformance("@assets@\\animationsamples\\advanced_rinlocomotion\\motions\\rin_idle.motion");
+        TestMotionSamplingPerformance("@products@\\animationsamples\\advanced_rinlocomotion\\motions\\rin_idle.motion");
     }
 
     TEST_F(PerformanceTestFixture, DISABLED_MotionSamplingPerformanceUniform)
     {
         // Make sure that the motion is set to use Uniform sampling! Change this in the scene settings! Otherwise you get wrong results.
-        TestMotionSamplingPerformance("@assets@\\animationsamples\\advanced_rinlocomotion\\motions\\rin_walk_kick_01.motion");
+        TestMotionSamplingPerformance("@products@\\animationsamples\\advanced_rinlocomotion\\motions\\rin_walk_kick_01.motion");
     }
 
 } // namespace EMotionFX

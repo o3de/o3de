@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -131,43 +132,13 @@ namespace AzToolsFramework
     {
         Q_OBJECT
     public:
-        static CScriptHelpDialog* GetInstance()
-        {
-            static CScriptHelpDialog* pInstance = nullptr;
-            if (!pInstance)
-            {
-                QMainWindow* mainWindow = GetMainWindowOfCurrentApplication();
-                if (!mainWindow)
-                {
-                    AZ_Assert(false, "Failed to find MainWindow.");
-                    return nullptr;
-                }
-
-                QWidget* parentWidget = mainWindow->window() ? mainWindow->window() : mainWindow; // MainWindow might have a WindowDecorationWrapper parent. Makes a difference on macOS.
-                pInstance = new CScriptHelpDialog(parentWidget);
-            }
-            return pInstance;
-        }
-
+        static CScriptHelpDialog* GetInstance();
     private Q_SLOTS:
         void OnDoubleClick(const QModelIndex&);
 
     private:
-        static QMainWindow* GetMainWindowOfCurrentApplication()
-        {
-            QMainWindow* mainWindow = nullptr;
-            for (QWidget* w : qApp->topLevelWidgets())
-            {
-                mainWindow = qobject_cast<QMainWindow*>(w);
-                if (mainWindow)
-                {
-                    return mainWindow;
-                }
-            }
-            return nullptr;
-        }
-
         explicit CScriptHelpDialog(QWidget* parent = nullptr);
+        static QMainWindow* GetMainWindowOfCurrentApplication();
         QScopedPointer<Ui::ScriptDialog> ui;
     };
 } // namespace AzToolsFramework

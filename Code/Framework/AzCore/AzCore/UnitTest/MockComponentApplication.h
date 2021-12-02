@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -40,10 +41,8 @@ namespace UnitTest
         MOCK_METHOD0(GetSerializeContext, AZ::SerializeContext* ());
         MOCK_METHOD0(GetJsonRegistrationContext, AZ::JsonRegistrationContext* ());
         MOCK_METHOD0(GetBehaviorContext, AZ::BehaviorContext* ());
-        MOCK_CONST_METHOD0(GetAppRoot, const char* ());
         MOCK_CONST_METHOD0(GetEngineRoot, const char* ());
         MOCK_CONST_METHOD0(GetExecutableFolder, const char* ());
-        MOCK_METHOD0(GetDrillerManager, AZ::Debug::DrillerManager* ());
         MOCK_CONST_METHOD1(QueryApplicationType, void(AZ::ApplicationTypeQuery&));
     };
 } // namespace UnitTest

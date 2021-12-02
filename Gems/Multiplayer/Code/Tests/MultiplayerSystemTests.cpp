@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -30,14 +31,16 @@ namespace UnitTest
 
             m_initHandler = Multiplayer::SessionInitEvent::Handler([this](AzNetworking::INetworkInterface* value) { TestInitEvent(value); });
             m_mpComponent->AddSessionInitHandler(m_initHandler);
-            m_shutdownHandler = Multiplayer::SessionInitEvent::Handler([this](AzNetworking::INetworkInterface* value) { TestShutdownEvent(value); });
+            m_shutdownHandler = Multiplayer::SessionShutdownEvent::Handler([this](AzNetworking::INetworkInterface* value) { TestShutdownEvent(value); });
             m_mpComponent->AddSessionShutdownHandler(m_shutdownHandler);
             m_connAcquiredHandler = Multiplayer::ConnectionAcquiredEvent::Handler([this](Multiplayer::MultiplayerAgentDatum value) { TestConnectionAcquiredEvent(value); });
             m_mpComponent->AddConnectionAcquiredHandler(m_connAcquiredHandler);
+            m_mpComponent->Activate();
         }
 
         void TearDown() override
         {
+            m_mpComponent->Deactivate();
             delete m_mpComponent;
             delete m_netComponent;
             AZ::NameDictionary::Destroy();
@@ -81,6 +84,7 @@ namespace UnitTest
 
     TEST_F(MultiplayerSystemTests, TestShutdownEvent)
     {
+        m_mpComponent->InitializeMultiplayer(Multiplayer::MultiplayerAgentType::DedicatedServer);
         IMultiplayerConnectionMock connMock1 = IMultiplayerConnectionMock(AzNetworking::ConnectionId(), AzNetworking::IpAddress(), AzNetworking::ConnectionRole::Acceptor);
         IMultiplayerConnectionMock connMock2 = IMultiplayerConnectionMock(AzNetworking::ConnectionId(), AzNetworking::IpAddress(), AzNetworking::ConnectionRole::Connector);
         m_mpComponent->OnDisconnect(&connMock1, AzNetworking::DisconnectReason::None, AzNetworking::TerminationEndpoint::Local);
@@ -91,8 +95,9 @@ namespace UnitTest
 
     TEST_F(MultiplayerSystemTests, TestConnectionDatum)
     {
-        IMultiplayerConnectionMock connMock1 = IMultiplayerConnectionMock(aznumeric_cast<AzNetworking::ConnectionId>(10), AzNetworking::IpAddress(), AzNetworking::ConnectionRole::Acceptor);
-        IMultiplayerConnectionMock connMock2 = IMultiplayerConnectionMock(aznumeric_cast<AzNetworking::ConnectionId>(15), AzNetworking::IpAddress(), AzNetworking::ConnectionRole::Acceptor);
+        using namespace testing;
+        NiceMock<IMultiplayerConnectionMock> connMock1(aznumeric_cast<AzNetworking::ConnectionId>(10), AzNetworking::IpAddress(), AzNetworking::ConnectionRole::Acceptor);
+        NiceMock<IMultiplayerConnectionMock> connMock2(aznumeric_cast<AzNetworking::ConnectionId>(15), AzNetworking::IpAddress(), AzNetworking::ConnectionRole::Acceptor);
         m_mpComponent->OnConnect(&connMock1);
         m_mpComponent->OnConnect(&connMock2);
 

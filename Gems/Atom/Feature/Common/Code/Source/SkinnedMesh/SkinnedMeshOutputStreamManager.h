@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -38,13 +39,14 @@ namespace AZ
             AZStd::intrusive_ptr<SkinnedMeshOutputStreamAllocation> Allocate(size_t byteCount) override;
             void DeAllocate(RHI::VirtualAddress allocation) override;
             void DeAllocateNoSignal(RHI::VirtualAddress allocation) override;
-            Data::Asset<RPI::BufferAsset> GetBufferAsset() const override;
+            Data::Asset<RPI::BufferAsset> GetBufferAsset() override;
             Data::Instance<RPI::Buffer> GetBuffer() override;
 
         private:
             // SystemTickBus
             void OnSystemTick() override;
 
+            void EnsureInit();
             void GarbageCollect();
             void CalculateAlignment();
             void CreateBufferAsset();
@@ -57,6 +59,7 @@ namespace AZ
             size_t m_sizeInBytes = 0;
             bool m_memoryWasFreed = false;
             bool m_broadcastMemoryAvailableEvent = false;
+            bool m_needsInit = true;
         };
     } // namespace Render
 } // namespace AZ

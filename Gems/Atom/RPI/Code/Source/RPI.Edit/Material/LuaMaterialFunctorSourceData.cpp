@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -136,7 +137,10 @@ namespace AZ
             }
             else if (!m_luaSourceFile.empty())
             {
-                auto loadOutcome = RPI::AssetUtils::LoadAsset<ScriptAsset>(materialTypeSourceFilePath, m_luaSourceFile);
+                // The sub ID for script assets must be explicit.
+                // LUA source files output a compiled as well as an uncompiled asset, sub Ids of 1 and 2.
+                auto loadOutcome =
+                    RPI::AssetUtils::LoadAsset<ScriptAsset>(materialTypeSourceFilePath, m_luaSourceFile, ScriptAsset::CompiledAssetSubId);
                 if (!loadOutcome)
                 {
                     AZ_Error("LuaMaterialFunctorSourceData", false, "Could not load script file '%s'", m_luaSourceFile.c_str());

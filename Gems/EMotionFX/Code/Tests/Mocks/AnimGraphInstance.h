@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -10,6 +11,8 @@ namespace EMotionFX
     class AnimGraphInstance
     {
     public:
+        virtual ~AnimGraphInstance() = default;
+
         //void Output(Pose* outputPose);
         //void Start();
         //void Stop();
@@ -26,27 +29,27 @@ namespace EMotionFX
         //bool GetVector3ParameterValue(const char* paramName, AZ::Vector3* outValue);
         //bool GetVector4ParameterValue(const char* paramName, AZ::Vector4* outValue);
         //bool GetRotationParameterValue(const char* paramName, MCore::Quaternion* outRotation);
-        //bool GetParameterValueAsFloat(uint32 paramIndex, float* outValue);
-        //bool GetParameterValueAsBool(uint32 paramIndex, bool* outValue);
-        //bool GetParameterValueAsInt(uint32 paramIndex, int32* outValue);
-        //bool GetVector2ParameterValue(uint32 paramIndex, AZ::Vector2* outValue);
-        //bool GetVector3ParameterValue(uint32 paramIndex, AZ::Vector3* outValue);
-        //bool GetVector4ParameterValue(uint32 paramIndex, AZ::Vector4* outValue);
-        //bool GetRotationParameterValue(uint32 paramIndex, MCore::Quaternion* outRotation);
+        //bool GetParameterValueAsFloat(size_t paramIndex, float* outValue);
+        //bool GetParameterValueAsBool(size_t paramIndex, bool* outValue);
+        //bool GetParameterValueAsInt(size_t paramIndex, int32* outValue);
+        //bool GetVector2ParameterValue(size_t paramIndex, AZ::Vector2* outValue);
+        //bool GetVector3ParameterValue(size_t paramIndex, AZ::Vector3* outValue);
+        //bool GetVector4ParameterValue(size_t paramIndex, AZ::Vector4* outValue);
+        //bool GetRotationParameterValue(size_t paramIndex, MCore::Quaternion* outRotation);
         //void SetMotionSet(MotionSet* motionSet);
         //void CreateParameterValues();
         MOCK_METHOD0(AddMissingParameterValues, void());
-        MOCK_METHOD1(ReInitParameterValue, void(uint32 index));
+        MOCK_METHOD1(ReInitParameterValue, void(size_t index));
         MOCK_METHOD0(ReInitParameterValues, void());
-        MOCK_METHOD2(RemoveParameterValueImpl, void(uint32 index, bool delFromMem));
-        virtual void RemoveParameterValue(uint32 index, bool delFromMem = true) { RemoveParameterValueImpl(index, delFromMem); }
+        MOCK_METHOD2(RemoveParameterValueImpl, void(size_t index, bool delFromMem));
+        virtual void RemoveParameterValue(size_t index, bool delFromMem = true) { RemoveParameterValueImpl(index, delFromMem); }
         //void AddParameterValue();
-        MOCK_METHOD2(MoveParameterValue, void(uint32 oldIndex, uint32 newIndex));
-        MOCK_METHOD1(InsertParameterValue, void(uint32 index));
+        MOCK_METHOD2(MoveParameterValue, void(size_t oldIndex, size_t newIndex));
+        MOCK_METHOD1(InsertParameterValue, void(size_t index));
         //void RemoveAllParameters(bool delFromMem);
         //template <typename T>
-        //T* GetParameterValueChecked(uint32 index) const;
-        //MCore::Attribute* GetParameterValue(uint32 index) const;
+        //T* GetParameterValueChecked(size_t index) const;
+        //MCore::Attribute* GetParameterValue(size_t index) const;
         //MCore::Attribute* FindParameter(const AZStd::string& name) const;
         //AZ::Outcome<size_t> FindParameterIndex(const AZStd::string& name) const;
         //bool SwitchToState(const char* stateName);
@@ -98,7 +101,7 @@ namespace EMotionFX
         //void OnStateEnd(AnimGraphNode* state);
         //void OnStartTransition(AnimGraphStateTransition* transition);
         //void OnEndTransition(AnimGraphStateTransition* transition);
-        //void CollectActiveAnimGraphNodes(MCore::Array<AnimGraphNode*>* outNodes, const AZ::TypeId& nodeType = AZ::TypeId::CreateNull());
+        //void CollectActiveAnimGraphNodes(AZStd::vector<AnimGraphNode*>* outNodes, const AZ::TypeId& nodeType = AZ::TypeId::CreateNull());
         //void CollectActiveNetTimeSyncNodes(AZStd::vector<AnimGraphNode*>* outNodes);
         //uint32 GetObjectFlags(uint32 objectIndex) const;
         //void SetObjectFlags(uint32 objectIndex, uint32 flags);

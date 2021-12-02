@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -31,15 +32,15 @@ namespace EMStudio
         m_nodeCount = actor->GetNumNodes();
 
         // node groups
-        const uint32 numNodeGroups = actor->GetNumNodeGroups();
+        const size_t numNodeGroups = actor->GetNumNodeGroups();
         m_nodeGroups.reserve(numNodeGroups);
-        for (uint32 i = 0; i < numNodeGroups; ++i)
+        for (size_t i = 0; i < numNodeGroups; ++i)
         {
             m_nodeGroups.emplace_back(actor, actor->GetNodeGroup(i));
         }
 
         // global mesh information
-        const uint32 lodLevel = actorInstance->GetLODLevel();
+        const size_t lodLevel = actorInstance->GetLODLevel();
         uint32 numPolygons;
         actor->CalcMeshTotals(lodLevel, &numPolygons, &m_totalVertices, &m_totalIndices);
     }

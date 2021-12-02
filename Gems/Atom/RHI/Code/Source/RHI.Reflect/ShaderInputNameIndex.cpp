@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -224,6 +225,12 @@ namespace AZ
         {
             AZ_Assert(IsInitialized(), "ShaderInputNameIndex [%s] has not been initialized. Please initialize with the Shader Resource Group.", m_name.GetCStr());
 
+        }
+
+        const Name& ShaderInputNameIndex::GetNameForDebug() const
+        {
+            AZ_Assert(HasName(), "GetNameForDebug() called on ShaderInputNameIndex that doesn't have a name set. Please initialize it with a name.", m_name.GetCStr());
+            return m_name;
         }
 
     }

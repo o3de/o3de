@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -77,6 +78,8 @@ namespace AZ
                 virtual void GetSupportedFileExtensions(AZStd::unordered_set<AZStd::string>& extensions);
                 //! Gets the file extension for the manifest.
                 virtual void GetManifestExtension(AZStd::string& result);
+                //! Gets the file extension for the generated manifest.
+                virtual void GetGeneratedManifestExtension(AZStd::string& result);
 
                 //! Before asset loading starts this is called to allow for any required initialization.
                 virtual ProcessingResult PrepareForAssetLoading(Containers::Scene& scene, RequestingApplication requester);
@@ -96,13 +99,31 @@ namespace AZ
                 // Get scene processing project setting: UseCustomNormal 
                 virtual void AreCustomNormalsUsed(bool & value);
 
+                /*!
+                    Optional method for reporting source file dependencies that may exist in the scene manifest
+                    Paths is a vector of JSON Path strings, relative to the IRule object
+                    For example, the following path: /scriptFilename
+                    Would match with this manifest:
+                
+                    {
+                        "values": [
+                            {
+                                "$type": "Test",
+                                "scriptFilename": "file.py"
+                            }
+                        ]
+                    }
+                 */
+                virtual void GetManifestDependencyPaths(AZStd::vector<AZStd::string>& paths);
+
                 //! Utility function to load an asset and manifest from file by using the EBus functions above.
                 //! @param assetFilePath The absolute path to the source file (not the manifest).
                 //! @param sourceGuid The guid assigned to the source file (not the manifest).
                 //! @param requester The application making the request to load the file. This can be used to optimize the type and amount of data
                 //! to load.
+                //! @param loadingComponentUuid The UUID assigned to the loading component.
                 static AZStd::shared_ptr<Containers::Scene> LoadSceneFromVerifiedPath(const AZStd::string& assetFilePath,
-                    const Uuid&sourceGuid, RequestingApplication requester);
+                    const Uuid& sourceGuid, RequestingApplication requester, const Uuid& loadingComponentUuid);
 
                 //! Utility function to determine if a given file path points to a scene manifest file (.assetinfo).
                 //! @param filePath A relative or absolute path to the file to check.

@@ -1,13 +1,12 @@
 #
-# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
-# 
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
 
 set(FILES
-    Source/StdAfx.cpp
-    Source/StdAfx.h
     Include/Blast/BlastActor.h
     Include/Blast/BlastActorData.h
     Include/Blast/BlastFamilyComponentBus.h
@@ -27,8 +26,8 @@ set(FILES
     Source/Asset/BlastAsset.cpp
     Source/Asset/BlastAssetHandler.h
     Source/Asset/BlastAssetHandler.cpp
-    Source/Asset/BlastSliceAsset.h
-    Source/Asset/BlastSliceAsset.cpp
+    Source/Asset/BlastChunksAsset.h
+    Source/Asset/BlastChunksAsset.cpp
     Source/Components/BlastFamilyComponent.h
     Source/Components/BlastFamilyComponent.cpp
     Source/Components/BlastFamilyComponentNotificationBusHandler.h

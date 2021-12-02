@@ -1,6 +1,7 @@
 #
-# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
-# 
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
@@ -46,8 +47,7 @@ ly_add_target(
 )
 
 # the script canvas debugger is an optional gem module
-# To Enable it: ly_enable_gems( ... TARGETS xxxyyzzz GEMS ScriptCanvasDebugger ...)
-# in any particular target.
+# To Enable it, associate it with a project
 ly_create_alias(NAME ScriptCanvasDebugger.Builders NAMESPACE Gem TARGETS Gem::ScriptCanvasDebugger)
 ly_create_alias(NAME ScriptCanvasDebugger.Tools    NAMESPACE Gem TARGETS Gem::ScriptCanvasDebugger)
 ly_create_alias(NAME ScriptCanvasDebugger.Clients  NAMESPACE Gem TARGETS Gem::ScriptCanvasDebugger)
@@ -57,6 +57,7 @@ ly_add_target(
     NAME ScriptCanvas.Static STATIC
     NAMESPACE Gem
     FILES_CMAKE
+        scriptcanvasgem_headers.cmake
         scriptcanvasgem_common_files.cmake
         scriptcanvasgem_runtime_asset_files.cmake
     INCLUDE_DIRECTORIES
@@ -87,6 +88,22 @@ ly_add_target(
         *.ScriptCanvasNodeable.xml,ScriptCanvasNodeable_Source.jinja,$path/$fileprefix.generated.cpp
     RUNTIME_DEPENDENCIES
         Gem::ScriptCanvasDebugger
+)
+
+ly_add_target(
+    NAME ScriptCanvas.API HEADERONLY
+    NAMESPACE Gem
+    FILES_CMAKE
+        scriptcanvasgem_headers.cmake
+    COMPILE_DEFINITIONS
+        INTERFACE
+            SCRIPTCANVAS_ERRORS_ENABLED
+            ${SCRIPT_CANVAS_COMMON_DEFINES}
+    INCLUDE_DIRECTORIES
+        INTERFACE
+            .
+            Include
+            ${SCRIPT_CANVAS_AUTOGEN_BUILD_DIR}
 )
 
 ly_add_target(

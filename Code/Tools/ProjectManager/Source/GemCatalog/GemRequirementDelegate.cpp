@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -9,6 +10,8 @@
 #include <GemCatalog/GemModel.h>
 
 #include <QPainter>
+#include <QMouseEvent>
+#include <QDesktopServices>
 
 namespace O3DE::ProjectManager
 {
@@ -34,10 +37,9 @@ namespace O3DE::ProjectManager
         CalcRects(options, fullRect, itemRect, contentRect);
 
         QFont standardFont(options.font);
-        standardFont.setPixelSize(s_fontSize);
+        standardFont.setPixelSize(static_cast<int>(s_fontSize));
         QFontMetrics standardFontMetrics(standardFont);
 
-        painter->save();
         painter->setClipping(true);
         painter->setClipRect(fullRect);
         painter->setFont(options.font);
@@ -50,30 +52,31 @@ namespace O3DE::ProjectManager
         painter->fillRect(itemRect, itemBackgroundColor);
 
         // Gem name
-        QString gemName = GemModel::GetName(modelIndex);
+        QString gemName = GemModel::GetDisplayName(modelIndex);
         QFont gemNameFont(options.font);
         const int firstColumnMaxTextWidth = s_summaryStartX - 30;
         gemName = QFontMetrics(gemNameFont).elidedText(gemName, Qt::TextElideMode::ElideRight, firstColumnMaxTextWidth);
-        gemNameFont.setPixelSize(s_gemNameFontSize);
+        gemNameFont.setPixelSize(static_cast<int>(s_gemNameFontSize));
         gemNameFont.setBold(true);
         QRect gemNameRect = GetTextRect(gemNameFont, gemName, s_gemNameFontSize);
-        gemNameRect.moveTo(contentRect.left(), contentRect.center().y() - s_gemNameFontSize);
+        gemNameRect.moveTo(contentRect.left(), contentRect.center().y() - static_cast<int>(s_gemNameFontSize));
 
         painter->setFont(gemNameFont);
         painter->setPen(m_textColor);
         painter->drawText(gemNameRect, Qt::TextSingleLine, gemName);
 
         // Gem requirement
-        const QSize requirementSize = QSize(contentRect.width() - s_summaryStartX - s_itemMargins.right(), contentRect.height());
-        const QRect requirementRect = QRect(QPoint(contentRect.left() + s_summaryStartX, contentRect.top()), requirementSize);
-
-        painter->setFont(standardFont);
-        painter->setPen(m_textColor);
-
+        const QRect requirementRect = CalcRequirementRect(contentRect);
         const QString requirement = GemModel::GetRequirement(modelIndex);
-        painter->drawText(requirementRect, Qt::AlignLeft | Qt::TextWordWrap, requirement);
+        DrawText(requirement, painter, requirementRect, standardFont);
 
         painter->restore();
+    }
+
+    QRect GemRequirementDelegate::CalcRequirementRect(const QRect& contentRect) const
+    {
+        const QSize requirementSize = QSize(contentRect.width() - s_summaryStartX - s_itemMargins.right(), contentRect.height());
+        return QRect(QPoint(contentRect.left() + s_summaryStartX, contentRect.top()), requirementSize);
     }
 
     bool GemRequirementDelegate::editorEvent(
@@ -82,7 +85,32 @@ namespace O3DE::ProjectManager
         [[maybe_unused]] const QStyleOptionViewItem& option,
         [[maybe_unused]] const QModelIndex& modelIndex)
     {
-        // Do nothing here
-        return false;
+        if (!modelIndex.isValid())
+        {
+            return false;
+        }
+
+        if (event->type() == QEvent::MouseButtonPress)
+        {
+            QMouseEvent* mouseEvent = static_cast<QMouseEvent*>(event);
+
+            QRect fullRect, itemRect, contentRect;
+            CalcRects(option, fullRect, itemRect, contentRect);
+
+            const QRect requirementsRect = CalcRequirementRect(contentRect);
+            if (requirementsRect.contains(mouseEvent->pos()))
+            {
+                const QString html = GemModel::GetRequirement(modelIndex);
+                QString anchor = anchorAt(html, mouseEvent->pos(), requirementsRect);
+                if (!anchor.isEmpty())
+                {
+                    QDesktopServices::openUrl(QUrl(anchor));
+                    return true;
+                }
+            }
+        }
+
+        return QStyledItemDelegate::editorEvent(event, model, option, modelIndex);
     }
+
 } // namespace O3DE::ProjectManager

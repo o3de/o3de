@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -10,7 +11,7 @@
 // include required files
 #include "EMotionFXConfig.h"
 #include "BaseObject.h"
-#include <MCore/Source/Array.h>
+#include <AzCore/std/containers/vector.h>
 #include <MCore/Source/StringIdPool.h>
 #include <MCore/Source/Endian.h>
 
@@ -38,39 +39,35 @@ namespace EMotionFX
     public:
         struct MapEntry
         {
-            uint32  mFirstNameID;   /**< The first name ID, which is the primary key in the map. */
-            uint32  mSecondNameID;  /**< The second name ID. */
-
-            MapEntry()
-                : mFirstNameID(MCORE_INVALIDINDEX32)
-                , mSecondNameID(MCORE_INVALIDINDEX32) {}
+            uint32 m_firstNameId = InvalidIndex32;   /**< The first name ID, which is the primary key in the map. */
+            uint32 m_secondNameId = InvalidIndex32;  /**< The second name ID. */
         };
 
         static NodeMap* Create();
 
         // prealloc space in the map
-        void Reserve(uint32 numEntries);
-        void Resize(uint32 numEntries);
+        void Reserve(size_t numEntries);
+        void Resize(size_t numEntries);
 
         // get data
-        uint32 GetNumEntries() const;
-        const char* GetFirstName(uint32 entryIndex) const;
-        const char* GetSecondName(uint32 entryIndex) const;
-        const AZStd::string& GetFirstNameString(uint32 entryIndex) const;
-        const AZStd::string& GetSecondNameString(uint32 entryIndex) const;
+        size_t GetNumEntries() const;
+        const char* GetFirstName(size_t entryIndex) const;
+        const char* GetSecondName(size_t entryIndex) const;
+        const AZStd::string& GetFirstNameString(size_t entryIndex) const;
+        const AZStd::string& GetSecondNameString(size_t entryIndex) const;
         bool GetHasEntry(const char* firstName) const;
-        uint32 FindEntryIndexByName(const char* firstName) const;
-        uint32 FindEntryIndexByNameID(uint32 firstNameID) const;
+        size_t FindEntryIndexByName(const char* firstName) const;
+        size_t FindEntryIndexByNameID(uint32 firstNameID) const;
         const char* FindSecondName(const char* firstName) const;
         void FindSecondName(const char* firstName, AZStd::string* outString);
 
         // set/modify
-        void SetFirstName(uint32 entryIndex, const char* name);
-        void SetSecondName(uint32 entryIndex, const char* name);
-        void SetEntry(uint32 entryIndex, const char* firstName, const char* secondName);
+        void SetFirstName(size_t entryIndex, const char* name);
+        void SetSecondName(size_t entryIndex, const char* name);
+        void SetEntry(size_t entryIndex, const char* firstName, const char* secondName);
         void AddEntry(const char* firstName, const char* secondName);
         void SetEntry(const char* firstName, const char* secondName, bool addIfNotExists);
-        void RemoveEntryByIndex(uint32 entryIndex);
+        void RemoveEntryByIndex(size_t entryIndex);
         void RemoveEntryByName(const char* firstName);
         void RemoveEntryByNameID(uint32 firstNameID);
 
@@ -87,9 +84,9 @@ namespace EMotionFX
         bool Save(const char* fileName, MCore::Endian::EEndianType targetEndianType) const;
 
     private:
-        MCore::Array<MapEntry>  mEntries;                   /**< The array of entries. */
-        AZStd::string           mFileName;                  /**< The filename. */
-        Actor*                  mSourceActor;               /**< The source actor. */
+        AZStd::vector<MapEntry>  m_entries;                   /**< The array of entries. */
+        AZStd::string           m_fileName;                  /**< The filename. */
+        Actor*                  m_sourceActor;               /**< The source actor. */
 
         // constructor and destructor
         NodeMap();

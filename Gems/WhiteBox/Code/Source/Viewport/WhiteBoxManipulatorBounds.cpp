@@ -1,11 +1,10 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-
-#include "WhiteBox_precompiled.h"
 
 #include "Util/WhiteBoxMathUtil.h"
 #include "WhiteBoxManipulatorBounds.h"
@@ -49,10 +48,10 @@ namespace WhiteBox
             float time;
             AZ::Vector3 normal;
             const float rayLength = 1000.0f;
-            const int intersected = AZ::Intersect::IntersectSegmentTriangleCCW(
+            const bool intersected = AZ::Intersect::IntersectSegmentTriangleCCW(
                 rayOrigin, rayOrigin + rayDirection * rayLength, p0, p1, p2, normal, time);
 
-            if (intersected != 0)
+            if (intersected)
             {
                 rayIntersectionDistance = time * rayLength;
                 intersectedTriangleIndex = triangleIndex / 3;

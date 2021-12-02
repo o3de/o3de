@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -81,14 +82,14 @@ public:
     // Overrides from CBaseObject.
     //////////////////////////////////////////////////////////////////////////
     //! Return type name of Entity.
-    QString GetTypeDescription() const { return GetEntityClass(); };
+    QString GetTypeDescription() const override { return GetEntityClass(); };
 
     //////////////////////////////////////////////////////////////////////////
-    bool IsSameClass(CBaseObject* obj);
+    bool IsSameClass(CBaseObject* obj) override;
 
-    virtual bool Init(IEditor* ie, CBaseObject* prev, const QString& file);
-    virtual void InitVariables();
-    virtual void Done();
+    bool Init(IEditor* ie, CBaseObject* prev, const QString& file) override;
+    void InitVariables() override;
+    void Done() override;
 
     void DrawExtraLightInfo (DisplayContext& disp);
 
@@ -101,35 +102,35 @@ public:
     void SetEntityPropertyFloat(const char* name, float value);
     void SetEntityPropertyString(const char* name, const QString& value);
 
-    virtual int MouseCreateCallback(CViewport* view, EMouseEvent event, QPoint& point, int flags);
-    virtual void OnContextMenu(QMenu* menu);
+    int MouseCreateCallback(CViewport* view, EMouseEvent event, QPoint& point, int flags) override;
+    void OnContextMenu(QMenu* menu) override;
 
-    void SetName(const QString& name);
-    void SetSelected(bool bSelect);
+    void SetName(const QString& name) override;
+    void SetSelected(bool bSelect) override;
 
-    virtual void GetLocalBounds(AABB& box);
+    void GetLocalBounds(AABB& box) override;
 
-    virtual bool HitTest(HitContext& hc);
-    virtual bool HitHelperTest(HitContext& hc);
-    virtual bool HitTestRect(HitContext& hc);
-    void UpdateVisibility(bool bVisible);
-    bool ConvertFromObject(CBaseObject* object);
+    bool HitTest(HitContext& hc) override;
+    bool HitHelperTest(HitContext& hc) override;
+    bool HitTestRect(HitContext& hc) override;
+    void UpdateVisibility(bool bVisible) override;
+    bool ConvertFromObject(CBaseObject* object) override;
 
-    virtual void Serialize(CObjectArchive& ar);
-    virtual void PostLoad(CObjectArchive& ar);
+    using CBaseObject::Serialize;
+    void Serialize(CObjectArchive& ar) override;
+    void PostLoad(CObjectArchive& ar) override;
 
-    XmlNodeRef Export(const QString& levelPath, XmlNodeRef& xmlNode);
+    XmlNodeRef Export(const QString& levelPath, XmlNodeRef& xmlNode) override;
 
     //////////////////////////////////////////////////////////////////////////
-    void OnEvent(ObjectEvent event);
+    void OnEvent(ObjectEvent event) override;
 
-    virtual void SetTransformDelegate(ITransformDelegate* pTransformDelegate) override;
+    void SetTransformDelegate(ITransformDelegate* pTransformDelegate) override;
 
     // Set attach flags and target
     enum EAttachmentType
     {
         eAT_Pivot,
-        eAT_GeomCacheNode,
         eAT_CharacterBone,
     };
 
@@ -138,15 +139,15 @@ public:
     EAttachmentType GetAttachType() const { return m_attachmentType; }
     QString GetAttachTarget() const { return m_attachmentTarget; }
 
-    virtual void SetHelperScale(float scale);
-    virtual float GetHelperScale();
+    void SetHelperScale(float scale) override;
+    float GetHelperScale() override;
 
-    virtual void GatherUsedResources(CUsedResources& resources);
-    virtual bool IsSimilarObject(CBaseObject* pObject);
+    void GatherUsedResources(CUsedResources& resources) override;
+    bool IsSimilarObject(CBaseObject* pObject) override;
 
-    virtual bool HasMeasurementAxis() const {   return false;   }
+    bool HasMeasurementAxis() const override {   return false;   }
 
-    virtual bool IsIsolated() const { return false; }
+    bool IsIsolated() const override { return false; }
 
     //////////////////////////////////////////////////////////////////////////
     // END CBaseObject
@@ -162,7 +163,7 @@ public:
 
     //////////////////////////////////////////////////////////////////////////
     //! Return number of event targets of Script.
-    int     GetEventTargetCount() const { return m_eventTargets.size(); };
+    int     GetEventTargetCount() const { return static_cast<int>(m_eventTargets.size()); };
     CEntityEventTarget& GetEventTarget(int index) { return m_eventTargets[index]; };
     //! Add new event target, returns index of created event target.
     //! Event targets are Always entities.
@@ -175,7 +176,7 @@ public:
     // Entity Links.
     //////////////////////////////////////////////////////////////////////////
     //! Return number of event targets of Script.
-    int     GetEntityLinkCount() const { return m_links.size(); };
+    int     GetEntityLinkCount() const { return static_cast<int>(m_links.size()); };
     CEntityLink& GetEntityLink(int index) { return m_links[index]; };
     virtual int AddEntityLink(const QString& name, GUID targetEntityId);
     virtual bool EntityLinkExists(const QString& name, GUID targetEntityId);
@@ -184,7 +185,7 @@ public:
     void RemoveAllEntityLinks();
     virtual void EntityLinked([[maybe_unused]] const QString& name, [[maybe_unused]] GUID targetEntityId){}
     virtual void EntityUnlinked([[maybe_unused]] const QString& name, [[maybe_unused]] GUID targetEntityId) {}
-    void LoadLink(XmlNodeRef xmlNode, CObjectArchive* pArchive = NULL);
+    void LoadLink(XmlNodeRef xmlNode, CObjectArchive* pArchive = nullptr);
     void SaveLink(XmlNodeRef xmlNode);
     //////////////////////////////////////////////////////////////////////////
     //////////////////////////////////////////////////////////////////////////
@@ -231,7 +232,7 @@ protected:
     //////////////////////////////////////////////////////////////////////////
     //! Must be called after cloning the object on clone of object.
     //! This will make sure object references are cloned correctly.
-    virtual void PostClone(CBaseObject* pFromObject, CObjectCloneContext& ctx);
+    void PostClone(CBaseObject* pFromObject, CObjectCloneContext& ctx) override;
 
     //! Draw default object items.
     void DrawProjectorPyramid(DisplayContext& dc, float dist);
@@ -263,7 +264,7 @@ public:
     }
 
 protected:
-    void DeleteThis() { delete this; };
+    void DeleteThis() override { delete this; };
 
     //////////////////////////////////////////////////////////////////////////
     // Radius callbacks.

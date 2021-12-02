@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -19,15 +20,15 @@ namespace EMotionFX
     StandardMaterialLayer::StandardMaterialLayer()
         : BaseObject()
     {
-        mLayerTypeID    = LAYERTYPE_UNKNOWN;
-        mFileNameID     = MCORE_INVALIDINDEX32;
-        mBlendMode      = LAYERBLENDMODE_NONE;
-        mAmount         = 1.0f;
-        mUOffset        = 0.0f;
-        mVOffset        = 0.0f;
-        mUTiling        = 1.0f;
-        mVTiling        = 1.0f;
-        mRotationRadians = 0.0f;
+        m_layerTypeId    = LAYERTYPE_UNKNOWN;
+        m_fileNameId     = MCORE_INVALIDINDEX32;
+        m_blendMode      = LAYERBLENDMODE_NONE;
+        m_amount         = 1.0f;
+        m_uOffset        = 0.0f;
+        m_vOffset        = 0.0f;
+        m_uTiling        = 1.0f;
+        m_vTiling        = 1.0f;
+        m_rotationRadians = 0.0f;
     }
 
 
@@ -35,17 +36,17 @@ namespace EMotionFX
     StandardMaterialLayer::StandardMaterialLayer(uint32 layerType, const char* fileName, float amount)
         : BaseObject()
     {
-        mLayerTypeID    = layerType;
-        mAmount         = amount;
-        mUOffset        = 0.0f;
-        mVOffset        = 0.0f;
-        mUTiling        = 1.0f;
-        mVTiling        = 1.0f;
-        mRotationRadians = 0.0f;
-        mBlendMode      = LAYERBLENDMODE_NONE;
+        m_layerTypeId    = layerType;
+        m_amount         = amount;
+        m_uOffset        = 0.0f;
+        m_vOffset        = 0.0f;
+        m_uTiling        = 1.0f;
+        m_vTiling        = 1.0f;
+        m_rotationRadians = 0.0f;
+        m_blendMode      = LAYERBLENDMODE_NONE;
 
         // calculate the ID
-        mFileNameID = MCore::GetStringIdPool().GenerateIdForString(fileName);
+        m_fileNameId = MCore::GetStringIdPool().GenerateIdForString(fileName);
     }
 
 
@@ -72,22 +73,22 @@ namespace EMotionFX
     // init from another layer
     void StandardMaterialLayer::InitFrom(StandardMaterialLayer* layer)
     {
-        mLayerTypeID    = layer->mLayerTypeID;
-        mFileNameID     = layer->mFileNameID;
-        mBlendMode      = layer->mBlendMode;
-        mAmount         = layer->mAmount;
-        mUOffset        = layer->mUOffset;
-        mVOffset        = layer->mVOffset;
-        mUTiling        = layer->mUTiling;
-        mVTiling        = layer->mVTiling;
-        mRotationRadians = layer->mRotationRadians;
+        m_layerTypeId    = layer->m_layerTypeId;
+        m_fileNameId     = layer->m_fileNameId;
+        m_blendMode      = layer->m_blendMode;
+        m_amount         = layer->m_amount;
+        m_uOffset        = layer->m_uOffset;
+        m_vOffset        = layer->m_vOffset;
+        m_uTiling        = layer->m_uTiling;
+        m_vTiling        = layer->m_vTiling;
+        m_rotationRadians = layer->m_rotationRadians;
     }
 
 
     // return the layer type string
     const char* StandardMaterialLayer::GetTypeString() const
     {
-        switch (mLayerTypeID)
+        switch (m_layerTypeId)
         {
         case LAYERTYPE_UNKNOWN:
         {
@@ -162,7 +163,7 @@ namespace EMotionFX
     // return the blend mode string
     const char* StandardMaterialLayer::GetBlendModeString() const
     {
-        switch (mBlendMode)
+        switch (m_blendMode)
         {
         case LAYERBLENDMODE_NONE:
         {
@@ -224,116 +225,116 @@ namespace EMotionFX
 
     float StandardMaterialLayer::GetUOffset() const
     {
-        return mUOffset;
+        return m_uOffset;
     }
 
 
     float StandardMaterialLayer::GetVOffset() const
     {
-        return mVOffset;
+        return m_vOffset;
     }
 
 
     float StandardMaterialLayer::GetUTiling() const
     {
-        return mUTiling;
+        return m_uTiling;
     }
 
 
     float StandardMaterialLayer::GetVTiling() const
     {
-        return mVTiling;
+        return m_vTiling;
     }
 
 
     float StandardMaterialLayer::GetRotationRadians() const
     {
-        return mRotationRadians;
+        return m_rotationRadians;
     }
 
 
     void StandardMaterialLayer::SetUOffset(float uOffset)
     {
-        mUOffset = uOffset;
+        m_uOffset = uOffset;
     }
 
 
     void StandardMaterialLayer::SetVOffset(float vOffset)
     {
-        mVOffset = vOffset;
+        m_vOffset = vOffset;
     }
 
 
     void StandardMaterialLayer::SetUTiling(float uTiling)
     {
-        mUTiling = uTiling;
+        m_uTiling = uTiling;
     }
 
 
     void StandardMaterialLayer::SetVTiling(float vTiling)
     {
-        mVTiling = vTiling;
+        m_vTiling = vTiling;
     }
 
 
     void StandardMaterialLayer::SetRotationRadians(float rotationRadians)
     {
-        mRotationRadians = rotationRadians;
+        m_rotationRadians = rotationRadians;
     }
 
 
     const char* StandardMaterialLayer::GetFileName() const
     {
-        return MCore::GetStringIdPool().GetName(mFileNameID).c_str();
+        return MCore::GetStringIdPool().GetName(m_fileNameId).c_str();
     }
 
 
     const AZStd::string& StandardMaterialLayer::GetFileNameString() const
     {
-        return MCore::GetStringIdPool().GetName(mFileNameID);
+        return MCore::GetStringIdPool().GetName(m_fileNameId);
     }
 
 
     void StandardMaterialLayer::SetFileName(const char* fileName)
     {
         // calculate the new ID
-        mFileNameID = MCore::GetStringIdPool().GenerateIdForString(fileName);
+        m_fileNameId = MCore::GetStringIdPool().GenerateIdForString(fileName);
     }
 
 
     void StandardMaterialLayer::SetAmount(float amount)
     {
-        mAmount = amount;
+        m_amount = amount;
     }
 
 
     float StandardMaterialLayer::GetAmount() const
     {
-        return mAmount;
+        return m_amount;
     }
 
 
     uint32 StandardMaterialLayer::GetType() const
     {
-        return mLayerTypeID;
+        return m_layerTypeId;
     }
 
 
     void StandardMaterialLayer::SetType(uint32 typeID)
     {
-        mLayerTypeID = typeID;
+        m_layerTypeId = typeID;
     }
 
 
     void StandardMaterialLayer::SetBlendMode(unsigned char layerBlendMode)
     {
-        mBlendMode = layerBlendMode;
+        m_blendMode = layerBlendMode;
     }
 
 
     unsigned char StandardMaterialLayer::GetBlendMode() const
     {
-        return mBlendMode;
+        return m_blendMode;
     }
 
 
@@ -345,18 +346,16 @@ namespace EMotionFX
     StandardMaterial::StandardMaterial(const char* name)
         : Material(name)
     {
-        mAmbient        = MCore::RGBAColor(0.2f, 0.2f, 0.2f);
-        mDiffuse        = MCore::RGBAColor(1.0f, 0.0f, 0.0f);
-        mSpecular       = MCore::RGBAColor(1.0f, 1.0f, 1.0f);
-        mEmissive       = MCore::RGBAColor(1.0f, 0.0f, 0.0f);
-        mShine          = 100.0f;
-        mShineStrength  = 1.0f;
-        mOpacity        = 1.0f;
-        mIOR            = 1.5f;
-        mDoubleSided    = true;
-        mWireFrame      = false;
-
-        mLayers.SetMemoryCategory(EMFX_MEMCATEGORY_GEOMETRY_MATERIALS);
+        m_ambient        = MCore::RGBAColor(0.2f, 0.2f, 0.2f);
+        m_diffuse        = MCore::RGBAColor(1.0f, 0.0f, 0.0f);
+        m_specular       = MCore::RGBAColor(1.0f, 1.0f, 1.0f);
+        m_emissive       = MCore::RGBAColor(1.0f, 0.0f, 0.0f);
+        m_shine          = 100.0f;
+        m_shineStrength  = 1.0f;
+        m_opacity        = 1.0f;
+        m_ior            = 1.5f;
+        m_doubleSided    = true;
+        m_wireFrame      = false;
     }
 
 
@@ -385,24 +384,24 @@ namespace EMotionFX
         StandardMaterial* standardMaterial = static_cast<StandardMaterial*>(clone);
 
         // copy the attributes
-        standardMaterial->mAmbient          = mAmbient;
-        standardMaterial->mDiffuse          = mDiffuse;
-        standardMaterial->mSpecular         = mSpecular;
-        standardMaterial->mEmissive         = mEmissive;
-        standardMaterial->mShine            = mShine;
-        standardMaterial->mShineStrength    = mShineStrength;
-        standardMaterial->mOpacity          = mOpacity;
-        standardMaterial->mIOR              = mIOR;
-        standardMaterial->mDoubleSided      = mDoubleSided;
-        standardMaterial->mWireFrame        = mWireFrame;
+        standardMaterial->m_ambient          = m_ambient;
+        standardMaterial->m_diffuse          = m_diffuse;
+        standardMaterial->m_specular         = m_specular;
+        standardMaterial->m_emissive         = m_emissive;
+        standardMaterial->m_shine            = m_shine;
+        standardMaterial->m_shineStrength    = m_shineStrength;
+        standardMaterial->m_opacity          = m_opacity;
+        standardMaterial->m_ior              = m_ior;
+        standardMaterial->m_doubleSided      = m_doubleSided;
+        standardMaterial->m_wireFrame        = m_wireFrame;
 
         // copy the layers
-        const uint32 numLayers = mLayers.GetLength();
-        standardMaterial->mLayers.Resize(numLayers);
-        for (uint32 i = 0; i < numLayers; ++i)
+        const size_t numLayers = m_layers.size();
+        standardMaterial->m_layers.resize(numLayers);
+        for (size_t i = 0; i < numLayers; ++i)
         {
-            standardMaterial->mLayers[i] = StandardMaterialLayer::Create();
-            standardMaterial->mLayers[i]->InitFrom(mLayers[i]);
+            standardMaterial->m_layers[i] = StandardMaterialLayer::Create();
+            standardMaterial->m_layers[i]->InitFrom(m_layers[i]);
         }
 
         // return the result
@@ -419,193 +418,190 @@ namespace EMotionFX
             {
                 layer->Destroy();
             }
-            mLayers.RemoveByValue(layer);
+            if (const auto it = AZStd::find(begin(m_layers), end(m_layers), layer); it != end(m_layers))
+            {
+                m_layers.erase(it);
+            }
         }
     }
 
 
     void StandardMaterial::SetAmbient(const MCore::RGBAColor& ambient)
     {
-        mAmbient = ambient;
+        m_ambient = ambient;
     }
 
 
     void StandardMaterial::SetDiffuse(const MCore::RGBAColor& diffuse)
     {
-        mDiffuse = diffuse;
+        m_diffuse = diffuse;
     }
 
 
     void StandardMaterial::SetSpecular(const MCore::RGBAColor& specular)
     {
-        mSpecular = specular;
+        m_specular = specular;
     }
 
 
     void StandardMaterial::SetEmissive(const MCore::RGBAColor& emissive)
     {
-        mEmissive = emissive;
+        m_emissive = emissive;
     }
 
 
     void StandardMaterial::SetShine(float shine)
     {
-        mShine = shine;
+        m_shine = shine;
     }
 
 
     void StandardMaterial::SetShineStrength(float shineStrength)
     {
-        mShineStrength = shineStrength;
+        m_shineStrength = shineStrength;
     }
 
 
     void StandardMaterial::SetOpacity(float opacity)
     {
-        mOpacity = opacity;
+        m_opacity = opacity;
     }
 
 
     void StandardMaterial::SetIOR(float ior)
     {
-        mIOR = ior;
+        m_ior = ior;
     }
 
 
     void StandardMaterial::SetDoubleSided(bool doubleSided)
     {
-        mDoubleSided = doubleSided;
+        m_doubleSided = doubleSided;
     }
 
 
     void StandardMaterial::SetWireFrame(bool wireFrame)
     {
-        mWireFrame = wireFrame;
+        m_wireFrame = wireFrame;
     }
 
 
     const MCore::RGBAColor& StandardMaterial::GetAmbient() const
     {
-        return mAmbient;
+        return m_ambient;
     }
 
 
     const MCore::RGBAColor& StandardMaterial::GetDiffuse() const
     {
-        return mDiffuse;
+        return m_diffuse;
     }
 
 
     const MCore::RGBAColor& StandardMaterial::GetSpecular() const
     {
-        return mSpecular;
+        return m_specular;
     }
 
 
     const MCore::RGBAColor& StandardMaterial::GetEmissive() const
     {
-        return mEmissive;
+        return m_emissive;
     }
 
 
     float StandardMaterial::GetShine() const
     {
-        return mShine;
+        return m_shine;
     }
 
 
     float StandardMaterial::GetShineStrength() const
     {
-        return mShineStrength;
+        return m_shineStrength;
     }
 
 
     float StandardMaterial::GetOpacity() const
     {
-        return mOpacity;
+        return m_opacity;
     }
 
 
     float StandardMaterial::GetIOR() const
     {
-        return mIOR;
+        return m_ior;
     }
 
 
     bool StandardMaterial::GetDoubleSided() const
     {
-        return mDoubleSided;
+        return m_doubleSided;
     }
 
 
     bool StandardMaterial::GetWireFrame() const
     {
-        return mWireFrame;
+        return m_wireFrame;
     }
 
 
     StandardMaterialLayer* StandardMaterial::AddLayer(StandardMaterialLayer* layer)
     {
-        mLayers.Add(layer);
+        m_layers.emplace_back(layer);
         return layer;
     }
 
 
-    uint32 StandardMaterial::GetNumLayers() const
+    size_t StandardMaterial::GetNumLayers() const
     {
-        return mLayers.GetLength();
+        return m_layers.size();
     }
 
 
-    StandardMaterialLayer* StandardMaterial::GetLayer(uint32 nr)
+    StandardMaterialLayer* StandardMaterial::GetLayer(size_t nr)
     {
-        MCORE_ASSERT(nr < mLayers.GetLength());
-        return mLayers[nr];
+        MCORE_ASSERT(nr < m_layers.size());
+        return m_layers[nr];
     }
 
 
-    void StandardMaterial::RemoveLayer(uint32 nr, bool delFromMem)
+    void StandardMaterial::RemoveLayer(size_t nr, bool delFromMem)
     {
-        MCORE_ASSERT(nr < mLayers.GetLength());
+        MCORE_ASSERT(nr < m_layers.size());
         if (delFromMem)
         {
-            mLayers[nr]->Destroy();
+            m_layers[nr]->Destroy();
         }
 
-        mLayers.Remove(nr);
+        m_layers.erase(AZStd::next(begin(m_layers), nr));
     }
 
 
     void StandardMaterial::RemoveAllLayers()
     {
-        const uint32 numLayers = mLayers.GetLength();
-        for (uint32 i = 0; i < numLayers; ++i)
+        for (StandardMaterialLayer* layer : m_layers)
         {
-            mLayers[i]->Destroy();
+            layer->Destroy();
         }
 
-        mLayers.Clear();
+        m_layers.clear();
     }
 
 
-    uint32 StandardMaterial::FindLayer(uint32 layerType) const
+    size_t StandardMaterial::FindLayer(uint32 layerType) const
     {
         // search through all layers
-        const uint32 numLayers = mLayers.GetLength();
-        for (uint32 i = 0; i < numLayers; ++i)
+        const auto foundLayer = AZStd::find_if(begin(m_layers), end(m_layers), [layerType](const StandardMaterialLayer* layer)
         {
-            if (mLayers[i]->GetType() == layerType)
-            {
-                return i;
-            }
-        }
-
-        return MCORE_INVALIDINDEX32;
+            return layer->GetType() == layerType;
+        });
+        return foundLayer != end(m_layers) ? AZStd::distance(begin(m_layers), foundLayer) : InvalidIndex;
     }
 
 
-    void StandardMaterial::ReserveLayers(uint32 numLayers)
+    void StandardMaterial::ReserveLayers(size_t numLayers)
     {
-        mLayers.Reserve(numLayers);
+        m_layers.reserve(numLayers);
     }
 } // namespace EMotionFX

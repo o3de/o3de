@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -30,13 +31,12 @@ namespace AZ
             float GetSurfaceArea() const override;
             float GetEffectiveSolidAngle() const override { return PhotometricValue::OmnidirectionalSteradians; }
             void SetEnableShadow(bool enabled) override;
+            void SetShadowBias(float bias) override;
             void SetShadowmapMaxSize(ShadowmapSize size) override;
             void SetShadowFilterMethod(ShadowFilterMethod method) override;
-            void SetSofteningBoundaryWidthAngle(float widthInDegrees) override;
-            void SetPredictionSampleCount(uint32_t count) override;
             void SetFilteringSampleCount(uint32_t count) override;
-            void SetPcfMethod(PcfMethod method) override;
             void SetEsmExponent(float esmExponent) override;
+            void SetNormalShadowBias(float bias) override;
 
         private:
 

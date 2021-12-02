@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -567,12 +568,12 @@ struct Matrix44_tpl
     ILINE F& operator () (uint32 i, uint32 j)   {   assert ((i < 4) && (j < 4));    F* p_data = (F*)(&m00);       return p_data[i * 4 + j];   }
 
     ILINE void SetRow(int i, const Vec3_tpl<F>& v)  {   assert(i < 4);    F* p = (F*)(&m00);    p[0 + 4 * i] = v.x;   p[1 + 4 * i] = v.y;   p[2 + 4 * i] = v.z;       }
-    ILINE void SetRow4(int i, const Vec4_tpl<F>& v)   {   assert(i < 4);    F* p = (F*)(&m00);    p[0 + 4 * i] = v.x;   p[1 + 4 * i] = v.y;   p[2 + 4 * i] = v.z;   p[3 + 4 * i] = v.w;   }
+    ILINE void SetRow4(int i, const Vec4& v)   {   assert(i < 4);    F* p = (F*)(&m00);    p[0 + 4 * i] = v.x;   p[1 + 4 * i] = v.y;   p[2 + 4 * i] = v.z;   p[3 + 4 * i] = v.w;   }
     ILINE const Vec3_tpl<F>& GetRow(int i) const    {   assert(i < 4); return *(const Vec3_tpl<F>*)(&m00 + 4 * i);  }
 
     ILINE void SetColumn(int i, const Vec3_tpl<F>& v)   {   assert(i < 4);    F* p = (F*)(&m00);    p[i + 4 * 0] = v.x;   p[i + 4 * 1] = v.y;   p[i + 4 * 2] = v.z;       }
     ILINE Vec3_tpl<F> GetColumn(int i) const    {   assert(i < 4);    F* p = (F*)(&m00);    return Vec3(p[i + 4 * 0], p[i + 4 * 1], p[i + 4 * 2]);    }
-    ILINE Vec4_tpl<F> GetColumn4(int i) const {   assert(i < 4);    F* p = (F*)(&m00);    return Vec4(p[i + 4 * 0], p[i + 4 * 1], p[i + 4 * 2], p[i + 4 * 3]);   }
+    ILINE Vec4 GetColumn4(int i) const {   assert(i < 4);    F* p = (F*)(&m00);    return Vec4(p[i + 4 * 0], p[i + 4 * 1], p[i + 4 * 2], p[i + 4 * 3]);   }
 
     ILINE Vec3 GetTranslation() const { return Vec3(m03, m13, m23);   }
     ILINE void SetTranslation(const Vec3& t)  {   m03 = t.x; m13 = t.y; m23 = t.z; }
@@ -654,8 +655,6 @@ struct Matrix44_tpl
             (fabs_tpl(m0.m30 - m1.m30) <= e) && (fabs_tpl(m0.m31 - m1.m31) <= e) && (fabs_tpl(m0.m32 - m1.m32) <= e) && (fabs_tpl(m0.m33 - m1.m33) <= e)
             );
     }
-
-    AUTO_STRUCT_INFO
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -665,7 +664,11 @@ struct Matrix44_tpl
 typedef Matrix44_tpl<f32>  Matrix44;   //always 32 bit
 typedef Matrix44_tpl<f64>  Matrix44d;  //always 64 bit
 typedef Matrix44_tpl<real> Matrix44r;  //variable float precision. depending on the target system it can be between 32, 64 or 80 bit
-typedef _MS_ALIGN(16) Matrix44_tpl<f32> _ALIGN (16) Matrix44A;
+#if AZ_COMPILER_MSVC
+    typedef __declspec(align(16)) Matrix44_tpl<f32> Matrix44A;
+#elif AZ_COMPILER_CLANG
+    typedef Matrix44_tpl<f32> __attribute__((aligned(16))) Matrix44A;
+#endif
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
@@ -674,63 +677,6 @@ typedef _MS_ALIGN(16) Matrix44_tpl<f32> _ALIGN (16) Matrix44A;
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
-
-/*!
-*  Implements the multiplication operator: Matrix44=Matrix44*Matrix33diag
-*
-*  Matrix44 and Matrix33diag are specified in collumn order.
-*  AxB = operation B followed by operation A.
-*  This operation takes 12 mults.
-*
-*  Example:
-*   Matrix33diag diag(1,2,3);
-*   Matrix44 m44=CreateRotationZ33(3.14192f);
-*     Matrix44 result=m44*diag;
-*/
-template<class F1,  class F2>
-ILINE Matrix44_tpl<F1> operator * (const Matrix44_tpl<F1>& l, const Diag33_tpl<F2>& r)
-{
-    assert(l.IsValid());
-    assert(r.IsValid());
-    Matrix44_tpl<F1> m;
-    m.m00 = l.m00 * r.x;
-    m.m01 = l.m01 * r.y;
-    m.m02 = l.m02 * r.z;
-    m.m03 = l.m03;
-    m.m10 = l.m10 * r.x;
-    m.m11 = l.m11 * r.y;
-    m.m12 = l.m12 * r.z;
-    m.m13 = l.m13;
-    m.m20 = l.m20 * r.x;
-    m.m21 = l.m21 * r.y;
-    m.m22 = l.m22 * r.z;
-    m.m23 = l.m23;
-    m.m30 = l.m30 * r.x;
-    m.m31 = l.m31 * r.y;
-    m.m32 = l.m32 * r.z;
-    m.m33 = l.m33;
-    return m;
-}
-template<class F1, class F2>
-ILINE Matrix44_tpl<F1>& operator *= (Matrix44_tpl<F1>& l, const Diag33_tpl<F2>& r)
-{
-    assert(l.IsValid());
-    assert(r.IsValid());
-    l.m00 *= r.x;
-    l.m01 *= r.y;
-    l.m02 *= r.z;
-    l.m10 *= r.x;
-    l.m11 *= r.y;
-    l.m12 *= r.z;
-    l.m20 *= r.x;
-    l.m21 *= r.y;
-    l.m22 *= r.z;
-    l.m30 *= r.x;
-    l.m31 *= r.y;
-    l.m32 *= r.z;
-    return l;
-}
-
 
 /*!
 *  Implements the multiplication operator: Matrix44=Matrix44*Matrix33
@@ -846,24 +792,24 @@ ILINE Matrix44_tpl<F1> operator * (const Matrix44_tpl<F1>& l, const Matrix44_tpl
 }
 
 //post-multiply
-template<class F1, class F2>
-ILINE Vec4_tpl<F1> operator*(const Matrix44_tpl<F2>& m, const Vec4_tpl<F1>& v)
+template<class F2>
+ILINE Vec4 operator*(const Matrix44_tpl<F2>& m, const Vec4& v)
 {
     assert(m.IsValid());
     assert(v.IsValid());
-    return Vec4_tpl<F1>(v.x * m.m00 + v.y * m.m01 + v.z * m.m02 + v.w * m.m03,
+    return Vec4(v.x * m.m00 + v.y * m.m01 + v.z * m.m02 + v.w * m.m03,
         v.x * m.m10 + v.y * m.m11 + v.z * m.m12 + v.w * m.m13,
         v.x * m.m20 + v.y * m.m21 + v.z * m.m22 + v.w * m.m23,
         v.x * m.m30 + v.y * m.m31 + v.z * m.m32 + v.w * m.m33);
 }
 
 //pre-multiply
-template<class F1, class F2>
-ILINE Vec4_tpl<F1> operator*(const Vec4_tpl<F1>& v, const Matrix44_tpl<F2>& m)
+template<class F2>
+ILINE Vec4 operator*(const Vec4& v, const Matrix44_tpl<F2>& m)
 {
     assert(m.IsValid());
     assert(v.IsValid());
-    return Vec4_tpl<F1>(v.x * m.m00 + v.y * m.m10 + v.z * m.m20 + v.w * m.m30,
+    return Vec4(v.x * m.m00 + v.y * m.m10 + v.z * m.m20 + v.w * m.m30,
         v.x * m.m01 + v.y * m.m11 + v.z * m.m21 + v.w * m.m31,
         v.x * m.m02 + v.y * m.m12 + v.z * m.m22 + v.w * m.m32,
         v.x * m.m03 + v.y * m.m13 + v.z * m.m23 + v.w * m.m33);

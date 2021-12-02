@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -12,6 +13,7 @@
 
 // CryCommon
 #include <CryCommon/Maestro/Types/AnimParamType.h>
+#include <CryCommon/IFont.h>
 
 // Editor
 #include "Settings.h"
@@ -25,7 +27,7 @@ CCommentNodeAnimator::CCommentNodeAnimator(CTrackViewAnimNode* pCommentNode)
 
 CCommentNodeAnimator::~CCommentNodeAnimator()
 {
-    m_pCommentNode = 0;
+    m_pCommentNode = nullptr;
 }
 
 void CCommentNodeAnimator::Animate(CTrackViewAnimNode* pNode, const SAnimContext& ac)
@@ -91,7 +93,7 @@ void CCommentNodeAnimator::AnimateCommentTextTrack(CTrackViewTrack* pTrack, cons
         if (commentKey.m_duration > 0 && ac.time < keyHandle.GetTime() + commentKey.m_duration)
         {
             m_commentContext.m_strComment = commentKey.m_strComment;
-            cry_strcpy(m_commentContext.m_strFont,  commentKey.m_strFont.c_str());
+            azstrcpy(m_commentContext.m_strFont, AZ_ARRAY_SIZE(m_commentContext.m_strFont), commentKey.m_strFont.c_str());
             m_commentContext.m_color = commentKey.m_color;
             m_commentContext.m_align = commentKey.m_align;
             m_commentContext.m_size = commentKey.m_size;
@@ -158,18 +160,10 @@ void CCommentNodeAnimator::Render(CTrackViewAnimNode* pNode, [[maybe_unused]] co
     }
 }
 
-Vec2 CCommentNodeAnimator::GetScreenPosFromNormalizedPos(const Vec2& unitPos)
+Vec2 CCommentNodeAnimator::GetScreenPosFromNormalizedPos(const Vec2&)
 {
-    const CCamera& cam = gEnv->pSystem->GetViewCamera();
-    float width = (float)cam.GetViewSurfaceX();
-    int height = cam.GetViewSurfaceZ();
-    float fAspectRatio = gSettings.viewports.fDefaultAspectRatio;
-    float camWidth = height * fAspectRatio;
-
-    float x = 0.5f * width + 0.5f * camWidth * unitPos.x;
-    float y = 0.5f * height * (1.f - unitPos.y);
-
-    return Vec2(x, y);
+    AZ_Error("CryLegacy", false, "CCommentNodeAnimator::GetScreenPosFromNormalizedPos not supported");
+    return Vec2(0, 0);
 }
 
 void CCommentNodeAnimator::DrawText(const char* szFontName, float fSize, const Vec2& unitPos, const ColorF col, const char* szText, int align)

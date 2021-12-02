@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -12,27 +13,6 @@
 #include <GraphCanvas/Components/DynamicOrderingDynamicSlotComponent.h>
 
 #include <ScriptCanvas/Core/NodeBus.h>
-
-namespace
-{
-    ScriptCanvas::ConnectionType ToScriptCanvasConnectionType(GraphCanvas::ConnectionType connectionType)
-    {
-        ScriptCanvas::ConnectionType scriptCanvasConnectionType = ScriptCanvas::ConnectionType::Unknown;
-        switch (connectionType)
-        {
-        case GraphCanvas::CT_Input:
-            scriptCanvasConnectionType = ScriptCanvas::ConnectionType::Input;
-            break;
-        case GraphCanvas::CT_Output:
-            scriptCanvasConnectionType = ScriptCanvas::ConnectionType::Output;
-            break;
-        default:
-            break;
-        }
-
-        return scriptCanvasConnectionType;
-    }
-}
 
 namespace ScriptCanvasEditor::Nodes
 {

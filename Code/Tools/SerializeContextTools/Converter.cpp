@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -81,7 +82,7 @@ namespace AZ
                 AZ_Printf("Convert", "Converting '%s'\n", filePath.c_str());
 
                 PathDocumentContainer documents;
-                auto callback = [&result, &documents, &extension, &convertSettings, &verifySettings, skipVerify]
+                auto callback = [&result, &documents, &convertSettings, &verifySettings, skipVerify]
                     (void* classPtr, const Uuid& classId, SerializeContext* /*context*/)
                 {
                     rapidjson::Document document;
@@ -201,8 +202,6 @@ namespace AZ
             bool skipSystem = commandLine->HasSwitch("skipsystem");
             bool isDryRun = commandLine->HasSwitch("dryrun");
 
-            const char* appRoot = const_cast<const Application&>(application).GetAppRoot();
-
             PathDocumentContainer documents;
             bool result = true;
             const AZStd::string& filePath = application.GetConfigFilePath();
@@ -229,7 +228,7 @@ namespace AZ
             }
             
             auto callback = 
-                [&result, skipGems, skipSystem, &configurationName, sourceGameFolder, &appRoot, &documents, &convertSettings, &verifySettings]
+                [&result, skipGems, skipSystem, &configurationName, sourceGameFolder, &documents, &convertSettings, &verifySettings]
                 (void* classPtr, const Uuid& classId, SerializeContext* context)
             {
                 if (classId == azrtti_typeid<AZ::ComponentApplication::Descriptor>())
@@ -237,7 +236,7 @@ namespace AZ
                     if (!skipSystem)
                     {
                         result = ConvertSystemSettings(documents, *reinterpret_cast<AZ::ComponentApplication::Descriptor*>(classPtr), 
-                            configurationName, sourceGameFolder, appRoot) && result;
+                            configurationName, sourceGameFolder) && result;
                     }
 
                     // Cleanup the Serialized Element to allow any classes within the element's hierarchy to delete
@@ -345,7 +344,7 @@ namespace AZ
                 // Convert the supplied file list to an absolute path
                 AZStd::optional<AZ::IO::FixedMaxPathString> absFilePath = AZ::Utils::ConvertToAbsolutePath(configFileView);
                 AZ::IO::FixedMaxPath configFilePath = absFilePath ? *absFilePath : configFileView;
-                auto callback = [&documents, &outputExtension, &configFilePath](AZ::IO::PathView configFileView, bool isFile) -> bool
+                auto callback = [&documents, &configFilePath](AZ::IO::PathView configFileView, bool isFile) -> bool
                 {
                     if (configFileView == "." || configFileView == "..")
                     {
@@ -442,7 +441,7 @@ namespace AZ
         }
 
         bool Converter::ConvertSystemSettings(PathDocumentContainer& documents, const ComponentApplication::Descriptor& descriptor, 
-            const AZStd::string& configurationName, const AZ::IO::PathView& projectFolder, [[maybe_unused]] const AZStd::string& applicationRoot)
+            const AZStd::string& configurationName, const AZ::IO::PathView& projectFolder)
         {
             AZ::IO::FixedMaxPath memoryFilePath{ projectFolder };
             memoryFilePath /= "Registry";
@@ -493,6 +492,7 @@ namespace AZ
                     return AZ::SettingsRegistryInterface::VisitResponse::Continue;
                 }
 
+                using AZ::SettingsRegistryInterface::Visitor::Visit;
                 void Visit(AZStd::string_view, [[maybe_unused]] AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type, AZStd::string_view value) override
                 {
                     if (m_processingSourcePathKey)
@@ -655,6 +655,7 @@ namespace AZ
                                 return AZ::SettingsRegistryInterface::VisitResponse::Continue;
                             }
 
+                            using AZ::SettingsRegistryInterface::Visitor::Visit;
                             void Visit(AZStd::string_view path, AZStd::string_view valueName, [[maybe_unused]] AZ::SettingsRegistryInterface::Type type,
                                 AZStd::string_view value) override
                             {
@@ -752,14 +753,21 @@ namespace AZ
         {
             using namespace AZ::JsonSerializationResult;
 
+            // Need special handling if the original type is `any', because `CreateAny' creates an empty `any' in that case,
+            // because it's not possible to store an any inside an any
+            const bool originalTypeIsAny = originalType == azrtti_typeid<AZStd::any>();
+
             AZStd::any convertedDeserialized = settings.m_serializeContext->CreateAny(originalType);
-            if (convertedDeserialized.empty())
+            if (!originalTypeIsAny && convertedDeserialized.empty())
             {
                 AZ_Printf("Convert", "  Failed to deserialized from converted document.\n");
                 return false;
             }
 
-            ResultCode loadResult = JsonSerialization::Load(AZStd::any_cast<void>(&convertedDeserialized), originalType, convertedData, settings);
+            // Get a storage suitable to hold this data.
+            void* objectPtr = originalTypeIsAny ? &convertedDeserialized : AZStd::any_cast<void>(&convertedDeserialized);
+
+            ResultCode loadResult = JsonSerialization::Load(objectPtr, originalType, convertedData, settings);
             if (loadResult.GetProcessing() == Processing::Halted)
             {
                 AZ_Printf("Convert", "  Failed to verify converted document because it couldn't be loaded.\n");
@@ -777,7 +785,7 @@ namespace AZ
             bool result = false;
             if (data->m_serializer)
             {
-                result = data->m_serializer->CompareValueData(original, AZStd::any_cast<void>(&convertedDeserialized));
+                result = data->m_serializer->CompareValueData(original, objectPtr);
             }
             else
             {
@@ -788,7 +796,7 @@ namespace AZ
                 AZStd::vector<AZ::u8> loadedData;
                 AZ::IO::ByteContainerStream<decltype(loadedData)> loadedStream(&loadedData);
                 AZ::Utils::SaveObjectToStream(loadedStream, AZ::ObjectStream::ST_BINARY,
-                    AZStd::any_cast<void>(&convertedDeserialized), convertedDeserialized.type());
+                    objectPtr, originalType);
                 
                 result = 
                     (originalData.size() == loadedData.size()) &&

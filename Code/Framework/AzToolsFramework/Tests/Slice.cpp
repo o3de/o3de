@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -224,7 +225,7 @@ namespace UnitTest
 
         tempAssetEntity = aznew AZ::Entity("TestEntity1");
         tempAssetEntity->CreateComponent<AzToolsFramework::Components::TransformComponent>();
-        AZ::Data::AssetId sliceAssetId1 = SaveAsSlice(tempAssetEntity);
+        SaveAsSlice(tempAssetEntity);
         tempAssetEntity = nullptr;
 
         AZ::SliceComponent::EntityList slice1EntitiesA = InstantiateSlice(sliceAssetId0);
@@ -456,7 +457,7 @@ namespace UnitTest
             {
                 AZ::Debug::TraceMessageBus::Handler::BusConnect();
             }
-            ~SliceTestWarningInterceptor()
+            ~SliceTestWarningInterceptor() override
             {
                 AZ::Debug::TraceMessageBus::Handler::BusDisconnect();
             }

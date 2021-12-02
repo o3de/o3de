@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -44,15 +45,10 @@ namespace AWSCore
         virtual std::shared_ptr<ClientType> GetClient() = 0;
     };
 
-#ifdef _MSC_VER
-#pragma warning( push )
-#pragma warning( disable: 4250 )
     // warning C4250: 'AWSCore::AwsApiClientJobConfig<ClientType>': inherits 'AWSCore::AwsApiJobConfig::AWSCore::AwsApiJobConfig::GetJobContext' via dominance
     // Thanks to http://stackoverflow.com/questions/11965596/diamond-inheritance-scenario-compiles-fine-in-g-but-produces-warnings-errors for the explanation
     // This is the expected and desired behavior. The warning is superfluous.
-
-#endif
-
+    AZ_PUSH_DISABLE_WARNING(4250, "-Wunknown-warning-option")
     /// Configuration for AWS jobs using a specific client type.
     template<class ClientType>
     class AwsApiClientJobConfig
@@ -67,9 +63,6 @@ namespace AWSCore
         using InitializerFunction = AZStd::function<void(AwsApiClientJobConfigType& config)>;
 
         /// Initialize an AwsApiClientJobConfig object.
-        ///
-        /// \param DefaultConfigType - the type of the config object from which
-        /// default values will be taken.
         ///
         /// \param defaultConfig - the config object that provides values when
         /// no override has been set in this object. The default is nullptr, which
@@ -87,10 +80,10 @@ namespace AWSCore
             }
         }
 
-        virtual ~AwsApiClientJobConfig() = default;
+        ~AwsApiClientJobConfig() override = default;
 
         /// Gets a client initialized used currently applied settings. If
-        /// any settings change after first use, code must call 
+        /// any settings change after first use, code must call
         /// ApplySettings before those changes will take effect.
         std::shared_ptr<ClientType> GetClient() override
         {
@@ -116,7 +109,7 @@ namespace AWSCore
             }
             else
             {
-                // If no explict credenitals are provided then AWS C++ SDK will perform standard search
+                // If no explicit credentials are provided then AWS C++ SDK will perform standard search
                 return std::make_shared<ClientType>(Aws::Auth::AWSCredentials(), GetClientConfiguration());
             }
         }
@@ -125,9 +118,6 @@ namespace AWSCore
         /// Set by ApplySettings
         std::shared_ptr<ClientType> m_client;
     };
-
-#ifdef _MSC_VER 
-#pragma warning( pop ) // C4250
-#endif
+    AZ_POP_DISABLE_WARNING
 
 } // namespace AWSCore

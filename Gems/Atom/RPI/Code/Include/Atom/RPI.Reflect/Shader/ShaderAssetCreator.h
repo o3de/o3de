@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -32,11 +33,6 @@ namespace AZ
             //! [Optional] Sets the DrawListTag name associated with this shader.
             void SetDrawListName(const Name& name);
 
-            //! [Optional] Adds a shader resource group asset. The order of shader resource group assets must match the same
-            //! order supplied to the pipeline layout descriptor. A mismatch will cause End() to fail. This method
-            //! requires that the asset be loaded in order to validate contents properly.
-            void AddShaderResourceGroupAsset(const Data::Asset<ShaderResourceGroupAsset>& shaderResourceGroupAsset);
-
             //! [Required] Assigns the layout used to construct and parse shader options packed into shader variant keys.
             //! Requires that the keys assigned to shader variants were constructed using the same layout.
             void SetShaderOptionGroupLayout(const Ptr<ShaderOptionGroupLayout>& shaderOptionGroupLayout);
@@ -46,33 +42,54 @@ namespace AZ
             //! @param type The target RHI API type.
             void BeginAPI(RHI::APIType type);
 
-            //! [Required] There's always a root variant for each RHI::APIType.
-            void SetRootShaderVariantAsset(Data::Asset<ShaderVariantAsset> shaderVariantAsset);
+            //! Begins the creation of a Supervariant for the current RHI::APIType.
+            //! If this is the first supervariant its name must be empty. The first
+            //! supervariant is always the default, nameless, supervariant.
+            void BeginSupervariant(const Name& name);
 
-            //! [Optional] Not all shaders have attributes before functions. Some attributes do not exist for all RHI::APIType either.
-            void SetShaderStageAttributeMapList(const RHI::ShaderStageAttributeMapList& shaderStageAttributeMapList);
+            void SetSrgLayoutList(const ShaderResourceGroupLayoutList& srgLayoutList);
 
             //! [Required] Assigns the pipeline layout descriptor shared by all variants in the shader. Shader variants
             //! embedded in a single shader asset are required to use the same pipeline layout. It is not necessary to call
             //! Finalize() on the pipeline layout prior to assignment, but still permitted.
-            void SetPipelineLayout(const Ptr<RHI::PipelineLayoutDescriptor>& pipelineLayoutDescriptor);
+            void SetPipelineLayout(RHI::Ptr<RHI::PipelineLayoutDescriptor> m_pipelineLayoutDescriptor);
+
+            //! Assigns the contract for inputs required by the shader.
+            void SetInputContract(const ShaderInputContract& contract);
+
+            //! Assigns the contract for outputs required by the shader.
+            void SetOutputContract(const ShaderOutputContract& contract);
+
+            //! Assigns the render states for the draw pipeline. Ignored for non-draw pipelines.
+            void SetRenderStates(const RHI::RenderStates& renderStates);
+
+            //! [Optional] Not all shaders have attributes before functions. Some attributes do not exist for all RHI::APIType either.
+            void SetShaderStageAttributeMapList(const RHI::ShaderStageAttributeMapList& shaderStageAttributeMapList);
+
+            //! [Required] There's always a root variant for each supervariant.
+            void SetRootShaderVariantAsset(Data::Asset<ShaderVariantAsset> shaderVariantAsset);
+
+            bool EndSupervariant();
 
             bool EndAPI();
 
             bool End(Data::Asset<ShaderAsset>& shaderAsset);
 
-            //! Clones an existing ShaderAsset and replaces the referenced Srg and Variant assets.
-            using ShaderResourceGroupAssets = AZStd::vector<AZ::Data::Asset<ShaderResourceGroupAsset>>;
+            //! Clones an existing ShaderAsset nd replaces the referenced Srg and Variant assets
             using ShaderRootVariantAssets = AZStd::vector<AZStd::pair<AZ::Crc32, Data::Asset<RPI::ShaderVariantAsset>>>;
             void Clone(const Data::AssetId& assetId,
-                       const ShaderAsset* sourceShaderAsset,
-                       const ShaderResourceGroupAssets& srgAssets,
+                       const ShaderAsset& sourceShaderAsset,
                        const ShaderRootVariantAssets& rootVariantAssets);
 
         private:
 
-            // Shader variants will use this draw list when they don't specify one
+            // Shader variants will use this draw list when they don't specify one.
             Name m_defaultDrawList;
+
+            // The current supervariant is cached here to facilitate asset
+            // construction. Additionally, prevents BeginSupervariant to be called more than once before calling EndSupervariant.
+            ShaderAsset::Supervariant* m_currentSupervariant = nullptr;
+
         };
     } // namespace RPI
 } // namespace AZ

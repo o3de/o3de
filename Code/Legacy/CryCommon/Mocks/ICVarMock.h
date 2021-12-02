@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -10,7 +11,7 @@
 #include <IConsole.h>
 #include <AzTest/AzTest.h>
 
-#include <SFunctor.h>
+#include <AzCore/std/function/function_template.h>
 
 class CVarMock
     : public ICVar
@@ -34,12 +35,8 @@ public:
     MOCK_METHOD0(GetHelp, const char*());
     MOCK_CONST_METHOD0(IsConstCVar, bool());
     MOCK_METHOD1(SetOnChangeCallback, void(ConsoleVarFunc));
-    MOCK_METHOD1(AddOnChangeFunctor, uint64(const SFunctor& pChangeFunctor));
-    MOCK_CONST_METHOD0(GetNumberOfOnChangeFunctors, uint64());
-    MOCK_CONST_METHOD1(GetOnChangeFunctor, const SFunctor&(uint64));
-    MOCK_METHOD1(RemoveOnChangeFunctor, bool(uint64));
+    MOCK_METHOD1(AddOnChangeFunctor, uint64(const AZStd::function<void()>& pChangeFunctor));
     MOCK_CONST_METHOD0(GetOnChangeCallback, ConsoleVarFunc());
-    MOCK_CONST_METHOD1(GetMemoryUsage, void(class ICrySizer* pSizer));
     MOCK_CONST_METHOD0(GetRealIVal, int());
     MOCK_METHOD2(SetLimits, void(float, float));
     MOCK_METHOD2(GetLimits, void(float&, float&));

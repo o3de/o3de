@@ -1,6 +1,7 @@
 #
-# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
-# 
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
@@ -27,23 +28,27 @@ ly_add_target(
     BUILD_DEPENDENCIES
         PRIVATE
             AZ::CrashHandler
+            AZ::AzCore
 )
 
 # Load the "Gem::CrashReporting" module in Clients and Servers
 ly_create_alias(NAME CrashReporting.Clients NAMESPACE Gem TARGETS Gem::CrashReporting)
 ly_create_alias(NAME CrashReporting.Servers NAMESPACE Gem TARGETS Gem::CrashReporting)
 
+if(NOT LY_MONOLITHIC_GAME)
 
-ly_add_target(
-    NAME CrashReporting.Uploader APPLICATION
-    NAMESPACE AZ
-    FILES_CMAKE
-        game_crash_uploader_files.cmake
-        Platform/${PAL_PLATFORM_NAME}/game_crash_uploader_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
-    INCLUDE_DIRECTORIES
-        PRIVATE
-            Include
-    BUILD_DEPENDENCIES
-        PRIVATE
-            AZ::CrashUploaderSupport
-)
+    ly_add_target(
+        NAME CrashReporting.Uploader APPLICATION
+        NAMESPACE AZ
+        FILES_CMAKE
+            game_crash_uploader_files.cmake
+            Platform/${PAL_PLATFORM_NAME}/game_crash_uploader_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
+        INCLUDE_DIRECTORIES
+            PRIVATE
+                Include
+        BUILD_DEPENDENCIES
+            PRIVATE
+                AZ::CrashUploaderSupport
+    )
+
+endif()

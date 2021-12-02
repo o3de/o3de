@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -44,7 +45,7 @@ namespace ScriptCanvas
                     int tupleGetFuncIndex = -1;
                     if (tupleGetFuncAttrReader.Read<int>(tupleGetFuncIndex))
                     {
-                        auto insertIter = tupleGetMethodMap.emplace(tupleGetFuncIndex, behaviorMethod);
+                        [[maybe_unused]] auto insertIter = tupleGetMethodMap.emplace(tupleGetFuncIndex, behaviorMethod);
                         AZ_Error("Script Canvas", insertIter.second, "Multiple methods with the same TupleGetFunctionIndex attribute"
                             "has been registered for the class name: %s with typeid: %s",
                             behaviorClass->m_name.data(), behaviorClass->m_typeId.ToString<AZStd::string>().data())

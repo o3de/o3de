@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -26,11 +27,11 @@ namespace EMotionFX
 
     void BlendTreeRagdollStrenghModifierNode::UniqueData::Update()
     {
-        BlendTreeRagdollStrenghModifierNode* ragdollModifierNode = azdynamic_cast<BlendTreeRagdollStrenghModifierNode*>(mObject);
+        BlendTreeRagdollStrenghModifierNode* ragdollModifierNode = azdynamic_cast<BlendTreeRagdollStrenghModifierNode*>(m_object);
         AZ_Assert(ragdollModifierNode, "Unique data linked to incorrect node type.");
 
         const AZStd::vector<AZStd::string>& modifiedJointNames = ragdollModifierNode->GetModifiedJointNames();
-        const Actor* actor = mAnimGraphInstance->GetActorInstance()->GetActor();
+        const Actor* actor = m_animGraphInstance->GetActorInstance()->GetActor();
         AnimGraphPropertyUtils::ReinitJointIndices(actor, modifiedJointNames, m_modifiedJointIndices);
     }
 
@@ -86,7 +87,7 @@ namespace EMotionFX
         }
 
         // As we already forwarded the input pose at this point, we can just return in case the node is disabled.
-        if (mDisabled)
+        if (m_disabled)
         {
             return;
         }
@@ -94,7 +95,7 @@ namespace EMotionFX
         Pose& outputPose = animGraphOutputPose->GetPose();
         if (GetCanVisualize(animGraphInstance))
         {
-            actorInstance->DrawSkeleton(outputPose, mVisualizeColor);
+            actorInstance->DrawSkeleton(outputPose, m_visualizeColor);
         }
 
         UniqueData* uniqueData = static_cast<UniqueData*>(FindOrCreateUniqueNodeData(animGraphInstance));

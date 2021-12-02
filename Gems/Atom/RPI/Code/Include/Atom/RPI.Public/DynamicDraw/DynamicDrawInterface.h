@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -47,19 +48,13 @@ namespace AZ
 
             AZ_DISABLE_COPY_MOVE(DynamicDrawInterface);
 
-            //! Create a DynamicDrawContext for specified scene (and render pipeline).
-            //! Draw calls which are made to this DynamicDrawContext will only be submitted for this scene.
+            //! Create a DynamicDrawContext
             //! The created DynamicDrawContext is managed by dynamic draw system.
-            virtual RHI::Ptr<DynamicDrawContext> CreateDynamicDrawContext(Scene* scene) = 0;
-                                    
-            //! Create a DynamicDrawContext for specified render pipeline
-            //! Draw calls submitted through the context created by this function are only submitted
-            //! to the supplied render pipeline (viewport)
-            virtual RHI::Ptr<DynamicDrawContext> CreateDynamicDrawContext(RenderPipeline* pipeline) = 0;
+            virtual RHI::Ptr<DynamicDrawContext> CreateDynamicDrawContext() = 0;
 
             //! Get a DynamicBuffer from DynamicDrawSystem.
             //! The returned buffer will be invalidated every time the RPISystem's RenderTick is called
-            virtual RHI::Ptr<DynamicBuffer> GetDynamicBuffer(uint32_t size, uint32_t alignment = 1) = 0;
+            virtual RHI::Ptr<DynamicBuffer> GetDynamicBuffer(uint32_t size, uint32_t alignment) = 0;
 
             //! Draw a geometry to a scene with a given material
             virtual void DrawGeometry(Data::Instance<Material> material, const GeometryData& geometry, ScenePtr scene) = 0;
@@ -68,6 +63,9 @@ namespace AZ
             //! Note that ownership of the DrawPacket pointer is passed to the dynamic draw system.
             //! (it will be cleaned up correctly since the DrawPacket keeps track of the allocator that was used when it was built)
             virtual void AddDrawPacket(Scene* scene, AZStd::unique_ptr<const RHI::DrawPacket> drawPacket) = 0;
+
+            //! Get DrawLists from any DynamicDrawContext which output to the specified RasterPass.
+            virtual AZStd::vector<RHI::DrawListView> GetDrawListsForPass(const RasterPass* pass) = 0;
         };
 
         //! Global function to query the DynamicDrawInterface.

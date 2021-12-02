@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -30,23 +31,25 @@ namespace Multiplayer
         NetworkEntityManager();
         ~NetworkEntityManager();
 
-        //! Only invoked for authoritative hosts
-        void Initialize(HostId hostId, AZStd::unique_ptr<IEntityDomain> entityDomain);
-
         //! INetworkEntityManager overrides.
         //! @{
+        void Initialize(const HostId& hostId, AZStd::unique_ptr<IEntityDomain> entityDomain) override;
+        bool IsInitialized() const override;
+        IEntityDomain* GetEntityDomain() const override;
         NetworkEntityTracker* GetNetworkEntityTracker() override;
         NetworkEntityAuthorityTracker* GetNetworkEntityAuthorityTracker() override;
         MultiplayerComponentRegistry* GetMultiplayerComponentRegistry() override;
-        HostId GetHostId() const override;
+        const HostId& GetHostId() const override;
         ConstNetworkEntityHandle GetEntity(NetEntityId netEntityId) const override;
+        NetEntityId GetNetEntityIdById(const AZ::EntityId& entityId) const override;
 
-        EntityList CreateEntitiesImmediate(const AzFramework::Spawnable& spawnable, NetEntityRole netEntityRole);
+        EntityList CreateEntitiesImmediate(const AzFramework::Spawnable& spawnable, NetEntityRole netEntityRole, AutoActivate autoActivate);
         EntityList CreateEntitiesImmediate
         (
             const PrefabEntityId& prefabEntryId,
             NetEntityRole netEntityRole,
-            const AZ::Transform& transform
+            const AZ::Transform& transform,
+            AutoActivate autoActivate = AutoActivate::Activate
         ) override;
         EntityList CreateEntitiesImmediate
         (
@@ -57,8 +60,9 @@ namespace Multiplayer
             const AZ::Transform& transform
         ) override;
 
+        AZStd::unique_ptr<AzFramework::EntitySpawnTicket> RequestNetSpawnableInstantiation(
+            const AZ::Data::Asset<AzFramework::Spawnable>& netSpawnable, const AZ::Transform& transform) override;
         void SetupNetEntity(AZ::Entity* netEntity, PrefabEntityId prefabEntityId, NetEntityRole netEntityRole) override;
-
         uint32_t GetEntityCount() const override;
         NetworkEntityHandle AddEntityToEntityMap(NetEntityId netEntityId, AZ::Entity* entity) override;
         void MarkForRemoval(const ConstNetworkEntityHandle& entityHandle) override;
@@ -75,16 +79,21 @@ namespace Multiplayer
         void NotifyControllersActivated(const ConstNetworkEntityHandle& entityHandle, EntityIsMigrating entityIsMigrating) override;
         void NotifyControllersDeactivated(const ConstNetworkEntityHandle& entityHandle, EntityIsMigrating entityIsMigrating) override;
         void HandleLocalRpcMessage(NetworkEntityRpcMessage& message) override;
+        void DebugDraw() const override;
         //! @}
 
         void DispatchLocalDeferredRpcMessages();
         void UpdateEntityDomain();
         void OnEntityExitDomain(NetEntityId entityId);
+
         //! RootSpawnableNotificationBus
         //! @{
         void OnRootSpawnableAssigned(AZ::Data::Asset<AzFramework::Spawnable> rootSpawnable, uint32_t generation) override;
         void OnRootSpawnableReleased(uint32_t generation) override;
         //! @}
+
+        //! Used to release all memory prior to shutdown.
+        void Reset();
 
     private:
         void RemoveEntities();
@@ -99,7 +108,6 @@ namespace Multiplayer
         AZStd::unique_ptr<IEntityDomain> m_entityDomain;
         AZ::ScheduledEvent m_updateEntityDomainEvent;
 
-        IEntityDomain::EntitiesNotInDomain m_entitiesNotInDomain;
         OwnedEntitySet m_ownedEntities;
 
         EntityExitDomainEvent m_entityExitDomainEvent;

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -200,8 +201,6 @@ namespace GraphCanvas
 
         AZStd::list<const GraphCanvas::GraphCanvasTreeItem*> exploreItems;
         exploreItems.push_back(treeItem);
-
-        const QModelIndex k_flagIndex;
 
         while (!exploreItems.empty())
         {

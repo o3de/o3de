@@ -1,6 +1,7 @@
 #
-# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
-# 
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
@@ -9,15 +10,6 @@ ly_get_list_relative_pal_filename(pal_include_dir ${CMAKE_CURRENT_LIST_DIR}/Incl
 ly_get_list_relative_pal_filename(pal_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/${PAL_PLATFORM_NAME})
 
 include(${pal_source_dir}/PAL_${PAL_PLATFORM_NAME_LOWERCASE}.cmake) # PAL_TRAIT_ATOM_RHI_DX12_SUPPORTED
-
-if(PAL_TRAIT_PIX_AVAILABLE)
-    set(USE_PIX_DEFINE "USE_PIX")
-    set(PIX_BUILD_DEPENDENCY "3rdParty::pix")
-else()
-    set(USE_PIX_DEFINE "")
-    set(PIX_BUILD_DEPENDENCY "")
-endif()
-
 
 if(PAL_TRAIT_AFTERMATH_AVAILABLE)
     set(USE_NSIGHT_AFTERMATH_DEFINE $<IF:$<CONFIG:release>,"","USE_NSIGHT_AFTERMATH">)
@@ -91,11 +83,7 @@ ly_add_target(
     BUILD_DEPENDENCIES
         PRIVATE
             AZ::AzCore
-            ${PIX_BUILD_DEPENDENCY}
             Gem::Atom_RHI.Reflect
-    COMPILE_DEFINITIONS 
-        PRIVATE
-            ${USE_PIX_DEFINE}
 )
 
 ly_add_target(
@@ -120,10 +108,8 @@ ly_add_target(
             Gem::Atom_RHI_DX12.Reflect
             3rdParty::d3dx12
             ${AFTERMATH_BUILD_DEPENDENCY}           
-            ${PIX_BUILD_DEPENDENCY}
     COMPILE_DEFINITIONS 
         PRIVATE
-            ${USE_PIX_DEFINE}
             ${USE_NSIGHT_AFTERMATH_DEFINE}
             
 )
@@ -147,10 +133,6 @@ ly_add_target(
             Gem::Atom_RHI.Public
             Gem::Atom_RHI_DX12.Reflect
             Gem::Atom_RHI_DX12.Private.Static
-            ${PIX_BUILD_DEPENDENCY}
-    COMPILE_DEFINITIONS 
-        PRIVATE
-            ${USE_PIX_DEFINE}
 )
 
 if(PAL_TRAIT_BUILD_HOST_TOOLS)

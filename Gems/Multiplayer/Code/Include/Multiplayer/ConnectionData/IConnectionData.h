@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -39,8 +40,7 @@ namespace Multiplayer
         virtual EntityReplicationManager& GetReplicationManager() = 0;
 
         //! Creates and manages sending updates to the remote endpoint.
-        //! @param hostTimeMs current server game time in milliseconds
-        virtual void Update(AZ::TimeMs hostTimeMs) = 0;
+        virtual void Update() = 0;
 
         //! Returns whether update messages can be sent to the connection.
         //! @return true if update messages can be sent
@@ -49,5 +49,13 @@ namespace Multiplayer
         //! Sets the state of connection whether update messages can be sent or not.
         //! @param canSendUpdates the state value
         virtual void SetCanSendUpdates(bool canSendUpdates) = 0;
+
+        //! Fetches the state of connection whether handshake logic has completed
+        //! @return true if handshake has completed
+        virtual bool DidHandshake() const = 0;
+
+        //! Sets the state of connection whether handshake logic has completed
+        //! @param didHandshake if handshake logic has completed
+        virtual void SetDidHandshake(bool didHandshake) = 0;
     };
 }

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -141,6 +142,11 @@ AZ::MallocSchema::size_type AZ::MallocSchema::Capacity() const
 AZ::MallocSchema::size_type AZ::MallocSchema::GetMaxAllocationSize() const
 {
     return 0xFFFFFFFFull;
+}
+
+AZ::MallocSchema::size_type AZ::MallocSchema::GetMaxContiguousAllocationSize() const
+{
+    return AZ_CORE_MAX_ALLOCATOR_SIZE;
 }
 
 AZ::IAllocatorAllocate* AZ::MallocSchema::GetSubAllocator()

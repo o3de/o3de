@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -8,6 +9,7 @@
 #define GM_DEFAULT_HANDSHAKE_H
 
 #include <GridMate/Carrier/Handshake.h>
+#include <AzCore/std/string/string.h>
 
 namespace GridMate
 {
@@ -23,34 +25,34 @@ namespace GridMate
         DefaultHandshake(unsigned int timeOut, VersionType version);
         virtual ~DefaultHandshake();
         /// Called from the system to write initial handshake data.
-        virtual void                OnInitiate(ConnectionID id, WriteBuffer& wb);
+        void                OnInitiate(ConnectionID id, WriteBuffer& wb) override;
         /**
         * Called when a system receives a handshake initiation from another system.
         * You can write a reply in the WriteBuffer.
         * return true if you accept this connection and false if you reject it.
         */
-        virtual HandshakeErrorCode  OnReceiveRequest(ConnectionID id, ReadBuffer& rb, WriteBuffer& wb);
+        HandshakeErrorCode  OnReceiveRequest(ConnectionID id, ReadBuffer& rb, WriteBuffer& wb) override;
         /**
         * If we already have a valid connection and we receive another connection request, the system will
         * call this function to verify the state of the connection.
         */
-        virtual bool                OnConfirmRequest(ConnectionID id, ReadBuffer& rb);
+        bool                OnConfirmRequest(ConnectionID id, ReadBuffer& rb) override;
         /**
         * Called when we receive Ack from the other system on our initial data \ref OnInitiate.
         * return true to accept the ack or false to reject the handshake.
         */
-        virtual bool                OnReceiveAck(ConnectionID id, ReadBuffer& rb);
+        bool                OnReceiveAck(ConnectionID id, ReadBuffer& rb) override;
         /**
         * Called when we receive Ack from the other system while we were connected. This callback is called
         * so we can just confirm that our connection is valid!
         */
-        virtual bool                OnConfirmAck(ConnectionID id, ReadBuffer& rb);
+        bool                OnConfirmAck(ConnectionID id, ReadBuffer& rb) override;
         /// Return true if you want to reject early reject a connection.
-        virtual bool                OnNewConnection(const string& address);
+        bool                OnNewConnection(const AZStd::string& address) override;
         /// Called when we close a connection.
-        virtual void                OnDisconnect(ConnectionID id);
+        void                OnDisconnect(ConnectionID id) override;
         /// Return timeout in milliseconds of the handshake procedure.
-        virtual unsigned int        GetHandshakeTimeOutMS() const       { return m_handshakeTimeOutMS; }
+        unsigned int        GetHandshakeTimeOutMS() const override       { return m_handshakeTimeOutMS; }
     private:
         unsigned int m_handshakeTimeOutMS;
         VersionType m_version;

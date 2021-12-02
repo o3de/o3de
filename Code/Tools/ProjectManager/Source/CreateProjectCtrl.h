@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -22,6 +23,7 @@ namespace O3DE::ProjectManager
     QT_FORWARD_DECLARE_CLASS(ScreenHeader)
     QT_FORWARD_DECLARE_CLASS(NewProjectSettingsScreen)
     QT_FORWARD_DECLARE_CLASS(GemCatalogScreen)
+    QT_FORWARD_DECLARE_CLASS(GemRepoScreen)
 
     class CreateProjectCtrl
         : public ScreenWidget
@@ -61,11 +63,9 @@ namespace O3DE::ProjectManager
         QPushButton* m_secondaryButton = nullptr;
 #endif // TEMPLATE_GEM_CONFIGURATION_ENABLED
 
-        QString m_projectTemplatePath;
-        ProjectInfo m_projectInfo;
-        
         NewProjectSettingsScreen* m_newProjectSettingsScreen = nullptr;
         GemCatalogScreen* m_gemCatalogScreen = nullptr;
+        GemRepoScreen* m_gemRepoScreen = nullptr;
     };
 
 } // namespace O3DE::ProjectManager

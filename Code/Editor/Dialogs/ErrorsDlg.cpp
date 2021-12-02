@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -19,7 +20,7 @@ AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
 AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 
 
-CErrorsDlg::CErrorsDlg(QWidget* pParent /*=NULL*/)
+CErrorsDlg::CErrorsDlg(QWidget* pParent /*=nullptr*/)
     : QDialog(pParent)
     , ui(new Ui::CErrorsDlg)
 {

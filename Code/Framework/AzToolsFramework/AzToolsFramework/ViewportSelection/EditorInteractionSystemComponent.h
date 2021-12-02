@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -13,6 +14,8 @@
 
 namespace AzToolsFramework
 {
+    class ViewportEditorModeTracker;
+
     //! System Component to wrap active input handler.
     //! EditorInteractionSystemComponent is notified of viewport mouse events from RenderViewport
     //! and forwards them to a concrete implementation of ViewportSelectionRequests.
@@ -24,6 +27,9 @@ namespace AzToolsFramework
     {
     public:
         AZ_COMPONENT(EditorInteractionSystemComponent, "{146D0317-AF42-45AB-A953-F54198525DD5}")
+
+        EditorInteractionSystemComponent();
+        ~EditorInteractionSystemComponent();
 
         static void Reflect(AZ::ReflectContext* context);
 
@@ -53,5 +59,7 @@ namespace AzToolsFramework
         AZStd::unique_ptr<InternalViewportSelectionRequests> m_interactionRequests; //!< Hold a concrete implementation of
                                                                                     //!< ViewportSelectionRequests to handle viewport
                                                                                     //!< input and drawing for the Editor.
+
+        AZStd::unique_ptr<ViewportEditorModeTracker> m_viewportEditorMode; //!< Editor mode tracker for each viewport.
     };
 } // namespace AzToolsFramework

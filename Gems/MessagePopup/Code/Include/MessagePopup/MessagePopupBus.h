@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -24,7 +25,7 @@ namespace MessagePopup
         EPopupKind_Toaster
     };
 
-    static const AZ::u32 InvalidId = -1;
+    static const AZ::u32 InvalidId = std::numeric_limits<AZ::u32>::max();
 
     //////////////////////////////////////////////////////////////////////////
     struct MessagePopupInfo

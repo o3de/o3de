@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -13,9 +14,10 @@
 #include "BaseObject.h"
 #include "MemoryCategories.h"
 #include <MCore/Source/MultiThreadManager.h>
-#include <MCore/Source/Array.h>
+#include <AzCore/std/containers/vector.h>
 #include <AzCore/std/smart_ptr/weak_ptr.h>
-
+#include <Source/Integration/Assets/ActorAsset.h>
+#include <Source/Integration/System/SystemCommon.h>
 
 namespace EMotionFX
 {
@@ -46,7 +48,7 @@ namespace EMotionFX
          * Register an actor.
          * @param actor The actor to register.
          */
-        void RegisterActor(AZStd::shared_ptr<Actor> actor);
+        void RegisterActor(ActorAssetData actorAsset);
 
         /**
          * Unregister all actors.
@@ -59,14 +61,14 @@ namespace EMotionFX
          * Unregister a specific actor.
          * @param actor The actor you passed to the RegisterActor function sometime before.
          */
-        void UnregisterActor(const AZStd::shared_ptr<Actor>& actor);
+        void UnregisterActor(AZ::Data::AssetId actorAssetID);
 
         /**
          * Get the number of registered actors.
          * This does not include the clones that have been optionally created.
          * @result The number of registered actors.
          */
-        MCORE_INLINE uint32 GetNumActors() const { return static_cast<uint32>(m_actors.size()); }
+        MCORE_INLINE size_t GetNumActors() const { return m_actorAssets.size(); }
 
         /**
          * Get a given actor.
@@ -76,7 +78,8 @@ namespace EMotionFX
          * @param nr The actor number, which must be in range of [0..GetNumActors()-1].
          * @result A reference to the actor object that contains the array of Actor objects.
          */
-        Actor* GetActor(uint32 nr) const;
+        Actor* GetActor(size_t nr) const;
+        ActorAssetData GetActorAsset(size_t nr) const;
 
         /**
          * Find the given actor by name.
@@ -98,7 +101,8 @@ namespace EMotionFX
          * @param actor The actor object you once passed to RegisterActor.
          * @result Returns the actor number, which is in range of [0..GetNumActors()-1], or returns MCORE_INVALIDINDEX32 when not found.
          */
-        uint32 FindActorIndex(Actor* actor) const;
+        size_t FindActorIndex(AZ::Data::AssetId assetId) const;
+        size_t FindActorIndex(const Actor* actor) const;
 
         /**
          * Find the actor number for a given actor name.
@@ -106,7 +110,7 @@ namespace EMotionFX
          * @param actorName The name of the actor.
          * @result Returns the actor number, which is in range of [0..GetNumActors()-1], or returns MCORE_INVALIDINDEX32 when not found.
          */
-        uint32 FindActorIndexByName(const char* actorName) const;
+        size_t FindActorIndexByName(const char* actorName) const;
 
         /**
          * Find the actor number for a given actor filename.
@@ -114,7 +118,7 @@ namespace EMotionFX
          * @param filename The filename of the actor.
          * @result Returns the actor number, which is in range of [0..GetNumActors()-1], or returns MCORE_INVALIDINDEX32 when not found.
          */
-        uint32 FindActorIndexByFileName(const char* filename) const;
+        size_t FindActorIndexByFileName(const char* filename) const;
 
         // register the actor instance
         void RegisterActorInstance(ActorInstance* actorInstance);
@@ -123,27 +127,27 @@ namespace EMotionFX
          * Get the number of actor instances that currently are registered.
          * @result The number of registered actor instances.
          */
-        MCORE_INLINE uint32 GetNumActorInstances() const                                { return mActorInstances.GetLength(); }
+        MCORE_INLINE size_t GetNumActorInstances() const                                { return m_actorInstances.size(); }
 
         /**
          * Get a given registered actor instance.
          * @param nr The actor instance number, which must be in range of [0..GetNumActorInstances()-1].
          * @result A pointer to the actor instance.
          */
-        MCORE_INLINE ActorInstance* GetActorInstance(uint32 nr) const                   { return mActorInstances[nr]; }
+        MCORE_INLINE ActorInstance* GetActorInstance(size_t nr) const                   { return m_actorInstances[nr]; }
 
         /**
          * Get the array of actor instances.
          * @result The const reference to the actor instance array.
          */
-        const MCore::Array<ActorInstance*>& GetActorInstanceArray() const;
+        const AZStd::vector<ActorInstance*>& GetActorInstanceArray() const;
 
         /**
          * Find the given actor instance inside the actor manager and return its index.
          * @param actorInstance A pointer to the actor instance to be searched.
          * @result The actor instance index for the actor manager, MCORE_INVALIDINDEX32 in case the actor instance hasn't been found.
          */
-        uint32 FindActorInstanceIndex(ActorInstance* actorInstance) const;
+        size_t FindActorInstanceIndex(ActorInstance* actorInstance) const;
 
         /**
          * Find an actor instance inside the actor manager by its id.
@@ -159,7 +163,7 @@ namespace EMotionFX
          */
         Actor* FindActorByID(uint32 id) const;
 
-        AZStd::shared_ptr<Actor> FindSharedActorByID(uint32 id) const;
+        AZ::Data::AssetId FindAssetIdByActorId(uint32 id) const;
 
         /**
          * Check if the given actor instance is registered.
@@ -191,7 +195,7 @@ namespace EMotionFX
          * When you delete an actor instance, it automatically will unregister itself from the manager.
          * @param nr The actor instance number, which has to be in range of [0..GetNumActorInstances()-1].
          */
-        void UnregisterActorInstance(uint32 nr);
+        void UnregisterActorInstance(size_t nr);
 
         /**
          * Get the number of root actor instances.
@@ -200,7 +204,7 @@ namespace EMotionFX
          * horse is the root attachment instance.
          * @result Returns the number of root actor instances.
          */
-        MCORE_INLINE uint32 GetNumRootActorInstances() const                    { return mRootActorInstances.GetLength(); }
+        MCORE_INLINE size_t GetNumRootActorInstances() const                    { return m_rootActorInstances.size(); }
 
         /**
          * Get a given root actor instance.
@@ -210,7 +214,7 @@ namespace EMotionFX
          * @param nr The root actor instance number, which must be in range of [0..GetNumRootActorInstances()-1].
          * @result A pointer to the actor instance that is a root.
          */
-        MCORE_INLINE ActorInstance* GetRootActorInstance(uint32 nr) const       { return mRootActorInstances[nr]; }
+        MCORE_INLINE ActorInstance* GetRootActorInstance(size_t nr) const       { return m_rootActorInstances[nr]; }
 
         /**
          * Get the currently used actor update scheduler.
@@ -254,12 +258,12 @@ namespace EMotionFX
         void UnlockActors();
 
     private:
-        MCore::Array<ActorInstance*>    mActorInstances;        /**< The registered actor instances. */
-        AZStd::vector<AZStd::shared_ptr<Actor>> m_actors;       /**< The registered actors. */
-        MCore::Array<ActorInstance*>    mRootActorInstances;    /**< Root actor instances (roots of all attachment chains). */
-        ActorUpdateScheduler*           mScheduler;             /**< The update scheduler to use. */
-        MCore::MutexRecursive           mActorLock;             /**< The multithread lock for touching the actors array. */
-        MCore::MutexRecursive           mActorInstanceLock;     /**< The multithread lock for touching the actor instances array. */
+        AZStd::vector<ActorInstance*>   m_actorInstances;        /**< The registered actor instances. */
+        AZStd::vector<ActorAssetData>   m_actorAssets;
+        AZStd::vector<ActorInstance*>   m_rootActorInstances;    /**< Root actor instances (roots of all attachment chains). */
+        ActorUpdateScheduler*           m_scheduler;             /**< The update scheduler to use. */
+        MCore::MutexRecursive           m_actorLock;             /**< The multithread lock for touching the actors array. */
+        MCore::MutexRecursive           m_actorInstanceLock;     /**< The multithread lock for touching the actor instances array. */
 
         /**
          * The constructor, which initializes using the multi processor scheduler.

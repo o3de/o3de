@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -43,7 +44,7 @@ namespace AzToolsFramework
     const char AssetBundleSettingsFileExtension[] = "bundlesettings";
     const char BundleFileExtension[] = "pak";
     const char ComparisonRulesFileExtension[] = "rules";
-    const char ErrorWindowName[] = "AssetBundler";
+    [[maybe_unused]] const char ErrorWindowName[] = "AssetBundler";
     const char* AssetFileInfoListComparison::ComparisonTypeNames[] = { "delta", "union", "intersection", "complement", "filepattern", "intersectioncount" };
     const char* AssetFileInfoListComparison::FilePatternTypeNames[] = { "wildcard", "regex" };
     const char DefaultTypeName[] = "default";

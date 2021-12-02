@@ -1,11 +1,11 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
-#include "StandaloneTools_precompiled.h"
 #include "LuaEditor.h"
 #include <Source/LuaIDEApplication.h>
 
@@ -34,6 +34,10 @@ int main(int argc, char* argv[])
         if (!AZ::AllocatorInstance<AZ::OSAllocator>::IsReady())
         {
             AZ::AllocatorInstance<AZ::OSAllocator>::Create();
+        }
+        if (!AZ::AllocatorInstance<AZ::SystemAllocator>::IsReady())
+        {
+            AZ::AllocatorInstance<AZ::SystemAllocator>::Create();
         }
 
         AZStd::unique_ptr<AZ::IO::LocalFileIO> fileIO = AZStd::unique_ptr<AZ::IO::LocalFileIO>(aznew AZ::IO::LocalFileIO());
@@ -70,6 +74,10 @@ int main(int argc, char* argv[])
         // if its in GUI mode or not.
     }
 
+    if (AZ::AllocatorInstance<AZ::SystemAllocator>::IsReady())
+    {
+        AZ::AllocatorInstance<AZ::SystemAllocator>::Destroy();
+    }
     if (AZ::AllocatorInstance<AZ::OSAllocator>::IsReady())
     {
         AZ::AllocatorInstance<AZ::OSAllocator>::Destroy();

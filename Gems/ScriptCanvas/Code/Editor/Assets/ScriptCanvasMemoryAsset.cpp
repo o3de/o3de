@@ -1,11 +1,11 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
-#include "precompiled.h"
 
 #include "ScriptCanvasMemoryAsset.h"
 #include "ScriptCanvasUndoHelper.h"
@@ -374,7 +374,6 @@ namespace ScriptCanvasEditor
         }
         else
         {
-            AZ::Data::AssetId assetId = asset.GetId();
             Internal::MemoryAssetSystemNotificationBus::Broadcast(&Internal::MemoryAssetSystemNotifications::OnAssetReloaded, this);
         }
     }
@@ -392,7 +391,6 @@ namespace ScriptCanvasEditor
         }
         else
         {
-            AZ::Data::AssetId assetId = asset.GetId();
             Internal::MemoryAssetSystemNotificationBus::Broadcast(&Internal::MemoryAssetSystemNotifications::OnAssetError, this);
         }
     }
@@ -505,7 +503,7 @@ namespace ScriptCanvasEditor
         m_pendingSave.emplace_back(normPath);
 
         m_assetSaveFinalizer.Reset();
-        m_assetSaveFinalizer.Start(this, fileInfo, saveInfo, onSaveCallback, AssetSaveFinalizer::OnCompleteHandler([this, saveInfo](AZ::Data::AssetId /*assetId*/)
+        m_assetSaveFinalizer.Start(this, fileInfo, saveInfo, onSaveCallback, AssetSaveFinalizer::OnCompleteHandler([](AZ::Data::AssetId /*assetId*/)
             {
             }));
     }
@@ -706,7 +704,7 @@ namespace ScriptCanvasEditor
 
                 bool savedSuccess;
                 {
-                    AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::ScriptCanvas, "ScriptCanvasAssetHandler::SaveAssetData");
+                    AZ_PROFILE_SCOPE(ScriptCanvas, "ScriptCanvasAssetHandler::SaveAssetData");
 
                     ScriptCanvasMemoryAsset cloneAsset;
                     m_sourceAsset->CloneTo(cloneAsset);
@@ -716,14 +714,14 @@ namespace ScriptCanvasEditor
                 stream.Close();
                 if (savedSuccess)
                 {
-                    AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::ScriptCanvas, "AssetTracker::SaveAssetPostSourceControl : TempToTargetFileReplacement");
+                    AZ_PROFILE_SCOPE(ScriptCanvas, "AssetTracker::SaveAssetPostSourceControl : TempToTargetFileReplacement");
 
                     AZ::IO::FileIOBase* fileIO = AZ::IO::FileIOBase::GetInstance();
                     const bool targetFileExists = fileIO->Exists(m_saveInfo.m_streamName.data());
 
                     bool removedTargetFile;
                     {
-                        AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::ScriptCanvas, "AssetTracker::SaveAssetPostSourceControl : TempToTargetFileReplacement : RemoveTarget");
+                        AZ_PROFILE_SCOPE(ScriptCanvas, "AssetTracker::SaveAssetPostSourceControl : TempToTargetFileReplacement : RemoveTarget");
                         removedTargetFile = fileIO->Remove(m_saveInfo.m_streamName.data());
                     }
 
@@ -733,7 +731,7 @@ namespace ScriptCanvasEditor
                     }
                     else
                     {
-                        AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::ScriptCanvas, "AssetTracker::SaveAssetPostSourceControl : TempToTargetFileReplacement : RenameTempFile");
+                        AZ_PROFILE_SCOPE(ScriptCanvas, "AssetTracker::SaveAssetPostSourceControl : TempToTargetFileReplacement : RenameTempFile");
                         AZ::IO::Result renameResult = fileIO->Rename(tempPath.data(), m_saveInfo.m_streamName.data());
                         if (!renameResult)
                         {

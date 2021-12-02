@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -20,7 +21,7 @@
 
 namespace EMotionFX
 {
-    size_t BlendTreeMaskLegacyNode::m_numMasks = 4;
+    size_t BlendTreeMaskLegacyNode::s_numMasks = 4;
 
     AZ_CLASS_ALLOCATOR_IMPL(BlendTreeMaskLegacyNode, AnimGraphAllocator, 0)
     AZ_CLASS_ALLOCATOR_IMPL(BlendTreeMaskLegacyNode::UniqueData, AnimGraphObjectUniqueDataAllocator, 0)
@@ -32,17 +33,17 @@ namespace EMotionFX
 
     void BlendTreeMaskLegacyNode::UniqueData::Update()
     {
-        BlendTreeMaskLegacyNode* maskNode = azdynamic_cast<BlendTreeMaskLegacyNode*>(mObject);
+        BlendTreeMaskLegacyNode* maskNode = azdynamic_cast<BlendTreeMaskLegacyNode*>(m_object);
         AZ_Assert(maskNode, "Unique data linked to incorrect node type.");
 
-        Actor* actor = mAnimGraphInstance->GetActorInstance()->GetActor();
+        Actor* actor = m_animGraphInstance->GetActorInstance()->GetActor();
 
         const size_t numMasks = BlendTreeMaskLegacyNode::GetNumMasks();
-        mMasks.resize(numMasks);
-        AnimGraphPropertyUtils::ReinitJointIndices(actor, maskNode->GetMask0(), mMasks[0]);
-        AnimGraphPropertyUtils::ReinitJointIndices(actor, maskNode->GetMask1(), mMasks[1]);
-        AnimGraphPropertyUtils::ReinitJointIndices(actor, maskNode->GetMask2(), mMasks[2]);
-        AnimGraphPropertyUtils::ReinitJointIndices(actor, maskNode->GetMask3(), mMasks[3]);
+        m_masks.resize(numMasks);
+        AnimGraphPropertyUtils::ReinitJointIndices(actor, maskNode->GetMask0(), m_masks[0]);
+        AnimGraphPropertyUtils::ReinitJointIndices(actor, maskNode->GetMask1(), m_masks[1]);
+        AnimGraphPropertyUtils::ReinitJointIndices(actor, maskNode->GetMask2(), m_masks[2]);
+        AnimGraphPropertyUtils::ReinitJointIndices(actor, maskNode->GetMask3(), m_masks[3]);
     }
 
     BlendTreeMaskLegacyNode::BlendTreeMaskLegacyNode()
@@ -53,7 +54,7 @@ namespace EMotionFX
         , m_outputEvents3(true)
     {
         // setup the input ports
-        InitInputPorts(static_cast<AZ::u32>(m_numMasks));
+        InitInputPorts(s_numMasks);
         SetupInputPort("Pose 0", INPUTPORT_POSE_0, AttributePose::TYPE_ID, PORTID_INPUT_POSE_0);
         SetupInputPort("Pose 1", INPUTPORT_POSE_1, AttributePose::TYPE_ID, PORTID_INPUT_POSE_1);
         SetupInputPort("Pose 2", INPUTPORT_POSE_2, AttributePose::TYPE_ID, PORTID_INPUT_POSE_2);
@@ -103,10 +104,10 @@ namespace EMotionFX
         UniqueData* uniqueData = static_cast<UniqueData*>(FindOrCreateUniqueNodeData(animGraphInstance));
 
         // for all input ports
-        for (uint32 i = 0; i < m_numMasks; ++i)
+        for (size_t i = 0; i < s_numMasks; ++i)
         {
             // if there is no connection plugged in
-            if (mInputPorts[INPUTPORT_POSE_0 + i].mConnection == nullptr)
+            if (m_inputPorts[INPUTPORT_POSE_0 + i].m_connection == nullptr)
             {
                 continue;
             }
@@ -120,10 +121,10 @@ namespace EMotionFX
         outputPose = GetOutputPose(animGraphInstance, OUTPUTPORT_RESULT)->GetValue();
         outputPose->InitFromBindPose(animGraphInstance->GetActorInstance());
 
-        for (uint32 i = 0; i < m_numMasks; ++i)
+        for (size_t i = 0; i < s_numMasks; ++i)
         {
             // if there is no connection plugged in
-            if (mInputPorts[INPUTPORT_POSE_0 + i].mConnection == nullptr)
+            if (m_inputPorts[INPUTPORT_POSE_0 + i].m_connection == nullptr)
             {
                 continue;
             }
@@ -134,14 +135,13 @@ namespace EMotionFX
             const Pose& localPose = pose->GetPose();
 
             // get the number of nodes inside the mask and default them to all nodes in the local pose in case there aren't any selected
-            const size_t numNodes = uniqueData->mMasks[i].size();
+            const size_t numNodes = uniqueData->m_masks[i].size();
             if (numNodes > 0)
             {
                 // for all nodes in the mask, output their transforms
-                for (size_t n = 0; n < numNodes; ++n)
+                for (size_t nodeIndex : uniqueData->m_masks[i])
                 {
-                    const uint32 nodeIndex = uniqueData->mMasks[i][n];
-                    outputLocalPose.SetLocalSpaceTransform(nodeIndex, localPose.GetLocalSpaceTransform(nodeIndex));
+                     outputLocalPose.SetLocalSpaceTransform(nodeIndex, localPose.GetLocalSpaceTransform(nodeIndex));
                 }
             }
             else
@@ -153,7 +153,7 @@ namespace EMotionFX
         // visualize it
         if (GetEMotionFX().GetIsInEditorMode() && GetCanVisualize(animGraphInstance))
         {
-            animGraphInstance->GetActorInstance()->DrawSkeleton(outputPose->GetPose(), mVisualizeColor);
+            animGraphInstance->GetActorInstance()->DrawSkeleton(outputPose->GetPose(), m_visualizeColor);
         }
     }
 
@@ -182,7 +182,7 @@ namespace EMotionFX
     void BlendTreeMaskLegacyNode::PostUpdate(AnimGraphInstance* animGraphInstance, float timePassedInSeconds)
     {
         // post update all incoming nodes
-        for (uint32 i = 0; i < m_numMasks; ++i)
+        for (size_t i = 0; i < s_numMasks; ++i)
         {
             // if the port has no input, skip it
             AnimGraphNode* inputNode = GetInputNode(INPUTPORT_POSE_0 + i);
@@ -202,7 +202,7 @@ namespace EMotionFX
         data->ClearEventBuffer();
         data->ZeroTrajectoryDelta();
 
-        for (uint32 i = 0; i < m_numMasks; ++i)
+        for (size_t i = 0; i < s_numMasks; ++i)
         {
             // if the port has no input, skip it
             AnimGraphNode* inputNode = GetInputNode(INPUTPORT_POSE_0 + i);
@@ -212,13 +212,12 @@ namespace EMotionFX
             }
 
             // get the number of nodes inside the mask and default them to all nodes in the local pose in case there aren't any selected
-            const size_t numNodes = uniqueData->mMasks[i].size();
+            const size_t numNodes = uniqueData->m_masks[i].size();
             if (numNodes > 0)
             {
                 // for all nodes in the mask, output their transforms
-                for (size_t n = 0; n < numNodes; ++n)
+                for (size_t nodeIndex : uniqueData->m_masks[i])
                 {
-                    const uint32 nodeIndex = uniqueData->mMasks[i][n];
                     if (nodeIndex == animGraphInstance->GetActorInstance()->GetActor()->GetMotionExtractionNodeIndex())
                     {
                         AnimGraphRefCountedData* sourceData = inputNode->FindOrCreateUniqueNodeData(animGraphInstance)->GetRefCountedData();
@@ -243,14 +242,14 @@ namespace EMotionFX
                 // get the input event buffer
                 const AnimGraphEventBuffer& inputEventBuffer = inputNode->FindOrCreateUniqueNodeData(animGraphInstance)->GetRefCountedData()->GetEventBuffer();
                 AnimGraphEventBuffer& outputEventBuffer = data->GetEventBuffer();
-                const uint32 startIndex = outputEventBuffer.GetNumEvents();
+                const size_t startIndex = outputEventBuffer.GetNumEvents();
 
                 // resize the buffer already, so that we don't do this for every event
                 outputEventBuffer.Resize(outputEventBuffer.GetNumEvents() + inputEventBuffer.GetNumEvents());
 
                 // copy over all the events
-                const uint32 numInputEvents = inputEventBuffer.GetNumEvents();
-                for (uint32 e = 0; e < numInputEvents; ++e)
+                const size_t numInputEvents = inputEventBuffer.GetNumEvents();
+                for (size_t e = 0; e < numInputEvents; ++e)
                 {
                     outputEventBuffer.SetEvent(startIndex + e, inputEventBuffer.GetEvent(e));
                 }

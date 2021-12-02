@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -62,18 +63,18 @@ namespace EMStudio
 
         AZStd::string GetName() const
         {
-            return mLineEdit->text().toUtf8().data();
+            return m_lineEdit->text().toUtf8().data();
         }
 
     private slots:
         void NameEditChanged(const QString& text);
 
     private:
-        AZStd::string                   mOldName;
-        AZStd::vector<AZStd::string>    mInvalidNames;
-        QPushButton*                    mOKButton;
-        QPushButton*                    mCancelButton;
-        QLineEdit*                      mLineEdit;
+        AZStd::string                   m_oldName;
+        AZStd::vector<AZStd::string>    m_invalidNames;
+        QPushButton*                    m_okButton;
+        QPushButton*                    m_cancelButton;
+        QLineEdit*                      m_lineEdit;
     };
 
     class ParameterWindow
@@ -95,7 +96,7 @@ namespace EMStudio
 
         bool GetIsParameterSelected(const AZStd::string& parameterName)
         {
-            if (AZStd::find(mSelectedParameterNames.begin(), mSelectedParameterNames.end(), parameterName) == mSelectedParameterNames.end())
+            if (AZStd::find(m_selectedParameterNames.begin(), m_selectedParameterNames.end(), parameterName) == m_selectedParameterNames.end())
             {
                 return false;
             }
@@ -191,21 +192,20 @@ namespace EMStudio
 
         // toolbar buttons
         QAction* m_addAction;
-        static int m_contextMenuWidth;
+        static int s_contextMenuWidth;
 
         QAction* m_editAction;
 
-        AZStd::vector<AZStd::string>    mSelectedParameterNames;
-        bool                            mEnsureVisibility;
-        bool                            mLockSelection;
+        AZStd::vector<AZStd::string>    m_selectedParameterNames;
+        bool                            m_ensureVisibility;
+        bool                            m_lockSelection;
 
-        AZStd::string                   mFilterString;
-        AnimGraphPlugin*                mPlugin;
-        ParameterWindowTreeWidget*      mTreeWidget;
+        AZStd::string                   m_filterString;
+        AnimGraphPlugin*                m_plugin;
+        ParameterWindowTreeWidget*      m_treeWidget;
         AzQtComponents::FilteredSearchWidget* m_searchWidget;
-        QVBoxLayout*                    mVerticalLayout;
-        QScrollArea*                    mScrollArea;
-        AZStd::string                   mNameString;
+        QVBoxLayout*                    m_verticalLayout;
+        AZStd::string                   m_nameString;
         struct ParameterWidget
         {
             AZStd::unique_ptr<ValueParameterEditor> m_valueParameterEditor;

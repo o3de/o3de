@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -35,29 +36,37 @@ namespace AZ
             void Init();
             void Shutdown();
 
-            struct PairOfShaderAssetAndShaderVariantId
+            struct TupleShaderAssetAndShaderVariantId
             {
                 Data::Asset<ShaderAsset> m_shaderAsset;
                 ShaderVariantId m_shaderVariantId;
+                SupervariantIndex m_supervariantIndex;
 
-                bool operator==(const PairOfShaderAssetAndShaderVariantId& anotherPair) const
+                bool operator==(const TupleShaderAssetAndShaderVariantId& anotherTuple) const
                 {
-                    return (m_shaderAsset.GetId() == anotherPair.m_shaderAsset.GetId() && m_shaderVariantId == anotherPair.m_shaderVariantId);
+                    return (
+                        (m_shaderAsset.GetId() == anotherTuple.m_shaderAsset.GetId()) &&
+                        (m_shaderVariantId == anotherTuple.m_shaderVariantId) &&
+                        (m_supervariantIndex == anotherTuple.m_supervariantIndex)
+                    );
                 }
             };
 
             ///////////////////////////////////////////////////////////////////
             // IShaderVariantFinder overrides
-            bool QueueLoadShaderVariantAssetByVariantId(Data::Asset<ShaderAsset> shaderAsset, const ShaderVariantId& shaderVariantId) override;
+            bool QueueLoadShaderVariantAssetByVariantId(Data::Asset<ShaderAsset> shaderAsset, const ShaderVariantId& shaderVariantId, SupervariantIndex supervariantIndex) override;
             bool QueueLoadShaderVariantTreeAsset(const Data::AssetId& shaderAssetId) override;
-            bool QueueLoadShaderVariantAsset(const Data::AssetId& shaderVariantTreeAssetId, ShaderVariantStableId variantStableId) override;
+            bool QueueLoadShaderVariantAsset(const Data::AssetId& shaderVariantTreeAssetId, ShaderVariantStableId variantStableId, SupervariantIndex supervariantIndex) override;
 
             Data::Asset<ShaderVariantAsset> GetShaderVariantAssetByVariantId(
-                Data::Asset<ShaderAsset> shaderAsset, const ShaderVariantId& shaderVariantId) override;
+                Data::Asset<ShaderAsset> shaderAsset, const ShaderVariantId& shaderVariantId, SupervariantIndex supervariantIndex) override;
             Data::Asset<ShaderVariantAsset> GetShaderVariantAssetByStableId(
-                Data::Asset<ShaderAsset> shaderAsset, ShaderVariantStableId shaderVariantStableId) override;
+                Data::Asset<ShaderAsset> shaderAsset, ShaderVariantStableId shaderVariantStableId,
+                SupervariantIndex supervariantIndex) override;
             Data::Asset<ShaderVariantTreeAsset> GetShaderVariantTreeAsset(const Data::AssetId& shaderAssetId) override;
-            Data::Asset<ShaderVariantAsset> GetShaderVariantAsset(const Data::AssetId& shaderVariantTreeAssetId, ShaderVariantStableId variantStableId) override;
+            Data::Asset<ShaderVariantAsset> GetShaderVariantAsset(
+                const Data::AssetId& shaderVariantTreeAssetId, ShaderVariantStableId variantStableId,
+                SupervariantIndex supervariantIndex) override;
 
             void Reset() override;
             ///////////////////////////////////////////////////////////////////
@@ -79,7 +88,7 @@ namespace AZ
             void ThreadServiceLoop();
 
             void QueueShaderVariantTreeForLoading(
-                const PairOfShaderAssetAndShaderVariantId& shaderAndVariantPair,
+                const TupleShaderAssetAndShaderVariantId& shaderAndVariantTuple,
                 AZStd::unordered_set<Data::AssetId>& shaderVariantTreePendingRequests);
 
             //! This is a helper method called from the service thread.
@@ -97,7 +106,7 @@ namespace AZ
             AZStd::condition_variable m_workCondition;
 
             //! This is a list of AssetId of ShaderVariantAsset.
-            AZStd::vector<PairOfShaderAssetAndShaderVariantId> m_newShaderVariantPendingRequests;
+            AZStd::vector<TupleShaderAssetAndShaderVariantId> m_newShaderVariantPendingRequests;
 
             //! This is a list of AssetId of ShaderAsset (Do not confuse with the AssetId ShaderVariantTreeAsset).
             AZStd::vector<Data::AssetId> m_shaderVariantTreePendingRequests;
@@ -139,13 +148,14 @@ namespace AZStd
     };
 
     template<>
-    struct hash<AZ::RPI::ShaderVariantAsyncLoader::PairOfShaderAssetAndShaderVariantId>
+    struct hash<AZ::RPI::ShaderVariantAsyncLoader::TupleShaderAssetAndShaderVariantId>
     {
-        size_t operator()(const AZ::RPI::ShaderVariantAsyncLoader::PairOfShaderAssetAndShaderVariantId& pair) const
+        size_t operator()(const AZ::RPI::ShaderVariantAsyncLoader::TupleShaderAssetAndShaderVariantId& tuple) const
         {
             static constexpr AZStd::hash<AZ::RPI::ShaderVariantId> hash_fn;
-            size_t retVal = pair.m_shaderAsset.GetId().m_guid.GetHash();
-            AZStd::hash_combine(retVal, hash_fn(pair.m_shaderVariantId));
+            size_t retVal = tuple.m_shaderAsset.GetId().m_guid.GetHash();
+            AZStd::hash_combine(retVal, hash_fn(tuple.m_shaderVariantId));
+            AZStd::hash_combine(retVal, tuple.m_supervariantIndex.GetIndex());
             return retVal;
         }
     };

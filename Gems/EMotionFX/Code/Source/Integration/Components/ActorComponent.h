@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -44,6 +45,31 @@ namespace EMotionFX
             AZ_COMPONENT(ActorComponent, "{BDC97E7F-A054-448B-A26F-EA2B5D78E377}");
             friend class EditorActorComponent;
 
+            class BoundingBoxConfiguration
+            {
+            public:
+                AZ_TYPE_INFO(BoundingBoxConfiguration, "{EBCFF975-00A5-4578-85C7-59909F52067C}");
+
+                BoundingBoxConfiguration() = default;
+
+                EMotionFX::ActorInstance::EBoundsType m_boundsType = EMotionFX::ActorInstance::BOUNDS_STATIC_BASED;
+                float m_expandBy = 25.0f; ///< Expand the bounding volume by the given percentage.
+                bool m_autoUpdateBounds    = true;
+                float m_updateTimeFrequency = 0.0f;
+                AZ::u32 m_updateItemFrequency = 1;
+
+                // Set the bounding box configuration of the given actor instance to the parameters given by 'this'. The actor instance must not be null (this is not checked).
+                void Set(ActorInstance* actorInstance) const;
+
+                // Set the bounding box configuration, then update the bounds of the actor instance
+                void SetAndUpdate(ActorInstance* actorInstance) const;
+
+                static void Reflect(AZ::ReflectContext* context);
+
+                AZ::Crc32 GetVisibilityAutoUpdate() const;
+                AZ::Crc32 GetVisibilityAutoUpdateSettings() const;
+            };
+
             /**
             * Configuration struct for procedural configuration of Actor Components.
             */
@@ -54,18 +80,19 @@ namespace EMotionFX
                 AZ::Data::Asset<ActorAsset> m_actorAsset{AZ::Data::AssetLoadBehavior::NoLoad}; ///< Selected actor asset.
                 ActorAsset::MaterialList m_materialPerLOD{}; ///< Material assignment per LOD.
                 AZ::EntityId m_attachmentTarget{}; ///< Target entity this actor should attach to.
-                AZ::u32 m_attachmentJointIndex = MCORE_INVALIDINDEX32; ///< Index of joint on target skeleton for actor attachments.
+                size_t m_attachmentJointIndex = InvalidIndex; ///< Index of joint on target skeleton for actor attachments.
                 AttachmentType m_attachmentType = AttachmentType::None; ///< Type of attachment.
                 bool m_renderSkeleton = false; ///< Toggles debug rendering of the skeleton.
                 bool m_renderCharacter = true; ///< Toggles rendering of the character.
                 bool m_renderBounds = false; ///< Toggles rendering of the character bounds used for visibility testing.
                 SkinningMethod m_skinningMethod = SkinningMethod::DualQuat; ///< The skinning method for this actor
-                AZ::u32 m_lodLevel = 0;
+                size_t m_lodLevel = 0;
 
                 // Force updating the joints when it is out of camera view. By
                 // default, joints level update (beside the root joint) on
                 // actor are disabled when the actor is out of view. 
                 bool m_forceUpdateJointsOOV = false;
+                BoundingBoxConfiguration m_bboxConfig; ///< Configuration for bounding box type and updates
 
                 static void Reflect(AZ::ReflectContext* context);
             };
@@ -92,7 +119,9 @@ namespace EMotionFX
             void DebugDrawRoot(bool enable) override;
             bool GetRenderCharacter() const override;
             void SetRenderCharacter(bool enable) override;
+            bool GetRenderActorVisible() const override;
             SkinningMethod GetSkinningMethod() const override;
+            void SetActorAsset(AZ::Data::Asset<ActorAsset> actorAsset) override;
 
             //////////////////////////////////////////////////////////////////////////
             // ActorComponentNotificationBus::Handler
@@ -150,8 +179,6 @@ namespace EMotionFX
             void OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
 
             bool IsPhysicsSceneSimulationFinishEventConnected() const;
-            
-            void SetActorAsset(AZ::Data::Asset<ActorAsset> actorAsset);
             AZ::Data::Asset<ActorAsset> GetActorAsset() const { return m_configuration.m_actorAsset; }
 
         private:

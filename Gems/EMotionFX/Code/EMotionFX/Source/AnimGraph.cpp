@@ -1,11 +1,13 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
 #include <AzCore/Debug/Timer.h>
+#include <AzCore/std/numeric.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/Utils.h>
@@ -33,23 +35,21 @@ namespace EMotionFX
     AZ_CLASS_ALLOCATOR_IMPL(AnimGraph, AnimGraphAllocator, 0)
 
     AnimGraph::AnimGraph()
-        : mGameControllerSettings(aznew AnimGraphGameControllerSettings())
+        : m_gameControllerSettings(aznew AnimGraphGameControllerSettings())
     {
-        mNodes.SetMemoryCategory(EMFX_MEMCATEGORY_ANIMGRAPH);
-
-        mID = MCore::GetIDGenerator().GenerateID();
-        mDirtyFlag = false;
-        mAutoUnregister = true;
-        mRetarget = false;
-        mRootStateMachine = nullptr;
+        m_id = aznumeric_caster(MCore::GetIDGenerator().GenerateID());
+        m_dirtyFlag = false;
+        m_autoUnregister = true;
+        m_retarget = false;
+        m_rootStateMachine = nullptr;
 
 #if defined(EMFX_DEVELOPMENT_BUILD)
-        mIsOwnedByRuntime = false;
+        m_isOwnedByRuntime = false;
         m_isOwnedByAsset = false;
 #endif // EMFX_DEVELOPMENT_BUILD
 
         // reserve some memory
-        mNodes.Reserve(1024);
+        m_nodes.reserve(1024);
 
         // automatically register the anim graph
         GetAnimGraphManager().AddAnimGraph(this);
@@ -65,35 +65,35 @@ namespace EMotionFX
 
         RemoveAllNodeGroups();
 
-        if (mRootStateMachine)
+        if (m_rootStateMachine)
         {
-            delete mRootStateMachine;
+            delete m_rootStateMachine;
         }
 
         // automatically unregister the anim graph
-        if (mAutoUnregister)
+        if (m_autoUnregister)
         {
             GetAnimGraphManager().RemoveAnimGraph(this, false);
         }
 
-        delete mGameControllerSettings;
+        delete m_gameControllerSettings;
     }
 
 
     void AnimGraph::RecursiveReinit()
     {
-        if (!mRootStateMachine)
+        if (!m_rootStateMachine)
         {
             return;
         }
 
-        mRootStateMachine->RecursiveReinit();
+        m_rootStateMachine->RecursiveReinit();
     }
 
 
     bool AnimGraph::InitAfterLoading()
     {
-        if (!mRootStateMachine)
+        if (!m_rootStateMachine)
         {
             return false;
         }
@@ -106,7 +106,7 @@ namespace EMotionFX
             m_valueParameterIndexByName.emplace(m_valueParameters[i]->GetName(), i);
         }
 
-        return mRootStateMachine->InitAfterLoading(this);
+        return m_rootStateMachine->InitAfterLoading(this);
     }
 
     void AnimGraph::RecursiveInvalidateUniqueDatas()
@@ -307,25 +307,25 @@ namespace EMotionFX
     // recursively find a given node
     AnimGraphNode* AnimGraph::RecursiveFindNodeByName(const char* nodeName) const
     {
-        return mRootStateMachine->RecursiveFindNodeByName(nodeName);
+        return m_rootStateMachine->RecursiveFindNodeByName(nodeName);
     }
 
 
     bool AnimGraph::IsNodeNameUnique(const AZStd::string& newNameCandidate, const AnimGraphNode* forNode) const
     {
-        return mRootStateMachine->RecursiveIsNodeNameUnique(newNameCandidate, forNode);
+        return m_rootStateMachine->RecursiveIsNodeNameUnique(newNameCandidate, forNode);
     }
 
 
     AnimGraphNode* AnimGraph::RecursiveFindNodeById(AnimGraphNodeId nodeId) const
     {
-        return mRootStateMachine->RecursiveFindNodeById(nodeId);
+        return m_rootStateMachine->RecursiveFindNodeById(nodeId);
     }
 
 
     AnimGraphStateTransition* AnimGraph::RecursiveFindTransitionById(AnimGraphConnectionId transitionId) const
     {
-        for (AnimGraphObject* object : mObjects)
+        for (AnimGraphObject* object : m_objects)
         {
             if (azrtti_typeid(object) == azrtti_typeid<AnimGraphStateTransition>())
             {
@@ -345,12 +345,12 @@ namespace EMotionFX
     AZStd::string AnimGraph::GenerateNodeName(const AZStd::unordered_set<AZStd::string>& nameReserveList, const char* prefix) const
     {
         AZStd::string result;
-        uint32 number = 0;
+        size_t number = 0;
         bool found = false;
         while (found == false)
         {
             // build the string
-            result = AZStd::string::format("%s%d", prefix, number++);
+            result = AZStd::string::format("%s%zu", prefix, number++);
 
             // if there is no such state machine yet
             if (!RecursiveFindNodeByName(result.c_str()) && nameReserveList.find(result) == nameReserveList.end())
@@ -363,9 +363,9 @@ namespace EMotionFX
     }
 
 
-    uint32 AnimGraph::RecursiveCalcNumNodes() const
+    size_t AnimGraph::RecursiveCalcNumNodes() const
     {
-        return mRootStateMachine->RecursiveCalcNumNodes();
+        return m_rootStateMachine->RecursiveCalcNumNodes();
     }
 
 
@@ -382,13 +382,13 @@ namespace EMotionFX
 
     void AnimGraph::RecursiveCalcStatistics(Statistics& outStatistics) const
     {
-        RecursiveCalcStatistics(outStatistics, mRootStateMachine);
+        RecursiveCalcStatistics(outStatistics, m_rootStateMachine);
     }
 
 
-    void AnimGraph::RecursiveCalcStatistics(Statistics& outStatistics, AnimGraphNode* animGraphNode, uint32 currentHierarchyDepth) const
+    void AnimGraph::RecursiveCalcStatistics(Statistics& outStatistics, AnimGraphNode* animGraphNode, size_t currentHierarchyDepth) const
     {
-        outStatistics.m_maxHierarchyDepth = MCore::Max<uint32>(currentHierarchyDepth, outStatistics.m_maxHierarchyDepth);
+        outStatistics.m_maxHierarchyDepth = AZStd::max(currentHierarchyDepth, outStatistics.m_maxHierarchyDepth);
 
         // Are we dealing with a state machine? If yes, increase the number of transitions, states etc. in the statistics.
         if (azrtti_typeid(animGraphNode) == azrtti_typeid<AnimGraphStateMachine>())
@@ -396,12 +396,12 @@ namespace EMotionFX
             AnimGraphStateMachine* stateMachine = static_cast<AnimGraphStateMachine*>(animGraphNode);
             outStatistics.m_numStateMachines++;
 
-            const AZ::u32 numTransitions = static_cast<AZ::u32>(stateMachine->GetNumTransitions());
+            const size_t numTransitions = stateMachine->GetNumTransitions();
             outStatistics.m_numTransitions += numTransitions;
 
             outStatistics.m_numStates += stateMachine->GetNumChildNodes();
 
-            for (uint32 i = 0; i < numTransitions; ++i)
+            for (size_t i = 0; i < numTransitions; ++i)
             {
                 AnimGraphStateTransition* transition = stateMachine->GetTransition(i);
 
@@ -410,12 +410,12 @@ namespace EMotionFX
                     outStatistics.m_numWildcardTransitions++;
                 }
 
-                outStatistics.m_numTransitionConditions += static_cast<uint32>(transition->GetNumConditions());
+                outStatistics.m_numTransitionConditions += transition->GetNumConditions();
             }
         }
 
-        const uint32 numChildNodes = animGraphNode->GetNumChildNodes();
-        for (uint32 i = 0; i < numChildNodes; ++i)
+        const size_t numChildNodes = animGraphNode->GetNumChildNodes();
+        for (size_t i = 0; i < numChildNodes; ++i)
         {
             RecursiveCalcStatistics(outStatistics, animGraphNode->GetChildNode(i), currentHierarchyDepth + 1);
         }
@@ -423,37 +423,37 @@ namespace EMotionFX
 
 
     // recursively calculate the number of node connections
-    uint32 AnimGraph::RecursiveCalcNumNodeConnections() const
+    size_t AnimGraph::RecursiveCalcNumNodeConnections() const
     {
-        return mRootStateMachine->RecursiveCalcNumNodeConnections();
+        return m_rootStateMachine->RecursiveCalcNumNodeConnections();
     }
 
 
     // adjust the dirty flag
     void AnimGraph::SetDirtyFlag(bool dirty)
     {
-        mDirtyFlag = dirty;
+        m_dirtyFlag = dirty;
     }
 
 
     // adjust the auto unregistering from the anim graph manager on delete
     void AnimGraph::SetAutoUnregister(bool enabled)
     {
-        mAutoUnregister = enabled;
+        m_autoUnregister = enabled;
     }
 
 
     // do we auto unregister from the anim graph manager on delete?
     bool AnimGraph::GetAutoUnregister() const
     {
-        return mAutoUnregister;
+        return m_autoUnregister;
     }
 
 
     void AnimGraph::SetIsOwnedByRuntime(bool isOwnedByRuntime)
     {
 #if defined(EMFX_DEVELOPMENT_BUILD)
-        mIsOwnedByRuntime = isOwnedByRuntime;
+        m_isOwnedByRuntime = isOwnedByRuntime;
 #else
         AZ_UNUSED(isOwnedByRuntime);
 #endif
@@ -463,7 +463,7 @@ namespace EMotionFX
     bool AnimGraph::GetIsOwnedByRuntime() const
     {
 #if defined(EMFX_DEVELOPMENT_BUILD)
-        return mIsOwnedByRuntime;
+        return m_isOwnedByRuntime;
 #else
         return true;
 #endif
@@ -492,16 +492,16 @@ namespace EMotionFX
     
 
     // get a pointer to the given node group
-    AnimGraphNodeGroup* AnimGraph::GetNodeGroup(uint32 index) const
+    AnimGraphNodeGroup* AnimGraph::GetNodeGroup(size_t index) const
     {
-        return mNodeGroups[index];
+        return m_nodeGroups[index];
     }
 
 
     // find the node group by name
     AnimGraphNodeGroup* AnimGraph::FindNodeGroupByName(const char* groupName) const
     {
-        for (AnimGraphNodeGroup* nodeGroup : mNodeGroups)
+        for (AnimGraphNodeGroup* nodeGroup : m_nodeGroups)
         {
             // Compare the node names and return a pointer in case they are equal.
             if (nodeGroup->GetNameString() == groupName)
@@ -515,40 +515,34 @@ namespace EMotionFX
 
 
     // find the node group index by name
-    uint32 AnimGraph::FindNodeGroupIndexByName(const char* groupName) const
+    size_t AnimGraph::FindNodeGroupIndexByName(const char* groupName) const
     {
-        const size_t numNodeGroups = mNodeGroups.size();
-        for (size_t i = 0; i < numNodeGroups; ++i)
+        const auto foundNodeGroup = AZStd::find_if(begin(m_nodeGroups), end(m_nodeGroups), [groupName](const AnimGraphNodeGroup* nodeGroup)
         {
-            // compare the node names and return the index in case they are equal
-            if (mNodeGroups[i]->GetNameString() == groupName)
-            {
-                return static_cast<uint32>(i);
-            }
-        }
-
-        return MCORE_INVALIDINDEX32;
+            return nodeGroup->GetNameString() == groupName;
+        });
+        return foundNodeGroup != end(m_nodeGroups) ? AZStd::distance(begin(m_nodeGroups), foundNodeGroup) : InvalidIndex;
     }
 
 
     // add the given node group to the anim graph
     void AnimGraph::AddNodeGroup(AnimGraphNodeGroup* nodeGroup)
     {
-        mNodeGroups.push_back(nodeGroup);
+        m_nodeGroups.push_back(nodeGroup);
     }
 
 
     // remove the node group at the given index from the anim graph
-    void AnimGraph::RemoveNodeGroup(uint32 index, bool delFromMem)
+    void AnimGraph::RemoveNodeGroup(size_t index, bool delFromMem)
     {
         // destroy the object
         if (delFromMem)
         {
-            delete mNodeGroups[index];
+            delete m_nodeGroups[index];
         }
 
         // remove the node group from the array
-        mNodeGroups.erase(mNodeGroups.begin() + index);
+        m_nodeGroups.erase(m_nodeGroups.begin() + index);
     }
 
 
@@ -558,28 +552,28 @@ namespace EMotionFX
         // destroy the node groups
         if (delFromMem)
         {
-            for (AnimGraphNodeGroup* nodeGroup : mNodeGroups)
+            for (AnimGraphNodeGroup* nodeGroup : m_nodeGroups)
             {
                 delete nodeGroup;
             }
         }
 
         // remove all node groups
-        mNodeGroups.clear();
+        m_nodeGroups.clear();
     }
 
 
     // get the number of node groups
-    uint32 AnimGraph::GetNumNodeGroups() const
+    size_t AnimGraph::GetNumNodeGroups() const
     {
-        return static_cast<uint32>(mNodeGroups.size());
+        return m_nodeGroups.size();
     }
 
 
     // find the node group in which the given anim graph node is in and return a pointer to it
     AnimGraphNodeGroup* AnimGraph::FindNodeGroupForNode(AnimGraphNode* animGraphNode) const
     {
-        for (AnimGraphNodeGroup* nodeGroup : mNodeGroups)
+        for (AnimGraphNodeGroup* nodeGroup : m_nodeGroups)
         {
             // check if the given node is part of the currently iterated node group
             if (nodeGroup->Contains(animGraphNode->GetId()))
@@ -624,24 +618,24 @@ namespace EMotionFX
 
     void AnimGraph::RecursiveCollectNodesOfType(const AZ::TypeId& nodeType, AZStd::vector<AnimGraphNode*>* outNodes) const
     {
-        mRootStateMachine->RecursiveCollectNodesOfType(nodeType, outNodes);
+        m_rootStateMachine->RecursiveCollectNodesOfType(nodeType, outNodes);
     }
 
-    void AnimGraph::RecursiveCollectTransitionConditionsOfType(const AZ::TypeId& conditionType, MCore::Array<AnimGraphTransitionCondition*>* outConditions) const
+    void AnimGraph::RecursiveCollectTransitionConditionsOfType(const AZ::TypeId& conditionType, AZStd::vector<AnimGraphTransitionCondition*>* outConditions) const
     {
-        mRootStateMachine->RecursiveCollectTransitionConditionsOfType(conditionType, outConditions);
+        m_rootStateMachine->RecursiveCollectTransitionConditionsOfType(conditionType, outConditions);
     }
 
 
     void AnimGraph::RecursiveCollectObjectsOfType(const AZ::TypeId& objectType, AZStd::vector<AnimGraphObject*>& outObjects)
     {
-        mRootStateMachine->RecursiveCollectObjectsOfType(objectType, outObjects);
+        m_rootStateMachine->RecursiveCollectObjectsOfType(objectType, outObjects);
     }
 
 
     void AnimGraph::RecursiveCollectObjectsAffectedBy(AnimGraph* animGraph, AZStd::vector<AnimGraphObject*>& outObjects)
     {
-        mRootStateMachine->RecursiveCollectObjectsAffectedBy(animGraph, outObjects);
+        m_rootStateMachine->RecursiveCollectObjectsAffectedBy(animGraph, outObjects);
     }
 
     GroupParameter* AnimGraph::FindGroupParameterByName(const AZStd::string& groupName) const
@@ -690,7 +684,7 @@ namespace EMotionFX
     // delete all unique datas for a given object
     void AnimGraph::RemoveAllObjectData(AnimGraphObject* object, bool delFromMem)
     {
-        MCore::LockGuard lock(mLock);
+        MCore::LockGuard lock(m_lock);
 
         for (AnimGraphInstance* animGraphInstance : m_animGraphInstances)
         {
@@ -702,11 +696,11 @@ namespace EMotionFX
     // set the root state machine
     void AnimGraph::SetRootStateMachine(AnimGraphStateMachine* stateMachine)
     {
-        mRootStateMachine = stateMachine;
-        if (mRootStateMachine)
+        m_rootStateMachine = stateMachine;
+        if (m_rootStateMachine)
         {
             // make sure the name is always the same for the root state machine
-            mRootStateMachine->SetName("Root");
+            m_rootStateMachine->SetName("Root");
         }
     }
 
@@ -714,18 +708,18 @@ namespace EMotionFX
     // add an object
     void AnimGraph::AddObject(AnimGraphObject* object)
     {
-        MCore::LockGuard lock(mLock);
+        MCore::LockGuard lock(m_lock);
 
         // assign the index and add it to the objects array
-        object->SetObjectIndex(static_cast<uint32>(mObjects.size()));
-        mObjects.push_back(object);
+        object->SetObjectIndex(m_objects.size());
+        m_objects.push_back(object);
 
         // if it's a node, add it to the nodes array as well
         if (azrtti_istypeof<AnimGraphNode>(object))
         {
             AnimGraphNode* node = static_cast<AnimGraphNode*>(object);
-            node->SetNodeIndex(mNodes.GetLength());
-            mNodes.Add(node);
+            node->SetNodeIndex(m_nodes.size());
+            m_nodes.emplace_back(node);
         }
 
         // create a unique data for this added object in the animgraph instances as well
@@ -739,7 +733,7 @@ namespace EMotionFX
     // remove an object
     void AnimGraph::RemoveObject(AnimGraphObject* object)
     {
-        MCore::LockGuard lock(mLock);
+        MCore::LockGuard lock(m_lock);
 
         const size_t objectIndex = object->GetObjectIndex();
 
@@ -747,64 +741,58 @@ namespace EMotionFX
         object->RemoveInternalAttributesForAllInstances();
 
         // decrease the indices of all objects that have an index after this node
-        const size_t numObjects = mObjects.size();
+        const size_t numObjects = m_objects.size();
         for (size_t i = objectIndex + 1; i < numObjects; ++i)
         {
-            AnimGraphObject* curObject = mObjects[i];
+            AnimGraphObject* curObject = m_objects[i];
             MCORE_ASSERT(i == curObject->GetObjectIndex());
             curObject->SetObjectIndex(i - 1);
         }
 
         // remove the object from the array
-        mObjects.erase(mObjects.begin() + objectIndex);
+        m_objects.erase(m_objects.begin() + objectIndex);
 
         // remove it from the nodes array if it is a node
         if (azrtti_istypeof<AnimGraphNode>(object))
         {
             AnimGraphNode* node = static_cast<AnimGraphNode*>(object);
-            const uint32 nodeIndex = node->GetNodeIndex();
+            const size_t nodeIndex = node->GetNodeIndex();
 
-            const uint32 numNodes = mNodes.GetLength();
-            for (uint32 i = nodeIndex + 1; i < numNodes; ++i)
+            const size_t numNodes = m_nodes.size();
+            for (size_t i = nodeIndex + 1; i < numNodes; ++i)
             {
-                AnimGraphNode* curNode = mNodes[i];
+                AnimGraphNode* curNode = m_nodes[i];
                 MCORE_ASSERT(i == curNode->GetNodeIndex());
                 curNode->SetNodeIndex(i - 1);
             }
 
             // remove the object from the array
-            mNodes.Remove(nodeIndex);
+            m_nodes.erase(AZStd::next(begin(m_nodes), nodeIndex));
         }
     }
 
 
     // reserve space for a given amount of objects
-    void AnimGraph::ReserveNumObjects(uint32 numObjects)
+    void AnimGraph::ReserveNumObjects(size_t numObjects)
     {
-        mObjects.reserve(numObjects);
+        m_objects.reserve(numObjects);
     }
 
 
     // reserve space for a given amount of nodes
-    void AnimGraph::ReserveNumNodes(uint32 numNodes)
+    void AnimGraph::ReserveNumNodes(size_t numNodes)
     {
-        mNodes.Reserve(numNodes);
+        m_nodes.reserve(numNodes);
     }
 
 
     // Calculate number of motion nodes in the graph
-    uint32 AnimGraph::CalcNumMotionNodes() const
+    size_t AnimGraph::CalcNumMotionNodes() const
     {
-        const uint32 numNodes = mNodes.GetLength();
-        uint32 numMotionNodes = 0;
-        for (uint32 i = 0; i < numNodes; ++i)
+        return AZStd::accumulate(begin(m_nodes), end(m_nodes), size_t{0}, [](size_t total, const AnimGraphNode* node)
         {
-            if (azrtti_istypeof<AnimGraphMotionNode>(mNodes[i]))
-            {
-                numMotionNodes++;
-            }
-        }
-        return numMotionNodes;
+            return total + azrtti_istypeof<AnimGraphMotionNode>(node);
+        });
     }
 
 
@@ -818,7 +806,7 @@ namespace EMotionFX
     // register an animgraph instance
     void AnimGraph::AddAnimGraphInstance(AnimGraphInstance* animGraphInstance)
     {
-        MCore::LockGuard lock(mLock);
+        MCore::LockGuard lock(m_lock);
         m_animGraphInstances.emplace_back(animGraphInstance);
     }
 
@@ -826,15 +814,15 @@ namespace EMotionFX
     // remove an animgraph instance
     void AnimGraph::RemoveAnimGraphInstance(AnimGraphInstance* animGraphInstance)
     {
-        MCore::LockGuard lock(mLock);
+        MCore::LockGuard lock(m_lock);
         m_animGraphInstances.erase(AZStd::remove(m_animGraphInstances.begin(), m_animGraphInstances.end(), animGraphInstance));
     }
 
 
     // decrease internal attribute indices by one, for values higher than the given parameter
-    void AnimGraph::DecreaseInternalAttributeIndices(uint32 decreaseEverythingHigherThan)
+    void AnimGraph::DecreaseInternalAttributeIndices(size_t decreaseEverythingHigherThan)
     {
-        for (AnimGraphObject* object : mObjects)
+        for (AnimGraphObject* object : m_objects)
         {
             object->DecreaseInternalAttributeIndices(decreaseEverythingHigherThan);
         }
@@ -843,72 +831,72 @@ namespace EMotionFX
 
     const char* AnimGraph::GetFileName() const
     {
-        return mFileName.c_str();
+        return m_fileName.c_str();
     }
 
 
     const AZStd::string& AnimGraph::GetFileNameString() const
     {
-        return mFileName;
+        return m_fileName;
     }
 
 
     void AnimGraph::SetFileName(const char* fileName)
     {
-        mFileName = fileName;
+        m_fileName = fileName;
     }
 
 
     AnimGraphStateMachine* AnimGraph::GetRootStateMachine() const
     {
-        return mRootStateMachine;
+        return m_rootStateMachine;
     }
 
 
     uint32 AnimGraph::GetID() const
     {
-        return mID;
+        return m_id;
     }
 
 
     void AnimGraph::SetID(uint32 id)
     {
-        mID = id;
+        m_id = id;
     }
 
 
     bool AnimGraph::GetDirtyFlag() const
     {
-        return mDirtyFlag;
+        return m_dirtyFlag;
     }
 
 
     AnimGraphGameControllerSettings& AnimGraph::GetGameControllerSettings()
     {
-        return *mGameControllerSettings;
+        return *m_gameControllerSettings;
     }
 
 
     bool AnimGraph::GetRetargetingEnabled() const
     {
-        return mRetarget;
+        return m_retarget;
     }
 
 
     void AnimGraph::SetRetargetingEnabled(bool enabled)
     {
-        mRetarget = enabled;
+        m_retarget = enabled;
     }
 
     void AnimGraph::Lock()
     {
-        mLock.Lock();
+        m_lock.Lock();
     }
 
 
     void AnimGraph::Unlock()
     {
-        mLock.Unlock();
+        m_lock.Unlock();
     }
 
 
@@ -916,7 +904,7 @@ namespace EMotionFX
     {
         for (AnimGraphInstance* animGraphInstance : m_animGraphInstances)
         {
-            animGraphInstance->SetRetargetingEnabled(mRetarget);
+            animGraphInstance->SetRetargetingEnabled(m_retarget);
         }
     }
 
@@ -932,10 +920,10 @@ namespace EMotionFX
         serializeContext->Class<AnimGraph>()
             ->Version(1)
             ->Field("rootGroupParameter", &AnimGraph::m_rootParameter)
-            ->Field("rootStateMachine", &AnimGraph::mRootStateMachine)
-            ->Field("nodeGroups", &AnimGraph::mNodeGroups)
-            ->Field("gameControllerSettings", &AnimGraph::mGameControllerSettings)
-            ->Field("retarget", &AnimGraph::mRetarget)
+            ->Field("rootStateMachine", &AnimGraph::m_rootStateMachine)
+            ->Field("nodeGroups", &AnimGraph::m_nodeGroups)
+            ->Field("gameControllerSettings", &AnimGraph::m_gameControllerSettings)
+            ->Field("retarget", &AnimGraph::m_retarget)
         ;
 
 
@@ -949,7 +937,7 @@ namespace EMotionFX
             ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
             ->Attribute(AZ::Edit::Attributes::AutoExpand, "")
             ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
-            ->DataElement(AZ::Edit::UIHandlers::Default, &AnimGraph::mRetarget, "Retarget", "")
+            ->DataElement(AZ::Edit::UIHandlers::Default, &AnimGraph::m_retarget, "Retarget", "")
             ->Attribute(AZ::Edit::Attributes::ChangeNotify, &AnimGraph::OnRetargetingEnabledChanged)
         ;
     }
@@ -1028,11 +1016,9 @@ namespace EMotionFX
     void AnimGraph::RemoveInvalidConnections(bool logWarnings)
     {
         // Iterate over all nodes
-        const AZ::u32 numNodes = mNodes.GetLength();
-        for (AZ::u32 i = 0; i < numNodes; ++i)
+        for (AnimGraphNode* node : m_nodes)
         {
-            AnimGraphNode* node = mNodes[i];
-            for (AZ::u32 c = 0; c < node->GetNumConnections();)
+            for (size_t c = 0; c < node->GetNumConnections();)
             {
                 BlendTreeConnection* connection = node->GetConnection(c);
                 if (!connection->GetSourceNode())   // Invalid source node.

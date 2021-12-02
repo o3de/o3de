@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -30,6 +31,7 @@
 
 namespace AWSCore
 {
+
     static constexpr int IconSize = 16;
 
     AWSCoreEditorMenu::AWSCoreEditorMenu(const QString& text)
@@ -52,7 +54,7 @@ namespace AWSCore
         {
             if (m_resourceMappingToolWatcher->IsProcessRunning())
             {
-                m_resourceMappingToolWatcher->TerminateProcess(AZ::u32(-1));
+                m_resourceMappingToolWatcher->TerminateProcess(static_cast<AZ::u32>(-1));
             }
             m_resourceMappingToolWatcher.reset();
         }
@@ -76,9 +78,9 @@ namespace AWSCore
 
     void AWSCoreEditorMenu::InitializeResourceMappingToolAction()
     {
-#ifdef AWSCORE_EDITOR_RESOURCE_MAPPING_TOOL_ENABLED
+#if AWSCORE_EDITOR_RESOURCE_MAPPING_TOOL_ENABLED
         AWSCoreResourceMappingToolAction* resourceMappingTool =
-            new AWSCoreResourceMappingToolAction(QObject::tr(AWSResourceMappingToolActionText));
+            new AWSCoreResourceMappingToolAction(QObject::tr(AWSResourceMappingToolActionText), this);
         QObject::connect(resourceMappingTool, &QAction::triggered, this,
             [resourceMappingTool, this]() {
                 AZStd::string launchCommand = resourceMappingTool->GetToolLaunchCommand();
@@ -107,7 +109,7 @@ namespace AWSCore
 
                 if (!m_resourceMappingToolWatcher || !m_resourceMappingToolWatcher->IsProcessRunning())
                 {
-                    AZStd::string resourceMappingToolLogPath = resourceMappingTool->GetToolLogPath();
+                    AZStd::string resourceMappingToolLogPath = resourceMappingTool->GetToolLogFilePath();
                     AZStd::string message = AZStd::string::format(AWSResourceMappingToolLogWarningText, resourceMappingToolLogPath.c_str());
                     QMessageBox::warning(QApplication::activeWindow(), "Warning", message.c_str(), QMessageBox::Ok);
                 }
@@ -154,6 +156,11 @@ namespace AWSCore
         metrics->setIcon(QIcon(QString(":/Notifications/download.svg")));
         metrics->setDisabled(true);
         this->addAction(metrics);
+
+        QAction* gamelift = new QAction(QObject::tr(AWSGameLiftActionText));
+        gamelift->setIcon(QIcon(QString(":/Notifications/download.svg")));
+        gamelift->setDisabled(true);
+        this->addAction(gamelift);
     }
 
     void AWSCoreEditorMenu::SetAWSClientAuthEnabled()
@@ -179,6 +186,23 @@ namespace AWSCore
         AddSpaceForIcon(subMenu);
     }
 
+    void AWSCoreEditorMenu::SetAWSGameLiftEnabled()
+    {
+        // TODO: instead of creating submenu in core editor, aws feature gem should return submenu component directly
+        QMenu* subMenu = SetAWSFeatureSubMenu(AWSGameLiftActionText);
+
+        subMenu->addAction(AddExternalLinkAction(AWSGameLiftGemOverviewActionText, AWSGameLiftGemOverviewUrl, ":/Notifications/link.svg"));
+        subMenu->addAction(AddExternalLinkAction(AWSGameLiftGemSetupActionText, AWSGameLiftGemSetupUrl, ":/Notifications/link.svg"));
+        subMenu->addAction(AddExternalLinkAction(AWSMGameLiftScriptingActionText, AWSGameLiftScriptingUrl, ":/Notifications/link.svg"));
+        subMenu->addAction(AddExternalLinkAction(AWSGameLiftAPIReferenceActionText, AWSGameLiftAPIReferenceUrl, ":/Notifications/link.svg"));
+        subMenu->addAction(AddExternalLinkAction(AWSGameLiftAdvancedTopicsActionText, AWSGameLiftAdvancedTopicsUrl, ":/Notifications/link.svg"));
+        subMenu->addAction(AddExternalLinkAction(AWSGameLiftLocalTestingActionText, AWSGameLiftLocalTestingUrl, ":/Notifications/link.svg"));
+        subMenu->addAction(AddExternalLinkAction(AWSGameLiftBuildPackagingActionText, AWSGameLiftBuildPackagingUrl, ":/Notifications/link.svg"));
+        subMenu->addAction(AddExternalLinkAction(AWSGameLiftResourceManagementActionText, AWSGameLiftResourceManagementUrl, ":/Notifications/link.svg"));
+
+        AddSpaceForIcon(subMenu);
+    }
+
     void AWSCoreEditorMenu::SetAWSMetricsEnabled()
     {
         // TODO: instead of creating submenu in core editor, aws feature gem should return submenu component directly
@@ -195,7 +219,7 @@ namespace AWSCore
         subMenu->addAction(AddExternalLinkAction(
             AWSMetricsAdvancedTopicsActionText, AWSMetricsAdvancedTopicsUrl, ":/Notifications/link.svg"));
 
-        AZStd::string priorAlias = AZ::IO::FileIOBase::GetInstance()->GetAlias("@devroot@");
+        AZStd::string priorAlias = AZ::IO::FileIOBase::GetInstance()->GetAlias("@engroot@");
         AZStd::string configFilePath = priorAlias + "\\Gems\\AWSMetrics\\Code\\" + AZ::SettingsRegistryInterface::RegistryFolder;
         AzFramework::StringFunc::Path::Normalize(configFilePath);
 
@@ -204,6 +228,7 @@ namespace AWSCore
             [configFilePath](){
                 QDesktopServices::openUrl(QUrl::fromLocalFile(configFilePath.c_str()));
             });
+
         subMenu->addAction(settingsAction);
         AddSpaceForIcon(subMenu);
     }
@@ -211,7 +236,7 @@ namespace AWSCore
     QMenu* AWSCoreEditorMenu::SetAWSFeatureSubMenu(const AZStd::string& menuText)
     {
         auto actionList = this->actions();
-        for (QList<QAction*>::iterator itr = actionList.begin(); itr != actionList.end(); itr++)
+        for (QList<QAction*>::iterator itr = actionList.begin(); itr != actionList.end(); ++itr)
         {
             if (QString::compare((*itr)->text(), menuText.c_str()) == 0)
             {
@@ -226,7 +251,7 @@ namespace AWSCore
         return nullptr;
     }
 
-    void AWSCoreEditorMenu::AddSpaceForIcon(QMenu* menu)
+    void AWSCoreEditorMenu::AddSpaceForIcon(QMenu *menu)
     {
         QSize size = menu->sizeHint();
         size.setWidth(size.width() + IconSize);

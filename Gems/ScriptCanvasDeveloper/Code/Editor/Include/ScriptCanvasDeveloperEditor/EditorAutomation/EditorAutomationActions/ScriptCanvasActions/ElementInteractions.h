@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -31,7 +32,7 @@ namespace ScriptCanvasDeveloper
         bool IsMissingPrecondition() override;
         EditorAutomationAction* GenerateMissingPreconditionAction() override;
 
-        void SetupAction();
+        void SetupAction() override;
 
     private:
 
@@ -65,9 +66,9 @@ namespace ScriptCanvasDeveloper
         ActionReport GenerateReport() const override;
 
         // SceneNotificaitonBus
-        void OnNodeRemoved(const AZ::EntityId& nodeId);
+        void OnNodeRemoved(const AZ::EntityId& nodeId) override;
 
-        void OnConnectionRemoved(const AZ::EntityId& connectionId);
+        void OnConnectionRemoved(const AZ::EntityId& connectionId) override;
         ////
 
     protected:
@@ -97,7 +98,7 @@ namespace ScriptCanvasDeveloper
         MouseToNodePropertyEditorAction(GraphCanvas::SlotId slotId);
         ~MouseToNodePropertyEditorAction() override = default;
 
-        void SetupAction();
+        void SetupAction() override;
 
     private:
 

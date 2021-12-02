@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -26,13 +27,13 @@ namespace MaterialEditor
         MaterialViewportRequestBus::BroadcastResult(presets, &MaterialViewportRequestBus::Events::GetModelPresets);
         AZStd::sort(presets.begin(), presets.end(), [](const auto& a, const auto& b) { return a->m_displayName < b->m_displayName; });
 
+        const int itemSize = aznumeric_cast<int>(
+            AtomToolsFramework::GetSettingOrDefault<AZ::u64>("/O3DE/Atom/MaterialEditor/PresetBrowserDialog/ModelItemSize", 90));
+
         QListWidgetItem* selectedItem = nullptr;
         for (const auto& preset : presets)
         {
-            QImage image;
-            MaterialViewportRequestBus::BroadcastResult(image, &MaterialViewportRequestBus::Events::GetModelPresetPreview, preset);
-
-            QListWidgetItem* item = CreateListItem(preset->m_displayName.c_str(), image);
+            QListWidgetItem* item = CreateListItem(preset->m_displayName.c_str(), preset->m_modelAsset.GetId(), QSize(itemSize, itemSize));
 
             m_listItemToPresetMap[item] = preset;
 

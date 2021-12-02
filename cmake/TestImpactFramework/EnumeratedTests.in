@@ -1,23 +1,31 @@
-#Lumberyard enumerated tests
-[google]
-[google.test]
-tests = [
-${google_tests}
-]
-[google.benchmark]
-tests = [
+{
+  "google": {
+    "benchmark": {
+      "tests": [
 ${google_benchmarks}
-]
-[python]
-[python.test]
-tests = [
-${python_tests}
-]
-[python.editor]
-tests = [
+      ]
+    },
+    "test": {
+      "tests": [
+${google_tests}
+      ]
+    }
+  },
+  "python": {
+    "editor": {
+      "tests": [
 ${python_editor_tests}
-]
-[unknown]
-tests = [
+      ]
+    },
+    "test": {
+      "tests": [
+${python_tests}
+      ]
+    }
+  },
+  "unknown": {
+    "tests": [
 ${unknown_tests}
-]
+    ]
+  }
+}

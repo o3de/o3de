@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -76,14 +77,13 @@ namespace AZ
             void RenderImguiDrawData(const ImDrawData& drawData);
 
             // TickBus::Handler overrides...
-            void OnTick(float deltaTime, AZ::ScriptTimePoint timePoint);
+            void OnTick(float deltaTime, AZ::ScriptTimePoint timePoint) override;
 
             // AzFramework::InputTextEventListener overrides...
             bool OnInputTextEventFiltered(const AZStd::string& textUTF8) override;
 
             // AzFramework::InputChannelEventListener overrides...
             bool OnInputChannelEventFiltered(const AzFramework::InputChannel& inputChannel) override;
-            AZ::s32 GetPriority() const override;
 
         protected:
             explicit ImGuiPass(const RPI::PassDescriptor& descriptor);

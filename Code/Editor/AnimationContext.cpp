@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -15,7 +16,6 @@
 
 // Editor
 #include "TrackView/TrackViewDialog.h"
-#include "RenderViewport.h"
 #include "ViewManager.h"
 #include "Objects/SelectionGroup.h"
 #include "Include/IObjectManager.h"
@@ -28,7 +28,7 @@ class CMovieCallback
     : public IMovieCallback
 {
 protected:
-    virtual void OnMovieCallback(ECallbackReason reason, [[maybe_unused]] IAnimNode* pNode)
+    void OnMovieCallback(ECallbackReason reason, [[maybe_unused]] IAnimNode* pNode) override
     {
         switch (reason)
         {
@@ -48,7 +48,7 @@ protected:
         }
     }
 
-    void OnSetCamera(const SCameraParams& Params)
+    void OnSetCamera(const SCameraParams& Params) override
     {
         // Only switch camera when in Play mode.
         GUID camObjId = GUID_NULL;
@@ -60,15 +60,6 @@ protected:
             {
                 camObjId = pEditorEntity->GetId();
             }
-
-            CViewport* pViewport = GetIEditor()->GetViewManager()->GetSelectedViewport();
-            if (CRenderViewport* rvp = viewport_cast<CRenderViewport*>(pViewport))
-            {
-                if (!rvp->IsSequenceCamera())
-                {
-                    return;
-                }
-            }
         }
 
         // Switch camera in active rendering view.
@@ -78,14 +69,14 @@ protected:
         }
     };
 
-    bool IsSequenceCamUsed() const
+    bool IsSequenceCamUsed() const override
     {
         if (gEnv->IsEditorGameMode() == true)
         {
             return true;
         }
 
-        if (GetIEditor()->GetViewManager() == NULL)
+        if (GetIEditor()->GetViewManager() == nullptr)
         {
             return false;
         }
@@ -112,7 +103,7 @@ public:
     CAnimationContextPostRender(CAnimationContext* pAC)
         : m_pAC(pAC){}
 
-    void OnPostRender() const { assert(m_pAC); m_pAC->OnPostRender(); }
+    void OnPostRender() const override { assert(m_pAC); m_pAC->OnPostRender(); }
 
 protected:
     CAnimationContext* m_pAC;
@@ -230,7 +221,7 @@ void CAnimationContext::SetSequence(CTrackViewSequence* sequence, bool force, bo
         m_pSequence->UnBindFromEditorObjects();
     }
     m_pSequence = sequence;
-    
+
     // Notify a new sequence was just selected.
     Maestro::EditorSequenceNotificationBus::Broadcast(&Maestro::EditorSequenceNotificationBus::Events::OnSequenceSelected, m_pSequence ? m_pSequence->GetSequenceComponentEntityId() : AZ::EntityId());
 
@@ -346,7 +337,7 @@ void CAnimationContext::OnSequenceActivated(AZ::EntityId entityId)
                     {
                         // Hang onto this because SetSequence() will reset it.
                         float lastTime = m_mostRecentSequenceTime;
-                        
+
                         SetSequence(sequence, false, false);
 
                         // Restore the current time.
@@ -637,7 +628,7 @@ void CAnimationContext::GoToFrameCmd(IConsoleCmdArgs* pArgs)
     float targetFrame = (float)atof(pArgs->GetArg(1));
     if (pSeq->GetTimeRange().start > targetFrame || targetFrame > pSeq->GetTimeRange().end)
     {
-        gEnv->pLog->LogError("GoToFrame: requested time %f is outside the range of sequence %s (%f, %f)", targetFrame, pSeq->GetName(), pSeq->GetTimeRange().start, pSeq->GetTimeRange().end);
+        gEnv->pLog->LogError("GoToFrame: requested time %f is outside the range of sequence %s (%f, %f)", targetFrame, pSeq->GetName().c_str(), pSeq->GetTimeRange().start, pSeq->GetTimeRange().end);
         return;
     }
     GetIEditor()->GetAnimation()->m_currTime = targetFrame;

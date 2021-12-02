@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -51,8 +52,8 @@ namespace UnitTest
             }
         };
 
-        MapOf<AZ::u8, AZ::u32> m_indexOfu8tou32 { {1, 4}, {2, 5}, {3, 6}, {4, 7} };
-        MapOf<AZ::u16, float> m_indexOfu16toFloat { {1, 0.4f}, {2, 0.5f}, {3, 0.6f}, {4, 0.7f} };
+        MapOf<AZ::u8, AZ::u32> m_indexOfu8tou32 { {AZ::u8(1), 4u}, {AZ::u8(2), 5u}, {AZ::u8(3), 6u}, {AZ::u8(4), 7u} };
+        MapOf<AZ::u16, float> m_indexOfu16toFloat { {AZ::u16(1u), 0.4f}, {AZ::u16(2u), 0.5f}, {AZ::u16(3u), 0.6f}, {AZ::u16(4u), 0.7f} };
         MapOf<AZStd::string, AZ::s32> m_indexOfStringTos32 { {"1", -4}, {"2", 5}, {"3", -6}, {"4", 7} };
         MapOf<AZStd::string, AZStd::string> m_indexOfStringToString { {"hello", "foo"}, {"world", "bar"}, {"bye", "baz"}, {"sky", "qux"} };
         MapOf<AZStd::string, AZ::Vector3> m_indexOfStringToVec3{ {"up", AZ::Vector3{ 0, 1.0, 0 }}, {"down", AZ::Vector3{0, -1.0, 0}},
@@ -106,7 +107,7 @@ namespace UnitTest
         void TearDown() override
         {
             // clearing up memory
-            m_testSink = PythonTraceMessageSink();
+            m_testSink.CleanUp();
             PythonTestingFixture::TearDown();
         }
     };

@@ -28,8 +28,6 @@
 
 // Modified from original
 
-#include "FastNoise_precompiled.h"
-
 #include "FastNoise.h"
 
 #include <math.h>
@@ -204,13 +202,13 @@ void FastNoise::SetSeed(int seed)
     std::mt19937_64 gen(seed);
 
     for (int i = 0; i < 256; i++)
-        m_perm[i] = i;
+        m_perm[i] = static_cast<unsigned char>(i);
 
     for (int j = 0; j < 256; j++)
     {
         int rng = (int)(gen() % (256 - j));
         int k = rng + j;
-        int l = m_perm[j];
+        unsigned char l = m_perm[j];
         m_perm[j] = m_perm[j + 256] = m_perm[k];
         m_perm[k] = l;
         m_perm12[j] = m_perm12[j + 256] = m_perm[j] % 12;

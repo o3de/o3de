@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -56,7 +57,7 @@ namespace ScriptCanvasEditor::Nodes
     // Handles the creation of a node through the node configurations for most nodes.
     AZ::EntityId DisplayGeneralScriptCanvasNode(AZ::EntityId, const ScriptCanvas::Node* node, const NodeConfiguration& nodeConfiguration)
     {
-        AZ_PROFILE_TIMER("ScriptCanvas", __FUNCTION__);
+        AZ_PROFILE_FUNCTION(ScriptCanvas);
 
         AZ::Entity* graphCanvasEntity = nullptr;
 
@@ -444,7 +445,7 @@ namespace ScriptCanvasEditor::Nodes
 
     AZ::EntityId DisplayEbusEventNode(AZ::EntityId, const AZStd::string& busName, const AZStd::string& eventName, const ScriptCanvas::EBusEventId& eventId)
     {
-        AZ_PROFILE_TIMER("ScriptCanvas", __FUNCTION__);
+        AZ_PROFILE_FUNCTION(ScriptCanvas);
 
         AZ::EntityId graphCanvasNodeId;
 
@@ -667,7 +668,7 @@ namespace ScriptCanvasEditor::Nodes
 
     AZ::EntityId DisplayScriptEventNode(AZ::EntityId, const AZ::Data::AssetId assetId, const ScriptEvents::Method& methodDefinition)
     {
-        AZ_PROFILE_TIMER("ScriptCanvas", __FUNCTION__);
+        AZ_PROFILE_FUNCTION(ScriptCanvas);
 
         AZ::EntityId graphCanvasNodeId;
 
@@ -743,7 +744,6 @@ namespace ScriptCanvasEditor::Nodes
             return graphCanvasNodeId;
         }
 
-        auto busId = senderNode->GetBusSlotId();
         for (const auto& slot : senderNode->GetSlots())
         {
             if (slot.IsVisible())
@@ -1000,7 +1000,7 @@ namespace ScriptCanvasEditor::Nodes
 
     AZ::EntityId DisplayGetVariableNode(AZ::EntityId graphCanvasGraphId, const ScriptCanvas::Nodes::Core::GetVariableNode* variableNode)
     {
-        AZ_PROFILE_TIMER("ScriptCanvas", __FUNCTION__);
+        AZ_PROFILE_FUNCTION(ScriptCanvas);
 
         NodeConfiguration nodeConfiguration;
         nodeConfiguration.PopulateComponentDescriptors<IconComponent, DynamicSlotComponent, GetVariableNodeDescriptorComponent>();
@@ -1032,7 +1032,7 @@ namespace ScriptCanvasEditor::Nodes
 
     AZ::EntityId DisplaySetVariableNode(AZ::EntityId graphCanvasGraphId, const ScriptCanvas::Nodes::Core::SetVariableNode* variableNode)
     {
-        AZ_PROFILE_TIMER("ScriptCanvas", __FUNCTION__);
+        AZ_PROFILE_FUNCTION(ScriptCanvas);
 
         NodeConfiguration nodeConfiguration;
         nodeConfiguration.PopulateComponentDescriptors<IconComponent, DynamicSlotComponent, SetVariableNodeDescriptorComponent>();
@@ -1068,7 +1068,7 @@ namespace ScriptCanvasEditor::Nodes
 ///////////////////
     AZ::EntityId DisplayScriptCanvasNode(AZ::EntityId graphCanvasGraphId, const ScriptCanvas::Node* node)
     {
-        AZ_PROFILE_TIMER("ScriptCanvas", __FUNCTION__);
+        AZ_PROFILE_FUNCTION(ScriptCanvas);
         AZ::EntityId graphCanvasNodeId;
 
         if (azrtti_istypeof<ScriptCanvas::Nodes::Core::SetVariableNode>(node))
@@ -1121,7 +1121,7 @@ namespace ScriptCanvasEditor::Nodes
 
     static void RegisterAndActivateGraphCanvasSlot(AZ::EntityId graphCanvasNodeId, const ScriptCanvas::SlotId& slotId, AZ::Entity* slotEntity)
     {
-        AZ_PROFILE_TIMER("ScriptCanvas", __FUNCTION__);
+        AZ_PROFILE_FUNCTION(ScriptCanvas);
         if (slotEntity)
         {
             slotEntity->Init();
@@ -1165,7 +1165,7 @@ namespace ScriptCanvasEditor::Nodes
             return AZ::EntityId();
         }
 
-        AZ_PROFILE_TIMER("ScriptCanvas", __FUNCTION__);
+        AZ_PROFILE_FUNCTION(ScriptCanvas);
         AZ::Entity* slotEntity = nullptr;
 
         AZ::Uuid typeId = ScriptCanvas::Data::ToAZType(slot.GetDataType());
@@ -1257,7 +1257,7 @@ namespace ScriptCanvasEditor::Nodes::SlotDisplayHelper
 {
     AZ::EntityId DisplayPropertySlot(AZ::EntityId graphCanvasNodeId, const ScriptCanvas::VisualExtensionSlotConfiguration& propertyConfiguration)
     {
-        AZ_PROFILE_TIMER("ScriptCanvas", __FUNCTION__);
+        AZ_PROFILE_FUNCTION(ScriptCanvas);
 
         GraphCanvas::SlotConfiguration graphCanvasConfiguration;
 
@@ -1283,7 +1283,7 @@ namespace ScriptCanvasEditor::Nodes::SlotDisplayHelper
 
     AZ::EntityId DisplayExtendableSlot(AZ::EntityId graphCanvasNodeId, const ScriptCanvas::VisualExtensionSlotConfiguration& extenderConfiguration)
     {
-        AZ_PROFILE_TIMER("ScriptCanvas", __FUNCTION__);
+        AZ_PROFILE_FUNCTION(ScriptCanvas);
 
         GraphCanvas::ExtenderSlotConfiguration graphCanvasConfiguration;
 

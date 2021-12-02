@@ -1,6 +1,7 @@
 #
-# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
-# 
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
@@ -59,8 +60,6 @@ set(FILES
     Tests/Integration/CanDeleteJackEntity.cpp
     Tests/Bugs/CanDeleteMotionWhenMotionIsBeingBlended.cpp
     Tests/Bugs/CanUndoParameterDeletionAndRestoreBlendTreeConnections.cpp
-    Tests/D6JointLimitConfiguration.cpp
-    Tests/D6JointLimitConfiguration.h
     Tests/Editor/FileManagerTests.cpp
     Tests/Editor/ParametersGroupDefaultValues.cpp
     Tests/Editor/MotionSetLoadEscalation.cpp

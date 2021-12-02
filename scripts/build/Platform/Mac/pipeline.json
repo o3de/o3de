@@ -1,6 +1,6 @@
 {
     "ENV": {
-        "NODE_LABEL": "mac-catalina-7ad2e45b",
+        "NODE_LABEL": "mac-bigsur-2fc3a22",
         "LY_3RDPARTY_PATH": "/Users/lybuilder/3rdParty",
         "TIMEOUT": 30,
         "WORKSPACE": "/Users/lybuilder/workspace",

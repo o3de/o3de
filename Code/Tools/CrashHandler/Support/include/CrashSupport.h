@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -10,6 +11,8 @@
 #pragma once
 
 #include <AzCore/PlatformDef.h>
+#include <AzCore/std/string/conversions.h>
+#include <AzCore/Utils/Utils.h>
 
 #include <algorithm>
 #include <string>
@@ -22,30 +25,24 @@
 namespace CrashHandler
 {
     std::string GetTimeString();
-    void GetExecutablePathA(char* pathBuffer, int& bufferSize);
-    void GetExecutablePathW(wchar_t* pathBuffer, int& bufferSize);
     void GetTimeInfo(tm& curTime);
 
-    template <typename T>
-    inline void GetExecutablePath(T& returnPath)
+    inline void GetExecutablePath(std::string& returnPath)
     {
         char currentFileName[CRASH_HANDLER_MAX_PATH_LEN] = { 0 };
-        int bufferLen{ CRASH_HANDLER_MAX_PATH_LEN };
-        GetExecutablePathA(currentFileName, bufferLen);
+        AZ::Utils::GetExecutablePath(currentFileName, CRASH_HANDLER_MAX_PATH_LEN);
 
         returnPath = currentFileName;
         std::replace(returnPath.begin(), returnPath.end(), '\\', '/');
     }
 
-    template <>
-    inline void GetExecutablePath<std::wstring>(std::wstring& returnPath)
+    inline void GetExecutablePath(std::wstring& returnPathW)
     {
-        wchar_t currentFileName[CRASH_HANDLER_MAX_PATH_LEN] = { 0 };
-        int bufferLen{ CRASH_HANDLER_MAX_PATH_LEN };
-        GetExecutablePathW(currentFileName, bufferLen);
-
-        returnPath = currentFileName;
-        std::replace(returnPath.begin(), returnPath.end(), '\\', '/');
+        std::string returnPath;
+        GetExecutablePath(returnPath);
+        wchar_t currentFileNameW[CRASH_HANDLER_MAX_PATH_LEN] = { 0 };
+        AZStd::to_wstring(currentFileNameW, CRASH_HANDLER_MAX_PATH_LEN, { returnPath.c_str(), returnPath.size() });
+        returnPathW = currentFileNameW;
     }
 
     template<typename T>

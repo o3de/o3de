@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -13,12 +14,12 @@ struct GridMateTestEnvironment
     : public AZ::Test::ITestEnvironment
     , public AZ::Debug::TraceMessageBus::Handler
 {
-    void SetupEnvironment() override final
+    void SetupEnvironment() final
     {
         AZ::AllocatorInstance<AZ::OSAllocator>::Create();
         BusConnect();
     }
-    void TeardownEnvironment() override final
+    void TeardownEnvironment() final
     {
         BusDisconnect();
         AZ::AllocatorInstance<AZ::OSAllocator>::Destroy();

@@ -1,6 +1,7 @@
 #
-# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
-# 
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
@@ -68,7 +69,7 @@ def disable_gem_in_project(gem_name: str = None,
         return 1
     gem_path = pathlib.Path(gem_path).resolve()
     # make sure this gem already exists if we're adding.  We can always remove a gem.
-    if not gem_path.is_dir():
+    if not gem_path.exists():
         logger.error(f'Gem Path {gem_path} does not exist.')
         return 1
 

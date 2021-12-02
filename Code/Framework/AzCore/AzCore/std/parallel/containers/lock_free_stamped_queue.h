@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -20,7 +21,7 @@ namespace AZStd
         template<typename T>
         struct lock_free_stamped_node_ptr
         {
-            AZ_ALIGN(struct lock_free_stamped_queue_node<T>* m_node, 8);
+            alignas(8) struct lock_free_stamped_queue_node<T>* m_node;
             unsigned int m_stamp;
         };
 

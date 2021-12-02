@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -39,22 +40,22 @@ namespace CommandSystem
     //////////////////////////////////////////////////////////////////////////////////////////////////////////
     MCORE_DEFINECOMMAND_START(CommandCreateMotionSet, "Create motion set", true)
     public:
-        uint32  mPreviouslyUsedID;
-        bool    mOldWorkspaceDirtyFlag;
+        uint32  m_previouslyUsedId;
+        bool    m_oldWorkspaceDirtyFlag;
     MCORE_DEFINECOMMAND_END
 
     MCORE_DEFINECOMMAND_START(CommandRemoveMotionSet, "Remove motion set", true)
     public:
-        AZStd::string   mOldName;
-        AZStd::string   mOldFileName;
-        uint32          mOldParentSetID;
-        uint32          mPreviouslyUsedID;
-        bool            mOldWorkspaceDirtyFlag;
+        AZStd::string   m_oldName;
+        AZStd::string   m_oldFileName;
+        uint32          m_oldParentSetId;
+        uint32          m_previouslyUsedId;
+        bool            m_oldWorkspaceDirtyFlag;
     MCORE_DEFINECOMMAND_END
 
     MCORE_DEFINECOMMAND_START(CommandAdjustMotionSet, "Adjust motion set", true)
-        AZStd::string   mOldSetName;
-        bool            mOldDirtyFlag;
+        AZStd::string   m_oldSetName;
+        bool            m_oldDirtyFlag;
     MCORE_DEFINECOMMAND_END
 
     //////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -72,8 +73,8 @@ namespace CommandSystem
 
     MCORE_DEFINECOMMAND_START(CommandMotionSetAdjustMotion, "Adjust motion set", true)
     public:
-        AZStd::string   mOldIdString;
-        AZStd::string   mOldMotionFilename;
+        AZStd::string   m_oldIdString;
+        AZStd::string   m_oldMotionFilename;
         void UpdateMotionNodes(const char* oldID, const char* newID);
     MCORE_DEFINECOMMAND_END
 
@@ -84,8 +85,8 @@ namespace CommandSystem
     public:
         using RelocateFilenameFunction = AZStd::function<void(AZStd::string&)>;
         RelocateFilenameFunction m_relocateFilenameFunction;
-        uint32 mOldMotionSetID;
-        bool mOldWorkspaceDirtyFlag;
+        uint32 m_oldMotionSetId;
+        bool m_oldWorkspaceDirtyFlag;
     MCORE_DEFINECOMMAND_END
 
     //////////////////////////////////////////////////////////////////////////////////////////////////////////

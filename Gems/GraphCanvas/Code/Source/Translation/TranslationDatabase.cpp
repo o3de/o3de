@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -32,10 +33,10 @@ namespace GraphCanvas
 
         m_database.clear();
 
-        AZStd::function<void()> reloadFn = [this]()
+        AZStd::function<void()> reloadFn = []()
         {
             // Collects all script assets for reloading
-            AZ::Data::AssetCatalogRequests::AssetEnumerationCB collectAssetsCb = [this](const AZ::Data::AssetId, const AZ::Data::AssetInfo& info)
+            AZ::Data::AssetCatalogRequests::AssetEnumerationCB collectAssetsCb = [](const AZ::Data::AssetId, const AZ::Data::AssetInfo& info)
             {
                 // Check asset type
                 if (info.m_assetType == azrtti_typeid<TranslationAsset>())

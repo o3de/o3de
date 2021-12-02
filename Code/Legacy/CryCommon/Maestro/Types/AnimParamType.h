@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -9,10 +10,6 @@
 #ifndef CRYINCLUDE_CRYCOMMON_MAESTRO_TYPES_ANIMPARAMTYPE_H
 #define CRYINCLUDE_CRYCOMMON_MAESTRO_TYPES_ANIMPARAMTYPE_H
 #pragma once
-
-// **NOTES**: Do not include into the precompiled header hierarchy!
-//            There are a couple legacy defines in IMovieSystem.h that
-//            correspond to these values. ByString and Invalid.
 
 // Static common parameters IDs of animation node.
 //

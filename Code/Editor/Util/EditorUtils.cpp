@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -29,30 +30,6 @@ void HeapCheck::Check([[maybe_unused]] const char* file, [[maybe_unused]] int li
     _ASSERTE(_CrtCheckMemory());
 #endif
 
-    /*
-   int heapstatus = _heapchk();
-   switch( heapstatus )
-   {
-   case _HEAPOK:
-      break;
-   case _HEAPEMPTY:
-      break;
-   case _HEAPBADBEGIN:
-            {
-                CString str;
-                str.Format( "Bad Start of Heap, at file %s line:%d",file,line );
-                MessageBox( NULL,str,"Heap Check",MB_OK );
-            }
-      break;
-   case _HEAPBADNODE:
-            {
-                CString str;
-                str.Format( "Bad Node in Heap, at file %s line:%d",file,line );
-                MessageBox( NULL,str,"Heap Check",MB_OK );
-            }
-      break;
-   }
-     */
     #endif
 }
 
@@ -228,7 +205,7 @@ QColor ColorLinearToGamma(ColorF col)
     g = (float)(g <= 0.0031308 ? (12.92 * g) : (1.055 * pow((double)g, 1.0 / 2.4) - 0.055));
     b = (float)(b <= 0.0031308 ? (12.92 * b) : (1.055 * pow((double)b, 1.0 / 2.4) - 0.055));
 
-    return QColor(FtoI(r * 255.0f), FtoI(g * 255.0f), FtoI(b * 255.0f), FtoI(a * 255.0f));
+    return QColor(int(r * 255.0f), int(g * 255.0f), int(b * 255.0f), int(a * 255.0f));
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -257,7 +234,7 @@ namespace EditorUtils
     AzWarningAbsorber::AzWarningAbsorber(const char* window)
         : m_window(window)
     AZ_POP_DISABLE_WARNING
-    { 
+    {
         BusConnect();
     }
 

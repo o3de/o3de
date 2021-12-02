@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -108,7 +109,10 @@ namespace AZ::Debug
         AZStd::thread threads[totalThreads];
         for (size_t threadIndex = 0; threadIndex < totalThreads; ++threadIndex)
         {
+            AZ_PUSH_DISABLE_WARNING(5233, "-Wunknown-warning-option") // Older versions of MSVC toolchain require to pass constexpr in the
+                                                                      // capture. Newer versions issue unused warning
             threads[threadIndex] = AZStd::thread([&startLogging, &messages]()
+            AZ_POP_DISABLE_WARNING
             {
                 while (!startLogging)
                 {
@@ -225,8 +229,13 @@ namespace AZ::Debug
         AZStd::thread threads[totalThreads];
         for (size_t threadIndex = 0; threadIndex < totalThreads; ++threadIndex)
         {
-            threads[threadIndex] = AZStd::thread([&startLogging, &totalRecordsWritten, &message, recordsPerThreadCount]()
+            AZ_PUSH_DISABLE_WARNING(5233, "-Wunknown-warning-option") // Older versions of MSVC toolchain require to pass constexpr in the
+                                                                      // capture. Newer versions issue unused warning
+            threads[threadIndex] = AZStd::thread([&startLogging, &message, &totalRecordsWritten]()
+            AZ_POP_DISABLE_WARNING
             {
+                AZ_UNUSED(message);
+
                 while (!startLogging)
                 {
                     AZStd::this_thread::yield();

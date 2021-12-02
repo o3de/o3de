@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -30,7 +31,8 @@ namespace AZ
 
         using FunctorVisitor = AZStd::function<void(ConsoleFunctorBase*)>;
 
-        inline static constexpr AZStd::string_view ConsoleRootCommandKey = "/Amazon/AzCore/Runtime/ConsoleCommands";
+        inline static constexpr AZStd::string_view ConsoleRuntimeCommandKey = "/Amazon/AzCore/Runtime/ConsoleCommands";
+        inline static constexpr AZStd::string_view ConsoleAutoexecCommandKey = "/O3DE/Autoexec/ConsoleCommands";
 
         IConsole() = default;
         virtual ~IConsole() = default;
@@ -93,22 +95,30 @@ namespace AZ
         //! @param commandLine the concatenated command-line string to execute
         virtual void ExecuteCommandLine(const AZ::CommandLine& commandLine) = 0;
 
+        //! Attempts to invoke a "deferred console command", which is a console command
+        //! that has failed to execute previously due to the command not being registered yet.
+        //! @return boolean true if any deferred console commands have executed, false otherwise
+        virtual bool ExecuteDeferredConsoleCommands() = 0;
+
+        //! Clear out any deferred console commands queue
+        virtual void ClearDeferredConsoleCommands() = 0;
+
         //! HasCommand is used to determine if the console knows about a command.
         //! @param command the command we are checking for
         //! @return boolean true on if the command is registered, false otherwise
-        virtual bool HasCommand(const char* command) = 0;
+        virtual bool HasCommand(AZStd::string_view command) = 0;
 
         //! FindCommand finds the console command with the specified console string.
         //! @param command the command that is being searched for
         //! @return non-null pointer to the console command if found
-        virtual ConsoleFunctorBase* FindCommand(const char* command) = 0;
+        virtual ConsoleFunctorBase* FindCommand(AZStd::string_view command) = 0;
 
         //! Finds all commands where the input command is a prefix and returns
         //! the longest matching substring prefix the results have in common.
         //! @param command The prefix string to find all matching commands for.
         //! @param matches The list of all commands that match the input prefix.
         //! @return The longest matching substring prefix the results have in common.
-        virtual AZStd::string AutoCompleteCommand(const char* command,
+        virtual AZStd::string AutoCompleteCommand(AZStd::string_view command,
                                                   AZStd::vector<AZStd::string>* matches = nullptr) = 0;
 
         //! Retrieves the value of the requested cvar.
@@ -116,7 +126,7 @@ namespace AZ
         //! @param outValue reference to the instance to write the current cvar value to
         //! @return GetValueResult::Success if the operation succeeded, or an error result if the operation failed
         template<typename RETURN_TYPE>
-        GetValueResult GetCvarValue(const char* command, RETURN_TYPE& outValue);
+        GetValueResult GetCvarValue(AZStd::string_view command, RETURN_TYPE& outValue);
 
         //! Visits all registered console functors.
         //! @param visitor the instance to visit all functors with
@@ -175,7 +185,7 @@ namespace AZ
     }
 
     template<typename RETURN_TYPE>
-    inline GetValueResult IConsole::GetCvarValue(const char* command, RETURN_TYPE& outValue)
+    inline GetValueResult IConsole::GetCvarValue(AZStd::string_view command, RETURN_TYPE& outValue)
     {
         ConsoleFunctorBase* cvarFunctor = FindCommand(command);
         if (cvarFunctor == nullptr)
@@ -252,6 +262,6 @@ static constexpr AZ::ThreadSafety ConsoleThreadSafety<_TYPE, std::enable_if_t<st
 //! @param _FLAGS a set of AzFramework::ConsoleFunctorFlags used to mutate behaviour
 //! @param _DESC a description of the cvar
 #define AZ_CONSOLEFREEFUNC_4(_NAME, _FUNCTION, _FLAGS, _DESC) \
-    inline AZ::ConsoleFunctor<void, false> Functor##_FUNCTION(#_FUNCTION, _DESC, _FLAGS | AZ::ConsoleFunctorFlags::DontDuplicate, AZ::TypeId::CreateNull(), &_FUNCTION)
+    inline AZ::ConsoleFunctor<void, false> Functor##_FUNCTION(_NAME, _DESC, _FLAGS | AZ::ConsoleFunctorFlags::DontDuplicate, AZ::TypeId::CreateNull(), &_FUNCTION)
 
 #define AZ_CONSOLEFREEFUNC(...) AZ_MACRO_SPECIALIZE(AZ_CONSOLEFREEFUNC_, AZ_VA_NUM_ARGS(__VA_ARGS__), (__VA_ARGS__))

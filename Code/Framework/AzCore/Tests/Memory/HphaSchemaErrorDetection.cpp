@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -296,7 +297,7 @@ AZ_POP_DISABLE_WARNING
         // the overflow guard is generated out of rand, so we set a fixed seed before doing the allocation
         // to get a deterministic guard
         srand(0);
-        const unsigned char expectedInitialGuard = rand();
+        const unsigned char expectedInitialGuard = static_cast<unsigned char>(rand());
 
         srand(0);
         TestClass<16>* someObject = aznew TestClass<16>();

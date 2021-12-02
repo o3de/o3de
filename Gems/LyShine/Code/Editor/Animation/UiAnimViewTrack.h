@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -22,7 +23,7 @@ public:
         : m_bAllOfSameType(true)
         , m_bHasRotationTrack(false) {}
 
-    unsigned int GetCount() const { return m_tracks.size(); }
+    unsigned int GetCount() const { return static_cast<unsigned int>(m_tracks.size()); }
     CUiAnimViewTrack* GetTrack(const unsigned int index) { return m_tracks[index]; }
     const CUiAnimViewTrack* GetTrack(const unsigned int index) const { return m_tracks[index]; }
 
@@ -72,7 +73,7 @@ public:
     CUiAnimViewAnimNode* GetAnimNode() const;
 
     // Name getter
-    virtual const char* GetName() const;
+    AZStd::string GetName() const override;
 
     // CUiAnimViewNode
     virtual EUiAnimViewNodeType GetNodeType() const override { return eUiAVNT_Track; }

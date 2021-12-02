@@ -1,7 +1,8 @@
 
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -143,15 +144,16 @@ namespace AssetBuilderSDK
     {
         Platform_NONE       = 0x00,
         Platform_PC         = 0x01,
-        Platform_ANDROID    = 0x02,
-        Platform_IOS        = 0x04,
-        Platform_MAC        = 0x08,
+        Platform_LINUX      = 0x02,
+        Platform_ANDROID    = 0x04,
+        Platform_IOS        = 0x08,
+        Platform_MAC        = 0x10,
         Platform_PROVO      = 0x20,
         Platform_SALEM      = 0x40,
         Platform_JASPER     = 0x80,
 
         //! if you add a new platform entry to this enum, you must add it to allplatforms as well otherwise that platform would not be considered valid. 
-        AllPlatforms = Platform_PC | Platform_ANDROID | Platform_IOS | Platform_MAC | Platform_PROVO | Platform_SALEM | Platform_JASPER
+        AllPlatforms = Platform_PC | Platform_LINUX | Platform_ANDROID | Platform_IOS | Platform_MAC | Platform_PROVO | Platform_SALEM | Platform_JASPER
     };
 #endif // defined(ENABLE_LEGACY_PLATFORMFLAGS_SUPPORT)
     //! Map data structure to holder parameters that are passed into a job for ProcessJob requests.
@@ -908,6 +910,19 @@ namespace AssetBuilderSDK
         //! There can be multiple builders running at once, so we need to filter out ones coming from other builders
         AZStd::thread_id m_jobThreadId;
     };
+
+    //! Get hash for a whole file
+    //! @filePath the path for the file
+    //! @bytesReadOut output the read file size in bytes
+    //! @hashMsDelay [Do not use except for unit test] add a delay in ms for between each block reading.
+    AZ::u64 GetFileHash(const char* filePath, AZ::IO::SizeType* bytesReadOut = nullptr, int hashMsDelay = 0);
+
+    //! Get hash for a generic IO stream
+    //! @readStream the input readable stream
+    //! @bytesReadOut output the read size in bytes
+    //! @hashMsDelay [Do not use except for unit test] add a delay in ms for between each block reading.
+    AZ::u64 GetHashFromIOStream(AZ::IO::GenericStream& readStream, AZ::IO::SizeType* bytesReadOut = nullptr, int hashMsDelay = 0);
+
 } // namespace AssetBuilderSDK
 
 namespace AZ

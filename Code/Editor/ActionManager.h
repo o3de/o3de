@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -150,7 +151,6 @@ public:
         }
 
         ActionWrapper& SetMenu(DynamicMenu* menu);
-        ActionWrapper& SetApplyHoverEffect();
 
         operator QAction*() const {
             return m_action;
@@ -300,8 +300,13 @@ public:
 
     void AddAction(QAction* action);
     void AddAction(int id, QAction* action);
+    void AddAction(AZ::Crc32 id, QAction* action);
+
     void RemoveAction(QAction* action);
+
     ActionWrapper AddAction(int id, const QString& name);
+    ActionWrapper AddAction(AZ::Crc32, const QString& name);
+
     bool HasAction(QAction*) const;
     bool HasAction(int id) const;
 
@@ -310,6 +315,7 @@ public:
 
     // AzToolsFramework::EditorActionRequests
     void AddActionViaBus(int id, QAction* action) override;
+    void AddActionViaBusCrc(AZ::Crc32 id, QAction* action) override;
     void RemoveActionViaBus(QAction* action) override;
     void EnableDefaultActions() override;
     void DisableDefaultActions() override;
@@ -346,7 +352,7 @@ public:
         m_actionHandlers[id] = std::bind(method, object, id);
     }
 
-    bool eventFilter(QObject* watched, QEvent* event);
+    bool eventFilter(QObject* watched, QEvent* event) override;
 
     // returns false if the action was already inserted, indicating that the action should not be processed again
     bool InsertActionExecuting(int id);
@@ -413,6 +419,7 @@ protected:
 
     void AddAction(int id, QAction* action);
     ActionManager::ActionWrapper AddAction(int id, const QString& name);
+    ActionManager::ActionWrapper AddAction(AZ::Crc32 id, const QString& name);
     void AddSeparator();
 
     void UpdateAllActions();

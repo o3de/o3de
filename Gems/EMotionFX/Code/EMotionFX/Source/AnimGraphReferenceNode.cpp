@@ -1,10 +1,12 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
+#include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/std/sort.h>
@@ -55,7 +57,7 @@ namespace EMotionFX
         // to the non-existing old anim graph, while the new one is about to be loaded asynchronously.
 
         // In case the asset already got destroyed (AnimGraphAssetHandler::DestroyAsset()), it removed all anim graph instances already.
-        if (GetAnimGraphManager().FindAnimGraphInstanceIndex(m_referencedAnimGraphInstance) != InvalidIndex32)
+        if (GetAnimGraphManager().FindAnimGraphInstanceIndex(m_referencedAnimGraphInstance) != InvalidIndex)
         {
             m_referencedAnimGraphInstance->Destroy();
         }
@@ -67,7 +69,7 @@ namespace EMotionFX
 
     void AnimGraphReferenceNode::UniqueData::Update()
     {
-        AnimGraphReferenceNode* referenceNode = azdynamic_cast<AnimGraphReferenceNode*>(mObject);
+        AnimGraphReferenceNode* referenceNode = azdynamic_cast<AnimGraphReferenceNode*>(m_object);
         AZ_Assert(referenceNode, "Unique data linked to incorrect node type.");
 
         MotionSet* motionSet = referenceNode->GetMotionSet();
@@ -115,10 +117,10 @@ namespace EMotionFX
     {
         // This node listens to changes in AnimGraph and MotionSet assets. We need to remove this node before disconnecting the asset bus to avoid the disconnect 
         // removing the MotionSet which can in turn access this node that is being deleted.
-        if (mAnimGraph)
+        if (m_animGraph)
         {
-            mAnimGraph->RemoveObject(this);
-            mAnimGraph = nullptr;
+            m_animGraph->RemoveObject(this);
+            m_animGraph = nullptr;
         }
         AZ::Data::AssetBus::MultiHandler::BusDisconnect();
     }
@@ -295,9 +297,9 @@ namespace EMotionFX
                 }
 
                 // Update the values for attributes that are fed through a connection
-                AZ_Assert(mInputPorts.size() == m_parameterIndexByPortIndex.size(), "Expected m_parameterIndexByPortIndex and numInputPorts to be in sync");
+                AZ_Assert(m_inputPorts.size() == m_parameterIndexByPortIndex.size(), "Expected m_parameterIndexByPortIndex and numInputPorts to be in sync");
 
-                const uint32 numInputPorts = static_cast<uint32>(mInputPorts.size());
+                const uint32 numInputPorts = static_cast<uint32>(m_inputPorts.size());
                 for (uint32 i = 0; i < numInputPorts; ++i)
                 {
                     MCore::Attribute* attribute = GetInputAttribute(animGraphInstance, i); // returns the attribute of the upstream side of the connection
@@ -374,8 +376,8 @@ namespace EMotionFX
                 // Release any left over ref data for the referenced anim graph instance.
                 const uint32 threadIndex = referencedAnimGraphInstance->GetActorInstance()->GetThreadIndex();
                 AnimGraphRefCountedDataPool& refDataPool = GetEMotionFX().GetThreadData(threadIndex)->GetRefCountedDataPool();
-                const uint32 numReferencedNodes = referencedAnimGraph->GetNumNodes();
-                for (uint32 i = 0; i < numReferencedNodes; ++i)
+                const size_t numReferencedNodes = referencedAnimGraph->GetNumNodes();
+                for (size_t i = 0; i < numReferencedNodes; ++i)
                 {
                     const AnimGraphNode* node = referencedAnimGraph->GetNode(i);
                     AnimGraphNodeData* nodeData = static_cast<AnimGraphNodeData*>(referencedAnimGraphInstance->GetUniqueObjectData(node->GetObjectIndex()));
@@ -436,7 +438,7 @@ namespace EMotionFX
         AnimGraph* referencedAnimGraph = GetReferencedAnimGraph();
         if (referencedAnimGraph)
         {
-            UniqueData* uniqueData = static_cast<UniqueData*>(animGraphInstance->GetUniqueObjectData(mObjectIndex));
+            UniqueData* uniqueData = static_cast<UniqueData*>(animGraphInstance->GetUniqueObjectData(m_objectIndex));
             if (uniqueData && uniqueData->m_referencedAnimGraphInstance)
             {
                 uniqueData->m_referencedAnimGraphInstance->RecursiveInvalidateUniqueDatas();
@@ -498,7 +500,7 @@ namespace EMotionFX
     }
 
 
-    void AnimGraphReferenceNode::RecursiveCollectObjects(MCore::Array<AnimGraphObject*>& outObjects) const
+    void AnimGraphReferenceNode::RecursiveCollectObjects(AZStd::vector<AnimGraphObject*>& outObjects) const
     {
         AnimGraphNode::RecursiveCollectObjects(outObjects);
 
@@ -530,10 +532,10 @@ namespace EMotionFX
 
             // Use an anim graph instance to recursively go through the parents. If we hit a parent that is referenceAnimGraph,
             // that means that the child we are about to add is a parent, therefore a cycle
-            const size_t numAnimGraphInstances = mAnimGraph->GetNumAnimGraphInstances();
+            const size_t numAnimGraphInstances = m_animGraph->GetNumAnimGraphInstances();
             if (numAnimGraphInstances > 0)
             {
-                AnimGraphInstance* animGraphInstance = mAnimGraph->GetAnimGraphInstance(0);
+                AnimGraphInstance* animGraphInstance = m_animGraph->GetAnimGraphInstance(0);
                 do 
                 {
                     if (animGraphInstance->GetAnimGraph() == referenceAnimGraph)
@@ -626,11 +628,11 @@ namespace EMotionFX
     {
         // Inform the unique datas as well as other systems about the changed anim graph asset, destroy and nullptr the reference
         // anim graph instances so that we don't try to update an anim graph instance or while the asset already got destructed.
-        const size_t numAnimGraphInstances = mAnimGraph->GetNumAnimGraphInstances();
+        const size_t numAnimGraphInstances = m_animGraph->GetNumAnimGraphInstances();
         for (size_t i = 0; i < numAnimGraphInstances; ++i)
         {
-            AnimGraphInstance* animGraphInstance = mAnimGraph->GetAnimGraphInstance(i);
-            UniqueData* uniqueData = static_cast<UniqueData*>(animGraphInstance->GetUniqueObjectData(mObjectIndex));
+            AnimGraphInstance* animGraphInstance = m_animGraph->GetAnimGraphInstance(i);
+            UniqueData* uniqueData = static_cast<UniqueData*>(animGraphInstance->GetUniqueObjectData(m_objectIndex));
             if (uniqueData)
             {
                 uniqueData->OnReferenceAnimGraphAssetChanged();
@@ -666,11 +668,11 @@ namespace EMotionFX
 
     void AnimGraphReferenceNode::OnMaskedParametersChanged()
     {
-        const size_t numAnimGraphInstances = mAnimGraph->GetNumAnimGraphInstances();
+        const size_t numAnimGraphInstances = m_animGraph->GetNumAnimGraphInstances();
         for (size_t i = 0; i < numAnimGraphInstances; ++i)
         {
-            AnimGraphInstance* animGraphInstance = mAnimGraph->GetAnimGraphInstance(i);
-            UniqueData* uniqueData = static_cast<UniqueData*>(animGraphInstance->GetUniqueObjectData(mObjectIndex));
+            AnimGraphInstance* animGraphInstance = m_animGraph->GetAnimGraphInstance(i);
+            UniqueData* uniqueData = static_cast<UniqueData*>(animGraphInstance->GetUniqueObjectData(m_objectIndex));
             if (uniqueData)
             {
                 uniqueData->m_parameterMappingCacheDirty = true;
@@ -833,10 +835,10 @@ namespace EMotionFX
     {
         MotionSet* motionSet = GetMotionSet();
 
-        const size_t numAnimGraphInstances = mAnimGraph->GetNumAnimGraphInstances();
+        const size_t numAnimGraphInstances = m_animGraph->GetNumAnimGraphInstances();
         for (size_t i = 0; i < numAnimGraphInstances; ++i)
         {
-            AnimGraphInstance* animGraphInstance = mAnimGraph->GetAnimGraphInstance(i);
+            AnimGraphInstance* animGraphInstance = m_animGraph->GetAnimGraphInstance(i);
             UniqueData* uniqueData = static_cast<UniqueData*>(FindOrCreateUniqueNodeData(animGraphInstance));
 
             if (uniqueData->m_referencedAnimGraphInstance)
@@ -885,7 +887,7 @@ namespace EMotionFX
         // exclude those parameters
         for (const AnimGraphNode::Port& port : GetInputPorts())
         {
-            if (port.mConnection)
+            if (port.m_connection)
             {
                 parameterNames.emplace_back(port.GetNameString());
             }
@@ -978,7 +980,7 @@ namespace EMotionFX
 
         AZ_Assert(!GetNumConnections(), "Unexpected connections");
 
-        const ValueParameterVector& valueParameters = mAnimGraph->RecursivelyGetValueParameters();
+        const ValueParameterVector& valueParameters = m_animGraph->RecursivelyGetValueParameters();
         const ValueParameterVector& referencedValueParameters = referencedAnimGraph->RecursivelyGetValueParameters();
 
         // For each parameter in referencedValueParameters, if it is not in valueParameters or is not compatible, add it
@@ -1013,10 +1015,10 @@ namespace EMotionFX
             m_reinitMaskedParameters = false;
         }
 
-        bool portChanged = !mInputPorts.empty();
+        bool portChanged = !m_inputPorts.empty();
 
         // Remove all input ports
-        mInputPorts.clear();
+        m_inputPorts.clear();
         m_parameterIndexByPortIndex.clear();
 
         // Get the ValueParameters from the AnimGraph
@@ -1053,16 +1055,16 @@ namespace EMotionFX
                 }),
                 m_maskedParameterNames.end()
             );
-            mConnections.erase(
-                AZStd::remove_if(mConnections.begin(), mConnections.end(), [&removedPortIndexes](const BlendTreeConnection* connection)
+            m_connections.erase(
+                AZStd::remove_if(m_connections.begin(), m_connections.end(), [&removedPortIndexes](const BlendTreeConnection* connection)
                 {
                     return removedPortIndexes.find(connection->GetTargetPort()) != removedPortIndexes.end();
                 }),
-                mConnections.end()
+                m_connections.end()
             );
 
             // Shift the port indexes of the remaining connections
-            for (BlendTreeConnection* connection : mConnections)
+            for (BlendTreeConnection* connection : m_connections)
             {
                 AZ::u16 originalTargetPort = connection->GetTargetPort();
                 AZ::u16 targetPort = originalTargetPort;
@@ -1114,17 +1116,17 @@ namespace EMotionFX
             // Update the input ports. Don't call RelinkPortConnections,
             // because ReinitInputPorts cannot guarantee that the connected
             // nodes have been initialized
-            for (BlendTreeConnection* connection : mConnections)
+            for (BlendTreeConnection* connection : m_connections)
             {
                 const AZ::u16 targetPortNr = connection->GetTargetPort();
 
-                if (targetPortNr < mInputPorts.size())
+                if (targetPortNr < m_inputPorts.size())
                 {
-                    mInputPorts[targetPortNr].mConnection = connection;
+                    m_inputPorts[targetPortNr].m_connection = connection;
                 }
                 else
                 {
-                    AZ_Error("EMotionFX", false, "Can't make connection to input port %i of '%s', max port count is %i.", targetPortNr, GetName(), mInputPorts.size());
+                    AZ_Error("EMotionFX", false, "Can't make connection to input port %i of '%s', max port count is %i.", targetPortNr, GetName(), m_inputPorts.size());
                 }
             }
             AnimGraphNotificationBus::Broadcast(&AnimGraphNotificationBus::Events::OnSyncVisualObject, this);

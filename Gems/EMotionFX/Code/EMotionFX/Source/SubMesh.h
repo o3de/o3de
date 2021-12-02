@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -10,7 +11,7 @@
 // include the required headers
 #include "EMotionFXConfig.h"
 #include "BaseObject.h"
-#include <MCore/Source/Array.h>
+#include <AzCore/std/containers/vector.h>
 
 
 namespace EMotionFX
@@ -54,7 +55,7 @@ namespace EMotionFX
          * @param materialIndex The material.
          * @param numBones The number of bones inside the submesh.
          */
-        static SubMesh* Create(Mesh* parentMesh, uint32 startVertex, uint32 startIndex, uint32 startPolygon, uint32 numVerts, uint32 numIndices, uint32 numPolygons, uint32 materialIndex, uint32 numBones);
+        static SubMesh* Create(Mesh* parentMesh, uint32 startVertex, uint32 startIndex, uint32 startPolygon, uint32 numVerts, uint32 numIndices, uint32 numPolygons, uint32 materialIndex, size_t numBones);
 
         /**
          * Get the start index. This is the offset in the index array of the parent mesh where the index data for this
@@ -177,48 +178,48 @@ namespace EMotionFX
          * Set the number of bones that is being used by this submesh.
          * @param numBones The number of bones used by the submesh.
          */
-        void SetNumBones(uint32 numBones);
+        void SetNumBones(size_t numBones);
 
         /**
          * Set the index of a given bone.
          * @param index The bone number, which must be in range of [0..GetNumBones()-1].
          * @param nodeIndex The node index number that acts as bone on this submesh.
          */
-        void SetBone(uint32 index, uint32 nodeIndex);
+        void SetBone(size_t index, size_t nodeIndex);
 
         /**
          * Get the number of bones used by this submesh.
          * @result The number of bones used by this submesh.
          */
-        MCORE_INLINE uint32 GetNumBones() const                                 { return mBones.GetLength(); }
+        MCORE_INLINE size_t GetNumBones() const                                 { return m_bones.size(); }
 
         /**
          * Get the node index for a given bone.
          * @param index The bone number, which must be in range of [0..GetNumBones()-1].
          * @result The node index value for the given bone.
          */
-        MCORE_INLINE uint32 GetBone(uint32 index)   const                       { return mBones[index]; }
+        MCORE_INLINE size_t GetBone(size_t index)   const                       { return m_bones[index]; }
 
         /**
          * Get direct access to the bone values, by getting a pointer to the first bone index.
          * Each integer in the array represents the node number that acts as bone on this submesh.
          * @result A pointer to the array of bones used by this submesh.
          */
-        MCORE_INLINE uint32* GetBones()                                         { return mBones.GetPtr(); }
+        MCORE_INLINE size_t* GetBones()                                         { return m_bones.data(); }
 
         /**
          * Get direct access to the bones array.
          * Each integer in the array represents the node number that acts as bone on this submesh.
          * @result A read only reference to the array of bones used by this submesh.
          */
-        MCORE_INLINE const MCore::Array<uint32>& GetBonesArray() const          { return mBones; }
+        MCORE_INLINE const AZStd::vector<size_t>& GetBonesArray() const          { return m_bones; }
 
         /**
          * Get direct access to the bones array.
          * Each integer in the array represents the node number that acts as bone on this submesh.
          * @result A reference to the array of bones used by this submesh.
          */
-        MCORE_INLINE MCore::Array<uint32>& GetBonesArray()                      { return mBones; }
+        MCORE_INLINE AZStd::vector<size_t>& GetBonesArray()                      { return m_bones; }
 
         /**
          * Reinitialize the bones.
@@ -235,20 +236,20 @@ namespace EMotionFX
          * @result The bone number inside the submesh, which is in range of [0..GetNumBones()-1].
          *         A value of MCORE_INVALIDINDEX32 is returned when the specified node isn't used as bone inside this submesh.
          */
-        uint32 FindBoneIndex(uint32 nodeNr) const;
+        size_t FindBoneIndex(size_t nodeNr) const;
 
         /**
          * Remap bone to a new bone. This will overwrite the given old bones with the new one.
          * @param oldNodeNr The node number to be searched and replaced.
          * @param newNodeNr The node number with which the old bones will be replaced with.
          */
-        void RemapBone(uint16 oldNodeNr, uint16 newNodeNr);
+        void RemapBone(size_t oldNodeNr, size_t newNodeNr);
 
         /**
          * Remove the given bone from the bones list.
          * @param index The index of the bone to be removed in range of [0..GetNumBones()-1].
          */
-        void RemoveBone(uint16 index);
+        void RemoveBone(size_t index);
 
         /**
          * Clone the submesh.
@@ -267,15 +268,15 @@ namespace EMotionFX
 
 
     protected:
-        MCore::Array<uint32>    mBones;         /**< The collection of bones. These are stored as node numbers that point into the actor. */
-        uint32                  mStartVertex;   /**< The start vertex number in the vertex data arrays of the parent mesh. */
-        uint32                  mStartIndex;    /**< The start index number in the index array of the parent mesh. */
-        uint32                  mStartPolygon;  /**< The start polygon number in the polygon vertex count array of the parent mesh. */
-        uint32                  mNumVertices;   /**< The number of vertices in this submesh. */
-        uint32                  mNumIndices;    /**< The number of indices in this submesh. */
-        uint32                  mNumPolygons;   /**< The number of polygons in this submesh. */
-        uint32                  mMaterial;      /**< The material index, which points into the materials array in the Node class. */
-        Mesh*                   mParentMesh;    /**< The parent mesh. */
+        AZStd::vector<size_t>    m_bones;         /**< The collection of bones. These are stored as node numbers that point into the actor. */
+        uint32                  m_startVertex;   /**< The start vertex number in the vertex data arrays of the parent mesh. */
+        uint32                  m_startIndex;    /**< The start index number in the index array of the parent mesh. */
+        uint32                  m_startPolygon;  /**< The start polygon number in the polygon vertex count array of the parent mesh. */
+        uint32                  m_numVertices;   /**< The number of vertices in this submesh. */
+        uint32                  m_numIndices;    /**< The number of indices in this submesh. */
+        uint32                  m_numPolygons;   /**< The number of polygons in this submesh. */
+        uint32                  m_material;      /**< The material index, which points into the materials array in the Node class. */
+        Mesh*                   m_parentMesh;    /**< The parent mesh. */
 
         /**
          * Constructor.
@@ -289,7 +290,7 @@ namespace EMotionFX
          * @param materialIndex The material.
          * @param numBones The number of bones inside the submesh.
          */
-        SubMesh(Mesh* parentMesh, uint32 startVertex, uint32 startIndex, uint32 startPolygon, uint32 numVerts, uint32 numIndices, uint32 numPolygons, uint32 materialIndex, uint32 numBones);
+        SubMesh(Mesh* parentMesh, uint32 startVertex, uint32 startIndex, uint32 startPolygon, uint32 numVerts, uint32 numIndices, uint32 numPolygons, uint32 materialIndex, size_t numBones);
 
         /**
          * Destructor.

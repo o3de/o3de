@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -9,6 +10,16 @@
 
 namespace Multiplayer
 {
+    inline NetBindComponent* NetworkEntityTracker::GetNetBindComponent(AZ::Entity* rawEntity) const
+    {
+        auto found = m_netBindingMap.find(rawEntity);
+        if (found != m_netBindingMap.end())
+        {
+            return found->second;
+        }
+        return nullptr;
+    }
+
     inline NetworkEntityTracker::iterator NetworkEntityTracker::begin()
     {
         return m_entityMap.begin();
@@ -47,6 +58,7 @@ namespace Multiplayer
     inline void NetworkEntityTracker::clear()
     {
         m_entityMap.clear();
+        m_netEntityIdMap.clear();
     }
 
     inline uint32_t NetworkEntityTracker::GetChangeDirty(const AZ::Entity* entity) const

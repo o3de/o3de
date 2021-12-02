@@ -1,5 +1,6 @@
 """
-Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+Copyright (c) Contributors to the Open 3D Engine Project.
+For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
@@ -16,6 +17,9 @@ from model.resource_mapping_attributes import ResourceMappingAttributesStatus
 from model.resource_proxy_model import ResourceProxyModel
 from model.resource_table_model import (ResourceTableConstants, ResourceTableModel)
 from view.common_view_components import (NotificationFrame, SearchFilterLineEdit)
+
+HIGHLIGHT_FIELD_PROPERTY = 'HighlightField'
+HIGHLIGHT_TEXT_PROPERTY = 'HighlightText'
 
 
 class ViewEditPageConstants(object):
@@ -179,6 +183,7 @@ class ViewEditPage(QWidget):
                                                   view_size_constants.INTERACTION_COMPONENT_HEIGHT)
         self._config_file_combobox.setCurrentIndex(-1)
         header_area_layout.addWidget(self._config_file_combobox)
+        self._config_file_combobox.currentIndexChanged.connect(self._set_config_file_combobox_style)
 
         header_area_spacer: QSpacerItem = QSpacerItem(view_size_constants.TOOL_APPLICATION_MAIN_WINDOW_WIDTH,
                                                       view_size_constants.INTERACTION_COMPONENT_HEIGHT,
@@ -201,7 +206,6 @@ class ViewEditPage(QWidget):
 
         self._config_location_button: QPushButton = QPushButton(self._header_area)
         self._config_location_button.setIcon(QIcon(":/Gallery/Folder.svg"))
-        self._config_location_button.setFlat(True)
         self._config_location_button.setMinimumSize(view_size_constants.INTERACTION_COMPONENT_HEIGHT,
                                                     view_size_constants.INTERACTION_COMPONENT_HEIGHT)
         header_area_layout.addWidget(self._config_location_button)
@@ -340,13 +344,6 @@ class ViewEditPage(QWidget):
                                                  view_size_constants.INTERACTION_COMPONENT_HEIGHT)
         footer_area_layout.addWidget(self._save_changes_button)
 
-        self._create_new_button: QPushButton = QPushButton(self._footer_area)
-        self._create_new_button.setObjectName("Primary")
-        self._create_new_button.setText(notification_label_text.VIEW_EDIT_PAGE_CREATE_NEW_TEXT)
-        self._create_new_button.setMinimumSize(view_size_constants.CREATE_NEW_BUTTON_WIDTH,
-                                               view_size_constants.INTERACTION_COMPONENT_HEIGHT)
-        footer_area_layout.addWidget(self._create_new_button)
-
         self._rescan_button: QPushButton = QPushButton(self._footer_area)
         self._rescan_button.setObjectName("Secondary")
         self._rescan_button.setText(notification_label_text.VIEW_EDIT_PAGE_RESCAN_TEXT)
@@ -398,10 +395,6 @@ class ViewEditPage(QWidget):
         return self._search_filter_line_edit
 
     @property
-    def create_new_button(self) -> QPushButton:
-        return self._create_new_button
-
-    @property
     def rescan_button(self) -> QPushButton:
         return self._rescan_button
 
@@ -441,24 +434,53 @@ class ViewEditPage(QWidget):
         if config_files:
             self._notification_page_frame.set_frame_text_receiver(
                 notification_label_text.VIEW_EDIT_PAGE_SELECT_CONFIG_FILE_MESSAGE)
-            self._create_new_button.setVisible(False)
             self._rescan_button.setVisible(False)
         else:
             self._notification_page_frame.set_frame_text_receiver(
-                notification_label_text.VIEW_EDIT_PAGE_NO_CONFIG_FILE_FOUND_MESSAGE)
-            self._create_new_button.setVisible(True)
+                notification_label_text.VIEW_EDIT_PAGE_NO_CONFIG_FILE_FOUND_MESSAGE,
+                notification_label_text.VIEW_EDIT_PAGE_NO_CONFIG_FILE_FOUND_TITLE)
             self._rescan_button.setVisible(True)
 
-        self._config_file_combobox.blockSignals(False)
+            self.set_config_location()
 
-    def set_config_location(self, config_location: str) -> None:
+        self._config_file_combobox.blockSignals(False)
+        self._set_config_file_combobox_style()
+        if len(config_files) == 1:
+            # If there's only one config file under the selected directory, load it automatically.
+            self._config_file_combobox.setCurrentIndex(0)
+
+    def _set_config_file_combobox_style(self):
+        if self._config_file_combobox.count() > 0 and self._config_file_combobox.currentIndex() == -1:
+            self._config_file_combobox.setProperty(HIGHLIGHT_FIELD_PROPERTY, True)
+        else:
+            self._config_file_combobox.setProperty(HIGHLIGHT_FIELD_PROPERTY, False)
+
+        # Update the style
+        self._config_file_combobox.setStyle(self._config_file_combobox.style())
+
+    def set_config_location(self, config_location: str = None) -> None:
         """Set config file location in text label"""
         self._config_location_text.clear()
 
-        metrics: QFontMetrics = QFontMetrics(self._config_location_text.font())
-        elided_text: str = metrics.elidedText(config_location, Qt.ElideMiddle, self._config_location_text.width())
-        self._config_location_text.setText(elided_text)
-        self._config_location_text.setToolTip(config_location)
+        if not config_location:
+            self._config_location_text.setText(notification_label_text.VIEW_EDIT_PAGE_INVALID_CONFIG_LOCATION_TEXT)
+            self._config_location_text.setProperty(HIGHLIGHT_TEXT_PROPERTY, True)
+
+            self._config_location_button.setFlat(False)
+            self._config_location_button.setProperty(HIGHLIGHT_FIELD_PROPERTY, True)
+        else:
+            metrics: QFontMetrics = QFontMetrics(self._config_location_text.font())
+            elided_text: str = metrics.elidedText(config_location, Qt.ElideMiddle, self._config_location_text.width())
+            self._config_location_text.setText(elided_text)
+            self._config_location_text.setToolTip(config_location)
+            self._config_location_text.setProperty(HIGHLIGHT_TEXT_PROPERTY, False)
+
+            self._config_location_button.setFlat(True)
+            self._config_location_button.setProperty(HIGHLIGHT_FIELD_PROPERTY, False)
+
+        # Update the style
+        self._config_location_text.setStyle(self._config_location_text.style())
+        self._config_location_button.setStyle(self._config_location_button.style())
 
     def set_table_view_page_interactions_enabled(self, enabled: bool) -> None:
         self._table_view_page.setEnabled(enabled)

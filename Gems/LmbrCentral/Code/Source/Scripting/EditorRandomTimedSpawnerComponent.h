@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -56,7 +57,7 @@ namespace LmbrCentral
         void SetSpawnDelayVariation(double spawnDelayVariation) override { m_config.m_spawnDelayVariation = spawnDelayVariation; }
         double GetSpawnDelayVariation() override { return m_config.m_spawnDelayVariation; }
 
-        void BuildGameEntity(AZ::Entity* gameEntity);
+        void BuildGameEntity(AZ::Entity* gameEntity) override;
 
     private:
         //Reflected members

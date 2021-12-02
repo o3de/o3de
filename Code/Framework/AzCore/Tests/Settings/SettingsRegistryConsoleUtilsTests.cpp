@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -146,7 +147,7 @@ namespace SettingsRegistryConsoleUtilsTests
         struct SettingsRegistryDumpCommandHandler
             : public AZ::Debug::TraceMessageBus::Handler
         {
-            bool OnOutput(const char* window, const char* message)
+            bool OnOutput(const char* window, const char* message) override
             {
                 if (window == AZStd::string_view("SettingsRegistry"))
                 {
@@ -217,7 +218,7 @@ namespace SettingsRegistryConsoleUtilsTests
                 , m_expectedValue2{ expectedValue2 }
             {
             }
-            bool OnOutput(const char* window, const char* message)
+            bool OnOutput(const char* window, const char* message) override
             {
                 if (window == AZStd::string_view("SettingsRegistry"))
                 {

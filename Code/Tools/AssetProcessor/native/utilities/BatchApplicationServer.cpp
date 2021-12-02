@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -37,7 +38,7 @@ bool BatchApplicationServer::startListening(unsigned short port)
 
         // Since we're starting up builders ourselves and informing them of the port chosen, we can scan for a free port
 
-        while (!listen(QHostAddress::Any, m_serverListeningPort))
+        while (!listen(QHostAddress::Any, static_cast<quint16>(m_serverListeningPort)))
         {
             auto error = serverError();
             

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -166,7 +167,7 @@ namespace AzFramework
     //=========================================================================
     void EntityContext::HandleEntitiesAdded(const EntityList& entities)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzFramework);
+        AZ_PROFILE_FUNCTION(AzFramework);
 
         for (AZ::Entity* entity : entities)
         {
@@ -183,7 +184,7 @@ namespace AzFramework
     //=========================================================================
     void EntityContext::HandleEntitiesRemoved(const EntityIdList& entityIds)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzFramework);
+        AZ_PROFILE_FUNCTION(AzFramework);
 
         for (AZ::EntityId id : entityIds)
         {

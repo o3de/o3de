@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -35,9 +36,7 @@ public:
 
     void ShowInExplorer(const QString& path) override;
 
-    bool CompileLuaFile(const char* luaFilename) override;
     bool ExtractFile(QString& file, bool bMsgBoxAskForExtraction = true, const char* pDestinationFilename = nullptr) override;
-    void EditTextFile(const char* txtFile, int line = 0, ETextFileType fileType = FILE_TYPE_SCRIPT) override;
     void EditTextureFile(const char* txtureFile, bool bUseGameFolder) override;
 
     //! dcc filename calculation and extraction sub-routines
@@ -109,8 +108,8 @@ public:
 
     //////////////////////////////////////////////////////////////////////////
     // @param LPPROGRESS_ROUTINE pfnProgress - called by the system to notify of file copy progress
-    // @param LPBOOL pbCancel - when the contents of this BOOL are set to TRUE, the system cancels the copy operation
-    ECopyTreeResult CopyFile(const QString& strSourceFile, const QString& strTargetFile, bool boConfirmOverwrite = false, ProgressRoutine pfnProgress = NULL, bool* pbCancel = NULL) override;
+    // @param LPBOOL pbCancel - when the contents of this BOOL are set to true, the system cancels the copy operation
+    ECopyTreeResult CopyFile(const QString& strSourceFile, const QString& strTargetFile, bool boConfirmOverwrite = false, ProgressRoutine pfnProgress = nullptr, bool* pbCancel = nullptr) override;
 
     // As we don't have a FileUtil interface here, we have to duplicate some code :-( in order to keep
     // function calls clean.

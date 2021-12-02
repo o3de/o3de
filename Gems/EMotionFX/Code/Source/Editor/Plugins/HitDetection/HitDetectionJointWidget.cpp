@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -64,7 +65,7 @@ namespace EMotionFX
 
     void HitDetectionJointWidget::InternalReinit()
     {
-        if (m_selectedModelIndices.size() == 1)
+        if (GetSelectedModelIndices().size() == 1)
         {
             Physics::CharacterColliderNodeConfiguration* hitDetectionNodeConfig = GetNodeConfig();
             if (hitDetectionNodeConfig)
@@ -89,17 +90,17 @@ namespace EMotionFX
 
     void HitDetectionJointWidget::OnAddCollider(const AZ::TypeId& colliderType)
     {
-        ColliderHelpers::AddCollider(m_selectedModelIndices, PhysicsSetup::HitDetection, colliderType);
+        ColliderHelpers::AddCollider(GetSelectedModelIndices(), PhysicsSetup::HitDetection, colliderType);
     }
 
     void HitDetectionJointWidget::OnCopyCollider(size_t colliderIndex)
     {
-        ColliderHelpers::CopyColliderToClipboard(m_selectedModelIndices.first(), colliderIndex, PhysicsSetup::HitDetection);
+        ColliderHelpers::CopyColliderToClipboard(GetSelectedModelIndices().first(), colliderIndex, PhysicsSetup::HitDetection);
     }
 
     void HitDetectionJointWidget::OnPasteCollider(size_t colliderIndex, bool replace)
     {
-        ColliderHelpers::PasteColliderFromClipboard(m_selectedModelIndices.first(), colliderIndex, PhysicsSetup::HitDetection, replace);
+        ColliderHelpers::PasteColliderFromClipboard(GetSelectedModelIndices().first(), colliderIndex, PhysicsSetup::HitDetection, replace);
     }
 
     void HitDetectionJointWidget::OnRemoveCollider(size_t colliderIndex)
@@ -109,7 +110,7 @@ namespace EMotionFX
 
     Physics::CharacterColliderNodeConfiguration* HitDetectionJointWidget::GetNodeConfig()
     {
-        AZ_Assert(m_selectedModelIndices.size() == 1, "Get Node config function only return the config when it is single seleted");
+        AZ_Assert(GetSelectedModelIndices().size() == 1, "Get Node config function only return the config when it is single seleted");
         Actor* actor = GetActor();
         Node* node = GetNode();
         if (!actor || !node)

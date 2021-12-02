@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -25,12 +26,12 @@ namespace EMotionFX
 {
     struct EventFilteringTestParam
     {
-        AnimGraphObject::EEventMode     eventMode;
-        float                           motionTime;
-        float                           testDuration;       // Maximum of time this test will be run.
-        AZStd::pair<float, float>       eventTimeRange;
-        float                           blendWeight;
-        int                             eventTriggerTimes;
+        AnimGraphObject::EEventMode     m_eventMode;
+        float                           m_motionTime;
+        float                           m_testDuration;       // Maximum of time this test will be run.
+        AZStd::pair<float, float>       m_eventTimeRange;
+        float                           m_blendWeight;
+        int                             m_eventTriggerTimes;
     };
 
     // Use this event handler to test if the on event is called.
@@ -85,7 +86,7 @@ namespace EMotionFX
                 AnimGraphMotionNode* motionNode = aznew AnimGraphMotionNode();
                 motionNode->SetName(AZStd::string::format("MotionNode%zu", i).c_str());
                 m_blendTree->AddChildNode(motionNode);
-                m_blend2Node->AddConnection(motionNode, AnimGraphMotionNode::PORTID_OUTPUT_POSE, i);
+                m_blend2Node->AddConnection(motionNode, AnimGraphMotionNode::PORTID_OUTPUT_POSE, aznumeric_caster(i));
                 m_motionNodes.push_back(motionNode);
             }
 
@@ -110,7 +111,7 @@ namespace EMotionFX
                 const AZStd::string motionId = AZStd::string::format("Motion%zu", i);
                 Motion* motion = aznew Motion(motionId.c_str());
                 motion->SetMotionData(aznew NonUniformMotionData());
-                motion->GetMotionData()->SetDuration(param.motionTime);
+                motion->GetMotionData()->SetDuration(param.m_motionTime);
                 m_motions.emplace_back(motion);
                 MotionSet::MotionEntry* motionEntry = aznew MotionSet::MotionEntry(motion->GetName(), motion->GetName(), motion);
                 m_motionSet->AddMotionEntry(motionEntry);
@@ -123,7 +124,7 @@ namespace EMotionFX
                 motion->GetEventTable()->AutoCreateSyncTrack(motion);
                 AnimGraphSyncTrack* syncTrack = motion->GetEventTable()->GetSyncTrack();
                 AZStd::shared_ptr<const TwoStringEventData> data = GetEMotionFX().GetEventManager()->FindOrCreateEventData<TwoStringEventData>(motionId.c_str(), "params");
-                syncTrack->AddEvent(param.eventTimeRange.first, param.eventTimeRange.second, data);
+                syncTrack->AddEvent(param.m_eventTimeRange.first, param.m_eventTimeRange.second, data);
             }
 
             m_eventHandler = aznew EventFilteringEventHandler();
@@ -150,20 +151,20 @@ namespace EMotionFX
     TEST_P(AnimGraphNodeEventFilterTestFixture, EventFilterTests)
     {
         const EventFilteringTestParam& param = GetParam();
-        m_floatNode->SetValue(param.blendWeight);
-        m_blend2Node->SetEventMode(param.eventMode);
+        m_floatNode->SetValue(param.m_blendWeight);
+        m_blend2Node->SetEventMode(param.m_eventMode);
 
         // Calling update first to make sure unique data is created.
         GetEMotionFX().Update(0.0f);
 
         // Expect the event handler will call different number of times based on the filtering mode, motion event range and test duration.
         EXPECT_CALL(*m_eventHandler, OnEvent(testing::_))
-            .Times(param.eventTriggerTimes);
+            .Times(param.m_eventTriggerTimes);
 
         // Update emfx to trigger the event firing.
         float totalTime = 0.0f;
         const float deltaTime = 0.1f;
-        while (totalTime <= param.testDuration)
+        while (totalTime <= param.m_testDuration)
         {
             GetEMotionFX().Update(deltaTime);
             totalTime += deltaTime;

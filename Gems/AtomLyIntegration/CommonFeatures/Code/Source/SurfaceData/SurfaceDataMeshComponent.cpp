@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -146,8 +147,6 @@ namespace SurfaceData
 
     bool SurfaceDataMeshComponent::DoRayTrace(const AZ::Vector3& inPosition, AZ::Vector3& outPosition, AZ::Vector3& outNormal) const
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
-
         AZStd::lock_guard<decltype(m_cacheMutex)> lock(m_cacheMutex);
 
         // test AABB as first pass to claim the point
@@ -232,7 +231,7 @@ namespace SurfaceData
 
     void SurfaceDataMeshComponent::UpdateMeshData()
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
+        AZ_PROFILE_SCOPE(Entity, "SurfaceDataMeshComponent: UpdateMeshData");
 
         bool meshValidBeforeUpdate = false;
         bool meshValidAfterUpdate = false;

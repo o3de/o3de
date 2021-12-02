@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -23,7 +24,7 @@ QColor ColorLinearToGamma(ColorF col)
     g = (float)(g <= 0.0031308 ? (12.92 * g) : (1.055 * pow((double)g, 1.0 / 2.4) - 0.055));
     b = (float)(b <= 0.0031308 ? (12.92 * b) : (1.055 * pow((double)b, 1.0 / 2.4) - 0.055));
 
-    return QColor(FtoI(r * 255.0f), FtoI(g * 255.0f), FtoI(b * 255.0f), FtoI(a * 255.0f));
+    return QColor(int(r * 255.0f), int(g * 255.0f), int(b * 255.0f), int(a * 255.0f));
 }
 
 //////////////////////////////////////////////////////////////////////////

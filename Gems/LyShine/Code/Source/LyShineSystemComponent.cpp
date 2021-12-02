@@ -1,11 +1,10 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-
-#include "LyShine_precompiled.h"
 
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
@@ -50,6 +49,7 @@
 #include "UiDynamicLayoutComponent.h"
 #include "UiDynamicScrollBoxComponent.h"
 #include "UiNavigationSettings.h"
+#include "LyShinePass.h"
 
 namespace LyShine
 {
@@ -114,9 +114,11 @@ namespace LyShine
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
-    void LyShineSystemComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
+    void LyShineSystemComponent::GetRequiredServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& required)
     {
-        (void)required;
+#if !defined(LYSHINE_BUILDER) && !defined(LYSHINE_TESTS)
+        required.push_back(AZ_CRC("RPISystem", 0xf2add773));
+#endif
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -187,11 +189,26 @@ namespace LyShine
         RegisterComponentTypeForMenuOrdering(UiDynamicScrollBoxComponent::RTTI_Type());
         RegisterComponentTypeForMenuOrdering(UiParticleEmitterComponent::RTTI_Type());
         RegisterComponentTypeForMenuOrdering(UiFlipbookAnimationComponent::RTTI_Type());
+
+#if !defined(LYSHINE_BUILDER) && !defined(LYSHINE_TESTS)
+        // Add LyShine pass
+        auto* passSystem = AZ::RPI::PassSystemInterface::Get();
+        AZ_Assert(passSystem, "Cannot get the pass system.");
+        passSystem->AddPassCreator(AZ::Name("LyShinePass"), &LyShine::LyShinePass::Create);
+
+        // Setup handler for load pass template mappings
+        m_loadTemplatesHandler = AZ::RPI::PassSystemInterface::OnReadyLoadTemplatesEvent::Handler([this]() { this->LoadPassTemplateMappings(); });
+        AZ::RPI::PassSystemInterface::Get()->ConnectEvent(m_loadTemplatesHandler);
+#endif
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     void LyShineSystemComponent::Deactivate()
     {
+#if !defined(LYSHINE_BUILDER) && !defined(LYSHINE_TESTS)
+        m_loadTemplatesHandler.Disconnect();
+#endif
+
         UiSystemBus::Handler::BusDisconnect();
         UiSystemToolsBus::Handler::BusDisconnect();
         UiFrameworkBus::Handler::BusDisconnect();
@@ -329,8 +346,6 @@ namespace LyShine
         // Build a map of entity Ids to their parent Ids, for faster lookup during processing.
         for (AZ::Entity* exportParentEntity : exportSliceEntities)
         {
-            AZ::EntityId exportParentId = exportParentEntity->GetId();
-
             UiElementComponent* exportParentComponent = exportParentEntity->FindComponent<UiElementComponent>();
             if (!exportParentComponent)
             {
@@ -387,4 +402,13 @@ namespace LyShine
     {
         UiCursorBus::Broadcast(&UiCursorInterface::SetUiCursor, m_cursorImagePathname.GetAssetPath().c_str());
     }
+
+#if !defined(LYSHINE_BUILDER) && !defined(LYSHINE_TESTS)
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    void LyShineSystemComponent::LoadPassTemplateMappings()
+    {
+        const char* passTemplatesFile = "Passes/LyShinePassTemplates.azasset";
+        AZ::RPI::PassSystemInterface::Get()->LoadPassTemplateMappings(passTemplatesFile);
+    }
+#endif
 }

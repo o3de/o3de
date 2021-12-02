@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -65,9 +66,9 @@ namespace AzToolsFramework
         return result;
     }
 
-    QPixmap LayerUiHandler::GenerateItemIcon(AZ::EntityId /*entityId*/) const
+    QIcon LayerUiHandler::GenerateItemIcon(AZ::EntityId /*entityId*/) const
     {
-        return QPixmap(m_layerIconPath);
+        return QIcon(m_layerIconPath);
     }
 
     void LayerUiHandler::PaintItemBackground(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
@@ -109,9 +110,6 @@ namespace AzToolsFramework
             PaintLayerStripeAndBorder(
                 painter, option.rect.left() - 1, option.rect.top(), option.rect.bottom(), m_layerBorderBottomColor, layerColor);
         }
-
-        QModelIndex nameColumn = index.sibling(index.row(), EntityOutlinerListModel::Column::ColumnName);
-        QModelIndex sibling = index.sibling(index.row() + 1, index.column());
 
         QPoint lineBottomLeft(option.rect.bottomLeft());
         QPoint lineTopLeft(option.rect.topLeft());

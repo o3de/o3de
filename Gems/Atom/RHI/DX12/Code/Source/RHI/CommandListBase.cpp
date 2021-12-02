@@ -1,10 +1,10 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "RHI/Atom_RHI_DX12_precompiled.h"
 #include <RHI/CommandListBase.h>
 #include <RHI/Conversions.h>
 #include <RHI/Device.h>
@@ -33,7 +33,7 @@ namespace AZ
 
         void CommandListBase::Reset(ID3D12CommandAllocator* commandAllocator)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzRender);  
+            AZ_PROFILE_SCOPE(RHI, "CommandListBase: Reset");
             AZ_Assert(m_queuedBarriers.empty(), "Unflushed barriers in command list.");
 
             m_commandList->Reset(commandAllocator, nullptr);
@@ -50,7 +50,7 @@ namespace AZ
 
         void CommandListBase::SetNameInternal(const AZStd::string_view& name)
         {
-            AZStd::wstring wname;
+            AZStd::fixed_wstring<256> wname;
             AZStd::to_wstring(wname, name.data());
             GetCommandList()->SetName(wname.data());
         }
@@ -95,7 +95,7 @@ namespace AZ
         {
             if (m_queuedBarriers.size())
             {
-                AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzRenderDetailed);
+                AZ_PROFILE_SCOPE(RHI, "CommandListBase: FlushBarriers");
 
                 m_commandList->ResourceBarrier((UINT)m_queuedBarriers.size(), m_queuedBarriers.data());
                 m_queuedBarriers.clear();

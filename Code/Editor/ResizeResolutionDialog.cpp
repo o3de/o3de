@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -88,7 +89,7 @@ int ResizeResolutionModel::SizeRow(uint32 dwSize) const
 // CResizeResolutionDialog dialog
 
 
-CResizeResolutionDialog::CResizeResolutionDialog(QWidget* pParent /*=NULL*/)
+CResizeResolutionDialog::CResizeResolutionDialog(QWidget* pParent /*=nullptr*/)
     : QDialog(pParent)
     , m_model(new ResizeResolutionModel(this))
     , ui(new Ui::CResizeResolutionDialog)

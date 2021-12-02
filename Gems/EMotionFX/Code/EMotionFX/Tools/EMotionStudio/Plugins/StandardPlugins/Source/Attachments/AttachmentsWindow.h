@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -55,7 +56,7 @@ namespace EMStudio
         void AddAttachments(const AZStd::vector<AZStd::string>& filenames);
 
         void OnAttachmentSelected();
-        bool GetIsWaitingForAttachment() const      { return mWaitingForAttachment; }
+        bool GetIsWaitingForAttachment() const      { return m_waitingForAttachment; }
 
         EMotionFX::ActorInstance* GetSelectedAttachment();
         AZStd::string GetSelectedNodeName();
@@ -77,7 +78,7 @@ namespace EMStudio
         void OnDroppedAttachmentsActors();
         void OnDroppedDeformableActors();
         void OnVisibilityChanged(int visibility);
-        void OnAttachmentNodesSelected(MCore::Array<SelectionItem> selection);
+        void OnAttachmentNodesSelected(AZStd::vector<SelectionItem> selection);
         void OnCancelAttachmentNodeSelection();
         void OnEscapeButtonPressed();
         void OnUpdateButtonsEnabled();
@@ -88,35 +89,35 @@ namespace EMStudio
         AZStd::string GetNodeNameFromTableRow(int row);
         int GetRowContainingWidget(const QWidget* widget);
 
-        bool                                    mWaitingForAttachment;
-        bool                                    mIsDeformableAttachment;
+        bool                                    m_waitingForAttachment;
+        bool                                    m_isDeformableAttachment;
 
-        QVBoxLayout*                            mWaitingForAttachmentLayout;
-        QVBoxLayout*                            mNoSelectionLayout;
-        QVBoxLayout*                            mMainLayout;
-        QVBoxLayout*                            mAttachmentsLayout;
+        QVBoxLayout*                            m_waitingForAttachmentLayout;
+        QVBoxLayout*                            m_noSelectionLayout;
+        QVBoxLayout*                            m_mainLayout;
+        QVBoxLayout*                            m_attachmentsLayout;
 
-        QWidget*                                mAttachmentsWidget;
-        QWidget*                                mWaitingForAttachmentWidget;
-        QWidget*                                mNoSelectionWidget;
+        QWidget*                                m_attachmentsWidget;
+        QWidget*                                m_waitingForAttachmentWidget;
+        QWidget*                                m_noSelectionWidget;
 
-        QShortcut*                              mEscapeShortcut;
+        QShortcut*                              m_escapeShortcut;
 
-        QTableWidget*                           mTableWidget;
-        EMotionFX::ActorInstance*               mActorInstance;
-        AZStd::vector<AZStd::string>            mAttachments;
-        AZStd::string                           mNodeBeforeSelectionWindow;
+        QTableWidget*                           m_tableWidget;
+        EMotionFX::ActorInstance*               m_actorInstance;
+        AZStd::vector<AZStd::string>            m_attachments;
+        AZStd::string                           m_nodeBeforeSelectionWindow;
 
-        QToolButton*                            mOpenAttachmentButton;
-        QToolButton*                            mOpenDeformableAttachmentButton;
-        QToolButton*                            mRemoveButton;
-        QToolButton*                            mClearButton;
-        QToolButton*                            mCancelSelectionButton;
+        QToolButton*                            m_openAttachmentButton;
+        QToolButton*                            m_openDeformableAttachmentButton;
+        QToolButton*                            m_removeButton;
+        QToolButton*                            m_clearButton;
+        QToolButton*                            m_cancelSelectionButton;
 
-        NodeSelectionWindow*                    mNodeSelectionWindow;
+        NodeSelectionWindow*                    m_nodeSelectionWindow;
 
-        AZStd::vector<AZStd::string>            mDropFileNames;
-        AZStd::string                           mTempString;
+        AZStd::vector<AZStd::string>            m_dropFileNames;
+        AZStd::string                           m_tempString;
     };
 
 } // namespace EMStudio

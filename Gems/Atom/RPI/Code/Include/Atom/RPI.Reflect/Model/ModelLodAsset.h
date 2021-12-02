@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -15,6 +16,7 @@
 #include <Atom/RPI.Reflect/Buffer/BufferAssetView.h>
 #include <Atom/RPI.Reflect/Buffer/BufferAsset.h>
 #include <Atom/RPI.Reflect/Material/MaterialAsset.h>
+#include <Atom/RPI.Reflect/Model/ModelMaterialSlot.h>
 
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Math/Aabb.h>
@@ -83,8 +85,9 @@ namespace AZ
                 //! Returns the number of indices in this mesh
                 uint32_t GetIndexCount() const;
 
-                //! Returns the reference to material asset used by this mesh
-                const Data::Asset <MaterialAsset>& GetMaterialAsset() const;
+                //! Returns the ID of the material slot used by this mesh.
+                //! This maps into the ModelAsset's material slot list.
+                ModelMaterialSlot::StableId GetMaterialSlotId() const;
 
                 //! Returns the name of this mesh
                 const AZ::Name& GetName() const;
@@ -123,7 +126,9 @@ namespace AZ
                 AZ::Name m_name;
                 AZ::Aabb m_aabb = AZ::Aabb::CreateNull();
 
-                Data::Asset<MaterialAsset> m_materialAsset{ Data::AssetLoadBehavior::PreLoad };
+                // Identifies the material slot that is used by this mesh.
+                // References material slot in the ModelAsset that owns this mesh; see ModelAsset::FindMaterialSlot().
+                ModelMaterialSlot::StableId m_materialSlotId = ModelMaterialSlot::InvalidStableId;
 
                 // Both the buffer in m_indexBufferAssetView and the buffers in m_streamBufferInfo 
                 // may point to either unique buffers for the mesh or to consolidated 
@@ -144,9 +149,15 @@ namespace AZ
             const AZ::Aabb& GetAabb() const;
 
         private:
+            // AssetData overrides...
+            bool HandleAutoReload() override
+            {
+                return false;
+            }
+            
             AZStd::vector<Mesh> m_meshes;
             AZ::Aabb m_aabb = AZ::Aabb::CreateNull();
-
+            
             // These buffers owned by the lod are the consolidated super buffers. 
             // Meshes may either have views into these buffers or they may own 
             // their own buffers.

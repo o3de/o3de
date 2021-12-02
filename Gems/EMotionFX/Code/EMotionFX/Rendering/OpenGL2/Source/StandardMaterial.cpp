@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -19,15 +20,13 @@ namespace RenderGL
     StandardMaterial::StandardMaterial(GLActor* actor)
         : Material(actor)
     {
-        mMaterial           = nullptr;
-        mActiveShader       = nullptr;
-        mAttributesUpdated  = true;
+        m_material           = nullptr;
+        m_activeShader       = nullptr;
+        m_attributesUpdated  = true;
 
-        mDiffuseMap     = GetGraphicsManager()->GetTextureCache()->GetWhiteTexture();
-        mSpecularMap    = GetGraphicsManager()->GetTextureCache()->GetWhiteTexture();
-        mNormalMap      = GetGraphicsManager()->GetTextureCache()->GetDefaultNormalTexture();
-
-        mShaders.SetMemoryCategory(MEMCATEGORY_RENDERING);
+        m_diffuseMap     = GetGraphicsManager()->GetTextureCache()->GetWhiteTexture();
+        m_specularMap    = GetGraphicsManager()->GetTextureCache()->GetWhiteTexture();
+        m_normalMap      = GetGraphicsManager()->GetTextureCache()->GetDefaultNormalTexture();
 
         SetAttribute(LIGHTING,  true);
         SetAttribute(SKINNING,  false);
@@ -49,7 +48,7 @@ namespace RenderGL
         UpdateShader();
 
         // check if the shader is valid and return in case it's not
-        if (mActiveShader == nullptr)
+        if (m_activeShader == nullptr)
         {
             return;
         }
@@ -59,103 +58,99 @@ namespace RenderGL
 
         if (flags & GLOBAL)
         {
-            mActiveShader->Activate();
+            m_activeShader->Activate();
 
             // vertex attributes
-            uint32 stride = mAttributes[SKINNING] ? sizeof(SkinnedVertex) : sizeof(StandardVertex);
+            uint32 stride = m_attributes[SKINNING] ? sizeof(SkinnedVertex) : sizeof(StandardVertex);
 
             static char* structStart  = reinterpret_cast<char*>(reinterpret_cast<SkinnedVertex*>(static_cast<char*>(0)));
-            static size_t offsetOfNormal = static_cast<size_t>((reinterpret_cast<char*>(&static_cast<SkinnedVertex*>(0)->mNormal)) - structStart);
-            static size_t offsetOfTangent  = static_cast<size_t>((reinterpret_cast<char*>(&static_cast<SkinnedVertex*>(0)->mTangent)) - structStart);
-            static size_t offsetOfUV       = static_cast<size_t>((reinterpret_cast<char*>(&static_cast<SkinnedVertex*>(0)->mUV)) - structStart);
-            static size_t offsetOfWeights  = static_cast<size_t>((reinterpret_cast<char*>(&static_cast<SkinnedVertex*>(0)->mWeights)) - structStart);
-            static size_t offsetOfBoneIndices = static_cast<size_t>((reinterpret_cast<char*>(&static_cast<SkinnedVertex*>(0)->mBoneIndices)) - structStart);
+            static size_t offsetOfNormal = static_cast<size_t>((reinterpret_cast<char*>(&static_cast<SkinnedVertex*>(0)->m_normal)) - structStart);
+            static size_t offsetOfTangent  = static_cast<size_t>((reinterpret_cast<char*>(&static_cast<SkinnedVertex*>(0)->m_tangent)) - structStart);
+            static size_t offsetOfUV       = static_cast<size_t>((reinterpret_cast<char*>(&static_cast<SkinnedVertex*>(0)->m_uv)) - structStart);
+            static size_t offsetOfWeights  = static_cast<size_t>((reinterpret_cast<char*>(&static_cast<SkinnedVertex*>(0)->m_weights)) - structStart);
+            static size_t offsetOfBoneIndices = static_cast<size_t>((reinterpret_cast<char*>(&static_cast<SkinnedVertex*>(0)->m_boneIndices)) - structStart);
 
-            mActiveShader->SetAttribute("inPosition", 4, GL_FLOAT, stride, 0);
-            mActiveShader->SetAttribute("inNormal",  4, GL_FLOAT, stride, offsetOfNormal);
-            mActiveShader->SetAttribute("inTangent", 4, GL_FLOAT, stride, offsetOfTangent);
-            mActiveShader->SetAttribute("inUV", 2, GL_FLOAT, stride, offsetOfUV);
+            m_activeShader->SetAttribute("inPosition", 4, GL_FLOAT, stride, 0);
+            m_activeShader->SetAttribute("inNormal",  4, GL_FLOAT, stride, offsetOfNormal);
+            m_activeShader->SetAttribute("inTangent", 4, GL_FLOAT, stride, offsetOfTangent);
+            m_activeShader->SetAttribute("inUV", 2, GL_FLOAT, stride, offsetOfUV);
 
             // vertex weights & indices
-            if (mAttributes[SKINNING])
+            if (m_attributes[SKINNING])
             {
-                mActiveShader->SetAttribute("inWeights", 4, GL_FLOAT, stride, offsetOfWeights);
-                mActiveShader->SetAttribute("inIndices", 4, GL_FLOAT, stride, offsetOfBoneIndices);
+                m_activeShader->SetAttribute("inWeights", 4, GL_FLOAT, stride, offsetOfWeights);
+                m_activeShader->SetAttribute("inIndices", 4, GL_FLOAT, stride, offsetOfBoneIndices);
             }
 
             // set the view projection matrix
             MCommon::Camera* camera = GetGraphicsManager()->GetCamera();
-            mActiveShader->SetUniform("matViewProj", camera->GetViewProjMatrix());
-            mActiveShader->SetUniform("matView", camera->GetViewMatrix());
+            m_activeShader->SetUniform("matViewProj", camera->GetViewProjMatrix());
+            m_activeShader->SetUniform("matView", camera->GetViewMatrix());
 
-            // lights
-            //      if (mAttributes[LIGHTING])
             {
                 AZ::Vector3 mainLightDir(0.0f, -1.0f, 0.0f);
                 mainLightDir = AZ::Matrix3x3::CreateRotationX(MCore::Math::DegreesToRadians(gfx->GetMainLightAngleB())) * AZ::Matrix3x3::CreateRotationZ(MCore::Math::DegreesToRadians(gfx->GetMainLightAngleA())) * mainLightDir;
                 mainLightDir.Normalize();
-                mActiveShader->SetUniform("mainLightDir", mainLightDir);
-                mActiveShader->SetUniform("skyColor", mActor->GetSkyColor() * gfx->GetMainLightIntensity());
-                mActiveShader->SetUniform("groundColor", mActor->GetGroundColor());
-                mActiveShader->SetUniform("eyePoint", camera->GetPosition());
+                m_activeShader->SetUniform("mainLightDir", mainLightDir);
+                m_activeShader->SetUniform("skyColor", m_actor->GetSkyColor() * gfx->GetMainLightIntensity());
+                m_activeShader->SetUniform("groundColor", m_actor->GetGroundColor());
+                m_activeShader->SetUniform("eyePoint", camera->GetPosition());
 
                 AZ::Vector3 rimLightDir = MCore::GetUp(camera->GetViewMatrix());
                 rimLightDir = AZ::Matrix3x3::CreateRotationZ(MCore::Math::DegreesToRadians(gfx->GetRimAngle())) * rimLightDir;
                 rimLightDir.Normalize();
-                mActiveShader->SetUniform("rimLightDir", rimLightDir);
+                m_activeShader->SetUniform("rimLightDir", rimLightDir);
 
-                mActiveShader->SetUniform("rimLightFactor", gfx->GetRimIntensity());
-                mActiveShader->SetUniform("rimWidth",       gfx->GetRimWidth());
-                mActiveShader->SetUniform("rimLightColor",  gfx->GetRimColor());
+                m_activeShader->SetUniform("rimLightFactor", gfx->GetRimIntensity());
+                m_activeShader->SetUniform("rimWidth",       gfx->GetRimWidth());
+                m_activeShader->SetUniform("rimLightColor",  gfx->GetRimColor());
             }
         }
 
         // Local settings
         if (flags & LOCAL)
         {
-            EMotionFX::StandardMaterial* stdMaterial = (mMaterial->GetType() == EMotionFX::StandardMaterial::TYPE_ID) ? static_cast<EMotionFX::StandardMaterial*>(mMaterial) : nullptr;
+            EMotionFX::StandardMaterial* stdMaterial = (m_material->GetType() == EMotionFX::StandardMaterial::TYPE_ID) ? static_cast<EMotionFX::StandardMaterial*>(m_material) : nullptr;
 
-            if (mDiffuseMap == nullptr || mDiffuseMap == gfx->GetTextureCache()->GetWhiteTexture() && stdMaterial)
+            if (m_diffuseMap == nullptr || m_diffuseMap == gfx->GetTextureCache()->GetWhiteTexture() && stdMaterial)
             {
-                mActiveShader->SetUniform("diffuseColor", stdMaterial->GetDiffuse());
+                m_activeShader->SetUniform("diffuseColor", stdMaterial->GetDiffuse());
             }
             else
             {
-                mActiveShader->SetUniform("diffuseColor", MCore::RGBAColor(1.0f, 1.0f, 1.0f, 1.0f));
+                m_activeShader->SetUniform("diffuseColor", MCore::RGBAColor(1.0f, 1.0f, 1.0f, 1.0f));
             }
 
-            //if (mAttributes[LIGHTING])
             {
                 if (stdMaterial)
                 {
                     MCore::RGBAColor specularColor = stdMaterial->GetSpecular() * (stdMaterial->GetShineStrength() * gfx->GetMainLightIntensity() * gfx->GetSpecularIntensity());
-                    mActiveShader->SetUniform("specularPower", stdMaterial->GetShine());
-                    mActiveShader->SetUniform("lightSpecular", specularColor);
+                    m_activeShader->SetUniform("specularPower", stdMaterial->GetShine());
+                    m_activeShader->SetUniform("lightSpecular", specularColor);
                 }
                 else
                 {
                     MCore::RGBAColor specularColor = MCore::RGBAColor(1.0f, 1.0f, 1.0f) * (1.0f * gfx->GetMainLightIntensity() * gfx->GetSpecularIntensity());
-                    mActiveShader->SetUniform("specularPower", 25.0f);
-                    mActiveShader->SetUniform("lightSpecular", specularColor);
+                    m_activeShader->SetUniform("specularPower", 25.0f);
+                    m_activeShader->SetUniform("lightSpecular", specularColor);
                 }
 
-                mActiveShader->SetUniform("normalMap", mNormalMap);
+                m_activeShader->SetUniform("normalMap", m_normalMap);
             }
 
-            //if (mAttributes[TEXTURING])
             {
-                mActiveShader->SetUniform("diffuseMap", mDiffuseMap);
-                mActiveShader->SetUniform("specularMap", mSpecularMap);
+                m_activeShader->SetUniform("diffuseMap", m_diffuseMap);
+                m_activeShader->SetUniform("specularMap", m_specularMap);
             }
         }
 
 
         // update the advanced rendering settings
-        mActiveShader->SetUniform("glowThreshold",      gfx->GetBloomThreshold());
-        mActiveShader->SetUniform("focalPlaneDepth",    gfx->GetDOFFocalDistance());
-        mActiveShader->SetUniform("nearPlaneDepth",     gfx->GetDOFNear());
-        mActiveShader->SetUniform("farPlaneDepth",      gfx->GetDOFFar());
-        mActiveShader->SetUniform("blurCutoff",         1.0f);
+        m_activeShader->SetUniform("glowThreshold",      gfx->GetBloomThreshold());
+        m_activeShader->SetUniform("focalPlaneDepth",    gfx->GetDOFFocalDistance());
+        m_activeShader->SetUniform("nearPlaneDepth",     gfx->GetDOFNear());
+        m_activeShader->SetUniform("farPlaneDepth",      gfx->GetDOFFar());
+        m_activeShader->SetUniform("blurCutoff",         1.0f);
     }
 
 
@@ -163,13 +158,13 @@ namespace RenderGL
     void StandardMaterial::Deactivate()
     {
         // check if the shader is valid and return in case it's not
-        if (mActiveShader == nullptr)
+        if (m_activeShader == nullptr)
         {
             return;
         }
 
         // deactivate the active shader
-        mActiveShader->Deactivate();
+        m_activeShader->Deactivate();
     }
 
 
@@ -177,49 +172,49 @@ namespace RenderGL
     bool StandardMaterial::Init(EMotionFX::Material* material)
     {
         initializeOpenGLFunctions();
-        mMaterial = material;
+        m_material = material;
 
         if (material->GetType() == EMotionFX::StandardMaterial::TYPE_ID)
         {
             EMotionFX::StandardMaterial* stdMaterial = static_cast<EMotionFX::StandardMaterial*>(material);
 
             // get the number of material layers and iterate through them
-            const uint32 numLayers = stdMaterial->GetNumLayers();
-            for (uint32 i = 0; i < numLayers; ++i)
+            const size_t numLayers = stdMaterial->GetNumLayers();
+            for (size_t i = 0; i < numLayers; ++i)
             {
                 EMotionFX::StandardMaterialLayer* layer = stdMaterial->GetLayer(i);
                 switch (layer->GetType())
                 {
                 case EMotionFX::StandardMaterialLayer::LAYERTYPE_DIFFUSE:
                 {
-                    mDiffuseMap   = LoadTexture(layer->GetFileName());
-                    if (mDiffuseMap  == nullptr)
+                    m_diffuseMap   = LoadTexture(layer->GetFileName());
+                    if (m_diffuseMap  == nullptr)
                     {
-                        mDiffuseMap = GetGraphicsManager()->GetTextureCache()->GetWhiteTexture();
+                        m_diffuseMap = GetGraphicsManager()->GetTextureCache()->GetWhiteTexture();
                     }
                 } break;
                 case EMotionFX::StandardMaterialLayer::LAYERTYPE_SHINESTRENGTH:
                 {
-                    mSpecularMap  = LoadTexture(layer->GetFileName());
-                    if (mSpecularMap == nullptr)
+                    m_specularMap  = LoadTexture(layer->GetFileName());
+                    if (m_specularMap == nullptr)
                     {
-                        mSpecularMap = GetGraphicsManager()->GetTextureCache()->GetWhiteTexture();
+                        m_specularMap = GetGraphicsManager()->GetTextureCache()->GetWhiteTexture();
                     }
                 } break;
                 case EMotionFX::StandardMaterialLayer::LAYERTYPE_BUMP:
                 {
-                    mNormalMap    = LoadTexture(layer->GetFileName());
-                    if (mNormalMap   == nullptr)
+                    m_normalMap    = LoadTexture(layer->GetFileName());
+                    if (m_normalMap   == nullptr)
                     {
-                        mNormalMap = GetGraphicsManager()->GetTextureCache()->GetDefaultNormalTexture();
+                        m_normalMap = GetGraphicsManager()->GetTextureCache()->GetDefaultNormalTexture();
                     }
                 } break;
                 case EMotionFX::StandardMaterialLayer::LAYERTYPE_NORMALMAP:
                 {
-                    mNormalMap    = LoadTexture(layer->GetFileName());
-                    if (mNormalMap   == nullptr)
+                    m_normalMap    = LoadTexture(layer->GetFileName());
+                    if (m_normalMap   == nullptr)
                     {
-                        mNormalMap = GetGraphicsManager()->GetTextureCache()->GetDefaultNormalTexture();
+                        m_normalMap = GetGraphicsManager()->GetTextureCache()->GetDefaultNormalTexture();
                     }
                 } break;
                 }
@@ -233,12 +228,10 @@ namespace RenderGL
     //
     void StandardMaterial::SetAttribute(EAttribute attribute, bool enabled)
     {
-        const uint32 index = (uint32)attribute;
-
-        if (mAttributes[index] != enabled)
+        if (m_attributes[attribute] != enabled)
         {
-            mAttributes[index] = enabled;
-            mAttributesUpdated = true;
+            m_attributes[attribute] = enabled;
+            m_attributesUpdated = true;
         }
     }
 
@@ -247,7 +240,7 @@ namespace RenderGL
     void StandardMaterial::Render(EMotionFX::ActorInstance* actorInstance, const Primitive* primitive)
     {
         // check if the shader is valid and return in case it's not
-        if (mActiveShader == nullptr)
+        if (m_activeShader == nullptr)
         {
             return;
         }
@@ -260,20 +253,20 @@ namespace RenderGL
 
         const EMotionFX::TransformData* transformData = actorInstance->GetTransformData();
 
-        if (mAttributes[SKINNING])
+        if (m_attributes[SKINNING])
         {
             const AZ::Matrix3x4* skinningMatrices = transformData->GetSkinningMatrices();
 
             // multiple each transform by its inverse bind pose
-            const uint32 numBones = primitive->mBoneNodeIndices.GetLength();
-            for (uint32 i = 0; i < numBones; ++i)
+            const size_t numBones = primitive->m_boneNodeIndices.size();
+            for (size_t i = 0; i < numBones; ++i)
             {
-                const uint32 nodeNr = primitive->mBoneNodeIndices[i];
+                const size_t nodeNr = primitive->m_boneNodeIndices[i];
                 const AZ::Matrix3x4& skinTransform = skinningMatrices[nodeNr];
-                mBoneMatrices[i] = AZ::Matrix4x4::CreateFromMatrix3x4(skinTransform);
+                m_boneMatrices[i] = AZ::Matrix4x4::CreateFromMatrix3x4(skinTransform);
             }
 
-            mActiveShader->SetUniform("matBones", mBoneMatrices, numBones);
+            m_activeShader->SetUniform("matBones", m_boneMatrices, aznumeric_caster(numBones));
         }
 
         const MCommon::Camera*    camera         = GetGraphicsManager()->GetCamera();
@@ -283,13 +276,13 @@ namespace RenderGL
         const AZ::Matrix4x4       worldViewProj  = camera->GetViewProjMatrix() * world;
         const AZ::Matrix4x4       worldIT        = world.GetInverseFull().GetTranspose();
 
-        mActiveShader->SetUniform("matWorld", world);
-        mActiveShader->SetUniform("matWorldIT", worldIT);
-        mActiveShader->SetUniform("matWorldView", worldView);
-        mActiveShader->SetUniform("matWorldViewProj", worldViewProj);
+        m_activeShader->SetUniform("matWorld", world);
+        m_activeShader->SetUniform("matWorldIT", worldIT);
+        m_activeShader->SetUniform("matWorldView", worldView);
+        m_activeShader->SetUniform("matWorldViewProj", worldViewProj);
 
         // render the primitive
-        glDrawElementsBaseVertex(GL_TRIANGLES, primitive->mNumTriangles * 3, GL_UNSIGNED_INT, (GLvoid*)(primitive->mIndexOffset * sizeof(uint32)), primitive->mVertexOffset);
+        glDrawElementsBaseVertex(GL_TRIANGLES, primitive->m_numTriangles * 3, GL_UNSIGNED_INT, (GLvoid*)(primitive->m_indexOffset * sizeof(uint32)), primitive->m_vertexOffset);
     }
 
 
@@ -297,19 +290,18 @@ namespace RenderGL
     void StandardMaterial::UpdateShader()
     {
         // check if any attibutes have changed and skip directly if not
-        if (mAttributesUpdated == false)
+        if (m_attributesUpdated == false)
         {
             return;
         }
 
         // reset the active shader
-        mActiveShader = nullptr;
+        m_activeShader = nullptr;
 
         // get the number of shaders and iterate through them
-        const uint32 numShaders = mShaders.GetLength();
-        for (uint32 i = 0; i < numShaders; ++i)
+        for (GLSLShader* shader : m_shaders)
         {
-            if (mShaders[i] == nullptr)
+            if (shader == nullptr)
             {
                 continue;
             }
@@ -318,9 +310,9 @@ namespace RenderGL
             bool match = true;
             for (uint32 n = 0; n < NUM_ATTRIBUTES; ++n)
             {
-                if (mAttributes[n])
+                if (m_attributes[n])
                 {
-                    if (mShaders[i]->CheckIfIsDefined(AttributeToString((EAttribute)n)) == false)
+                    if (shader->CheckIfIsDefined(AttributeToString((EAttribute)n)) == false)
                     {
                         match = false;
                         break;
@@ -328,7 +320,7 @@ namespace RenderGL
                 }
                 else
                 {
-                    if (mShaders[i]->CheckIfIsDefined(AttributeToString((EAttribute)n)))
+                    if (shader->CheckIfIsDefined(AttributeToString((EAttribute)n)))
                     {
                         match = false;
                         break;
@@ -339,31 +331,31 @@ namespace RenderGL
             // in case we have found a matching shader update the active shader
             if (match)
             {
-                mActiveShader = mShaders[i];
+                m_activeShader = shader;
                 break;
             }
         }
 
         // if we didn't find a matching shader, compile it new
-        if (mActiveShader == nullptr)
+        if (m_activeShader == nullptr)
         {
             // if this function gets called at runtime something is wrong, go bug hunting!
 
             // construct an array of string attributes
-            MCore::Array<AZStd::string> defines;
+            AZStd::vector<AZStd::string> defines;
             for (uint32 n = 0; n < NUM_ATTRIBUTES; ++n)
             {
-                if (mAttributes[n])
+                if (m_attributes[n])
                 {
-                    defines.Add(AttributeToString((EAttribute)n));
+                    defines.emplace_back(AttributeToString((EAttribute)n));
                 }
             }
 
             // compile shader and add it to the list of shaders
-            mActiveShader = GetGraphicsManager()->LoadShader("StandardMaterial_VS.glsl", "StandardMaterial_PS.glsl", defines);
-            mShaders.Add(mActiveShader);
+            m_activeShader = GetGraphicsManager()->LoadShader("StandardMaterial_VS.glsl", "StandardMaterial_PS.glsl", defines);
+            m_shaders.emplace_back(m_activeShader);
         }
 
-        mAttributesUpdated = false;
+        m_attributesUpdated = false;
     }
 }

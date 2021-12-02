@@ -1,12 +1,13 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
-#include "LmbrCentral_precompiled.h"
 #include <AzCore/RTTI/BehaviorContext.h>
+#include <AzCore/Serialization/SerializeContext.h>
 #include <LmbrCentral/Shape/ShapeComponentBus.h>
 
 namespace LmbrCentral
@@ -23,7 +24,7 @@ namespace LmbrCentral
             Call(FN_OnShapeChanged, changeReason);
         }
     };
-    
+
     void ShapeComponentGeneric::Reflect(AZ::ReflectContext* context)
     {
         AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context);
@@ -41,7 +42,7 @@ namespace LmbrCentral
 
             behaviorContext->Enum<(int)ShapeComponentNotifications::ShapeChangeReasons::TransformChanged>("ShapeChangeReasons_TransformChanged")
                            ->Enum<(int)LmbrCentral::ShapeComponentNotifications::ShapeChangeReasons::ShapeChanged>("ShapeChangeReasons_ShapeChanged");
-            
+
             behaviorContext->EBus<ShapeComponentNotificationsBus>("ShapeComponentNotificationsBus")
                 ->Handler<BehaviorShapeComponentNotificationsBusHandler>()
                 ;

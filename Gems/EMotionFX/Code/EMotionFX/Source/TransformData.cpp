@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -24,10 +25,10 @@ namespace EMotionFX
     TransformData::TransformData()
         : BaseObject()
     {
-        mSkinningMatrices   = nullptr;
-        mBindPose           = nullptr;
-        mNumTransforms      = 0;
-        mHasUniqueBindPose  = false;
+        m_skinningMatrices   = nullptr;
+        m_bindPose           = nullptr;
+        m_numTransforms      = 0;
+        m_hasUniqueBindPose  = false;
     }
 
 
@@ -48,17 +49,17 @@ namespace EMotionFX
     // get rid of all allocated data
     void TransformData::Release()
     {
-        MCore::AlignedFree(mSkinningMatrices);
+        MCore::AlignedFree(m_skinningMatrices);
 
-        if (mHasUniqueBindPose)
+        if (m_hasUniqueBindPose)
         {
-            delete mBindPose;
+            delete m_bindPose;
         }
 
-        mPose.Clear();
-        mSkinningMatrices = nullptr;
-        mBindPose       = nullptr;
-        mNumTransforms  = 0;
+        m_pose.Clear();
+        m_skinningMatrices = nullptr;
+        m_bindPose       = nullptr;
+        m_numTransforms  = 0;
     }
 
 
@@ -68,33 +69,33 @@ namespace EMotionFX
         Release();
 
         // link to the given actor instance
-        mPose.LinkToActorInstance(actorInstance);
+        m_pose.LinkToActorInstance(actorInstance);
 
         // release all memory if we want to resize to zero nodes
-        const uint32 numNodes = actorInstance->GetNumNodes();
+        const size_t numNodes = actorInstance->GetNumNodes();
         if (numNodes == 0)
         {
             Release();
             return;
         }
 
-        mSkinningMatrices       = (AZ::Matrix3x4*)MCore::AlignedAllocate(sizeof(AZ::Matrix3x4) * numNodes, static_cast<uint16>(AZStd::alignment_of<AZ::Matrix3x4>()), EMFX_MEMCATEGORY_TRANSFORMDATA);
-        mNumTransforms          = numNodes;
+        m_skinningMatrices       = (AZ::Matrix3x4*)MCore::AlignedAllocate(sizeof(AZ::Matrix3x4) * numNodes, static_cast<uint16>(AZStd::alignment_of<AZ::Matrix3x4>()), EMFX_MEMCATEGORY_TRANSFORMDATA);
+        m_numTransforms          = numNodes;
 
-        if (mHasUniqueBindPose)
+        if (m_hasUniqueBindPose)
         {
-            mBindPose = new Pose();
-            mBindPose->LinkToActorInstance(actorInstance);
+            m_bindPose = new Pose();
+            m_bindPose->LinkToActorInstance(actorInstance);
         }
         else
         {
-            mBindPose = actorInstance->GetActor()->GetBindPose();
+            m_bindPose = actorInstance->GetActor()->GetBindPose();
         }
 
         // now initialize the data with the actor transforms
-        for (uint32 i = 0; i < numNodes; ++i)
+        for (size_t i = 0; i < numNodes; ++i)
         {
-            mSkinningMatrices[i] = AZ::Matrix3x4::CreateIdentity();
+            m_skinningMatrices[i] = AZ::Matrix3x4::CreateIdentity();
         }
     }
 
@@ -102,53 +103,53 @@ namespace EMotionFX
     // make the bind pose transforms unique
     void TransformData::MakeBindPoseTransformsUnique()
     {
-        if (mHasUniqueBindPose)
+        if (m_hasUniqueBindPose)
         {
             return;
         }
 
-        const ActorInstance* actorInstance = mPose.GetActorInstance();
-        mHasUniqueBindPose = true;
-        mBindPose = new Pose();
-        mBindPose->LinkToActorInstance(actorInstance);
-        *mBindPose = *actorInstance->GetActor()->GetBindPose();
+        const ActorInstance* actorInstance = m_pose.GetActorInstance();
+        m_hasUniqueBindPose = true;
+        m_bindPose = new Pose();
+        m_bindPose->LinkToActorInstance(actorInstance);
+        *m_bindPose = *actorInstance->GetActor()->GetBindPose();
     }
 
 
     EMFX_SCALECODE
     (
         // set the scaling value for the node and all child nodes
-        void TransformData::SetBindPoseLocalScaleInherit(uint32 nodeIndex, const AZ::Vector3& scale)
+        void TransformData::SetBindPoseLocalScaleInherit(size_t nodeIndex, const AZ::Vector3& scale)
         {
-            const ActorInstance*  actorInstance   = mPose.GetActorInstance();
+            const ActorInstance*  actorInstance   = m_pose.GetActorInstance();
             const Actor*          actor           = actorInstance->GetActor();
 
             // get the node index and the number of children of the given node
             const Node* node        = actor->GetSkeleton()->GetNode(nodeIndex);
-            const uint32 numChilds  = node->GetNumChildNodes();
+            const size_t numChilds  = node->GetNumChildNodes();
 
             // set the new scale for the given node
             SetBindPoseLocalScale(nodeIndex, scale);
 
             // iterate through the children and set their scale recursively
-            for (uint32 i = 0; i < numChilds; ++i)
+            for (size_t i = 0; i < numChilds; ++i)
             {
                 SetBindPoseLocalScaleInherit(node->GetChildIndex(i), scale);
             }
         }
 
         // update the local space scale
-        void TransformData::SetBindPoseLocalScale(uint32 nodeIndex, const AZ::Vector3& scale)
+        void TransformData::SetBindPoseLocalScale(size_t nodeIndex, const AZ::Vector3& scale)
         {
-            Transform newTransform = mBindPose->GetLocalSpaceTransform(nodeIndex);
-            newTransform.mScale = scale;
-            mBindPose->SetLocalSpaceTransform(nodeIndex, newTransform);
+            Transform newTransform = m_bindPose->GetLocalSpaceTransform(nodeIndex);
+            newTransform.m_scale = scale;
+            m_bindPose->SetLocalSpaceTransform(nodeIndex, newTransform);
         }
     ) // EMFX_SCALECODE
 
     // set the number of morph weights
-    void TransformData::SetNumMorphWeights(uint32 numMorphWeights)
+    void TransformData::SetNumMorphWeights(size_t numMorphWeights)
     {
-        mPose.ResizeNumMorphs(numMorphWeights);
+        m_pose.ResizeNumMorphs(numMorphWeights);
     }
 }   // namespace EMotionFX

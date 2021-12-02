@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -59,8 +60,8 @@ namespace MCommon
          */
         const char* GetTypeString() const override;
 
-        MCORE_INLINE void SetMode(ViewMode viewMode)                { mMode = viewMode; }
-        MCORE_INLINE ViewMode GetMode() const                       { return mMode; }
+        MCORE_INLINE void SetMode(ViewMode viewMode)                { m_mode = viewMode; }
+        MCORE_INLINE ViewMode GetMode() const                       { return m_mode; }
 
         /**
          * Update the camera transformation.
@@ -98,15 +99,15 @@ namespace MCommon
         void AutoUpdateLimits() override;
 
         void StartFlight(float distance, const AZ::Vector3& position, float flightTime);
-        bool GetIsFlightActive() const                                          { return mFlightActive; }
-        void SetFlightTargetPosition(const AZ::Vector3& targetPos)              { mFlightTargetPosition = targetPos; }
+        bool GetIsFlightActive() const                                          { return m_flightActive; }
+        void SetFlightTargetPosition(const AZ::Vector3& targetPos)              { m_flightTargetPosition = targetPos; }
         float FlightTimeLeft() const
         {
-            if (mFlightActive == false)
+            if (m_flightActive == false)
             {
                 return 0.0f;
             }
-            return mFlightMaxTime - mFlightCurrentTime;
+            return m_flightMaxTime - m_flightCurrentTime;
         }
 
         /**
@@ -117,22 +118,22 @@ namespace MCommon
          */
         MCore::Ray Unproject(int32 screenX, int32 screenY) override;
 
-        MCORE_INLINE void SetCurrentDistance(float distance)                    { mCurrentDistance = distance; }
-        MCORE_INLINE float GetCurrentDistance() const                           { return mCurrentDistance; }
+        MCORE_INLINE void SetCurrentDistance(float distance)                    { m_currentDistance = distance; }
+        MCORE_INLINE float GetCurrentDistance() const                           { return m_currentDistance; }
 
     private:
-        ViewMode mMode;
-        AZ::Vector2     mPositionDelta;     /**< The position delta which will be applied to the camera position when calling update. After adjusting the position it will be reset again. */
-        float           mMinDistance;       /**< The minimum distance from the orbit camera to its target in the orbit sphere. */
-        float           mMaxDistance;       /**< The maximum distance from the orbit camera to its target in the orbit sphere. */
-        float           mCurrentDistance;   /**< The current distance from the orbit camera to its target in the orbit sphere. */
-        bool            mFlightActive;
-        float           mFlightMaxTime;
-        float           mFlightCurrentTime;
-        float           mFlightSourceDistance;
-        AZ::Vector3     mFlightSourcePosition;
-        float           mFlightTargetDistance;
-        AZ::Vector3     mFlightTargetPosition;
+        ViewMode m_mode;
+        AZ::Vector2     m_positionDelta;     /**< The position delta which will be applied to the camera position when calling update. After adjusting the position it will be reset again. */
+        float           m_minDistance;       /**< The minimum distance from the orbit camera to its target in the orbit sphere. */
+        float           m_maxDistance;       /**< The maximum distance from the orbit camera to its target in the orbit sphere. */
+        float           m_currentDistance;   /**< The current distance from the orbit camera to its target in the orbit sphere. */
+        bool            m_flightActive;
+        float           m_flightMaxTime;
+        float           m_flightCurrentTime;
+        float           m_flightSourceDistance;
+        AZ::Vector3     m_flightSourcePosition;
+        float           m_flightTargetDistance;
+        AZ::Vector3     m_flightTargetPosition;
     };
 } // namespace MCommon
 

@@ -1,6 +1,7 @@
 #
-# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
-# 
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
@@ -27,10 +28,38 @@ set(gems_json_template [[
  string(APPEND gem_module_template
 [=[            "@stripped_gem_target@":]=] "\n"
 [=[            {]=] "\n"
-[=[$<$<NOT:$<IN_LIST:$<TARGET_PROPERTY:@gem_target@,TYPE>,INTERFACE_LIBRARY>>:                "Modules":["$<TARGET_FILE_NAME:@gem_target@>"]]=] "$<COMMA>\n>"
+[=[$<$<IN_LIST:$<TARGET_PROPERTY:@gem_target@,TYPE>,MODULE_LIBRARY$<SEMICOLON>SHARED_LIBRARY>:                "Modules":["$<TARGET_FILE_NAME:@gem_target@>"]]=] "$<COMMA>\n>"
 [=[                "SourcePaths":["@gem_module_root_relative_to_engine_root@"]]=] "\n"
 [=[            }]=]
 )
+
+#!ly_detect_cycle_through_visitation: Detects if there is a cycle based on a list of visited
+# items. If the passed item is in the list, then there is a cycle. 
+# \arg:item - item being checked for the cycle
+# \arg:visited_items - list of visited items
+# \arg:visited_items_var - list of visited items variable, "item" will be added to the list
+# \arg:cycle(variable) - empty string if there is no cycle (an empty string in cmake evaluates 
+#     to false). If there is a cycle a cycle dependency string detailing the sequence of items
+#     that produce a cycle, e.g. A --> B --> C --> A
+# 
+function(ly_detect_cycle_through_visitation item visited_items visited_items_var cycle)
+    if(item IN_LIST visited_items)
+        unset(dependency_cycle_loop)
+        foreach(visited_item IN LISTS visited_items)
+            string(APPEND dependency_cycle_loop ${visited_item})
+            if(visited_item STREQUAL item)
+                string(APPEND dependency_cycle_loop " (cycle starts)")
+            endif()
+            string(APPEND dependency_cycle_loop " --> ")
+        endforeach()
+        string(APPEND dependency_cycle_loop "${item} (cycle ends)")
+        set(${cycle} "${dependency_cycle_loop}" PARENT_SCOPE)
+    else()
+        set(cycle "" PARENT_SCOPE) # no cycles
+    endif()
+    list(APPEND visited_items ${item})
+    set(${visited_items_var} "${visited_items}" PARENT_SCOPE)
+endfunction()
 
 #!ly_get_gem_load_dependencies: Retrieves the list of "load" dependencies for a target
 # Visits through only MANUALLY_ADDED_DEPENDENCIES of targets with a GEM_MODULE property
@@ -43,6 +72,13 @@ function(ly_get_gem_load_dependencies ly_GEM_LOAD_DEPENDENCIES ly_TARGET)
     if(NOT TARGET ${ly_TARGET})
         return() # Nothing to do
     endif()
+    # Internally we use a third parameter to pass the list of targets that we have traversed. This is 
+    # used to detect runtime cycles
+    if(ARGC EQUAL 3)
+        set(ly_CYCLE_DETECTION_TARGETS ${ARGV2})
+    else()
+        set(ly_CYCLE_DETECTION_TARGETS "")
+    endif()
 
     # Optimize the search by caching gem load dependencies
     get_property(are_dependencies_cached GLOBAL PROPERTY LY_GEM_LOAD_DEPENDENCIES_${ly_TARGET} SET)
@@ -51,6 +87,13 @@ function(ly_get_gem_load_dependencies ly_GEM_LOAD_DEPENDENCIES ly_TARGET)
         get_property(cached_dependencies GLOBAL PROPERTY LY_GEM_LOAD_DEPENDENCIES_${ly_TARGET})
         set(${ly_GEM_LOAD_DEPENDENCIES} ${cached_dependencies} PARENT_SCOPE)
         return()
+    endif()
+
+    # detect cycles
+    unset(cycle_detected)
+    ly_detect_cycle_through_visitation(${ly_TARGET} "${ly_CYCLE_DETECTION_TARGETS}" ly_CYCLE_DETECTION_TARGETS cycle_detected)
+    if(cycle_detected)
+        message(FATAL_ERROR "Runtime dependency detected: ${cycle_detected}")
     endif()
 
     unset(all_gem_load_dependencies)
@@ -68,7 +111,7 @@ function(ly_get_gem_load_dependencies ly_GEM_LOAD_DEPENDENCIES ly_TARGET)
             # and recurse into its manually added dependencies
             if (is_gem_target)
                 unset(dependencies)
-                ly_get_gem_load_dependencies(dependencies ${dealias_load_dependency})
+                ly_get_gem_load_dependencies(dependencies ${dealias_load_dependency} "${ly_CYCLE_DETECTION_TARGETS}")
                 list(APPEND all_gem_load_dependencies ${dependencies})
                 list(APPEND all_gem_load_dependencies ${dealias_load_dependency})
             endif()
@@ -86,7 +129,7 @@ endfunction()
 #
 # \arg:gem_target(TARGET) - Target to look upwards from using its SOURCE_DIR property
 function(ly_get_gem_module_root output_gem_module_root gem_target)
-    unset(gem_module_roots)
+    unset(${output_gem_module_root} PARENT_SCOPE)
     get_property(gem_source_dir TARGET ${gem_target} PROPERTY SOURCE_DIR)
 
     if(gem_source_dir)
@@ -95,8 +138,8 @@ function(ly_get_gem_module_root output_gem_module_root gem_target)
         while(NOT EXISTS ${candidate_gem_dir}/gem.json)
             get_filename_component(parent_dir ${candidate_gem_dir} DIRECTORY)
             if (${parent_dir} STREQUAL ${candidate_gem_dir})
-                message(WARNING "Did not find a gem.json while processing GEM_MODULE target ${gem_target}!")
-                break()
+                # "Did not find a gem.json while processing GEM_MODULE target ${gem_target}!"
+                return()
             endif()
             set(candidate_gem_dir ${parent_dir})
         endwhile()
@@ -117,6 +160,12 @@ endfunction()
 #  The generated file contains the file to the each dependent targets
 #  This can be used for example to determine which list of gems to load with an application
 function(ly_delayed_generate_settings_registry)
+
+    if(LY_MONOLITHIC_GAME) # No need to generate setregs for monolithic builds
+        set_property(GLOBAL PROPERTY LY_DELAYED_LOAD_DEPENDENCIES) # Clear out the load targets from the global load dependencies list
+        return()
+    endif()
+
     get_property(ly_delayed_load_targets GLOBAL PROPERTY LY_DELAYED_LOAD_DEPENDENCIES)
     foreach(prefix_target ${ly_delayed_load_targets})
         string(REPLACE "," ";" prefix_target_list "${prefix_target}")
@@ -159,11 +208,15 @@ function(ly_delayed_generate_settings_registry)
             endif()
 
             ly_get_gem_module_root(gem_module_root ${gem_target})
+            if (NOT gem_module_root)
+                # If the target doesn't have a gem.json, skip it
+                continue()
+            endif()
             file(RELATIVE_PATH gem_module_root_relative_to_engine_root ${LY_ROOT_FOLDER} ${gem_module_root})
 
             # De-alias namespace from gem targets before configuring them into the json template
             ly_de_alias_target(${gem_target} stripped_gem_target)
-            string(CONFIGURE ${gem_module_template} gem_module_json @ONLY)
+            string(CONFIGURE "${gem_module_template}" gem_module_json @ONLY)
             list(APPEND target_gem_dependencies_names ${gem_module_json})
         endforeach()
 
@@ -176,7 +229,8 @@ function(ly_delayed_generate_settings_registry)
         string(CONFIGURE ${gems_json_template} gem_json @ONLY)
         get_target_property(is_imported ${target} IMPORTED)
         get_target_property(target_type ${target} TYPE)
-        if(is_imported OR target_type STREQUAL UTILITY)
+        set(non_loadable_types "UTILITY" "INTERFACE_LIBRARY" "STATIC_LIBRARY")
+        if(is_imported OR (target_type IN_LIST non_loadable_types))
             unset(target_dir)
             foreach(conf IN LISTS CMAKE_CONFIGURATION_TYPES)
                 string(TOUPPER ${conf} UCONF)
@@ -195,7 +249,7 @@ function(ly_delayed_generate_settings_registry)
         set_property(GLOBAL PROPERTY LY_DELAYED_LOAD_"${prefix_target}")
     endforeach()
 
-    # Clear out the load targets from the glboal load dependencies list
+    # Clear out the load targets from the global load dependencies list
     set_property(GLOBAL PROPERTY LY_DELAYED_LOAD_DEPENDENCIES)
 endfunction()
 

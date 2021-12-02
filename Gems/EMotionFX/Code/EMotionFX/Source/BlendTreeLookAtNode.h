@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -62,10 +63,10 @@ namespace EMotionFX
             void Update() override;
 
         public:
-            AZ::Quaternion mRotationQuat = AZ::Quaternion::CreateIdentity();
-            float mTimeDelta = 0.0f;
-            uint32 mNodeIndex = InvalidIndex32;
-            bool mFirstUpdate = true;
+            AZ::Quaternion m_rotationQuat = AZ::Quaternion::CreateIdentity();
+            float m_timeDelta = 0.0f;
+            size_t m_nodeIndex = InvalidIndex;
+            bool m_firstUpdate = true;
         };
 
         BlendTreeLookAtNode();

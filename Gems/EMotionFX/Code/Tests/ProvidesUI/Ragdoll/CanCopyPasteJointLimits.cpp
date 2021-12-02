@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -13,7 +14,6 @@
 
 #include <EMotionFX/CommandSystem/Source/CommandManager.h>
 #include <EMotionFX/CommandSystem/Source/RagdollCommands.h>
-#include <EMotionFX/Source/AutoRegisteredActor.h>
 #include <EMotionStudio/EMStudioSDK/Source/EMStudioManager.h>
 #include <Editor/Plugins/Ragdoll/RagdollJointLimitWidget.h>
 #include <Editor/Plugins/Ragdoll/RagdollNodeInspectorPlugin.h>
@@ -24,6 +24,7 @@
 #include <Tests/Mocks/PhysicsSystem.h>
 #include <Tests/TestAssetCode/ActorFactory.h>
 #include <Tests/TestAssetCode/SimpleActors.h>
+#include <Tests/TestAssetCode/TestActorAssets.h>
 #include <Tests/UI/UIFixture.h>
 
 namespace EMotionFX
@@ -40,7 +41,10 @@ namespace EMotionFX
     {
         using testing::_;
 
-        D6JointLimitConfiguration::Reflect(GetSerializeContext());
+        AZ::SerializeContext* serializeContext = GetSerializeContext();
+
+        Physics::MockPhysicsSystem::Reflect(serializeContext); // Required by Ragdoll plugin to fake PhysX Gem is available
+        D6JointLimitConfiguration::Reflect(serializeContext);
 
         EMStudio::GetMainWindow()->ApplicationModeChanged("Physics");
 
@@ -50,12 +54,31 @@ namespace EMotionFX
 
         Physics::MockPhysicsSystem physicsSystem;
         Physics::MockPhysicsInterface physicsInterface;
-        EXPECT_CALL(physicsSystem, GetSupportedJointTypes)
-            .WillRepeatedly(testing::Return(AZStd::vector<AZ::TypeId>{azrtti_typeid<D6JointLimitConfiguration>()}));
-        EXPECT_CALL(physicsSystem, ComputeInitialJointLimitConfiguration(azrtti_typeid<D6JointLimitConfiguration>(), _, _, _, _))
-            .WillRepeatedly([]([[maybe_unused]] const AZ::TypeId& jointLimitTypeId, [[maybe_unused]] const AZ::Quaternion& parentWorldRotation, [[maybe_unused]] const AZ::Quaternion& childWorldRotation, [[maybe_unused]] const AZ::Vector3& axis, [[maybe_unused]] const AZStd::vector<AZ::Quaternion>& exampleLocalRotations) { return AZStd::make_unique<D6JointLimitConfiguration>(); });
+        Physics::MockJointHelpersInterface jointHelpers;
+        EXPECT_CALL(jointHelpers, GetSupportedJointTypeIds)
+            .WillRepeatedly(testing::Return(AZStd::vector<AZ::TypeId>{ azrtti_typeid<D6JointLimitConfiguration>() }));
+        EXPECT_CALL(jointHelpers, GetSupportedJointTypeId(_))
+            .WillRepeatedly(
+                [](AzPhysics::JointType jointType) -> AZStd::optional<const AZ::TypeId>
+                {
+                    if (jointType == AzPhysics::JointType::D6Joint)
+                    {
+                        return azrtti_typeid<D6JointLimitConfiguration>();
+                    }
+                    return AZStd::nullopt;
+                });
+        EXPECT_CALL(jointHelpers, ComputeInitialJointLimitConfiguration(_, _, _, _, _))
+            .WillRepeatedly(
+                []([[maybe_unused]] const AZ::TypeId& jointLimitTypeId,
+                   [[maybe_unused]] const AZ::Quaternion& parentWorldRotation, [[maybe_unused]] const AZ::Quaternion& childWorldRotation,
+                   [[maybe_unused]] const AZ::Vector3& axis, [[maybe_unused]] const AZStd::vector<AZ::Quaternion>& exampleLocalRotations)
+                {
+                    return AZStd::make_unique<D6JointLimitConfiguration>();
+                });
 
-        AutoRegisteredActor actor {ActorFactory::CreateAndInit<SimpleJointChainActor>(4)};
+        AZ::Data::AssetId actorAssetId("{5060227D-B6F4-422E-BF82-41AAC5F228A5}");
+        AZ::Data::Asset<Integration::ActorAsset>  actorAsset = TestActorAssets::CreateActorAssetAndRegister<SimpleJointChainActor>(actorAssetId, 4);
+        const Actor* actor = actorAsset->GetActor();
 
         {
             AZStd::string result;
@@ -65,7 +88,7 @@ namespace EMotionFX
         CommandRagdollHelpers::AddJointsToRagdoll(actor->GetID(), {"rootJoint", "joint1", "joint2", "joint3"});
         const Physics::RagdollConfiguration& ragdollConfig = actor->GetPhysicsSetup()->GetRagdollConfig();
         ASSERT_EQ(ragdollConfig.m_nodes.size(), 4);
-        AZStd::shared_ptr<D6JointLimitConfiguration> rootJointLimit = AZStd::rtti_pointer_cast<D6JointLimitConfiguration>(ragdollConfig.FindNodeConfigByName("rootJoint")->m_jointLimit);
+        AZStd::shared_ptr<D6JointLimitConfiguration> rootJointLimit = AZStd::rtti_pointer_cast<D6JointLimitConfiguration>(ragdollConfig.FindNodeConfigByName("rootJoint")->m_jointConfig);
         ASSERT_TRUE(rootJointLimit);
         // Set the initial joint limits on the rootJoint to be something different
         rootJointLimit->m_swingLimitY = 1.0f;
@@ -114,7 +137,8 @@ namespace EMotionFX
         selectionModel.select(joint1Index, QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Rows);
 
         // Verify initial state of joint1's limits
-        const AZStd::shared_ptr<D6JointLimitConfiguration> joint1Limit = AZStd::rtti_pointer_cast<D6JointLimitConfiguration>(ragdollConfig.FindNodeConfigByName("joint1")->m_jointLimit);
+        const AZStd::shared_ptr<D6JointLimitConfiguration> joint1Limit =
+            AZStd::rtti_pointer_cast<D6JointLimitConfiguration>(ragdollConfig.FindNodeConfigByName("joint1")->m_jointConfig);
         EXPECT_EQ(joint1Limit->m_swingLimitY, 45.0f);
         EXPECT_EQ(joint1Limit->m_swingLimitZ, 45.0f);
 
@@ -136,10 +160,12 @@ namespace EMotionFX
         selectionModel.select(joint2Index, QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Rows);
         selectionModel.select(joint3Index, QItemSelectionModel::Select | QItemSelectionModel::Rows);
 
-        const AZStd::shared_ptr<D6JointLimitConfiguration> joint2Limit = AZStd::rtti_pointer_cast<D6JointLimitConfiguration>(ragdollConfig.FindNodeConfigByName("joint2")->m_jointLimit);
+        const AZStd::shared_ptr<D6JointLimitConfiguration> joint2Limit =
+            AZStd::rtti_pointer_cast<D6JointLimitConfiguration>(ragdollConfig.FindNodeConfigByName("joint2")->m_jointConfig);
         EXPECT_EQ(joint2Limit->m_swingLimitY, 45.0f);
         EXPECT_EQ(joint2Limit->m_swingLimitZ, 45.0f);
-        const AZStd::shared_ptr<D6JointLimitConfiguration> joint3Limit = AZStd::rtti_pointer_cast<D6JointLimitConfiguration>(ragdollConfig.FindNodeConfigByName("joint3")->m_jointLimit);
+        const AZStd::shared_ptr<D6JointLimitConfiguration> joint3Limit =
+            AZStd::rtti_pointer_cast<D6JointLimitConfiguration>(ragdollConfig.FindNodeConfigByName("joint3")->m_jointConfig);
         EXPECT_EQ(joint3Limit->m_swingLimitY, 45.0f);
         EXPECT_EQ(joint3Limit->m_swingLimitZ, 45.0f);
 

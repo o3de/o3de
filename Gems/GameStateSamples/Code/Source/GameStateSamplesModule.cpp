@@ -1,11 +1,13 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
 #include <AzCore/Component/ComponentApplicationBus.h>
+#include <AzCore/Component/TickBus.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Module/Module.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
@@ -54,6 +56,7 @@ namespace GameStateSamples
     //!
     class GameStateSamplesModule
         : public CryHooksModule
+        , public AZ::TickBus::Handler
         , public GameOptionRequestBus::Handler
     {
     public:
@@ -81,10 +84,26 @@ namespace GameStateSamples
         }
 
     protected:
-        void OnCrySystemInitialized(ISystem& system, const SSystemInitParams& systemInitParams)
+        void OnCrySystemInitialized(ISystem& system, const SSystemInitParams& systemInitParams) override
         {
             CryHooksModule::OnCrySystemInitialized(system, systemInitParams);
 
+            AZ::TickBus::Handler::BusConnect();
+        }
+
+        void OnTick([[maybe_unused]]float deltaTime, [[maybe_unused]]AZ::ScriptTimePoint scriptTimePoint) override
+        {
+            // Ideally this would be called at startup (either above in OnCrySystemInitialized, or better during AZ system component
+            // initialisation), but because the initial game state depends on loading a UI canvas using LYShine we need to wait until
+            // the first tick, because LyShine in turn is not properly initialized until UiRenderer::OnBootstrapSceneReady has been
+            // called, which doesn't happen until a queued tick event that gets called right at the end of initialisation before we
+            // enter the main game loop.
+            CreateAndPushInitialGameState();
+            AZ::TickBus::Handler::BusDisconnect();
+        }
+
+        void CreateAndPushInitialGameState()
+        {
             REGISTER_INT("sys_primaryUserSelectionEnabled", 2, VF_NULL,
                          "Controls whether the game forces selection of a primary user at startup.\n"
                          "0 : Skip selection of a primary user at startup on all platform.\n"

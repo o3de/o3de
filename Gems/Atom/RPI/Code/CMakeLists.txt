@@ -1,6 +1,7 @@
 #
-# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
-# 
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
@@ -159,6 +160,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
                 Gem::Atom_RPI.Public
                 Gem::Atom_RHI.Public
                 Gem::Atom_RPI.Edit
+                Gem::Atom_Utils.TestUtils.Static
     )
     ly_add_googletest(
         NAME Gem::Atom_RPI.Tests

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -59,10 +60,10 @@ namespace AZ
     }
 
 
-    AZ_MATH_INLINE Aabb Aabb::CreatePoints(const Vector3* pts, int numPts)
+    AZ_MATH_INLINE Aabb Aabb::CreatePoints(const Vector3* pts, size_t numPts)
     {
         Aabb aabb = Aabb::CreateFromPoint(pts[0]);
-        for (int i = 1; i < numPts; ++i)
+        for (size_t i = 1; i < numPts; ++i)
         {
             aabb.AddPoint(pts[i]);
         }

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -48,7 +49,7 @@ namespace EMotionFX
         ASSERT_TRUE(motionSetWindow) << "No motion set window found";
 
         // Check there aren't any motion sets yet.
-        const AZ::u32 numMotionSets = EMotionFX::GetMotionManager().GetNumMotionSets();
+        const size_t numMotionSets = EMotionFX::GetMotionManager().GetNumMotionSets();
         EXPECT_EQ(numMotionSets, 0);
 
         // Find the action to create a new motion set and press it.
@@ -57,7 +58,7 @@ namespace EMotionFX
         QTest::mouseClick(addMotionSetButton, Qt::LeftButton);
 
         // Make sure the new motion set has  been created.
-        const AZ::u32 numMotionSetsAfterCreate = EMotionFX::GetMotionManager().GetNumMotionSets();
+        const size_t numMotionSetsAfterCreate = EMotionFX::GetMotionManager().GetNumMotionSets();
         ASSERT_EQ(numMotionSetsAfterCreate, numMotionSets + 1) << "Failed to create motion set.";
 
         EMotionFX::MotionSet* motionSet = EMotionFX::GetMotionManager().GetMotionSet(0);

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -39,6 +40,8 @@ namespace AzQtComponents
         //! Current value.
         Q_PROPERTY(int value READ value WRITE setValue NOTIFY valueChanged)
     public:
+        using value_type = int;
+
         explicit SliderCombo(QWidget *parent = nullptr);
         ~SliderCombo();
 
@@ -141,6 +144,8 @@ namespace AzQtComponents
         Q_PROPERTY(double curveMidpoint READ curveMidpoint WRITE setCurveMidpoint)
 
     public:
+        using value_type = double;
+
         explicit SliderDoubleCombo(QWidget *parent = nullptr);
         ~SliderDoubleCombo();
 

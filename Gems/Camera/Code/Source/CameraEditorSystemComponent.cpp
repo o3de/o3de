@@ -1,10 +1,10 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "Camera_precompiled.h"
 #include "CameraEditorSystemComponent.h"
 #include "EditorCameraComponent.h"
 
@@ -20,17 +20,13 @@
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/API/EntityCompositionRequestBus.h>
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
+#include <AzToolsFramework/Entity/PrefabEditorEntityOwnershipInterface.h>
 
-#include <IEditor.h>
-#include <ViewManager.h>
-#include <GameEngine.h>
-#include <Objects/BaseObject.h>
-#include <Include/IObjectManager.h>
-
-#include <Cry_Geo.h>
-#include <MathConversion.h>
 #include <AzToolsFramework/API/EditorCameraBus.h>
 #include "ViewportCameraSelectorWindow.h"
+
+#include <QAction>
+#include <QMenu>
 
 namespace Camera
 {
@@ -72,27 +68,28 @@ namespace Camera
 
     void CameraEditorSystemComponent::PopulateEditorGlobalContextMenu(QMenu* menu, const AZ::Vector2&, int flags)
     {
-        IEditor* editor;
-        AzToolsFramework::EditorRequests::Bus::BroadcastResult(editor, &AzToolsFramework::EditorRequests::GetEditor);
-
-        CGameEngine* gameEngine = editor->GetGameEngine();
-        if (!gameEngine || !gameEngine->IsLevelLoaded())
-        {
-            return;
-        }
-
         if (!(flags & AzToolsFramework::EditorEvents::eECMF_HIDE_ENTITY_CREATION))
         {
             QAction* action = menu->addAction(QObject::tr("Create camera entity from view"));
-            QObject::connect(action, &QAction::triggered, [this]() { CreateCameraEntityFromViewport(); });
+            const auto prefabEditorEntityOwnershipInterface = AZ::Interface<AzToolsFramework::PrefabEditorEntityOwnershipInterface>::Get();
+            if (prefabEditorEntityOwnershipInterface && !prefabEditorEntityOwnershipInterface->IsRootPrefabAssigned())
+            {
+                action->setEnabled(false);
+            }
+            else
+            {
+                QObject::connect(
+                    action, &QAction::triggered,
+                    [this]()
+                    {
+                        CreateCameraEntityFromViewport();
+                    });
+            }
         }
     }
 
     void CameraEditorSystemComponent::CreateCameraEntityFromViewport()
     {
-        IEditor* editor = nullptr;
-        AzToolsFramework::EditorRequests::Bus::BroadcastResult(editor, &AzToolsFramework::EditorRequests::GetEditor);
-
         AzFramework::CameraState cameraState{};
         AZ::EBusReduceResult<bool, AZStd::logical_or<bool>> aggregator;
         Camera::EditorCameraRequestBus::BroadcastResult(

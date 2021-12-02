@@ -1,13 +1,14 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <PhysX_precompiled.h>
 #include <Editor/EditorClassConverters.h>
 #include <Source/EditorColliderComponent.h>
 #include <PhysX/MeshAsset.h>
+#include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Math/Matrix3x3.h>
 #include <AzFramework/Physics/Collision/CollisionGroups.h>
 
@@ -65,7 +66,6 @@ namespace PhysX
         {
             // collision group id
             AzPhysics::CollisionGroups::Id collisionGroupId;
-            const int baseColliderComponentIndex = classElement.FindElement(AZ_CRC("BaseClass1", 0xd4925735));
             FindElementRecursiveAndGetData(classElement, AZ_CRC("CollisionGroupId", 0x84fe4bbe), collisionGroupId);
 
             // collider config

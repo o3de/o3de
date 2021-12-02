@@ -1,12 +1,14 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
 #include <Prefab/PrefabTestDomUtils.h>
 #include <Prefab/PrefabTestFixture.h>
+#include <Prefab/PrefabTestComponent.h>
 
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
@@ -16,6 +18,98 @@
 namespace UnitTest
 {
     using PrefabInstanceToTemplateTests = PrefabTestFixture;
+
+    TEST_F(PrefabInstanceToTemplateTests, GenerateEntityDom_InvalidType_InvalidTypeSkipped)
+    {
+        const char* newEntityName = "New Entity";
+        AZ::Entity* newEntity = CreateEntity(newEntityName, false);
+        ASSERT_TRUE(newEntity);
+
+        // Add a component with a member that is missing reflection info
+        // and a member that is properly reflected
+        PrefabTestComponentWithUnReflectedTypeMember* newComponent =
+            newEntity->CreateComponent<PrefabTestComponentWithUnReflectedTypeMember>();
+
+        ASSERT_TRUE(newComponent);
+
+        AZStd::unique_ptr<Instance> prefabInstance = m_prefabSystemComponent->CreatePrefab({ newEntity }, {}, "test/path");
+        ASSERT_TRUE(prefabInstance);
+
+        PrefabDom entityDom;
+        m_instanceToTemplateInterface->GenerateDomForEntity(entityDom, *newEntity);
+
+        auto componentListDom = entityDom.FindMember("Components");
+
+        // Confirm that there is only one component in the entityDom
+        ASSERT_NE(componentListDom, entityDom.MemberEnd());
+        ASSERT_TRUE(componentListDom->value.IsObject());
+        ASSERT_EQ(componentListDom->value.MemberCount(), 1);
+
+        auto testComponentDom = componentListDom->value.MemberBegin();
+        ASSERT_TRUE(testComponentDom->value.IsObject());
+
+        // Confirm that the componentDom does not contained the invalid UnReflectedType
+        // We want to skip over it and produce a best effort entityDom
+        auto unReflectedTypeDom = testComponentDom->value.FindMember("UnReflectedType");
+        ASSERT_EQ(unReflectedTypeDom, testComponentDom->value.MemberEnd());
+
+        // Confirm the presence of the valid ReflectedType
+        auto reflectedTypeDom = testComponentDom->value.FindMember("ReflectedType");
+        ASSERT_NE(reflectedTypeDom, testComponentDom->value.MemberEnd());
+
+        // Confirm the reflected type has the correct type and value
+        ASSERT_TRUE(reflectedTypeDom->value.IsInt());
+        EXPECT_EQ(reflectedTypeDom->value.GetInt(), newComponent->m_reflectedType);
+    }
+
+    TEST_F(PrefabInstanceToTemplateTests, GenerateInstanceDom_InvalidType_InvalidTypeSkipped)
+    {
+        const char* newEntityName = "New Entity";
+        AZ::Entity* newEntity = CreateEntity(newEntityName, false);
+        ASSERT_TRUE(newEntity);
+
+        // Add a component with a member that is missing reflection info
+        // and a member that is properly reflected
+        PrefabTestComponentWithUnReflectedTypeMember* newComponent =
+            newEntity->CreateComponent<PrefabTestComponentWithUnReflectedTypeMember>();
+
+        ASSERT_TRUE(newComponent);
+
+        AZStd::unique_ptr<Instance> prefabInstance = m_prefabSystemComponent->CreatePrefab({ newEntity }, {}, "test/path");
+        ASSERT_TRUE(prefabInstance);
+
+        PrefabDom instanceDom;
+        m_instanceToTemplateInterface->GenerateDomForInstance(instanceDom, *prefabInstance);
+
+        // Acquire the entity out of the instanceDom
+        auto entitiesDom = instanceDom.FindMember(PrefabDomUtils::EntitiesName);
+        ASSERT_NE(entitiesDom, instanceDom.MemberEnd());
+        ASSERT_EQ(entitiesDom->value.MemberCount(), 1);
+
+        auto entityDom = entitiesDom->value.MemberBegin();
+        auto componentListDom = entityDom->value.FindMember("Components");
+
+        // Confirm that there is only one component in the entityDom
+        ASSERT_NE(componentListDom, entityDom->value.MemberEnd());
+        ASSERT_TRUE(componentListDom->value.IsObject());
+        ASSERT_EQ(componentListDom->value.MemberCount(), 1);
+
+        auto testComponentDom = componentListDom->value.MemberBegin();
+        ASSERT_TRUE(testComponentDom->value.IsObject());
+
+        // Confirm that the componentDom does not contained the invalid UnReflectedType
+        // We want to skip over it and produce a best effort entityDom
+        auto unReflectedTypeDom = testComponentDom->value.FindMember("UnReflectedType");
+        ASSERT_EQ(unReflectedTypeDom, testComponentDom->value.MemberEnd());
+
+        // Confirm the presence of the valid ReflectedType
+        auto reflectedTypeDom = testComponentDom->value.FindMember("ReflectedType");
+        ASSERT_NE(reflectedTypeDom, testComponentDom->value.MemberEnd());
+
+        // Confirm the reflected type has the correct type and value
+        ASSERT_TRUE(reflectedTypeDom->value.IsInt());
+        EXPECT_EQ(reflectedTypeDom->value.GetInt(), newComponent->m_reflectedType);
+    }
 
     TEST_F(PrefabInstanceToTemplateTests, PrefabUpdateTemplate_UpdateEntityOnInstance)
     {
@@ -226,7 +320,7 @@ namespace UnitTest
         Instance& addedInstance = *addedInstancePtr;
 
         //create a first instance where the instance will be removed
-        AZStd::unique_ptr<Instance> firstInstance = m_prefabSystemComponent->CreatePrefab({}, MakeInstanceList( AZStd::move(addedInstancePtr) ), "test/path");
+        AZStd::unique_ptr<Instance> firstInstance = m_prefabSystemComponent->CreatePrefab({}, MakeInstanceList(AZStd::move(addedInstancePtr)), "test/path");
         ASSERT_TRUE(firstInstance);
 
         //get added instance alias
@@ -244,7 +338,9 @@ namespace UnitTest
         m_instanceToTemplateInterface->GenerateDomForInstance(instanceDomBeforeUpdate, *firstInstance);
 
         //remove instance from instance
-        firstInstance->DetachNestedInstance(addedAlias);
+        AZStd::unique_ptr<Instance> detachedInstance = firstInstance->DetachNestedInstance(addedAlias);
+        ASSERT_TRUE(detachedInstance != nullptr);
+        m_prefabSystemComponent->RemoveLink(detachedInstance->GetLinkId());
 
         //create document with after change snapshot
         PrefabDom instanceDomAfterUpdate;

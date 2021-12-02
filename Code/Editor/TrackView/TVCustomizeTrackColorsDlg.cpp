@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -105,7 +106,6 @@ namespace
         { AnimParamType::User, "Muted", QColor(255, 224, 224) },
     };
 
-    const int kButtonsIdBase = 0x7fff;
     const int kMaxRows = 20;
     const int kColumnWidth = 300;
     const int kRowHeight = 24;
@@ -343,7 +343,7 @@ void CTVCustomizeTrackColorsDlg::Export(const QString& fullPath) const
 bool CTVCustomizeTrackColorsDlg::Import(const QString& fullPath)
 {
     XmlNodeRef customTrackColorsNode = XmlHelpers::LoadXmlFromFile(fullPath.toStdString().c_str());
-    if (customTrackColorsNode == NULL)
+    if (customTrackColorsNode == nullptr)
     {
         return false;
     }
@@ -366,7 +366,7 @@ bool CTVCustomizeTrackColorsDlg::Import(const QString& fullPath)
         { 
             return entry.paramType == paramType;
         });
-        int entryIndex = pEntry - g_trackEntries;
+        int entryIndex = static_cast<int>(pEntry - g_trackEntries);
         if (entryIndex >= arraysize(g_trackEntries)) // If not found, skip this.
         {
             continue;

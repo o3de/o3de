@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -54,7 +55,7 @@ namespace AZ::TangentGeneration::BlendShape::MikkT
     {
         MikktCustomData* customData = static_cast<MikktCustomData*>(context->m_pUserData);
         const AZ::u32 vertexIndex = customData->m_blendShapeData->GetFaceVertexIndex(face, vert);
-        const AZ::Vector2& uv = customData->m_blendShapeData->GetUV(vertexIndex, customData->m_uvSetIndex);
+        const AZ::Vector2& uv = customData->m_blendShapeData->GetUV(vertexIndex, static_cast<unsigned int>(customData->m_uvSetIndex));
         texOut[0] = uv.GetX();
         texOut[1] = uv.GetY();
     }
@@ -75,33 +76,47 @@ namespace AZ::TangentGeneration::BlendShape::MikkT
         const AZ::Vector4 tangentVec(tangent[0]*magS, tangent[1]*magS, tangent[2]*magS, flipSign);
         const AZ::Vector3 bitangentVec(bitangent[0]*magT, bitangent[1]*magT, bitangent[2]*magT);
 
-        // Set the tangent and bitangent back to the blendshape
+        // Set the tangent and bitangent back to the blend shape
         AZStd::vector<AZ::Vector4>& tangents = customData->m_blendShapeData->GetTangents();
         AZStd::vector<AZ::Vector3>& bitangents = customData->m_blendShapeData->GetBitangents();
         tangents[vertexIndex] = tangentVec;
         bitangents[vertexIndex] = bitangentVec;
     }
 
-    bool GenerateTangents(AZ::SceneData::GraphData::BlendShapeData* blendShapeData, size_t uvSetIndex)
+    void SetTSpaceBasic(const SMikkTSpaceContext* context, const float tangent[], const float signValue, const int face, const int vert)
+    {
+        MikktCustomData* customData = static_cast<MikktCustomData*>(context->m_pUserData);
+        const AZ::u32 vertexIndex = customData->m_blendShapeData->GetFaceVertexIndex(face, vert);
+        AZ::Vector3 tangentVec3(tangent[0], tangent[1], tangent[2]);
+        tangentVec3.NormalizeSafe();
+        AZ::Vector3 normal = customData->m_blendShapeData->GetNormal(vertexIndex);
+        normal.NormalizeSafe();
+        const AZ::Vector3 bitangent = normal.Cross(tangentVec3) * signValue;
+
+        // Set the tangent and bitangent back to the blend shape
+        AZStd::vector<AZ::Vector4>& tangents = customData->m_blendShapeData->GetTangents();
+        AZStd::vector<AZ::Vector3>& bitangents = customData->m_blendShapeData->GetBitangents();
+        tangents[vertexIndex] = AZ::Vector4(tangentVec3.GetX(), tangentVec3.GetY(), tangentVec3.GetZ(), signValue);
+        bitangents[vertexIndex] = bitangent;
+    }
+
+    bool GenerateTangents(AZ::SceneData::GraphData::BlendShapeData* blendShapeData,
+        size_t uvSetIndex,
+        AZ::SceneAPI::DataTypes::MikkTSpaceMethod tSpaceMethod)
     {
         // Create tangent and bitangent data sets and relate them to the given UV set.
-        const AZStd::vector<AZ::Vector2>& uvSet = blendShapeData->GetUVs(uvSetIndex);
+        const AZStd::vector<AZ::Vector2>& uvSet = blendShapeData->GetUVs(static_cast<AZ::u8>(uvSetIndex));
         if (uvSet.empty())
         {
-            AZ_TracePrintf(AZ::SceneAPI::Utilities::ErrorWindow, "Cannot find UV data (set index=%d) to generate tangents and bitangents from in MikkT generator!\n", uvSetIndex);
-            return false;
-        }
-
-        AZStd::vector<AZ::Vector4>& tangents = blendShapeData->GetTangents();
-        AZStd::vector<AZ::Vector3>& bitangents = blendShapeData->GetBitangents();
-        if (!tangents.empty() || !bitangents.empty())
-        {
-            AZ_TracePrintf(
-                AZ::SceneAPI::Utilities::WarningWindow, "Cannot generate tangents and bitangents because existing tangent or bitangent data has been found.\n");
+            AZ_Error(AZ::SceneAPI::Utilities::ErrorWindow, false,
+                "Cannot find UV data (set index=%d) to generate tangents and bitangents from in MikkT generator.\n",
+                uvSetIndex);
             return false;
         }
 
         // Pre-allocate the tangent and bitangent data.
+        AZStd::vector<AZ::Vector4>& tangents = blendShapeData->GetTangents();
+        AZStd::vector<AZ::Vector3>& bitangents = blendShapeData->GetBitangents();
         tangents.resize(blendShapeData->GetVertexCount());
         bitangents.resize(blendShapeData->GetVertexCount());
 
@@ -113,9 +128,23 @@ namespace AZ::TangentGeneration::BlendShape::MikkT
         mikkInterface.m_getNormal           = GetNormal;
         mikkInterface.m_getPosition         = GetPosition;
         mikkInterface.m_getTexCoord         = GetTexCoord;
-        mikkInterface.m_setTSpace           = SetTSpace;
-        mikkInterface.m_setTSpaceBasic      = nullptr;
         mikkInterface.m_getNumVerticesOfFace= GetNumVerticesOfFace;
+
+        switch (tSpaceMethod)
+        {
+            case AZ::SceneAPI::DataTypes::MikkTSpaceMethod::TSpaceBasic:
+            {
+                mikkInterface.m_setTSpace = nullptr;
+                mikkInterface.m_setTSpaceBasic = SetTSpaceBasic;
+                break;
+            }
+            default:
+            {
+                mikkInterface.m_setTSpace = SetTSpace;
+                mikkInterface.m_setTSpaceBasic = nullptr;
+                break;
+            }
+        }
 
         // Set the MikkT custom data.
         MikktCustomData customData;

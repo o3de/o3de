@@ -1,12 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg width="24px" height="24px" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-    <!-- Generator: Sketch 53.2 (72643) - https://sketchapp.com -->
-    <title>icon / Physics / Cry / Rigid Body Physics </title>
-    <desc>Created with Sketch.</desc>
+    <title>icon / Physics / PhysX / RigidPhysics</title>
     <defs>
         <path d="M12.1875,21 C7.32049064,21 3.375,17.0545094 3.375,12.1875 C3.375,7.32049064 7.32049064,3.375 12.1875,3.375 C17.0545094,3.375 21,7.32049064 21,12.1875 C21,17.0545094 17.0545094,21 12.1875,21 Z M11.375,11.375 L11.375,4.03978956 C7.50197046,4.4212683 4.4212683,7.50197046 4.03978956,11.375 L11.375,11.375 Z M12.625,20.3635108 C16.7985591,20.1437686 20.1437686,16.7985591 20.3635108,12.625 L12.625,12.625 L12.625,20.3635108 Z" id="path-1"></path>
     </defs>
-    <g id="icon-/-Physics-/-Cry-/-Rigid-Body-Physics-" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+    <g id="icon-/-Physics-/-PhysX-/-RigidPhysics" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
         <mask id="mask-2" fill="white">
             <use xlink:href="#path-1"></use>
         </mask>

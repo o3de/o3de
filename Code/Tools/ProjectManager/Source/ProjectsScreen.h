@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -17,6 +18,7 @@ QT_FORWARD_DECLARE_CLASS(QPaintEvent)
 QT_FORWARD_DECLARE_CLASS(QFrame)
 QT_FORWARD_DECLARE_CLASS(QStackedWidget)
 QT_FORWARD_DECLARE_CLASS(QLayout)
+QT_FORWARD_DECLARE_CLASS(FlowLayout)
 
 namespace O3DE::ProjectManager
 {
@@ -44,6 +46,7 @@ namespace O3DE::ProjectManager
         void HandleAddProjectButton();
         void HandleOpenProject(const QString& projectPath);
         void HandleEditProject(const QString& projectPath);
+        void HandleEditProjectGems(const QString& projectPath);
         void HandleCopyProject(const ProjectInfo& projectInfo);
         void HandleRemoveProject(const QString& projectPath);
         void HandleDeleteProject(const QString& projectPath);
@@ -58,8 +61,8 @@ namespace O3DE::ProjectManager
 
     private:
         QFrame* CreateFirstTimeContent();
-        QFrame* CreateProjectsContent(QString buildProjectPath = "", ProjectButton** projectButton = nullptr);
-        ProjectButton* CreateProjectButton(ProjectInfo& project, QLayout* flowLayout, bool processing = false);
+        QFrame* CreateProjectsContent();
+        ProjectButton* CreateProjectButton(const ProjectInfo& project);
         void ResetProjectsContent();
         bool ShouldDisplayFirstTimeContent();
         bool RemoveInvalidProjects();
@@ -74,7 +77,9 @@ namespace O3DE::ProjectManager
         QPixmap m_background;
         QFrame* m_firstTimeContent = nullptr;
         QFrame* m_projectsContent = nullptr;
+        FlowLayout* m_projectsFlowLayout = nullptr;
         QStackedWidget* m_stack = nullptr;
+        QHash<QString, ProjectButton*> m_projectButtons;
         QList<ProjectInfo> m_requiresBuild;
         QQueue<ProjectInfo> m_buildQueue;
         ProjectBuilderController* m_currentBuilder = nullptr;

@@ -1,10 +1,10 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "Atom_RHI_Metal_precompiled.h"
 
 #include <Atom/RHI.Reflect/SamplerState.h>
 #include <AzCore/std/containers/vector.h>
@@ -204,6 +204,7 @@ namespace AZ
                 {
                     RHI::Ptr<Memory> nullMtlImagePtr = m_device->GetNullDescriptorManager().GetNullImage(shaderInputImage.m_type).GetMemory();
                     mtlTextures[imageArrayLen] = nullMtlImagePtr->GetGpuAddress<id<MTLTexture>>();
+                    m_useNullDescriptorHeap = true;
                 }
                 imageArrayLen++;
             }
@@ -282,12 +283,16 @@ namespace AZ
                     {
                         RHI::Ptr<Memory> nullMtlBufferMemPtr = nullDescriptorManager.GetNullImageBuffer().GetMemory();
                         mtlTextures[bufferArrayLen] = nullMtlBufferMemPtr->GetGpuAddress<id<MTLTexture>>();
+                        m_useNullDescriptorHeap = true;
                     }
                     else
                     {
                         RHI::Ptr<Memory> nullMtlBufferMemPtr = nullDescriptorManager.GetNullBuffer().GetMemory();
                         mtlBuffers[bufferArrayLen] = nullMtlBufferMemPtr->GetGpuAddress<id<MTLBuffer>>();
                         mtlBufferOffsets[bufferArrayLen] = nullDescriptorManager.GetNullBuffer().GetOffset();
+                        m_resourceBindings[shaderInputBuffer.m_name].insert(
+                            ResourceBindingData{nullMtlBufferMemPtr, .m_bufferAccess = shaderInputBuffer.m_access}
+                        );
                     }
                 }
 
@@ -426,7 +431,7 @@ namespace AZ
                     }
                     else
                     {
-                        bool isBoundToGraphics = RHI::CheckBitsAny(visMaskIt->second, RHI::ShaderStageMask::Vertex) || RHI::CheckBitsAny(visMaskIt->second, RHI::ShaderStageMask::Fragment);
+                        [[maybe_unused]] bool isBoundToGraphics = RHI::CheckBitsAny(visMaskIt->second, RHI::ShaderStageMask::Vertex) || RHI::CheckBitsAny(visMaskIt->second, RHI::ShaderStageMask::Fragment);
                         AZ_Assert(isBoundToGraphics, "The visibility mask %i is not set for Vertex or fragment stage", visMaskIt->second);
                         CollectResourcesForGraphics(commandEncoder, visMaskIt->second, it.second, resourcesToMakeResidentGraphics);
                     }
@@ -498,6 +503,27 @@ namespace AZ
                 id<MTLResource> mtlResourceToBind = resourceBindingData.m_resourcPtr->GetGpuAddress<id<MTLResource>>();
                 resourcesToMakeResidentMap[key].emplace(mtlResourceToBind);
             }
+        }
+    
+        bool ArgumentBuffer::IsNullHeapNeededForVertexStage(const ShaderResourceGroupVisibility& srgResourcesVisInfo) const
+        {
+            bool isUsedByVertexStage = false;
+            
+            //Iterate over all the SRG entries
+            for (const auto& it : srgResourcesVisInfo.m_resourcesStageMask)
+            {
+                //Only the ones not added to m_resourceBindings would require null heap
+                if( m_resourceBindings.find(it.first) == m_resourceBindings.end())
+                {
+                    isUsedByVertexStage |= RHI::CheckBitsAny(it.second, RHI::ShaderStageMask::Vertex);
+                }
+            }
+            return isUsedByVertexStage;
+        }
+    
+        bool ArgumentBuffer::IsNullDescHeapNeeded() const
+        {
+            return m_useNullDescriptorHeap;
         }
     }
 }

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -249,7 +250,7 @@ namespace AZ::MeshBuilder
             AZ::JobContext* jobContext = nullptr;
             AZ::Job* job = AZ::CreateJobFunction([&subMesh]()
             {
-                AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::Animation, "MeshBuilder::GenerateSubMeshVertexOrders::SubMeshJob");
+                AZ_PROFILE_SCOPE(Animation, "MeshBuilder::GenerateSubMeshVertexOrders::SubMeshJob");
                 subMesh->GenerateVertexOrder();
             }, true, jobContext);
 

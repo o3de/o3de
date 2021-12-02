@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -59,11 +60,14 @@ namespace O3DE::ProjectManager
         QLabel* showCountLabel = new QLabel();
         showCountLabel->setObjectName("GemCatalogHeaderShowCountLabel");
         topLayout->addWidget(showCountLabel);
-        connect(proxyModel, &GemSortFilterProxyModel::OnInvalidated, this, [=]
-            {
+
+        auto refreshGemCountUI = [=]() {
                 const int numGemsShown = proxyModel->rowCount();
                 showCountLabel->setText(QString(tr("showing %1 Gems")).arg(numGemsShown));
-            });
+            };
+
+        connect(proxyModel, &GemSortFilterProxyModel::OnInvalidated, this, refreshGemCountUI);
+        connect(proxyModel->GetSourceModel(), &GemModel::dataChanged, this, refreshGemCountUI);
 
         topLayout->addSpacing(GemItemDelegate::s_contentMargins.right() + GemItemDelegate::s_borderWidth);
 
@@ -99,11 +103,11 @@ namespace O3DE::ProjectManager
         QSpacerItem* horizontalSpacer = new QSpacerItem(0, 0, QSizePolicy::Expanding, QSizePolicy::Minimum);
         columnHeaderLayout->addSpacerItem(horizontalSpacer);
 
-        QLabel* gemSelectedLabel = new QLabel(tr("Selected"));
+        QLabel* gemSelectedLabel = new QLabel(tr("Status"));
         gemSelectedLabel->setObjectName("GemCatalogHeaderLabel");
         columnHeaderLayout->addWidget(gemSelectedLabel);
 
-        columnHeaderLayout->addSpacing(65);
+        columnHeaderLayout->addSpacing(72);
 
         vLayout->addLayout(columnHeaderLayout);
     }

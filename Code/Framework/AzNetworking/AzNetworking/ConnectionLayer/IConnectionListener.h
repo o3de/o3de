@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -44,8 +45,8 @@ namespace AzNetworking
         //! @param connection   pointer to the connection instance generating the event
         //! @param packetHeader packet header of the associated payload
         //! @param serializer   serializer instance containing the transmitted payload
-        //! @return boolean true to signal success, false to disconnect with a transport error
-        virtual bool OnPacketReceived(IConnection* connection, const IPacketHeader& packetHeader, ISerializer& serializer) = 0;
+        //! @return PacketDispatchResult result of the packet handling attempt
+        virtual PacketDispatchResult OnPacketReceived(IConnection* connection, const IPacketHeader& packetHeader, ISerializer& serializer) = 0;
 
         //! Called when a packet is deemed lost by the remote connection.
         //! @param connection pointer to the connection instance generating the event

@@ -1,11 +1,11 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
-#include "AzToolsFramework_precompiled.h"
 
 #include "LogPanel_Panel.h"
 
@@ -32,6 +32,9 @@ AZ_PUSH_DISABLE_WARNING(4244 4251 4800, "-Wunknown-warning-option") // 4244: con
                                                                     // 4800 'QTextEngine *const ': forcing value to bool 'true' or 'false' (performance warning)
 #include <QAbstractTextDocumentLayout>
 AZ_POP_DISABLE_WARNING
+#include <QtWidgets/QLabel>
+#include <QtWidgets/QApplication>
+
 #include <AzQtComponents/Components/Widgets/TabWidget.h>
 
 #include "NewLogTabDialog.h"
@@ -58,7 +61,7 @@ namespace AzToolsFramework
             , m_impl(new BaseLogPanel::Impl)
         {
             m_impl->storageID = 0;
-            this->setLayout(aznew LogPanelLayout(NULL));
+            this->setLayout(aznew LogPanelLayout(nullptr));
 
             m_impl->pTabWidget = new AzQtComponents::TabWidget(this);
             m_impl->pTabWidget->setObjectName(QString::fromUtf8("tabWidget"));
@@ -598,7 +601,7 @@ namespace AzToolsFramework
         {
             if (index >= (int)m_children.size())
             {
-                return NULL;
+                return nullptr;
             }
 
             return m_children[index];
@@ -606,11 +609,11 @@ namespace AzToolsFramework
 
         QLayoutItem* LogPanelLayout::takeAt(int index)
         {
-            QLayoutItem* pItem = NULL;
+            QLayoutItem* pItem = nullptr;
 
             if (index >= (int)m_children.size())
             {
-                return NULL;
+                return nullptr;
             }
 
             pItem = m_children[index];
@@ -654,7 +657,6 @@ namespace AzToolsFramework
                 // if we have any elements, the last element is top right aligned:
                 QLayoutItem* pItem = m_children[m_children.size() - 1];
                 QSize lastItemSize = pItem->minimumSize();
-                QPoint topRight = effectiveRect.topRight();
                 QRect topRightCorner(effectiveRect.topRight() - QPoint(lastItemSize.width(), 0), lastItemSize);
                 pItem->setGeometry(topRightCorner);
             }
@@ -858,7 +860,7 @@ namespace AzToolsFramework
                 return richLabel;
             }
 
-            return NULL;
+            return nullptr;
         }
 
         bool LogPanelItemDelegate::editorEvent(QEvent* event, QAbstractItemModel* model, const QStyleOptionViewItem& option, const QModelIndex& index)

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -37,26 +38,26 @@ namespace EMStudio
         RemoveAllConnections();
 
         // add all input ports
-        const AZStd::vector<EMotionFX::AnimGraphNode::Port>& inPorts = mEMFXNode->GetInputPorts();
-        const uint32 numInputs = static_cast<uint32>(inPorts.size());
-        mInputPorts.Reserve(numInputs);
-        for (uint32 i = 0; i < numInputs; ++i)
+        const AZStd::vector<EMotionFX::AnimGraphNode::Port>& inPorts = m_emfxNode->GetInputPorts();
+        const AZ::u16 numInputs = aznumeric_caster(inPorts.size());
+        m_inputPorts.reserve(numInputs);
+        for (AZ::u16 i = 0; i < numInputs; ++i)
         {
             NodePort* port = AddInputPort(false);
-            port->SetNameID(inPorts[i].mNameID);
+            port->SetNameID(inPorts[i].m_nameId);
             port->SetColor(GetPortColor(inPorts[i]));
         }
 
         if (GetHasVisualOutputPorts())
         {
             // add all output ports
-            const AZStd::vector<EMotionFX::AnimGraphNode::Port>& outPorts = mEMFXNode->GetOutputPorts();
-            const uint32 numOutputs = static_cast<uint32>(outPorts.size());
-            mOutputPorts.Reserve(numOutputs);
-            for (uint32 i = 0; i < numOutputs; ++i)
+            const AZStd::vector<EMotionFX::AnimGraphNode::Port>& outPorts = m_emfxNode->GetOutputPorts();
+            const AZ::u16 numOutputs = aznumeric_caster(outPorts.size());
+            m_outputPorts.reserve(numOutputs);
+            for (AZ::u16 i = 0; i < numOutputs; ++i)
             {
                 NodePort* port = AddOutputPort(false);
-                port->SetNameID(outPorts[i].mNameID);
+                port->SetNameID(outPorts[i].m_nameId);
                 port->SetColor(GetPortColor(outPorts[i]));
             }
         }
@@ -70,12 +71,12 @@ namespace EMStudio
             {
                 EMotionFX::BlendTreeConnection* connection = childIndex.data(AnimGraphModel::ROLE_CONNECTION_POINTER).value<EMotionFX::BlendTreeConnection*>();
 
-                GraphNode* source = mParentGraph->FindGraphNode(connection->GetSourceNode());
+                GraphNode* source = m_parentGraph->FindGraphNode(connection->GetSourceNode());
                 GraphNode* target = this;
-                const uint32 sourcePort = connection->GetSourcePort();
-                const uint32 targetPort = connection->GetTargetPort();
+                const AZ::u16 sourcePort = connection->GetSourcePort();
+                const AZ::u16 targetPort = connection->GetTargetPort();
 
-                NodeConnection* visualConnection = new NodeConnection(mParentGraph, childIndex, target, targetPort, source, sourcePort);
+                NodeConnection* visualConnection = new NodeConnection(m_parentGraph, childIndex, target, targetPort, source, sourcePort);
                 target->AddConnection(visualConnection);
             }
         }
@@ -89,7 +90,7 @@ namespace EMStudio
     // get the port color for a given EMotion FX port
     QColor BlendTreeVisualNode::GetPortColor(const EMotionFX::AnimGraphNode::Port& port) const
     {
-        switch (port.mCompatibleTypes[0])
+        switch (port.m_compatibleTypes[0])
         {
         case EMotionFX::AttributePose::TYPE_ID:
             return QColor(150, 150, 255);
@@ -111,7 +112,6 @@ namespace EMStudio
         default:
             return QColor(50, 250, 250);
         }
-        ;
     }
 
 
@@ -119,7 +119,7 @@ namespace EMStudio
     void BlendTreeVisualNode::Render(QPainter& painter, QPen* pen, bool renderShadow)
     {
         // only render if the given node is visible
-        if (mIsVisible == false)
+        if (m_isVisible == false)
         {
             return;
         }
@@ -130,8 +130,8 @@ namespace EMStudio
             RenderShadow(painter);
         }
 
-        float opacityFactor = mOpacity;
-        if (mIsEnabled == false)
+        float opacityFactor = m_opacity;
+        if (m_isEnabled == false)
         {
             opacityFactor *= 0.35f;
         }
@@ -155,7 +155,7 @@ namespace EMStudio
         {
             borderColor.setRgb(255, 128, 0);
 
-            if (mParentGraph->GetScale() > 0.75f)
+            if (m_parentGraph->GetScale() > 0.75f)
             {
                 pen->setWidth(2);
             }
@@ -166,12 +166,9 @@ namespace EMStudio
             {
                 borderColor.setRgb(255, 0, 0);
             }
-            //else
-            //if (mIsProcessed)
-            //borderColor.setRgb(255,225,0);
             else
             {
-                borderColor = mBorderColor;
+                borderColor = m_borderColor;
             }
         }
 
@@ -183,11 +180,11 @@ namespace EMStudio
         }
         else // not selected
         {
-            if (mIsEnabled)
+            if (m_isEnabled)
             {
-                if (mIsProcessed || colorAllNodes)
+                if (m_isProcessed || colorAllNodes)
                 {
-                    bgColor = mBaseColor;
+                    bgColor = m_baseColor;
                 }
                 else
                 {
@@ -204,9 +201,9 @@ namespace EMStudio
         // blinking error
         if (hasError && !isSelected)
         {
-            if (mParentGraph->GetUseAnimation())
+            if (m_parentGraph->GetUseAnimation())
             {
-                borderColor = mParentGraph->GetErrorBlinkColor();
+                borderColor = m_parentGraph->GetErrorBlinkColor();
             }
             else
             {
@@ -220,16 +217,13 @@ namespace EMStudio
         QColor headerBgColor;
         bgColor2   = bgColor.lighter(30);// make darker actually, 30% of the old color, same as bgColor * 0.3f;
 
-        //if (mIsProcessed == false/* && mIsUpdated*/ && hasError == false && mIsSelected == false)
-        //headerBgColor = mBaseColor.lighter(30);
-        //else
         headerBgColor = bgColor.lighter(20);
 
         // text color
         QColor textColor;
         if (!isSelected)
         {
-            if (mIsEnabled)
+            if (m_isEnabled)
             {
                 textColor = Qt::white;
             }
@@ -243,10 +237,10 @@ namespace EMStudio
             textColor = QColor(bgColor);
         }
 
-        if (mIsCollapsed == false)
+        if (m_isCollapsed == false)
         {
             // is highlighted/hovered (on-mouse-over effect)
-            if (mIsHighlighted)
+            if (m_isHighlighted)
             {
                 bgColor = bgColor.lighter(120);
                 bgColor2 = bgColor2.lighter(120);
@@ -255,9 +249,9 @@ namespace EMStudio
             // draw the main rect
             painter.setPen(borderColor);
 
-            if (!mIsProcessed && mIsEnabled && !isSelected && !colorAllNodes)
+            if (!m_isProcessed && m_isEnabled && !isSelected && !colorAllNodes)
             {
-                if (mIsHighlighted == false)
+                if (m_isHighlighted == false)
                 {
                     painter.setBrush(QColor(40, 40, 40));
                 }
@@ -268,21 +262,21 @@ namespace EMStudio
             }
             else
             {
-                QLinearGradient bgGradient(0, mRect.top(), 0, mRect.bottom());
+                QLinearGradient bgGradient(0, m_rect.top(), 0, m_rect.bottom());
                 bgGradient.setColorAt(0.0f, bgColor);
                 bgGradient.setColorAt(1.0f, bgColor2);
                 painter.setBrush(bgGradient);
             }
 
-            painter.drawRoundedRect(mRect, BORDER_RADIUS, BORDER_RADIUS);
+            painter.drawRoundedRect(m_rect, BORDER_RADIUS, BORDER_RADIUS);
 
             // if the scale is so small that we can't see those small things anymore
-            QRect fullHeaderRect(mRect.left(), mRect.top(), mRect.width(), 30);
-            QRect headerRect(mRect.left(), mRect.top(), mRect.width(), 15);
-            QRect subHeaderRect(mRect.left(), mRect.top() + 13, mRect.width(), 15);
+            QRect fullHeaderRect(m_rect.left(), m_rect.top(), m_rect.width(), 30);
+            QRect headerRect(m_rect.left(), m_rect.top(), m_rect.width(), 15);
+            QRect subHeaderRect(m_rect.left(), m_rect.top() + 13, m_rect.width(), 15);
 
             // if the scale is so small that we can't see those small things anymore
-            if (mParentGraph->GetScale() < 0.3f)
+            if (m_parentGraph->GetScale() < 0.3f)
             {
                 painter.setOpacity(1.0f);
                 painter.setClipping(false);
@@ -294,19 +288,19 @@ namespace EMStudio
             painter.setPen(borderColor);
             painter.setClipRect(fullHeaderRect, Qt::ReplaceClip);
             painter.setBrush(headerBgColor);
-            painter.drawRoundedRect(mRect, BORDER_RADIUS, BORDER_RADIUS);
+            painter.drawRoundedRect(m_rect, BORDER_RADIUS, BORDER_RADIUS);
             painter.setClipping(false);
 
             // if the scale is so small that we can't see those small things anymore
-            if (mParentGraph->GetScale() > 0.5f)
+            if (m_parentGraph->GetScale() > 0.5f)
             {
                 // draw the input ports
                 QColor portBrushColor, portPenColor;
-                const uint32 numInputs = mInputPorts.GetLength();
-                for (uint32 i = 0; i < numInputs; ++i)
+                const AZ::u16 numInputs = aznumeric_caster(m_inputPorts.size());
+                for (AZ::u16 i = 0; i < numInputs; ++i)
                 {
                     // get the input port and the corresponding rect
-                    NodePort* inputPort = &mInputPorts[i];
+                    NodePort* inputPort = &m_inputPorts[i];
                     const QRect& portRect = inputPort->GetRect();
 
                     // get and set the pen and brush colors
@@ -321,11 +315,11 @@ namespace EMStudio
                 if (GetHasVisualOutputPorts())
                 {
                     // draw the output ports
-                    const uint32 numOutputs = mOutputPorts.GetLength();
-                    for (uint32 i = 0; i < numOutputs; ++i)
+                    const AZ::u16 numOutputs = aznumeric_caster(m_outputPorts.size());
+                    for (AZ::u16 i = 0; i < numOutputs; ++i)
                     {
                         // get the output port and the corresponding rect
-                        NodePort* outputPort = &mOutputPorts[i];
+                        NodePort* outputPort = &m_outputPorts[i];
                         const QRect& portRect = outputPort->GetRect();
 
                         // get and set the pen and brush colors
@@ -342,16 +336,16 @@ namespace EMStudio
         else // it is collapsed
         {
             // is highlighted/hovered (on-mouse-over effect)
-            if (mIsHighlighted)
+            if (m_isHighlighted)
             {
                 bgColor = bgColor.lighter(160);
                 headerBgColor = headerBgColor.lighter(160);
             }
 
             // if the scale is so small that we can't see those small things anymore
-            QRect fullHeaderRect(mRect.left(), mRect.top(), mRect.width(), 30);
-            QRect headerRect(mRect.left(), mRect.top(), mRect.width(), 15);
-            QRect subHeaderRect(mRect.left(), mRect.top() + 13, mRect.width(), 15);
+            QRect fullHeaderRect(m_rect.left(), m_rect.top(), m_rect.width(), 30);
+            QRect headerRect(m_rect.left(), m_rect.top(), m_rect.width(), 15);
+            QRect subHeaderRect(m_rect.left(), m_rect.top() + 13, m_rect.width(), 15);
 
             // draw the header
             painter.setPen(borderColor);
@@ -359,7 +353,7 @@ namespace EMStudio
             painter.drawRoundedRect(fullHeaderRect, 7.0, 7.0);
 
             // if the scale is so small that we can't see those small things anymore
-            if (mParentGraph->GetScale() < 0.3f)
+            if (m_parentGraph->GetScale() < 0.3f)
             {
                 painter.setOpacity(1.0f);
                 return;
@@ -370,7 +364,7 @@ namespace EMStudio
             painter.setClipping(false);
         }
 
-        if (mParentGraph->GetScale() > 0.3f)
+        if (m_parentGraph->GetScale() > 0.3f)
         {
             // draw the collapse triangle
             if (isSelected)
@@ -384,37 +378,37 @@ namespace EMStudio
                 painter.setBrush(QColor(175, 175, 175));
             }
 
-            if (mIsCollapsed == false)
+            if (m_isCollapsed == false)
             {
                 QPoint triangle[3];
-                triangle[0].setX(mArrowRect.left());
-                triangle[0].setY(mArrowRect.top());
-                triangle[1].setX(mArrowRect.right());
-                triangle[1].setY(mArrowRect.top());
-                triangle[2].setX(mArrowRect.center().x());
-                triangle[2].setY(mArrowRect.bottom());
+                triangle[0].setX(m_arrowRect.left());
+                triangle[0].setY(m_arrowRect.top());
+                triangle[1].setX(m_arrowRect.right());
+                triangle[1].setY(m_arrowRect.top());
+                triangle[2].setX(m_arrowRect.center().x());
+                triangle[2].setY(m_arrowRect.bottom());
                 painter.drawPolygon(triangle, 3, Qt::WindingFill);
             }
             else
             {
                 QPoint triangle[3];
-                triangle[0].setX(mArrowRect.left());
-                triangle[0].setY(mArrowRect.top());
-                triangle[1].setX(mArrowRect.right());
-                triangle[1].setY(mArrowRect.center().y());
-                triangle[2].setX(mArrowRect.left());
-                triangle[2].setY(mArrowRect.bottom());
+                triangle[0].setX(m_arrowRect.left());
+                triangle[0].setY(m_arrowRect.top());
+                triangle[1].setX(m_arrowRect.right());
+                triangle[1].setY(m_arrowRect.center().y());
+                triangle[2].setX(m_arrowRect.left());
+                triangle[2].setY(m_arrowRect.bottom());
                 painter.drawPolygon(triangle, 3, Qt::WindingFill);
             }
 
             // draw the visualize area
-            if (mCanVisualize)
+            if (m_canVisualize)
             {
                 RenderVisualizeRect(painter, bgColor, bgColor2);
             }
 
             // render the tracks etc
-            if (mIsCollapsed == false && mEMFXNode->GetHasOutputPose() && mIsProcessed)
+            if (m_isCollapsed == false && m_emfxNode->GetHasOutputPose() && m_isProcessed)
             {
                 RenderTracks(painter, bgColor, bgColor2);
             }
@@ -424,60 +418,57 @@ namespace EMStudio
         }
 
         // render the text overlay with the pre-baked node name and port names etc.
-        float textOpacity = MCore::Clamp<float>(mParentGraph->GetScale() * mParentGraph->GetScale() * 1.5f, 0.0f, 1.0f);
-        //if (mIsProcessed == false && mIsEnabled)
-        //textOpacity *= 0.65f;
+        float textOpacity = MCore::Clamp<float>(m_parentGraph->GetScale() * m_parentGraph->GetScale() * 1.5f, 0.0f, 1.0f);
 
         painter.setOpacity(textOpacity);
 
         // draw the title
-        //painter.drawPixmap( mRect, mTextPixmap );
         painter.setBrush(Qt::NoBrush);
         painter.setPen(textColor);
-        painter.setFont(mHeaderFont);
-        painter.drawStaticText(mRect.left(), mRect.top(), mTitleText);
+        painter.setFont(m_headerFont);
+        painter.drawStaticText(m_rect.left(), m_rect.top(), m_titleText);
 
         // draw the subtitle
-        painter.setFont(mSubTitleFont);
-        painter.drawStaticText(mRect.left(), aznumeric_cast<int>(mRect.top() + mTitleText.size().height() - 3), mSubTitleText);
+        painter.setFont(m_subTitleFont);
+        painter.drawStaticText(m_rect.left(), aznumeric_cast<int>(m_rect.top() + m_titleText.size().height() - 3), m_subTitleText);
 
         // draw the info text
-        if (mIsCollapsed == false)
+        if (m_isCollapsed == false)
         {
             // draw info text
             QRect textRect;
             CalcInfoTextRect(textRect, false);
-            painter.setFont(mInfoTextFont);
+            painter.setFont(m_infoTextFont);
             painter.setPen(QColor(255, 128, 0));
-            painter.drawStaticText(mRect.left(), textRect.top() + 4, mInfoText);
+            painter.drawStaticText(m_rect.left(), textRect.top() + 4, m_infoText);
 
             painter.setPen(textColor);
-            painter.setFont(mPortNameFont);
+            painter.setFont(m_portNameFont);
 
             // draw input port text
-            const uint32 numInputs = mInputPorts.GetLength();
-            for (uint32 i = 0; i < numInputs; ++i)
+            const AZ::u16 numInputs = aznumeric_caster(m_inputPorts.size());
+            for (AZ::u16 i = 0; i < numInputs; ++i)
             {
-                NodePort* inputPort = &mInputPorts[i];
+                NodePort* inputPort = &m_inputPorts[i];
                 const QRect& portRect = inputPort->GetRect();
                 if (inputPort->GetNameID() == MCORE_INVALIDINDEX32)
                 {
                     continue;
                 }
-                painter.drawStaticText(mRect.left() + 8, portRect.top() - 3, mInputPortText[i]);
+                painter.drawStaticText(m_rect.left() + 8, portRect.top() - 3, m_inputPortText[i]);
             }
 
             // draw output port text
-            const uint32 numOutputs = mOutputPorts.GetLength();
-            for (uint32 i = 0; i < numOutputs; ++i)
+            const AZ::u16 numOutputs = aznumeric_caster(m_outputPorts.size());
+            for (AZ::u16 i = 0; i < numOutputs; ++i)
             {
-                NodePort* outputPort = &mOutputPorts[i];
+                NodePort* outputPort = &m_outputPorts[i];
                 const QRect& portRect = outputPort->GetRect();
                 if (outputPort->GetNameID() == MCORE_INVALIDINDEX32)
                 {
                     continue;
                 }
-                painter.drawStaticText(aznumeric_cast<int>(mRect.right() - 10 - mOutputPortText[i].size().width()), portRect.top() - 3, mOutputPortText[i]);
+                painter.drawStaticText(aznumeric_cast<int>(m_rect.right() - 10 - m_outputPortText[i].size().width()), portRect.top() - 3, m_outputPortText[i]);
             }
         }
 

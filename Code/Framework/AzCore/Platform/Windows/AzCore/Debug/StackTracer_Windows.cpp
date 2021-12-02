@@ -1,11 +1,13 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 #include <AzCore/Debug/StackTracer.h>
 #include <AzCore/Math/MathUtils.h>
+#include <AzCore/Math/Crc.h>
 
 #include <AzCore/PlatformIncl.h>
 #include <AzCore/std/containers/fixed_vector.h>
@@ -89,7 +91,7 @@ namespace AZ {
             {
             case CBA_EVENT:
                 evt = (PIMAGEHLP_CBA_EVENT)CallbackData;
-                _tprintf(_T("%s"), (PTSTR)evt->desc);
+                printf("%s", evt->desc);
                 break;
 
             default:
@@ -299,7 +301,7 @@ namespace AZ {
                 return;
             }
 
-            const HMODULE hNtDll = GetModuleHandle(_T("ntdll.dll"));
+            const HMODULE hNtDll = GetModuleHandleW(L"ntdll.dll");
             m_LdrRegisterDllNotification = reinterpret_cast<PLDR_REGISTER_DLL_NOTIFICATION>(GetProcAddress(hNtDll, "LdrRegisterDllNotification"));
 
             if (m_LdrRegisterDllNotification)
@@ -323,7 +325,7 @@ namespace AZ {
                 return;
             }
 
-            const HMODULE hNtDll = GetModuleHandle(_T("ntdll.dll"));
+            const HMODULE hNtDll = GetModuleHandleW(L"ntdll.dll");
             m_LdrUnregisterDllNotification = reinterpret_cast<PLDR_UNREGISTER_DLL_NOTIFICATION>(GetProcAddress(hNtDll, "LdrUnregisterDllNotification"));
 
             if (m_LdrUnregisterDllNotification)
@@ -476,7 +478,7 @@ namespace AZ {
                 DWORD displacement;
                 if (g_SymGetLineFromAddr64(g_currentProcess, pc, &displacement, &line) && line.FileName[0] != 0)
                 {
-                    azsnprintf(textLine, textLineSize, "%s (%d) : ", line.FileName, line.LineNumber);
+                    azsnprintf(textLine, textLineSize, "%s (%ld) : ", line.FileName, line.LineNumber);
                 }
                 else
                 {
@@ -608,8 +610,8 @@ namespace AZ {
                         if (GetFileVersionInfoA(szImg, dwHandle, dwSize, vData) != 0)
                         {
                             UINT len;
-                            TCHAR szSubBlock[] = _T("\\");
-                            if (VerQueryValue(vData, szSubBlock, (LPVOID*) &fInfo, &len) == 0)
+                            TCHAR szSubBlock[] = L"\\";
+                            if (VerQueryValueW(vData, szSubBlock, (LPVOID*) &fInfo, &len) == 0)
                             {
                                 fInfo = NULL;
                             }
@@ -710,7 +712,7 @@ namespace AZ {
             typedef BOOL (__stdcall * tM32N)(HANDLE hSnapshot, LPMODULEENTRY32 lpme);
 
             // try both dlls...
-            const TCHAR* dllname[] = { _T("kernel32.dll"), _T("tlhelp32.dll") };
+            const TCHAR* dllname[] = { L"kernel32.dll", L"tlhelp32.dll" };
             HINSTANCE hToolhelp = NULL;
             tCT32S pCT32S = NULL;
             tM32F pM32F = NULL;
@@ -821,7 +823,7 @@ namespace AZ {
             const SIZE_T TTBUFLEN = 8096;
             int cnt = 0;
 
-            hPsapi = LoadLibrary(_T("psapi.dll"));
+            hPsapi = LoadLibraryW(L"psapi.dll");
             if (hPsapi == NULL)
             {
                 return FALSE;
@@ -955,10 +957,10 @@ cleanup:
                 // In that scenario, we may try to load and older dbghelp.dll which could cause issues
                 // To overcome this, we try to load dbghelp.dll from the Win 10 SDK folder, if that doesn't
                 // work, load the default.
-                g_dbgHelpDll = LoadLibrary(_T(R"(C:\Program Files (x86)\Windows Kits\10\Debuggers\x64\dbghelp.dll)"));
+                g_dbgHelpDll = LoadLibraryW(LR"(C:\Program Files (x86)\Windows Kits\10\Debuggers\x64\dbghelp.dll)");
                 if (g_dbgHelpDll == NULL)
                 {
-                    g_dbgHelpDll = LoadLibrary(_T("dbghelp.dll"));
+                    g_dbgHelpDll = LoadLibrary(L"dbghelp.dll");
                 }
             }
             if (g_dbgHelpDll == NULL)
@@ -1046,9 +1048,9 @@ cleanup:
     unsigned int
     StackRecorder::Record(StackFrame* frames, unsigned int maxNumOfFrames, unsigned int suppressCount, void* nativeThread)
     {
-#if defined(AZ_ENABLE_DEBUG_TOOLS)
         unsigned int numFrames = 0;
 
+#if defined(AZ_ENABLE_DEBUG_TOOLS)
         if (nativeThread == NULL)
         {
             ++suppressCount; // Skip current call
@@ -1071,15 +1073,14 @@ cleanup:
             }
 
             HANDLE hThread = nativeThread;
-            AZ_ALIGN(CONTEXT context, 8); // Without this alignment the function randomly crashes in release.
+            CONTEXT alignas(8) context; // Without this alignment the function randomly crashes in release.
             context.ContextFlags = CONTEXT_ALL;
             GetThreadContext(hThread, &context);
 
             STACKFRAME64 sf;
             memset(&sf, 0, sizeof(STACKFRAME64));
-            DWORD imageType;
+            DWORD imageType = IMAGE_FILE_MACHINE_AMD64;
 
-            imageType = IMAGE_FILE_MACHINE_AMD64;
             sf.AddrPC.Offset = context.Rip;
             sf.AddrPC.Mode = AddrModeFlat;
             sf.AddrFrame.Offset = context.Rsp;
@@ -1088,8 +1089,7 @@ cleanup:
             sf.AddrStack.Mode = AddrModeFlat;
 
             EnterCriticalSection(&g_csDbgHelpDll);
-            s32 frame = -(s32)suppressCount;
-            for (; frame < (s32)maxNumOfFrames; ++frame)
+            for (s32 frame = -static_cast<s32>(suppressCount); frame < static_cast<s32>(maxNumOfFrames); ++frame)
             {
                 if (!g_StackWalk64(imageType, g_currentProcess, hThread, &sf, &context, 0, g_SymFunctionTableAccess64, g_SymGetModuleBase64, 0))
                 {
@@ -1109,15 +1109,68 @@ cleanup:
             }
 
             LeaveCriticalSection(&g_csDbgHelpDll);
-        }
-        return numFrames;
+        }        
 #else
-        (void)frames;
-        (void)maxNumOfFrames;
-        (void)suppressCount;
-        (void)nativeThread;
-        return 0;
+        AZ_UNUSED(frames);
+        AZ_UNUSED(maxNumOfFrames);
+        AZ_UNUSED(suppressCount);
+        AZ_UNUSED(nativeThread);
 #endif // AZ_ENABLE_DEBUG_TOOLS
+
+        return numFrames;
+    }
+
+    unsigned int StackConverter::FromNative(StackFrame* frames, unsigned int maxNumOfFrames, void* nativeContext)
+    {
+        unsigned int numFrames = 0;
+
+#if defined(AZ_ENABLE_DEBUG_TOOLS)
+        if (!g_dbgHelpLoaded)
+        {
+            LoadDbgHelp();
+        }
+
+        HANDLE hThread;
+        DuplicateHandle(GetCurrentProcess(), GetCurrentThread(), GetCurrentProcess(), &hThread, 0, false, DUPLICATE_SAME_ACCESS);       
+
+        PCONTEXT nativeContextType = reinterpret_cast<PCONTEXT>(nativeContext);
+        STACKFRAME64 sf;
+        memset(&sf, 0, sizeof(STACKFRAME64));
+
+        DWORD imageType = IMAGE_FILE_MACHINE_AMD64;
+
+        sf.AddrPC.Offset = nativeContextType->Rip;
+        sf.AddrPC.Mode = AddrModeFlat;
+        sf.AddrFrame.Offset = nativeContextType->Rsp;
+        sf.AddrFrame.Mode = AddrModeFlat;
+        sf.AddrStack.Offset = nativeContextType->Rsp;
+        sf.AddrStack.Mode = AddrModeFlat;
+
+        EnterCriticalSection(&g_csDbgHelpDll);
+        for (unsigned int frame = 0; frame < maxNumOfFrames; ++frame)
+        {
+            if (!g_StackWalk64(imageType, g_currentProcess, hThread, &sf, nativeContext, 0, g_SymFunctionTableAccess64, g_SymGetModuleBase64, 0))
+            {
+                break;
+            }
+
+            if (sf.AddrPC.Offset == sf.AddrReturn.Offset)
+            {
+                // "StackWalk64-Endless-Callstack!"
+                break;
+            }
+
+            frames[numFrames++].m_programCounter = sf.AddrPC.Offset;
+        }
+
+        LeaveCriticalSection(&g_csDbgHelpDll);
+#else
+        AZ_UNUSED(frames);
+        AZ_UNUSED(maxNumOfFrames);
+        AZ_UNUSED(nativeContext);
+#endif
+
+        return numFrames;
     }
 
     //////////////////////////////////////////////////////////////////////////

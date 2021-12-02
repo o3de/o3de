@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -38,5 +39,34 @@ namespace AzNetworking
     inline void ConnectionMetrics::Reset()
     {
         *this = ConnectionMetrics();
+    }
+
+    inline void ConnectionMetrics::LogPacketSent(uint32_t byteCount, AZ::TimeMs currentTimeMs)
+    {
+        if (byteCount > 0)
+        {
+            m_packetsSent++;
+        }
+        m_sendDatarate.LogPacket(byteCount, currentTimeMs);
+    }
+
+    inline void ConnectionMetrics::LogPacketRecv(uint32_t byteCount, AZ::TimeMs currentTimeMs)
+    {
+        if (byteCount > 0)
+        {
+            m_packetsRecv++;
+        }
+        m_recvDatarate.LogPacket(byteCount, currentTimeMs);
+    }
+
+    inline void ConnectionMetrics::LogPacketLost()
+    {
+        m_packetsLost++;
+        m_sendDatarate.LogPacketLost();
+    }
+
+    inline void ConnectionMetrics::LogPacketAcked()
+    {
+        m_packetsAcked++;
     }
 }

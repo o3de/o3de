@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -184,7 +185,7 @@ namespace Vegetation
 
     bool BlockerComponent::ClaimPosition(EntityIdStack& processedIds, const ClaimPoint& point, InstanceData& instanceData)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
+        AZ_PROFILE_FUNCTION(Entity);
 
 #if VEG_BLOCKER_ENABLE_CACHING
         {
@@ -221,7 +222,7 @@ namespace Vegetation
         for (const auto& id : processedIds)
         {
             bool accepted = true;
-            FilterRequestBus::EnumerateHandlersId(id, [this, &instanceData, &accepted](FilterRequestBus::Events* handler) {
+            FilterRequestBus::EnumerateHandlersId(id, [&instanceData, &accepted](FilterRequestBus::Events* handler) {
                 accepted = handler->Evaluate(instanceData);
                 return accepted;
             });
@@ -244,7 +245,7 @@ namespace Vegetation
 
     void BlockerComponent::ClaimPositions(EntityIdStack& stackIds, ClaimContext& context)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
+        AZ_PROFILE_FUNCTION(Entity);
 
         //adding entity id to the stack of entity ids affecting vegetation
         EntityIdStack emptyIds;
@@ -284,7 +285,7 @@ namespace Vegetation
 
     AZ::Aabb BlockerComponent::GetEncompassingAabb() const
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
+        AZ_PROFILE_FUNCTION(Entity);
 
         AZ::Aabb bounds = AZ::Aabb::CreateNull();
         LmbrCentral::ShapeComponentRequestsBus::EventResult(bounds, GetEntityId(), &LmbrCentral::ShapeComponentRequestsBus::Events::GetEncompassingAabb);

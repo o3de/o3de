@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -12,6 +13,7 @@
 #include <AudioAllocators.h>
 #include <AudioInternalInterfaces.h>
 
+#include <AzCore/Debug/Budget.h>
 #include <AzCore/std/containers/deque.h>
 #include <AzCore/std/containers/vector.h>
 
@@ -20,6 +22,8 @@
 #include <AzCore/std/parallel/thread.h>
 
 #define PROVIDE_GETNAME_SUPPORT
+
+AZ_DECLARE_BUDGET(Audio);
 
 namespace Audio
 {
@@ -116,7 +120,7 @@ namespace Audio
         void FreeAudioProxy(IAudioProxy* const pIAudioProxy) override;
 
         TAudioSourceId CreateAudioSource(const SAudioInputConfig& sourceConfig) override;
-        void DestroyAudioSource(TAudioSourceId sourceId);
+        void DestroyAudioSource(TAudioSourceId sourceId) override;
 
         // When AUDIO_RELEASE is defined, these two functions always return nullptr
         const char* GetAudioControlName(const EAudioControlType controlType, const TATLIDType atlID) const override;

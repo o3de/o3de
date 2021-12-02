@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -72,8 +73,8 @@ namespace EMotionFX
         UpdateAllIncomingNodes(animGraphInstance, timePassedInSeconds);
 
         // if there are less than two incoming connections, there is nothing to do
-        const size_t numConnections = mConnections.size();
-        if (numConnections < 2 || mDisabled)
+        const size_t numConnections = m_connections.size();
+        if (numConnections < 2 || m_disabled)
         {
             GetOutputFloat(animGraphInstance, OUTPUTPORT_WEIGHT)->SetValue(0.0f);
             return;

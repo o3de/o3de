@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -33,7 +34,9 @@ namespace AZ
         friend IAllocator;
         friend class AllocatorBase;
         friend class Debug::AllocationRecords;
-        friend class AZ::Internal::EnvironmentVariableHolder<AllocatorManager>;
+        template<typename T, typename... Args> friend constexpr auto AZStd::construct_at(T*, Args&&... args)
+            ->AZStd::enable_if_t<AZStd::is_void_v<AZStd::void_t<decltype(new (AZStd::declval<void*>()) T(AZStd::forward<Args>(args)...))>>, T*>;
+        template<typename T> constexpr friend void AZStd::destroy_at(T*);
 
     public:
         typedef AZStd::function<void (IAllocator* allocator, size_t /*byteSize*/, size_t /*alignment*/, int/* flags*/, const char* /*name*/, const char* /*fileName*/, int lineNum /*=0*/)>    OutOfMemoryCBType;

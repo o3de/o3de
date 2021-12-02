@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -11,12 +12,6 @@ namespace AZ
    namespace SDKScene
    {
       const char* SceneWrapperBase::s_defaultSceneName = "myScene";
-
-      SceneWrapperBase::SceneWrapperBase(aiScene* aiScene)
-          : m_assImpScene(aiScene)
-      {
-      }
-
 
       bool SceneWrapperBase::LoadSceneFromFile([[maybe_unused]] const char* fileName)
       {
@@ -39,12 +34,5 @@ namespace AZ
       void SceneWrapperBase::Clear()
       {
       }
-
-      const aiScene* SceneWrapperBase::GetAssImpScene() const
-      {
-          return m_assImpScene;
-      }
-
-
    } //namespace Scene
 }// namespace AZ

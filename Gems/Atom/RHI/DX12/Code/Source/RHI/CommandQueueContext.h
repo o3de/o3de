@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -13,11 +14,6 @@
 
 namespace AZ
 {
-    namespace RHI
-    {
-        struct CpuTimingStatistics;
-    }
-
     namespace DX12
     {
         class CommandQueueContext
@@ -48,7 +44,7 @@ namespace AZ
                 RHI::HardwareQueueClass hardwareQueueClass,
                 const ExecuteWorkRequest& request);
 
-            void UpdateCpuTimingStatistics(RHI::CpuTimingStatistics& cpuTimingStatistics) const;
+            void UpdateCpuTimingStatistics() const;
             
             // Fences across all queues that are compiled by the frame graph compilation phase
             const FenceSet& GetCompiledFences();

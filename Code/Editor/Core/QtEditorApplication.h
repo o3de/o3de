@@ -1,13 +1,13 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 #pragma once
 
 #if !defined(Q_MOC_RUN)
-#include <QApplication>
 #include <QAbstractNativeEventFilter>
 #include <QColor>
 #include <QMap>
@@ -19,6 +19,7 @@
 #include <AzCore/PlatformDef.h>
 #include <AzCore/UserSettings/UserSettingsProvider.h>
 #include <IEditor.h>
+#include <AzQtComponents/Application/AzQtApplication.h>
 #endif
 
 class QFileInfo;
@@ -47,7 +48,7 @@ namespace Editor
     void ScanDirectories(QFileInfoList& directoryList, const QStringList& filters, QFileInfoList& files, ScanDirectoriesUpdateCallBack updateCallback = nullptr);
 
     class EditorQtApplication
-        : public QApplication
+        : public AzQtComponents::AzQtApplication
         , public QAbstractNativeEventFilter
         , public IEditorNotifyListener
         , public AZ::UserSettingsOwnerRequestBus::Handler
@@ -71,13 +72,11 @@ namespace Editor
         ////
 
         static EditorQtApplication* instance();
+        static EditorQtApplication* newInstance(int& argc, char** argv);
 
         static bool IsActive();
 
         bool isMovingOrResizing() const;
-
-        // QAbstractNativeEventFilter:
-        bool nativeEventFilter(const QByteArray& eventType, void* message, long* result) override;
 
         // IEditorNotifyListener:
         void OnEditorNotifyEvent(EEditorNotifyEvent event) override;
@@ -99,6 +98,10 @@ namespace Editor
     signals:
         void skinChanged();
 
+    protected:
+
+        bool m_isMovingOrResizing = false;
+
     private:
         enum TimerResetFlag
         {
@@ -115,8 +118,6 @@ namespace Editor
 
         AzQtComponents::O3DEStylesheet* m_stylesheet;
 
-        bool m_inWinEventFilter = false;
-
         // Translators
         void InstallEditorTranslators();
         void UninstallEditorTranslators();
@@ -126,7 +127,6 @@ namespace Editor
         QTranslator* m_editorTranslator = nullptr;
         QTranslator* m_assetBrowserTranslator = nullptr;
         QTimer* const m_idleTimer = nullptr;
-        bool m_isMovingOrResizing = false;
 
         AZ::UserSettingsProvider m_localUserSettings;
 

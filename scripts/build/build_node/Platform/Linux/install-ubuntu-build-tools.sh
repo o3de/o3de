@@ -1,7 +1,8 @@
 #!/bin/bash
 
-# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
-# 
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 
@@ -110,6 +111,23 @@ else
     echo  Kitware Repository repo already set
 fi
 
+
+#
+# Add Amazon Corretto repository to install the necessary JDK for Jenkins and Android
+#
+
+CORRETTO_REPO_COUNT=$(cat /etc/apt/sources.list | grep ^dev | grep https://apt.corretto.aws | wc -l)
+
+if [ $CORRETTO -eq 0 ]
+then
+    echo Adding Corretto Repository for JDK
+    
+    wget -O- https://apt.corretto.aws/corretto.key | apt-key add - 
+    add-apt-repository 'deb https://apt.corretto.aws stable main'
+    apt-get update
+else
+    echo Corretto repo already set
+fi
 
 # Read from the package list and process each package
 PACKAGE_FILE_LIST=package-list.ubuntu-$UBUNTU_DISTRO.txt

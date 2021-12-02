@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -19,17 +20,12 @@ namespace AzNetworking
     {
     public:
 
-        using StringMap = AZStd::map<AZStd::string, AZStd::string>;
+        using ValueMap = AZStd::map<AZStd::string, AZStd::string>;
 
-        StringifySerializer(char delimeter = ' ', bool outputFieldNames = true, const AZStd::string& seperator = "=");
+        StringifySerializer() = default;
 
-        // GetString
-        // After serializing objects, get the serialized values as a single string
-        const AZStd::string& GetString() const;
-
-        // GetValueMap
-        // After serializing objects, get the serialized values as key value pairs
-        const StringMap& GetValueMap() const;
+        //! After serializing objects, get the serialized values as a map of key/value pairs.
+        const ValueMap& GetValueMap() const;
 
         // ISerializer interfaces
         SerializerMode GetSerializerMode() const override;
@@ -61,15 +57,8 @@ namespace AzNetworking
         template <typename T>
         bool ProcessData(const char* name, const T& value);
 
-    private:
-
-        char m_delimeter;
-        bool m_outputFieldNames = true;
-
-        StringMap m_map;
-        AZStd::string m_string;
+        ValueMap m_valueMap;
         AZStd::string m_prefix;
-        AZStd::string m_separator;
         AZStd::deque<AZStd::size_t> m_prefixSizeStack;
     };
 }

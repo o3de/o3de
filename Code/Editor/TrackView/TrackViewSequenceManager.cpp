@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -74,7 +75,7 @@ CTrackViewSequence* CTrackViewSequenceManager::GetSequenceByName(QString name) c
     {
         CTrackViewSequence* sequence = (*iter).get();
 
-        if (sequence->GetName() == name)
+        if (QString::fromUtf8(sequence->GetName().c_str()) == name)
         {
             return sequence;
         }
@@ -226,7 +227,7 @@ void CTrackViewSequenceManager::AddTrackViewSequence(CTrackViewSequence* sequenc
 ////////////////////////////////////////////////////////////////////////////
 void CTrackViewSequenceManager::DeleteSequence(CTrackViewSequence* sequence)
 {
-    const int numSequences = m_sequences.size();
+    const int numSequences = static_cast<int>(m_sequences.size());
     for (int sequenceIndex = 0; sequenceIndex < numSequences; ++sequenceIndex)
     {
         if (m_sequences[sequenceIndex].get() == sequence)
@@ -245,7 +246,7 @@ void CTrackViewSequenceManager::DeleteSequence(CTrackViewSequence* sequence)
                 {
                     AZ::ComponentTypeList requiredComponents;
                     AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(requiredComponents, &AzToolsFramework::EditorEntityContextRequestBus::Events::GetRequiredComponentTypes);
-                    const int numComponentToDeleteEntity = requiredComponents.size() + 1;
+                    const int numComponentToDeleteEntity = static_cast<int>(requiredComponents.size() + 1);
 
                     AZ::Entity::ComponentArrayType entityComponents = entity->GetComponents();
                     if (entityComponents.size() == numComponentToDeleteEntity)
@@ -370,8 +371,8 @@ void CTrackViewSequenceManager::SortSequences()
     std::stable_sort(m_sequences.begin(), m_sequences.end(),
         [](const std::unique_ptr<CTrackViewSequence>& a, const std::unique_ptr<CTrackViewSequence>& b) -> bool
         {
-            QString aName = a.get()->GetName();
-            QString bName = b.get()->GetName();
+            QString aName = QString::fromUtf8(a.get()->GetName().c_str());
+            QString bName = QString::fromUtf8(b.get()->GetName().c_str());
             return aName < bName;
         });
 }
@@ -412,9 +413,9 @@ void CTrackViewSequenceManager::OnDataBaseItemEvent([[maybe_unused]] IDataBaseIt
 {
     if (event != EDataBaseItemEvent::EDB_ITEM_EVENT_ADD)
     {
-        const uint numSequences = m_sequences.size();
+        const size_t numSequences = m_sequences.size();
 
-        for (uint i = 0; i < numSequences; ++i)
+        for (size_t i = 0; i < numSequences; ++i)
         {
             m_sequences[i]->UpdateDynamicParams();
         }

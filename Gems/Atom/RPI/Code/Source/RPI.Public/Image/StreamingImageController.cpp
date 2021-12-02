@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -87,7 +88,7 @@ namespace AZ
                 {
                     if (StreamingImage* image = context->TryGetImage())
                     {
-                        const RHI::ResultCode resultCode = image->ExpandMipChain();
+                        [[maybe_unused]] const RHI::ResultCode resultCode = image->ExpandMipChain();
                         AZ_Warning("StreamingImageController", resultCode == RHI::ResultCode::Success, "Failed to expand mip chain for streaming image.");
                     }
                     context->m_queuedForMipExpand = false;

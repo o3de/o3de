@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -20,14 +21,14 @@
 
 //////////////////////////////////////////////////////////////////////////
 CPakFile::CPakFile()
-    : m_pArchive(NULL)
-    , m_pCryPak(NULL)
+    : m_pArchive(nullptr)
+    , m_pCryPak(nullptr)
 {
 }
 
 //////////////////////////////////////////////////////////////////////////
 CPakFile::CPakFile(AZ::IO::IArchive* pCryPak)
-    : m_pArchive(NULL)
+    : m_pArchive(nullptr)
     , m_pCryPak(pCryPak)
 {
 }
@@ -41,14 +42,14 @@ CPakFile::~CPakFile()
 //////////////////////////////////////////////////////////////////////////
 CPakFile::CPakFile(const char* filename)
 {
-    m_pArchive = NULL;
+    m_pArchive = nullptr;
     Open(filename);
 }
 
 //////////////////////////////////////////////////////////////////////////
 void CPakFile::Close()
 {
-    m_pArchive = NULL;
+    m_pArchive = nullptr;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -60,14 +61,14 @@ bool CPakFile::Open(const char* filename, bool bAbsolutePath)
     }
 
     auto pCryPak = m_pCryPak ? m_pCryPak : GetIEditor()->GetSystem()->GetIPak();
-    if (pCryPak == NULL)
+    if (pCryPak == nullptr)
     {
         return false;
     }
 
     if (bAbsolutePath)
     {
-        m_pArchive = pCryPak->OpenArchive(filename, nullptr, AZ::IO::INestedArchive::FLAGS_ABSOLUTE_PATHS);
+        m_pArchive = pCryPak->OpenArchive(filename, {}, AZ::IO::INestedArchive::FLAGS_ABSOLUTE_PATHS);
     }
     else
     {
@@ -88,11 +89,11 @@ bool CPakFile::OpenForRead(const char* filename)
         Close();
     }
     auto pCryPak = m_pCryPak ? m_pCryPak : GetIEditor()->GetSystem()->GetIPak();
-    if (pCryPak == NULL)
+    if (pCryPak == nullptr)
     {
         return false;
     }
-    m_pArchive = pCryPak->OpenArchive(filename, nullptr, AZ::IO::INestedArchive::FLAGS_OPTIMIZED_READ_ONLY | AZ::IO::INestedArchive::FLAGS_ABSOLUTE_PATHS);
+    m_pArchive = pCryPak->OpenArchive(filename, {}, AZ::IO::INestedArchive::FLAGS_OPTIMIZED_READ_ONLY | AZ::IO::INestedArchive::FLAGS_ABSOLUTE_PATHS);
     if (m_pArchive)
     {
         return true;
@@ -105,7 +106,7 @@ bool CPakFile::UpdateFile(const char* filename, CCryMemFile& file, bool bCompres
 {
     if (m_pArchive)
     {
-        int nSize = file.GetLength();
+        int nSize = static_cast<int>(file.GetLength());
 
         UpdateFile(filename, file.GetMemPtr(), nSize, bCompress);
         file.Close();

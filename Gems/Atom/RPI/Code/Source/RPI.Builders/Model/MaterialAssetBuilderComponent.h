@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -38,6 +39,13 @@ namespace AZ
 
             // Required for ExportingComponent
             static void Reflect(AZ::ReflectContext* context);
+
+        private:
+
+            SceneAPI::Events::ProcessingResult ConvertMaterials(MaterialAssetBuilderContext& context) const;
+            SceneAPI::Events::ProcessingResult AssignDefaultMaterials(MaterialAssetBuilderContext& context) const;
+            
+            Data::Asset<MaterialAsset> GetDefaultMaterialAsset() const;
         };
 
         /**
@@ -64,6 +72,7 @@ namespace AZ
 
             // SceneAPI::SceneBuilderDependencyBus::Handler overrides...
             void ReportJobDependencies(SceneAPI::JobDependencyList& jobDependencyList, const char* platformIdentifier) override;
+            void AddFingerprintInfo(AZStd::set<AZStd::string>& fingerprintInfo) override;
         };
     } // namespace RPI
 } // namespace AZ

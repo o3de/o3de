@@ -8,7 +8,6 @@
 //=============================================================================
 // Modified from original
 
-#include <ImageProcessing_precompiled.h>
 
 #include "CBBoxInt32.h"
 

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -29,7 +30,7 @@ CSplineCtrl::CSplineCtrl(QWidget* parent)
     m_nHitKeyIndex = -1;
     m_nKeyDrawRadius = 3;
     m_bTracking = false;
-    m_pSpline = 0;
+    m_pSpline = nullptr;
     m_gridX = 10;
     m_gridY = 10;
     m_fMinTime = -1;
@@ -39,7 +40,7 @@ CSplineCtrl::CSplineCtrl(QWidget* parent)
     m_fTooltipScaleX = 1;
     m_fTooltipScaleY = 1;
     m_bLockFirstLastKey = false;
-    m_pTimelineCtrl = 0;
+    m_pTimelineCtrl = nullptr;
 
     m_bSelectedKeys.reserve(0);
 
@@ -85,13 +86,13 @@ QPoint CSplineCtrl::KeyToPoint(int nKey)
 QPoint CSplineCtrl::TimeToPoint(float time)
 {
     QPoint point;
-    point.setX((time - m_fMinTime) * (m_rcSpline.width() / (m_fMaxTime - m_fMinTime)) + m_rcSpline.left());
+    point.setX(static_cast<int>((time - m_fMinTime) * (m_rcSpline.width() / (m_fMaxTime - m_fMinTime)) + m_rcSpline.left()));
     float val = 0;
     if (m_pSpline)
     {
         m_pSpline->InterpolateFloat(time, val);
     }
-    point.setY((floor((m_fMaxValue - val) * (m_rcSpline.height() / (m_fMaxValue - m_fMinValue)) + 0.5f) + m_rcSpline.top()));
+    point.setY(static_cast<int>((floor((m_fMaxValue - val) * (m_rcSpline.height() / (m_fMaxValue - m_fMinValue)) + 0.5f) + m_rcSpline.top())));
     return point;
 }
 
@@ -100,7 +101,7 @@ void CSplineCtrl::PointToTimeValue(const QPoint& point, float& time, float& valu
 {
     time = XOfsToTime(point.x());
     float t = float(m_rcSpline.bottom() - point.y()) / m_rcSpline.height();
-    value = LERP(m_fMinValue, m_fMaxValue, t);
+    value = AZ::Lerp(m_fMinValue, m_fMaxValue, t);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -108,7 +109,7 @@ float CSplineCtrl::XOfsToTime(int x)
 {
     // m_fMinTime to m_fMaxTime time range.
     float t = float(x - m_rcSpline.left()) / m_rcSpline.width();
-    return LERP(m_fMinTime, m_fMaxTime, t);
+    return AZ::Lerp(m_fMinTime, m_fMaxTime, t);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -121,8 +122,6 @@ QPoint CSplineCtrl::XOfsToPoint(int x)
 void CSplineCtrl::paintEvent(QPaintEvent* event)
 {
     QPainter painter(this);
-
-    QRect rcClient = rect();
 
     if (m_pSpline)
     {
@@ -416,7 +415,7 @@ void CSplineCtrl::SetActiveKey(int nIndex)
 }
 
 /////////////////////////////////////////////////////////////////////////////
-void CSplineCtrl::SetSpline(ISplineInterpolator* pSpline, BOOL bRedraw)
+void CSplineCtrl::SetSpline(ISplineInterpolator* pSpline, bool bRedraw)
 {
     if (pSpline != m_pSpline)
     {
@@ -595,7 +594,7 @@ CSplineCtrl::EHitCode CSplineCtrl::HitTest(const QPoint& point)
 ///////////////////////////////////////////////////////////////////////////////
 void CSplineCtrl::StartTracking()
 {
-    m_bTracking = TRUE;
+    m_bTracking = true;
 
     GetIEditor()->BeginUndo();
 
@@ -673,7 +672,7 @@ void CSplineCtrl::StopTracking()
 
     GetIEditor()->AcceptUndo("Spline Move");
 
-    m_bTracking = FALSE;
+    m_bTracking = false;
 }
 
 //////////////////////////////////////////////////////////////////////////

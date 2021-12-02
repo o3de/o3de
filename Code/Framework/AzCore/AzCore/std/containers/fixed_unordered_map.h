@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -118,6 +119,11 @@ namespace AZStd
             {
                 base_type::insert(*first);
             }
+        }
+        fixed_unordered_map(const AZStd::initializer_list<value_type>& list, const hasher& hash = hasher(),
+            const key_eq& keyEqual = key_eq())
+            : fixed_unordered_map(list.begin(), list.end(), hash, keyEqual)
+        {
         }
 
         AZ_FORCE_INLINE pair_iter_bool insert(const value_type& value)
@@ -240,6 +246,12 @@ namespace AZStd
                 base_type::insert(*first);
             }
         }
+        fixed_unordered_multimap(const AZStd::initializer_list<value_type>& list, const hasher& hash = hasher(),
+            const key_eq& keyEqual = key_eq())
+            : fixed_unordered_multimap(list.begin(), list.end(), hash, keyEqual)
+        {
+        }
+
         AZ_FORCE_INLINE iterator insert(const value_type& value)
         {
             return base_type::insert_impl(value).first;

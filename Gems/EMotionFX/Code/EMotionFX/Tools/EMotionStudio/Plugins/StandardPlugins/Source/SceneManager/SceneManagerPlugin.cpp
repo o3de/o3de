@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -24,8 +25,8 @@ namespace EMStudio
 {
     void SaveDirtyActorFilesCallback::GetDirtyFileNames(AZStd::vector<AZStd::string>* outFileNames, AZStd::vector<ObjectPointer>* outObjects)
     {
-        const uint32 numLeaderActors = EMotionFX::GetActorManager().GetNumActors();
-        for (uint32 i = 0; i < numLeaderActors; ++i)
+        const size_t numLeaderActors = EMotionFX::GetActorManager().GetNumActors();
+        for (size_t i = 0; i < numLeaderActors; ++i)
         {
             EMotionFX::Actor* actor = EMotionFX::GetActorManager().GetActor(i);
 
@@ -37,7 +38,7 @@ namespace EMStudio
 
                 // add the link to the actual object
                 ObjectPointer objPointer;
-                objPointer.mActor = actor;
+                objPointer.m_actor = actor;
                 outObjects->push_back(objPointer);
             }
         }
@@ -48,18 +49,16 @@ namespace EMStudio
     {
         MCORE_UNUSED(filenamesToSave);
 
-        const size_t numObjects = objects.size();
-        for (size_t i = 0; i < numObjects; ++i)
+        for (const ObjectPointer& objPointer : objects)
         {
             // get the current object pointer and skip directly if the type check fails
-            ObjectPointer objPointer = objects[i];
-            if (objPointer.mActor == nullptr)
+            if (objPointer.m_actor == nullptr)
             {
                 continue;
             }
 
-            EMotionFX::Actor* actor = objPointer.mActor;
-            if (mPlugin->SaveDirtyActor(actor, commandGroup, false) == DirtyFileManager::CANCELED)
+            EMotionFX::Actor* actor = objPointer.m_actor;
+            if (m_plugin->SaveDirtyActor(actor, commandGroup, false) == DirtyFileManager::CANCELED)
             {
                 return DirtyFileManager::CANCELED;
             }
@@ -73,20 +72,20 @@ namespace EMStudio
     SceneManagerPlugin::SceneManagerPlugin()
         : EMStudio::DockWidgetPlugin()
     {
-        mImportActorCallback                = nullptr;
-        mCreateActorInstanceCallback        = nullptr;
-        mSelectCallback                     = nullptr;
-        mUnselectCallback                   = nullptr;
-        mClearSelectionCallback             = nullptr;
-        mRemoveActorCallback                = nullptr;
-        mRemoveActorInstanceCallback        = nullptr;
-        mSaveActorAssetInfoCallback         = nullptr;
-        mScaleActorDataCallback             = nullptr;
-        mActorPropsWindow                   = nullptr;
-        mAdjustActorCallback                = nullptr;
-        mActorSetCollisionMeshesCallback    = nullptr;
-        mAdjustActorInstanceCallback        = nullptr;
-        mDirtyFilesCallback                 = nullptr;
+        m_importActorCallback                = nullptr;
+        m_createActorInstanceCallback        = nullptr;
+        m_selectCallback                     = nullptr;
+        m_unselectCallback                   = nullptr;
+        m_clearSelectionCallback             = nullptr;
+        m_removeActorCallback                = nullptr;
+        m_removeActorInstanceCallback        = nullptr;
+        m_saveActorAssetInfoCallback         = nullptr;
+        m_scaleActorDataCallback             = nullptr;
+        m_actorPropsWindow                   = nullptr;
+        m_adjustActorCallback                = nullptr;
+        m_actorSetCollisionMeshesCallback    = nullptr;
+        m_adjustActorInstanceCallback        = nullptr;
+        m_dirtyFilesCallback                 = nullptr;
             }
 
 
@@ -178,33 +177,33 @@ namespace EMStudio
     SceneManagerPlugin::~SceneManagerPlugin()
     {
         // unregister the command callbacks and get rid of the memory
-        GetCommandManager()->RemoveCommandCallback(mImportActorCallback, false);
-        GetCommandManager()->RemoveCommandCallback(mCreateActorInstanceCallback, false);
-        GetCommandManager()->RemoveCommandCallback(mSelectCallback, false);
-        GetCommandManager()->RemoveCommandCallback(mUnselectCallback, false);
-        GetCommandManager()->RemoveCommandCallback(mClearSelectionCallback, false);
-        GetCommandManager()->RemoveCommandCallback(mRemoveActorCallback, false);
-        GetCommandManager()->RemoveCommandCallback(mRemoveActorInstanceCallback, false);
-        GetCommandManager()->RemoveCommandCallback(mSaveActorAssetInfoCallback, false);
-        GetCommandManager()->RemoveCommandCallback(mAdjustActorCallback, false);
-        GetCommandManager()->RemoveCommandCallback(mActorSetCollisionMeshesCallback, false);
-        GetCommandManager()->RemoveCommandCallback(mAdjustActorInstanceCallback, false);
-        GetCommandManager()->RemoveCommandCallback(mScaleActorDataCallback, false);
-        delete mImportActorCallback;
-        delete mCreateActorInstanceCallback;
-        delete mSelectCallback;
-        delete mUnselectCallback;
-        delete mClearSelectionCallback;
-        delete mRemoveActorCallback;
-        delete mRemoveActorInstanceCallback;
-        delete mSaveActorAssetInfoCallback;
-        delete mAdjustActorCallback;
-        delete mActorSetCollisionMeshesCallback;
-        delete mAdjustActorInstanceCallback;
-        delete mScaleActorDataCallback;
+        GetCommandManager()->RemoveCommandCallback(m_importActorCallback, false);
+        GetCommandManager()->RemoveCommandCallback(m_createActorInstanceCallback, false);
+        GetCommandManager()->RemoveCommandCallback(m_selectCallback, false);
+        GetCommandManager()->RemoveCommandCallback(m_unselectCallback, false);
+        GetCommandManager()->RemoveCommandCallback(m_clearSelectionCallback, false);
+        GetCommandManager()->RemoveCommandCallback(m_removeActorCallback, false);
+        GetCommandManager()->RemoveCommandCallback(m_removeActorInstanceCallback, false);
+        GetCommandManager()->RemoveCommandCallback(m_saveActorAssetInfoCallback, false);
+        GetCommandManager()->RemoveCommandCallback(m_adjustActorCallback, false);
+        GetCommandManager()->RemoveCommandCallback(m_actorSetCollisionMeshesCallback, false);
+        GetCommandManager()->RemoveCommandCallback(m_adjustActorInstanceCallback, false);
+        GetCommandManager()->RemoveCommandCallback(m_scaleActorDataCallback, false);
+        delete m_importActorCallback;
+        delete m_createActorInstanceCallback;
+        delete m_selectCallback;
+        delete m_unselectCallback;
+        delete m_clearSelectionCallback;
+        delete m_removeActorCallback;
+        delete m_removeActorInstanceCallback;
+        delete m_saveActorAssetInfoCallback;
+        delete m_adjustActorCallback;
+        delete m_actorSetCollisionMeshesCallback;
+        delete m_adjustActorInstanceCallback;
+        delete m_scaleActorDataCallback;
 
-        GetMainWindow()->GetDirtyFileManager()->RemoveCallback(mDirtyFilesCallback, false);
-        delete mDirtyFilesCallback;
+        GetMainWindow()->GetDirtyFileManager()->RemoveCallback(m_dirtyFilesCallback, false);
+        delete m_dirtyFilesCallback;
     }
 
 
@@ -222,57 +221,57 @@ namespace EMStudio
         MysticQt::DialogStack* dialogStack = new MysticQt::DialogStack();
 
         // create and register the command callbacks only (only execute this code once for all plugins)
-        mImportActorCallback                = new ImportActorCallback(false);
-        mCreateActorInstanceCallback        = new CreateActorInstanceCallback(false);
-        mSelectCallback                     = new CommandSelectCallback(false);
-        mUnselectCallback                   = new CommandUnselectCallback(false);
-        mClearSelectionCallback             = new CommandClearSelectionCallback(false);
-        mRemoveActorCallback                = new RemoveActorCallback(false);
-        mRemoveActorInstanceCallback        = new RemoveActorInstanceCallback(false);
-        mSaveActorAssetInfoCallback         = new SaveActorAssetInfoCallback(false);
-        mAdjustActorCallback                = new CommandAdjustActorCallback(false);
-        mActorSetCollisionMeshesCallback    = new CommandActorSetCollisionMeshesCallback(false);
-        mAdjustActorInstanceCallback        = new CommandAdjustActorInstanceCallback(false);
-        mScaleActorDataCallback             = new CommandScaleActorDataCallback(false);
+        m_importActorCallback                = new ImportActorCallback(false);
+        m_createActorInstanceCallback        = new CreateActorInstanceCallback(false);
+        m_selectCallback                     = new CommandSelectCallback(false);
+        m_unselectCallback                   = new CommandUnselectCallback(false);
+        m_clearSelectionCallback             = new CommandClearSelectionCallback(false);
+        m_removeActorCallback                = new RemoveActorCallback(false);
+        m_removeActorInstanceCallback        = new RemoveActorInstanceCallback(false);
+        m_saveActorAssetInfoCallback         = new SaveActorAssetInfoCallback(false);
+        m_adjustActorCallback                = new CommandAdjustActorCallback(false);
+        m_actorSetCollisionMeshesCallback    = new CommandActorSetCollisionMeshesCallback(false);
+        m_adjustActorInstanceCallback        = new CommandAdjustActorInstanceCallback(false);
+        m_scaleActorDataCallback             = new CommandScaleActorDataCallback(false);
 
-        GetCommandManager()->RegisterCommandCallback("ImportActor", mImportActorCallback);
-        GetCommandManager()->RegisterCommandCallback("CreateActorInstance", mCreateActorInstanceCallback);
-        GetCommandManager()->RegisterCommandCallback("Select", mSelectCallback);
-        GetCommandManager()->RegisterCommandCallback("Unselect", mUnselectCallback);
-        GetCommandManager()->RegisterCommandCallback("ClearSelection", mClearSelectionCallback);
-        GetCommandManager()->RegisterCommandCallback("RemoveActor", mRemoveActorCallback);
-        GetCommandManager()->RegisterCommandCallback("RemoveActorInstance", mRemoveActorInstanceCallback);
-        GetCommandManager()->RegisterCommandCallback("SaveActorAssetInfo", mSaveActorAssetInfoCallback);
-        GetCommandManager()->RegisterCommandCallback("AdjustActor", mAdjustActorCallback);
-        GetCommandManager()->RegisterCommandCallback("ActorSetCollisionMeshes", mActorSetCollisionMeshesCallback);
-        GetCommandManager()->RegisterCommandCallback("AdjustActorInstance", mAdjustActorInstanceCallback);
-        GetCommandManager()->RegisterCommandCallback("ScaleActorData", mScaleActorDataCallback);
+        GetCommandManager()->RegisterCommandCallback("ImportActor", m_importActorCallback);
+        GetCommandManager()->RegisterCommandCallback("CreateActorInstance", m_createActorInstanceCallback);
+        GetCommandManager()->RegisterCommandCallback("Select", m_selectCallback);
+        GetCommandManager()->RegisterCommandCallback("Unselect", m_unselectCallback);
+        GetCommandManager()->RegisterCommandCallback("ClearSelection", m_clearSelectionCallback);
+        GetCommandManager()->RegisterCommandCallback("RemoveActor", m_removeActorCallback);
+        GetCommandManager()->RegisterCommandCallback("RemoveActorInstance", m_removeActorInstanceCallback);
+        GetCommandManager()->RegisterCommandCallback("SaveActorAssetInfo", m_saveActorAssetInfoCallback);
+        GetCommandManager()->RegisterCommandCallback("AdjustActor", m_adjustActorCallback);
+        GetCommandManager()->RegisterCommandCallback("ActorSetCollisionMeshes", m_actorSetCollisionMeshesCallback);
+        GetCommandManager()->RegisterCommandCallback("AdjustActorInstance", m_adjustActorInstanceCallback);
+        GetCommandManager()->RegisterCommandCallback("ScaleActorData", m_scaleActorDataCallback);
 
         // create the actors window
-        mActorsWindow = new ActorsWindow(this);
+        m_actorsWindow = new ActorsWindow(this);
 
         // add in the dialog stack
-        dialogStack->Add(mActorsWindow, "Actors", false, true, true);
+        dialogStack->Add(m_actorsWindow, "Actors", false, true, true);
 
         // create the actor properties window
-        mActorPropsWindow = new ActorPropertiesWindow(mDock, this);
-        mActorPropsWindow->Init();
+        m_actorPropsWindow = new ActorPropertiesWindow(m_dock, this);
+        m_actorPropsWindow->Init();
 
         // add the actor properties window to the stack window
-        dialogStack->Add(mActorPropsWindow, "Actor Properties", false, false, true);
+        dialogStack->Add(m_actorPropsWindow, "Actor Properties", false, false, true);
 
         // set dialog stack as main widget of the dock
-        mDock->setWidget(dialogStack);
+        m_dock->setWidget(dialogStack);
 
         // connect
-        connect(mDock, &QDockWidget::visibilityChanged, this, &SceneManagerPlugin::WindowReInit);
+        connect(m_dock, &QDockWidget::visibilityChanged, this, &SceneManagerPlugin::WindowReInit);
 
         // reinit the dialog
         ReInit();
 
         // initialize the dirty files callback
-        mDirtyFilesCallback = new SaveDirtyActorFilesCallback(this);
-        GetMainWindow()->GetDirtyFileManager()->AddCallback(mDirtyFilesCallback);
+        m_dirtyFilesCallback = new SaveDirtyActorFilesCallback(this);
+        GetMainWindow()->GetDirtyFileManager()->AddCallback(m_dirtyFilesCallback);
 
         return true;
     }
@@ -282,7 +281,7 @@ namespace EMStudio
     void SceneManagerPlugin::ReInit()
     {
         // reinit the actors window
-        mActorsWindow->ReInit();
+        m_actorsWindow->ReInit();
 
         // update the interface
         UpdateInterface();
@@ -293,10 +292,10 @@ namespace EMStudio
     void SceneManagerPlugin::UpdateInterface()
     {
         // update interface of the actors window
-        mActorsWindow->UpdateInterface();
+        m_actorsWindow->UpdateInterface();
 
         // update interface of the actor properties window
-        mActorPropsWindow->UpdateInterface();
+        m_actorPropsWindow->UpdateInterface();
     }
 
 

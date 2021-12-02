@@ -1,11 +1,11 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
-#include <PhysX_precompiled.h>
 #include "PhysXTestFixtures.h"
 #include "PhysXTestUtil.h"
 #include "PhysXTestCommon.h"
@@ -24,7 +24,6 @@ namespace PhysX
     {
     protected:
         const AZStd::string DefaultLayer = "Default";
-        const AZStd::string TouchBendLayer = "TouchBend";
         const AZStd::string LayerA = "LayerA";
         const AZStd::string LayerB = "LayerB";
         const AZStd::string GroupA = "GroupA";
@@ -42,7 +41,6 @@ namespace PhysX
             AZStd::vector<AZStd::string> TestCollisionLayers =
             {
                 DefaultLayer,
-                TouchBendLayer, // This is needed here as placeholder as collision events are disabled on this layer.
                 LayerA,
                 LayerB
             };

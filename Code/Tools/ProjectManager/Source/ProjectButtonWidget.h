@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -55,13 +56,14 @@ namespace O3DE::ProjectManager
         void OnLinkActivated(const QString& link);
 
     private:
-        QVBoxLayout* m_buildOverlayLayout;
-        QLabel* m_overlayLabel;
-        QProgressBar* m_progressBar;
-        QPushButton* m_openEditorButton;
-        QPushButton* m_actionButton;
-        QLabel* m_warningText;
-        QLabel* m_warningIcon;
+        QVBoxLayout* m_buildOverlayLayout = nullptr;
+        QLabel* m_overlayLabel = nullptr;
+        QProgressBar* m_progressBar = nullptr;
+        QPushButton* m_openEditorButton = nullptr;
+        QPushButton* m_actionButton = nullptr;
+        QLabel* m_warningText = nullptr;
+        QLabel* m_warningIcon = nullptr;
+
         QUrl m_logUrl;
         bool m_enabled = true;
     };
@@ -72,13 +74,18 @@ namespace O3DE::ProjectManager
         Q_OBJECT // AUTOMOC
 
     public:
-        explicit ProjectButton(const ProjectInfo& m_projectInfo, QWidget* parent = nullptr, bool processing = false);
+        explicit ProjectButton(const ProjectInfo& m_projectInfo, QWidget* parent = nullptr);
         ~ProjectButton() = default;
 
+        const ProjectInfo& GetProjectInfo() const;
+
+        void RestoreDefaultState();
+
         void SetProjectButtonAction(const QString& text, AZStd::function<void()> lambda);
-        void SetProjectBuildButtonAction();
         void SetBuildLogsLink(const QUrl& logUrl);
         void ShowBuildFailed(bool show, const QUrl& logUrl);
+        void ShowBuildRequired();
+        void SetProjectBuilding();
 
         void SetLaunchButtonEnabled(bool enabled);
         void SetButtonOverlayText(const QString& text);
@@ -88,23 +95,24 @@ namespace O3DE::ProjectManager
     signals:
         void OpenProject(const QString& projectName);
         void EditProject(const QString& projectName);
+        void EditProjectGems(const QString& projectName);
         void CopyProject(const ProjectInfo& projectInfo);
         void RemoveProject(const QString& projectName);
         void DeleteProject(const QString& projectName);
         void BuildProject(const ProjectInfo& projectInfo);
+        void OpenCMakeGUI(const ProjectInfo& projectInfo);
 
     private:
-        void BaseSetup();
-        void ProcessingSetup();
-        void ReadySetup();
         void enterEvent(QEvent* event) override;
         void leaveEvent(QEvent* event) override;
-        void BuildThisProject();
+        void ShowWarning(bool show, const QString& warning);
+        void ShowDefaultBuildButton();
 
         ProjectInfo m_projectInfo;
-        LabelButton* m_projectImageLabel;
-        QFrame* m_projectFooter;
-        QLayout* m_requiresBuildLayout;
+
+        LabelButton* m_projectImageLabel = nullptr;
+        QPushButton* m_projectMenuButton = nullptr;
+        QLayout* m_requiresBuildLayout = nullptr;
 
         QMetaObject::Connection m_actionButtonConnection;
     };

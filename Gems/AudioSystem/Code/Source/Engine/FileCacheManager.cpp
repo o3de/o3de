@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -8,12 +9,13 @@
 
 #include <FileCacheManager.h>
 
+#include <AzCore/Debug/Profiler.h>
+#include <AzCore/IO/FileIO.h>
 #include <AzCore/IO/IStreamer.h>
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/std/string/conversions.h>
 #include <AzCore/std/parallel/binary_semaphore.h>
 #include <AzCore/StringFunc/StringFunc.h>
-#include <AzFramework/Archive/IArchive.h>
 
 #include <AudioAllocators.h>
 #include <AudioInternalInterfaces.h>
@@ -60,7 +62,7 @@ namespace Audio
     ///////////////////////////////////////////////////////////////////////////////////////////////
     void CFileCacheManager::Update()
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Audio);
+        AZ_PROFILE_FUNCTION(Audio);
 
         AudioFileCacheManagerNotficationBus::ExecuteQueuedEvents();
         UpdatePreloadRequestsStatus();
@@ -114,9 +116,9 @@ namespace Audio
                     newAudioFileEntry->m_dataScope = dataScope;
                     AZStd::to_lower(newAudioFileEntry->m_filePath.begin(), newAudioFileEntry->m_filePath.end());
 
-                    const size_t fileSize = gEnv->pCryPak->FGetSize(newAudioFileEntry->m_filePath.c_str());
-
-                    if (fileSize > 0)
+                    auto fileIO = AZ::IO::FileIOBase::GetInstance();
+                    if (AZ::u64 fileSize = 0;
+                        fileIO->Size(newAudioFileEntry->m_filePath.c_str(), fileSize) && fileSize != 0)
                     {
                         newAudioFileEntry->m_fileSize = fileSize;
                         newAudioFileEntry->m_flags.ClearFlags(eAFF_NOTFOUND);
@@ -339,20 +341,17 @@ namespace Audio
     ///////////////////////////////////////////////////////////////////////////////////////////////
     void CFileCacheManager::DrawDebugInfo(IRenderAuxGeom& auxGeom, const float posX, const float posY)
     {
-        if ((g_audioCVars.m_nDrawAudioDebug & eADDF_SHOW_FILECACHE_MANAGER_INFO) != 0)
+        if (CVars::s_debugDrawOptions.AreAllFlagsActive(DebugDraw::Options::FileCacheInfo))
         {
             EATLDataScope dataScope = eADS_ALL;
 
-            if ((g_audioCVars.m_nFileCacheManagerDebugFilter & eAFCMDF_ALL) == 0)
+            if (CVars::s_fcmDrawOptions.AreAllFlagsActive(FileCacheManagerDebugDraw::Options::Global))
             {
-                if ((g_audioCVars.m_nFileCacheManagerDebugFilter & eAFCMDF_GLOBALS) != 0)
-                {
-                    dataScope = eADS_GLOBAL;
-                }
-                else if ((g_audioCVars.m_nFileCacheManagerDebugFilter & eAFCMDF_LEVEL_SPECIFICS) != 0)
-                {
-                    dataScope = eADS_LEVEL_SPECIFIC;
-                }
+                dataScope = eADS_GLOBAL;
+            }
+            else if (CVars::s_fcmDrawOptions.AreAllFlagsActive(FileCacheManagerDebugDraw::Options::LevelSpecific))
+            {
+                dataScope = eADS_LEVEL_SPECIFIC;
             }
 
             const auto frameTime = AZStd::chrono::system_clock::now();
@@ -381,11 +380,11 @@ namespace Audio
                 "FileCacheManager (%zu of %zu KiB) [Entries: %zu]", m_currentByteTotal >> 10, m_maxByteTotal >> 10, m_audioFileEntries.size());
             positionY += 15.0f;
 
-            bool displayAll = (g_audioCVars.m_nFileCacheManagerDebugFilter == eAFCMDF_ALL);
-            bool displayGlobals = ((g_audioCVars.m_nFileCacheManagerDebugFilter & eAFCMDF_GLOBALS) != 0);
-            bool displayLevels = ((g_audioCVars.m_nFileCacheManagerDebugFilter & eAFCMDF_LEVEL_SPECIFICS) != 0);
-            bool displayUseCounted = ((g_audioCVars.m_nFileCacheManagerDebugFilter & eAFCMDF_USE_COUNTED) != 0);
-            bool displayLoaded = ((g_audioCVars.m_nFileCacheManagerDebugFilter & eAFCMDF_LOADED) != 0);
+            const bool displayAll = CVars::s_fcmDrawOptions.GetRawFlags() == 0;
+            const bool displayGlobals = CVars::s_fcmDrawOptions.AreAllFlagsActive(FileCacheManagerDebugDraw::Options::Global);
+            const bool displayLevels = CVars::s_fcmDrawOptions.AreAllFlagsActive(FileCacheManagerDebugDraw::Options::LevelSpecific);
+            const bool displayUseCounted = CVars::s_fcmDrawOptions.AreAllFlagsActive(FileCacheManagerDebugDraw::Options::UseCounted);
+            const bool displayLoaded = CVars::s_fcmDrawOptions.AreAllFlagsActive(FileCacheManagerDebugDraw::Options::Loaded);
 
             for (auto& audioFileEntryPair : m_audioFileEntries)
             {
@@ -447,13 +446,13 @@ namespace Audio
                     }
 
                     // Format: "relative/path/filename.ext (230 KiB) [2]"
-                    AZStd::string displayString = AZStd::string::format("%s (%zu %s) [%zu]",
+                    auxGeom.Draw2dLabel(positionX, positionY, entryDrawSize, color, false, 
+                        "%s (%zu %s) [%zu]",
                         audioFileEntry->m_filePath.c_str(),
                         fileSize,
                         kiloBytes ? "KiB" : "Bytes",
                         audioFileEntry->m_useCount);
 
-                    auxGeom.Draw2dLabel(positionX, positionY, entryDrawSize, color, false, displayString.c_str());
                     color[3] = originalAlpha;
                     positionY += entryStepSize;
                 }
@@ -540,7 +539,7 @@ namespace Audio
     bool CFileCacheManager::FinishCachingFileInternal(CATLAudioFileEntry* const audioFileEntry, [[maybe_unused]] AZ::IO::SizeType bytesRead,
         AZ::IO::IStreamerTypes::RequestStatus requestState)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Audio);
+        AZ_PROFILE_FUNCTION(Audio);
 
         bool success = false;
         audioFileEntry->m_asyncStreamRequest.reset();
@@ -642,7 +641,7 @@ namespace Audio
     ///////////////////////////////////////////////////////////////////////////////////////////////
     bool CFileCacheManager::AllocateMemoryBlockInternal(CATLAudioFileEntry* const audioFileEntry)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Audio);
+        AZ_PROFILE_FUNCTION(Audio);
 
         // Must not have valid memory yet.
         AZ_Assert(!audioFileEntry->m_memoryBlock, "FileCacheManager AllocateMemoryBlockInternal - Memory appears to be set already!");
@@ -772,9 +771,12 @@ namespace Audio
         }
         AZStd::to_lower(audioFileEntry->m_filePath.begin(), audioFileEntry->m_filePath.end());
 
-        audioFileEntry->m_fileSize = gEnv->pCryPak->FGetSize(audioFileEntry->m_filePath.c_str());
+        AZ::u64 fileSize = 0;
+        auto fileIO = AZ::IO::FileIOBase::GetInstance();
+        fileIO->Size(audioFileEntry->m_filePath.c_str(), fileSize);
+        audioFileEntry->m_fileSize = fileSize;
 
-        AZ_Assert(audioFileEntry->m_fileSize > 0, "FileCacheManager - UpdateLocalizedFileEntryData expected file size to be greater than zero!");
+        AZ_Assert(audioFileEntry->m_fileSize != 0, "FileCacheManager - UpdateLocalizedFileEntryData expected file size to be greater than zero!");
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -785,7 +787,7 @@ namespace Audio
         const bool overrideUseCount /* = false */,
         const size_t useCount /* = 0 */)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Audio);
+        AZ_PROFILE_FUNCTION(Audio);
 
         bool success = false;
 
@@ -839,9 +841,9 @@ namespace Audio
 
                     streamer->SetRequestCompleteCallback(
                         audioFileEntry->m_asyncStreamRequest,
-                        [this](AZ::IO::FileRequestHandle request)
+                        [](AZ::IO::FileRequestHandle request)
                         {
-                            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Audio);
+                            AZ_PROFILE_FUNCTION(Audio);
                             AudioFileCacheManagerNotficationBus::QueueBroadcast(
                                 &AudioFileCacheManagerNotficationBus::Events::FinishAsyncStreamRequest,
                                 request);

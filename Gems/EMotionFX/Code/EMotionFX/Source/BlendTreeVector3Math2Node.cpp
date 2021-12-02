@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -32,7 +33,7 @@ namespace EMotionFX
         SetupOutputPort("Vector3", OUTPUTPORT_RESULT_VECTOR3, MCore::AttributeVector3::TYPE_ID, PORTID_OUTPUT_VECTOR3);
         SetupOutputPort("Float", OUTPUTPORT_RESULT_FLOAT, MCore::AttributeFloat::TYPE_ID, PORTID_OUTPUT_FLOAT);
 
-        if (mAnimGraph)
+        if (m_animGraph)
         {
             Reinit();
         }
@@ -117,7 +118,7 @@ namespace EMotionFX
         UpdateAllIncomingNodes(animGraphInstance, timePassedInSeconds);
 
         // if there are no incoming connections, there is nothing to do
-        if (mConnections.empty())
+        if (m_connections.empty())
         {
             return;
         }
@@ -146,7 +147,7 @@ namespace EMotionFX
     void BlendTreeVector3Math2Node::SetMathFunction(EMathFunction func)
     {
         m_mathFunction = func;
-        if (mAnimGraph)
+        if (m_animGraph)
         {
             Reinit();
         }

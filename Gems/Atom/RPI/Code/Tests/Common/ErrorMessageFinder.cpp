@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -104,7 +105,7 @@ namespace UnitTest
     {
         EXPECT_FALSE(m_disabled);
 
-        AZStd::for_each(m_expectedErrors.begin(), m_expectedErrors.end(), [this](ExpectedError& expectedError) { expectedError.m_gotCount = 0; });
+        AZStd::for_each(m_expectedErrors.begin(), m_expectedErrors.end(), [](ExpectedError& expectedError) { expectedError.m_gotCount = 0; });
 
         m_checked = false;
     }

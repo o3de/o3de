@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -18,13 +19,11 @@ class CUiAnimViewKeyConstHandle
 {
 public:
     CUiAnimViewKeyConstHandle()
-        : m_bIsValid(false)
-        , m_keyIndex(0)
+        : m_keyIndex(0)
         , m_pTrack(nullptr) {}
 
     CUiAnimViewKeyConstHandle(const CUiAnimViewTrack* pTrack, unsigned int keyIndex)
-        : m_bIsValid(true)
-        , m_keyIndex(keyIndex)
+        : m_keyIndex(keyIndex)
         , m_pTrack(pTrack) {}
 
     void GetKey(IKey* pKey) const;
@@ -32,7 +31,6 @@ public:
     const CUiAnimViewTrack* GetTrack() const { return m_pTrack; }
 
 private:
-    bool m_bIsValid;
     unsigned int m_keyIndex;
     const CUiAnimViewTrack* m_pTrack;
 };
@@ -117,10 +115,11 @@ class CUiAnimViewKeyBundle
 public:
     CUiAnimViewKeyBundle()
         : m_bAllOfSameType(true) {}
+    virtual ~CUiAnimViewKeyBundle() = default;
 
     virtual bool AreAllKeysOfSameType() const override { return m_bAllOfSameType; }
 
-    virtual unsigned int GetKeyCount() const override { return m_keys.size(); }
+    virtual unsigned int GetKeyCount() const override { return static_cast<unsigned int>(m_keys.size()); }
     virtual CUiAnimViewKeyHandle GetKey(unsigned int index) override { return m_keys[index]; }
 
     virtual void SelectKeys(const bool bSelected) override;
@@ -158,7 +157,7 @@ public:
     virtual ~CUiAnimViewNode() {}
 
     // Name
-    virtual const char* GetName() const = 0;
+    virtual AZStd::string GetName() const = 0;
     virtual bool SetName([[maybe_unused]] const char* pName) { return false; };
     virtual bool CanBeRenamed() const { return false; }
 
@@ -172,7 +171,7 @@ public:
     CUiAnimViewNode* GetParentNode() const { return m_pParentNode; }
 
     // Children
-    unsigned int GetChildCount() const { return m_childNodes.size(); }
+    unsigned int GetChildCount() const { return static_cast<unsigned int>(m_childNodes.size()); }
     CUiAnimViewNode* GetChild(unsigned int index) const { return m_childNodes[index].get(); }
 
     // Snap time value to prev/next key in sequence

@@ -1,10 +1,10 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "Atom_RHI_Vulkan_precompiled.h"
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/parallel/lock.h>
 #include <RHI/Buffer.h>
@@ -822,7 +822,7 @@ namespace AZ
             {
                 RHI::ConstPtr<ShaderResourceGroup> shaderResourceGroup;
                 const auto& srgBitset = pipelineLayout.GetAZSLBindingSlotsOfIndex(index);
-                AZStd::vector<const ShaderResourceGroup*> shaderResourceGroupList;
+                AZStd::fixed_vector<const ShaderResourceGroup*, RHI::Limits::Pipeline::ShaderResourceGroupCountMax> shaderResourceGroupList;
                 // Collect all the SRGs that are part of this descriptor set. They could be more than
                 // 1, so we would need to merge their values before committing the descriptor set.
                 for (uint32_t bindingSlot = 0; bindingSlot < srgBitset.size(); ++bindingSlot)

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -14,7 +15,7 @@
 #define TAG_SCRIPT_TYPE "t"
 #define TAG_SCRIPT_NAME "n"
 
-//#define LOG_SERIALIZE_STACK(tag,szName) CryLogAlways( "<%s> %s/%s",tag,GetStackInfo(),szName );
+//#define LOG_SERIALIZE_STACK(tag,szName) CryLogAlways( "<%s> %s/%s",tag,GetStackInfo().c_str(), szName);
 #define LOG_SERIALIZE_STACK(tag, szName)
 
 CSerializeXMLReaderImpl::CSerializeXMLReaderImpl(const XmlNodeRef& nodeRef)
@@ -43,12 +44,12 @@ bool CSerializeXMLReaderImpl::Value(const char* name, int8& value)
     }
     else
     {
-        value = temp;
+        value = static_cast<int8>(temp);
     }
     return bResult;
 }
 
-bool CSerializeXMLReaderImpl::Value(const char* name, string& value)
+bool CSerializeXMLReaderImpl::Value(const char* name, AZStd::string& value)
 {
     DefaultValue(value); // Set input value to default.
     if (m_nErrors)
@@ -103,23 +104,6 @@ bool CSerializeXMLReaderImpl::Value(const char* name, CTimeValue& value)
     return true;
 }
 
-bool CSerializeXMLReaderImpl::Value(const char* name, XmlNodeRef& value)
-{
-    DefaultValue(value); // Set input value to default.
-    if (m_nErrors)
-    {
-        return false;
-    }
-
-    if (BeginOptionalGroup(name, true))
-    {
-        value = CurNode()->getChild(0);
-        EndGroup();
-    }
-
-    return true;
-}
-
 void CSerializeXMLReaderImpl::BeginGroup(const char* szName)
 {
     if (m_nErrors)
@@ -171,34 +155,4 @@ void CSerializeXMLReaderImpl::EndGroup()
         m_nodeStack.pop_back();
     }
     assert(!m_nodeStack.empty());
-}
-
-//////////////////////////////////////////////////////////////////////////
-const char* CSerializeXMLReaderImpl::GetStackInfo() const
-{
-    static string str;
-    str.assign("");
-    for (int i = 0; i < (int)m_nodeStack.size(); i++)
-    {
-        const char* name = m_nodeStack[i].m_node->getAttr(TAG_SCRIPT_NAME);
-        if (name && name[0])
-        {
-            str += name;
-        }
-        else
-        {
-            str += m_nodeStack[i].m_node->getTag();
-        }
-        if (i != m_nodeStack.size() - 1)
-        {
-            str += "/";
-        }
-    }
-    return str.c_str();
-}
-
-void CSerializeXMLReaderImpl::GetMemoryUsage(ICrySizer* pSizer) const
-{
-    pSizer->Add(*this);
-    pSizer->AddContainer(m_nodeStack);
 }

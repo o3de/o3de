@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -11,9 +12,9 @@
 #pragma once
 
 #include "IUndoManagerListener.h"
-#include "CrySizer.h"                           // ICrySizer
 #include "IUndoObject.h"
 #include <AzCore/Asset/AssetManager.h>
+#include <CryCommon/StlUtils.h>
 
 struct IUndoObject;
 class CSuperUndoStep;
@@ -60,12 +61,12 @@ public:
     // Confetti: Get the size of m_undoObjects
     virtual int GetCount() const
     {
-        return m_undoObjects.size();
+        return static_cast<int>(m_undoObjects.size());
     }
     virtual bool IsEmpty() const { return m_undoObjects.empty(); };
     virtual void Undo(bool bUndo)
     {
-        for (int i = m_undoObjects.size() - 1; i >= 0; i--)
+        for (int i = static_cast<int>(m_undoObjects.size() - 1); i >= 0; i--)
         {
             m_undoObjects[i]->Undo(bUndo);
         }
@@ -76,20 +77,6 @@ public:
         {
             m_undoObjects[i]->Redo();
         }
-    }
-
-    // to get memory statistics
-    void GetMemoryUsage(ICrySizer* pSizer)
-    {
-        size_t nThisSize = sizeof(*this);
-
-        for (int i = 0; i < m_undoObjects.size(); i++)
-        {
-            nThisSize += m_undoObjects[i]->GetSize();
-        }
-
-        pSizer->Add(m_name);
-        pSizer->Add(this, nThisSize);
     }
 
     // get undo object at index i
@@ -115,7 +102,7 @@ public:
                 continue;
             }
 
-            if (m_undoObjects[i]->GetObjectName() == NULL)
+            if (m_undoObjects[i]->GetObjectName() == nullptr)
             {
                 continue;
             }
@@ -208,7 +195,7 @@ public:
 
     bool IsHaveUndo() const;
     bool IsHaveRedo() const;
-    
+
     void SetMaxUndoStep(int steps);
     int GetMaxUndoStep() const;
 
@@ -239,9 +226,6 @@ public:
 
     void ClearUndoStack(int num);
     void ClearRedoStack(int num);
-
-    // to get memory statistics
-    void GetMemoryUsage(ICrySizer* pSizer);
 
     void AddListener(IUndoManagerListener* pListener);
     void RemoveListener(IUndoManagerListener* pListener);

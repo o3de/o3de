@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -9,6 +10,7 @@
 
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Component/EntityId.h>
+#include <AzCore/Debug/Budget.h>
 #include <AzCore/Serialization/ObjectStream.h>
 #include <AzFramework/Entity/EntityOwnershipServiceBus.h>
 
@@ -16,6 +18,8 @@ namespace AZ
 {
     class Entity;
 }
+
+AZ_DECLARE_BUDGET(AzFramework);
 
 namespace AzFramework
 {

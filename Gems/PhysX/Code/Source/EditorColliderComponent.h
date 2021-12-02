@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -83,9 +84,12 @@ namespace PhysX
 
         AZStd::shared_ptr<Physics::ShapeConfiguration> CloneCurrent() const;
 
+    private:
         bool ShowingSubdivisionLevel() const;
-
+        AZ::u32 OnShapeTypeChanged();
         AZ::u32 OnConfigurationChanged();
+
+        Physics::ShapeType m_lastShapeType = Physics::ShapeType::PhysicsAsset;
     };
 
     class EditorColliderComponentDescriptor;
@@ -102,6 +106,7 @@ namespace PhysX
         , private PhysX::ColliderShapeRequestBus::Handler
         , private AZ::Render::MeshComponentNotificationBus::Handler
         , private PhysX::EditorColliderComponentRequestBus::Handler
+        , private PhysX::EditorColliderValidationRequestBus::Handler
         , private AzPhysics::SimulatedBodyComponentRequestsBus::Handler
     {
     public:
@@ -140,7 +145,7 @@ namespace PhysX
         void OnDeselected() override;
 
         // DisplayCallback
-        void Display(AzFramework::DebugDisplayRequests& debugDisplay) const;
+        void Display(AzFramework::DebugDisplayRequests& debugDisplay) const override;
         void DisplayMeshCollider(AzFramework::DebugDisplayRequests& debugDisplay) const;
         void DisplayUnscaledPrimitiveCollider(AzFramework::DebugDisplayRequests& debugDisplay) const;
         void DisplayScaledPrimitiveCollider(AzFramework::DebugDisplayRequests& debugDisplay) const;
@@ -193,6 +198,9 @@ namespace PhysX
         void SetAssetScale(const AZ::Vector3& scale) override;
         AZ::Vector3 GetAssetScale() override;
 
+        // PhysX::EditorColliderValidationRequestBus overrides ...
+        void ValidateRigidBodyMeshGeometryType() override;
+
         AZ::Transform GetColliderLocalTransform() const;
 
         EditorProxyShapeConfig m_shapeConfiguration;
@@ -218,8 +226,6 @@ namespace PhysX
         void ClearStaticEditorCollider();
 
         void BuildDebugDrawMesh() const;
-
-        void ValidateRigidBodyMeshGeometryType();
 
         AZ::ComponentDescriptor::StringWarningArray GetComponentWarnings() const { return m_componentWarnings; };
 

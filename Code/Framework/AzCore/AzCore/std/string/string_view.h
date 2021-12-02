@@ -1,21 +1,23 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 #pragma once
 
-#include <AzCore/Casting/numeric_cast.h>
-#include <AzCore/std/algorithm.h>
 #include <AzCore/std/createdestroy.h>
 #include <AzCore/std/iterator.h>
-#include <AzCore/std/hash.h>
+#include <AzCore/std/limits.h>
+
 
 namespace AZStd
 {
     namespace StringInternal
     {
+        constexpr size_t min_size(size_t left, size_t right) { return (left < right) ? left : right; }
+
         template<class Traits, class CharT, class SizeT>
         constexpr SizeT char_find(const CharT* s, size_t count, CharT ch, SizeT npos = static_cast<SizeT>(-1)) noexcept
         {
@@ -44,6 +46,10 @@ namespace AZStd
                     return npos;
                 }
                 size_t foundIndex = searchIndex + charFindIndex;
+                if (foundIndex + count > size)
+                {
+                    return npos; // the rest of the string doesnt fit in the remainder of the data buffer
+                }
                 if (Traits::compare(&data[foundIndex], ptr, count) == 0)
                 {
                     return foundIndex;
@@ -82,7 +88,7 @@ namespace AZStd
             }
 
             // Add one to offset so that for loop condition can check against 0 as the breakout condition
-            size_t lastIndex = (AZStd::min)(offset, size - count) + 1;
+            size_t lastIndex = StringInternal::min_size(offset, size - count) + 1;
 
             for (; lastIndex; --lastIndex)
             {
@@ -496,6 +502,9 @@ namespace AZStd
             swap(other);
         }
 
+        // C++23 overload to prevent initializing a string_view via a nullptr or integer type
+        constexpr basic_string_view(AZStd::nullptr_t) = delete;
+
         constexpr const_reference operator[](size_type index) const { return data()[index]; }
         /// Returns value, not reference. If index is out of bounds, 0 is returned (can't be reference).
         constexpr value_type at(size_type index) const
@@ -575,7 +584,7 @@ namespace AZStd
             {
                 return 0;
             }
-            size_type rlen = AZStd::min<size_type>(count, size() - pos);
+            size_type rlen = StringInternal::min_size(count, size() - pos);
             Traits::copy(dest, data() + pos, rlen);
             return rlen;
         }
@@ -583,12 +592,12 @@ namespace AZStd
         constexpr basic_string_view substr(size_type pos = 0, size_type count = npos) const
         {
             AZ_Assert(pos <= size(), "Cannot create substring where position is larger than size");
-            return pos > size() ? basic_string_view() : basic_string_view(data() + pos, AZStd::min<size_type>(count, size() - pos));
+            return pos > size() ? basic_string_view() : basic_string_view(data() + pos, StringInternal::min_size(count, size() - pos));
         }
 
         constexpr int compare(basic_string_view other) const
         {
-            size_t cmpSize = AZStd::min<size_type>(size(), other.size());
+            size_t cmpSize = StringInternal::min_size(size(), other.size());
             int cmpval = cmpSize == 0 ? 0 : Traits::compare(data(), other.data(), cmpSize);
             if (cmpval == 0)
             {
@@ -870,26 +879,13 @@ namespace AZStd
         for (; first != last; ++first)
         {
             hash ^= static_cast<size_t>(*first);
-#if AZ_COMPILER_MSVC < 1924
-            // Workaround for integer overflow warning for hash function when used in a constexpr context
-            // The warning must be disabled at the call site and is a compiler bug that has been fixed
-            // with Visual Studio 2019 version 16.4
-            // https://developercommunity.visualstudio.com/content/problem/211134/unsigned-integer-overflows-in-constexpr-functionsa.html?childToView=211580#comment-211580
-            constexpr size_t fnvPrimeHigh{ 0x100ULL };
-            constexpr size_t fnvPrimeLow{ 0x000001b3 };
-            const uint64_t hashHigh{ hash >> 32 };
-            const uint64_t hashLow{ hash & 0xFFFF'FFFF };
-            const uint64_t lowResult{ hashLow * fnvPrimeLow };
-            const uint64_t fnvPrimeHighResult{ hashLow * fnvPrimeHigh };
-            const uint64_t hashHighResult{ hashHigh * fnvPrimeLow };
-            hash = (lowResult & 0xffff'ffff) + (((lowResult >> 32) + (fnvPrimeHighResult & 0xffff'ffff) + (hashHighResult & 0xffff'ffff)) << 32);
-#else
             hash *= fnvPrime;
-#endif
         }
         return hash;
     }
 
+    template<class T>
+    struct hash;
     template<class Element, class Traits>
     struct hash<basic_string_view<Element, Traits>>
     {

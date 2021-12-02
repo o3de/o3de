@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -286,23 +287,23 @@ namespace EMStudio
     }
 
     NodePaletteWidget::EventHandler::EventHandler(NodePaletteWidget* widget)
-        : mWidget(widget)
+        : m_widget(widget)
     {}
 
     void NodePaletteWidget::EventHandler::OnCreatedNode(EMotionFX::AnimGraph* animGraph, EMotionFX::AnimGraphNode* node)
     {
-        if (mWidget->mNode && node->GetParentNode() == mWidget->mNode)
+        if (m_widget->m_node && node->GetParentNode() == m_widget->m_node)
         {
-            mWidget->Init(animGraph, mWidget->mNode);
+            m_widget->Init(animGraph, m_widget->m_node);
         }
     }
 
 
     void NodePaletteWidget::EventHandler::OnRemovedChildNode(EMotionFX::AnimGraph* animGraph, EMotionFX::AnimGraphNode* parentNode)
     {
-        if (mWidget->mNode && parentNode && parentNode == mWidget->mNode)
+        if (m_widget->m_node && parentNode && parentNode == m_widget->m_node)
         {
-            mWidget->Init(animGraph, mWidget->mNode);
+            m_widget->Init(animGraph, m_widget->m_node);
         }
     }
 
@@ -310,52 +311,52 @@ namespace EMStudio
     // constructor
     NodePaletteWidget::NodePaletteWidget(AnimGraphPlugin* plugin)
         : QWidget()
-        , mPlugin(plugin)
-        , mModel(new NodePaletteModel(plugin, this))
+        , m_plugin(plugin)
+        , m_model(new NodePaletteModel(plugin, this))
     {
-        mNode   = nullptr;
+        m_node   = nullptr;
 
         // create the default layout
-        mLayout = new QVBoxLayout();
-        mLayout->setMargin(0);
-        mLayout->setSpacing(0);
+        m_layout = new QVBoxLayout();
+        m_layout->setMargin(0);
+        m_layout->setSpacing(0);
 
         // create the initial text
-        mInitialText = new QLabel("<c>Create and activate a <b>Anim Graph</b> first.<br>Then <b>drag and drop</b> items from the<br>palette into the <b>Anim Graph window</b>.</c>");
-        mInitialText->setAlignment(Qt::AlignCenter);
-        mInitialText->setTextFormat(Qt::RichText);
-        mInitialText->setMaximumSize(10000, 10000);
-        mInitialText->setMargin(0);
-        mInitialText->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Maximum);
+        m_initialText = new QLabel("<c>Create and activate a <b>Anim Graph</b> first.<br>Then <b>drag and drop</b> items from the<br>palette into the <b>Anim Graph window</b>.</c>");
+        m_initialText->setAlignment(Qt::AlignCenter);
+        m_initialText->setTextFormat(Qt::RichText);
+        m_initialText->setMaximumSize(10000, 10000);
+        m_initialText->setMargin(0);
+        m_initialText->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Maximum);
 
         // add the initial text in the layout
-        mLayout->addWidget(mInitialText);
+        m_layout->addWidget(m_initialText);
 
         // create the tree view
-        mTreeView = new QTreeView(this);
-        mTreeView->setHeaderHidden(true);
-        mTreeView->setModel(mModel);
-        mTreeView->setDragDropMode(QAbstractItemView::DragOnly);
+        m_treeView = new QTreeView(this);
+        m_treeView->setHeaderHidden(true);
+        m_treeView->setModel(m_model);
+        m_treeView->setDragDropMode(QAbstractItemView::DragOnly);
 
         // add the tree view in the layout
-        mLayout->addWidget(mTreeView);
+        m_layout->addWidget(m_treeView);
 
         // set the default layout
-        setLayout(mLayout);
+        setLayout(m_layout);
 
         // register the event handler
-        mEventHandler = aznew NodePaletteWidget::EventHandler(this);
-        EMotionFX::GetEventManager().AddEventHandler(mEventHandler);
+        m_eventHandler = aznew NodePaletteWidget::EventHandler(this);
+        EMotionFX::GetEventManager().AddEventHandler(m_eventHandler);
 
-        connect(&mPlugin->GetAnimGraphModel(), &AnimGraphModel::FocusChanged, this, &NodePaletteWidget::OnFocusChanged);
+        connect(&m_plugin->GetAnimGraphModel(), &AnimGraphModel::FocusChanged, this, &NodePaletteWidget::OnFocusChanged);
     }
 
 
     // destructor
     NodePaletteWidget::~NodePaletteWidget()
     {
-        EMotionFX::GetEventManager().RemoveEventHandler(mEventHandler);
-        delete mEventHandler;
+        EMotionFX::GetEventManager().RemoveEventHandler(m_eventHandler);
+        delete m_eventHandler;
     }
 
 
@@ -363,33 +364,33 @@ namespace EMStudio
     void NodePaletteWidget::Init(EMotionFX::AnimGraph* animGraph, EMotionFX::AnimGraphNode* node)
     {
         // set the node
-        mNode = node;
+        m_node = node;
 
         // check if the anim graph is not valid
         // on this case we show a message to say no one anim graph is activated
         if (animGraph == nullptr)
         {
             // set the layout params
-            mLayout->setMargin(0);
-            mLayout->setSpacing(0);
+            m_layout->setMargin(0);
+            m_layout->setSpacing(0);
 
             // set the widget visible or not
-            mInitialText->setVisible(true);
-            mTreeView->setVisible(false);
+            m_initialText->setVisible(true);
+            m_treeView->setVisible(false);
         }
         else
         {
             // set the layout params
-            mLayout->setMargin(2);
-            mLayout->setSpacing(2);
+            m_layout->setMargin(2);
+            m_layout->setSpacing(2);
 
             // set the widget visible or not
-            mInitialText->setVisible(false);
-            mTreeView->setVisible(true);
+            m_initialText->setVisible(false);
+            m_treeView->setVisible(true);
         }
 
         SaveExpandStates();
-        mModel->setNode(mNode);
+        m_model->setNode(m_node);
         RestoreExpandStates();
     }
 
@@ -397,16 +398,16 @@ namespace EMStudio
     void NodePaletteWidget::SaveExpandStates()
     {
         m_expandedCatagory.clear();
-        const auto& catagoryNames = mModel->GetCategoryNames();
+        const auto& catagoryNames = m_model->GetCategoryNames();
 
         // Save the expand state.
         for (const auto& categoryName : catagoryNames)
         {
             const QString& str = categoryName.second;
-            const QModelIndexList items = mModel->match(mModel->index(0, 0), Qt::DisplayRole, QVariant::fromValue(str));
+            const QModelIndexList items = m_model->match(m_model->index(0, 0), Qt::DisplayRole, QVariant::fromValue(str));
             if (!items.isEmpty())
             {
-                if (mTreeView->isExpanded(items.first()))
+                if (m_treeView->isExpanded(items.first()))
                 {
                     m_expandedCatagory.emplace(categoryName.first);
                 }
@@ -417,7 +418,7 @@ namespace EMStudio
 
     void NodePaletteWidget::RestoreExpandStates()
     {
-        const auto& catagoryNames = mModel->GetCategoryNames();
+        const auto& catagoryNames = m_model->GetCategoryNames();
 
         // Restore the expand state.
         for (const auto& categoryName : catagoryNames)
@@ -429,10 +430,10 @@ namespace EMStudio
             }
 
             const QString& str = categoryName.second;
-            const QModelIndexList items = mModel->match(mModel->index(0, 0), Qt::DisplayRole, QVariant::fromValue(str));
+            const QModelIndexList items = m_model->match(m_model->index(0, 0), Qt::DisplayRole, QVariant::fromValue(str));
             if (!items.isEmpty())
             {
-                mTreeView->setExpanded(items.first(), true);
+                m_treeView->setExpanded(items.first(), true);
             }
         }
         m_expandedCatagory.clear();

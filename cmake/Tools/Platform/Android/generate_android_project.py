@@ -1,6 +1,7 @@
 #
-# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
-# 
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
@@ -367,7 +368,6 @@ def main(args):
     if not third_party_path.is_dir():
         raise common.LmbrCmdError(f"Invalid --third-party-path '{parsed_args.third_party_path}'.",
                                   common.ERROR_CODE_INVALID_PARAMETER)
-    third_party_path = third_party_path.parent
 
     build_dir = parsed_args.build_dir
 

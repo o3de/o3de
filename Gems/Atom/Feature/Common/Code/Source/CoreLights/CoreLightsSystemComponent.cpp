@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -11,6 +12,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContextConstants.inl>
 
+#include <Atom/Feature/RenderCommon.h>
 #include <Atom/Feature/CoreLights/EsmShadowmapsPassData.h>
 #include <Atom/Feature/CoreLights/PhotometricValue.h>
 #include <Atom/Feature/CoreLights/ShadowConstants.h>
@@ -31,8 +33,6 @@
 #include <CoreLights/QuadLightFeatureProcessor.h>
 #include <CoreLights/ShadowmapPass.h>
 #include <CoreLights/ProjectedShadowmapsPass.h>
-
-#include <RenderCommon.h>
 
 namespace AZ
 {

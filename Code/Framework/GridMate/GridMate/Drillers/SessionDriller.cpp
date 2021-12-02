@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -223,7 +224,7 @@ namespace GridMate
         // [4/15/2011]
         //=========================================================================
         void
-        SessionDriller::OnSessionError(GridSession* session, const string& errorMsg)
+        SessionDriller::OnSessionError(GridSession* session, const AZStd::string& errorMsg)
         {
             m_output->BeginTag(m_drillerTag);
             m_output->BeginTag(AZ_CRC("SessionError", 0xc689cc40));

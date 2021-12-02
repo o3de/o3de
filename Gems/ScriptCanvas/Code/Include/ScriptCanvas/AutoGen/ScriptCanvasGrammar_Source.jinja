@@ -1,8 +1,11 @@
 {#
-Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+Copyright (c) Contributors to the Open 3D Engine Project.
+For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
 #}
+{% import 'ScriptCanvas_Macros.jinja' as macros %}
+
 {% macro add_attribute(attribute, tags) %}
 {% set value = tags[attribute] %}
 {% if value is defined %} 
@@ -11,6 +14,7 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 {% endmacro %}
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/RTTI/TypeInfo.h>
 
 #include <ScriptCanvas/Core/Slot.h>
@@ -25,12 +29,24 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 #include "{{ xml.attrib['Include'] }}"
 
 {%     for Class in xml.iter('Class') %}
+{% set baseClass = Class.attrib['Base'].split(';')[0] if Class.attrib['Base'] is string else "ScriptCanvas::Node" %}
+{% set attribute_Namespace = undefined %}
+{%- if Class.attrib['Namespace'] is defined %}
+{%      if Class.attrib['Namespace'] != "None" %}
+{%          set attribute_Namespace = Class.attrib['Namespace'] %}
+{%      endif %}
+{% endif %}
+
+{% if attribute_Namespace is defined %}
+namespace {{attribute_Namespace}} 
+{
+{% endif %}
+
+
 void {{ Class.attrib['QualifiedName'] }}::ConfigureSlots()
 {
-{% if Class.attrib['Base'] is defined %}
-    {{ Class.attrib['Base'] }}::ConfigureSlots();
+    {{ baseClass }}::ConfigureSlots();
 
-{% endif %}
 {% for Property in Class.iter('Property') %}
     {% if Property.attrib['IsInput'] | booleanTrue %}
     // {{ Property.attrib['Name'] }}
@@ -193,15 +209,15 @@ void {{ Class.attrib['QualifiedName'] }}::Reflect(AZ::ReflectContext* context)
 {% endfor %}    
 
 {% endif %}
-{% if Class.attrib['Base'] is defined %}
-    static_assert((std::is_base_of<ScriptCanvas::Node, {{ Class.attrib['Base'] }}>::value), "Script Canvas nodes require the first base class to be derived from ScriptCanvas::Node");
+    static_assert((std::is_base_of<ScriptCanvas::Node, {{ baseClass }}>::value), "Script Canvas nodes require the first base class to be derived from ScriptCanvas::Node");
 
-{% endif %}
     if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
     {
-        serializeContext->Class<{{ Class.attrib['QualifiedName'] }}{% if Class.attrib['Base'] is defined %}, {{ Class.attrib['Base'] }}{% endif %}>()
+        serializeContext->Class<{{ Class.attrib['QualifiedName'] }}, {{ baseClass }}>()
 {% if Class.attrib['EventHandler'] is defined %}
+#if defined(OBJECT_STREAM_EDITOR_ASSET_LOADING_SUPPORT_ENABLED)////
             ->EventHandler<{{ Class.attrib['EventHandler'] }}>()
+#endif//defined(OBJECT_STREAM_EDITOR_ASSET_LOADING_SUPPORT_ENABLED)
 {% endif %}
 {% if Class.attrib['Version'] is defined %}
             ->Version({{ Class.attrib['Version'] }}{% if Class.attrib['VersionConverter'] is defined %}, &{{ Class.attrib['VersionConverter'] }}{% endif %})
@@ -268,7 +284,12 @@ void {{ Class.attrib['QualifiedName'] }}::Reflect(AZ::ReflectContext* context)
     return datumValue ? *datumValue : {{ Property.attrib['Type'] }}();
 }
 
-
 {%         endfor %}
+
+{% if attribute_Namespace is defined %}
+}
+{% endif %}
+
+
 {%     endfor %}
 {% endfor %}

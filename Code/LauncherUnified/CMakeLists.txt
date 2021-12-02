@@ -1,6 +1,7 @@
 #
-# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
-# 
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
@@ -93,3 +94,26 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
 
 endif()
 
+################################################################################
+# Install
+################################################################################
+
+ly_install_files(
+    FILES
+        launcher_generator.cmake
+        launcher_project_files.cmake
+        LauncherProject.cpp
+        StaticModules.in
+    DESTINATION LauncherGenerator
+)
+ly_install_directory(
+    DIRECTORIES 
+        Platform/${PAL_PLATFORM_NAME}
+        Platform/Common
+    DESTINATION LauncherGenerator/Platform
+    VERBATIM
+)
+ly_install_files(
+    FILES FindLauncherGenerator.cmake
+    DESTINATION cmake
+)

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -43,6 +44,7 @@ namespace JsonSerializationTests
             features.m_supportsPartialInitialization = false;
         }
 
+        using JsonSerializerConformityTestDescriptor<Map>::Reflect;
         void Reflect(AZStd::unique_ptr<AZ::SerializeContext>& context) override
         {
             context->RegisterGenericType<Map>();
@@ -168,7 +170,7 @@ namespace JsonSerializationTests
             return AZStd::shared_ptr<Map>(new Map{}, &Delete);
         }
 
-        AZStd::shared_ptr<Map> CreatePartialDefaultInstance()
+        AZStd::shared_ptr<Map> CreatePartialDefaultInstance() override
         {
             auto instance = AZStd::shared_ptr<Map>(new Map{}, &Delete);
             instance->emplace(AZStd::make_pair(aznew SimpleClass(), aznew SimpleClass(188, 188.0)));
@@ -246,6 +248,7 @@ namespace JsonSerializationTests
             features.m_supportsPartialInitialization = true;
         }
 
+        using MapBaseTestDescription<T<SimpleClass*, SimpleClass*>, Serializer>::Reflect;
         void Reflect(AZStd::unique_ptr<AZ::SerializeContext>& context) override
         {
             SimpleClass::Reflect(context, true);

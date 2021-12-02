@@ -1,16 +1,15 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
 #if !defined(AZCORE_EXCLUDE_LUA)
 
-#include <AzCore/Script/ScriptSystemComponent.h>
-
-#include <AzCore/Asset/AssetManagerBus.h>
 #include <AzCore/Asset/AssetManager.h>
+#include <AzCore/Asset/AssetManagerBus.h>
 #include <AzCore/Casting/numeric_cast.h>
 #include <AzCore/Component/ComponentApplication.h>
 #include <AzCore/Component/Entity.h>
@@ -20,13 +19,16 @@
 #include <AzCore/Math/MathReflection.h>
 #include <AzCore/PlatformId/PlatformId.h>
 #include <AzCore/RTTI/BehaviorContext.h>
-#include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Script/ScriptAsset.h>
 #include <AzCore/Script/ScriptContextDebug.h>
 #include <AzCore/Script/ScriptDebug.h>
-
-#include <AzCore/std/string/conversions.h>
+#include <AzCore/Script/ScriptPropertySerializer.h>
+#include <AzCore/Script/ScriptSystemComponent.h>
 #include <AzCore/Script/lua/lua.h>
+#include <AzCore/Serialization/DynamicSerializableField.h>
+#include <AzCore/Serialization/EditContext.h>
+#include <AzCore/Serialization/Json/RegistrationContext.h>
+#include <AzCore/std/string/conversions.h>
 
 using namespace AZ;
 
@@ -85,6 +87,8 @@ void ScriptSystemComponent::Activate()
 
     AZ::Data::AssetCatalogRequestBus::Broadcast(&AZ::Data::AssetCatalogRequests::AddExtension, "lua");
     AZ::Data::AssetCatalogRequestBus::Broadcast(&AZ::Data::AssetCatalogRequests::AddExtension, "luac");
+    AZ::Data::AssetCatalogRequestBus::Broadcast(
+        &AZ::Data::AssetCatalogRequests::EnableCatalogForAsset, AZ::AzTypeInfo<AZ::ScriptAsset>::Uuid());
 
     if (Data::AssetManager::Instance().IsReady())
     {
@@ -284,14 +288,6 @@ void    ScriptSystemComponent::OnSystemTick()
         {
             contextContainer.m_context->GetDebugContext()->ProcessDebugCommands();
         }
-
-#ifdef AZ_PROFILE_TELEMETRY
-        if (contextContainer.m_context->GetId() == ScriptContextIds::DefaultScriptContextId)
-        {
-            size_t memoryUsageBytes = contextContainer.m_context->GetMemoryUsage();
-            AZ_PROFILE_DATAPOINT(AZ::Debug::ProfileCategory::Script, memoryUsageBytes / 1024.0, "Script Memory (KB)");
-        }
-#endif // AZ_PROFILE_TELEMETRY
 
         contextContainer.m_context->GarbageCollectStep(contextContainer.m_garbageCollectorSteps);
     }
@@ -918,6 +914,12 @@ void ScriptSystemComponent::Reflect(ReflectContext* reflection)
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System", 0xc94d118b))
                 ;
         }
+    }
+
+    if (AZ::JsonRegistrationContext* jsonContext = azrtti_cast<AZ::JsonRegistrationContext*>(reflection))
+    {
+        jsonContext->Serializer<AZ::ScriptPropertySerializer>()
+            ->HandlesType<DynamicSerializableField>();
     }
 
     if (BehaviorContext* behaviorContext = azrtti_cast<BehaviorContext*>(reflection))

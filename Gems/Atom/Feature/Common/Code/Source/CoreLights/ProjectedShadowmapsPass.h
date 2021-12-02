@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -29,7 +30,7 @@ namespace AZ
             AZ_CLASS_ALLOCATOR(ProjectedShadowmapsPass, SystemAllocator, 0);
             AZ_RTTI(ProjectedShadowmapsPass, "00024B13-1095-40FA-BEC3-B0F68110BEA2", Base);
 
-            static constexpr uint16_t InvalidIndex = ~0;
+            static constexpr uint16_t InvalidIndex = std::numeric_limits<uint16_t>::max();
             struct ShadowmapSizeWithIndices
             {
                 ShadowmapSize m_size = ShadowmapSize::None;

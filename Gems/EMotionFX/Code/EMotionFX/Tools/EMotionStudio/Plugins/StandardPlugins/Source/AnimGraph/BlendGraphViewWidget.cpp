@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -368,9 +369,9 @@ namespace EMStudio
 
         toolBar->addAction(m_actions[NAVIGATION_FORWARD]);
 
-        mNavigationLink = new NavigationLinkWidget(m_parentPlugin, this);
-        mNavigationLink->setMinimumHeight(28);
-        toolBar->addWidget(mNavigationLink);
+        m_navigationLink = new NavigationLinkWidget(m_parentPlugin, this);
+        m_navigationLink->setMinimumHeight(28);
+        toolBar->addWidget(m_navigationLink);
 
         toolBar->addAction(m_actions[NAVIGATION_NAVPANETOGGLE]);
 
@@ -579,11 +580,11 @@ namespace EMStudio
 
         m_openMenu->addAction(m_actions[FILE_OPEN]);
 
-        const uint32 numAnimGraphs = EMotionFX::GetAnimGraphManager().GetNumAnimGraphs();
+        const size_t numAnimGraphs = EMotionFX::GetAnimGraphManager().GetNumAnimGraphs();
         if (numAnimGraphs > 0)
         {
             m_openMenu->addSeparator();
-            for (uint32 i = 0; i < numAnimGraphs; ++i)
+            for (size_t i = 0; i < numAnimGraphs; ++i)
             {
                 EMotionFX::AnimGraph* animGraph = EMotionFX::GetAnimGraphManager().GetAnimGraph(i);
                 if (animGraph->GetIsOwnedByRuntime() == false)
@@ -626,7 +627,7 @@ namespace EMStudio
     {
         // get the current selection list and the number of actor instances selected
         const CommandSystem::SelectionList& selectionList = GetCommandManager()->GetCurrentSelection();
-        const uint32 numActorInstances = selectionList.GetNumSelectedActorInstances();
+        const size_t numActorInstances = selectionList.GetNumSelectedActorInstances();
 
         // Activate the new anim graph automatically (The shown anim graph should always be the activated one).
         if (numActorInstances > 0)
@@ -655,7 +656,7 @@ namespace EMStudio
             if (motionSet)
             {
                 // Activate anim graph on all actor instances in case there is a motion set.
-                for (uint32 i = 0; i < numActorInstances; ++i)
+                for (size_t i = 0; i < numActorInstances; ++i)
                 {
                     EMotionFX::ActorInstance* actorInstance = selectionList.GetActorInstance(i);
                     commandGroup.AddCommandString(AZStd::string::format("ActivateAnimGraph -actorInstanceID %d -animGraphID %%LASTRESULT%% -motionSetID %d", actorInstance->GetID(), motionSet->GetID()));

@@ -1,18 +1,10 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-
-#include "ComponentEntityEditorPlugin_precompiled.h"
-
-// All plugins suffer from the following warning:
-//  warning C4273: 'GetIEditor' : inconsistent dll linkage
-// GetIEditor() is forward-declared using EDITOR_CORE_API, which without EDITOR_CORE set,
-// results in dllimport rather than dllexport. This define ensure it's consistently and
-// properly defined for export.
-#define EDITOR_CORE
 
 #include <platform.h>
 

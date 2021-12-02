@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -24,7 +25,7 @@ namespace CommandSystem
     CommandCreateActorInstance::CommandCreateActorInstance(MCore::Command* orgCommand)
         : MCore::Command("CreateActorInstance", orgCommand)
     {
-        mPreviouslyUsedID = MCORE_INVALIDINDEX32;
+        m_previouslyUsedId = MCORE_INVALIDINDEX32;
     }
 
 
@@ -108,15 +109,15 @@ namespace CommandSystem
         }
 
         // in case of redoing the command set the previously used id
-        if (mPreviouslyUsedID != MCORE_INVALIDINDEX32)
+        if (m_previouslyUsedId != MCORE_INVALIDINDEX32)
         {
-            newInstance->SetID(mPreviouslyUsedID);
+            newInstance->SetID(m_previouslyUsedId);
         }
 
-        mPreviouslyUsedID = newInstance->GetID();
+        m_previouslyUsedId = newInstance->GetID();
 
         // setup the position, rotation and scale
-        AZ::Vector3 newPos = newInstance->GetLocalSpaceTransform().mPosition;
+        AZ::Vector3 newPos = newInstance->GetLocalSpaceTransform().m_position;
         if (parameters.CheckIfHasParameter("xPos"))
         {
             newPos.SetX(parameters.GetValueAsFloat("xPos", this));
@@ -140,7 +141,7 @@ namespace CommandSystem
         // add the actor instance to the selection
         if (select)
         {
-            GetCommandManager()->ExecuteCommandInsideCommand(AZStd::string::format("Select -actorInstanceID %i", newInstance->GetID()).c_str(), outResult);
+            GetCommandManager()->ExecuteCommandInsideCommand(AZStd::string::format("Select -actorInstanceID %u", newInstance->GetID()).c_str(), outResult);
 
             if (EMotionFX::GetActorManager().GetNumActorInstances() == 1 && GetCommandManager()->GetLockSelection() == false)
             {
@@ -154,7 +155,7 @@ namespace CommandSystem
         }
 
         // mark the workspace as dirty
-        mOldWorkspaceDirtyFlag = GetCommandManager()->GetWorkspaceDirtyFlag();
+        m_oldWorkspaceDirtyFlag = GetCommandManager()->GetWorkspaceDirtyFlag();
         GetCommandManager()->SetWorkspaceDirtyFlag(true);
 
         // return the id of the newly created actor instance
@@ -173,7 +174,7 @@ namespace CommandSystem
         uint32 actorInstanceID = parameters.GetValueAsInt("actorInstanceID", MCORE_INVALIDINDEX32);
         if (actorInstanceID == MCORE_INVALIDINDEX32)
         {
-            actorInstanceID = mPreviouslyUsedID;
+            actorInstanceID = m_previouslyUsedId;
         }
 
         // find the actor intance based on the given id
@@ -201,7 +202,7 @@ namespace CommandSystem
         }
 
         // restore the workspace dirty flag
-        GetCommandManager()->SetWorkspaceDirtyFlag(mOldWorkspaceDirtyFlag);
+        GetCommandManager()->SetWorkspaceDirtyFlag(m_oldWorkspaceDirtyFlag);
 
         // get rid of the actor instance
         if (actorInstance)
@@ -273,7 +274,7 @@ namespace CommandSystem
         if (parameters.CheckIfHasParameter("pos"))
         {
             AZ::Vector3 value       = parameters.GetValueAsVector3("pos", this);
-            mOldPosition            = actorInstance->GetLocalSpaceTransform().mPosition;
+            m_oldPosition            = actorInstance->GetLocalSpaceTransform().m_position;
             actorInstance->SetLocalSpacePosition(value);
         }
 
@@ -281,7 +282,7 @@ namespace CommandSystem
         if (parameters.CheckIfHasParameter("rot"))
         {
             AZ::Vector4 value   = parameters.GetValueAsVector4("rot", this);
-            mOldRotation        = actorInstance->GetLocalSpaceTransform().mRotation;
+            m_oldRotation        = actorInstance->GetLocalSpaceTransform().m_rotation;
             actorInstance->SetLocalSpaceRotation(AZ::Quaternion(value.GetX(), value.GetY(), value.GetZ(), value.GetW()));
         }
 
@@ -291,7 +292,7 @@ namespace CommandSystem
             if (parameters.CheckIfHasParameter("scale"))
             {
                 AZ::Vector3 value       = parameters.GetValueAsVector3("scale", this);
-                mOldScale               = actorInstance->GetLocalSpaceTransform().mScale;
+                m_oldScale               = actorInstance->GetLocalSpaceTransform().m_scale;
                 actorInstance->SetLocalSpaceScale(value);
             }
         )
@@ -300,7 +301,7 @@ namespace CommandSystem
         if (parameters.CheckIfHasParameter("lodLevel"))
         {
             uint32 value    = parameters.GetValueAsInt("lodLevel", this);
-            mOldLODLevel    = actorInstance->GetLODLevel();
+            m_oldLodLevel    = actorInstance->GetLODLevel();
             actorInstance->SetLODLevel(value);
         }
 
@@ -308,7 +309,7 @@ namespace CommandSystem
         if (parameters.CheckIfHasParameter("isVisible"))
         {
             bool value      = parameters.GetValueAsBool("isVisible", this);
-            mOldIsVisible   = actorInstance->GetIsVisible();
+            m_oldIsVisible   = actorInstance->GetIsVisible();
             actorInstance->SetIsVisible(value);
         }
 
@@ -316,12 +317,12 @@ namespace CommandSystem
         if (parameters.CheckIfHasParameter("doRender"))
         {
             bool value      = parameters.GetValueAsBool("doRender", this);
-            mOldDoRender    = actorInstance->GetRender();
+            m_oldDoRender    = actorInstance->GetRender();
             actorInstance->SetRender(value);
         }
 
         // mark the workspace as dirty
-        mOldWorkspaceDirtyFlag = GetCommandManager()->GetWorkspaceDirtyFlag();
+        m_oldWorkspaceDirtyFlag = GetCommandManager()->GetWorkspaceDirtyFlag();
         GetCommandManager()->SetWorkspaceDirtyFlag(true);
 
         return true;
@@ -344,13 +345,13 @@ namespace CommandSystem
         // set the position
         if (parameters.CheckIfHasParameter("pos"))
         {
-            actorInstance->SetLocalSpacePosition(mOldPosition);
+            actorInstance->SetLocalSpacePosition(m_oldPosition);
         }
 
         // set the rotation
         if (parameters.CheckIfHasParameter("rot"))
         {
-            actorInstance->SetLocalSpaceRotation(mOldRotation);
+            actorInstance->SetLocalSpaceRotation(m_oldRotation);
         }
 
         // set the scale
@@ -358,30 +359,30 @@ namespace CommandSystem
         (
             if (parameters.CheckIfHasParameter("scale"))
             {
-                actorInstance->SetLocalSpaceScale(mOldScale);
+                actorInstance->SetLocalSpaceScale(m_oldScale);
             }
         )
 
         // set the LOD level
         if (parameters.CheckIfHasParameter("lodLevel"))
         {
-            actorInstance->SetLODLevel(mOldLODLevel);
+            actorInstance->SetLODLevel(m_oldLodLevel);
         }
 
         // set the visibility flag
         if (parameters.CheckIfHasParameter("isVisible"))
         {
-            actorInstance->SetIsVisible(mOldIsVisible);
+            actorInstance->SetIsVisible(m_oldIsVisible);
         }
 
         // set the rendering flag
         if (parameters.CheckIfHasParameter("doRender"))
         {
-            actorInstance->SetRender(mOldDoRender);
+            actorInstance->SetRender(m_oldDoRender);
         }
 
         // restore the workspace dirty flag
-        GetCommandManager()->SetWorkspaceDirtyFlag(mOldWorkspaceDirtyFlag);
+        GetCommandManager()->SetWorkspaceDirtyFlag(m_oldWorkspaceDirtyFlag);
 
         return true;
     }
@@ -439,15 +440,15 @@ namespace CommandSystem
         }
 
         // store the old values before removing the instance
-        mOldPosition            = actorInstance->GetLocalSpaceTransform().mPosition;
-        mOldRotation            = actorInstance->GetLocalSpaceTransform().mRotation;
+        m_oldPosition            = actorInstance->GetLocalSpaceTransform().m_position;
+        m_oldRotation            = actorInstance->GetLocalSpaceTransform().m_rotation;
         EMFX_SCALECODE
         (
-            mOldScale = actorInstance->GetLocalSpaceTransform().mScale;
+            m_oldScale = actorInstance->GetLocalSpaceTransform().m_scale;
         )
-        mOldLODLevel            = actorInstance->GetLODLevel();
-        mOldIsVisible           = actorInstance->GetIsVisible();
-        mOldDoRender            = actorInstance->GetRender();
+        m_oldLodLevel            = actorInstance->GetLODLevel();
+        m_oldIsVisible           = actorInstance->GetIsVisible();
+        m_oldDoRender            = actorInstance->GetRender();
 
         // remove the actor instance from the selection
         if (GetCommandManager()->GetLockSelection())
@@ -457,7 +458,7 @@ namespace CommandSystem
 
         // get the id from the corresponding actor and save it for undo
         EMotionFX::Actor* actor = actorInstance->GetActor();
-        mOldActorID = actor->GetID();
+        m_oldActorId = actor->GetID();
 
         // get rid of the actor instance
         if (actorInstance)
@@ -466,7 +467,7 @@ namespace CommandSystem
         }
 
         // mark the workspace as dirty
-        mOldWorkspaceDirtyFlag = GetCommandManager()->GetWorkspaceDirtyFlag();
+        m_oldWorkspaceDirtyFlag = GetCommandManager()->GetWorkspaceDirtyFlag();
         GetCommandManager()->SetWorkspaceDirtyFlag(true);
 
         return true;
@@ -488,17 +489,17 @@ namespace CommandSystem
         AZStd::string commandString;
         MCore::CommandGroup commandGroup("Undo remove actor instance", 2);
 
-        commandString = AZStd::string::format("CreateActorInstance -actorID %i -actorInstanceID %i", mOldActorID, actorInstanceID);
+        commandString = AZStd::string::format("CreateActorInstance -actorID %i -actorInstanceID %i", m_oldActorId, actorInstanceID);
         commandGroup.AddCommandString(commandString.c_str());
 
-        commandString = AZStd::string::format("AdjustActorInstance -actorInstanceID %i -pos \"%s\" -rot \"%s\" -scale \"%s\" -lodLevel %d -isVisible \"%s\" -doRender \"%s\"",
+        commandString = AZStd::string::format("AdjustActorInstance -actorInstanceID %i -pos \"%s\" -rot \"%s\" -scale \"%s\" -lodLevel %zu -isVisible \"%s\" -doRender \"%s\"",
             actorInstanceID,
-            AZStd::to_string(mOldPosition).c_str(),
-            AZStd::to_string(mOldRotation).c_str(),
-            AZStd::to_string(mOldScale).c_str(),
-            mOldLODLevel,
-            AZStd::to_string(mOldIsVisible).c_str(),
-            AZStd::to_string(mOldDoRender).c_str()
+            AZStd::to_string(m_oldPosition).c_str(),
+            AZStd::to_string(m_oldRotation).c_str(),
+            AZStd::to_string(m_oldScale).c_str(),
+            m_oldLodLevel,
+            AZStd::to_string(m_oldIsVisible).c_str(),
+            AZStd::to_string(m_oldDoRender).c_str()
             );
         commandGroup.AddCommandString(commandString);
 
@@ -506,7 +507,7 @@ namespace CommandSystem
         bool result = GetCommandManager()->ExecuteCommandGroupInsideCommand(commandGroup, outResult);
 
         // restore the workspace dirty flag
-        GetCommandManager()->SetWorkspaceDirtyFlag(mOldWorkspaceDirtyFlag);
+        GetCommandManager()->SetWorkspaceDirtyFlag(m_oldWorkspaceDirtyFlag);
 
         return result;
     }
@@ -537,10 +538,10 @@ namespace CommandSystem
             return;
         }
 
-        const AZ::Vector3& pos = actorInstance->GetLocalSpaceTransform().mPosition;
-        const AZ::Quaternion& rot = actorInstance->GetLocalSpaceTransform().mRotation;
+        const AZ::Vector3& pos = actorInstance->GetLocalSpaceTransform().m_position;
+        const AZ::Quaternion& rot = actorInstance->GetLocalSpaceTransform().m_rotation;
         #ifndef EMFX_SCALE_DISABLED
-            const AZ::Vector3& scale = actorInstance->GetLocalSpaceTransform().mScale;
+            const AZ::Vector3& scale = actorInstance->GetLocalSpaceTransform().m_scale;
         #else
             const AZ::Vector3 scale = AZ::Vector3::CreateOne();
         #endif
@@ -560,7 +561,7 @@ namespace CommandSystem
     {
         // get the selection and number of selected actor instances
         const SelectionList& selection = GetCommandManager()->GetCurrentSelection();
-        const uint32 numActorInstances = selection.GetNumSelectedActorInstances();
+        const size_t numActorInstances = selection.GetNumSelectedActorInstances();
 
         // create the command group
         MCore::CommandGroup commandGroup("Clone actor instances", numActorInstances);
@@ -569,7 +570,7 @@ namespace CommandSystem
         commandGroup.AddCommandString("Unselect -actorInstanceID SELECT_ALL -actorID SELECT_ALL");
 
         // iterate over the selected instances and clone them
-        for (uint32 i = 0; i < numActorInstances; ++i)
+        for (size_t i = 0; i < numActorInstances; ++i)
         {
             // get the current actor instance
             EMotionFX::ActorInstance* actorInstance = selection.GetActorInstance(i);
@@ -611,14 +612,14 @@ namespace CommandSystem
     {
         // get the selection and number of selected actor instances
         const SelectionList& selection = GetCommandManager()->GetCurrentSelection();
-        const uint32 numActorInstances = selection.GetNumSelectedActorInstances();
+        const size_t numActorInstances = selection.GetNumSelectedActorInstances();
 
         // create the command group
         MCore::CommandGroup commandGroup("Remove actor instances", numActorInstances);
         AZStd::string tempString;
 
         // iterate over the selected instances and clone them
-        for (uint32 i = 0; i < numActorInstances; ++i)
+        for (size_t i = 0; i < numActorInstances; ++i)
         {
             // get the current actor instance
             EMotionFX::ActorInstance* actorInstance = selection.GetActorInstance(i);
@@ -644,7 +645,7 @@ namespace CommandSystem
     {
         // get the selection and number of selected actor instances
         const SelectionList& selection = GetCommandManager()->GetCurrentSelection();
-        const uint32 numActorInstances = selection.GetNumSelectedActorInstances();
+        const size_t numActorInstances = selection.GetNumSelectedActorInstances();
 
         // create the command group
         AZStd::string outResult;
@@ -652,7 +653,7 @@ namespace CommandSystem
         MCore::CommandGroup commandGroup("Hide actor instances", numActorInstances * 2);
 
         // iterate over the selected instances
-        for (uint32 i = 0; i < numActorInstances; ++i)
+        for (size_t i = 0; i < numActorInstances; ++i)
         {
             // get the current actor instance
             EMotionFX::ActorInstance* actorInstance = selection.GetActorInstance(i);
@@ -684,7 +685,7 @@ namespace CommandSystem
     {
         // get the selection and number of selected actor instances
         const SelectionList& selection = GetCommandManager()->GetCurrentSelection();
-        const uint32 numActorInstances = selection.GetNumSelectedActorInstances();
+        const size_t numActorInstances = selection.GetNumSelectedActorInstances();
 
         // create the command group
         AZStd::string outResult;
@@ -692,7 +693,7 @@ namespace CommandSystem
         MCore::CommandGroup commandGroup("Unhide actor instances", numActorInstances * 2);
 
         // iterate over the selected instances
-        for (uint32 i = 0; i < numActorInstances; ++i)
+        for (size_t i = 0; i < numActorInstances; ++i)
         {
             // get the current actor instance
             EMotionFX::ActorInstance* actorInstance = selection.GetActorInstance(i);
@@ -721,7 +722,7 @@ namespace CommandSystem
     {
         // get the selection and number of selected actor instances
         SelectionList selection = GetCommandManager()->GetCurrentSelection();
-        const uint32 numActorInstances = selection.GetNumSelectedActorInstances();
+        const size_t numActorInstances = selection.GetNumSelectedActorInstances();
 
         // create the command group
         AZStd::string outResult;
@@ -729,7 +730,7 @@ namespace CommandSystem
         MCore::CommandGroup commandGroup("Unselect all actor instances", numActorInstances + 1);
 
         // iterate over the selected instances and clone them
-        for (uint32 i = 0; i < numActorInstances; ++i)
+        for (size_t i = 0; i < numActorInstances; ++i)
         {
             // get the current actor instance
             EMotionFX::ActorInstance* actorInstance = selection.GetActorInstance(i);

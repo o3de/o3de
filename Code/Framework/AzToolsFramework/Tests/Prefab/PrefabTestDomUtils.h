@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -37,7 +38,7 @@ namespace UnitTest
             const EntityAlias& entityAlias)
         {
             return GetPrefabDomEntitiesPath()
-                .Append(entityAlias.c_str(), entityAlias.length());
+                .Append(entityAlias.c_str(), static_cast<rapidjson::SizeType>(entityAlias.length()));
         };
 
         inline PrefabDomPath GetPrefabDomEntityNamePath(
@@ -61,7 +62,7 @@ namespace UnitTest
         inline PrefabDomPath GetPrefabDomInstancePath(
             const InstanceAlias& instanceAlias)
         {
-            return GetPrefabDomInstancesPath().Append(instanceAlias.c_str(), instanceAlias.length());
+            return GetPrefabDomInstancesPath().Append(instanceAlias.c_str(), static_cast<rapidjson::SizeType>(instanceAlias.length()));
         };
 
         inline PrefabDomPath GetPrefabDomInstancePath(
@@ -117,7 +118,7 @@ namespace UnitTest
             const PrefabDomValue& patches);
 
         void ValidateInstances(
-            const TemplateId& templateId,
+            TemplateId templateId,
             const PrefabDomValue& expectedContent,
             const PrefabDomPath& contentPath,
             bool isContentAnInstance = false,
@@ -146,12 +147,12 @@ namespace UnitTest
         void ComparePrefabDomValues(PrefabDomValueConstReference valueA, PrefabDomValueConstReference valueB);
 
         void ValidateEntitiesOfInstances(
-            const AzToolsFramework::Prefab::TemplateId& templateId,
+            AzToolsFramework::Prefab::TemplateId templateId,
             const AzToolsFramework::Prefab::PrefabDom& expectedPrefabDom,
             const AZStd::vector<EntityAlias>& entityAliases);
 
         void ValidateNestedInstancesOfInstances(
-            const AzToolsFramework::Prefab::TemplateId& templateId,
+            AzToolsFramework::Prefab::TemplateId templateId,
             const AzToolsFramework::Prefab::PrefabDom& expectedPrefabDom,
             const AZStd::vector<InstanceAlias>& nestedInstanceAliases);
 

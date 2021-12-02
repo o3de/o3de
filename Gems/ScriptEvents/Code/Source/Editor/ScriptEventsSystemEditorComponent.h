@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -45,7 +46,7 @@ namespace ScriptEventsEditor
 
         // AssetEditorValidationRequestBus::Handler
         AZ::Outcome<bool, AZStd::string> IsAssetDataValid(const AZ::Data::Asset<AZ::Data::AssetData>& asset) override;
-        void PreAssetSave(AZ::Data::Asset<AZ::Data::AssetData> asset);
+        void PreAssetSave(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
         void BeforePropertyEdit(AzToolsFramework::InstanceDataNode* node, AZ::Data::Asset<AZ::Data::AssetData> asset) override;
 
         void SetSaveAsBinary(bool saveAsBinary) { m_saveAsBinary = saveAsBinary; }

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -40,21 +41,12 @@ namespace EMotionFX
     public:
         AZ_TYPE_INFO_LEGACY(EMotionFX::KeyTrackLinear, "{8C6EB52A-9720-467B-9D96-B4B967A113D1}", StorageType)
             
-        /**
-         * Default constructor.
-         */
-        KeyTrackLinearDynamic();
+        KeyTrackLinearDynamic() = default;
 
         /**
-         * Constructor.
          * @param nrKeys The number of keyframes which the keytrack contains (preallocates this amount of keyframes).
          */
-        KeyTrackLinearDynamic(uint32 nrKeys);
-
-        /**
-         * Destructor.
-         */
-        ~KeyTrackLinearDynamic();
+        KeyTrackLinearDynamic(size_t nrKeys);
 
         static void Reflect(AZ::ReflectContext* context);
 
@@ -62,14 +54,14 @@ namespace EMotionFX
          * Reserve space for a given number of keys. This pre-allocates data, so that adding keys doesn't always do a reallocation.
          * @param numKeys The number of keys to reserve space for. This is the absolute number of keys, NOT the number to reserve extra.
          */
-        void Reserve(uint32 numKeys);
+        void Reserve(size_t numKeys);
 
         /**
          * Calculate the memory usage, in bytes.
          * @param includeMembers Specifies whether to include member variables of the keytrack class itself or not (default=true).
          * @result The number of bytes used by this keytrack.
          */
-        uint32 CalcMemoryUsage(bool includeMembers = true) const;
+        size_t CalcMemoryUsage(bool includeMembers = true) const;
 
         /**
          * Initialize all keyframes in this keytrack.
@@ -89,7 +81,7 @@ namespace EMotionFX
          * @param currentTime The global time, in seconds. This time value has to be between the time value of the startKey and the one after that.
          * @result The interpolated value.
          */
-        MCORE_INLINE ReturnType Interpolate(uint32 startKey, float currentTime) const;
+        MCORE_INLINE ReturnType Interpolate(size_t startKey, float currentTime) const;
 
         /**
          * Add a key to the track (at the back).
@@ -115,7 +107,7 @@ namespace EMotionFX
          * recalculated when the key structure has changed.
          * @param keyNr The keyframe number, must be in range of [0..GetNumKeys()-1].
          */
-        MCORE_INLINE void RemoveKey(uint32 keyNr);
+        MCORE_INLINE void RemoveKey(size_t keyNr);
 
         /**
          * Clear all keys.
@@ -141,14 +133,14 @@ namespace EMotionFX
          * @param interpolate Should we interpolate between the keyframes?
          * @result Returns the value at the specified time.
          */
-        ReturnType GetValueAtTime(float currentTime, uint32* cachedKey = nullptr, uint8* outWasCacheHit = nullptr, bool interpolate = true) const;
+        ReturnType GetValueAtTime(float currentTime, size_t* cachedKey = nullptr, uint8* outWasCacheHit = nullptr, bool interpolate = true) const;
 
         /**
          * Get a given keyframe.
          * @param nr The index, so the keyframe number.
          * @result A pointer to the keyframe.
          */
-        MCORE_INLINE KeyFrame<ReturnType, StorageType>* GetKey(uint32 nr);
+        MCORE_INLINE KeyFrame<ReturnType, StorageType>* GetKey(size_t nr);
 
         /**
          * Returns the first keyframe.
@@ -167,7 +159,7 @@ namespace EMotionFX
          * @param nr The index, so the keyframe number.
          * @result A pointer to the keyframe.
          */
-        MCORE_INLINE const KeyFrame<ReturnType, StorageType>* GetKey(uint32 nr) const;
+        MCORE_INLINE const KeyFrame<ReturnType, StorageType>* GetKey(size_t nr) const;
 
         /**
          * Returns the first keyframe.
@@ -198,7 +190,7 @@ namespace EMotionFX
          * Returns the number of keyframes in this track.
          * @result The number of currently stored keyframes.
          */
-        MCORE_INLINE uint32 GetNumKeys() const;
+        MCORE_INLINE size_t GetNumKeys() const;
 
         /**
          * Find a key at a given time.
@@ -213,7 +205,7 @@ namespace EMotionFX
          * @param curTime The time to retreive the key for.
          * @result Returns the key number or MCORE_INVALIDINDEX32 when not found.
          */
-        MCORE_INLINE uint32 FindKeyNumber(float curTime) const;
+        MCORE_INLINE size_t FindKeyNumber(float curTime) const;
 
         /**
          * Make the keytrack loopable, by adding a new keyframe at the end of the keytrack.
@@ -236,7 +228,7 @@ namespace EMotionFX
          * @param maxError The maximum allowed error value. The higher you set this value, the more keyframes will be removed.
          * @result The method returns the number of removed keyframes.
          */
-        uint32 Optimize(float maxError);
+        size_t Optimize(float maxError);
 
         /**
          * Pre-allocate a given number of keys.
@@ -244,7 +236,7 @@ namespace EMotionFX
          * However, newly created keys will be uninitialized.
          * @param numKeys The number of keys to allocate.
          */
-        void SetNumKeys(uint32 numKeys);
+        void SetNumKeys(size_t numKeys);
 
         /**
          * Set the value of a key.
@@ -253,7 +245,7 @@ namespace EMotionFX
          * @param time The time value, in seconds.
          * @param value The value of the key.
          */
-        MCORE_INLINE void SetKey(uint32 keyNr, float time, const ReturnType& value);
+        MCORE_INLINE void SetKey(size_t keyNr, float time, const ReturnType& value);
 
         /**
          * Set the storage type value of a key.
@@ -262,10 +254,10 @@ namespace EMotionFX
          * @param time The time value, in seconds.
          * @param value The storage type value of the key.
          */
-        MCORE_INLINE void SetStorageTypeKey(uint32 keyNr, float time, const StorageType& value);
+        MCORE_INLINE void SetStorageTypeKey(size_t keyNr, float time, const StorageType& value);
 
     protected:
-        AZStd::vector<KeyFrame<ReturnType, StorageType>> mKeys;          /**< The collection of keys which form the track. */
+        AZStd::vector<KeyFrame<ReturnType, StorageType>> m_keys;          /**< The collection of keys which form the track. */
     };
 
 

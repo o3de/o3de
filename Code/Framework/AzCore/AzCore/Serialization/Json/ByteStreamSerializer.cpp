@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -70,7 +71,7 @@ namespace AZ
         if (context.ShouldKeepDefaults() || !defaultValue || (valAsByteStream != *static_cast<const JsonByteStream*>(defaultValue)))
         {
             const auto base64ByteStream = AZ::StringFunc::Base64::Encode(valAsByteStream.data(), valAsByteStream.size());
-            outputValue.SetString(base64ByteStream.c_str(), base64ByteStream.size(), context.GetJsonAllocator());
+            outputValue.SetString(base64ByteStream.c_str(), static_cast<rapidjson::SizeType>(base64ByteStream.size()), context.GetJsonAllocator());
             return context.Report(Tasks::WriteValue, Outcomes::Success, "ByteStream successfully stored.");
         }
 

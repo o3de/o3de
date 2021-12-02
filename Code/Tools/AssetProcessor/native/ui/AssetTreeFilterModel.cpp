@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -61,7 +62,10 @@ namespace AssetProcessor
         {
             searchStr = searchStr.mid(0, subidPos);
         }
-        AZ::Uuid filterAsUuid = AZ::Uuid::CreateStringPermissive(searchStr.toUtf8(), 0);
+
+         // Cap the string to some reasonable length, we don't want to try parsing an entire book
+        size_t cappedStringLength = searchStr.length() > 60 ? 60 : searchStr.length();
+        AZ::Uuid filterAsUuid = AZ::Uuid::CreateStringPermissive(searchStr.toUtf8(), cappedStringLength);
 
         return DescendantMatchesFilter(*assetTreeItem, filter, filterAsUuid);
     }

@@ -1,8 +1,11 @@
 """
-Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+Copyright (c) Contributors to the Open 3D Engine Project.
+For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
+
+from model import constants
 
 NOTIFICATION_LOADING_MESSAGE: str = "Loading..."
 
@@ -10,6 +13,7 @@ ERROR_PAGE_OK_TEXT: str = "OK"
 
 VIEW_EDIT_PAGE_CONFIG_FILE_TEXT: str = "Config File"
 VIEW_EDIT_PAGE_CONFIG_LOCATION_TEXT: str = "Config Location:"
+VIEW_EDIT_PAGE_INVALID_CONFIG_LOCATION_TEXT: str = "Invalid Location"
 VIEW_EDIT_PAGE_ADD_ROW_TEXT: str = "Add Row"
 VIEW_EDIT_PAGE_DELETE_ROW_TEXT: str = "Delete Row"
 VIEW_EDIT_PAGE_SAVE_CHANGES_TEXT: str = "Save Changes"
@@ -22,9 +26,9 @@ VIEW_EDIT_PAGE_SEARCH_PLACEHOLDER_TEXT: str = "Search by Key Name, Type, Name/ID
 VIEW_EDIT_PAGE_IMPORT_RESOURCES_PLACEHOLDER_TEXT: str = "Import Additional Resources"
 
 VIEW_EDIT_PAGE_SELECT_CONFIG_FILE_MESSAGE: str = "Please select the Config file you would like to view and modify..."
+VIEW_EDIT_PAGE_NO_CONFIG_FILE_FOUND_TITLE: str = "Unable to locate a resource mapping config file"
 VIEW_EDIT_PAGE_NO_CONFIG_FILE_FOUND_MESSAGE: str = \
-    "<p><b>Unable to locate a resource mapping config file.</b></p>"\
-    "<p>We can either make this file for you or you can rescan your directory.</p>"
+    "<p>Please select your project's config file directory using the browse tool in the upper right.</p>"
 VIEW_EDIT_PAGE_SAVING_SUCCEED_MESSAGE: str = "Config file {} is saved successfully."
 
 IMPORT_RESOURCES_PAGE_BACK_TEXT: str = "Back"

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -44,5 +45,15 @@ namespace AzQtComponents
         QPixmap m_pixmap;
         bool m_visible = false; // maintain our own flag, so that we're always ready to render ignoring Qt's widget caching system
         bool m_clipToWidgets = false;
+
+        //! Determines the way the ghost widget pixmap should be painted on the widget.
+        enum class PaintMode
+        {
+            FULL = 0,       //!< Paint the pixmap on the full widget
+            BOTTOMLEFT,     //!< Paint the pixmap on the bottom left quarter of the widget, halving its size
+            BOTTOMRIGHT     //!< Paint the pixmap on the bottom right quarter of the widget, halving its size
+        };
+
+        PaintMode m_paintMode = PaintMode::FULL;
     };
 } // namespace AzQtComponents

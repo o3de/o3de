@@ -1,15 +1,14 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
 #include <AzTest/AzTest.h>
 #include <Common/RPITestFixture.h>
-
-#include <Atom/RPI.Reflect/Shader/ShaderResourceGroupAsset.h>
-#include <Atom/RPI.Reflect/Shader/ShaderResourceGroupAssetCreator.h>
+#include <Common/ShaderAssetTestUtils.h>
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
 
 namespace UnitTest
@@ -31,7 +30,8 @@ namespace UnitTest
             uint32_t m_uint = 0;
         };
         
-        AZ::Data::Asset<AZ::RPI::ShaderResourceGroupAsset> m_srgAsset;
+        AZ::Data::Asset<AZ::RPI::ShaderAsset> m_shaderAsset;
+        AZ::RHI::Ptr<AZ::RHI::ShaderResourceGroupLayout> m_srgLayout;
         AZ::Data::Instance<AZ::RPI::ShaderResourceGroup> m_srg;
 
         void SetUp() override
@@ -39,17 +39,19 @@ namespace UnitTest
             RPITestFixture::SetUp();
 
             // This provides the high-level metadata and low-level srg layout
-            m_srgAsset = BuildSrgAssetWithShaderConstants();
-            ASSERT_TRUE(m_srgAsset.IsReady());
+            m_srgLayout = BuildSrgLayoutWithShaderConstants(m_shaderAsset);
+            ASSERT_TRUE(m_srgLayout);
+            ASSERT_TRUE(m_shaderAsset.IsReady());
 
-            m_srg = AZ::RPI::ShaderResourceGroup::Create(m_srgAsset);
+            m_srg = AZ::RPI::ShaderResourceGroup::Create(m_shaderAsset, AZ::RPI::DefaultSupervariantIndex, m_srgLayout->GetName());
             ASSERT_TRUE(m_srg != nullptr);
         }
 
         void TearDown() override
         {
             m_srg.reset();
-            m_srgAsset.Release();
+            m_srgLayout = nullptr;
+            m_shaderAsset.Release();
 
             RPITestFixture::TearDown();
         }
@@ -66,13 +68,13 @@ namespace UnitTest
             }
         }
 
-        AZ::Data::Asset<AZ::RPI::ShaderResourceGroupAsset> BuildSrgAssetWithShaderConstants([[maybe_unused]] bool includeMetadata = true)
+        AZ::RHI::Ptr<AZ::RHI::ShaderResourceGroupLayout> BuildSrgLayoutWithShaderConstants(
+            AZ::Data::Asset<AZ::RPI::ShaderAsset>& shaderAsset, [[maybe_unused]] bool includeMetadata = true)
         {
             using namespace AZ;
 
-            RPI::ShaderResourceGroupAssetCreator srgAssetCreator;
-            srgAssetCreator.Begin(Uuid::CreateRandom(), Name{"TestSrg"});
-            srgAssetCreator.BeginAPI(RHI::Factory::Get().GetType());
+            AZ::RHI::Ptr<AZ::RHI::ShaderResourceGroupLayout> srgLayout = RHI::ShaderResourceGroupLayout::Create();
+            srgLayout->SetName(Name{"TestSrg"});
 
             uint32_t offset = 0;
             uint32_t count;
@@ -80,125 +82,125 @@ namespace UnitTest
             uint32_t registerIndex = 0;
             uint32_t sizeOfBool = 4;
 
-            srgAssetCreator.SetBindingSlot(0);
+            srgLayout->SetBindingSlot(0);
 
             // bool, binding index 0
             count = 1;
             size = count * sizeOfBool;
-            srgAssetCreator.AddShaderInput(RHI::ShaderInputConstantDescriptor{Name("MyBool"), offset, size, registerIndex });
+            srgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{Name("MyBool"), offset, size, registerIndex });
             offset += size;
 
             // bool2, binding index 1
             count = 2;
             size = count * sizeOfBool;
-            srgAssetCreator.AddShaderInput(RHI::ShaderInputConstantDescriptor{Name("MyBool2"), offset, size, registerIndex });
+            srgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{Name("MyBool2"), offset, size, registerIndex });
             offset += size;
 
             // bool3, binding index 2
             count = 3;
             size = count * sizeOfBool;
-            srgAssetCreator.AddShaderInput(RHI::ShaderInputConstantDescriptor{Name("MyBool3"), offset, size, registerIndex });
+            srgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{Name("MyBool3"), offset, size, registerIndex });
             offset += size;
 
             // bool4, binding index 3
             count = 4;
             size = count * sizeOfBool;
-            srgAssetCreator.AddShaderInput(RHI::ShaderInputConstantDescriptor{Name("MyBool4"), offset, size, registerIndex });
+            srgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{Name("MyBool4"), offset, size, registerIndex });
             offset += size;
 
             // int, binding index 4
             count = 1;
             size = count * sizeof(int32_t);
-            srgAssetCreator.AddShaderInput(RHI::ShaderInputConstantDescriptor{Name("MyInt"), offset, size, registerIndex });
+            srgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{Name("MyInt"), offset, size, registerIndex });
             offset += size;
 
             // int2, binding index 5
             count = 2;
             size = count * sizeof(int32_t);
-            srgAssetCreator.AddShaderInput(RHI::ShaderInputConstantDescriptor{Name("MyInt2"), offset, size, registerIndex });
+            srgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{Name("MyInt2"), offset, size, registerIndex });
             offset += size;
 
             // int3, binding index 6
             count = 3;
             size = count * sizeof(int32_t);
-            srgAssetCreator.AddShaderInput(RHI::ShaderInputConstantDescriptor{Name("MyInt3"), offset, size, registerIndex });
+            srgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{Name("MyInt3"), offset, size, registerIndex });
             offset += size;
 
             // int4, binding index 7
             count = 4;
             size = count * sizeof(int32_t);
-            srgAssetCreator.AddShaderInput(RHI::ShaderInputConstantDescriptor{Name("MyInt4"), offset, size, registerIndex });
+            srgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{Name("MyInt4"), offset, size, registerIndex });
             offset += size;
 
             // uint, binding index 8
             count = 1;
             size = count * sizeof(uint32_t);
-            srgAssetCreator.AddShaderInput(RHI::ShaderInputConstantDescriptor{Name("MyUint"), offset, size, registerIndex });
+            srgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{Name("MyUint"), offset, size, registerIndex });
             offset += size;
 
             // uint2, binding index 9
             count = 2;
             size = count * sizeof(uint32_t);
-            srgAssetCreator.AddShaderInput(RHI::ShaderInputConstantDescriptor{Name("MyUint2"), offset, size, registerIndex });
+            srgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{Name("MyUint2"), offset, size, registerIndex });
             offset += size;
 
             // uint3, binding index 10
             count = 3;
             size = count * sizeof(uint32_t);
-            srgAssetCreator.AddShaderInput(RHI::ShaderInputConstantDescriptor{Name("MyUint3"), offset, size, registerIndex });
+            srgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{Name("MyUint3"), offset, size, registerIndex });
             offset += size;
 
             // uint4, binding index 11
             count = 4;
             size = count * sizeof(uint32_t);
-            srgAssetCreator.AddShaderInput(RHI::ShaderInputConstantDescriptor{Name("MyUint4"), offset, size, registerIndex });
+            srgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{Name("MyUint4"), offset, size, registerIndex });
             offset += size;
 
             // float, binding index 12
             count = 1;
             size = count * sizeof(float);
-            srgAssetCreator.AddShaderInput(RHI::ShaderInputConstantDescriptor{Name("MyFloat"), offset, size, registerIndex });
+            srgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{Name("MyFloat"), offset, size, registerIndex });
             offset += size;
 
             // float2, binding index 13
             count = 2;
             size = count * sizeof(float);
-            srgAssetCreator.AddShaderInput(RHI::ShaderInputConstantDescriptor{Name("MyFloat2"), offset, size, registerIndex });
+            srgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{Name("MyFloat2"), offset, size, registerIndex });
             offset += size;
 
             // float3, binding index 14
             count = 3;
             size = count * sizeof(float);
-            srgAssetCreator.AddShaderInput(RHI::ShaderInputConstantDescriptor{Name("MyFloat3"), offset, size, registerIndex });
+            srgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{Name("MyFloat3"), offset, size, registerIndex });
             offset += size;
 
             // float4, binding index 15
             count = 4;
             size = count * sizeof(float);
-            srgAssetCreator.AddShaderInput(RHI::ShaderInputConstantDescriptor{Name("MyFloat4"), offset, size, registerIndex });
+            srgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{Name("MyFloat4"), offset, size, registerIndex });
             offset += size;
 
             // simple struct, binding index 16
             // [GFX TODO][ATOM-111] This is not very fleshed out right now. We still need to do more to support structs, but at least I want to verify that SRG templatized setters and getters can work with structs
             count = 1;
             size = 8;
-            srgAssetCreator.AddShaderInput(RHI::ShaderInputConstantDescriptor{Name("MySimpleStruct"), offset, size, registerIndex });
+            srgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{Name("MySimpleStruct"), offset, size, registerIndex });
             offset += size;
 
             // array of 2 simple structs, binding index 17
             // [GFX TODO][ATOM-111] This is not very fleshed out right now. We still need to do more to support structs, but at least I want to verify that SRG templatized setters and getters can work with structs
             count = 2;
             size = 16;
-            srgAssetCreator.AddShaderInput(RHI::ShaderInputConstantDescriptor{Name("MySimpleStructArray2"), offset, size, registerIndex });
+            srgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{Name("MySimpleStructArray2"), offset, size, registerIndex });
             offset += size;
 
-            srgAssetCreator.SetBindingSlot(0);
+            srgLayout->SetBindingSlot(0);
 
-            Data::Asset<RPI::ShaderResourceGroupAsset> srgAsset;
-            EXPECT_TRUE(srgAssetCreator.EndAPI());
-            EXPECT_TRUE(srgAssetCreator.End(srgAsset));
+            EXPECT_TRUE(srgLayout->Finalize());
 
-            return srgAsset;
+            shaderAsset = CreateTestShaderAsset(Uuid::CreateRandom(), srgLayout);
+
+            return srgLayout;
         }
     };
 

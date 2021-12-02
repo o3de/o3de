@@ -1,18 +1,22 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 #pragma once
 
 #include <Atom/RHI.Reflect/Bits.h>
+#include <AzCore/Debug/Budget.h>
 #include <AzCore/Math/Crc.h>
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/Outcome/Outcome.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/smart_ptr/intrusive_ptr.h>
 
+AZ_DECLARE_BUDGET(RHI);
+inline static constexpr AZ::Crc32 rhiMetricsId = AZ_CRC_CE("RHI");
 
 namespace UnitTest
 {

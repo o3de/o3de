@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -93,8 +94,8 @@ namespace EMotionFX
         if (nodeState.m_simulationType == Physics::SimulationType::Kinematic &&
             destNodeState.m_simulationType == Physics::SimulationType::Dynamic)
         {
-            nodeState.m_position = jointTransform.mPosition.Lerp(destNodeState.m_position, weight);
-            nodeState.m_orientation = jointTransform.mRotation.NLerp(destNodeState.m_orientation, weight);
+            nodeState.m_position = jointTransform.m_position.Lerp(destNodeState.m_position, weight);
+            nodeState.m_orientation = jointTransform.m_rotation.NLerp(destNodeState.m_orientation, weight);
 
             // We're blending from a kinematic to a dynamic joint, which means when starting the blend we know that the animation pose matches the ragdoll pose.
             // The closest a powered ragdoll joint can be to its target pose and thus matching the kinematic one is by using its maximum strength.
@@ -113,8 +114,8 @@ namespace EMotionFX
         else if (nodeState.m_simulationType == Physics::SimulationType::Dynamic &&
                  destNodeState.m_simulationType == Physics::SimulationType::Kinematic)
         {
-            nodeState.m_position = nodeState.m_position.Lerp(destJointTransform.mPosition, weight);
-            nodeState.m_orientation = nodeState.m_orientation.NLerp(destJointTransform.mRotation, weight);
+            nodeState.m_position = nodeState.m_position.Lerp(destJointTransform.m_position, weight);
+            nodeState.m_orientation = nodeState.m_orientation.NLerp(destJointTransform.m_rotation, weight);
 
             // Inverse way here. Blending towards the maximum strength possible to make sure we're as close as possible to the target pose when switching simulation
             // state to kinematic.
@@ -157,7 +158,7 @@ namespace EMotionFX
                 // Blend node states. Both, the destination pose as well as the current pose hold used ragdoll pose datas.
                 for (size_t i = 0; i < nodeStateCount; ++i)
                 {
-                    const AZ::u32 jointIndex = ragdollInstance->GetJointIndex(i);
+                    const size_t jointIndex = ragdollInstance->GetJointIndex(i);
                     const Transform& localTransform = m_pose->GetLocalSpaceTransform(jointIndex);
                     const Transform& destLocalTransform = destPose->GetLocalSpaceTransform(jointIndex);
 

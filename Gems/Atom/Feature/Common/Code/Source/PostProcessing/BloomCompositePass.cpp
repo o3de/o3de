@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -132,8 +133,8 @@ namespace AZ
             inBinding.m_connectedBinding = &parentInBinding;
 
             RHI::ImageViewDescriptor inViewDesc;
-            inViewDesc.m_mipSliceMin = mipLevel;
-            inViewDesc.m_mipSliceMax = mipLevel;
+            inViewDesc.m_mipSliceMin = static_cast<uint16_t>(mipLevel);
+            inViewDesc.m_mipSliceMax = static_cast<uint16_t>(mipLevel);
             inBinding.m_unifiedScopeDesc.SetAsImage(inViewDesc);
 
             pass->AddAttachmentBinding(inBinding);
@@ -150,8 +151,8 @@ namespace AZ
             if (mipLevel != 0)
             {
                 RHI::ImageViewDescriptor outViewDesc;
-                outViewDesc.m_mipSliceMin = mipLevel - 1;
-                outViewDesc.m_mipSliceMax = mipLevel - 1;
+                outViewDesc.m_mipSliceMin = static_cast<uint16_t>(mipLevel - 1);
+                outViewDesc.m_mipSliceMax = static_cast<uint16_t>(mipLevel - 1);
                 outBinding.m_unifiedScopeDesc.SetAsImage(outViewDesc);
             }
             

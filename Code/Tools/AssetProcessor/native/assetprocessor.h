@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -241,6 +242,11 @@ namespace AssetProcessor
                 (m_jobEntry.m_platformInfo.m_identifier == rhs.m_jobEntry.m_platformInfo.m_identifier) &&
                 (m_jobEntry.m_jobKey == rhs.m_jobEntry.m_jobKey) &&
                 m_jobEntry.m_builderGuid == rhs.m_jobEntry.m_builderGuid);
+        }
+
+        static bool DatabaseSourceLexCompare(const JobDetails& left, const JobDetails& right)
+        {
+            return left.m_jobEntry.m_databaseSourceName <= right.m_jobEntry.m_databaseSourceName;
         }
 
         JobDetails() = default;

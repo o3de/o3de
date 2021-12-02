@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -12,7 +13,9 @@
 #include <GemCatalog/GemCatalogScreen.h>
 #include <ProjectsScreen.h>
 #include <UpdateProjectSettingsScreen.h>
+#include <EngineScreenCtrl.h>
 #include <EngineSettingsScreen.h>
+#include <GemRepo/GemRepoScreen.h>
 
 namespace O3DE::ProjectManager
 {
@@ -40,8 +43,14 @@ namespace O3DE::ProjectManager
         case (ProjectManagerScreen::UpdateProjectSettings):
             newScreen = new UpdateProjectSettingsScreen(parent);
             break;
+        case (ProjectManagerScreen::Engine):
+            newScreen = new EngineScreenCtrl(parent);
+            break;
         case (ProjectManagerScreen::EngineSettings):
             newScreen = new EngineSettingsScreen(parent);
+            break;
+        case (ProjectManagerScreen::GemRepos):
+            newScreen = new GemRepoScreen(parent);
             break;
         case (ProjectManagerScreen::Empty):
         default:

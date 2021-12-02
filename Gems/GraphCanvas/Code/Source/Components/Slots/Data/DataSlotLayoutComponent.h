@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -9,6 +10,7 @@
 #include <QGraphicsLinearLayout>
 #include <QTimer>
 
+#include <AzToolsFramework/UI/Notifications/ToastBus.h>
 #include <Components/Slots/SlotLayoutComponent.h>
 #include <GraphCanvas/Components/SceneBus.h>
 #include <GraphCanvas/Components/Slots/SlotBus.h>
@@ -57,7 +59,7 @@ namespace GraphCanvas
             SlotId m_slotId;
 
             ViewId  m_viewId;
-            ToastId m_toastId;
+            AzToolsFramework::ToastId m_toastId;
         };
 
         class DoubleClickSceneEventFilter

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -57,7 +58,7 @@ namespace EMotionFX
         MOCK_METHOD2(OnStartTransition, void(AnimGraphInstance* animGraphInstance, AnimGraphStateTransition* transition));
         MOCK_METHOD2(OnEndTransition, void(AnimGraphInstance* animGraphInstance, AnimGraphStateTransition* transition));
 
-        MOCK_METHOD3(OnSetVisualManipulatorOffset, void(AnimGraphInstance* animGraphInstance, uint32 paramIndex, const AZ::Vector3& offset));
+        MOCK_METHOD3(OnSetVisualManipulatorOffset, void(AnimGraphInstance* animGraphInstance, size_t paramIndex, const AZ::Vector3& offset));
         MOCK_METHOD4(OnInputPortsChanged, void(AnimGraphNode* node, const AZStd::vector<AZStd::string>& newInputPorts, const AZStd::string& memberName, const AZStd::vector<AZStd::string>& memberValue));
         MOCK_METHOD4(OnOutputPortsChanged, void(AnimGraphNode* node, const AZStd::vector<AZStd::string>& newOutputPorts, const AZStd::string& memberName, const AZStd::vector<AZStd::string>& memberValue));
         MOCK_METHOD3(OnRenamedNode, void(AnimGraph* animGraph, AnimGraphNode* node, const AZStd::string& oldName));

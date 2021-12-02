@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -44,7 +45,7 @@ int CAutoDirectoryRestoreFileDialog::exec()
         foreach(const QString&fileName, selectedFiles())
         {
             QFileInfo info(fileName);
-            if (!CryStringUtils::IsValidFileName(info.fileName().toStdString().c_str()))
+            if (!AZ::StringFunc::Path::IsValid(info.fileName().toStdString().c_str()))
             {
                 QMessageBox::warning(this, tr("Error"), tr("Please select a valid file name (standard English alphanumeric characters only)"));
                 problem = true;

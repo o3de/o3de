@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -19,18 +20,23 @@
 #include "System.h" // to access InitLocalization()
 #include <CryPath.h>
 #include <IConsole.h>
-#include <StringUtils.h>
+#include <IFont.h>
 #include <locale.h>
 #include <time.h>
 
 #include <AzCore/std/string/conversions.h>
 #include <AzFramework/StringFunc/StringFunc.h>
+#include <AzCore/std/string/conversions.h>
+#include <AzCore/Math/Crc.h>
 
 #define MAX_CELL_COUNT 32
 
 // CVAR names
+#if !defined(_RELEASE)
 const char c_sys_localization_debug[] = "sys_localization_debug";
 const char c_sys_localization_encode[] = "sys_localization_encode";
+#endif // !defined(_RELEASE)
+
 #define LOC_WINDOW "Localization"
 const char c_sys_localization_format[] = "sys_localization_format";
 
@@ -145,9 +151,9 @@ static void ReloadDialogData([[maybe_unused]] IConsoleCmdArgs* pArgs)
 #if !defined(_RELEASE)
 static void TestFormatMessage ([[maybe_unused]] IConsoleCmdArgs* pArgs)
 {
-    string fmt1 ("abc %1 def % gh%2i %");
-    string fmt2 ("abc %[action:abc] %2 def % gh%1i %1");
-    string out1, out2;
+    AZStd::string fmt1 ("abc %1 def % gh%2i %");
+    AZStd::string fmt2 ("abc %[action:abc] %2 def % gh%1i %1");
+    AZStd::string out1, out2;
     LocalizationManagerRequestBus::Broadcast(&LocalizationManagerRequestBus::Events::FormatStringMessage, out1, fmt1, "first", "second", "third", nullptr);
     CryLogAlways("%s", out1.c_str());
     LocalizationManagerRequestBus::Broadcast(&LocalizationManagerRequestBus::Events::FormatStringMessage, out2, fmt2, "second", nullptr, nullptr, nullptr);
@@ -205,18 +211,18 @@ CLocalizedStringsManager::CLocalizedStringsManager(ISystem* pSystem)
 
     // Populate available languages by scanning the localization directory for paks
     // Default to US English if language is not supported
-    string sPath;
-    const string sLocalizationFolder(PathUtil::GetLocalizationFolder());
+    AZStd::string sPath;
+    const AZStd::string sLocalizationFolder(PathUtil::GetLocalizationFolder());
     ILocalizationManager::TLocalizationBitfield availableLanguages = 0;
-    
+
     AZ::IO::FileIOBase* fileIO = AZ::IO::FileIOBase::GetInstance();
     // test language name against supported languages
     for (int i = 0; i < ILocalizationManager::ePILID_MAX_OR_INVALID; i++)
     {
-        string sCurrentLanguage = LangNameFromPILID((ILocalizationManager::EPlatformIndependentLanguageID)i);  
+        AZStd::string sCurrentLanguage = LangNameFromPILID((ILocalizationManager::EPlatformIndependentLanguageID)i);
         sPath = sLocalizationFolder.c_str() + sCurrentLanguage;
-        sPath.MakeLower();
-        if (fileIO && fileIO->IsDirectory(sPath))
+        AZStd::to_lower(sPath.begin(), sPath.end());
+        if (fileIO && fileIO->IsDirectory(sPath.c_str()))
         {
             availableLanguages |= ILocalizationManager::LocalizationBitfieldFromPILID((ILocalizationManager::EPlatformIndependentLanguageID)i);
             if (m_cvarLocalizationDebug >= 2)
@@ -365,7 +371,7 @@ bool CLocalizedStringsManager::SetLanguage(const char* sLanguage)
     // Check if already language loaded.
     for (uint32 i = 0; i < m_languages.size(); i++)
     {
-        if (_stricmp(sLanguage, m_languages[i]->sLanguage) == 0)
+        if (_stricmp(sLanguage, m_languages[i]->sLanguage.c_str()) == 0)
         {
             InternalSetCurrentLanguage(m_languages[i]);
             return true;
@@ -440,9 +446,9 @@ void CLocalizedStringsManager::AddControl([[maybe_unused]] int nKey)
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CLocalizedStringsManager::ParseFirstLine(IXmlTableReader* pXmlTableReader, char* nCellIndexToType, std::map<int, string>& SoundMoodIndex, std::map<int, string>& EventParameterIndex)
+void CLocalizedStringsManager::ParseFirstLine(IXmlTableReader* pXmlTableReader, char* nCellIndexToType, std::map<int, AZStd::string>& SoundMoodIndex, std::map<int, AZStd::string>& EventParameterIndex)
 {
-    string sCellContent;
+    AZStd::string sCellContent;
 
     for (;; )
     {
@@ -465,20 +471,20 @@ void CLocalizedStringsManager::ParseFirstLine(IXmlTableReader* pXmlTableReader, 
         }
 
         sCellContent.assign(pContent, contentSize);
-        sCellContent.MakeLower();
+        AZStd::to_lower(sCellContent.begin(), sCellContent.end());
 
         for (int i = 0; i < sizeof(sLocalizedColumnNames) / sizeof(sLocalizedColumnNames[0]); ++i)
         {
             const char* pFind = strstr(sCellContent.c_str(), sLocalizedColumnNames[i]);
             if (pFind != 0)
             {
-                nCellIndexToType[nCellIndex] = i;
+                nCellIndexToType[nCellIndex] = static_cast<char>(i);
 
                 // find SoundMood
                 if (i == ELOCALIZED_COLUMN_SOUNDMOOD)
                 {
                     const char* pSoundMoodName = pFind + strlen(sLocalizedColumnNames[i]) + 1;
-                    int nSoundMoodNameLength = sCellContent.length() - strlen(sLocalizedColumnNames[i]) - 1;
+                    int nSoundMoodNameLength = static_cast<int>(sCellContent.length() - strlen(sLocalizedColumnNames[i]) - 1);
                     if (nSoundMoodNameLength > 0)
                     {
                         SoundMoodIndex[nCellIndex] = pSoundMoodName;
@@ -489,7 +495,7 @@ void CLocalizedStringsManager::ParseFirstLine(IXmlTableReader* pXmlTableReader, 
                 if (i == ELOCALIZED_COLUMN_EVENTPARAMETER)
                 {
                     const char* pParameterName = pFind + strlen(sLocalizedColumnNames[i]) + 1;
-                    int nParameterNameLength = sCellContent.length() - strlen(sLocalizedColumnNames[i]) - 1;
+                    int nParameterNameLength = static_cast<int>(sCellContent.length() - strlen(sLocalizedColumnNames[i]) - 1);
                     if (nParameterNameLength > 0)
                     {
                         EventParameterIndex[nCellIndex] = pParameterName;
@@ -527,15 +533,15 @@ static void CopyLowercase(char* dst, size_t dstSize, const char* src, size_t src
 }
 
 //////////////////////////////////////////////////////////////////////////
-static void ReplaceEndOfLine(CryFixedStringT<CLocalizedStringsManager::LOADING_FIXED_STRING_LENGTH>& s)
+static void ReplaceEndOfLine(AZStd::fixed_string<CLocalizedStringsManager::LOADING_FIXED_STRING_LENGTH>& s)
 {
-    const string oldSubstr("\\n");
-    const string newSubstr(" \n");
+    const AZStd::string oldSubstr("\\n");
+    const AZStd::string newSubstr(" \n");
     size_t pos = 0;
     for (;; )
     {
         pos = s.find(oldSubstr, pos);
-        if (pos == CryFixedStringT<CLocalizedStringsManager::LOADING_FIXED_STRING_LENGTH>::npos)
+        if (pos == AZStd::fixed_string<CLocalizedStringsManager::LOADING_FIXED_STRING_LENGTH>::npos)
         {
             return;
         }
@@ -564,7 +570,7 @@ void CLocalizedStringsManager::OnSystemEvent(
 
             for (TStringVec::iterator it = m_tagLoadRequests.begin(); it != m_tagLoadRequests.end(); ++it)
             {
-                LoadLocalizationDataByTag(*it);
+                LoadLocalizationDataByTag(it->c_str());
             }
         }
 
@@ -576,7 +582,7 @@ void CLocalizedStringsManager::OnSystemEvent(
         // Load all tags after the Editor has finished initialization.
         for (TTagFileNames::iterator it = m_tagFileNames.begin(); it != m_tagFileNames.end(); ++it)
         {
-            LoadLocalizationDataByTag(it->first);
+            LoadLocalizationDataByTag(it->first.c_str());
         }
 
         break;
@@ -599,7 +605,7 @@ bool CLocalizedStringsManager::InitLocalizationData(
     for (int i = 0; i < root->getChildCount(); i++)
     {
         XmlNodeRef typeNode = root->getChild(i);
-        string sType = typeNode->getTag();
+        AZStd::string sType = typeNode->getTag();
 
         // tags should be unique
         if (m_tagFileNames.find(sType) != m_tagFileNames.end())
@@ -621,7 +627,7 @@ bool CLocalizedStringsManager::InitLocalizationData(
 
         CRY_ASSERT(m_tagFileNames.size() < 255);
 
-        uint8 curNumTags = m_tagFileNames.size();
+        uint8 curNumTags = static_cast<uint8>(m_tagFileNames.size());
 
         m_tagFileNames[sType].filenames = vEntries;
         m_tagFileNames[sType].id                = curNumTags + 1;
@@ -677,9 +683,9 @@ bool CLocalizedStringsManager::LoadLocalizationDataByTag(
     for (TStringVec::iterator it2 = vEntries.begin(); it2 != vEntries.end(); ++it2)
     {
         //Only load files of the correct type for the configured format
-        if ((m_cvarLocalizationFormat == 0 && strstr(*it2, ".xml")) || (m_cvarLocalizationFormat == 1 && strstr(*it2, ".agsxml")))
+        if ((m_cvarLocalizationFormat == 0 && strstr(it2->c_str(), ".xml")) || (m_cvarLocalizationFormat == 1 && strstr(it2->c_str(), ".agsxml")))
         {
-            bResult &= (this->*loadFunction)(*it2, it->second.id, bReload);
+            bResult &= (this->*loadFunction)(it2->c_str(), it->second.id, bReload);
         }
     }
 
@@ -756,7 +762,7 @@ bool CLocalizedStringsManager::ReleaseLocalizationDataByTag(
 
         bool bVecEntryErased = false;
         //Then remove the entries in the storage vector
-        const uint32 numEntries = m_pLanguage->m_vLocalizedStrings.size();
+        const int32 numEntries = static_cast<int32>(m_pLanguage->m_vLocalizedStrings.size());
         for (int32 i = numEntries - 1; i >= 0; i--)
         {
             SLocalizedStringEntry* entry = m_pLanguage->m_vLocalizedStrings[i];
@@ -796,16 +802,6 @@ bool CLocalizedStringsManager::ReleaseLocalizationDataByTag(
             m_pLanguage->m_vLocalizedStrings.clear();
             m_pLanguage->m_vLocalizedStrings = newVec;
         }
-
-        /*LARGE_INTEGER liEnd, liFreq;
-        QueryPerformanceCounter(&liEnd);
-        QueryPerformanceFrequency(&liFreq);
-
-        CTimeValue lockTime = CTimeValue((liEnd.QuadPart - liStart.QuadPart) * CTimeValue::TIMEVALUE_PRECISION / liFreq.QuadPart);
-        if (m_cvarLocalizationDebug >= 2)
-        {
-            CryLog("<Localization> ReleaseLocalizationDataByTag %s lock time %fMS", sTag, lockTime.GetMilliSeconds());
-        }*/
     }
 
     if (m_cvarLocalizationDebug >= 2)
@@ -823,7 +819,7 @@ bool CLocalizedStringsManager::LoadAllLocalizationData(bool bReload)
 {
     for (TTagFileNames::iterator it = m_tagFileNames.begin(); it != m_tagFileNames.end(); ++it)
     {
-        if(!LoadLocalizationDataByTag(it->first, bReload))
+        if(!LoadLocalizationDataByTag(it->first.c_str(), bReload))
             return false;
     }
     return true;
@@ -836,11 +832,41 @@ bool CLocalizedStringsManager::LoadExcelXmlSpreadsheet(const char* sFileName, bo
     return (this->*loadFunction)(sFileName, 0, bReload);
 }
 
+enum class YesNoType
+{
+    Yes,
+    No,
+    Invalid
+};
+
+// parse the yes/no string
+/*!
+\param szString any of the following strings: yes, enable, true, 1, no, disable, false, 0
+\return YesNoType::Yes if szString is yes/enable/true/1, YesNoType::No if szString is no, disable, false, 0 and YesNoType::Invalid if the string is not one of the expected values.
+*/
+inline YesNoType ToYesNoType(const char* szString)
+{
+    if (!_stricmp(szString, "yes")
+        || !_stricmp(szString, "enable")
+        || !_stricmp(szString, "true")
+        || !_stricmp(szString, "1"))
+    {
+        return YesNoType::Yes;
+    }
+    if (!_stricmp(szString, "no")
+        || !_stricmp(szString, "disable")
+        || !_stricmp(szString, "false")
+        || !_stricmp(szString, "0"))
+    {
+        return YesNoType::No;
+    }
+    return YesNoType::Invalid;
+}
+
 //////////////////////////////////////////////////////////////////////
 // Loads a string-table from a Excel XML Spreadsheet file.
 bool CLocalizedStringsManager::DoLoadExcelXmlSpreadsheet(const char* sFileName, uint8 nTagID, bool bReload)
 {
-    LOADING_TIME_PROFILE_SECTION_ARGS(sFileName)
     if (!m_pLanguage)
     {
         return false;
@@ -849,7 +875,7 @@ bool CLocalizedStringsManager::DoLoadExcelXmlSpreadsheet(const char* sFileName, 
     //check if this table has already been loaded
     if (!bReload)
     {
-        if (m_loadedTables.find(CONST_TEMP_STRING(sFileName)) != m_loadedTables.end())
+        if (m_loadedTables.find(AZStd::string(sFileName)) != m_loadedTables.end())
         {
             return (true);
         }
@@ -865,12 +891,12 @@ bool CLocalizedStringsManager::DoLoadExcelXmlSpreadsheet(const char* sFileName, 
     }
 
     XmlNodeRef root;
-    string sPath;
+    AZStd::string sPath;
     {
-        const string sLocalizationFolder(PathUtil::GetLocalizationRoot());
-        const string& languageFolder = m_pLanguage->sLanguage;
+        const AZStd::string sLocalizationFolder(PathUtil::GetLocalizationRoot());
+        const AZStd::string& languageFolder = m_pLanguage->sLanguage;
         sPath = sLocalizationFolder.c_str() + languageFolder + PathUtil::GetSlash() + sFileName;
-        root = m_pSystem->LoadXmlFromFile(sPath);
+        root = m_pSystem->LoadXmlFromFile(sPath.c_str());
         if (!root)
         {
             CryLog("Loading Localization File %s failed!", sPath.c_str());
@@ -947,14 +973,14 @@ bool CLocalizedStringsManager::DoLoadExcelXmlSpreadsheet(const char* sFileName, 
     memset(nCellIndexToType, 0, sizeof(nCellIndexToType));
 
     // SoundMood Index
-    std::map<int, string> SoundMoodIndex;
+    std::map<int, AZStd::string> SoundMoodIndex;
 
     // EventParameter Index
-    std::map<int, string> EventParameterIndex;
+    std::map<int, AZStd::string> EventParameterIndex;
 
     bool bFirstRow = true;
 
-    CryFixedStringT<LOADING_FIXED_STRING_LENGTH> sTmp;
+    AZStd::fixed_string<LOADING_FIXED_STRING_LENGTH> sTmp;
 
     // lower case event name
     char szLowerCaseEvent[128];
@@ -1082,7 +1108,7 @@ bool CLocalizedStringsManager::DoLoadExcelXmlSpreadsheet(const char* sFileName, 
                 break;
             case ELOCALIZED_COLUMN_USE_SUBTITLE:
                 sTmp.assign(cell.ptr, cell.count);
-                bUseSubtitle = CryStringUtils::ToYesNoType(sTmp.c_str()) == CryStringUtils::YesNoType::No ? false : true; // favor yes (yes and invalid -> yes)
+                bUseSubtitle = ToYesNoType(sTmp.c_str()) == YesNoType::No ? false : true; // favor yes (yes and invalid -> yes)
                 break;
             case ELOCALIZED_COLUMN_VOLUME:
                 sTmp.assign(cell.ptr, cell.count);
@@ -1120,7 +1146,7 @@ bool CLocalizedStringsManager::DoLoadExcelXmlSpreadsheet(const char* sFileName, 
                 {
                     bIsIntercepted = true;
                 }
-                bIsDirectRadio = bIsIntercepted || (CryStringUtils::ToYesNoType(sTmp.c_str()) == CryStringUtils::YesNoType::Yes ? true : false); // favor no (no and invalid -> no)
+                bIsDirectRadio = bIsIntercepted || (ToYesNoType(sTmp.c_str()) == YesNoType::Yes ? true : false); // favor no (no and invalid -> no)
                 ++nItems;
                 break;
             // legacy names
@@ -1287,7 +1313,7 @@ bool CLocalizedStringsManager::DoLoadExcelXmlSpreadsheet(const char* sFileName, 
         }
 
         //Compute the CRC32 of the key
-        keyCRC = CCrc32::Compute(szLowerCaseKey);
+        keyCRC = AZ::Crc32(szLowerCaseKey);
         if (m_cvarLocalizationDebug >= 3)
         {
             CryLogAlways("<Localization dupe/clash detection> CRC32: 0x%8X, Key: %s", keyCRC, szLowerCaseKey);
@@ -1357,7 +1383,7 @@ bool CLocalizedStringsManager::DoLoadExcelXmlSpreadsheet(const char* sFileName, 
             }
             else
             {
-                pEntry->TranslatedText.psUtf8Uncompressed = new string(sTmp.c_str(), sTmp.c_str() + sTmp.length());
+                pEntry->TranslatedText.psUtf8Uncompressed = new AZStd::string(sTmp.c_str(), sTmp.c_str() + sTmp.length());
             }
         }
 
@@ -1366,7 +1392,7 @@ bool CLocalizedStringsManager::DoLoadExcelXmlSpreadsheet(const char* sFileName, 
         // the CryString makes sure, that only the ref-count is increment on assignment
         if (*szLowerCaseEvent)
         {
-            PrototypeSoundEvents::iterator it = m_prototypeEvents.find(CONST_TEMP_STRING(szLowerCaseEvent));
+            PrototypeSoundEvents::iterator it = m_prototypeEvents.find(AZStd::string(szLowerCaseEvent));
             if (it != m_prototypeEvents.end())
             {
                 pEntry->sPrototypeSoundEvent = *it;
@@ -1383,8 +1409,8 @@ bool CLocalizedStringsManager::DoLoadExcelXmlSpreadsheet(const char* sFileName, 
         {
             sTmp.assign(sWho.ptr, sWho.count);
             ReplaceEndOfLine(sTmp);
-            sTmp.replace(" ", "_");
-            string tmp;
+            AZStd::replace(sTmp.begin(), sTmp.end(), ' ', '_');
+            AZStd::string tmp;
             {
                 tmp = sTmp.c_str();
             }
@@ -1404,7 +1430,7 @@ bool CLocalizedStringsManager::DoLoadExcelXmlSpreadsheet(const char* sFileName, 
 
         // SoundMood Entries
         {
-            pEntry->SoundMoods.resize(SoundMoodValues.size());
+            pEntry->SoundMoods.resize(static_cast<int>(SoundMoodValues.size()));
             if (SoundMoodValues.size() > 0)
             {
                 std::map<int, float>::const_iterator itEnd = SoundMoodValues.end();
@@ -1420,7 +1446,7 @@ bool CLocalizedStringsManager::DoLoadExcelXmlSpreadsheet(const char* sFileName, 
 
         // EventParameter Entries
         {
-            pEntry->EventParameters.resize(EventParameterValues.size());
+            pEntry->EventParameters.resize(static_cast<int>(EventParameterValues.size()));
             if (EventParameterValues.size() > 0)
             {
                 std::map<int, float>::const_iterator itEnd = EventParameterValues.end();
@@ -1475,7 +1501,7 @@ bool CLocalizedStringsManager::DoLoadExcelXmlSpreadsheet(const char* sFileName, 
     if (m_cvarLocalizationEncode == 1)
     {
         pEncoder->Finalize();
-        
+
         {
             uint8 compressionBuffer[COMPRESSION_FIXED_BUFFER_LENGTH];
             //uint8 decompressionBuffer[COMPRESSION_FIXED_BUFFER_LENGTH];
@@ -1530,19 +1556,19 @@ bool CLocalizedStringsManager::DoLoadAGSXmlDocument(const char* sFileName, uint8
     }
     if (!bReload)
     {
-        if (m_loadedTables.find(CONST_TEMP_STRING(sFileName)) != m_loadedTables.end())
+        if (m_loadedTables.find(AZStd::string(sFileName)) != m_loadedTables.end())
         {
             return true;
         }
     }
     ListAndClearProblemLabels();
     XmlNodeRef root;
-    string sPath;
+    AZStd::string sPath;
     {
-        const string sLocalizationFolder(PathUtil::GetLocalizationRoot());
-        const string& languageFolder = m_pLanguage->sLanguage;
+        const AZStd::string sLocalizationFolder(PathUtil::GetLocalizationRoot());
+        const AZStd::string& languageFolder = m_pLanguage->sLanguage;
         sPath = sLocalizationFolder.c_str() + languageFolder + PathUtil::GetSlash() + sFileName;
-        root = m_pSystem->LoadXmlFromFile(sPath);
+        root = m_pSystem->LoadXmlFromFile(sPath.c_str());
         if (!root)
         {
             AZ_TracePrintf(LOC_WINDOW, "Loading Localization File %s failed!", sPath.c_str());
@@ -1608,14 +1634,14 @@ bool CLocalizedStringsManager::DoLoadAGSXmlDocument(const char* sFileName, uint8
         {
             continue;
         }
-        AzFramework::StringFunc::Replace(textValue, "\\n", " \n");      // carried over from helper func ReplaceEndOfLine(CryFixedStringT<>& s)
+        AzFramework::StringFunc::Replace(textValue, "\\n", " \n");
         if (keyString[0] == '@')
         {
             AzFramework::StringFunc::LChop(keyString, 1);
         }
         lowerKey = keyString;
         AZStd::to_lower(lowerKey.begin(), lowerKey.end());
-        keyCRC = CCrc32::Compute(lowerKey.c_str());
+        keyCRC = AZ::Crc32(lowerKey);
         if (m_cvarLocalizationDebug >= 3)
         {
             CryLogAlways("<Localization dupe/clash detection> CRC32: 0%8X, Key: %s", keyCRC, lowerKey.c_str());
@@ -1653,7 +1679,7 @@ bool CLocalizedStringsManager::DoLoadAGSXmlDocument(const char* sFileName, uint8
             }
             else
             {
-                pEntry->TranslatedText.psUtf8Uncompressed = new string(textString, textString + textLength);
+                pEntry->TranslatedText.psUtf8Uncompressed = new AZStd::string(textString, textString + textLength);
             }
         }
         {
@@ -1713,7 +1739,7 @@ void CLocalizedStringsManager::ReloadData()
     FreeLocalizationData();
     for (tmapFilenames::iterator it = temp.begin(); it != temp.end(); it++)
     {
-        (this->*loadFunction)((*it).first, (*it).second.nTagID, true);
+        (this->*loadFunction)((*it).first.c_str(), (*it).second.nTagID, true);
     }
 }
 
@@ -1721,9 +1747,9 @@ void CLocalizedStringsManager::ReloadData()
 void CLocalizedStringsManager::AddLocalizedString(SLanguage* pLanguage, SLocalizedStringEntry* pEntry, const uint32 keyCRC32)
 {
     pLanguage->m_vLocalizedStrings.push_back(pEntry);
-    int nId = (int)pLanguage->m_vLocalizedStrings.size() - 1;
+    [[maybe_unused]] int nId = (int)pLanguage->m_vLocalizedStrings.size() - 1;
     pLanguage->m_keysMap[keyCRC32] = pEntry;
-    
+
     if (m_cvarLocalizationDebug >= 2)
     {
         CryLog("<Localization> Add new string <%u> with ID %d to <%s>", keyCRC32, nId, pLanguage->sLanguage.c_str());
@@ -1731,19 +1757,19 @@ void CLocalizedStringsManager::AddLocalizedString(SLanguage* pLanguage, SLocaliz
 }
 
 //////////////////////////////////////////////////////////////////////////
-bool CLocalizedStringsManager::LocalizeString_ch(const char* sString, string& outLocalizedString, bool bEnglish)
+bool CLocalizedStringsManager::LocalizeString_ch(const char* sString, AZStd::string& outLocalizedString, bool bEnglish)
 {
     return LocalizeStringInternal(sString, strlen(sString), outLocalizedString, bEnglish);
 }
 
 //////////////////////////////////////////////////////////////////////////
-bool CLocalizedStringsManager::LocalizeString_s(const string& sString, string& outLocalizedString, bool bEnglish)
+bool CLocalizedStringsManager::LocalizeString_s(const AZStd::string& sString, AZStd::string& outLocalizedString, bool bEnglish)
 {
     return LocalizeStringInternal(sString.c_str(), sString.length(), outLocalizedString, bEnglish);
 }
 
 //////////////////////////////////////////////////////////////////////////
-bool CLocalizedStringsManager::LocalizeStringInternal(const char* pStr, size_t len, string& outLocalizedString, bool bEnglish)
+bool CLocalizedStringsManager::LocalizeStringInternal(const char* pStr, size_t len, AZStd::string& outLocalizedString, bool bEnglish)
 {
     assert (m_pLanguage);
     if (m_pLanguage == 0)
@@ -1754,7 +1780,7 @@ bool CLocalizedStringsManager::LocalizeStringInternal(const char* pStr, size_t l
     }
 
     // note: we don't write directly to outLocalizedString, in case it aliases pStr
-    string out;
+    AZStd::string out;
 
     // scan the string
     const char* pPos = pStr;
@@ -1782,8 +1808,8 @@ bool CLocalizedStringsManager::LocalizeStringInternal(const char* pStr, size_t l
         }
 
         // localize token
-        string token(pLabel, pLabelEnd);
-        string sLocalizedToken;
+        AZStd::string token(pLabel, pLabelEnd);
+        AZStd::string sLocalizedToken;
         if (bEnglish)
         {
             GetEnglishString(token.c_str(), sLocalizedToken);
@@ -1802,7 +1828,7 @@ bool CLocalizedStringsManager::LocalizeStringInternal(const char* pStr, size_t l
 
 void CLocalizedStringsManager::LocalizeAndSubstituteInternal(AZStd::string& locString, const AZStd::vector<AZStd::string>& keys, const AZStd::vector<AZStd::string>& values)
 {
-    string outString;
+    AZStd::string outString;
     LocalizeString_ch(locString.c_str(), outString);
     locString = outString .c_str();
     if (values.size() != keys.size())
@@ -1829,7 +1855,7 @@ void CLocalizedStringsManager::LocalizeAndSubstituteInternal(AZStd::string& locS
             startIndex += substituteOut.length();
         }
         startIndex = locString.find_first_of('{', startIndex);
-        endIndex = locString.find_first_of('}', startIndex); 
+        endIndex = locString.find_first_of('}', startIndex);
     }
 }
 #if defined(LOG_DECOMP_TIMES)
@@ -1865,9 +1891,8 @@ static void LogDecompTimer(__int64 nTotalTicks, __int64 nDecompTicks, __int64 nA
 }
 #endif
 
-string CLocalizedStringsManager::SLocalizedStringEntry::GetTranslatedText(const SLanguage* pLanguage) const
+AZStd::string CLocalizedStringsManager::SLocalizedStringEntry::GetTranslatedText(const SLanguage* pLanguage) const
 {
-    FUNCTION_PROFILER_FAST(GetISystem(), PROFILE_SYSTEM, g_bProfilerEnabled);
     if ((flags & IS_COMPRESSED) != 0)
     {
 #if defined(LOG_DECOMP_TIMES)
@@ -1875,7 +1900,7 @@ string CLocalizedStringsManager::SLocalizedStringEntry::GetTranslatedText(const 
         nTotalTicks = CryGetTicks();
 #endif  //LOG_DECOMP_TIMES
 
-        string outputString;
+        AZStd::string outputString;
         if (TranslatedText.szCompressed != NULL)
         {
             uint8 decompressionBuffer[COMPRESSION_FIXED_BUFFER_LENGTH];
@@ -1894,11 +1919,9 @@ string CLocalizedStringsManager::SLocalizedStringEntry::GetTranslatedText(const 
 #endif  //LOG_DECOMP_TIMES
 
 #if !defined(NDEBUG)
-            size_t len =
-#endif
-                strnlen((const char*)decompressionBuffer, COMPRESSION_FIXED_BUFFER_LENGTH);
+            size_t len = strnlen((const char*)decompressionBuffer, COMPRESSION_FIXED_BUFFER_LENGTH);
             assert(len < COMPRESSION_FIXED_BUFFER_LENGTH && "Buffer not null-terminated");
-
+#endif
 
 #if defined(LOG_DECOMP_TIMES)
             nAllocTicks = CryGetTicks();
@@ -1922,7 +1945,7 @@ string CLocalizedStringsManager::SLocalizedStringEntry::GetTranslatedText(const 
         }
         else
         {
-            string emptyOutputString;
+            AZStd::string emptyOutputString;
             return emptyOutputString;
         }
     }
@@ -1948,7 +1971,7 @@ void CLocalizedStringsManager::ListAndClearProblemLabels()
         CryLog ("These labels caused localization problems:");
         INDENT_LOG_DURING_SCOPE();
 
-        for (std::map<string, bool>::iterator iter = m_warnedAboutLabels.begin(); iter != m_warnedAboutLabels.end(); iter++)
+        for (std::map<AZStd::string, bool>::iterator iter = m_warnedAboutLabels.begin(); iter != m_warnedAboutLabels.end(); iter++)
         {
             CryLog ("%s", iter->first.c_str());
         }
@@ -1960,7 +1983,7 @@ void CLocalizedStringsManager::ListAndClearProblemLabels()
 #endif
 
 //////////////////////////////////////////////////////////////////////////
-bool CLocalizedStringsManager::LocalizeLabel(const char* sLabel, string& outLocalString, bool bEnglish)
+bool CLocalizedStringsManager::LocalizeLabel(const char* sLabel, AZStd::string& outLocalString, bool bEnglish)
 {
     assert(sLabel);
     if (!m_pLanguage || !sLabel)
@@ -1971,15 +1994,14 @@ bool CLocalizedStringsManager::LocalizeLabel(const char* sLabel, string& outLoca
     // Label sign.
     if (sLabel[0] == '@')
     {
-        uint32 labelCRC32 = CCrc32::ComputeLowercase(sLabel + 1);   // skip @ character.
+        uint32 labelCRC32 = AZ::Crc32(sLabel + 1);   // skip @ character.
         {
             AutoLock lock(m_cs);    //Lock here, to prevent strings etc being modified underneath this lookup
             SLocalizedStringEntry* entry = stl::find_in_map(m_pLanguage->m_keysMap, labelCRC32, NULL);
 
             if (entry != NULL)
             {
-                
-                string translatedText = entry->GetTranslatedText(m_pLanguage);
+                AZStd::string translatedText = entry->GetTranslatedText(m_pLanguage);
                 if ((bEnglish || translatedText.empty()) && entry->pEditorExtension != NULL)
                 {
                     //assert(!"No Localization Text available!");
@@ -2010,7 +2032,7 @@ bool CLocalizedStringsManager::LocalizeLabel(const char* sLabel, string& outLoca
 
 
 //////////////////////////////////////////////////////////////////////////
-bool CLocalizedStringsManager::GetEnglishString(const char* sKey, string& sLocalizedString)
+bool CLocalizedStringsManager::GetEnglishString(const char* sKey, AZStd::string& sLocalizedString)
 {
     assert(sKey);
     if (!m_pLanguage || !sKey)
@@ -2021,10 +2043,10 @@ bool CLocalizedStringsManager::GetEnglishString(const char* sKey, string& sLocal
     // Label sign.
     if (sKey[0] == '@')
     {
-        uint32 keyCRC32 = CCrc32::ComputeLowercase(sKey + 1);
+        uint32 keyCRC32 = AZ::Crc32(sKey + 1);
         {
-            AutoLock lock(m_cs);    //Lock here, to prevent strings etc being modified underneath this lookup
-            SLocalizedStringEntry* entry = stl::find_in_map(m_pLanguage->m_keysMap, keyCRC32, NULL);   // skip @ character.
+            AutoLock lock(m_cs); // Lock here, to prevent strings etc being modified underneath this lookup
+            SLocalizedStringEntry* entry = stl::find_in_map(m_pLanguage->m_keysMap, keyCRC32, NULL); // skip @ character.
             if (entry != NULL && entry->pEditorExtension != NULL)
             {
                 sLocalizedString = entry->pEditorExtension->sOriginalText;
@@ -2032,7 +2054,7 @@ bool CLocalizedStringsManager::GetEnglishString(const char* sKey, string& sLocal
             }
             else
             {
-                keyCRC32 = CCrc32::ComputeLowercase(sKey);
+                keyCRC32 = AZ::Crc32(sKey);
                 entry = stl::find_in_map(m_pLanguage->m_keysMap, keyCRC32, NULL);
                 if (entry != NULL && entry->pEditorExtension != NULL)
                 {
@@ -2050,7 +2072,8 @@ bool CLocalizedStringsManager::GetEnglishString(const char* sKey, string& sLocal
     }
     else
     {
-        // CryWarning( VALIDATOR_MODULE_SYSTEM,VALIDATOR_WARNING,"Not a valid localized string Label <%s>, must start with @ symbol", sKey );
+        // CryWarning( VALIDATOR_MODULE_SYSTEM,VALIDATOR_WARNING,"Not a valid localized string Label <%s>, must start with @ symbol", sKey
+        // );
     }
 
     sLocalizedString = sKey;
@@ -2063,7 +2086,7 @@ bool CLocalizedStringsManager::IsLocalizedInfoFound(const char* sKey)
     {
         return false;
     }
-    uint32 keyCRC32 = CCrc32::ComputeLowercase(sKey);
+    uint32 keyCRC32 = AZ::Crc32(sKey);
     {
         AutoLock lock(m_cs);    //Lock here, to prevent strings etc being modified underneath this lookup
         const SLocalizedStringEntry* entry = stl::find_in_map(m_pLanguage->m_keysMap, keyCRC32, NULL);
@@ -2079,13 +2102,13 @@ bool CLocalizedStringsManager::GetLocalizedInfoByKey(const char* sKey, SLocalize
         return false;
     }
 
-    uint32 keyCRC32 = CCrc32::ComputeLowercase(sKey);
+    uint32 keyCRC32 = AZ::Crc32(sKey);
     {
         AutoLock lock(m_cs);    //Lock here, to prevent strings etc being modified underneath this lookup
         const SLocalizedStringEntry* entry = stl::find_in_map(m_pLanguage->m_keysMap, keyCRC32, NULL);
         if (entry != NULL)
         {
-            outGameInfo.szCharacterName = entry->sCharacterName;
+            outGameInfo.szCharacterName = entry->sCharacterName.c_str();
             outGameInfo.sUtf8TranslatedText = entry->GetTranslatedText(m_pLanguage);
 
             outGameInfo.bUseSubtitle = (entry->flags & SLocalizedStringEntry::USE_SUBTITLE);
@@ -2110,7 +2133,7 @@ bool CLocalizedStringsManager::GetLocalizedInfoByKey(const char* sKey, SLocalize
 
     bool bResult = false;
 
-    uint32 keyCRC32 = CCrc32::ComputeLowercase(sKey);
+    uint32 keyCRC32 = AZ::Crc32(sKey);
     {
         AutoLock lock(m_cs);    //Lock here, to prevent strings etc being modified underneath this lookup
         const SLocalizedStringEntry* pEntry = stl::find_in_map(m_pLanguage->m_keysMap, keyCRC32, NULL);
@@ -2118,7 +2141,7 @@ bool CLocalizedStringsManager::GetLocalizedInfoByKey(const char* sKey, SLocalize
         {
             bResult = true;
 
-            pOutSoundInfo->szCharacterName = pEntry->sCharacterName;
+            pOutSoundInfo->szCharacterName = pEntry->sCharacterName.c_str();
             pOutSoundInfo->sUtf8TranslatedText = pEntry->GetTranslatedText(m_pLanguage);
 
             //pOutSoundInfo->sOriginalActorLine = pEntry->sOriginalActorLine.c_str();
@@ -2195,7 +2218,7 @@ int CLocalizedStringsManager::GetLocalizedStringCount()
     {
         return 0;
     }
-    return m_pLanguage->m_vLocalizedStrings.size();
+    return static_cast<int>(m_pLanguage->m_vLocalizedStrings.size());
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -2212,7 +2235,7 @@ bool CLocalizedStringsManager::GetLocalizedInfoByIndex(int nIndex, SLocalizedInf
     }
     const SLocalizedStringEntry* pEntry = entryVec[nIndex];
 
-    outGameInfo.szCharacterName = pEntry->sCharacterName;
+    outGameInfo.szCharacterName = pEntry->sCharacterName.c_str();
     outGameInfo.sUtf8TranslatedText = pEntry->GetTranslatedText(m_pLanguage);
 
     outGameInfo.bUseSubtitle = (pEntry->flags & SLocalizedStringEntry::USE_SUBTITLE);
@@ -2232,18 +2255,18 @@ bool CLocalizedStringsManager::GetLocalizedInfoByIndex(int nIndex, SLocalizedInf
         return false;
     }
     const SLocalizedStringEntry* pEntry = entryVec[nIndex];
-    outEditorInfo.szCharacterName = pEntry->sCharacterName;
+    outEditorInfo.szCharacterName = pEntry->sCharacterName.c_str();
     outEditorInfo.sUtf8TranslatedText = pEntry->GetTranslatedText(m_pLanguage);
 
     assert(pEntry->pEditorExtension != NULL);
 
-    outEditorInfo.sKey = pEntry->pEditorExtension->sKey;
+    outEditorInfo.sKey = pEntry->pEditorExtension->sKey.c_str();
 
-    outEditorInfo.sOriginalActorLine = pEntry->pEditorExtension->sOriginalActorLine;
-    outEditorInfo.sUtf8TranslatedActorLine = pEntry->pEditorExtension->sUtf8TranslatedActorLine;
+    outEditorInfo.sOriginalActorLine = pEntry->pEditorExtension->sOriginalActorLine.c_str();
+    outEditorInfo.sUtf8TranslatedActorLine = pEntry->pEditorExtension->sUtf8TranslatedActorLine.c_str();
 
     //outEditorInfo.sOriginalText = pEntry->sOriginalText;
-    outEditorInfo.sOriginalCharacterName = pEntry->pEditorExtension->sOriginalCharacterName;
+    outEditorInfo.sOriginalCharacterName = pEntry->pEditorExtension->sOriginalCharacterName.c_str();
 
     outEditorInfo.nRow = pEntry->pEditorExtension->nRow;
     outEditorInfo.bUseSubtitle = (pEntry->flags & SLocalizedStringEntry::USE_SUBTITLE);
@@ -2251,7 +2274,7 @@ bool CLocalizedStringsManager::GetLocalizedInfoByIndex(int nIndex, SLocalizedInf
 }
 
 //////////////////////////////////////////////////////////////////////////
-bool CLocalizedStringsManager::GetSubtitle(const char* sKeyOrLabel, string& outSubtitle, bool bForceSubtitle)
+bool CLocalizedStringsManager::GetSubtitle(const char* sKeyOrLabel, AZStd::string& outSubtitle, bool bForceSubtitle)
 {
     assert(sKeyOrLabel);
     if (!m_pLanguage || !sKeyOrLabel || !*sKeyOrLabel)
@@ -2263,7 +2286,7 @@ bool CLocalizedStringsManager::GetSubtitle(const char* sKeyOrLabel, string& outS
         ++sKeyOrLabel;
     }
 
-    uint32 keyCRC32 = CCrc32::ComputeLowercase(sKeyOrLabel);
+    uint32 keyCRC32 = AZ::Crc32(sKeyOrLabel);
     {
         AutoLock lock(m_cs);    //Lock here, to prevent strings etc being modified underneath this lookup
         const SLocalizedStringEntry* pEntry = stl::find_in_map(m_pLanguage->m_keysMap, keyCRC32, NULL);
@@ -2299,21 +2322,20 @@ bool CLocalizedStringsManager::GetSubtitle(const char* sKeyOrLabel, string& outS
     }
 }
 
-template<typename StringClass, typename CharType>
-void InternalFormatStringMessage(StringClass& outString, const StringClass& sString, const CharType** sParams, int nParams)
+void InternalFormatStringMessage(AZStd::string& outString, const AZStd::string& sString, const char** sParams, int nParams)
 {
-    static const CharType token = (CharType) '%';
-    static const CharType tokens1[2] = { token, (CharType) '\0' };
-    static const CharType tokens2[3] = { token, token, (CharType) '\0' };
+    static const char token = '%';
+    static const char tokens1[2] = { token, '\0' };
+    static const char tokens2[3] = { token, token, '\0' };
 
     int maxArgUsed = 0;
-    int lastPos = 0;
-    int curPos = 0;
-    const int sourceLen = sString.length();
+    size_t lastPos = 0;
+    size_t curPos = 0;
+    const int sourceLen = static_cast<int>(sString.length());
     while (true)
     {
-        int foundPos = sString.find(token, curPos);
-        if (foundPos != string::npos)
+        auto foundPos = sString.find(token, curPos);
+        if (foundPos != AZStd::string::npos)
         {
             if (foundPos + 1 < sourceLen)
             {
@@ -2330,8 +2352,8 @@ void InternalFormatStringMessage(StringClass& outString, const StringClass& sStr
                     }
                     else
                     {
-                        StringClass tmp (sString);
-                        tmp.replace(tokens1, tokens2);
+                        AZStd::string tmp(sString);
+                        AZ::StringFunc::Replace(tmp, tokens1, tokens2);
                         if constexpr (sizeof(*tmp.c_str()) == sizeof(char))
                         {
                             CryWarning(VALIDATOR_MODULE_SYSTEM, VALIDATOR_WARNING, "Parameter for argument %d is missing. [%s]", nArg + 1, (const char*)tmp.c_str());
@@ -2361,11 +2383,10 @@ void InternalFormatStringMessage(StringClass& outString, const StringClass& sStr
     }
 }
 
-template<typename StringClass, typename CharType>
-void InternalFormatStringMessage(StringClass& outString, const StringClass& sString, const CharType* param1, const CharType* param2 = 0, const CharType* param3 = 0, const CharType* param4 = 0)
+void InternalFormatStringMessage(AZStd::string& outString, const AZStd::string& sString, const char* param1, const char* param2 = 0, const char* param3 = 0, const char* param4 = 0)
 {
     static const int MAX_PARAMS = 4;
-    const CharType* params[MAX_PARAMS] = { param1, param2, param3, param4 };
+    const char* params[MAX_PARAMS] = { param1, param2, param3, param4 };
     int nParams = 0;
     while (nParams < MAX_PARAMS && params[nParams])
     {
@@ -2375,28 +2396,18 @@ void InternalFormatStringMessage(StringClass& outString, const StringClass& sStr
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CLocalizedStringsManager::FormatStringMessage_List(string& outString, const string& sString, const char** sParams, int nParams)
+void CLocalizedStringsManager::FormatStringMessage_List(AZStd::string& outString, const AZStd::string& sString, const char** sParams, int nParams)
 {
     InternalFormatStringMessage(outString, sString, sParams, nParams);
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CLocalizedStringsManager::FormatStringMessage(string& outString, const string& sString, const char* param1, const char* param2, const char* param3, const char* param4)
+void CLocalizedStringsManager::FormatStringMessage(AZStd::string& outString, const AZStd::string& sString, const char* param1, const char* param2, const char* param3, const char* param4)
 {
     InternalFormatStringMessage(outString, sString, param1, param2, param3, param4);
 }
 
 //////////////////////////////////////////////////////////////////////////
-int CLocalizedStringsManager::GetMemoryUsage(ICrySizer* pSizer)
-{
-    pSizer->AddObject(this, sizeof(*this));
-    pSizer->AddObject(m_languages);
-    pSizer->AddObject(m_prototypeEvents);
-    pSizer->AddObject(m_characterNameSet);
-    pSizer->AddObject(m_pLanguage);
-
-    return 0;
-}
 
 #if defined (WIN32) || defined(WIN64)
 namespace
@@ -2429,7 +2440,7 @@ namespace
         { "nl-NL", 0x0413 },  // Dutch (The Netherlands)
         { "fi-FI", 0x040b },  // Finnish
         { "sv-SE", 0x041d },  // Swedish
-        { "cs-CZ", 0x0405 },  // Czech 
+        { "cs-CZ", 0x0405 },  // Czech
         { "no-NO", 0x0414 },  // Norwegian (Norway)
         { "ar-SA", 0x0401 },  // Arabic (Saudi Arabia)
         { "da-DK", 0x0406 },  // Danish (Denmark)
@@ -2461,7 +2472,7 @@ void CLocalizedStringsManager::InternalSetCurrentLanguage(CLocalizedStringsManag
 #if defined (WIN32) || defined(WIN64)
     if (m_pLanguage != 0)
     {
-        g_currentLanguageID = GetLanguageID(m_pLanguage->sLanguage);
+        g_currentLanguageID = GetLanguageID(m_pLanguage->sLanguage.c_str());
     }
     else
     {
@@ -2493,7 +2504,7 @@ void CLocalizedStringsManager::InternalSetCurrentLanguage(CLocalizedStringsManag
     }
 }
 
-void CLocalizedStringsManager::LocalizeDuration(int seconds, string& outDurationString)
+void CLocalizedStringsManager::LocalizeDuration(int seconds, AZStd::string& outDurationString)
 {
     int s = seconds;
     int d, h, m;
@@ -2503,27 +2514,27 @@ void CLocalizedStringsManager::LocalizeDuration(int seconds, string& outDuration
     s -= h * 3600;
     m = s / 60;
     s = s - m * 60;
-    string str;
+    AZStd::string str;
     if (d > 1)
     {
-        str.Format("%d @ui_days %02d:%02d:%02d", d, h, m, s);
+        str = AZStd::string::format("%d @ui_days %02d:%02d:%02d", d, h, m, s);
     }
     else if (d > 0)
     {
-        str.Format("%d @ui_day %02d:%02d:%02d", d, h, m, s);
+        str = AZStd::string::format("%d @ui_day %02d:%02d:%02d", d, h, m, s);
     }
     else if (h > 0)
     {
-        str.Format("%02d:%02d:%02d", h, m, s);
+        str = AZStd::string::format("%02d:%02d:%02d", h, m, s);
     }
     else
     {
-        str.Format("%02d:%02d", m, s);
+        str = AZStd::string::format("%02d:%02d", m, s);
     }
     LocalizeString_s(str, outDurationString);
 }
 
-void CLocalizedStringsManager::LocalizeNumber(int number, string& outNumberString)
+void CLocalizedStringsManager::LocalizeNumber(int number, AZStd::string& outNumberString)
 {
     if (number == 0)
     {
@@ -2534,8 +2545,8 @@ void CLocalizedStringsManager::LocalizeNumber(int number, string& outNumberStrin
     outNumberString.assign("");
 
     int n = abs(number);
-    string separator;
-    CryFixedStringT<64> tmp;
+    AZStd::string separator;
+    AZStd::fixed_string<64> tmp;
     LocalizeString_ch("@ui_thousand_separator", separator);
     while (n > 0)
     {
@@ -2543,49 +2554,49 @@ void CLocalizedStringsManager::LocalizeNumber(int number, string& outNumberStrin
         int b = n - (a * 1000);
         if (a > 0)
         {
-            tmp.Format("%s%03d%s", separator.c_str(), b, tmp.c_str());
+            tmp = AZStd::string::format("%s%03d%s", separator.c_str(), b, tmp.c_str());
         }
         else
         {
-            tmp.Format("%d%s", b, tmp.c_str());
+            tmp = AZStd::string::format("%d%s", b, tmp.c_str());
         }
         n = a;
     }
 
     if (number < 0)
     {
-        tmp.Format("-%s", tmp.c_str());
+        tmp = AZStd::string::format("-%s", tmp.c_str());
     }
 
     outNumberString.assign(tmp.c_str());
 }
 
-void CLocalizedStringsManager::LocalizeNumber_Decimal(float number, int decimals, string& outNumberString)
+void CLocalizedStringsManager::LocalizeNumber_Decimal(float number, int decimals, AZStd::string& outNumberString)
 {
     if (number == 0.0f)
     {
-        CryFixedStringT<64> tmp;
-        tmp.Format("%.*f", decimals, number);
+        AZStd::fixed_string<64> tmp;
+        tmp = AZStd::fixed_string<64>::format("%.*f", decimals, number);
         outNumberString.assign(tmp.c_str());
         return;
     }
 
     outNumberString.assign("");
 
-    string commaSeparator;
+    AZStd::string commaSeparator;
     LocalizeString_ch("@ui_decimal_separator", commaSeparator);
     float f = number > 0.0f ? number : -number;
     int d = (int)f;
 
-    string intPart;
+    AZStd::string intPart;
     LocalizeNumber(d, intPart);
 
     float decimalsOnly = f - (float)d;
 
     int decimalsAsInt = aznumeric_cast<int>(int_round(decimalsOnly * pow(10.0f, decimals)));
 
-    CryFixedStringT<64> tmp;
-    tmp.Format("%s%s%0*d", intPart.c_str(), commaSeparator.c_str(), decimals, decimalsAsInt);
+    AZStd::fixed_string<64> tmp;
+    tmp = AZStd::fixed_string<64>::format("%s%s%0*d", intPart.c_str(), commaSeparator.c_str(), decimals, decimalsAsInt);
 
     outNumberString.assign(tmp.c_str());
 }
@@ -2639,7 +2650,7 @@ namespace
     }
 };
 
-void CLocalizedStringsManager::LocalizeTime(time_t t, bool bMakeLocalTime, bool bShowSeconds, string& outTimeString)
+void CLocalizedStringsManager::LocalizeTime(time_t t, bool bMakeLocalTime, bool bShowSeconds, AZStd::string& outTimeString)
 {
     if (bMakeLocalTime)
     {
@@ -2647,7 +2658,7 @@ void CLocalizedStringsManager::LocalizeTime(time_t t, bool bMakeLocalTime, bool 
         localtime_s(&thetime, &t);
         t = gEnv->pTimer->DateToSecondsUTC(thetime);
     }
-    outTimeString.resize(0);
+    outTimeString.clear();
     LCID lcID = g_currentLanguageID.lcID ? g_currentLanguageID.lcID : LOCALE_USER_DEFAULT;
     DWORD flags = bShowSeconds == false ? TIME_NOSECONDS : 0;
     SYSTEMTIME systemTime;
@@ -2656,14 +2667,14 @@ void CLocalizedStringsManager::LocalizeTime(time_t t, bool bMakeLocalTime, bool 
     if (len > 0)
     {
         // len includes terminating null!
-        CryFixedWStringT<256> tmpString;
+        AZStd::fixed_wstring<256> tmpString;
         tmpString.resize(len);
         ::GetTimeFormatW(lcID, flags, &systemTime, 0, (wchar_t*) tmpString.c_str(), len);
-        Unicode::Convert(outTimeString, tmpString);
+        AZStd::to_string(outTimeString, tmpString.data());
     }
 }
 
-void CLocalizedStringsManager::LocalizeDate(time_t t, bool bMakeLocalTime, bool bShort, bool bIncludeWeekday, string& outDateString)
+void CLocalizedStringsManager::LocalizeDate(time_t t, bool bMakeLocalTime, bool bShort, bool bIncludeWeekday, AZStd::string& outDateString)
 {
     if (bMakeLocalTime)
     {
@@ -2677,7 +2688,7 @@ void CLocalizedStringsManager::LocalizeDate(time_t t, bool bMakeLocalTime, bool 
     UnixTimeToSystemTime(t, &systemTime);
 
     // len includes terminating null!
-    CryFixedWStringT<256> tmpString;
+    AZStd::fixed_wstring<256> tmpString;
 
     if (bIncludeWeekday)
     {
@@ -2688,8 +2699,8 @@ void CLocalizedStringsManager::LocalizeDate(time_t t, bool bMakeLocalTime, bool 
             // len includes terminating null!
             tmpString.resize(len);
             ::GetDateFormatW(lcID, 0, &systemTime, L"ddd", (wchar_t*) tmpString.c_str(), len);
-            string utf8;
-            Unicode::Convert(utf8, tmpString);
+            AZStd::string utf8;
+            AZStd::to_string(utf8, tmpString.data());
             outDateString.append(utf8);
             outDateString.append(" ");
         }
@@ -2701,15 +2712,15 @@ void CLocalizedStringsManager::LocalizeDate(time_t t, bool bMakeLocalTime, bool 
         // len includes terminating null!
         tmpString.resize(len);
         ::GetDateFormatW(lcID, flags, &systemTime, 0, (wchar_t*) tmpString.c_str(), len);
-        string utf8;
-        Unicode::Convert(utf8, tmpString);
+        AZStd::string utf8;
+        AZStd::to_string(utf8, tmpString.data());
         outDateString.append(utf8);
     }
 }
 
 #else // #if defined (WIN32) || defined(WIN64)
 
-void CLocalizedStringsManager::LocalizeTime(time_t t, bool bMakeLocalTime, bool bShowSeconds, string& outTimeString)
+void CLocalizedStringsManager::LocalizeTime(time_t t, bool bMakeLocalTime, bool bShowSeconds, AZStd::string& outTimeString)
 {
     struct tm theTime;
     if (bMakeLocalTime)
@@ -2733,10 +2744,10 @@ void CLocalizedStringsManager::LocalizeTime(time_t t, bool bMakeLocalTime, bool 
     const size_t bufSize = sizeof(buf) / sizeof(buf[0]);
     wcsftime(buf, bufSize, bShowSeconds ? L"%#X" : L"%X", &theTime);
     buf[bufSize - 1] = 0;
-    Unicode::Convert(outTimeString, buf);
+    AZStd::to_string(outTimeString, buf);
 }
 
-void CLocalizedStringsManager::LocalizeDate(time_t t, bool bMakeLocalTime, bool bShort, bool bIncludeWeekday, string& outDateString)
+void CLocalizedStringsManager::LocalizeDate(time_t t, bool bMakeLocalTime, bool bShort, bool bIncludeWeekday, AZStd::string& outDateString)
 {
     struct tm theTime;
     if (bMakeLocalTime)
@@ -2761,7 +2772,7 @@ void CLocalizedStringsManager::LocalizeDate(time_t t, bool bMakeLocalTime, bool 
     const wchar_t* format = bShort ? (bIncludeWeekday ? L"%a %x" : L"%x") : L"%#x"; // long format always contains Weekday name
     wcsftime(buf, bufSize, format, &theTime);
     buf[bufSize - 1] = 0;
-    Unicode::Convert(outDateString, buf);
+    AZStd::to_string(outDateString, buf);
 }
 
 

@@ -2505,7 +2505,6 @@ OutlinerCheckBox
     spacing: 0px;
     padding: 0px;
     line-height: 0px;
-    font-size: 0px;
     margin: 2px 2px 0 2px;
     background-color: none;
     max-height: 20px;

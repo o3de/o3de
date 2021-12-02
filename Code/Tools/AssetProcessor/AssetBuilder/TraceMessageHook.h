@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -25,8 +26,8 @@ namespace AssetBuilder
         void EnableDebugMode(bool enable);
 
         bool OnAssert(const char* message) override;
-        bool OnPreError(const char* window, const char* fileName, int line, const char* func, const char* message);
-        bool OnPreWarning(const char* window, const char* fileName, int line, const char* func, const char* message);
+        bool OnPreError(const char* window, const char* fileName, int line, const char* func, const char* message) override;
+        bool OnPreWarning(const char* window, const char* fileName, int line, const char* func, const char* message) override;
         bool OnException(const char* message) override;
         bool OnPrintf(const char* window, const char* message) override;
         bool OnOutput(const char* window, const char* message) override;

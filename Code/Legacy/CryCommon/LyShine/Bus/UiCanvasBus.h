@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -100,7 +101,7 @@ public: // member functions
 
     //! Save this canvas to the given path in XML
     //! \return true if no error
-    virtual bool SaveToXml(const string& assetIdPathname, const string& sourceAssetPathname) = 0;
+    virtual bool SaveToXml(const AZStd::string& assetIdPathname, const AZStd::string& sourceAssetPathname) = 0;
 
     //! Initialize a set of entities that have been added to the canvas
     //! Used when instantiating a slice or for undo/redo, copy/paste

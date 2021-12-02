@@ -1,5 +1,6 @@
 """
-Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+Copyright (c) Contributors to the Open 3D Engine Project.
+For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
@@ -15,6 +16,7 @@ from aws_cdk import (
 import os
 
 from . import aws_metrics_constants
+from .aws_utils import resource_name_sanitizer
 
 
 class BatchProcessing:
@@ -24,11 +26,13 @@ class BatchProcessing:
     """
     def __init__(self,
                  stack: core.Construct,
+                 application_name: str,
                  input_stream_arn: str,
                  analytics_bucket_arn: str,
                  events_database_name: str,
                  events_table_name) -> None:
         self._stack = stack
+        self._application_name = application_name
         self._input_stream_arn = input_stream_arn
         self._analytics_bucket_arn = analytics_bucket_arn
         self._events_database_name = events_database_name
@@ -41,7 +45,8 @@ class BatchProcessing:
         """
         Generate the events processing lambda to filter the invalid metrics events.
         """
-        events_processing_lambda_name = f'{self._stack.stack_name}-EventsProcessingLambda'
+        events_processing_lambda_name = resource_name_sanitizer.sanitize_resource_name(
+            f'{self._stack.stack_name}-EventsProcessingLambda', 'lambda_function')
         self._create_events_processing_lambda_role(events_processing_lambda_name)
 
         self._events_processing_lambda = lambda_.Function(
@@ -57,6 +62,12 @@ class BatchProcessing:
                     os.path.join(os.path.dirname(__file__), 'lambdas', 'events_processing_lambda')),
             role=self._events_processing_lambda_role
         )
+        core.CfnOutput(
+            self._stack,
+            id='EventProcessingLambdaName',
+            description='Lambda function for processing metrics events data.',
+            export_name=f"{self._application_name}:EventProcessingLambda",
+            value=self._events_processing_lambda.function_name)
 
     def _create_events_processing_lambda_role(self, function_name: str) -> None:
         """
@@ -88,7 +99,8 @@ class BatchProcessing:
         self._events_processing_lambda_role = iam.Role(
             self._stack,
             id='EventsProcessingLambdaRole',
-            role_name=f'{self._stack.stack_name}-EventsProcessingLambdaRole',
+            role_name=resource_name_sanitizer.sanitize_resource_name(
+                f'{self._stack.stack_name}-EventsProcessingLambdaRole', 'iam_role'),
             assumed_by=iam.ServicePrincipal(
                 service='lambda.amazonaws.com'
             ),
@@ -106,8 +118,10 @@ class BatchProcessing:
 
         self._events_firehose_delivery_stream = kinesisfirehose.CfnDeliveryStream(
             self._stack,
-            id=f'{self._stack.stack_name}-EventsFirehoseDeliveryStream',
+            id=f'EventsFirehoseDeliveryStream',
             delivery_stream_type='KinesisStreamAsSource',
+            delivery_stream_name=resource_name_sanitizer.sanitize_resource_name(
+                f'{self._stack.stack_name}-EventsFirehoseDeliveryStream', 'firehose_delivery_stream'),
             kinesis_stream_source_configuration=kinesisfirehose.CfnDeliveryStream.KinesisStreamSourceConfigurationProperty(
                 kinesis_stream_arn=self._input_stream_arn,
                 role_arn=self._firehose_delivery_stream_role.role_arn
@@ -191,7 +205,8 @@ class BatchProcessing:
         self._firehose_delivery_stream_log_group = logs.LogGroup(
             self._stack,
             id='FirehoseLogGroup',
-            log_group_name=f'{self._stack.stack_name}-FirehoseLogGroup',
+            log_group_name=resource_name_sanitizer.sanitize_resource_name(
+                f'{self._stack.stack_name}-FirehoseLogGroup', 'cloudwatch_log_group'),
             removal_policy=core.RemovalPolicy.DESTROY,
             retention=logs.RetentionDays.ONE_MONTH
         )
@@ -298,7 +313,8 @@ class BatchProcessing:
         self._firehose_delivery_stream_role = iam.Role(
             self._stack,
             id='GameEventsFirehoseRole',
-            role_name=f'{self._stack.stack_name}-GameEventsFirehoseRole',
+            role_name=resource_name_sanitizer.sanitize_resource_name(
+                f'{self._stack.stack_name}-GameEventsFirehoseRole', 'iam_role'),
             assumed_by=iam.ServicePrincipal(
                 service='firehose.amazonaws.com'
             ),

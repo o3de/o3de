@@ -1,6 +1,7 @@
 #
-# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
-# 
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
@@ -15,36 +16,20 @@ set(AUDIOENGINEWWISE_COMPILEDEFINITIONS
 )
 
 find_package(Wwise MODULE)
-if (NOT Wwise_FOUND)
-    message(STATUS "** Update the LY_WWISE_INSTALL_PATH cache variable if you intend to use Wwise.")
-endif()
 
 ################################################################################
-# Server / Unsupported
+# Servers
+# (and situations where Wwise SDK is not found or otherwise unavailable)
 ################################################################################
-if (PAL_TRAIT_BUILD_SERVER_SUPPORTED OR PAL_TRAIT_AUDIO_ENGINE_WWISE_USE_STUB OR NOT Wwise_FOUND)
-    # Stub gem for server and unsupported platforms. Audio Engine Wwise is client only
-    ly_add_target(
-        NAME AudioEngineWwise.Stub ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
-        NAMESPACE Gem
-        FILES_CMAKE
-            audioenginewwise_stub_files.cmake
-        BUILD_DEPENDENCIES
-            PRIVATE
-                AZ::AzCore
-    )
-endif()
-
-if (PAL_TRAIT_AUDIO_ENGINE_WWISE_USE_STUB OR NOT Wwise_FOUND)
-    # setup aliases so stubs will be used if something references AudioEngineWwise(.Editor)
-    add_library(Gem::AudioEngineWwise ALIAS AudioEngineWwise.Stub)
-    add_library(Gem::AudioEngineWwise.Editor ALIAS AudioEngineWwise.Stub)
+if(NOT PAL_TRAIT_AUDIO_ENGINE_WWISE_SUPPORTED OR NOT Wwise_FOUND)
+    # Don't create any Gem targets and aliases.  Nothing should depend on this
+    # Gem directly, because if it doesn't define targets it will cause an error.
     return()
 endif()
 
 
 ################################################################################
-# Runtime / Game
+# Clients
 ################################################################################
 ly_add_target(
     NAME AudioEngineWwise.Static STATIC
@@ -183,7 +168,7 @@ if (PAL_TRAIT_BUILD_TESTS_SUPPORTED)
 endif()
 
 ################################################################################
-# Tools / Editor
+# Tools / Builders
 ################################################################################
 if (PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_add_target(

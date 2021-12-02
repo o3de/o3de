@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -26,13 +27,13 @@ namespace EMStudio
 
     public:
         // constructor and destructor
-        GraphWidgetCallback(NodeGraphWidget* graphWidget)   { mGraphWidget = graphWidget; }
+        GraphWidgetCallback(NodeGraphWidget* graphWidget)   { m_graphWidget = graphWidget; }
         virtual ~GraphWidgetCallback()                      {}
 
         virtual void DrawOverlay(QPainter& painter) = 0;
 
     protected:
-        NodeGraphWidget* mGraphWidget;
+        NodeGraphWidget* m_graphWidget;
     };
 }   // namespace EMStudio
 

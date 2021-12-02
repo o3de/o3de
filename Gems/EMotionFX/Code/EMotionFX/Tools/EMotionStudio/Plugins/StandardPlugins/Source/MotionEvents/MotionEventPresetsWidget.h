@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -45,7 +46,7 @@ namespace EMStudio
         void Init();
         void UpdateInterface();
 
-        QTableWidget* GetMotionEventPresetsTable()                                                          { return mTableWidget; }
+        QTableWidget* GetMotionEventPresetsTable()                                                          { return m_tableWidget; }
 
     public slots:
         void ReInit();
@@ -92,12 +93,12 @@ namespace EMStudio
             }
         };
 
-        DragTableWidget* mTableWidget = nullptr;
+        DragTableWidget* m_tableWidget = nullptr;
         QAction* m_addAction = nullptr;
         QAction* m_saveMenuAction = nullptr;
         QAction* m_saveAction = nullptr;
         QAction* m_saveAsAction = nullptr;
         QAction* m_loadAction = nullptr;
-        MotionEventsPlugin* mPlugin = nullptr;
+        MotionEventsPlugin* m_plugin = nullptr;
     };
 } // namespace EMStudio

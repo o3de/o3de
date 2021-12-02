@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -158,8 +159,6 @@ namespace Audio
         TActiveObjectMap m_cAudioObjects;
         CInstanceManager<CATLAudioObject, TAudioObjectID> m_cObjectPool;
         float m_fTimeSinceLastVelocityUpdateMS;
-
-        CAudioEventManager& m_refAudioEventManager;
 
         AudioRaycastManager m_raycastManager;
     };

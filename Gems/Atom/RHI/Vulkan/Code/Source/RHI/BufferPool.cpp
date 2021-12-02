@@ -1,10 +1,10 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "Atom_RHI_Vulkan_precompiled.h"
 #include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/RHI.Reflect/PlatformLimitsDescriptor.h>
 #include <Atom/RHI.Reflect/Vulkan/BufferPoolDescriptor.h>
@@ -49,7 +49,7 @@ namespace AZ
         {
             auto& device = static_cast<Device&>(deviceBase);
 
-            VkDeviceSize bufferPageSizeInBytes = RHI::RHISystemInterface::Get()->GetPlatformLimitsDescriptor()->m_platformDefaultValues.m_bufferPoolPageSizeInBytes;
+            VkDeviceSize bufferPageSizeInBytes = device.GetDescriptor().m_platformLimitsDescriptor->m_platformDefaultValues.m_bufferPoolPageSizeInBytes;
             VkMemoryPropertyFlags additionalMemoryPropertyFlags = 0;
             if (const auto* descriptor = azrtti_cast<const BufferPoolDescriptor*>(&descriptorBase))
             {

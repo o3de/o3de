@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -32,14 +33,6 @@ namespace ScriptCanvasTestUtilitiesCPP
 namespace ScriptCanvasTests
 {
     using namespace ScriptCanvas;
-
-#define SC_CORE_UNIT_TEST_DIR "@engroot@/LY_SC_UnitTest_ScriptCanvas_CoreCPP_Temporary"
-#define SC_CORE_UNIT_TEST_NAME "serializationTest.scriptcanvas_compiled"
-    const char* k_tempCoreAssetDir = SC_CORE_UNIT_TEST_DIR;
-    const char* k_tempCoreAssetName = SC_CORE_UNIT_TEST_NAME;
-    const char* k_tempCoreAssetPath = SC_CORE_UNIT_TEST_DIR "/" SC_CORE_UNIT_TEST_NAME;
-#undef SC_CORE_UNIT_TEST_DIR
-#undef SC_CORE_UNIT_TEST_NAME
 
     void ExpectParse(AZStd::string_view graphPath)
     {

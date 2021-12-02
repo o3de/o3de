@@ -1,12 +1,12 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
 
-#include "UiCanvasEditor_precompiled.h"
 #include "UiEditorAnimationBus.h"
 #include "UiEditorDLLBus.h"
 #include "UiAnimViewAnimNode.h"
@@ -18,7 +18,6 @@
 #include "UiAnimViewSequenceManager.h"
 #include "Objects/EntityObject.h"
 #include "ViewManager.h"
-#include "RenderViewport.h"
 #include "Clipboard.h"
 
 #include <AzCore/Math/Crc.h>
@@ -150,8 +149,6 @@ void CUiAnimViewAnimNode::UiElementPropertyChanged()
 
     bool valueChanged = false;
 
-    const float time = GetSequence()->GetTime();
-
     if (m_nodeEntityId.IsValid() && !m_azEntityDataCache.empty())
     {
         AZ::Entity* pNodeEntity = nullptr;
@@ -181,8 +178,8 @@ void CUiAnimViewAnimNode::UiElementPropertyChanged()
                     AZ::Component* oldComponent = oldComponents[componentIndex];
                     AZ::Component* newComponent = newComponents[componentIndex];
 
-                    AZ::Uuid oldComponentType = oldComponent->RTTI_GetType();
-                    AZ::Uuid newComponentType = newComponent->RTTI_GetType();
+                    [[maybe_unused]] AZ::Uuid oldComponentType = oldComponent->RTTI_GetType();
+                    [[maybe_unused]] AZ::Uuid newComponentType = newComponent->RTTI_GetType();
 
                     AZ_Assert(oldComponentType == newComponentType, "Components have different types");
 
@@ -537,9 +534,6 @@ void CUiAnimViewAnimNode::BindToEditorObjects()
     }
 
     CUiAnimViewSequenceNotificationContext context(GetSequence());
-
-    CUiAnimViewAnimNode* pDirector = GetDirector();
-    const bool bBelongsToActiveDirector = pDirector ? pDirector->IsActiveDirector() : true;
 
     // if this node represents an AZ entity then register for updates
     if (m_nodeEntityId.IsValid())
@@ -1100,7 +1094,7 @@ bool CUiAnimViewAnimNode::SetName(const char* pName)
         }
     }
 
-    string oldName = GetName();
+    AZStd::string oldName = GetName();
     m_pAnimNode->SetName(pName);
 
     if (UiAnimUndo::IsRecording())
@@ -1108,7 +1102,7 @@ bool CUiAnimViewAnimNode::SetName(const char* pName)
         UiAnimUndo::Record(new CUndoAnimNodeRename(this, oldName));
     }
 
-    GetSequence()->OnNodeRenamed(this, oldName);
+    GetSequence()->OnNodeRenamed(this, oldName.c_str());
 
     return true;
 }
@@ -1247,7 +1241,7 @@ CUiAnimViewAnimNodeBundle CUiAnimViewAnimNode::GetAnimNodesByName(const char* pN
 {
     CUiAnimViewAnimNodeBundle bundle;
 
-    QString nodeName = GetName();
+    QString nodeName = QString::fromUtf8(GetName().c_str());
     if (GetNodeType() == eUiAVNT_AnimNode && QString::compare(pName, nodeName, Qt::CaseInsensitive) == 0)
     {
         bundle.AppendAnimNode(this);
@@ -1267,17 +1261,15 @@ CUiAnimViewAnimNodeBundle CUiAnimViewAnimNode::GetAnimNodesByName(const char* pN
 }
 
 //////////////////////////////////////////////////////////////////////////
-const char* CUiAnimViewAnimNode::GetParamName(const CUiAnimParamType& paramType) const
+AZStd::string CUiAnimViewAnimNode::GetParamName(const CUiAnimParamType& paramType) const
 {
-    const char* pName = m_pAnimNode->GetParamName(paramType);
-    return pName ? pName : "";
+    return m_pAnimNode->GetParamName(paramType);
 }
 
 //////////////////////////////////////////////////////////////////////////
-const char* CUiAnimViewAnimNode::GetParamNameForTrack(const CUiAnimParamType& paramType, const IUiAnimTrack* track) const
+AZStd::string CUiAnimViewAnimNode::GetParamNameForTrack(const CUiAnimParamType& paramType, const IUiAnimTrack* track) const
 {
-    const char* pName = m_pAnimNode->GetParamNameForTrack(paramType, track);
-    return pName ? pName : "";
+    return m_pAnimNode->GetParamNameForTrack(paramType, track);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1414,7 +1406,7 @@ void CUiAnimViewAnimNode::UpdateDynamicParams()
 void CUiAnimViewAnimNode::CopyKeysToClipboard(XmlNodeRef& xmlNode, const bool bOnlySelectedKeys, const bool bOnlyFromSelectedTracks)
 {
     XmlNodeRef childNode = xmlNode->createNode("Node");
-    childNode->setAttr("name", GetName());
+    childNode->setAttr("name", GetName().c_str());
     childNode->setAttr("type", GetType());
 
     for (auto iter = m_childNodes.begin(); iter != m_childNodes.end(); ++iter)
@@ -1483,7 +1475,7 @@ bool CUiAnimViewAnimNode::PasteNodesFromClipboard(QWidget* context)
     const bool bLightAnimationSetActive = GetSequence()->GetFlags() & IUiAnimSequence::eSeqFlags_LightAnimationSet;
 
     const unsigned int numNodes = animNodesRoot->getChildCount();
-    for (int i = 0; i < numNodes; ++i)
+    for (unsigned int i = 0; i < numNodes; ++i)
     {
         XmlNodeRef xmlNode = animNodesRoot->getChild(i);
 
@@ -1558,7 +1550,7 @@ bool CUiAnimViewAnimNode::IsValidReparentingTo(CUiAnimViewAnimNode* pNewParent)
     }
 
     // Check if the new parent already contains a node with this name
-    CUiAnimViewAnimNodeBundle foundNodes = pNewParent->GetAnimNodesByName(GetName());
+    CUiAnimViewAnimNodeBundle foundNodes = pNewParent->GetAnimNodesByName(GetName().c_str());
     if (foundNodes.GetCount() > 1 || (foundNodes.GetCount() == 1 && foundNodes.GetNode(0) != this))
     {
         return false;
@@ -1633,7 +1625,7 @@ void CUiAnimViewAnimNode::OnSelectionChanged(const bool bSelected)
 {
     if (m_pAnimNode)
     {
-        const EUiAnimNodeType animNodeType = GetType();
+        [[maybe_unused]] const EUiAnimNodeType animNodeType = GetType();
         assert(animNodeType == eUiAnimNodeType_Camera || animNodeType == eUiAnimNodeType_Entity || animNodeType == eUiAnimNodeType_GeomCache);
 
         const EUiAnimNodeFlags flags = (EUiAnimNodeFlags)m_pAnimNode->GetFlags();

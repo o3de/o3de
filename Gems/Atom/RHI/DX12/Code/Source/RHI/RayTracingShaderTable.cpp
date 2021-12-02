@@ -1,10 +1,10 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "RHI/Atom_RHI_DX12_precompiled.h"
 #include <RHI/RayTracingPipelineState.h>
 #include <RHI/RayTracingShaderTable.h>
 #include <Atom/RHI.Reflect/DX12/ShaderStageFunction.h>
@@ -72,7 +72,7 @@ namespace AZ
             AZ_Assert(resultCode == RHI::ResultCode::Success, "failed to create shader table buffer");
 
             MemoryView& shaderTableMemoryView = static_cast<Buffer*>(shaderTableBuffer.get())->GetMemoryView();
-            shaderTableMemoryView.SetName("RayTracingShaderTable");
+            shaderTableMemoryView.SetName(L"RayTracingShaderTable");
 
             // copy records
             RHI::BufferMapResponse mapResponse;
@@ -85,7 +85,7 @@ namespace AZ
                 uint8_t* nextRecord = RHI::AlignUp(mappedData + shaderRecordSize, D3D12_RAYTRACING_SHADER_RECORD_BYTE_ALIGNMENT);
 
                 AZStd::wstring shaderExportNameWstring;
-                AZStd::to_wstring(shaderExportNameWstring, record.m_shaderExportName.GetStringView().data(), record.m_shaderExportName.GetStringView().size());
+                AZStd::to_wstring(shaderExportNameWstring, record.m_shaderExportName.GetStringView());
                 void* shaderIdentifier = stateObjectProperties->GetShaderIdentifier(shaderExportNameWstring.c_str());
                 memcpy(mappedData, shaderIdentifier, D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES);
                 mappedData += D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES;

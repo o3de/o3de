@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -28,7 +29,6 @@ namespace AZ
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->DataElement(AZ::Edit::UIHandlers::Default, &ModelPreset::m_displayName, "Display Name", "Identifier used for display and selection")
                         ->DataElement(AZ::Edit::UIHandlers::Default, &ModelPreset::m_modelAsset, "Model Asset", "Model asset reference")
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &ModelPreset::m_previewImageAsset, "Preview Image Asset", "Preview image asset reference")
                         ;
                 }
             }

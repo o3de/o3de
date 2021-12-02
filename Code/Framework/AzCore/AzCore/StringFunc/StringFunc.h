@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -484,10 +485,11 @@ namespace AZ
             //! CalculateBranchToken
             /*! Calculate the branch token that is used for asset processor connection negotiations
             *
-            * \param appRootPath - The absolute path of the app root to base the token calculation on
+            * \param engineRootPath - The absolute path to the engine root to base the token calculation on
             * \param token       - The result of the branch token calculation
             */
-            void CalculateBranchToken(const AZStd::string& appRootPath, AZStd::string& token);
+            void CalculateBranchToken(AZStd::string_view engineRootPath, AZStd::string& token);
+            void CalculateBranchToken(AZStd::string_view engineRootPath, AZ::IO::FixedMaxPathString& token);
         }
 
         //////////////////////////////////////////////////////////////////////////

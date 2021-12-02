@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -82,7 +83,7 @@ protected Q_SLOTS:
     void OnIndexDoubleClicked(const QModelIndex& index);
 
 protected:
-    virtual void OnFileMonitorChange(const SFileChangeInfo& rChange);
+    void OnFileMonitorChange(const SFileChangeInfo& rChange) override;
     void contextMenuEvent(QContextMenuEvent* e) override;
 
     void InitTree();

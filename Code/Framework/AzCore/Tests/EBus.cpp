@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -2087,7 +2088,7 @@ namespace UnitTest
         DisconnectNextHandlerByIdImpl multiHandler2;
         multiHandler2.BusConnect(DisconnectNextHandlerByIdImpl::firstBusAddress);
         multiHandler2.BusConnect(DisconnectNextHandlerByIdImpl::secondBusAddress);
-        
+
         // Set the first handler m_nextHandler field to point to the second handler
         multiHandler1.m_nextHandler = &multiHandler2;
 
@@ -2806,7 +2807,7 @@ namespace UnitTest
                     AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(m_val % m_maxSleep));
                 }
             }
-            
+
             void DoConnect() override
             {
                 MyEventGroupBus::Handler::BusConnect(m_id);
@@ -2836,7 +2837,7 @@ namespace UnitTest
             handlerList.emplace_back(i, maxSleep);
         }
 
-        auto work = [maxSleep, threadCount]()
+        auto work = []()
         {
             char sentinel[64] = { 0 };
             char* end = sentinel + AZ_ARRAY_SIZE(sentinel);
@@ -2853,7 +2854,7 @@ namespace UnitTest
                 }
 
                 MyEventGroupBus::Event(id, &MyEventGroupBus::Events::Calculate, i, i * 2, i << 4);
-                
+
                 LocklessConnectorBus::Event(id, &LocklessConnectorBus::Events::DoDisconnect);
 
                 bool failed = (AZStd::find_if(&sentinel[0], end, [](char s) { return s != 0; }) != end);
@@ -2890,7 +2891,7 @@ namespace UnitTest
         {
             MyEventGroupImpl()
             {
-                
+
             }
 
             ~MyEventGroupImpl() override
@@ -2922,7 +2923,7 @@ namespace UnitTest
 
         MyEventGroupImpl handler;
 
-        auto work = [maxSleep, &handler]()
+        auto work = [&handler]()
         {
             for (int i = 1; i < cycleCount; ++i)
             {
@@ -3613,7 +3614,7 @@ namespace UnitTest
             {
                 AZStd::this_thread::yield();
             }
-                
+
             EXPECT_GE(AZStd::chrono::system_clock::now(), endTime);
         };
         AZStd::thread connectThread([&connectHandler, &waitHandler]()
@@ -3812,7 +3813,7 @@ namespace UnitTest
     struct LastHandlerDisconnectHandler
         : public LastHandlerDisconnectBus::Handler
     {
-        void OnEvent() override 
+        void OnEvent() override
         {
             ++m_numOnEvents;
             BusDisconnect();
@@ -3853,7 +3854,7 @@ namespace UnitTest
     struct DisconnectAssertHandler
         : public DisconnectAssertBus::Handler
     {
-        
+
     };
 
     TEST_F(EBus, HandlerDestroyedWithoutDisconnect_Asserts)
@@ -3993,6 +3994,191 @@ namespace UnitTest
         EXPECT_FALSE(SingleHandlerPerIdTestRequestBus::HasHandlers(invalidBusIdPtr));
 
         idTestRequest.Disconnect();
+    }
+
+    // IsInDispatchThisThread
+    struct IsInThreadDispatchRequests
+        : AZ::EBusTraits
+    {
+        using MutexType = AZStd::recursive_mutex;
+    };
+
+    using IsInThreadDispatchBus = AZ::EBus<IsInThreadDispatchRequests>;
+
+    class IsInThreadDispatchHandler
+        : public IsInThreadDispatchBus::Handler
+    {};
+
+    TEST_F(EBus, InvokingIsInThisThread_ReturnsSuccess_OnlyIfThreadIsInDispatch)
+    {
+        IsInThreadDispatchHandler handler;
+        handler.BusConnect();
+
+        auto ThreadDispatcher = [](IsInThreadDispatchRequests*)
+        {
+            EXPECT_TRUE(IsInThreadDispatchBus::IsInDispatchThisThread());
+            auto PerThreadBusDispatch = []()
+            {
+                EXPECT_FALSE(IsInThreadDispatchBus::IsInDispatchThisThread());
+            };
+            AZStd::array threads{ AZStd::thread(PerThreadBusDispatch), AZStd::thread(PerThreadBusDispatch) };
+            for (AZStd::thread& thread : threads)
+            {
+                thread.join();
+            }
+        };
+
+        static constexpr size_t ThreadDispatcherIterations = 4;
+        for (size_t iteration = 0; iteration < ThreadDispatcherIterations; ++iteration)
+        {
+            EXPECT_FALSE(IsInThreadDispatchBus::IsInDispatchThisThread());
+            IsInThreadDispatchBus::Broadcast(ThreadDispatcher);
+            EXPECT_FALSE(IsInThreadDispatchBus::IsInDispatchThisThread());
+        }
+    }
+
+    // Thread Dispatch Policy
+    struct ThreadDispatchTestBusTraits
+        : AZ::EBusTraits
+    {
+        using MutexType = AZStd::recursive_mutex;
+
+        struct PostThreadDispatchTestInvoker
+        {
+            ~PostThreadDispatchTestInvoker();
+        };
+
+        template <typename DispatchMutex>
+        struct ThreadDispatchTestLockGuard
+        {
+            ThreadDispatchTestLockGuard(DispatchMutex& contextMutex)
+                : m_lock{ contextMutex }
+            {}
+            ThreadDispatchTestLockGuard(DispatchMutex& contextMutex, AZStd::adopt_lock_t adopt_lock)
+                : m_lock{ contextMutex, adopt_lock }
+            {}
+            ThreadDispatchTestLockGuard(const ThreadDispatchTestLockGuard&) = delete;
+            ThreadDispatchTestLockGuard& operator=(const ThreadDispatchTestLockGuard&) = delete;
+        private:
+            PostThreadDispatchTestInvoker m_threadPolicyInvoker;
+            using LockType = AZStd::conditional_t<LocklessDispatch, AZ::Internal::NullLockGuard<DispatchMutex>, AZStd::scoped_lock<DispatchMutex>>;
+            LockType m_lock;
+        };
+
+        template <typename DispatchMutex, bool IsLocklessDispatch>
+        using DispatchLockGuard = ThreadDispatchTestLockGuard<DispatchMutex>;
+
+        static inline AZStd::atomic<int32_t> s_threadPostDispatchCalls;
+    };
+
+    class ThreadDispatchTestRequests
+    {
+    public:
+        virtual void FirstCall() = 0;
+        virtual void SecondCall() = 0;
+        virtual void ThirdCall() = 0;
+    };
+
+    using ThreadDispatchTestBus = AZ::EBus<ThreadDispatchTestRequests, ThreadDispatchTestBusTraits>;
+
+    ThreadDispatchTestBusTraits::PostThreadDispatchTestInvoker::~PostThreadDispatchTestInvoker()
+    {
+        if (!ThreadDispatchTestBus::IsInDispatchThisThread())
+        {
+            ++s_threadPostDispatchCalls;
+        }
+    }
+
+    class ThreadDispatchTestHandler
+        : public ThreadDispatchTestBus::Handler
+    {
+    public:
+        void Connect()
+        {
+            ThreadDispatchTestBus::Handler::BusConnect();
+        }
+        void Disconnect()
+        {
+            ThreadDispatchTestBus::Handler::BusDisconnect();
+        }
+
+        void FirstCall() override
+        {
+            ThreadDispatchTestBus::Broadcast(&ThreadDispatchTestBus::Events::SecondCall);
+        }
+        void SecondCall() override
+        {
+            ThreadDispatchTestBus::Broadcast(&ThreadDispatchTestBus::Events::ThirdCall);
+        }
+        void ThirdCall() override
+        {
+        }
+    };
+
+    template <typename ParamType>
+    class EBusParamFixture
+        : public ScopedAllocatorSetupFixture
+        , public ::testing::WithParamInterface<ParamType>
+    {};
+
+    struct ThreadDispatchParams
+    {
+        size_t m_threadCount{};
+        size_t m_handlerCount{};
+    };
+
+    using ThreadDispatchParamFixture = EBusParamFixture<ThreadDispatchParams>;
+
+    INSTANTIATE_TEST_CASE_P(
+        ThreadDispatch,
+        ThreadDispatchParamFixture,
+        ::testing::Values(
+            ThreadDispatchParams{ 1, 1 },
+            ThreadDispatchParams{ 2, 1 },
+            ThreadDispatchParams{ 1, 2 },
+            ThreadDispatchParams{ 2, 2 },
+            ThreadDispatchParams{ 16, 8 }
+            )
+    );
+
+    TEST_P(ThreadDispatchParamFixture, CustomDispatchLockGuard_InvokesPostDispatchFunction_AfterThreadHasFinishedDispatch)
+    {
+        ThreadDispatchTestBusTraits::s_threadPostDispatchCalls = 0;
+        ThreadDispatchParams threadDispatchParams = GetParam();
+        AZStd::vector<AZStd::thread> testThreads;
+        AZStd::vector<ThreadDispatchTestHandler> testHandlers(threadDispatchParams.m_handlerCount);
+        for (ThreadDispatchTestHandler& testHandler : testHandlers)
+        {
+            testHandler.Connect();
+        }
+
+        static constexpr size_t DispatchThreadCalls = 3;
+        const size_t totalThreadDispatchCalls = threadDispatchParams.m_threadCount * DispatchThreadCalls;
+
+        auto DispatchThreadWorker = []()
+        {
+            ThreadDispatchTestBus::Broadcast(&ThreadDispatchTestBus::Events::FirstCall);
+            ThreadDispatchTestBus::Broadcast(&ThreadDispatchTestBus::Events::SecondCall);
+            ThreadDispatchTestBus::Broadcast(&ThreadDispatchTestBus::Events::ThirdCall);
+        };
+
+        for (size_t threadIndex = 0; threadIndex < threadDispatchParams.m_threadCount; ++threadIndex)
+        {
+            testThreads.emplace_back(DispatchThreadWorker);
+        }
+
+        for (AZStd::thread& thread : testThreads)
+        {
+            thread.join();
+        }
+
+        for (ThreadDispatchTestHandler& testHandler : testHandlers)
+        {
+            testHandler.Disconnect();
+        }
+
+        EXPECT_EQ(totalThreadDispatchCalls, ThreadDispatchTestBusTraits::s_threadPostDispatchCalls);
+        ThreadDispatchTestBusTraits::s_threadPostDispatchCalls = 0;
     }
 } // namespace UnitTest
 
@@ -4369,7 +4555,7 @@ namespace Benchmark
             Bus::ExecuteQueuedEvents();
         }
         s_benchmarkEBusEnv<Bus>.Disconnect(state);
-        
+
     }
     BUS_BENCHMARK_REGISTER_ALL(BM_EBus_ExecuteBroadcast);
 

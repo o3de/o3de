@@ -1,5 +1,6 @@
-# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
-# 
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
@@ -22,7 +23,7 @@ def returnStubDir(stub):
                 break
             if (len(tail) == 0):
                 path = ""
-                if _G_DEBUG:
+                if _DCCSI_GDEBUG:
                     print('~ Debug Message:  I was not able to find the '
                           'path to that file (stub) in a walk-up from currnet path')
                 break

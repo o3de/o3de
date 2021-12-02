@@ -1,5 +1,6 @@
 """
-Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+Copyright (c) Contributors to the Open 3D Engine Project.
+For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
 
@@ -237,7 +238,7 @@ class TestAndroidLauncher:
         launcher = ly_test_tools.launchers.AndroidLauncher(mock_workspace, ["dummy"])
         launcher.configure_settings()
 
-        assert mock_workspace.settings.modify_platform_setting.call_count == 8
+        assert mock_workspace.settings.modify_platform_setting.call_count == 1
 
     @mock.patch('ly_test_tools.launchers.platforms.base.Launcher._config_ini_to_dict')
     @mock.patch('ly_test_tools.environment.process_utils.check_output')

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -25,11 +26,11 @@ namespace EMStudio
     {
         setWindowTitle("SimulatedObject Selection Window");
 
-        m_OKButton = new QPushButton("OK");
+        m_okButton = new QPushButton("OK");
         m_cancelButton = new QPushButton("Cancel");
 
         QHBoxLayout* buttonLayout = new QHBoxLayout();
-        buttonLayout->addWidget(m_OKButton);
+        buttonLayout->addWidget(m_okButton);
         buttonLayout->addWidget(m_cancelButton);
 
         QVBoxLayout* layout = new QVBoxLayout(this);
@@ -37,7 +38,7 @@ namespace EMStudio
         layout->addWidget(m_simulatedObjectSelectionWidget);
         layout->addLayout(buttonLayout);
 
-        connect(m_OKButton, &QPushButton::clicked, this, &SimulatedObjectSelectionWindow::accept);
+        connect(m_okButton, &QPushButton::clicked, this, &SimulatedObjectSelectionWindow::accept);
         connect(m_cancelButton, &QPushButton::clicked, this, &SimulatedObjectSelectionWindow::reject);
         connect(m_simulatedObjectSelectionWidget, &SimulatedObjectSelectionWidget::OnDoubleClicked, this, &SimulatedObjectSelectionWindow::accept);
     }

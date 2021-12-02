@@ -24,7 +24,7 @@
 								</Class>
 								<Class name="bool" field="IsEditorOnly" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
 							</Class>
-							<Class name="TransformComponent" field="element" version="9" type="{27F1E1A1-8D9D-4C3B-BD3A-AFB9762449C0}">
+							<Class name="TransformComponent" field="element" version="10" type="{27F1E1A1-8D9D-4C3B-BD3A-AFB9762449C0}">
 								<Class name="EditorComponentBase" field="BaseClass1" version="1" type="{D5346BD4-7F20-444E-B370-327ACD03D4A0}">
 									<Class name="AZ::Component" field="BaseClass1" type="{EDFCB2CF-F75D-43BE-B26B-F35821B29247}">
 										<Class name="AZ::u64" field="Id" value="12470135924384913029" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
@@ -33,19 +33,20 @@
 								<Class name="EntityId" field="Parent Entity" version="1" type="{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}">
 									<Class name="AZ::u64" field="id" value="4294967295" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
 								</Class>
-								<Class name="EditorTransform" field="Transform Data" version="2" type="{B02B7063-D238-4F40-A724-405F7A6D68CB}">
+								<Class name="EditorTransform" field="Transform Data" version="3" type="{B02B7063-D238-4F40-A724-405F7A6D68CB}">
 									<Class name="Vector3" field="Translate" value="0.0000000 0.0000000 0.0000000" type="{8379EB7D-01FA-4538-B64B-A6543B4BE73D}"/>
 									<Class name="Vector3" field="Rotate" value="0.0000000 0.0000000 0.0000000" type="{8379EB7D-01FA-4538-B64B-A6543B4BE73D}"/>
 									<Class name="Vector3" field="Scale" value="1.0000000 1.0000000 1.0000000" type="{8379EB7D-01FA-4538-B64B-A6543B4BE73D}"/>
 									<Class name="bool" field="Locked" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
+									<Class name="float" field="UniformScale" value="1.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
 								</Class>
-								<Class name="Transform" field="Cached World Transform" value="0.0000000 0.0000000 0.0000000 1.0000000 1.0000000 1.0000000 1.0000000 0.0000000 0.0000000 0.0000000" version="1" type="{5D9958E9-9F1E-4985-B532-FFFDE75FEDFD}"/>
+								<Class name="bool" field="AddNonUniformScaleButton" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
+								<Class name="Transform" field="Cached World Transform" value="0.0000000 0.0000000 0.0000000 1.0000000 1.0000000 0.0000000 0.0000000 0.0000000" version="2" type="{5D9958E9-9F1E-4985-B532-FFFDE75FEDFD}"/>
 								<Class name="EntityId" field="Cached World Transform Parent" version="1" type="{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}">
 									<Class name="AZ::u64" field="id" value="4294967295" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
 								</Class>
 								<Class name="unsigned int" field="Parent Activation Transform Mode" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 								<Class name="bool" field="IsStatic" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
-								<Class name="bool" field="Sync Enabled" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
 								<Class name="unsigned int" field="InterpolatePosition" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 								<Class name="unsigned int" field="InterpolateRotation" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 							</Class>
@@ -143,7 +144,7 @@
 								</Class>
 								<Class name="bool" field="IsEditorOnly" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
 							</Class>
-							<Class name="TransformComponent" field="element" version="9" type="{27F1E1A1-8D9D-4C3B-BD3A-AFB9762449C0}">
+							<Class name="TransformComponent" field="element" version="10" type="{27F1E1A1-8D9D-4C3B-BD3A-AFB9762449C0}">
 								<Class name="EditorComponentBase" field="BaseClass1" version="1" type="{D5346BD4-7F20-444E-B370-327ACD03D4A0}">
 									<Class name="AZ::Component" field="BaseClass1" type="{EDFCB2CF-F75D-43BE-B26B-F35821B29247}">
 										<Class name="AZ::u64" field="Id" value="9845606399230319505" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
@@ -152,19 +153,20 @@
 								<Class name="EntityId" field="Parent Entity" version="1" type="{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}">
 									<Class name="AZ::u64" field="id" value="303447173544404" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
 								</Class>
-								<Class name="EditorTransform" field="Transform Data" version="2" type="{B02B7063-D238-4F40-A724-405F7A6D68CB}">
+								<Class name="EditorTransform" field="Transform Data" version="3" type="{B02B7063-D238-4F40-A724-405F7A6D68CB}">
 									<Class name="Vector3" field="Translate" value="0.0000000 0.0000000 0.0000000" type="{8379EB7D-01FA-4538-B64B-A6543B4BE73D}"/>
 									<Class name="Vector3" field="Rotate" value="0.0000000 0.0000000 -0.0000683" type="{8379EB7D-01FA-4538-B64B-A6543B4BE73D}"/>
 									<Class name="Vector3" field="Scale" value="1.0000000 1.0000000 1.0000000" type="{8379EB7D-01FA-4538-B64B-A6543B4BE73D}"/>
 									<Class name="bool" field="Locked" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
+									<Class name="float" field="UniformScale" value="1.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
 								</Class>
-								<Class name="Transform" field="Cached World Transform" value="0.0000000 0.0000000 0.0000000 1.0000000 1.0000000 1.0000000 1.0000000 0.0000000 0.0000000 0.0000000" version="1" type="{5D9958E9-9F1E-4985-B532-FFFDE75FEDFD}"/>
+								<Class name="bool" field="AddNonUniformScaleButton" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
+								<Class name="Transform" field="Cached World Transform" value="0.0000000 0.0000000 0.0000000 1.0000000 1.0000000 0.0000000 0.0000000 0.0000000" version="2" type="{5D9958E9-9F1E-4985-B532-FFFDE75FEDFD}"/>
 								<Class name="EntityId" field="Cached World Transform Parent" version="1" type="{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}">
 									<Class name="AZ::u64" field="id" value="4294967295" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
 								</Class>
 								<Class name="unsigned int" field="Parent Activation Transform Mode" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 								<Class name="bool" field="IsStatic" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
-								<Class name="bool" field="Sync Enabled" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
 								<Class name="unsigned int" field="InterpolatePosition" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 								<Class name="unsigned int" field="InterpolateRotation" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 							</Class>
@@ -246,7 +248,14 @@
 								<Class name="bool" field="RenderBounds" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
 								<Class name="unsigned int" field="SkinningMethod" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 								<Class name="bool" field="UpdateJointTransformsWhenOutOfView" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
-								<Class name="unsigned int" field="LodLevel" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+								<Class name="AZ::u64" field="LodLevel" value="0" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
+								<Class name="BoundingBoxConfiguration" field="BBoxConfig" version="2" type="{EBCFF975-00A5-4578-85C7-59909F52067C}">
+									<Class name="unsigned char" field="m_boundsType" value="5" type="{72B9409A-7D1A-4831-9CFE-FCB3FADD3426}"/>
+									<Class name="bool" field="m_autoUpdateBounds" value="true" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
+									<Class name="float" field="m_updateTimeFrequency" value="0.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+									<Class name="unsigned int" field="m_updateItemFrequency" value="1" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+									<Class name="float" field="expandBy" value="25.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+								</Class>
 							</Class>
 							<Class name="EditorSimpleMotionComponent" field="element" version="3" type="{0CF1ADF7-DA51-4183-89EC-BDD7D2E17D36}">
 								<Class name="EditorComponentBase" field="BaseClass1" version="1" type="{D5346BD4-7F20-444E-B370-327ACD03D4A0}">
@@ -316,12 +325,9 @@
 												<Class name="ComponentConfig" field="BaseClass1" version="1" type="{0A7929DF-2932-40EA-B2B3-79BC1C3490D0}"/>
 												<Class name="AZStd::unordered_map" field="materials" type="{50F6716F-698B-5A6C-AACD-940597FDEC24}">
 													<Class name="AZStd::pair" field="element" type="{F652A87A-0FDF-527C-B0ED-340C074A4874}">
-														<Class name="AZ::Render::MaterialAssignmentId" field="value1" version="1" type="{EB603581-4654-4C17-B6DE-AE61E79EDA97}">
+														<Class name="AZ::Render::MaterialAssignmentId" field="value1" version="2" type="{EB603581-4654-4C17-B6DE-AE61E79EDA97}">
 															<Class name="AZ::u64" field="lodIndex" value="18446744073709551615" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
-															<Class name="AssetId" field="materialAssetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
-																<Class name="AZ::Uuid" field="guid" value="{3E4C6A29-92A4-523E-8739-F3E64957569E}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-																<Class name="unsigned int" field="subId" value="1541321207" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-															</Class>
+															<Class name="unsigned int" field="materialSlotStableId" value="1541321207" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 														</Class>
 														<Class name="AZ::Render::MaterialAssignment" field="value2" version="1" type="{C66E5214-A24B-4722-B7F0-5991E6F8F163}">
 															<Class name="Asset" field="MaterialAsset" value="id={6114C408-26EE-51DC-8733-A07800BF4991}:0,type={522C7BE0-501D-463E-92C6-15184A2B7AD8},hint={objects/cloth/chicken/actor/chicken_chicken_eye_mat.azmaterial},loadBehavior=1" version="2" type="{77A19D40-8731-4D3C-9041-1B43047366A4}"/>
@@ -329,12 +335,9 @@
 														</Class>
 													</Class>
 													<Class name="AZStd::pair" field="element" type="{F652A87A-0FDF-527C-B0ED-340C074A4874}">
-														<Class name="AZ::Render::MaterialAssignmentId" field="value1" version="1" type="{EB603581-4654-4C17-B6DE-AE61E79EDA97}">
+														<Class name="AZ::Render::MaterialAssignmentId" field="value1" version="2" type="{EB603581-4654-4C17-B6DE-AE61E79EDA97}">
 															<Class name="AZ::u64" field="lodIndex" value="18446744073709551615" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
-															<Class name="AssetId" field="materialAssetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
-																<Class name="AZ::Uuid" field="guid" value="{3E4C6A29-92A4-523E-8739-F3E64957569E}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-																<Class name="unsigned int" field="subId" value="668669130" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-															</Class>
+															<Class name="unsigned int" field="materialSlotStableId" value="668669130" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 														</Class>
 														<Class name="AZ::Render::MaterialAssignment" field="value2" version="1" type="{C66E5214-A24B-4722-B7F0-5991E6F8F163}">
 															<Class name="Asset" field="MaterialAsset" value="id={FB34D8F7-E8CA-542D-92A3-F0E04F3A3EC3}:0,type={522C7BE0-501D-463E-92C6-15184A2B7AD8},hint={objects/cloth/chicken/actor/chicken_chicken_body_mat.azmaterial},loadBehavior=1" version="2" type="{77A19D40-8731-4D3C-9041-1B43047366A4}"/>
@@ -342,12 +345,9 @@
 														</Class>
 													</Class>
 													<Class name="AZStd::pair" field="element" type="{F652A87A-0FDF-527C-B0ED-340C074A4874}">
-														<Class name="AZ::Render::MaterialAssignmentId" field="value1" version="1" type="{EB603581-4654-4C17-B6DE-AE61E79EDA97}">
+														<Class name="AZ::Render::MaterialAssignmentId" field="value1" version="2" type="{EB603581-4654-4C17-B6DE-AE61E79EDA97}">
 															<Class name="AZ::u64" field="lodIndex" value="18446744073709551615" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
-															<Class name="AssetId" field="materialAssetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
-																<Class name="AZ::Uuid" field="guid" value="{3E4C6A29-92A4-523E-8739-F3E64957569E}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-																<Class name="unsigned int" field="subId" value="2608524672" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-															</Class>
+															<Class name="unsigned int" field="materialSlotStableId" value="2608524672" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 														</Class>
 														<Class name="AZ::Render::MaterialAssignment" field="value2" version="1" type="{C66E5214-A24B-4722-B7F0-5991E6F8F163}">
 															<Class name="Asset" field="MaterialAsset" value="id={80F92051-203E-52CE-B4D6-E3AED21795C9}:0,type={522C7BE0-501D-463E-92C6-15184A2B7AD8},hint={objects/cloth/chicken/actor/chicken_mohawkmat.azmaterial},loadBehavior=1" version="2" type="{77A19D40-8731-4D3C-9041-1B43047366A4}"/>
@@ -360,94 +360,66 @@
 									</Class>
 								</Class>
 								<Class name="AZStd::string" field="message" value="" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-								<Class name="EditorMaterialComponentSlot" field="defaultMaterialSlot" version="4" type="{344066EB-7C3D-4E92-B53D-3C9EBD546488}">
-									<Class name="AZ::Render::MaterialAssignmentId" field="id" version="1" type="{EB603581-4654-4C17-B6DE-AE61E79EDA97}">
+								<Class name="EditorMaterialComponentSlot" field="defaultMaterialSlot" version="6" type="{344066EB-7C3D-4E92-B53D-3C9EBD546488}">
+									<Class name="AZ::Render::MaterialAssignmentId" field="id" version="2" type="{EB603581-4654-4C17-B6DE-AE61E79EDA97}">
 										<Class name="AZ::u64" field="lodIndex" value="18446744073709551615" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
-										<Class name="AssetId" field="materialAssetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
-											<Class name="AZ::Uuid" field="guid" value="{00000000-0000-0000-0000-000000000000}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-											<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-										</Class>
+										<Class name="unsigned int" field="materialSlotStableId" value="4294967295" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 									</Class>
 									<Class name="Asset" field="materialAsset" value="id={00000000-0000-0000-0000-000000000000}:0,type={522C7BE0-501D-463E-92C6-15184A2B7AD8},hint={},loadBehavior=1" version="2" type="{77A19D40-8731-4D3C-9041-1B43047366A4}"/>
-									<Class name="AZStd::unordered_map" field="propertyOverrides" type="{6E6962E1-04C9-56F9-89C4-361031CC1384}"/>
-									<Class name="AZStd::unordered_map" field="matModUvOverrides" type="{D6E637F3-3BD8-55E7-911F-F35DE5769296}"/>
+									<Class name="Asset" field="defaultMaterialAsset" value="id={00000000-0000-0000-0000-000000000000}:0,type={522C7BE0-501D-463E-92C6-15184A2B7AD8},hint={},loadBehavior=1" version="2" type="{77A19D40-8731-4D3C-9041-1B43047366A4}"/>
 								</Class>
 								<Class name="AZStd::vector" field="materialSlots" type="{7FDDDE36-46C8-5DBC-8566-E792AA358BD9}">
-									<Class name="EditorMaterialComponentSlot" field="element" version="4" type="{344066EB-7C3D-4E92-B53D-3C9EBD546488}">
-										<Class name="AZ::Render::MaterialAssignmentId" field="id" version="1" type="{EB603581-4654-4C17-B6DE-AE61E79EDA97}">
+									<Class name="EditorMaterialComponentSlot" field="element" version="6" type="{344066EB-7C3D-4E92-B53D-3C9EBD546488}">
+										<Class name="AZ::Render::MaterialAssignmentId" field="id" version="2" type="{EB603581-4654-4C17-B6DE-AE61E79EDA97}">
 											<Class name="AZ::u64" field="lodIndex" value="18446744073709551615" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
-											<Class name="AssetId" field="materialAssetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
-												<Class name="AZ::Uuid" field="guid" value="{3E4C6A29-92A4-523E-8739-F3E64957569E}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-												<Class name="unsigned int" field="subId" value="668669130" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-											</Class>
+											<Class name="unsigned int" field="materialSlotStableId" value="668669130" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 										</Class>
 										<Class name="Asset" field="materialAsset" value="id={FB34D8F7-E8CA-542D-92A3-F0E04F3A3EC3}:0,type={522C7BE0-501D-463E-92C6-15184A2B7AD8},hint={objects/cloth/chicken/actor/chicken_chicken_body_mat.azmaterial},loadBehavior=1" version="2" type="{77A19D40-8731-4D3C-9041-1B43047366A4}"/>
-										<Class name="AZStd::unordered_map" field="propertyOverrides" type="{6E6962E1-04C9-56F9-89C4-361031CC1384}"/>
-										<Class name="AZStd::unordered_map" field="matModUvOverrides" type="{D6E637F3-3BD8-55E7-911F-F35DE5769296}"/>
+										<Class name="Asset" field="defaultMaterialAsset" value="id={3E4C6A29-92A4-523E-8739-F3E64957569E}:27db14ca,type={522C7BE0-501D-463E-92C6-15184A2B7AD8},hint={objects/cloth/chicken/actor/chicken_chicken_body_mat_4404500000782619850.azmaterial},loadBehavior=0" version="2" type="{77A19D40-8731-4D3C-9041-1B43047366A4}"/>
 									</Class>
-									<Class name="EditorMaterialComponentSlot" field="element" version="4" type="{344066EB-7C3D-4E92-B53D-3C9EBD546488}">
-										<Class name="AZ::Render::MaterialAssignmentId" field="id" version="1" type="{EB603581-4654-4C17-B6DE-AE61E79EDA97}">
+									<Class name="EditorMaterialComponentSlot" field="element" version="6" type="{344066EB-7C3D-4E92-B53D-3C9EBD546488}">
+										<Class name="AZ::Render::MaterialAssignmentId" field="id" version="2" type="{EB603581-4654-4C17-B6DE-AE61E79EDA97}">
 											<Class name="AZ::u64" field="lodIndex" value="18446744073709551615" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
-											<Class name="AssetId" field="materialAssetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
-												<Class name="AZ::Uuid" field="guid" value="{3E4C6A29-92A4-523E-8739-F3E64957569E}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-												<Class name="unsigned int" field="subId" value="1541321207" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-											</Class>
+											<Class name="unsigned int" field="materialSlotStableId" value="1541321207" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 										</Class>
 										<Class name="Asset" field="materialAsset" value="id={6114C408-26EE-51DC-8733-A07800BF4991}:0,type={522C7BE0-501D-463E-92C6-15184A2B7AD8},hint={objects/cloth/chicken/actor/chicken_chicken_eye_mat.azmaterial},loadBehavior=1" version="2" type="{77A19D40-8731-4D3C-9041-1B43047366A4}"/>
-										<Class name="AZStd::unordered_map" field="propertyOverrides" type="{6E6962E1-04C9-56F9-89C4-361031CC1384}"/>
-										<Class name="AZStd::unordered_map" field="matModUvOverrides" type="{D6E637F3-3BD8-55E7-911F-F35DE5769296}"/>
+										<Class name="Asset" field="defaultMaterialAsset" value="id={3E4C6A29-92A4-523E-8739-F3E64957569E}:5bdeb1f7,type={522C7BE0-501D-463E-92C6-15184A2B7AD8},hint={objects/cloth/chicken/actor/chicken_chicken_eye_mat_10184937185004663287.azmaterial},loadBehavior=0" version="2" type="{77A19D40-8731-4D3C-9041-1B43047366A4}"/>
 									</Class>
-									<Class name="EditorMaterialComponentSlot" field="element" version="4" type="{344066EB-7C3D-4E92-B53D-3C9EBD546488}">
-										<Class name="AZ::Render::MaterialAssignmentId" field="id" version="1" type="{EB603581-4654-4C17-B6DE-AE61E79EDA97}">
+									<Class name="EditorMaterialComponentSlot" field="element" version="6" type="{344066EB-7C3D-4E92-B53D-3C9EBD546488}">
+										<Class name="AZ::Render::MaterialAssignmentId" field="id" version="2" type="{EB603581-4654-4C17-B6DE-AE61E79EDA97}">
 											<Class name="AZ::u64" field="lodIndex" value="18446744073709551615" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
-											<Class name="AssetId" field="materialAssetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
-												<Class name="AZ::Uuid" field="guid" value="{3E4C6A29-92A4-523E-8739-F3E64957569E}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-												<Class name="unsigned int" field="subId" value="2608524672" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-											</Class>
+											<Class name="unsigned int" field="materialSlotStableId" value="2608524672" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 										</Class>
 										<Class name="Asset" field="materialAsset" value="id={80F92051-203E-52CE-B4D6-E3AED21795C9}:0,type={522C7BE0-501D-463E-92C6-15184A2B7AD8},hint={objects/cloth/chicken/actor/chicken_mohawkmat.azmaterial},loadBehavior=1" version="2" type="{77A19D40-8731-4D3C-9041-1B43047366A4}"/>
-										<Class name="AZStd::unordered_map" field="propertyOverrides" type="{6E6962E1-04C9-56F9-89C4-361031CC1384}"/>
-										<Class name="AZStd::unordered_map" field="matModUvOverrides" type="{D6E637F3-3BD8-55E7-911F-F35DE5769296}"/>
+										<Class name="Asset" field="defaultMaterialAsset" value="id={3E4C6A29-92A4-523E-8739-F3E64957569E}:9b7aed80,type={522C7BE0-501D-463E-92C6-15184A2B7AD8},hint={objects/cloth/chicken/actor/chicken_mohawkmat_13891540077583723904.azmaterial},loadBehavior=0" version="2" type="{77A19D40-8731-4D3C-9041-1B43047366A4}"/>
 									</Class>
 								</Class>
 								<Class name="bool" field="materialSlotsByLodEnabled" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
 								<Class name="AZStd::vector" field="materialSlotsByLod" type="{22E4F3CF-29C1-54AC-89DD-6FD47A657229}">
 									<Class name="AZStd::vector" field="element" type="{7FDDDE36-46C8-5DBC-8566-E792AA358BD9}">
-										<Class name="EditorMaterialComponentSlot" field="element" version="4" type="{344066EB-7C3D-4E92-B53D-3C9EBD546488}">
-											<Class name="AZ::Render::MaterialAssignmentId" field="id" version="1" type="{EB603581-4654-4C17-B6DE-AE61E79EDA97}">
+										<Class name="EditorMaterialComponentSlot" field="element" version="6" type="{344066EB-7C3D-4E92-B53D-3C9EBD546488}">
+											<Class name="AZ::Render::MaterialAssignmentId" field="id" version="2" type="{EB603581-4654-4C17-B6DE-AE61E79EDA97}">
 												<Class name="AZ::u64" field="lodIndex" value="0" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
-												<Class name="AssetId" field="materialAssetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
-													<Class name="AZ::Uuid" field="guid" value="{3E4C6A29-92A4-523E-8739-F3E64957569E}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-													<Class name="unsigned int" field="subId" value="668669130" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-												</Class>
+												<Class name="unsigned int" field="materialSlotStableId" value="668669130" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 											</Class>
 											<Class name="Asset" field="materialAsset" value="id={00000000-0000-0000-0000-000000000000}:0,type={522C7BE0-501D-463E-92C6-15184A2B7AD8},hint={},loadBehavior=1" version="2" type="{77A19D40-8731-4D3C-9041-1B43047366A4}"/>
-											<Class name="AZStd::unordered_map" field="propertyOverrides" type="{6E6962E1-04C9-56F9-89C4-361031CC1384}"/>
-											<Class name="AZStd::unordered_map" field="matModUvOverrides" type="{D6E637F3-3BD8-55E7-911F-F35DE5769296}"/>
+											<Class name="Asset" field="defaultMaterialAsset" value="id={3E4C6A29-92A4-523E-8739-F3E64957569E}:27db14ca,type={522C7BE0-501D-463E-92C6-15184A2B7AD8},hint={objects/cloth/chicken/actor/chicken_chicken_body_mat_4404500000782619850.azmaterial},loadBehavior=0" version="2" type="{77A19D40-8731-4D3C-9041-1B43047366A4}"/>
 										</Class>
-										<Class name="EditorMaterialComponentSlot" field="element" version="4" type="{344066EB-7C3D-4E92-B53D-3C9EBD546488}">
-											<Class name="AZ::Render::MaterialAssignmentId" field="id" version="1" type="{EB603581-4654-4C17-B6DE-AE61E79EDA97}">
+										<Class name="EditorMaterialComponentSlot" field="element" version="6" type="{344066EB-7C3D-4E92-B53D-3C9EBD546488}">
+											<Class name="AZ::Render::MaterialAssignmentId" field="id" version="2" type="{EB603581-4654-4C17-B6DE-AE61E79EDA97}">
 												<Class name="AZ::u64" field="lodIndex" value="0" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
-												<Class name="AssetId" field="materialAssetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
-													<Class name="AZ::Uuid" field="guid" value="{3E4C6A29-92A4-523E-8739-F3E64957569E}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-													<Class name="unsigned int" field="subId" value="1541321207" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-												</Class>
+												<Class name="unsigned int" field="materialSlotStableId" value="1541321207" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 											</Class>
 											<Class name="Asset" field="materialAsset" value="id={00000000-0000-0000-0000-000000000000}:0,type={522C7BE0-501D-463E-92C6-15184A2B7AD8},hint={},loadBehavior=1" version="2" type="{77A19D40-8731-4D3C-9041-1B43047366A4}"/>
-											<Class name="AZStd::unordered_map" field="propertyOverrides" type="{6E6962E1-04C9-56F9-89C4-361031CC1384}"/>
-											<Class name="AZStd::unordered_map" field="matModUvOverrides" type="{D6E637F3-3BD8-55E7-911F-F35DE5769296}"/>
+											<Class name="Asset" field="defaultMaterialAsset" value="id={3E4C6A29-92A4-523E-8739-F3E64957569E}:5bdeb1f7,type={522C7BE0-501D-463E-92C6-15184A2B7AD8},hint={objects/cloth/chicken/actor/chicken_chicken_eye_mat_10184937185004663287.azmaterial},loadBehavior=0" version="2" type="{77A19D40-8731-4D3C-9041-1B43047366A4}"/>
 										</Class>
-										<Class name="EditorMaterialComponentSlot" field="element" version="4" type="{344066EB-7C3D-4E92-B53D-3C9EBD546488}">
-											<Class name="AZ::Render::MaterialAssignmentId" field="id" version="1" type="{EB603581-4654-4C17-B6DE-AE61E79EDA97}">
+										<Class name="EditorMaterialComponentSlot" field="element" version="6" type="{344066EB-7C3D-4E92-B53D-3C9EBD546488}">
+											<Class name="AZ::Render::MaterialAssignmentId" field="id" version="2" type="{EB603581-4654-4C17-B6DE-AE61E79EDA97}">
 												<Class name="AZ::u64" field="lodIndex" value="0" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
-												<Class name="AssetId" field="materialAssetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
-													<Class name="AZ::Uuid" field="guid" value="{3E4C6A29-92A4-523E-8739-F3E64957569E}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-													<Class name="unsigned int" field="subId" value="2608524672" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-												</Class>
+												<Class name="unsigned int" field="materialSlotStableId" value="2608524672" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 											</Class>
 											<Class name="Asset" field="materialAsset" value="id={00000000-0000-0000-0000-000000000000}:0,type={522C7BE0-501D-463E-92C6-15184A2B7AD8},hint={},loadBehavior=1" version="2" type="{77A19D40-8731-4D3C-9041-1B43047366A4}"/>
-											<Class name="AZStd::unordered_map" field="propertyOverrides" type="{6E6962E1-04C9-56F9-89C4-361031CC1384}"/>
-											<Class name="AZStd::unordered_map" field="matModUvOverrides" type="{D6E637F3-3BD8-55E7-911F-F35DE5769296}"/>
+											<Class name="Asset" field="defaultMaterialAsset" value="id={3E4C6A29-92A4-523E-8739-F3E64957569E}:9b7aed80,type={522C7BE0-501D-463E-92C6-15184A2B7AD8},hint={objects/cloth/chicken/actor/chicken_mohawkmat_13891540077583723904.azmaterial},loadBehavior=0" version="2" type="{77A19D40-8731-4D3C-9041-1B43047366A4}"/>
 										</Class>
 									</Class>
 								</Class>
@@ -459,7 +431,7 @@
 									</Class>
 								</Class>
 								<Class name="ClothConfiguration" field="Configuration" version="2" type="{96E2AF5E-3C98-4872-8F90-F56302A44F2A}">
-									<Class name="AZStd::string" field="Mesh Node" value="chicken_mohawk" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+									<Class name="AZStd::string" field="Mesh Node" value="chicken_mohawk_1" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 									<Class name="float" field="Mass" value="4.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
 									<Class name="bool" field="Use Custom Gravity" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
 									<Class name="Vector3" field="Custom Gravity" value="0.0000000 0.0000000 -9.8100004" type="{8379EB7D-01FA-4538-B64B-A6543B4BE73D}"/>
@@ -510,6 +482,7 @@
 									<Class name="float" field="Solver Frequency" value="300.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
 									<Class name="unsigned int" field="Acceleration Filter Iterations" value="30" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 									<Class name="bool" field="Remove Static Triangles" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
+									<Class name="bool" field="Update Normals of Static Particles" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
 								</Class>
 							</Class>
 						</Class>

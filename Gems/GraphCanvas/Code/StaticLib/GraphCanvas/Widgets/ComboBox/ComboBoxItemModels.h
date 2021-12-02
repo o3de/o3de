@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -414,7 +415,7 @@ namespace GraphCanvas
             return index(nextRow, GetSortColumn());
         }
 
-        void OnDropDownAboutToShow()
+        void OnDropDownAboutToShow() override
         {
             beginResetModel();
             setSourceModel(m_modelInterface->GetDropDownItemModel());
@@ -423,7 +424,7 @@ namespace GraphCanvas
             invalidate();
         }
 
-        void OnDropDownHidden()
+        void OnDropDownHidden() override
         {
             beginResetModel();
             setSourceModel(nullptr);

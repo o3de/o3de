@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -23,7 +24,7 @@
 
 namespace RenderGL
 {
-    size_t GraphicsManager::mNumRandomOffsets = 64;
+    size_t GraphicsManager::s_numRandomOffsets = 64;
     GraphicsManager* gGraphicsManager = nullptr;
 
 
@@ -38,60 +39,60 @@ namespace RenderGL
     GraphicsManager::GraphicsManager()
     {
         gGraphicsManager    = this;
-        mPostProcessing     = false;
+        m_postProcessing     = false;
 
         // render background
-        mUseGradientBackground  = true;
-        mClearColor             = MCore::RGBAColor(0.359f, 0.3984f, 0.4492f);
-        mGradientSourceColor    = MCore::RGBAColor(0.4941f, 0.5686f, 0.6470f);
-        mGradientTargetColor    = MCore::RGBAColor(0.0941f, 0.1019f, 0.1098f);
+        m_useGradientBackground  = true;
+        m_clearColor             = MCore::RGBAColor(0.359f, 0.3984f, 0.4492f);
+        m_gradientSourceColor    = MCore::RGBAColor(0.4941f, 0.5686f, 0.6470f);
+        m_gradientTargetColor    = MCore::RGBAColor(0.0941f, 0.1019f, 0.1098f);
 
-        mGBuffer        = nullptr;
-        mHBloom         = nullptr;
-        mVBloom         = nullptr;
-        mHBlur          = nullptr;
-        mVBlur          = nullptr;
-        mDownSample     = nullptr;
-        mDOF            = nullptr;
-        mSSDO           = nullptr;
-        mHSmartBlur     = nullptr;
-        mVSmartBlur     = nullptr;
-        mRenderTexture  = nullptr;
-        mActiveShader   = nullptr;
-        mCamera         = nullptr;
-        mRenderUtil     = nullptr;
+        m_gBuffer        = nullptr;
+        m_hBloom         = nullptr;
+        m_vBloom         = nullptr;
+        m_hBlur          = nullptr;
+        m_vBlur          = nullptr;
+        m_downSample     = nullptr;
+        m_dof            = nullptr;
+        m_ssdo           = nullptr;
+        m_hSmartBlur     = nullptr;
+        m_vSmartBlur     = nullptr;
+        m_renderTexture  = nullptr;
+        m_activeShader   = nullptr;
+        m_camera         = nullptr;
+        m_renderUtil     = nullptr;
 
-        mMainLightIntensity = 1.00f;
-        mMainLightAngleA    = -30.0f;
-        mMainLightAngleB    = 18.0f;
-        mSpecularIntensity  = 1.0f;
+        m_mainLightIntensity = 1.00f;
+        m_mainLightAngleA    = -30.0f;
+        m_mainLightAngleB    = 18.0f;
+        m_specularIntensity  = 1.0f;
 
-        mBloomEnabled   = true;
-        mBloomRadius    = 4.0f;
-        mBloomIntensity = 0.85f;
-        mBloomThreshold = 0.80f;
+        m_bloomEnabled   = true;
+        m_bloomRadius    = 4.0f;
+        m_bloomIntensity = 0.85f;
+        m_bloomThreshold = 0.80f;
 
-        mDOFEnabled     = false;
-        mDOFBlurRadius  = 2.0f;
-        mDOFFocalDistance = 500.0f;
-        mDOFNear        = 0.001f;
-        mDOFFar         = 1000.0f;
+        m_dofEnabled     = false;
+        m_dofBlurRadius  = 2.0f;
+        m_dofFocalDistance = 500.0f;
+        m_dofNear        = 0.001f;
+        m_dofFar         = 1000.0f;
 
-        mRimAngle       = 60.0f;
-        mRimWidth       = 0.65f;
-        mRimIntensity   = 1.5f;
-        mRimColor       = MCore::RGBAColor(1.0f, 0.70f, 0.109f);
+        m_rimAngle       = 60.0f;
+        m_rimWidth       = 0.65f;
+        m_rimIntensity   = 1.5f;
+        m_rimColor       = MCore::RGBAColor(1.0f, 0.70f, 0.109f);
 
-        mRandomVectorTexture    = nullptr;
-        mCreateMipMaps          = true;
-        mSkipLoadingTextures    = false;
+        m_randomVectorTexture    = nullptr;
+        m_createMipMaps          = true;
+        m_skipLoadingTextures    = false;
 
         // init random offsets
-        mRandomOffsets.resize(mNumRandomOffsets);
-        AZStd::vector<AZ::Vector3> samples = MCore::Random::RandomDirVectorsHalton(AZ::Vector3(0.0f, 1.0f, 0.0f), MCore::Math::twoPi, mNumRandomOffsets);
-        for (size_t i = 0; i < mNumRandomOffsets; ++i)
+        m_randomOffsets.resize(s_numRandomOffsets);
+        AZStd::vector<AZ::Vector3> samples = MCore::Random::RandomDirVectorsHalton(AZ::Vector3(0.0f, 1.0f, 0.0f), MCore::Math::twoPi, s_numRandomOffsets);
+        for (size_t i = 0; i < s_numRandomOffsets; ++i)
         {
-            mRandomOffsets[i] = samples[i] * MCore::Random::RandF(0.1f, 1.0f);
+            m_randomOffsets[i] = samples[i] * MCore::Random::RandF(0.1f, 1.0f);
         }
     }
 
@@ -100,38 +101,37 @@ namespace RenderGL
     GraphicsManager::~GraphicsManager()
     {
         // shutdown the texture cache
-        mTextureCache.Release();
+        m_textureCache.Release();
 
         // delete all shaders
-        mShaderCache.Release();
+        m_shaderCache.Release();
 
         // get rid of the OpenGL render utility
-        delete mRenderUtil;
+        delete m_renderUtil;
 
         // release random vector texture memory
-        delete mRandomVectorTexture;
+        delete m_randomVectorTexture;
 
         // clear the string memory
-        mShaderPath.clear();
+        m_shaderPath.clear();
     }
 
 
     // setup sunset color style rim lighting
     void GraphicsManager::SetupSunsetRim()
     {
-        mRimWidth       = 0.65f;
-        mRimIntensity   = 1.5f;
-        mRimColor       = MCore::RGBAColor(1.0f, 0.70f, 0.109f);
-        //mRimColor     = MCore::RGBAColor(1.0f, 0.77f, 0.30f);
+        m_rimWidth       = 0.65f;
+        m_rimIntensity   = 1.5f;
+        m_rimColor       = MCore::RGBAColor(1.0f, 0.70f, 0.109f);
     }
 
 
     // setup blue color style rim lighting
     void GraphicsManager::SetupBlueRim()
     {
-        mRimWidth       = 0.65f;
-        mRimIntensity   = 1.5f;
-        mRimColor       = MCore::RGBAColor(81.0f / 255.0f, 160.0f / 255.0f, 1.0f);
+        m_rimWidth       = 0.65f;
+        m_rimIntensity   = 1.5f;
+        m_rimColor       = MCore::RGBAColor(81.0f / 255.0f, 160.0f / 255.0f, 1.0f);
     }
 
 
@@ -151,12 +151,12 @@ namespace RenderGL
         glBegin(GL_QUADS);
 
         // bottom
-        glColor3f(bottomColor.r, bottomColor.g, bottomColor.b);
+        glColor3f(bottomColor.m_r, bottomColor.m_g, bottomColor.m_b);
         glVertex2f(-1.0, -1.0);
         glVertex2f(1.0, -1.0);
 
         // top
-        glColor3f(topColor.r, topColor.g, topColor.b);
+        glColor3f(topColor.m_r, topColor.m_g, topColor.m_b);
         glVertex2f(1.0, 1.0);
         glVertex2f(-1.0, 1.0);
 
@@ -175,13 +175,13 @@ namespace RenderGL
         //glPushAttrib( GL_ALL_ATTRIB_BITS );
 
         // Activate render targets
-        glClearColor(mClearColor.r, mClearColor.g, mClearColor.b, 1.0f);
+        glClearColor(m_clearColor.m_r, m_clearColor.m_g, m_clearColor.m_b, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
         // render the gradient background
-        if (mUseGradientBackground)
+        if (m_useGradientBackground)
         {
-            RenderGradientBackground(mGradientSourceColor, mGradientTargetColor);
+            RenderGradientBackground(m_gradientSourceColor, m_gradientTargetColor);
         }
 
         return true;
@@ -191,9 +191,9 @@ namespace RenderGL
     // end a frame (perform the swap)
     void GraphicsManager::EndRender()
     {
-        mRenderUtil->RenderTextPeriods();
-        mRenderUtil->RenderTextures();
-        ((MCommon::RenderUtil*)mRenderUtil)->Render2DLines();
+        m_renderUtil->RenderTextPeriods();
+        m_renderUtil->RenderTextures();
+        ((MCommon::RenderUtil*)m_renderUtil)->Render2DLines();
     }
 
 
@@ -206,7 +206,7 @@ namespace RenderGL
         SetShaderPath(shaderPath);
 
         // texture cache
-        if (mTextureCache.Init() == false)
+        if (m_textureCache.Init() == false)
         {
             return false;
         }
@@ -217,7 +217,7 @@ namespace RenderGL
         glDepthFunc(GL_LEQUAL);
         glEnable(GL_DEPTH_TEST);
 
-        glClearColor(mClearColor.r, mClearColor.g, mClearColor.b, 1.0f);
+        glClearColor(m_clearColor.m_r, m_clearColor.m_g, m_clearColor.m_b, 1.0f);
 
         glHint(GL_POINT_SMOOTH_HINT, GL_NICEST);
         glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
@@ -227,15 +227,15 @@ namespace RenderGL
         glDisable(GL_BLEND);
 
         // initialize utility rendering
-        mRenderUtil = new GLRenderUtil(this);
-        mRenderUtil->Init();
+        m_renderUtil = new GLRenderUtil(this);
+        m_renderUtil->Init();
 
         // post processing
-        if (mPostProcessing)
+        if (m_postProcessing)
         {
             if (InitPostProcessing() == false)
             {
-                mPostProcessing = false;
+                m_postProcessing = false;
             }
         }
 
@@ -274,86 +274,52 @@ namespace RenderGL
         ResizeTextures(screenWidth, screenHeight);
 
         // load horizontal bloom
-        mHBloom = LoadPostProcessShader("HBloom.glsl");
-        if (mHBloom == nullptr)
+        m_hBloom = LoadPostProcessShader("HBloom.glsl");
+        if (m_hBloom == nullptr)
         {
             MCore::LogWarning("[OpenGL] Failed to load HBloom shader, disabling post processing.");
             return false;
         }
 
         // load vertical bloom
-        mVBloom = LoadPostProcessShader("VBloom.glsl");
-        if (mVBloom == nullptr)
+        m_vBloom = LoadPostProcessShader("VBloom.glsl");
+        if (m_vBloom == nullptr)
         {
             MCore::LogWarning("[OpenGL] Failed to load VBloom shader, disabling post processing.");
             return false;
         }
 
         // load vertical bloom
-        mDownSample = LoadPostProcessShader("DownSample.glsl");
-        if (mDownSample == nullptr)
+        m_downSample = LoadPostProcessShader("DownSample.glsl");
+        if (m_downSample == nullptr)
         {
             MCore::LogWarning("[OpenGL] Failed to load DownSample shader, disabling post processing.");
             return false;
         }
 
         // load horizontal blur
-        mHBlur = LoadPostProcessShader("HBlur.glsl");
-        if (mHBlur == nullptr)
+        m_hBlur = LoadPostProcessShader("HBlur.glsl");
+        if (m_hBlur == nullptr)
         {
             MCore::LogWarning("[OpenGL] Failed to load HBlur shader, disabling post processing.");
             return false;
         }
 
         // load vertical blur
-        mVBlur = LoadPostProcessShader("VBlur.glsl");
-        if (mVBlur == nullptr)
+        m_vBlur = LoadPostProcessShader("VBlur.glsl");
+        if (m_vBlur == nullptr)
         {
             MCore::LogWarning("[OpenGL] Failed to load VBlur shader, disabling post processing.");
             return false;
         }
 
         // load DOF shader
-        mDOF = LoadPostProcessShader("DepthOfField.glsl");
-        if (mDOF == nullptr)
+        m_dof = LoadPostProcessShader("DepthOfField.glsl");
+        if (m_dof == nullptr)
         {
             MCore::LogWarning("[OpenGL] Failed to load DOF shader, disabling post processing.");
             return false;
         }
-        /*
-            // load screen space directional occlusion shader
-            mSSDO = LoadPostProcessShader("SSDO.glsl");
-            if (mSSDO == nullptr)
-            {
-                MCore::LogWarning("[OpenGL] Failed to load SSDO shader, disabling post processing.");
-                return false;
-            }
-
-            // horizontal smartblur
-            mHSmartBlur = LoadPostProcessShader("HSmartBlur.glsl");
-            if (mHSmartBlur == nullptr)
-            {
-                MCore::LogWarning("[OpenGL] Failed to load HSmartBlur shader, disabling post processing.");
-                return false;
-            }
-
-            // vertical smartblur
-            mVSmartBlur = LoadPostProcessShader("VSmartBlur.glsl");
-            if (mVSmartBlur == nullptr)
-            {
-                MCore::LogWarning("[OpenGL] Failed to load VSmartBlur shader, disabling post processing.");
-                return false;
-            }
-        */
-        /*
-            // create the post processing shaders
-            mSSAO   = LoadPostProcessShader("SSAO.glsl");
-            if (mSSAO == nullptr)
-            {
-                MCore::LogWarning("[OpenGL] Failed to load SSAO shader, disabling post processing.");
-                return false;
-            }
-        */
         return true;
     }
 
@@ -370,17 +336,17 @@ namespace RenderGL
     // try to load a texture
     Texture* GraphicsManager::LoadTexture(AZ::IO::PathView filename)
     {
-        return LoadTexture(filename, mCreateMipMaps);
+        return LoadTexture(filename, m_createMipMaps);
     }
 
 
     // LoadPostProcessShader
     PostProcessShader* GraphicsManager::LoadPostProcessShader(AZ::IO::PathView cFileName)
     {
-        AZ::IO::PathView filename = mShaderPath / cFileName;
+        AZ::IO::PathView filename = m_shaderPath / cFileName;
 
         // check if the shader is already in the cache
-        Shader* s = mShaderCache.FindShader(filename.Native());
+        Shader* s = m_shaderCache.FindShader(filename.Native());
         if (s)
         {
             return (PostProcessShader*)s;
@@ -394,7 +360,7 @@ namespace RenderGL
             return nullptr;
         }
 
-        mShaderCache.AddShader(filename.Native(), shader);
+        m_shaderCache.AddShader(filename.Native(), shader);
         return shader;
     }
 
@@ -402,27 +368,26 @@ namespace RenderGL
     // LoadShader
     GLSLShader* GraphicsManager::LoadShader(AZ::IO::PathView vertexFileName, AZ::IO::PathView pixelFileName)
     {
-        MCore::Array<AZStd::string> defines;
+        AZStd::vector<AZStd::string> defines;
         return LoadShader(vertexFileName, pixelFileName, defines);
     }
 
 
     // LoadShader
-    GLSLShader* GraphicsManager::LoadShader(AZ::IO::PathView vertexFileName, AZ::IO::PathView pixelFileName, MCore::Array<AZStd::string>& defines)
+    GLSLShader* GraphicsManager::LoadShader(AZ::IO::PathView vertexFileName, AZ::IO::PathView pixelFileName, AZStd::vector<AZStd::string>& defines)
     {
-        const AZ::IO::Path vertexPath {vertexFileName.empty() ? AZ::IO::Path{} : mShaderPath / vertexFileName};
-        const AZ::IO::Path pixelPath {pixelFileName.empty() ? AZ::IO::Path{} : mShaderPath / pixelFileName};
+        const AZ::IO::Path vertexPath {vertexFileName.empty() ? AZ::IO::Path{} : m_shaderPath / vertexFileName};
+        const AZ::IO::Path pixelPath {pixelFileName.empty() ? AZ::IO::Path{} : m_shaderPath / pixelFileName};
 
         // construct the lookup string for the shader cache
         AZStd::string cacheLookupStr = vertexPath.Native() + pixelPath.Native();
-        const uint32 numDefines = defines.GetLength();
-        for (uint32 n = 0; n < numDefines; n++)
+        for (const AZStd::string& define : defines)
         {
-            cacheLookupStr += AZStd::string::format("#%s", defines[n].c_str());
+            cacheLookupStr += AZStd::string::format("#%s", define.c_str());
         }
 
         // check if the shader is already in the cache
-        Shader* cShader = mShaderCache.FindShader(cacheLookupStr);
+        Shader* cShader = m_shaderCache.FindShader(cacheLookupStr);
         if (cShader)
         {
             return (GLSLShader*)cShader;
@@ -436,7 +401,7 @@ namespace RenderGL
             return nullptr;
         }
 
-        mShaderCache.AddShader(cacheLookupStr, shader);
+        m_shaderCache.AddShader(cacheLookupStr, shader);
         return shader;
     }
 
@@ -463,7 +428,7 @@ namespace RenderGL
     // SetShader
     void GraphicsManager::SetShader(Shader* shader)
     {
-        if (mActiveShader == shader)
+        if (m_activeShader == shader)
         {
             return;
         }
@@ -471,7 +436,7 @@ namespace RenderGL
         if (shader == nullptr)
         {
             glUseProgram(0);
-            mActiveShader = nullptr;
+            m_activeShader = nullptr;
             return;
         }
 
@@ -481,7 +446,7 @@ namespace RenderGL
             glUseProgram(g->GetProgram());
         }
 
-        mActiveShader = shader;
+        m_activeShader = shader;
     }
 
 
@@ -529,7 +494,7 @@ namespace RenderGL
         }
 
         // create Texture object
-        mRandomVectorTexture = new Texture(textureID, width, height);
+        m_randomVectorTexture = new Texture(textureID, width, height);
 
         glDisable(GL_TEXTURE_2D);
         return true;

@@ -1,5 +1,6 @@
 """
-Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+Copyright (c) Contributors to the Open 3D Engine Project.
+For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
@@ -102,7 +103,17 @@ def list_s3_buckets(region: str = "") -> List[str]:
     bucket_names: List[str] = []
     bucket: Dict[str, any]
     for bucket in response["Buckets"]:
-        bucket_names.append(bucket["Name"])
+        try:
+            bucket_name: str = bucket["Name"]
+            location_response: Dict[str, any] = s3_client.get_bucket_location(Bucket=bucket_name)
+            # Buckets in Region us-east-1 have a LocationConstraint of null .
+            # https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/s3.html#S3.Client.get_bucket_location
+            if ((location_response["LocationConstraint"] == region) or
+                    (not location_response["LocationConstraint"] and region == "us-east-1")):
+                bucket_names.append(bucket_name)
+        except ClientError as error:
+            raise RuntimeError(error_messages.AWS_SERVICE_REQUEST_CLIENT_ERROR_MESSAGE.format(
+                "get_bucket_location", error.response['Error']['Code'], error.response['Error']['Message']))
     return bucket_names
 
 

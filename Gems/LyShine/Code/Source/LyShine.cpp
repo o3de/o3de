@@ -1,11 +1,10 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "LyShine_precompiled.h"
-
 #include "LyShine.h"
 
 #include "UiCanvasComponent.h"
@@ -125,10 +124,9 @@ AllocateConstIntCVar(CLyShine, CV_ui_RunUnitTestsOnStartup);
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-CLyShine::CLyShine(ISystem* system)
+CLyShine::CLyShine([[maybe_unused]] ISystem* system)
     : AzFramework::InputChannelEventListener(AzFramework::InputChannelEventListener::GetPriorityUI())
     , AzFramework::InputTextEventListener(AzFramework::InputTextEventListener::GetPriorityUI())
-    , m_system(system)
     , m_draw2d(new CDraw2d)
     , m_uiRenderer(new UiRenderer)
     , m_uiCanvasManager(new UiCanvasManager)
@@ -164,6 +162,8 @@ CLyShine::CLyShine(ISystem* system)
     AzFramework::InputTextEventListener::Connect();
     UiCursorBus::Handler::BusConnect();
     AZ::TickBus::Handler::BusConnect();
+    AZ::RPI::ViewportContextNotificationBus::Handler::BusConnect(
+        AZ::RPI::ViewportContextRequests::Get()->GetDefaultViewportContextName());
     AZ::Render::Bootstrap::NotificationBus::Handler::BusConnect();
 
     // These are internal Amazon components, so register them so that we can send back their names to our metrics collection
@@ -241,9 +241,11 @@ CLyShine::~CLyShine()
 {
     UiCursorBus::Handler::BusDisconnect();
     AZ::TickBus::Handler::BusDisconnect();
+    AZ::RPI::ViewportContextNotificationBus::Handler::BusDisconnect();
     AzFramework::InputTextEventListener::Disconnect();
     AzFramework::InputChannelEventListener::Disconnect();
     AZ::Render::Bootstrap::NotificationBus::Handler::BusDisconnect();
+    LyShinePassDataRequestBus::Handler::BusDisconnect();
 
     UiCanvasComponent::Shutdown();
 
@@ -288,7 +290,7 @@ AZ::EntityId CLyShine::CreateCanvas()
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-AZ::EntityId CLyShine::LoadCanvas(const string& assetIdPathname)
+AZ::EntityId CLyShine::LoadCanvas(const AZStd::string& assetIdPathname)
 {
     return m_uiCanvasManager->LoadCanvas(assetIdPathname.c_str());
 }
@@ -300,7 +302,7 @@ AZ::EntityId CLyShine::CreateCanvasInEditor(UiEntityContext* entityContext)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-AZ::EntityId CLyShine::LoadCanvasInEditor(const string& assetIdPathname, const string& sourceAssetPathname, UiEntityContext* entityContext)
+AZ::EntityId CLyShine::LoadCanvasInEditor(const AZStd::string& assetIdPathname, const AZStd::string& sourceAssetPathname, UiEntityContext* entityContext)
 {
     return m_uiCanvasManager->LoadCanvasInEditor(assetIdPathname, sourceAssetPathname, entityContext);
 }
@@ -318,7 +320,7 @@ AZ::EntityId CLyShine::FindCanvasById(LyShine::CanvasId id)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-AZ::EntityId CLyShine::FindLoadedCanvasByPathName(const string& assetIdPathname)
+AZ::EntityId CLyShine::FindLoadedCanvasByPathName(const AZStd::string& assetIdPathname)
 {
     return m_uiCanvasManager->FindLoadedCanvasByPathName(assetIdPathname.c_str());
 }
@@ -336,13 +338,13 @@ void CLyShine::ReleaseCanvasDeferred(AZ::EntityId canvas)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-ISprite* CLyShine::LoadSprite(const string& pathname)
+ISprite* CLyShine::LoadSprite(const AZStd::string& pathname)
 {
     return CSprite::LoadSprite(pathname);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-ISprite* CLyShine::CreateSprite(const string& renderTargetName)
+ISprite* CLyShine::CreateSprite(const AZStd::string& renderTargetName)
 {
     return CSprite::CreateSprite(renderTargetName);
 }
@@ -374,8 +376,6 @@ void CLyShine::SetViewportSize(AZ::Vector2 viewportSize)
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void CLyShine::Update(float deltaTimeInSeconds)
 {
-    FRAME_PROFILER(__FUNCTION__, gEnv->pSystem, PROFILE_UI);
-
     if (!m_uiRenderer->IsReady())
     {
         return;
@@ -405,8 +405,6 @@ void CLyShine::Update(float deltaTimeInSeconds)
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void CLyShine::Render()
 {
-    FRAME_PROFILER(__FUNCTION__, gEnv->pSystem, PROFILE_UI);
-
     if (AZ::RHI::IsNullRenderer())
     {
         return;
@@ -584,8 +582,6 @@ AZ::Vector2 CLyShine::GetUiCursorPosition()
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 bool CLyShine::OnInputChannelEventFiltered(const AzFramework::InputChannel& inputChannel)
 {
-    FUNCTION_PROFILER(GetISystem(), PROFILE_ACTION);
-
     // disable UI inputs when console is open except for a primary release
     // if we ignore the primary release when there is an active interactable then it will miss its release
     // which leaves it in a bad state. E.g. a drag operation will be left in flight and not properly
@@ -621,8 +617,6 @@ bool CLyShine::OnInputChannelEventFiltered(const AzFramework::InputChannel& inpu
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 bool CLyShine::OnInputTextEventFiltered(const AZStd::string& textUTF8)
 {
-    FUNCTION_PROFILER(GetISystem(), PROFILE_ACTION);
-
     if (gEnv->pConsole->GetStatus()) // disable UI inputs when console is open
     {
         return false;
@@ -643,22 +637,36 @@ void CLyShine::OnTick(float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time
 {
     // Update the loaded UI canvases
     Update(deltaTime);
-
-    // Recreate dirty render graphs and send primitive data to the dynamic draw context
-    Render();
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 int CLyShine::GetTickOrder()
 {
-    return AZ::TICK_UI;
+    return AZ::TICK_PRE_RENDER;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-void CLyShine::OnBootstrapSceneReady([[maybe_unused]] AZ::RPI::Scene* bootstrapScene)
+void CLyShine::OnRenderTick()
+{
+    // Recreate dirty render graphs and send primitive data to the dynamic draw context
+    Render();
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+void CLyShine::OnBootstrapSceneReady(AZ::RPI::Scene* bootstrapScene)
 {
     // Load cursor if its path was set before RPI was initialized
     LoadUiCursor();
+
+    LyShinePassDataRequestBus::Handler::BusConnect(bootstrapScene->GetId());
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+LyShine::AttachmentImagesAndDependencies CLyShine::GetRenderTargets()
+{
+    LyShine::AttachmentImagesAndDependencies attachmentImagesAndDependencies;
+    m_uiCanvasManager->GetRenderTargets(attachmentImagesAndDependencies);
+    return attachmentImagesAndDependencies;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

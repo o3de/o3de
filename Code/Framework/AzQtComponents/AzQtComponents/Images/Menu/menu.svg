@@ -3,9 +3,9 @@
     <title>Buttons / Dropdown button with Icon / no arrow</title>
     <g id="Buttons-/-Dropdown-button-with-Icon-/-no-arrow" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
         <g id="Icons-/-System-/-Menu" fill="#FFFFFF">
-            <rect id="Rectangle-11" x="1.33333333" y="2.66666667" width="13.3333333" height="1.33333333"></rect>
-            <rect id="Rectangle-11" x="1.33333333" y="7.33333333" width="13.3333333" height="1.33333333"></rect>
-            <rect id="Rectangle-11" x="1.33333333" y="12" width="13.3333333" height="1.33333333"></rect>
+            <rect id="Rectangle-11" x="4" y="2.66666667" width="12" height="2"></rect>
+            <rect id="Rectangle-11" x="4" y="7.33333333" width="12" height="2"></rect>
+            <rect id="Rectangle-11" x="4" y="12" width="12" height="2"></rect>
         </g>
     </g>
 </svg>

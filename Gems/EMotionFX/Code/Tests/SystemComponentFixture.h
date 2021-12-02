@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -60,7 +61,9 @@ namespace EMotionFX
             constexpr auto projectPathKey = FixedValueString(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey) + "/project_path";
             if(auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
             {
-                settingsRegistry->Set(projectPathKey, "AutomatedTesting");
+                AZ::IO::FixedMaxPath enginePath;
+                settingsRegistry->Get(enginePath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder);
+                settingsRegistry->Set(projectPathKey, (enginePath / "AutomatedTesting").Native());
                 AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(*settingsRegistry);
             }
         }

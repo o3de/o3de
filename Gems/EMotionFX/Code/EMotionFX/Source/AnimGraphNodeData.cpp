@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -19,19 +20,19 @@ namespace EMotionFX
     // constructor
     AnimGraphNodeData::AnimGraphNodeData(AnimGraphNode* node, AnimGraphInstance* animGraphInstance)
         : AnimGraphObjectData(reinterpret_cast<AnimGraphObject*>(node), animGraphInstance)
-        , mDuration(0.0f)
-        , mCurrentTime(0.0f)
-        , mPlaySpeed(1.0f)
-        , mPreSyncTime(0.0f)
-        , mGlobalWeight(1.0f)
-        , mLocalWeight(1.0f)
-        , mSyncIndex(MCORE_INVALIDINDEX32)
-        , mPoseRefCount(0)
-        , mRefDataRefCount(0)
-        , mInheritFlags(0)
+        , m_duration(0.0f)
+        , m_currentTime(0.0f)
+        , m_playSpeed(1.0f)
+        , m_preSyncTime(0.0f)
+        , m_globalWeight(1.0f)
+        , m_localWeight(1.0f)
+        , m_syncIndex(InvalidIndex)
+        , m_poseRefCount(0)
+        , m_refDataRefCount(0)
+        , m_inheritFlags(0)
         , m_isMirrorMotion(false)
-        , mRefCountedData(nullptr)
-        , mSyncTrack(nullptr)
+        , m_refCountedData(nullptr)
+        , m_syncTrack(nullptr)
     {
     }
 
@@ -46,16 +47,16 @@ namespace EMotionFX
     // reset the sync related data
     void AnimGraphNodeData::Clear()
     {
-        mDuration = 0.0f;
-        mCurrentTime = 0.0f;
-        mPreSyncTime = 0.0f;
-        mPlaySpeed = 1.0f;
-        mGlobalWeight = 1.0f;
-        mLocalWeight = 1.0f;
-        mInheritFlags = 0;
+        m_duration = 0.0f;
+        m_currentTime = 0.0f;
+        m_preSyncTime = 0.0f;
+        m_playSpeed = 1.0f;
+        m_globalWeight = 1.0f;
+        m_localWeight = 1.0f;
+        m_inheritFlags = 0;
         m_isMirrorMotion = false;
-        mSyncIndex = MCORE_INVALIDINDEX32;
-        mSyncTrack = nullptr;
+        m_syncIndex = InvalidIndex;
+        m_syncTrack = nullptr;
     }
 
 
@@ -69,15 +70,15 @@ namespace EMotionFX
     // init from existing node data
     void AnimGraphNodeData::Init(AnimGraphNodeData* nodeData)
     {
-        mDuration = nodeData->mDuration;
-        mCurrentTime = nodeData->mCurrentTime;
-        mPreSyncTime = nodeData->mPreSyncTime;
-        mPlaySpeed = nodeData->mPlaySpeed;
-        mSyncIndex = nodeData->mSyncIndex;
-        mGlobalWeight = nodeData->mGlobalWeight;
-        mInheritFlags = nodeData->mInheritFlags;
+        m_duration = nodeData->m_duration;
+        m_currentTime = nodeData->m_currentTime;
+        m_preSyncTime = nodeData->m_preSyncTime;
+        m_playSpeed = nodeData->m_playSpeed;
+        m_syncIndex = nodeData->m_syncIndex;
+        m_globalWeight = nodeData->m_globalWeight;
+        m_inheritFlags = nodeData->m_inheritFlags;
         m_isMirrorMotion = nodeData->m_isMirrorMotion;
-        mSyncTrack = nodeData->mSyncTrack;
+        m_syncTrack = nodeData->m_syncTrack;
     }
 
 

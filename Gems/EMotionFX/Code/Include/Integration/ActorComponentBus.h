@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -15,7 +16,7 @@
 #include <AzCore/RTTI/TypeInfo.h>
 #include <AzFramework/Physics/AnimationConfiguration.h>
 #include <AzFramework/Physics/Character.h>
-
+#include <Integration/Assets/ActorAsset.h>
 
 namespace EMotionFX
 {
@@ -90,11 +91,15 @@ namespace EMotionFX
             /// Enables rendering of the actor.
             virtual bool GetRenderCharacter() const = 0;
             virtual void SetRenderCharacter(bool enable) = 0;
+            virtual bool GetRenderActorVisible() const = 0;
 
             /// Returns skinning method used by the actor.
             virtual SkinningMethod GetSkinningMethod() const = 0;
 
-            static const size_t s_invalidJointIndex = ~0;
+            // Use this to alter the actor asset.
+            virtual void SetActorAsset(AZ::Data::Asset<EMotionFX::Integration::ActorAsset> actorAsset) = 0;
+
+            static const size_t s_invalidJointIndex = std::numeric_limits<size_t>::max();
         };
 
         using ActorComponentRequestBus = AZ::EBus<ActorComponentRequests>;

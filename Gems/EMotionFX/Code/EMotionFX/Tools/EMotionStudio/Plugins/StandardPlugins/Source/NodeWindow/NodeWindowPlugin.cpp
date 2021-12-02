@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -27,8 +28,8 @@ namespace EMStudio
 {
     NodeWindowPlugin::NodeWindowPlugin()
         : EMStudio::DockWidgetPlugin()
-        , mDialogStack(nullptr)
-        , mHierarchyWidget(nullptr)
+        , m_dialogStack(nullptr)
+        , m_hierarchyWidget(nullptr)
         , m_propertyWidget(nullptr)
     {
     }
@@ -78,35 +79,35 @@ namespace EMStudio
         GetCommandManager()->RegisterCommandCallback("ClearSelection", m_callbacks.back());
 
         // create the dialog stack
-        AZ_Assert(!mDialogStack, "Expected an unitialized mDialogStack, was this function called more than once?");
-        mDialogStack = new MysticQt::DialogStack();
+        AZ_Assert(!m_dialogStack, "Expected an unitialized m_dialogStack, was this function called more than once?");
+        m_dialogStack = new MysticQt::DialogStack();
 
         // add the node hierarchy
-        mHierarchyWidget = new NodeHierarchyWidget(mDock, false);
-        mHierarchyWidget->setObjectName("EMFX.NodeWindowPlugin.NodeHierarchyWidget.HierarchyWidget");
-        mHierarchyWidget->GetTreeWidget()->setMinimumWidth(100);
-        mDialogStack->Add(mHierarchyWidget, "Hierarchy", false, true);
+        m_hierarchyWidget = new NodeHierarchyWidget(m_dock, false);
+        m_hierarchyWidget->setObjectName("EMFX.NodeWindowPlugin.NodeHierarchyWidget.HierarchyWidget");
+        m_hierarchyWidget->GetTreeWidget()->setMinimumWidth(100);
+        m_dialogStack->Add(m_hierarchyWidget, "Hierarchy", false, true);
 
         // add the node attributes widget
-        m_propertyWidget = aznew AzToolsFramework::ReflectedPropertyEditor(mDialogStack);
+        m_propertyWidget = aznew AzToolsFramework::ReflectedPropertyEditor(m_dialogStack);
         m_propertyWidget->setObjectName("EMFX.NodeWindowPlugin.ReflectedPropertyEditor.PropertyWidget");
         m_propertyWidget->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Fixed);
         m_propertyWidget->SetAutoResizeLabels(true);
-        mDialogStack->Add(m_propertyWidget, "Node Attributes", false, true, true, false);
+        m_dialogStack->Add(m_propertyWidget, "Node Attributes", false, true, true, false);
 
         // prepare the dock window
-        mDock->setWidget(mDialogStack);
-        mDock->setMinimumWidth(100);
-        mDock->setMinimumHeight(100);
+        m_dock->setWidget(m_dialogStack);
+        m_dock->setMinimumWidth(100);
+        m_dock->setMinimumHeight(100);
 
         // add functionality to the controls
-        connect(mDock, &QDockWidget::visibilityChanged, this, &NodeWindowPlugin::VisibilityChanged);
-        connect(mHierarchyWidget->GetTreeWidget(), &QTreeWidget::itemSelectionChanged, this, &NodeWindowPlugin::OnNodeChanged);
+        connect(m_dock, &QDockWidget::visibilityChanged, this, &NodeWindowPlugin::VisibilityChanged);
+        connect(m_hierarchyWidget->GetTreeWidget(), &QTreeWidget::itemSelectionChanged, this, &NodeWindowPlugin::OnNodeChanged);
 
-        const AzQtComponents::FilteredSearchWidget* searchWidget = mHierarchyWidget->GetSearchWidget();
+        const AzQtComponents::FilteredSearchWidget* searchWidget = m_hierarchyWidget->GetSearchWidget();
         connect(searchWidget, &AzQtComponents::FilteredSearchWidget::TextFilterChanged, this, &NodeWindowPlugin::OnTextFilterChanged);
 
-        connect(mHierarchyWidget, &NodeHierarchyWidget::FilterStateChanged, this, &NodeWindowPlugin::UpdateVisibleNodeIndices);
+        connect(m_hierarchyWidget, &NodeHierarchyWidget::FilterStateChanged, this, &NodeWindowPlugin::UpdateVisibleNodeIndices);
 
         // reinit the dialog
         ReInit();
@@ -122,15 +123,15 @@ namespace EMStudio
         EMotionFX::ActorInstance*           actorInstance   = selection.GetSingleActorInstance();
 
         // reset the node name filter
-        mHierarchyWidget->GetSearchWidget()->ClearTextFilter();
-        mHierarchyWidget->GetTreeWidget()->clear();
+        m_hierarchyWidget->GetSearchWidget()->ClearTextFilter();
+        m_hierarchyWidget->GetTreeWidget()->clear();
         
         m_propertyWidget->ClearInstances();
         m_propertyWidget->InvalidateAll();
 
         if (actorInstance)
         {
-            mHierarchyWidget->Update(actorInstance->GetID());
+            m_hierarchyWidget->Update(actorInstance->GetID());
             m_actorInfo.reset(aznew ActorInfo(actorInstance));
             m_propertyWidget->AddInstance(m_actorInfo.get(), azrtti_typeid(m_actorInfo.get()));
         }
@@ -157,14 +158,14 @@ namespace EMStudio
         selection.ClearNodeSelection();
         m_selectedNodeIndices.clear();
 
-        AZStd::vector<SelectionItem>& selectedItems = mHierarchyWidget->GetSelectedItems();
+        AZStd::vector<SelectionItem>& selectedItems = m_hierarchyWidget->GetSelectedItems();
 
         EMotionFX::ActorInstance*   selectedInstance    = nullptr;
         EMotionFX::Node*            selectedNode        = nullptr;
 
         for (const SelectionItem& selectedItem : selectedItems)
         {
-            const uint32                actorInstanceID = selectedItem.mActorInstanceID;
+            const uint32                actorInstanceID = selectedItem.m_actorInstanceId;
             const char*                 nodeName        = selectedItem.GetNodeName();
             EMotionFX::ActorInstance*   actorInstance   = EMotionFX::GetActorManager().FindActorInstanceByID(actorInstanceID);
 
@@ -176,7 +177,7 @@ namespace EMStudio
             EMotionFX::Actor*           actor   = actorInstance->GetActor();
             EMotionFX::Node*            node    = actor->GetSkeleton()->FindNodeByName(nodeName);
 
-            if (node && mHierarchyWidget->CheckIfNodeVisible(actorInstance, node))
+            if (node && m_hierarchyWidget->CheckIfNodeVisible(actorInstance, node))
             {
                 if (selectedInstance == nullptr)
                 {
@@ -277,26 +278,26 @@ namespace EMStudio
             return;
         }
 
-        AZStd::string filterString = mHierarchyWidget->GetSearchWidgetText();
+        AZStd::string filterString = m_hierarchyWidget->GetSearchWidgetText();
         AZStd::to_lower(filterString.begin(), filterString.end());
-        const bool showNodes        = mHierarchyWidget->GetDisplayNodes();
-        const bool showBones        = mHierarchyWidget->GetDisplayBones();
-        const bool showMeshes       = mHierarchyWidget->GetDisplayMeshes();
+        const bool showNodes        = m_hierarchyWidget->GetDisplayNodes();
+        const bool showBones        = m_hierarchyWidget->GetDisplayBones();
+        const bool showMeshes       = m_hierarchyWidget->GetDisplayMeshes();
 
         // get access to the actor and the number of nodes
         EMotionFX::Actor* actor = actorInstance->GetActor();
-        const uint32 numNodes = actor->GetNumNodes();
+        const size_t numNodes = actor->GetNumNodes();
 
         // reserve memory for the visible node indices
         m_visibleNodeIndices.reserve(numNodes);
 
         // extract the bones from the actor
-        MCore::Array<uint32> boneList;
+        AZStd::vector<size_t> boneList;
         actor->ExtractBoneList(actorInstance->GetLODLevel(), &boneList);
 
         // iterate through all nodes and check if the node is visible
         AZStd::string nodeName;
-        for (uint32 i = 0; i < numNodes; ++i)
+        for (size_t i = 0; i < numNodes; ++i)
         {
             EMotionFX::Node* node = actor->GetSkeleton()->GetNode(i);
 
@@ -304,10 +305,10 @@ namespace EMStudio
             nodeName = node->GetNameString();
             AZStd::to_lower(nodeName.begin(), nodeName.end());
 
-            const uint32        nodeIndex   = node->GetNodeIndex();
+            const size_t        nodeIndex   = node->GetNodeIndex();
             EMotionFX::Mesh*    mesh        = actor->GetMesh(actorInstance->GetLODLevel(), nodeIndex);
             const bool          isMeshNode  = (mesh);
-            const bool          isBone      = (boneList.Find(nodeIndex) != MCORE_INVALIDINDEX32);
+            const bool          isBone      = (AZStd::find(begin(boneList), end(boneList), nodeIndex) != end(boneList));
             const bool          isNode      = (isMeshNode == false && isBone == false);
 
             if (((showMeshes && isMeshNode) ||
@@ -326,7 +327,16 @@ namespace EMStudio
 
     void NodeWindowPlugin::OnActorReady([[maybe_unused]] EMotionFX::Actor* actor)
     {
-        ReInit();
+        m_reinitRequested = true;
+    }
+
+    void NodeWindowPlugin::ProcessFrame([[maybe_unused]] float timePassedInSeconds)
+    {
+        if (m_reinitRequested)
+        {
+            ReInit();
+            m_reinitRequested = false;
+        }
     }
 
     //-----------------------------------------------------------------------------------------

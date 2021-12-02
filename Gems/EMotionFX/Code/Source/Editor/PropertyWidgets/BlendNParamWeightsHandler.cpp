@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -237,11 +238,11 @@ namespace EMotionFX
             const char* sourceNodeName = "";
             for (const AnimGraphNode::Port& port : inputPorts)
             {
-                if (port.mConnection)
+                if (port.m_connection)
                 {
-                    if (port.mPortID == paramWeights[i].GetPortId())
+                    if (port.m_portId == paramWeights[i].GetPortId())
                     {
-                        sourceNodeName = port.mConnection->GetSourceNode()->GetName();
+                        sourceNodeName = port.m_connection->GetSourceNode()->GetName();
                     }
                 }
             }

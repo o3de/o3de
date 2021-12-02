@@ -1,10 +1,13 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 #pragma once
+
+#include <AzCore/PlatformDef.h>
 
 AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option")
 #include <qgraphicswidget.h>
@@ -16,6 +19,7 @@ AZ_POP_DISABLE_WARNING
 #include <AzCore/Component/EntityBus.h>
 #include <AzCore/std/string/string.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
+#include <AzToolsFramework/UI/Notifications/ToastBus.h>
 
 #include <GraphCanvas/Components/Connections/ConnectionBus.h>
 #include <GraphCanvas/Components/GeometryBus.h>
@@ -207,7 +211,7 @@ namespace GraphCanvas
 
         ConnectionValidationTooltip m_validationResult;
         Endpoint m_endpointTooltip;
-        ToastId  m_toastId;
+        AzToolsFramework::ToastId  m_toastId;
 
         //! The Id of the graph this connection belongs to.
         GraphId m_graphId;

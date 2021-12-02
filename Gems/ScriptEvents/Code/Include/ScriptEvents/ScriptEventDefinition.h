@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -10,7 +11,7 @@
 #include <AzCore/std/containers/vector.h>
 
 #include <ScriptEvents/ScriptEventParameter.h>
-#include <ScriptEvents/ScriptEventMethod.h>
+#include <ScriptEvents/ScriptEventsMethod.h>
 #include <ScriptEvents/Internal/VersionedProperty.h>
 
 namespace ScriptEvents
@@ -150,7 +151,7 @@ namespace ScriptEvents
         
         const AZStd::vector<Method>& GetMethods() const { return m_methods; }
 
-        AZStd::string_view GetLabel() const { return GetName(); }
+        AZStd::string_view GetLabel() const { return { m_name.Get<AZStd::string>()->data(), m_name.Get<AZStd::string>()->size() }; }
 
         void SetVersion(AZ::u32 version) { m_version = version; }
         ScriptEventData::VersionedProperty& GetNameProperty() { return m_name; }
