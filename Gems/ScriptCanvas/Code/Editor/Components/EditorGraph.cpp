@@ -1051,7 +1051,7 @@ namespace ScriptCanvasEditor
             auto graph = entity->CreateComponent<ScriptCanvasEditor::Graph>();
             entity->CreateComponent<EditorGraphVariableManagerComponent>(graph->GetScriptCanvasId());
 
-            if (ScriptCanvas::DataPtr data = AZStd::make_shared<ScriptCanvas::ScriptCanvasData>())
+            if (ScriptCanvas::DataPtr data = aznew ScriptCanvas::ScriptCanvasData())
             {
                 data->m_scriptCanvasEntity.reset(entity);
                 graph->MarkOwnership(*data);

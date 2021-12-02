@@ -97,23 +97,15 @@ namespace ScriptCanvasEditor
             }
             else
             {
-                // #sc_editor_asset - skip save, narrow down the memory corruption
-                AZ::SystemTickBus::QueueFunction([this, tmpFileName]()
-                {
-                    FileSaveResult result;
-                    result.tempFileRemovalError = RemoveTempFile(tmpFileName);
-                    m_onComplete(result);
-                });
-                                
                 // the actual move attempt
-                /*
                 auto moveResult = AZ::IO::SmartMove(tmpFileName.c_str(), target.c_str());
                 if (moveResult.GetResultCode() == AZ::IO::ResultCode::Success)
                 {
                     auto streamer = AZ::Interface<AZ::IO::IStreamer>::Get();
                     AZ::IO::FileRequestPtr flushRequest = streamer->FlushCache(target.c_str());
                     // Bump the slice asset up in the asset processor's queue.
-                    AzFramework::AssetSystemRequestBus::Broadcast(&AzFramework::AssetSystem::AssetSystemRequests::EscalateAssetBySearchTerm, target.c_str());
+                    AzFramework::AssetSystemRequestBus::Broadcast
+                        (&AzFramework::AssetSystem::AssetSystemRequests::EscalateAssetBySearchTerm, target.c_str());
                     
                     AZ::SystemTickBus::QueueFunction([this, tmpFileName]()
                         {
@@ -124,17 +116,19 @@ namespace ScriptCanvasEditor
                 }
                 else
                 {
-                    AZ_Warning(ScriptCanvas::k_VersionExplorerWindow.data(), false, "moving converted file to tmpFileName destination failed: %s, trying again", target.c_str());
+                    AZ_Warning(ScriptCanvas::k_VersionExplorerWindow.data(), false
+                        , "moving converted file to tmpFileName destination failed: %s, trying again", target.c_str());
                     auto streamer = AZ::Interface<AZ::IO::IStreamer>::Get();
                     AZ::IO::FileRequestPtr flushRequest = streamer->FlushCache(target.c_str());
-                    streamer->SetRequestCompleteCallback(flushRequest, [this, tmpFileName, target, remainingAttempts]([[maybe_unused]] AZ::IO::FileRequestHandle request)
+                    streamer->SetRequestCompleteCallback(flushRequest
+                    , [this, tmpFileName, target, remainingAttempts]([[maybe_unused]] AZ::IO::FileRequestHandle request)
                     {
                         // Continue saving.
-                        AZ::SystemTickBus::QueueFunction([this, tmpFileName, target, remainingAttempts]() { PerformMove(tmpFileName, target, remainingAttempts - 1); });
+                        AZ::SystemTickBus::QueueFunction(
+                            [this, tmpFileName, target, remainingAttempts]() { PerformMove(tmpFileName, target, remainingAttempts - 1); });
                     });
                     streamer->QueueRequest(flushRequest);
                 }
-                **/
             }
         }
 
