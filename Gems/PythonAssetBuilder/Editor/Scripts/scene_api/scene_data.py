@@ -131,11 +131,19 @@ class SceneManifest:
         self.manifest = {'values': []}
 
     def add_mesh_group(self, name: str) -> dict:
-        """
-        Adds a Mesh Group to the scene manifest.
+        """Adds a Mesh Group to the scene manifest.
 
-        :param name: Name of the mesh group.  This will become a file on disk and be usable as a Mesh in the editor.
-        :return: Newly created mesh group.
+        Parameters
+        ----------
+        name :
+            Name of the mesh group.  This will become a file on disk and be usable as a Mesh in the editor.
+            
+
+        Returns
+        -------
+        type
+            Newly created mesh group.
+
         """
         mesh_group = {
             '$type': '{07B356B7-3635-40B5-878A-FAC4EFD5AD86} MeshGroup',
@@ -147,13 +155,23 @@ class SceneManifest:
         return mesh_group
 
     def add_prefab_group(self, name: str, id: str, json: dict) -> dict:
-        """
-        Adds a Prefab Group to the scene manifest.  This will become a file on disk and be usable as a ProceduralPrefab in the editor.
+        """Adds a Prefab Group to the scene manifest.  This will become a file on disk and be usable as a ProceduralPrefab in the editor.
 
-        :param name: Name of the prefab.
-        :param id: Unique ID for this prefab group.
-        :param json: The prefab template data.
-        :return: The newly created Prefab group
+        Parameters
+        ----------
+        name :
+            Name of the prefab.
+        id :
+            Unique ID for this prefab group.
+        json :
+            The prefab template data.
+            
+
+        Returns
+        -------
+        type
+            The newly created Prefab group
+
         """
         prefab_group = {
             '$type': '{99FE3C6F-5B55-4D8B-8013-2708010EC715} PrefabGroup',
@@ -165,20 +183,36 @@ class SceneManifest:
         return prefab_group
 
     def mesh_group_select_node(self, mesh_group: dict, node_name: str) -> None:
-        """
-        Adds a node as a selected node.
+        """Adds a node as a selected node.
 
-        :param mesh_group: Mesh group to apply the selection to.
-        :param node_name: Path of the node.
+        Parameters
+        ----------
+        mesh_group :
+            Mesh group to apply the selection to.
+        node_name :
+            Path of the node.
+            
+
+        Returns
+        -------
+
         """
         mesh_group['nodeSelectionList']['selectedNodes'].append(node_name)
 
     def mesh_group_unselect_node(self, mesh_group: dict, node_name: str) -> None:
-        """
-        Adds a node as an unselected node.
+        """Adds a node as an unselected node.
 
-        :param mesh_group: Mesh group to apply the selection to.
-        :param node_name: Path of the node.
+        Parameters
+        ----------
+        mesh_group :
+            Mesh group to apply the selection to.
+        node_name :
+            Path of the node.
+            
+
+        Returns
+        -------
+
         """
         mesh_group['nodeSelectionList']['unselectedNodes'].append(node_name)
 
@@ -187,15 +221,25 @@ class SceneManifest:
                                                   translation: typing.Optional[object] = None,
                                                   rotation: typing.Optional[object] = None,
                                                   scale: float = 1.0) -> None:
-        """
-        Adds an Advanced Coordinate System rule which modifies the target coordinate system,
+        """Adds an Advanced Coordinate System rule which modifies the target coordinate system,
         applying a transformation to all data (transforms and vertex data if it exists).
 
-        :param mesh_group: Mesh group to add the Advanced Coordinate System rule to.
-        :param origin_node_name:
-        :param translation: Moves the group along the given vector.
-        :param rotation: Sets the orientation offset of the processed mesh in degrees. Rotates the group after translation.
-        :param scale: Sets the scale offset of the processed mesh.
+        Parameters
+        ----------
+        mesh_group :
+            Mesh group to add the Advanced Coordinate System rule to.
+        origin_node_name :
+            Path of the node to use as the origin.
+        translation :
+            Moves the group along the given vector.
+        rotation :
+            Sets the orientation offset of the processed mesh in degrees. Rotates the group after translation.
+        scale :
+            Sets the scale offset of the processed mesh.
+
+        Returns
+        -------
+
         """
         origin_rule = {
             '$type': 'CoordinateSystemRule',
@@ -211,11 +255,19 @@ class SceneManifest:
         mesh_group['rules']['rules'].append(origin_rule)
 
     def mesh_group_add_comment(self, mesh_group: dict, comment: str) -> None:
-        """
-        Adds a Comment rule.
+        """Adds a Comment rule.
 
-        :param mesh_group: Mesh group to add the comment rule to.
-        :param comment: Text for the comment rule.
+        Parameters
+        ----------
+        mesh_group :
+            Mesh group to add the comment rule to.
+        comment :
+            Text for the comment rule.
+            
+
+        Returns
+        -------
+
         """
         comment_rule = {
             '$type': 'CommentRule',
@@ -235,18 +287,33 @@ class SceneManifest:
                                   backstop_stream_name: typing.Optional[str],
                                   backstop_offset_channel: typing.Optional[ColorChannel],
                                   backstop_radius_channel: typing.Optional[ColorChannel]) -> None:
-        """
-        Adds a Cloth rule.
+        """Adds a Cloth rule.
 
-        :param mesh_group: Mesh Group to add the cloth rule to
-        :param cloth_node_name: Name of the node that the rule applies to
-        :param inverse_masses_stream_name: Name of the color stream to use for inverse masses
-        :param inverse_masses_channel: Color channel (index) for inverse masses
-        :param motion_constraints_stream_name: Name of the color stream to use for motion constraints
-        :param motion_constraints_channel: Color channel (index) for motion constraints
-        :param backstop_stream_name: Name of the color stream to use for backstop
-        :param backstop_offset_channel: Color channel (index) for backstop offset value
-        :param backstop_radius_channel: Color channel (index) for backstop radius value
+        Parameters
+        ----------
+        mesh_group :
+            Mesh Group to add the cloth rule to
+        cloth_node_name :
+            Name of the node that the rule applies to
+        inverse_masses_stream_name :
+            Name of the color stream to use for inverse masses
+        inverse_masses_channel :
+            Color channel (index) for inverse masses
+        motion_constraints_stream_name :
+            Name of the color stream to use for motion constraints
+        motion_constraints_channel :
+            Color channel (index) for motion constraints
+        backstop_stream_name :
+            Name of the color stream to use for backstop
+        backstop_offset_channel :
+            Color channel (index) for backstop offset value
+        backstop_radius_channel :
+            Color channel (index) for backstop radius value
+            
+
+        Returns
+        -------
+
         """
         cloth_rule = {
             '$type': 'ClothRule',
@@ -267,11 +334,19 @@ class SceneManifest:
         mesh_group['rules']['rules'].append(cloth_rule)
 
     def mesh_group_add_lod_rule(self, mesh_group: dict) -> dict:
-        """
-        Adds an LOD rule.
+        """Adds an LOD rule.
 
-        :param mesh_group: Mesh Group to add the rule to.
-        :return: LOD rule.
+        Parameters
+        ----------
+        mesh_group :
+            Mesh Group to add the rule to.
+
+
+        Returns
+        -------
+        type
+            LOD rule.
+
         """
         lod_rule = {
             '$type': '{6E796AC8-1484-4909-860A-6D3F22A7346F} LodRule',
@@ -282,31 +357,55 @@ class SceneManifest:
         return lod_rule
 
     def lod_rule_add_lod(self, lod_rule: dict) -> dict:
-        """
-        Adds an LOD level to the LOD rule.  Nodes are added in order.  The first node added represents LOD1, 2nd LOD2, etc.
+        """Adds an LOD level to the LOD rule.  Nodes are added in order.  The first node added represents LOD1, 2nd LOD2, etc.
 
-        :param lod_rule: LOD rule to add the LOD level to.
-        :return: LOD level.
+        Parameters
+        ----------
+        lod_rule :
+            LOD rule to add the LOD level to.
+            
+
+        Returns
+        -------
+        type
+            LOD level.
+
         """
         lod = {'selectedNodes': [], 'unselectedNodes': []}
         lod_rule['nodeSelectionList'].append(lod)
         return lod
 
     def lod_select_node(self, lod: dict, selected_node: str) -> None:
-        """
-        Adds a node as a selected node.
+        """Adds a node as a selected node.
 
-        :param lod: LOD level to add the node to.
-        :param selected_node: Path of the node.
+        Parameters
+        ----------
+        lod :
+            LOD level to add the node to.
+        selected_node :
+            Path of the node.
+            
+
+        Returns
+        -------
+
         """
         lod['selectedNodes'].append(selected_node)
 
     def lod_unselect_node(self, lod: dict, unselected_node: str) -> None:
-        """
-        Adds a node as an unselected node.
+        """Adds a node as an unselected node.
 
-        :param lod: LOD rule to add the node to.
-        :param unselected_node: Path of the node.
+        Parameters
+        ----------
+        lod :
+            LOD rule to add the node to.
+        unselected_node :
+            Path of the node.
+            
+
+        Returns
+        -------
+
         """
         lod['unselectedNodes'].append(unselected_node)
 
@@ -315,14 +414,24 @@ class SceneManifest:
                                           merge_meshes: bool = True,
                                           use_custom_normals: bool = True,
                                           vertex_color_stream: typing.Optional[str] = None) -> None:
-        """
-        Adds an Advanced Mesh rule.
+        """Adds an Advanced Mesh rule.
 
-        :param mesh_group: Mesh Group to add the rule to.
-        :param use_32bit_vertices: False = 16bit vertex position precision. True = 32bit vertex position precision.
-        :param merge_meshes: Merge all meshes into a single mesh.
-        :param use_custom_normals: True = use normals from DCC tool.  False = average normals.
-        :param vertex_color_stream: Color stream name to use for Vertex Coloring.
+        Parameters
+        ----------
+        mesh_group :
+            Mesh Group to add the rule to.
+        use_32bit_vertices :
+            False = 16bit vertex position precision. True = 32bit vertex position precision.
+        merge_meshes :
+            Merge all meshes into a single mesh.
+        use_custom_normals :
+            True = use normals from DCC tool.  False = average normals.
+        vertex_color_stream :
+            Color stream name to use for Vertex Coloring.
+
+        Returns
+        -------
+
         """
         rule = {
             '$type': 'StaticMeshAdvancedRule',
@@ -337,12 +446,20 @@ class SceneManifest:
         mesh_group['rules']['rules'].append(rule)
 
     def mesh_group_add_skin_rule(self, mesh_group: dict, max_weights_per_vertex: int = 4, weight_threshold: float = 0.001) -> None:
-        """
-        Adds a Skin rule.
+        """Adds a Skin rule.
 
-        :param mesh_group: Mesh Group to add the rule to.
-        :param max_weights_per_vertex: Max number of joints that can influence a vertex.
-        :param weight_threshold: Weight values below this value will be treated as 0.
+        Parameters
+        ----------
+        mesh_group :
+            Mesh Group to add the rule to.
+        max_weights_per_vertex :
+            Max number of joints that can influence a vertex.
+        weight_threshold :
+            Weight values below this value will be treated as 0.
+
+        Returns
+        -------
+
         """
         rule = {
             '$type': 'SkinRule',
@@ -355,12 +472,20 @@ class SceneManifest:
     def mesh_group_add_tangent_rule(self, mesh_group: dict,
                                     tangent_space: TangentSpaceSource = TangentSpaceSource.SCENE,
                                     tspace_method: TangentSpaceMethod = TangentSpaceMethod.TSPACE) -> None:
-        """
-        Adds a Tangent rule to control tangent space generation.
+        """Adds a Tangent rule to control tangent space generation.
 
-        :param mesh_group: Mesh Group to add the rule to.
-        :param tangent_space: Tangent space source. 0 = Scene, 1 = MikkT Tangent Generation.
-        :param tspace_method: MikkT Generation method. 0 = TSpace, 1 = TSpaceBasic.
+        Parameters
+        ----------
+        mesh_group :
+            Mesh Group to add the rule to.
+        tangent_space :
+            Tangent space source. 0 = Scene, 1 = MikkT Tangent Generation.
+        tspace_method :
+            MikkT Generation method. 0 = TSpace, 1 = TSpaceBasic.
+
+        Returns
+        -------
+
         """
         rule = {
             '$type': 'TangentsRule',
@@ -404,26 +529,42 @@ class SceneManifest:
                                       mesh_weld_tolerance: float = 0.0,
                                       num_tris_per_leaf: int = 4,
                                       physics_material: typing.Optional[str] = None) -> dict:
-        """
-        Adds a Triangle type PhysX Mesh Group to the scene.
+        """Adds a Triangle type PhysX Mesh Group to the scene.
 
-        :param name: Name of the mesh group.
-        :param merge_meshes: When true, all selected nodes will be merged into a single collision mesh.
-        :param weld_vertices: When true, mesh welding is performed. Clean mesh must be enabled.
-        :param disable_clean_mesh: When true, mesh cleaning is disabled. This makes cooking faster.
-        :param force_32bit_indices: When true, 32-bit indices will always be created regardless of triangle count.
-        :param suppress_triangle_mesh_remap_table: When true, the face remap table is not created.
-                            This saves a significant amount of memory, but the SDK will not be able to provide the remap
-                            information for internal mesh triangles returned by collisions, sweeps or raycasts hits.
-        :param build_triangle_adjacencies: When true, the triangle adjacency information is created.
-        :param mesh_weld_tolerance: If mesh welding is enabled, this controls the distance at
-                            which vertices are welded. If mesh welding is not enabled, this value defines the
-                            acceptance distance for mesh validation. Provided no two vertices are within this
-                            distance, the mesh is considered to be clean. If not, a warning will be emitted.
-        :param num_tris_per_leaf: Mesh cooking hint for max triangles per leaf limit. Fewer triangles per leaf
-                            produces larger meshes with better runtime performance and worse cooking performance.
-        :param physics_material: Configure which physics material to use.
-        :return: The newly created mesh group.
+        Parameters
+        ----------
+        name :
+            Name of the mesh group.
+        merge_meshes :
+            When true, all selected nodes will be merged into a single collision mesh.
+        weld_vertices :
+            When true, mesh welding is performed. Clean mesh must be enabled.
+        disable_clean_mesh :
+            When true, mesh cleaning is disabled. This makes cooking faster.
+        force_32bit_indices :
+            When true, 32-bit indices will always be created regardless of triangle count.
+        suppress_triangle_mesh_remap_table :
+            When true, the face remap table is not created.
+            This saves a significant amount of memory, but the SDK will not be able to provide the remap
+            information for internal mesh triangles returned by collisions, sweeps or raycasts hits.
+        build_triangle_adjacencies :
+            When true, the triangle adjacency information is created.
+        mesh_weld_tolerance :
+            If mesh welding is enabled, this controls the distance at
+            which vertices are welded. If mesh welding is not enabled, this value defines the
+            acceptance distance for mesh validation. Provided no two vertices are within this
+            distance, the mesh is considered to be clean. If not, a warning will be emitted.
+        num_tris_per_leaf :
+            Mesh cooking hint for max triangles per leaf limit. Fewer triangles per leaf
+            produces larger meshes with better runtime performance and worse cooking performance.
+        physics_material :
+            Configure which physics material to use.
+
+        Returns
+        -------
+        type
+            The newly created mesh group.
+
         """
         group = self.__add_physx_base_mesh_group(name, physics_material)
         group["export method"] = 0
@@ -449,32 +590,49 @@ class SceneManifest:
                                     gauss_map_limit: int = 32,
                                     build_gpu_data: bool = False,
                                     physics_material: typing.Optional[str] = None) -> dict:
-        """
-        Adds a Convex type PhysX Mesh Group to the scene.
+        """Adds a Convex type PhysX Mesh Group to the scene.
 
-        :param name: Name of the mesh group.
-        :param area_test_epsilon: If the area of a triangle of the hull is below this value, the triangle will be
-                            rejected. This test is done only if Check Zero Area Triangles is used.
-        :param plane_tolerance: The value is used during hull construction. When a new point is about to be added
-                            to the hull it gets dropped when the point is closer to the hull than the planeTolerance.
-        :param use_16bit_indices: Denotes the use of 16-bit vertex indices in Convex triangles or polygons.
-        :param check_zero_area_triangles: Checks and removes almost zero-area triangles during convex hull computation.
-                            The rejected area size is specified in Area Test Epsilon.
-        :param quantize_input: Quantizes the input vertices using the k-means clustering.
-        :param use_plane_shifting: Enables plane shifting vertex limit algorithm. Plane shifting is an alternative
-                            algorithm for the case when the computed hull has more vertices than the specified vertex
-                            limit.
-        :param shift_vertices: Convex hull input vertices are shifted to be around origin to provide better
-                            computation stability
-        :param gauss_map_limit: Vertex limit beyond which additional acceleration structures are computed for each
-                            convex mesh. Increase that limit to reduce memory usage. Computing the extra structures
-                            all the time does not guarantee optimal performance.
-        :param build_gpu_data: When true, additional information required for GPU-accelerated rigid body
-                            simulation is created. This can increase memory usage and cooking times for convex meshes
-                            and triangle meshes. Convex hulls are created with respect to GPU simulation limitations.
-                            Vertex limit is set to 64 and vertex limit per face is internally set to 32.
-        :param physics_material: Configure which physics material to use.
-        :return: The newly created mesh group.
+        Parameters
+        ----------
+        name :
+            Name of the mesh group.
+        area_test_epsilon :
+            If the area of a triangle of the hull is below this value, the triangle will be
+            rejected. This test is done only if Check Zero Area Triangles is used.
+        plane_tolerance :
+            The value is used during hull construction. When a new point is about to be added
+            to the hull it gets dropped when the point is closer to the hull than the planeTolerance.
+        use_16bit_indices :
+            Denotes the use of 16-bit vertex indices in Convex triangles or polygons.
+        check_zero_area_triangles :
+            Checks and removes almost zero-area triangles during convex hull computation.
+            The rejected area size is specified in Area Test Epsilon.
+        quantize_input :
+            Quantizes the input vertices using the k-means clustering.
+        use_plane_shifting :
+            Enables plane shifting vertex limit algorithm. Plane shifting is an alternative
+            algorithm for the case when the computed hull has more vertices than the specified vertex
+            limit.
+        shift_vertices :
+            Convex hull input vertices are shifted to be around origin to provide better
+            computation stability
+        gauss_map_limit :
+            Vertex limit beyond which additional acceleration structures are computed for each
+            convex mesh. Increase that limit to reduce memory usage. Computing the extra structures
+            all the time does not guarantee optimal performance.
+        build_gpu_data :
+            When true, additional information required for GPU-accelerated rigid body
+            simulation is created. This can increase memory usage and cooking times for convex meshes
+            and triangle meshes. Convex hulls are created with respect to GPU simulation limitations.
+            Vertex limit is set to 64 and vertex limit per face is internally set to 32.
+        physics_material :
+            Configure which physics material to use.
+
+        Returns
+        -------
+        type
+            The newly created mesh group.
+
         """
         group = self.__add_physx_base_mesh_group(name, physics_material)
         group["export method"] = 1
@@ -496,17 +654,27 @@ class SceneManifest:
                                        primitive_shape_target: PrimitiveShape = PrimitiveShape.BEST_FIT,
                                        volume_term_coefficient: float = 0.0,
                                        physics_material: typing.Optional[str] = None) -> dict:
-        """
-        Adds a Primitive Shape type PhysX Mesh Group to the scene
+        """Adds a Primitive Shape type PhysX Mesh Group to the scene
 
-        :param name: Name of the mesh group.
-        :param primitive_shape_target: The shape that should be fitted to this mesh. If BEST_FIT is selected, the
-                            algorithm will determine which of the shapes fits best.
-        :param volume_term_coefficient: This parameter controls how aggressively the primitive fitting algorithm will try
-                            to minimize the volume of the fitted primitive. A value of 0 (no volume minimization) is
-                            recommended for most meshes, especially those with moderate to high vertex counts.
-        :param physics_material: Configure which physics material to use.
-        :return: The newly created mesh group.
+        Parameters
+        ----------
+        name :
+            Name of the mesh group.
+        primitive_shape_target :
+            The shape that should be fitted to this mesh. If BEST_FIT is selected, the
+            algorithm will determine which of the shapes fits best.
+        volume_term_coefficient :
+            This parameter controls how aggressively the primitive fitting algorithm will try
+            to minimize the volume of the fitted primitive. A value of 0 (no volume minimization) is
+            recommended for most meshes, especially those with moderate to high vertex counts.
+        physics_material :
+            Configure which physics material to use.
+
+        Returns
+        -------
+        type
+            The newly created mesh group.
+
         """
         group = self.__add_physx_base_mesh_group(name, physics_material)
         group["export method"] = 2
@@ -529,26 +697,44 @@ class SceneManifest:
                                           convex_hull_downsampling: int = 4,
                                           pca: bool = False,
                                           project_hull_vertices: bool = True) -> None:
-        """
-        Enables and configures mesh decomposition for a PhysX Mesh Group.
+        """Enables and configures mesh decomposition for a PhysX Mesh Group.
         Only valid for convex or primitive mesh types.
 
-        :param mesh_group: Mesh group to configure decomposition for.
-        :param max_convex_hulls: Controls the maximum number of hulls to generate.
-        :param max_num_vertices_per_convex_hull: Controls the maximum number of triangles per convex hull.
-        :param concavity: Maximum concavity of each approximate convex hull.
-        :param resolution: Maximum number of voxels generated during the voxelization stage.
-        :param mode: Select voxel-based approximate convex decomposition or tetrahedron-based
-                            approximate convex decomposition.
-        :param alpha: Controls the bias toward clipping along symmetry planes.
-        :param beta: Controls the bias toward clipping along revolution axes.
-        :param min_volume_per_convex_hull: Controls the adaptive sampling of the generated convex hulls.
-        :param plane_downsampling: Controls the granularity of the search for the best clipping plane.
-        :param convex_hull_downsampling: Controls the precision of the convex hull generation process
-                            during the clipping plane selection stage.
-        :param pca: Enable or disable normalizing the mesh before applying the convex decomposition.
-        :param project_hull_vertices: Project the output convex hull vertices onto the original source mesh to increase
-                            the floating point accuracy of the results.
+        Parameters
+        ----------
+        mesh_group :
+            Mesh group to configure decomposition for.
+        max_convex_hulls :
+            Controls the maximum number of hulls to generate.
+        max_num_vertices_per_convex_hull :
+            Controls the maximum number of triangles per convex hull.
+        concavity :
+            Maximum concavity of each approximate convex hull.
+        resolution :
+            Maximum number of voxels generated during the voxelization stage.
+        mode :
+            Select voxel-based approximate convex decomposition or tetrahedron-based
+            approximate convex decomposition.
+        alpha :
+            Controls the bias toward clipping along symmetry planes.
+        beta :
+            Controls the bias toward clipping along revolution axes.
+        min_volume_per_convex_hull :
+            Controls the adaptive sampling of the generated convex hulls.
+        plane_downsampling :
+            Controls the granularity of the search for the best clipping plane.
+        convex_hull_downsampling :
+            Controls the precision of the convex hull generation process
+            during the clipping plane selection stage.
+        pca :
+            Enable or disable normalizing the mesh before applying the convex decomposition.
+        project_hull_vertices :
+            Project the output convex hull vertices onto the original source mesh to increase
+            the floating point accuracy of the results.
+
+        Returns
+        -------
+
         """
         mesh_group['DecomposeMeshes'] = True
         mesh_group['ConvexDecompositionParams'] = {
@@ -567,41 +753,74 @@ class SceneManifest:
         }
 
     def physx_mesh_group_add_selected_node(self, mesh_group: dict, node: str) -> None:
-        """
-        Adds a node to the selected nodes list
+        """Adds a node to the selected nodes list
 
-        :param mesh_group: Mesh group to add to.
-        :param node: Node path to add.
+        Parameters
+        ----------
+        mesh_group :
+            Mesh group to add to.
+        node :
+            Node path to add.
+            
+
+        Returns
+        -------
+
         """
         mesh_group['NodeSelectionList']['selectedNodes'].append(node)
 
     def physx_mesh_group_add_unselected_node(self, mesh_group: dict, node: str) -> None:
-        """
-        Adds a node to the unselected nodes list
+        """Adds a node to the unselected nodes list
 
-        :param mesh_group: Mesh group to add to.
-        :param node: Node path to add.
+        Parameters
+        ----------
+        mesh_group :
+            Mesh group to add to.
+        node :
+            Node path to add.
+            
+
+        Returns
+        -------
+
         """
         mesh_group['NodeSelectionList']['unselectedNodes'].append(node)
 
     def physx_mesh_group_add_selected_unselected_nodes(self, mesh_group: dict, selected: typing.List[str],
                                                        unselected: typing.List[str]) -> None:
-        """
-        Adds a set of nodes to the selected/unselected node lists
+        """Adds a set of nodes to the selected/unselected node lists
 
-        :param mesh_group: Mesh group to add to.
-        :param selected: List of node paths to add to the selected list.
-        :param unselected: List of node paths to add to the unselected list.
+        Parameters
+        ----------
+        mesh_group :
+            Mesh group to add to.
+        selected :
+            List of node paths to add to the selected list.
+        unselected :
+            List of node paths to add to the unselected list.
+            
+
+        Returns
+        -------
+
         """
         mesh_group['NodeSelectionList']['selectedNodes'].extend(selected)
         mesh_group['NodeSelectionList']['unselectedNodes'].extend(unselected)
 
     def physx_mesh_group_add_comment(self, mesh_group: dict, comment: str) -> None:
-        """
-        Adds a comment rule
+        """Adds a comment rule
 
-        :param mesh_group: Mesh group to add the rule to.
-        :param comment: Comment string.
+        Parameters
+        ----------
+        mesh_group :
+            Mesh group to add the rule to.
+        comment :
+            Comment string.
+            
+
+        Returns
+        -------
+
         """
         rule = {
             "$type": "CommentRule",
