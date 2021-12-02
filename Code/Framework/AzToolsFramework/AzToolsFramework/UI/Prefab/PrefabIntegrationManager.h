@@ -18,10 +18,10 @@
 #include <AzToolsFramework/Prefab/PrefabPublicInterface.h>
 #include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
 #include <AzToolsFramework/UI/Prefab/LevelRootUiHandler.h>
-
 #include <AzToolsFramework/UI/Prefab/PrefabIntegrationBus.h>
 #include <AzToolsFramework/UI/Prefab/PrefabIntegrationInterface.h>
 #include <AzToolsFramework/UI/Prefab/PrefabUiHandler.h>
+#include <AzToolsFramework/UI/Prefab/Procedural/ProceduralPrefabUiHandler.h>
 
 #include <AzQtComponents/Components/Widgets/Card.h>
 
@@ -98,6 +98,9 @@ namespace AzToolsFramework
             // Used to handle the UI for prefab entities
             PrefabUiHandler m_prefabUiHandler;
 
+            // Used to handle the UI for procedural prefab entities
+            ProceduralPrefabUiHandler m_proceduralPrefabUiHandler;
+
             // Context menu item handlers
             static void ContextMenu_CreatePrefab(AzToolsFramework::EntityIdList selectedEntities);
             static void ContextMenu_InstantiatePrefab();
@@ -150,6 +153,8 @@ namespace AzToolsFramework
             AZStd::unique_ptr<AzQtComponents::Card> ConstructUnsavedPrefabsCard(TemplateId templateId);
             AZStd::unique_ptr<QDialog> ConstructSavePrefabDialog(TemplateId templateId, bool useSaveAllPrefabsPreference);
             void SavePrefabsInDialog(QDialog* unsavedPrefabsDialog);
+
+            bool IsOwnedByProceduralPrefab(const AZ::EntityId& entityId);
 
             AZStd::vector<AZStd::unique_ptr<QAction>> m_actions;
 

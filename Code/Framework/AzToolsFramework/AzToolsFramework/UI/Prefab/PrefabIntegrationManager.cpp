@@ -27,6 +27,7 @@
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/Prefab/EditorPrefabComponent.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceEntityMapperInterface.h>
+#include <AzToolsFramework/Prefab/Instance/InstanceToTemplateInterface.h>
 #include <AzToolsFramework/Prefab/PrefabFocusInterface.h>
 #include <AzToolsFramework/Prefab/PrefabFocusPublicInterface.h>
 #include <AzToolsFramework/Prefab/PrefabLoaderInterface.h>
@@ -1255,6 +1256,23 @@ namespace AzToolsFramework
             return true;
         }
 
+        bool PrefabIntegrationManager::IsOwnedByProceduralPrefab(const AZ::EntityId& entityId)
+        {
+            if (auto instanceEntityMapperInterface = AZ::Interface<InstanceEntityMapperInterface>::Get())
+            {
+                if (auto instanceReference = instanceEntityMapperInterface->FindOwningInstance(entityId); instanceReference.has_value())
+                {
+                    if (auto templateReference = s_prefabSystemComponentInterface->FindTemplate(instanceReference->get().GetTemplateId());
+                        templateReference.has_value())
+                    {
+                        return templateReference->get().IsProcedural();
+                    }
+                }
+            }
+
+            return false;
+        }
+
         void PrefabIntegrationManager::OnPrefabComponentActivate(AZ::EntityId entityId)
         {
             // Register entity to appropriate UI Handler for UI overrides
@@ -1264,7 +1282,14 @@ namespace AzToolsFramework
             }
             else
             {
-                s_editorEntityUiInterface->RegisterEntity(entityId, m_prefabUiHandler.GetHandlerId());
+                if (IsOwnedByProceduralPrefab(entityId))
+                {
+                    s_editorEntityUiInterface->RegisterEntity(entityId, m_proceduralPrefabUiHandler.GetHandlerId());
+                }
+                else
+                {
+                    s_editorEntityUiInterface->RegisterEntity(entityId, m_prefabUiHandler.GetHandlerId());
+                }
 
                 // Register entity as a container
                 s_containerEntityInterface->RegisterEntityAsContainer(entityId);
