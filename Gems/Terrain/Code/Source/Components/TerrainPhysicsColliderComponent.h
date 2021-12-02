@@ -92,7 +92,8 @@ namespace Terrain
         bool ReadInConfig(const AZ::ComponentConfig* baseConfig) override;
         bool WriteOutConfig(AZ::ComponentConfig* outBaseConfig) const override;
 
-        uint8_t FindSurfaceTagIndex(const SurfaceData::SurfaceTag tag) const;
+        uint8_t GetMaterialIdIndex(const Physics::MaterialId& materialId, const AZStd::vector<Physics::MaterialId>& materialList) const;
+        Physics::MaterialId FindMaterialIdForSurfaceTag(const SurfaceData::SurfaceTag tag) const;
 
         void GenerateHeightsInBounds(AZStd::vector<float>& heights) const;
         void GenerateHeightsAndMaterialsInBounds(AZStd::vector<Physics::HeightMaterialPoint>& heightMaterials) const;

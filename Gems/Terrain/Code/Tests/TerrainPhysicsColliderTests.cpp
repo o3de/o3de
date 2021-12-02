@@ -327,10 +327,39 @@ TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderReturnsMateria
     Physics::HeightfieldProviderRequestsBus::EventResult(
         materialList, m_entity->GetId(), &Physics::HeightfieldProviderRequestsBus::Events::GetMaterialList);
 
-    EXPECT_EQ(materialList.size(), 2);
+    // The materialList should be 3 items long: the two materials we've added, plus a default material.
+    EXPECT_EQ(materialList.size(), 3);
 
-    EXPECT_EQ(materialList[0], mat1);
-    EXPECT_EQ(materialList[1], mat2);
+    Physics::MaterialId defaultMaterial = Physics::MaterialId();
+    EXPECT_EQ(materialList[0], defaultMaterial);
+    EXPECT_EQ(materialList[1], mat1);
+    EXPECT_EQ(materialList[2], mat2);
+
+    m_entity.reset();
+}
+
+TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderReturnsMaterialsWhenNotMapped)
+{
+    // Check that the TerrainPhysicsCollider returns a default material when no surfaces are mapped.
+    CreateEntity();
+
+    m_boxComponent = m_entity->CreateComponent<UnitTest::MockAxisAlignedBoxShapeComponent>();
+    m_app.RegisterComponentDescriptor(m_boxComponent->CreateDescriptor());
+
+    m_colliderComponent = m_entity->CreateComponent<Terrain::TerrainPhysicsColliderComponent>();
+    m_app.RegisterComponentDescriptor(m_colliderComponent->CreateDescriptor());
+
+    m_entity->Activate();
+
+    AZStd::vector<Physics::MaterialId> materialList;
+    Physics::HeightfieldProviderRequestsBus::EventResult(
+        materialList, m_entity->GetId(), &Physics::HeightfieldProviderRequestsBus::Events::GetMaterialList);
+
+    // The materialList should be 1 items long: which should be the default material.
+    EXPECT_EQ(materialList.size(), 1);
+
+    Physics::MaterialId defaultMaterial = Physics::MaterialId();
+    EXPECT_EQ(materialList[0], defaultMaterial);
 
     m_entity.reset();
 }
@@ -412,12 +441,13 @@ TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderGetHeightsAndM
 
     const float expectedHeightValue = 16384.0f;
 
+    // 
     // Check an entry from the first half of the returned list.
-    EXPECT_EQ(heightsAndMaterials[0].m_materialIndex, 0);
+    EXPECT_EQ(heightsAndMaterials[0].m_materialIndex, 1);
     EXPECT_NEAR(heightsAndMaterials[0].m_height, expectedHeightValue, 0.01f);
 
     // Check an entry from the second half of the list
-    EXPECT_EQ(heightsAndMaterials[256 * 128].m_materialIndex, 1);
+    EXPECT_EQ(heightsAndMaterials[256 * 128].m_materialIndex, 2);
     EXPECT_NEAR(heightsAndMaterials[256 * 128].m_height, expectedHeightValue, 0.01f);
 
     m_entity.reset();

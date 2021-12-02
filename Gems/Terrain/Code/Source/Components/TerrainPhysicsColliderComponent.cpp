@@ -284,7 +284,18 @@ namespace Terrain
         }
     }
 
-    uint8_t TerrainPhysicsColliderComponent::FindSurfaceTagIndex(const SurfaceData::SurfaceTag tag) const
+    uint8_t TerrainPhysicsColliderComponent::GetMaterialIdIndex(const Physics::MaterialId& materialId, const AZStd::vector<Physics::MaterialId>& materialList) const
+    {
+        const auto& materialIter = AZStd::find(materialList.begin(), materialList.end(), materialId);
+        if (materialIter != materialList.end())
+        {
+            return static_cast<uint8_t>(materialIter - materialList.begin());
+        }
+
+        return 0;
+    }
+
+    Physics::MaterialId TerrainPhysicsColliderComponent::FindMaterialIdForSurfaceTag(const SurfaceData::SurfaceTag tag) const
     {
         uint8_t index = 0;
 
@@ -292,12 +303,13 @@ namespace Terrain
         {
             if (mapping.m_surfaceTag == tag)
             {
-                return index;
+                return mapping.m_materialId;
             }
             index++;
         }
 
-        return InvalidSurfaceTagIndex;
+        // If this surface isn't mapped, use the default material.
+        return Physics::MaterialId();
     }
 
     void TerrainPhysicsColliderComponent::GenerateHeightsAndMaterialsInBounds(
@@ -316,6 +328,8 @@ namespace Terrain
 
         heightMaterials.clear();
         heightMaterials.reserve(gridWidth * gridHeight);
+
+        AZStd::vector<Physics::MaterialId> materialList = GetMaterialList();
 
         for (int32_t row = 0; row < gridHeight; row++)
         {
@@ -346,7 +360,10 @@ namespace Terrain
                 Physics::HeightMaterialPoint point;
                 point.m_height = height - worldCenterZ;
                 point.m_quadMeshType = terrainExists ? Physics::QuadMeshType::SubdivideUpperLeftToBottomRight : Physics::QuadMeshType::Hole;
-                point.m_materialIndex = FindSurfaceTagIndex(surfaceWeight.m_surfaceType);
+
+                Physics::MaterialId materialId = FindMaterialIdForSurfaceTag(surfaceWeight.m_surfaceType);
+                point.m_materialIndex = GetMaterialIdIndex(materialId, materialList);
+
                 heightMaterials.emplace_back(point);
             }
         }
@@ -391,11 +408,17 @@ namespace Terrain
     AZStd::vector<Physics::MaterialId> TerrainPhysicsColliderComponent::GetMaterialList() const
     {
         AZStd::vector<Physics::MaterialId> materialList;
-        materialList.reserve(m_configuration.m_surfaceMaterialMappings.size());
+
+        // Ensure the list contains the default material as the first entry.
+        materialList.emplace_back(Physics::MaterialId());
 
         for (auto& mapping : m_configuration.m_surfaceMaterialMappings)
         {
-            materialList.emplace_back(mapping.m_materialId);
+            const auto& existingInstance = AZStd::find(materialList.begin(), materialList.end(), mapping.m_materialId);
+            if (existingInstance == materialList.end())
+            {
+                materialList.emplace_back(mapping.m_materialId);
+            }
         }
 
         return materialList;
