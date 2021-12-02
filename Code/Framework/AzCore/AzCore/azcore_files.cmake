@@ -393,7 +393,6 @@ set(FILES
     Memory/Memory.h
     Memory/MemoryComponent.cpp
     Memory/MemoryComponent.h
-    Memory/MemoryDrillerBus.h
     Memory/nedmalloc.inl
     Memory/NewAndDelete.inl
     Memory/OSAllocator.cpp
