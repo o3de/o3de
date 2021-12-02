@@ -92,10 +92,6 @@ set(FILES
     Compression/Compression.h
     Compression/zstd_compression.cpp
     Compression/zstd_compression.h
-    Debug/AssetTracking.cpp
-    Debug/AssetTracking.h
-    Debug/AssetTrackingTypesImpl.h
-    Debug/AssetTrackingTypes.h
     Debug/Budget.h
     Debug/Budget.cpp
     Debug/BudgetTracker.h

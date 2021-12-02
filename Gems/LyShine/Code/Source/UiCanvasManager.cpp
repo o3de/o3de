@@ -16,7 +16,6 @@
 #include <CryCommon/StlUtils.h>
 #include <LyShine/UiSerializeHelpers.h>
 
-#include <AzCore/Debug/AssetTracking.h>
 #include <AzCore/Memory/Memory.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Component/TickBus.h>
@@ -179,8 +178,6 @@ AZ::EntityId UiCanvasManager::LoadCanvas(const AZStd::string& assetIdPathname)
     {
         return AZ::EntityId();
     }
-
-    AZ_ASSET_NAMED_SCOPE(assetIdPathname.c_str());
 
     UiGameEntityContext* entityContext = new UiGameEntityContext();
 
@@ -916,60 +913,56 @@ AZ::EntityId UiCanvasManager::LoadCanvasInternal(const AZStd::string& assetIdPat
     // editor version so that the user can test their canvas without saving it
     UiCanvasComponent* canvasComponent = FindEditorCanvasComponentByPathname(assetIdPath);
 
-    // This scope opened here intentionally to control the lifetime of the AZ_ASSET_NAMED_SCOPE
+    if (canvasComponent)
     {
-        AZ_ASSET_NAMED_SCOPE(pathToOpen.c_str());
-        if (canvasComponent)
+        // this canvas is already loaded in the editor
+        if (forEditor)
         {
-            // this canvas is already loaded in the editor
-            if (forEditor)
-            {
-                // should never load a canvas in Editor if it is already loaded. The Editor should avoid loading the
-                // same canvas twice in Editor. If the game is running it is not possible to load a canvas
-                // from the editor.
-                gEnv->pSystem->Warning(VALIDATOR_MODULE_SHINE, VALIDATOR_WARNING, VALIDATOR_FLAG_FILE,
-                    pathToOpen.c_str(),
-                    "UI canvas file: %s is already loaded",
-                    pathToOpen.c_str());
-                return AZ::EntityId();
-            }
-            else
-            {
-                // we are loading from the game, the canvas is already open in the editor, so
-                // we clone the canvas that is open in the editor.
-                canvasComponent = canvasComponent->CloneAndInitializeCanvas(entityContext, assetIdPath);
-            }
+            // should never load a canvas in Editor if it is already loaded. The Editor should avoid loading the
+            // same canvas twice in Editor. If the game is running it is not possible to load a canvas
+            // from the editor.
+            gEnv->pSystem->Warning(VALIDATOR_MODULE_SHINE, VALIDATOR_WARNING, VALIDATOR_FLAG_FILE,
+                pathToOpen.c_str(),
+                "UI canvas file: %s is already loaded",
+                pathToOpen.c_str());
+            return AZ::EntityId();
         }
         else
         {
-            // not already loaded in editor, attempt to load...
-            canvasComponent = UiCanvasComponent::LoadCanvasInternal(pathToOpen.c_str(), forEditor, assetIdPath.c_str(), entityContext, previousRemapTable, previousCanvasId);
+            // we are loading from the game, the canvas is already open in the editor, so
+            // we clone the canvas that is open in the editor.
+            canvasComponent = canvasComponent->CloneAndInitializeCanvas(entityContext, assetIdPath);
         }
+    }
+    else
+    {
+        // not already loaded in editor, attempt to load...
+        canvasComponent = UiCanvasComponent::LoadCanvasInternal(pathToOpen.c_str(), forEditor, assetIdPath.c_str(), entityContext, previousRemapTable, previousCanvasId);
+    }
 
-        if (canvasComponent)
+    if (canvasComponent)
+    {
+        // canvas loaded OK (or cloned from Editor canvas OK)
+
+        // add to the list of loaded canvases
+        if (forEditor)
         {
-            // canvas loaded OK (or cloned from Editor canvas OK)
-
-            // add to the list of loaded canvases
-            if (forEditor)
-            {
-                m_loadedCanvasesInEditor.push_back(canvasComponent);
-            }
-            else
-            {
-                if (canvasComponent->GetEnabled() && canvasComponent->GetIsConsumingAllInputEvents())
-                {
-                    AzFramework::InputChannelRequestBus::Broadcast(&AzFramework::InputChannelRequests::ResetState);
-                    EBUS_EVENT(UiCanvasBus, ClearAllInteractables);
-                }
-                m_loadedCanvases.push_back(canvasComponent);
-                SortCanvasesByDrawOrder();
-
-                // Update hover state for loaded canvases
-                m_generateMousePositionInputEvent = true;
-            }
-            canvasComponent->SetLocalUserIdInputFilter(m_localUserIdInputFilter);
+            m_loadedCanvasesInEditor.push_back(canvasComponent);
         }
+        else
+        {
+            if (canvasComponent->GetEnabled() && canvasComponent->GetIsConsumingAllInputEvents())
+            {
+                AzFramework::InputChannelRequestBus::Broadcast(&AzFramework::InputChannelRequests::ResetState);
+                EBUS_EVENT(UiCanvasBus, ClearAllInteractables);
+            }
+            m_loadedCanvases.push_back(canvasComponent);
+            SortCanvasesByDrawOrder();
+
+            // Update hover state for loaded canvases
+            m_generateMousePositionInputEvent = true;
+        }
+        canvasComponent->SetLocalUserIdInputFilter(m_localUserIdInputFilter);
     }
 
     return (canvasComponent) ? canvasComponent->GetEntityId() : AZ::EntityId();

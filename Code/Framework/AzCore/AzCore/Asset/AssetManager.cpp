@@ -10,7 +10,6 @@
 #include <AzCore/Asset/AssetManager_private.h>
 #include <AzCore/Asset/AssetDataStream.h>
 #include <AzCore/Casting/numeric_cast.h>
-#include <AzCore/Debug/AssetTracking.h>
 #include <AzCore/IO/IStreamer.h>
 #include <AzCore/Math/Crc.h>
 #include <AzCore/Math/MathUtils.h>
@@ -164,8 +163,6 @@ namespace AZ::Data
                 AZ_PROFILE_SCOPE(AzCore, "AZ::Data::LoadAssetJob::Process: %s",
                     asset.GetHint().c_str());
 
-                AZ_ASSET_ATTACH_TO_SCOPE(this);
-
                 if (m_owner->ValidateAndRegisterAssetLoading(asset))
                 {
                     LoadAndSignal(asset);
@@ -200,7 +197,6 @@ namespace AZ::Data
                 AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(cl_assetLoadDelay));
             }
 
-            AZ_ASSET_NAMED_SCOPE(asset.GetHint().c_str());
             bool loadedSuccessfully = false;
 
             if (!cl_assetLoadError && m_requestState == AZ::IO::IStreamerTypes::RequestStatus::Completed)
@@ -982,7 +978,6 @@ namespace AZ::Data
         }
 
         AZ_PROFILE_SCOPE(AzCore, "GetAsset: %s", assetInfo.m_relativePath.c_str());
-        AZ_ASSET_NAMED_SCOPE("GetAsset: %s", assetInfo.m_relativePath.c_str());
 
         AZStd::shared_ptr<AssetDataStream> dataStream;
         AssetStreamInfo loadInfo;
