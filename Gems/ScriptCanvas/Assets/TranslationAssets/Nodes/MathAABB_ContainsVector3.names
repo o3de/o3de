@@ -1,44 +1,44 @@
 {
     "entries": [
         {
-            "key": "{BD9731E7-78AD-5864-8617-25DE422C6CDE}",
+            "base": "{BD9731E7-78AD-5864-8617-25DE422C6CDE}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "ContainsVector3",
-                "category": "Math/AABB",
+                "name": "Contains Vector3",
+                "category": "Math/Axis Aligned Bounding Box",
                 "tooltip": "returns true if Source contains the Candidate, else false",
-                "subtitle": "AABB"
+                "subtitle": "Axis Aligned Bounding Box"
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "key": "DataInput_AABB: Source",
+                    "base": "DataInput_AABB: Source",
                     "details": {
-                        "name": "AABB: Source"
+                        "name": "Source"
                     }
                 },
                 {
-                    "key": "DataInput_Vector3: Candidate",
+                    "base": "DataInput_Vector3: Candidate",
                     "details": {
-                        "name": "Vector3: Candidate"
+                        "name": "Candidate"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Boolean",
+                    "base": "DataOutput_Result: Boolean",
                     "details": {
-                        "name": "Result: Boolean"
+                        "name": "Contains"
                     }
                 }
             ]

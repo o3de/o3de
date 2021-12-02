@@ -23,6 +23,8 @@
 #include <AzCore/RTTI/BehaviorContext.h>
 //////////////////////////////////////////////////////////////////////////
 
+#include <xxhash/xxhash.h>
+
 namespace AssetBuilderSDK
 {
     const char* const ErrorWindow = "Error"; //Use this window name to log error messages.
@@ -690,7 +692,6 @@ namespace AssetBuilderSDK
     static const char* textureExtensions = ".dds";
     static const char* staticMeshExtensions = ".cgf";
     static const char* skinnedMeshExtensions = ".skin";
-    static const char* materialExtensions = ".mtl";
 
     // MIPS
     static const int c_MaxMipsCount = 11; // 11 is for 8k textures non-compressed. When not compressed it is using one file per mip.
@@ -699,7 +700,6 @@ namespace AssetBuilderSDK
 
     // XML files may contain generic data (avoid this in new builders - use a custom extension!)
     static const char* xmlExtensions = ".xml";
-    static const char* geomCacheExtensions = ".cax";
     static const char* skeletonExtensions = ".chr";
 
     static AZ::Data::AssetType unknownAssetType = AZ::Data::AssetType::CreateNull();
@@ -710,7 +710,6 @@ namespace AssetBuilderSDK
     static AZ::Data::AssetType textureMipsAssetType("{3918728C-D3CA-4D9E-813E-A5ED20C6821E}");
     static AZ::Data::AssetType skinnedMeshLodsAssetType("{58E5824F-C27B-46FD-AD48-865BA41B7A51}");
     static AZ::Data::AssetType staticMeshLodsAssetType("{9AAE4926-CB6A-4C60-9948-A1A22F51DB23}");
-    static AZ::Data::AssetType geomCacheAssetType("{EBC96071-E960-41B6-B3E3-328F515AE5DA}");
     static AZ::Data::AssetType skeletonAssetType("{60161B46-21F0-4396-A4F0-F2CCF0664CDE}");
     static AZ::Data::AssetType entityIconAssetType("{3436C30E-E2C5-4C3B-A7B9-66C94A28701B}");
 
@@ -807,11 +806,6 @@ namespace AssetBuilderSDK
             return textureAssetType;
         }
 
-        if (AzFramework::StringFunc::Find(materialExtensions, extension.c_str()) != AZStd::string::npos)
-        {
-            return materialAssetType;
-        }
-
         if (AzFramework::StringFunc::Find(staticMeshExtensions, extension.c_str()) != AZStd::string::npos)
         {
             return meshAssetType;
@@ -820,11 +814,6 @@ namespace AssetBuilderSDK
         if (AzFramework::StringFunc::Find(skinnedMeshExtensions, extension.c_str()) != AZStd::string::npos)
         {
             return skinnedMeshAssetType;
-        }
-
-        if (AzFramework::StringFunc::Find(geomCacheExtensions, extension.c_str()) != AZStd::string::npos)
-        {
-            return geomCacheAssetType;
         }
 
         if (AzFramework::StringFunc::Find(skeletonExtensions, extension.c_str()) != AZStd::string::npos)
@@ -1611,5 +1600,71 @@ namespace AssetBuilderSDK
     size_t AssertAndErrorAbsorber::GetErrorCount() const
     {
         return m_errorsOccurred;
+    }
+
+    AZ::u64 GetHashFromIOStream(AZ::IO::GenericStream& readStream, AZ::IO::SizeType* bytesReadOut, int hashMsDelay)
+    {        
+        constexpr AZ::u64 HashBufferSize = 1024 * 64;
+        char buffer[HashBufferSize];
+
+        if(readStream.IsOpen() && readStream.CanRead())
+        {
+            AZ::IO::SizeType bytesRead;
+
+            auto* state = XXH64_createState();
+
+            if(state == nullptr)
+            {
+                AZ_Assert(false, "Failed to create hash state");
+                return 0;
+            }
+
+            if (XXH64_reset(state, 0) == XXH_ERROR)
+            {
+                AZ_Assert(false, "Failed to reset hash state");
+                return 0;
+            }
+
+            do
+            {
+                // In edge cases where another process is writing to this file while this hashing is occuring and that file wasn't locked,
+                // the following read check can fail because it performs an end of file check, and asserts and shuts down if the read size
+                // was smaller than the buffer and the read is not at the end of the file. The logic used to check end of file internal to read
+                // will be out of date in the edge cases where another process is actively writing to this file while this hash is running.
+                // The stream's length ends up more accurate in this case, preventing this assert and shut down.
+                // One area this occurs is the navigation mesh file (mnmnavmission0.bai) that's temporarily created when exporting a level,
+                // the navigation system can still be writing to this file when hashing begins, causing the EoF marker to change.
+                AZ::IO::SizeType remainingToRead = AZStd::min(readStream.GetLength() - readStream.GetCurPos(), aznumeric_cast<AZ::IO::SizeType>(AZ_ARRAY_SIZE(buffer)));
+                bytesRead = readStream.Read(remainingToRead, buffer);
+
+                if(bytesReadOut)
+                {
+                    *bytesReadOut += bytesRead;
+                }
+
+                XXH64_update(state, buffer, bytesRead);
+
+                // Used by unit tests to force the race condition mentioned above, to verify the crash fix.
+                if(hashMsDelay > 0)
+                {
+                    AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(hashMsDelay));
+                }
+
+            } while (bytesRead > 0);
+
+            auto hash = XXH64_digest(state);
+
+            XXH64_freeState(state);
+
+            return hash;
+        }
+        return 0;
+    }
+
+    AZ::u64 GetFileHash(const char* filePath, AZ::IO::SizeType* bytesReadOut, int hashMsDelay)
+    {
+        constexpr bool ErrorOnReadFailure = true;
+        AZ::IO::FileIOStream readStream(filePath, AZ::IO::OpenMode::ModeRead | AZ::IO::OpenMode::ModeBinary, ErrorOnReadFailure);
+        return GetHashFromIOStream(readStream, bytesReadOut, hashMsDelay);
     }
 }

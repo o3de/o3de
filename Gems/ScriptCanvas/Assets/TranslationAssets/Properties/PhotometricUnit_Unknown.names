@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "PhotometricUnit_Unknown",
+            "base": "PhotometricUnit_Unknown",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "PhotometricUnit_Unknown::Getter",
-                "category": "Constants"
-            }
+                "name": "Unknown",
+                "category": "Constants/Photometric Unit"
+            },
+            "methods": [
+                {
+                    "base": "GetPhotometricUnit_Unknown",
+                    "details": {
+                        "name": "Unknown"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

@@ -1,68 +1,67 @@
 {
     "entries": [
         {
-            "key": "{A2D614BC-1636-5F54-868A-BF5544910967}",
+            "base": "{A2D614BC-1636-5F54-868A-BF5544910967}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "RandomPointInWedge",
+                "name": "Random Point In Wedge",
                 "category": "Math/Random",
-                "tooltip": "returns a random point in the specified wedge",
-                "subtitle": "Random"
+                "tooltip": "Returns a random point in the specified wedge"
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "key": "DataInput_Vector3: Origin",
+                    "base": "DataInput_Origin",
                     "details": {
-                        "name": "Vector3: Origin"
+                        "name": "Origin"
                     }
                 },
                 {
-                    "key": "DataInput_Vector3: Direction",
+                    "base": "DataInput_Direction",
                     "details": {
-                        "name": "Vector3: Direction"
+                        "name": "Direction"
                     }
                 },
                 {
-                    "key": "DataInput_Vector3: Normal",
+                    "base": "DataInput_Normal",
                     "details": {
-                        "name": "Vector3: Normal"
+                        "name": "Normal"
                     }
                 },
                 {
-                    "key": "DataInput_Number: Radius",
+                    "base": "DataInput_Radius",
                     "details": {
-                        "name": "Number: Radius"
+                        "name": "Radius"
                     }
                 },
                 {
-                    "key": "DataInput_Number: Height",
+                    "base": "DataInput_Height",
                     "details": {
-                        "name": "Number: Height"
+                        "name": "Height"
                     }
                 },
                 {
-                    "key": "DataInput_Number: Angle",
+                    "base": "DataInput_Angle",
                     "details": {
-                        "name": "Number: Angle"
+                        "name": "Angle"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Vector3",
+                    "base": "DataOutput_Result",
                     "details": {
-                        "name": "Result: Vector3"
+                        "name": "Result"
                     }
                 }
             ]

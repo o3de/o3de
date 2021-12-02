@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "UiInteractableNotificationBus",
+            "base": "UiInteractableNotificationBus",
             "context": "EBusHandler",
             "variant": "",
             "details": {
@@ -10,35 +10,35 @@
             },
             "methods": [
                 {
-                    "key": "OnHoverStart",
+                    "base": "OnHoverStart",
                     "details": {
                         "name": "On Hover Start",
                         "tooltip": "Executes when the interactive element starts being hovered"
                     }
                 },
                 {
-                    "key": "OnHoverEnd",
+                    "base": "OnHoverEnd",
                     "details": {
                         "name": "On Hover End",
                         "tooltip": "Executes when the interactive element ends being hovered"
                     }
                 },
                 {
-                    "key": "OnPressed",
+                    "base": "OnPressed",
                     "details": {
                         "name": "On Pressed",
                         "tooltip": "Executes when the interactive element has been pressed"
                     }
                 },
                 {
-                    "key": "OnReleased",
+                    "base": "OnReleased",
                     "details": {
                         "name": "On Released",
                         "tooltip": "Executes when the interactive element has been released"
                     }
                 },
                 {
-                    "key": "OnReceivedHoverByNavigatingFromDescendant",
+                    "base": "OnReceivedHoverByNavigatingFromDescendant",
                     "details": {
                         "name": "On Received Hover By Navigating From Descendant",
                         "tooltip": "Executes when the interactive element receives the hover by being navigated to from a descendant"

@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "UiLayoutCellComponent",
+            "base": "UiLayoutCellComponent",
             "context": "BehaviorClass",
             "variant": "",
             "details": {

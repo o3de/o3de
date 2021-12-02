@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "DisplaySettings_SerializableFlagsMask",
+            "base": "DisplaySettings_SerializableFlagsMask",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "DisplaySettings_SerializableFlagsMask::Getter",
-                "category": "Constants"
-            }
+                "name": "Serializable Flags Mask",
+                "category": "Constants/Display Settings"
+            },
+            "methods": [
+                {
+                    "base": "GetDisplaySettings_SerializableFlagsMask",
+                    "details": {
+                        "name": "Get Serializable Flags Mask"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

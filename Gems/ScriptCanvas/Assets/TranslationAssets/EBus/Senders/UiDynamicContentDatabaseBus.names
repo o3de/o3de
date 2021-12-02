@@ -1,16 +1,16 @@
 {
     "entries": [
         {
-            "key": "UiDynamicContentDatabaseBus",
+            "base": "UiDynamicContentDatabaseBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "UiDynamicContentDatabaseBus",
+                "name": "UI Dynamic Content Database",
                 "category": "UI/LyShine Examples"
             },
             "methods": [
                 {
-                    "key": "Refresh",
+                    "base": "Refresh",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Refresh"
@@ -41,7 +41,7 @@
                     ]
                 },
                 {
-                    "key": "GetColorPrice",
+                    "base": "GetColorPrice",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Color Price"
@@ -81,7 +81,7 @@
                     ]
                 },
                 {
-                    "key": "GetColorName",
+                    "base": "GetColorName",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Color Name"
@@ -121,7 +121,7 @@
                     ]
                 },
                 {
-                    "key": "GetColor",
+                    "base": "GetColor",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Color"
@@ -161,7 +161,7 @@
                     ]
                 },
                 {
-                    "key": "GetNumColors",
+                    "base": "GetNumColors",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Number Of Colors"

@@ -1,44 +1,43 @@
 {
     "entries": [
         {
-            "key": "{CE8BA72E-E595-5653-9229-D77A0CB1BAFA}",
+            "base": "{CE8BA72E-E595-5653-9229-D77A0CB1BAFA}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "MultiplyByVector",
+                "name": "Multiply By Vector",
                 "category": "Math/Matrix4x4",
-                "tooltip": "returns vector created by right left multiplying matrix by supplied vector",
-                "subtitle": "Matrix4x4"
+                "tooltip": "Returns vector created by right left multiplying matrix by supplied vector"
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "key": "DataInput_Matrix4x4: Source",
+                    "base": "DataInput_Source",
                     "details": {
-                        "name": "Matrix4x4: Source"
+                        "name": "Source"
                     }
                 },
                 {
-                    "key": "DataInput_Vector4: Vector",
+                    "base": "DataInput_Vector",
                     "details": {
-                        "name": "Vector4: Vector"
+                        "name": "Vector"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Vector4",
+                    "base": "DataOutput_Result",
                     "details": {
-                        "name": "Result: Vector4"
+                        "name": "Result"
                     }
                 }
             ]

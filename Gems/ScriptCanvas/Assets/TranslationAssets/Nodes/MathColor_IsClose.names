@@ -1,50 +1,50 @@
 {
     "entries": [
         {
-            "key": "{629BABFE-B9D2-5D29-BCC1-3E5CBDD7CAA4}",
+            "base": "{629BABFE-B9D2-5D29-BCC1-3E5CBDD7CAA4}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "IsClose",
+                "name": "Is Close",
                 "category": "Math/Color",
-                "tooltip": "returns true if A is within Tolerance of B, else false",
+                "tooltip": "Returns true if A is within Tolerance of B, else false",
                 "subtitle": "Color"
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "key": "DataInput_Color: A",
+                    "base": "DataInput_Color: A",
                     "details": {
-                        "name": "Color: A"
+                        "name": "First"
                     }
                 },
                 {
-                    "key": "DataInput_Color: B",
+                    "base": "DataInput_Color: B",
                     "details": {
-                        "name": "Color: B"
+                        "name": "Second"
                     }
                 },
                 {
-                    "key": "DataInput_Number: Tolerance",
+                    "base": "DataInput_Number: Tolerance",
                     "details": {
-                        "name": "Number: Tolerance"
+                        "name": "Tolerance"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Boolean",
+                    "base": "DataOutput_Result: Boolean",
                     "details": {
-                        "name": "Result: Boolean"
+                        "name": "Is Close"
                     }
                 }
             ]

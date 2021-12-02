@@ -1,38 +1,37 @@
 {
     "entries": [
         {
-            "key": "{44BAE83D-1C90-5026-BD0D-65406C837A27}",
+            "base": "{44BAE83D-1C90-5026-BD0D-65406C837A27}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "GetPosition",
-                "category": "Math/OBB",
-                "tooltip": "returns the position of Source",
-                "subtitle": "OBB"
+                "name": "Get Position",
+                "category": "Math/Oriented Bounding Box",
+                "tooltip": "Returns the position of Source"
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "key": "DataInput_OBB: Source",
+                    "base": "DataInput_Source",
                     "details": {
-                        "name": "OBB: Source"
+                        "name": "Source"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Vector3",
+                    "base": "DataOutput_Result",
                     "details": {
-                        "name": "Result: Vector3"
+                        "name": "Result"
                     }
                 }
             ]

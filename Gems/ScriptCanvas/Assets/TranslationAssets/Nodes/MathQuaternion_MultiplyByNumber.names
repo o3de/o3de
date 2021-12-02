@@ -1,44 +1,43 @@
 {
     "entries": [
         {
-            "key": "{36ECEF91-815A-5D40-B21F-0CAA4D6DAD53}",
+            "base": "{36ECEF91-815A-5D40-B21F-0CAA4D6DAD53}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "MultiplyByNumber",
+                "name": "Multiply By Number",
                 "category": "Math/Quaternion",
-                "tooltip": "returns the Source with each element multiplied by Multiplier",
-                "subtitle": "Quaternion"
+                "tooltip": "Returns the Source with each element multiplied by Multiplier"
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "key": "DataInput_Quaternion: Source",
+                    "base": "DataInput_Source",
                     "details": {
-                        "name": "Quaternion: Source"
+                        "name": "Source"
                     }
                 },
                 {
-                    "key": "DataInput_Number: Multiplier",
+                    "base": "DataInput_Multiplier",
                     "details": {
-                        "name": "Number: Multiplier"
+                        "name": "Multiplier"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Quaternion",
+                    "base": "DataOutput_Result",
                     "details": {
-                        "name": "Result: Quaternion"
+                        "name": "Result"
                     }
                 }
             ]

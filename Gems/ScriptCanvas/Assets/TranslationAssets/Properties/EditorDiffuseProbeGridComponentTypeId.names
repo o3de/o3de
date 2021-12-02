@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "EditorDiffuseProbeGridComponentTypeId",
+            "base": "EditorDiffuseProbeGridComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "EditorDiffuseProbeGridComponentTypeId::Getter",
-                "category": "Constants"
-            }
+                "name": "Editor Diffuse Probe Grid Component Type Id",
+                "category": "Constants/Editor"
+            },
+            "methods": [
+                {
+                    "base": "GetEditorDiffuseProbeGridComponentTypeId",
+                    "details": {
+                        "name": "Get Editor Diffuse Probe Grid Component Type Id"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}",
+                            "details": {
+                                "name": "AZ:: Uuid"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

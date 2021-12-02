@@ -13,42 +13,39 @@
 
 #include <unistd.h>
 
-namespace AZ
+namespace AZ::Utils
 {
-    namespace Utils
+    GetExecutablePathReturnType GetExecutablePath(char* exeStorageBuffer, size_t exeStorageSize)
     {
-        GetExecutablePathReturnType GetExecutablePath(char* exeStorageBuffer, size_t exeStorageSize)
+        GetExecutablePathReturnType result;
+        result.m_pathIncludesFilename = true;
+
+        // http://man7.org/linux/man-pages/man5/proc.5.html
+        const ssize_t bytesWritten = readlink("/proc/self/exe", exeStorageBuffer, exeStorageSize);
+        if (bytesWritten == -1)
         {
-            GetExecutablePathReturnType result;
-            result.m_pathIncludesFilename = true;
-
-            // http://man7.org/linux/man-pages/man5/proc.5.html
-            const ssize_t bytesWritten = readlink("/proc/self/exe", exeStorageBuffer, exeStorageSize);
-            if (bytesWritten == -1)
-            {
-                result.m_pathStored = ExecutablePathResult::GeneralError;
-            }
-            else if (bytesWritten == exeStorageSize)
-            {
-                result.m_pathStored = ExecutablePathResult::BufferSizeNotLargeEnough;
-            }
-            else
-            {
-                // readlink doesn't null terminate
-                exeStorageBuffer[bytesWritten] = '\0';
-            }
-
-            return result;
+            result.m_pathStored = ExecutablePathResult::GeneralError;
+        }
+        else if (bytesWritten == exeStorageSize)
+        {
+            result.m_pathStored = ExecutablePathResult::BufferSizeNotLargeEnough;
+        }
+        else
+        {
+            // readlink doesn't null terminate
+            exeStorageBuffer[bytesWritten] = '\0';
         }
 
-        AZStd::optional<AZ::IO::FixedMaxPathString> GetDefaultAppRootPath()
-        {
-            return AZStd::nullopt;
-        }
-
-        AZStd::optional<AZ::IO::FixedMaxPathString> GetDevWriteStoragePath()
-        {
-            return AZStd::nullopt;
-        }
+        return result;
     }
-}
+
+    AZStd::optional<AZ::IO::FixedMaxPathString> GetDefaultAppRootPath()
+    {
+        return AZStd::nullopt;
+    }
+
+    AZStd::optional<AZ::IO::FixedMaxPathString> GetDevWriteStoragePath()
+    {
+        return AZStd::nullopt;
+    }
+} // namespace AZ::Utils

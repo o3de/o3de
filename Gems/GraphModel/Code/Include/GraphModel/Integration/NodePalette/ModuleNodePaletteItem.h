@@ -95,7 +95,7 @@ namespace GraphModelIntegration
         AZ_CLASS_ALLOCATOR(ModuleNodePaletteItem, AZ::SystemAllocator, 0);
 
         //! Constructor
-        //! \param editorId        Unique name of the client system editor (ex: AZ_CRC("ShaderCanvas", 0xa6d1a85a))
+        //! \param editorId        Unique name of the client system editor (ex: AZ_CRC("ShaderCanvas", 0x0a1dff96))
         //! \param sourceFileId    The unique id for the module node graph source file.
         //! \param sourceFilePath  The path to the module node graph source file. This will be used for node naming and debug output.
         ModuleNodePaletteItem(GraphCanvas::EditorId editorId, AZ::Uuid sourceFileId, AZStd::string_view sourceFilePath)

@@ -1,44 +1,43 @@
 {
     "entries": [
         {
-            "key": "{E39B02FA-3231-57AC-8D2F-E9448E2CECD3}",
+            "base": "{E39B02FA-3231-57AC-8D2F-E9448E2CECD3}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "SetX",
+                "name": "Set X",
                 "category": "Math/Vector4",
-                "tooltip": "returns a the vector(X, Source.Y, Source.Z, Source.W)",
-                "subtitle": "Vector4"
+                "tooltip": "Returns a the vector(X, Source.Y, Source.Z, Source.W)"
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "key": "DataInput_Vector4: Source",
+                    "base": "DataInput_Source",
                     "details": {
-                        "name": "Vector4: Source"
+                        "name": "Source"
                     }
                 },
                 {
-                    "key": "DataInput_Number: X",
+                    "base": "DataInput_X",
                     "details": {
-                        "name": "Number: X"
+                        "name": "X"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Vector4",
+                    "base": "DataOutput_Result",
                     "details": {
-                        "name": "Result: Vector4"
+                        "name": "Result"
                     }
                 }
             ]

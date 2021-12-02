@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "eUiAnimationEvent_Stopped",
+            "base": "eUiAnimationEvent_Stopped",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "eUiAnimationEvent_Stopped::Getter",
-                "category": "Constants"
-            }
+                "name": "Stopped",
+                "category": "Constants/UI/Animation Event"
+            },
+            "methods": [
+                {
+                    "base": "GeteUiAnimationEvent_Stopped",
+                    "details": {
+                        "name": "Stopped"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

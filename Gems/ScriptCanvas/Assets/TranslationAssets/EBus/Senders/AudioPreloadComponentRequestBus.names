@@ -1,16 +1,16 @@
 {
     "entries": [
         {
-            "key": "AudioPreloadComponentRequestBus",
+            "base": "AudioPreloadComponentRequestBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "AudioPreloadComponentRequestBus",
+                "name": "Audio Preload",
                 "category": "Audio"
             },
             "methods": [
                 {
-                    "key": "IsLoaded",
+                    "base": "IsLoaded",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Is Loaded"
@@ -40,7 +40,7 @@
                     ]
                 },
                 {
-                    "key": "Unload",
+                    "base": "Unload",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Unload"
@@ -54,7 +54,7 @@
                     }
                 },
                 {
-                    "key": "UnloadPreload",
+                    "base": "UnloadPreload",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Unload Preload"
@@ -76,7 +76,7 @@
                     ]
                 },
                 {
-                    "key": "Load",
+                    "base": "Load",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Load"
@@ -90,7 +90,7 @@
                     }
                 },
                 {
-                    "key": "LoadPreload",
+                    "base": "LoadPreload",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Load Preload"

@@ -1,83 +1,83 @@
 {
     "entries": [
         {
-            "key": "NavigationComponentNotificationBus",
+            "base": "NavigationComponentNotificationBus",
             "context": "EBusHandler",
             "variant": "",
             "details": {
-                "name": "NavigationComponentNotificationBus",
-                "category": "EBus Handlers"
+                "name": "Movement",
+                "category": "Navigation"
             },
             "methods": [
                 {
-                    "key": "OnSearchingForPath",
+                    "base": "OnSearchingForPath",
                     "details": {
-                        "name": "OnSearchingForPath"
+                        "name": "On Searching For Path"
                     },
                     "params": [
                         {
                             "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
                             "details": {
-                                "name": "RequestId",
+                                "name": "Request Id",
                                 "tooltip": "Navigation request Id"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "OnTraversalStarted",
+                    "base": "OnTraversalStarted",
                     "details": {
-                        "name": "OnTraversalStarted"
+                        "name": "On Traversal Started"
                     },
                     "params": [
                         {
                             "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
                             "details": {
-                                "name": "RequestId",
+                                "name": "Request Id",
                                 "tooltip": "Navigation request Id"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "OnTraversalPathUpdate",
+                    "base": "OnTraversalPathUpdate",
                     "details": {
-                        "name": "OnTraversalPathUpdate"
+                        "name": "On Traversal Path Update"
                     },
                     "params": [
                         {
                             "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
                             "details": {
-                                "name": "RequestId",
+                                "name": "Request Id",
                                 "tooltip": "Navigation request Id"
                             }
                         },
                         {
                             "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
                             "details": {
-                                "name": "NextPathPosition",
+                                "name": "Next Path Position",
                                 "tooltip": "Next path position"
                             }
                         },
                         {
                             "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
                             "details": {
-                                "name": "InflectionPosition",
+                                "name": "Inflection Position",
                                 "tooltip": "Next inflection position"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "OnTraversalInProgress",
+                    "base": "OnTraversalInProgress",
                     "details": {
-                        "name": "OnTraversalInProgress"
+                        "name": "On Traversal In Progress"
                     },
                     "params": [
                         {
                             "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
                             "details": {
-                                "name": "RequestId",
+                                "name": "Request Id",
                                 "tooltip": "Navigation request Id"
                             }
                         },
@@ -91,30 +91,30 @@
                     ]
                 },
                 {
-                    "key": "OnTraversalComplete",
+                    "base": "OnTraversalComplete",
                     "details": {
-                        "name": "OnTraversalComplete"
+                        "name": "On Traversal Complete"
                     },
                     "params": [
                         {
                             "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
                             "details": {
-                                "name": "RequestId",
+                                "name": "Request Id",
                                 "tooltip": "Navigation request Id"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "OnTraversalCancelled",
+                    "base": "OnTraversalCancelled",
                     "details": {
-                        "name": "OnTraversalCancelled"
+                        "name": "On Traversal Cancelled"
                     },
                     "params": [
                         {
                             "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
                             "details": {
-                                "name": "RequestId",
+                                "name": "Request Id",
                                 "tooltip": "Navigation request Id"
                             }
                         }

@@ -765,7 +765,7 @@ namespace AZ
                 return;
             }
             
-            const AZStd::sys_time_t shaderVariantAssetBuildTimestamp = AZStd::GetTimeNowMicroSecond();
+            const AZ::u64 shaderVariantAssetBuildTimestamp = AZStd::GetTimeUTCMilliSecond();
 
             auto supervariantList = ShaderBuilderUtility::GetSupervariantListFromShaderSourceData(shaderSourceDescriptor);
 

@@ -6,13 +6,12 @@
  *
  */
 
-
 // Description : interface for the CViewport class.
-
 
 #pragma once
 
 #if !defined(Q_MOC_RUN)
+#include <AzFramework/Viewport/ViewportId.h>
 #include <AzToolsFramework/Viewport/ViewportTypes.h>
 #include <AzToolsFramework/ViewportUi/ViewportUiManager.h>
 #include <Cry_Color.h>
@@ -201,7 +200,6 @@ public:
 
     //! Performs hit testing of 2d point in view to find which object hit.
     virtual bool HitTest(const QPoint& point, HitContext& hitInfo) = 0;
-    virtual AZ::Vector3 GetHitLocation(const QPoint& point) = 0;
 
     virtual void MakeConstructionPlane(int axis) = 0;
 
@@ -396,7 +394,6 @@ public:
 
     //! Snap any given 3D world position to grid lines if snap is enabled.
     Vec3 SnapToGrid(const Vec3& vec) override;
-    float GetGridStep() const override;
 
     //! Returns the screen scale factor for a point given in world coordinates.
     //! This factor gives the width in world-space units at the point's distance of the viewport.
@@ -432,11 +429,6 @@ public:
 
     //! Performs hit testing of 2d point in view to find which object hit.
     bool HitTest(const QPoint& point, HitContext& hitInfo) override;
-    AZ::Vector3 GetHitLocation(const QPoint& point) override;
-
-    //! Do 2D hit testing of line in world space.
-    // pToCameraDistance is an optional output parameter in which distance from the camera to the line is returned.
-    bool HitTestLine(const Vec3& lineP1, const Vec3& lineP2, const QPoint& hitpoint, int pixelRadius, float* pToCameraDistance = 0) const override;
 
     float GetDistanceToLine(const Vec3& lineP1, const Vec3& lineP2, const QPoint& point) const override;
 
@@ -444,9 +436,6 @@ public:
     bool GetAdvancedSelectModeFlag() override;
 
     void GetPerpendicularAxis(EAxis* pAxis, bool* pIs2D) const override;
-    const ::Plane* GetConstructionPlane() const override { return &m_constructionPlane; }
-
-    //////////////////////////////////////////////////////////////////////////
 
     //////////////////////////////////////////////////////////////////////////
     //! Set construction plane from given position construction matrix refrence coord system and axis settings.
@@ -502,7 +491,7 @@ public:
     void ReleaseMouse() override { m_mouseCaptured = false;  QWidget::releaseMouse(); }
 
     void setRay(QPoint& vp, Vec3& raySrc, Vec3& rayDir) override;
-    void setHitcontext(QPoint& vp, Vec3& raySrc, Vec3& rayDir) override;
+
     QPoint m_vp;
     AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
     Vec3 m_raySrc;
@@ -522,9 +511,6 @@ protected:
     void setRenderOverlayVisible(bool);
     bool isRenderOverlayVisible() const;
 
-    // called to process mouse callback inside the viewport.
-    virtual bool MouseCallback(EMouseEvent event, const QPoint& point, Qt::KeyboardModifiers modifiers, Qt::MouseButtons buttons = Qt::NoButton);
-
     void ProcessRenderLisneters(DisplayContext& rstDisplayContext);
 
     void mousePressEvent(QMouseEvent* event) override;
@@ -535,29 +521,29 @@ protected:
     void keyPressEvent(QKeyEvent* event) override;
     void keyReleaseEvent(QKeyEvent* event) override;
     void resizeEvent(QResizeEvent* event) override;
-    void leaveEvent(QEvent* event) override;
-
     void paintEvent(QPaintEvent* event) override;
 
-    virtual void OnMouseMove(Qt::KeyboardModifiers modifiers, Qt::MouseButtons buttons, const QPoint& point);
-    virtual void OnMouseWheel(Qt::KeyboardModifiers modifiers, short zDelta, const QPoint& pt);
-    virtual void OnLButtonDown(Qt::KeyboardModifiers modifiers, const QPoint& point);
-    virtual void OnLButtonUp(Qt::KeyboardModifiers modifiers, const QPoint& point);
-    virtual void OnRButtonDown(Qt::KeyboardModifiers modifiers, const QPoint& point);
-    virtual void OnRButtonUp(Qt::KeyboardModifiers modifiers, const QPoint& point);
-    virtual void OnMButtonDblClk(Qt::KeyboardModifiers modifiers, const QPoint& point);
-    virtual void OnMButtonDown(Qt::KeyboardModifiers modifiers, const QPoint& point);
-    virtual void OnMButtonUp(Qt::KeyboardModifiers modifiers, const QPoint& point);
-    virtual void OnLButtonDblClk(Qt::KeyboardModifiers modifiers, const QPoint& point);
-    virtual void OnRButtonDblClk(Qt::KeyboardModifiers modifiers, const QPoint& point);
-    virtual void OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags);
-    virtual void OnKeyUp(UINT nChar, UINT nRepCnt, UINT nFlags);
+    virtual void OnMouseMove(Qt::KeyboardModifiers, Qt::MouseButtons, const QPoint&) {}
+    virtual void OnMouseWheel(Qt::KeyboardModifiers, short zDelta, const QPoint&);
+    virtual void OnLButtonDown(Qt::KeyboardModifiers, const QPoint&) {}
+    virtual void OnLButtonUp(Qt::KeyboardModifiers, const QPoint&) {}
+    virtual void OnRButtonDown(Qt::KeyboardModifiers, const QPoint&) {}
+    virtual void OnRButtonUp(Qt::KeyboardModifiers, const QPoint&) {}
+    virtual void OnMButtonDblClk(Qt::KeyboardModifiers, const QPoint&) {}
+    virtual void OnMButtonDown(Qt::KeyboardModifiers, const QPoint&) {}
+    virtual void OnMButtonUp(Qt::KeyboardModifiers, const QPoint&) {}
+    virtual void OnLButtonDblClk(Qt::KeyboardModifiers, const QPoint&) {}
+    virtual void OnRButtonDblClk(Qt::KeyboardModifiers, const QPoint&) {}
+    virtual void OnKeyDown([[maybe_unused]] UINT nChar, [[maybe_unused]] UINT nRepCnt, [[maybe_unused]] UINT nFlags) {}
+    virtual void OnKeyUp([[maybe_unused]] UINT nChar, [[maybe_unused]] UINT nRepCnt, [[maybe_unused]] UINT nFlags) {}
 #if defined(AZ_PLATFORM_WINDOWS)
     void OnRawInput(UINT wParam, HRAWINPUT lParam);
 #endif
     void OnSetCursor();
 
-    virtual void BuildDragDropContext(AzQtComponents::ViewportDragContext& context, const QPoint& pt);
+    virtual void BuildDragDropContext(
+        AzQtComponents::ViewportDragContext& context, AzFramework::ViewportId viewportId, const QPoint& point);
+
     void dragEnterEvent(QDragEnterEvent* event) override;
     void dragMoveEvent(QDragMoveEvent* event) override;
     void dragLeaveEvent(QDragLeaveEvent* event) override;

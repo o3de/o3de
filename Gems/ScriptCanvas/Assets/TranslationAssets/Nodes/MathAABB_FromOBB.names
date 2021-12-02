@@ -1,38 +1,38 @@
 {
     "entries": [
         {
-            "key": "{95A84A7D-9D3C-59AE-9463-1CC41D275239}",
+            "base": "{95A84A7D-9D3C-59AE-9463-1CC41D275239}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "FromOBB",
-                "category": "Math/AABB",
+                "name": "From Oriented Bounding Box",
+                "category": "Math/Axis Aligned Bounding Box",
                 "tooltip": "returns the AABB which contains Source",
-                "subtitle": "AABB"
+                "subtitle": "Axis Aligned Bounding Box"
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "key": "DataInput_OBB: Source",
+                    "base": "DataInput_OBB: Source",
                     "details": {
-                        "name": "OBB: Source"
+                        "name": "Source"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: AABB",
+                    "base": "DataOutput_Result: AABB",
                     "details": {
-                        "name": "Result: AABB"
+                        "name": "AABB"
                     }
                 }
             ]

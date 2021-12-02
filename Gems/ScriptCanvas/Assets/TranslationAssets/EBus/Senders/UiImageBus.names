@@ -1,16 +1,16 @@
 {
     "entries": [
         {
-            "key": "UiImageBus",
+            "base": "UiImageBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "UiImageBus",
+                "name": "UI Image",
                 "category": "UI"
             },
             "methods": [
                 {
-                    "key": "GetColor",
+                    "base": "GetColor",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Color"
@@ -33,7 +33,7 @@
                     ]
                 },
                 {
-                    "key": "SetColor",
+                    "base": "SetColor",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Color"
@@ -57,7 +57,7 @@
                     ]
                 },
                 {
-                    "key": "SetSpriteType",
+                    "base": "SetSpriteType",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Sprite Type"
@@ -81,7 +81,7 @@
                     ]
                 },
                 {
-                    "key": "GetFillClockwise",
+                    "base": "GetFillClockwise",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Fill Clockwise"
@@ -104,7 +104,7 @@
                     ]
                 },
                 {
-                    "key": "SetRenderTargetName",
+                    "base": "SetRenderTargetName",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Render Target Name"
@@ -128,7 +128,7 @@
                     ]
                 },
                 {
-                    "key": "SetSpritePathnameIfExists",
+                    "base": "SetSpritePathnameIfExists",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Sprite Pathname If Exists"
@@ -161,7 +161,7 @@
                     ]
                 },
                 {
-                    "key": "SetEdgeFillOrigin",
+                    "base": "SetEdgeFillOrigin",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Edge Fill Origin"
@@ -185,7 +185,7 @@
                     ]
                 },
                 {
-                    "key": "GetEdgeFillOrigin",
+                    "base": "GetEdgeFillOrigin",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Edge Fill Origin"
@@ -208,7 +208,7 @@
                     ]
                 },
                 {
-                    "key": "SetFillClockwise",
+                    "base": "SetFillClockwise",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Fill Clockwise"
@@ -232,7 +232,7 @@
                     ]
                 },
                 {
-                    "key": "SetSpritePathname",
+                    "base": "SetSpritePathname",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Sprite Pathname"
@@ -256,7 +256,7 @@
                     ]
                 },
                 {
-                    "key": "SetFillCenter",
+                    "base": "SetFillCenter",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Fill Center"
@@ -280,7 +280,7 @@
                     ]
                 },
                 {
-                    "key": "SetAlpha",
+                    "base": "SetAlpha",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Alpha"
@@ -304,7 +304,7 @@
                     ]
                 },
                 {
-                    "key": "SetFillType",
+                    "base": "SetFillType",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Fill Type"
@@ -328,7 +328,7 @@
                     ]
                 },
                 {
-                    "key": "SetFillAmount",
+                    "base": "SetFillAmount",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Fill Amount"
@@ -352,7 +352,7 @@
                     ]
                 },
                 {
-                    "key": "GetRadialFillStartAngle",
+                    "base": "GetRadialFillStartAngle",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Radial Fill Start Angle"
@@ -375,7 +375,7 @@
                     ]
                 },
                 {
-                    "key": "GetRenderTargetName",
+                    "base": "GetRenderTargetName",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Render Target Name"
@@ -398,7 +398,7 @@
                     ]
                 },
                 {
-                    "key": "SetIsRenderTargetSRGB",
+                    "base": "SetIsRenderTargetSRGB",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Is Render Target sRGB"
@@ -422,7 +422,7 @@
                     ]
                 },
                 {
-                    "key": "GetAlpha",
+                    "base": "GetAlpha",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Alpha"
@@ -445,7 +445,7 @@
                     ]
                 },
                 {
-                    "key": "GetIsRenderTargetSRGB",
+                    "base": "GetIsRenderTargetSRGB",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Is Render Target sRGB"
@@ -468,7 +468,7 @@
                     ]
                 },
                 {
-                    "key": "SetImageType",
+                    "base": "SetImageType",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Image Type"
@@ -492,7 +492,7 @@
                     ]
                 },
                 {
-                    "key": "GetSpritePathname",
+                    "base": "GetSpritePathname",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Sprite Pathname"
@@ -515,7 +515,7 @@
                     ]
                 },
                 {
-                    "key": "GetFillType",
+                    "base": "GetFillType",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Fill Type"
@@ -538,7 +538,7 @@
                     ]
                 },
                 {
-                    "key": "SetCornerFillOrigin",
+                    "base": "SetCornerFillOrigin",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Corner Fill Origin"
@@ -562,7 +562,7 @@
                     ]
                 },
                 {
-                    "key": "GetCornerFillOrigin",
+                    "base": "GetCornerFillOrigin",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Corner Fill Origin"
@@ -585,7 +585,7 @@
                     ]
                 },
                 {
-                    "key": "GetImageType",
+                    "base": "GetImageType",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Image Type"
@@ -608,7 +608,7 @@
                     ]
                 },
                 {
-                    "key": "SetRadialFillStartAngle",
+                    "base": "SetRadialFillStartAngle",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Radial Fill Start Angle"
@@ -632,7 +632,7 @@
                     ]
                 },
                 {
-                    "key": "GetSpriteType",
+                    "base": "GetSpriteType",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Sprite Type"
@@ -655,7 +655,7 @@
                     ]
                 },
                 {
-                    "key": "GetFillAmount",
+                    "base": "GetFillAmount",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Fill Amount"
@@ -678,7 +678,7 @@
                     ]
                 },
                 {
-                    "key": "GetFillCenter",
+                    "base": "GetFillCenter",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Fill Center"

@@ -20,7 +20,6 @@
 #include <AzCore/std/parallel/lock.h>
 #include <AzCore/Casting/numeric_cast.h>
 #include <AzCore/Debug/EventTrace.h>
-#include <AzCore/Debug/Timer.h>
 #include <AzCore/Jobs/JobFunction.h>
 #include <AzCore/Jobs/Job.h>
 #include <AzCore/Task/TaskGraph.h>
@@ -284,7 +283,7 @@ namespace AZ
             const Scene& scene,
             View& view,
             Frustum& frustum,
-            void* maskedOcclusionCulling)
+            [[maybe_unused]]void* maskedOcclusionCulling)
         {
             AZStd::shared_ptr<WorklistData> worklistData = AZStd::make_shared<WorklistData>();
             worklistData->m_debugCtx = &debugCtx;
@@ -517,7 +516,7 @@ namespace AZ
         }
 #endif
 
-        void CullingScene::ProcessCullablesCommon(const Scene& scene, View& view, AZ::Frustum& frustum, void*& maskedOcclusionCulling)
+        void CullingScene::ProcessCullablesCommon(const Scene& scene, View& view, AZ::Frustum& frustum, [[maybe_unused]]void*& maskedOcclusionCulling)
         {
             AZ_PROFILE_SCOPE(RPI, "CullingScene::ProcessCullablesCommon() - %s", view.GetName().GetCStr());
 

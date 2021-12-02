@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "EditorOcclusionCullingPlaneComponentTypeId",
+            "base": "EditorOcclusionCullingPlaneComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "EditorOcclusionCullingPlaneComponentTypeId::Getter",
-                "category": "Constants"
-            }
+                "name": "Editor Occlusion Culling Plane Component Type Id",
+                "category": "Constants/Editor"
+            },
+            "methods": [
+                {
+                    "base": "GetEditorOcclusionCullingPlaneComponentTypeId",
+                    "details": {
+                        "name": "Get Editor Occlusion Culling Plane Component Type Id"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}",
+                            "details": {
+                                "name": "AZ:: Uuid"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

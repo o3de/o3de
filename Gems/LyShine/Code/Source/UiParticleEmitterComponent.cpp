@@ -15,6 +15,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/std/sort.h>
+#include <AzCore/Time/ITime.h>
 
 #include <LyShine/ISprite.h>
 
@@ -73,7 +74,7 @@ void UiParticleEmitterComponent::SetIsEmitting(bool emitParticles)
     {
         m_nextEmitTime = (m_isHitParticleCountOnActivate ? -m_particleLifetime : 0.0f);
         m_emitterAge = 0.0f;
-        m_random.SetSeed(m_isRandomSeedFixed ? m_randomSeed : gEnv->pTimer->GetAsyncTime().GetMilliSecondsAsInt64());
+        m_random.SetSeed(m_isRandomSeedFixed ? m_randomSeed : aznumeric_cast<int64_t>(AZ::GetElapsedTimeMs()));
     }
     m_isEmitting = emitParticles;
 }

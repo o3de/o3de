@@ -1,42 +1,42 @@
 {
     "entries": [
         {
-            "key": "{214CCB41-01CA-578C-9D7F-1237202A885B}",
+            "base": "{214CCB41-01CA-578C-9D7F-1237202A885B}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "ToSphere",
-                "category": "Math/AABB",
+                "name": "To Sphere",
+                "category": "Math/Axis Aligned Bounding Box",
                 "tooltip": "returns the center and radius of smallest sphere that contains Source",
-                "subtitle": "AABB"
+                "subtitle": "Axis Aligned Bounding Box"
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "key": "DataInput_AABB: Source",
+                    "base": "DataInput_AABB: Source",
                     "details": {
                         "name": "AABB: Source"
                     }
                 },
                 {
-                    "key": "DataOutput_Center: Vector3",
+                    "base": "DataOutput_Center: Vector3",
                     "details": {
                         "name": "Center: Vector3"
                     }
                 },
                 {
-                    "key": "DataOutput_Radius: Number",
+                    "base": "DataOutput_Radius: Number",
                     "details": {
                         "name": "Radius: Number"
                     }

@@ -47,7 +47,6 @@ namespace O3DE::ProjectManager
         AZ::Outcome<QString, QString> ExecuteCommandResult(
             const QString& cmd,
             const QStringList& arguments,
-            const QProcessEnvironment& processEnv,
             int commandTimeoutSeconds = ProjectCommandLineTimeoutSeconds);
 
         /**
@@ -61,15 +60,43 @@ namespace O3DE::ProjectManager
         AZ::Outcome<QString, QString> ExecuteCommandResultModalDialog(
             const QString& cmd,
             const QStringList& arguments,
-            const QProcessEnvironment& processEnv,
             const QString& title);
 
-        AZ::Outcome<QProcessEnvironment, QString> GetCommandLineProcessEnvironment();
+        AZ::Outcome<void, QString> SetupCommandLineProcessEnvironment();
         AZ::Outcome<QString, QString> GetProjectBuildPath(const QString& projectPath);
         AZ::Outcome<void, QString> OpenCMakeGUI(const QString& projectPath);
         AZ::Outcome<QString, QString> RunGetPythonScript(const QString& enginePath);
+
+        /**
+         * Create a desktop shortcut.
+         * @param filename the name of the desktop shorcut file 
+         * @param target the path to the target to run 
+         * @param arguments the argument list to provide to the target
+         * @return AZ::Outcome with the command result on success
+         */
+        AZ::Outcome<QString, QString> CreateDesktopShortcut(const QString& filename, const QString& targetPath, const QStringList& arguments);
         
-        AZ::IO::FixedMaxPath GetEditorDirectory();
+        /**
+         * Lookup the location of an Editor executable executable that can be used with the
+         * supplied project path
+         * First the method attempts to locate a build directory with the project path
+         * via querying the <project-path>/user/Registry/Platform/<platform>/build_path.setreg
+         * Once that is done a path is formed to locate the Editor executable within the that build
+         * directory.
+         * Two paths will checked for the existence of an Editor
+         * - "<project-build-directory>/bin/$<CONFIG>/Editor"
+         * - "<project-build-directory>/bin/<platform>/$<CONFIG>/Editor"
+         * Where <platform> is the current platform the O3DE executable is running on and $<CONFIG> is the
+         * current build configuration the O3DE executable
+         *
+         * If neiether of the above paths contain an Editor application, then a path to the Editor
+         * is formed by combinding the O3DE executable directory with the filename of Editor
+         * - "<executable-directory>/Editor"
+         *
+         * @param projectPath Path to the root of the project
+         * @return path of the Editor Executable if found or an empty path if not
+         */
+        AZ::IO::FixedMaxPath GetEditorExecutablePath(const AZ::IO::PathView& projectPath);
 
     } // namespace ProjectUtils
 } // namespace O3DE::ProjectManager

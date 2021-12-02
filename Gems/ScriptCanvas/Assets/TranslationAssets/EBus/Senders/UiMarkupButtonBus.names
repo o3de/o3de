@@ -1,16 +1,16 @@
 {
     "entries": [
         {
-            "key": "UiMarkupButtonBus",
+            "base": "UiMarkupButtonBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "UiMarkupButtonBus",
+                "name": "UI Markup Button",
                 "category": "UI"
             },
             "methods": [
                 {
-                    "key": "GetLinkColor",
+                    "base": "GetLinkColor",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Link Color"
@@ -33,7 +33,7 @@
                     ]
                 },
                 {
-                    "key": "SetLinkColor",
+                    "base": "SetLinkColor",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Link Color"
@@ -57,7 +57,7 @@
                     ]
                 },
                 {
-                    "key": "GetLinkHoverColor",
+                    "base": "GetLinkHoverColor",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Link Hover Color"
@@ -80,7 +80,7 @@
                     ]
                 },
                 {
-                    "key": "SetLinkHoverColor",
+                    "base": "SetLinkHoverColor",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Link Hover Color"

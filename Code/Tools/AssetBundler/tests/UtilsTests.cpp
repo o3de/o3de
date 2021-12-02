@@ -67,7 +67,7 @@ namespace AssetBundler
         void NormalizePathKeepCase(AZStd::string& /*path*/) override {}
         void CalculateBranchTokenForEngineRoot(AZStd::string& /*token*/) const override {}
 
-        const char* GetEngineRoot() const override
+        const char* GetTempDir() const
         {
             return m_tempDir->GetDirectory();
         }
@@ -83,7 +83,7 @@ namespace AssetBundler
     TEST_F(MockUtilsTest, DISABLED_TestFilePath_StartsWithAFileSeparator_Valid)
     {
         AZ::IO::Path relFilePath = "Foo/foo.xml";
-        AZ::IO::Path absoluteFilePath = AZ::IO::PathView(GetEngineRoot()).RootPath();
+        AZ::IO::Path absoluteFilePath = AZ::IO::PathView(GetTempDir()).RootPath();
         absoluteFilePath /= relFilePath;
         absoluteFilePath = absoluteFilePath.LexicallyNormal();
 
@@ -95,7 +95,7 @@ namespace AssetBundler
     TEST_F(MockUtilsTest, TestFilePath_RelativePath_Valid)
     {
         AZ::IO::Path relFilePath = "Foo\\foo.xml";
-        AZ::IO::Path absoluteFilePath = (AZ::IO::Path(GetEngineRoot()) / relFilePath).LexicallyNormal();
+        AZ::IO::Path absoluteFilePath = (AZ::IO::Path(GetTempDir()) / relFilePath).LexicallyNormal();
         FilePath filePath(relFilePath.Native());
         EXPECT_EQ(AZ::IO::PathView{ filePath.AbsolutePath() }, absoluteFilePath);
     }
@@ -107,8 +107,8 @@ namespace AssetBundler
         AZ::IO::Path relFilePath = "Foo\\Foo.xml";
         AZ::IO::Path wrongCaseRelFilePath = "Foo\\foo.xml";
 
-        AZ::IO::Path correctAbsoluteFilePath = (AZ::IO::Path(GetEngineRoot()) / relFilePath).LexicallyNormal();
-        AZ::IO::Path wrongCaseAbsoluteFilePath = (AZ::IO::Path(GetEngineRoot()) / wrongCaseRelFilePath).LexicallyNormal();
+        AZ::IO::Path correctAbsoluteFilePath = (AZ::IO::Path(GetTempDir()) / relFilePath).LexicallyNormal();
+        AZ::IO::Path wrongCaseAbsoluteFilePath = (AZ::IO::Path(GetTempDir()) / wrongCaseRelFilePath).LexicallyNormal();
 
         AZ::IO::HandleType fileHandle = AZ::IO::InvalidHandle;
         AZ::IO::FileIOBase::GetInstance()->Open(correctAbsoluteFilePath.c_str(), AZ::IO::OpenMode::ModeWrite | AZ::IO::OpenMode::ModeCreatePath, fileHandle);
@@ -121,7 +121,7 @@ namespace AssetBundler
     TEST_F(MockUtilsTest, TestFilePath_NoFileExists_NoError_valid)
     {
         AZ::IO::Path relFilePath = "Foo\\Foo.xml";
-        AZ::IO::Path absoluteFilePath = (AZ::IO::Path(GetEngineRoot()) / relFilePath).LexicallyNormal();
+        AZ::IO::Path absoluteFilePath = (AZ::IO::Path(GetTempDir()) / relFilePath).LexicallyNormal();
 
         FilePath filePath(absoluteFilePath.Native(), true, false);
         EXPECT_TRUE(filePath.IsValid());
@@ -132,8 +132,8 @@ namespace AssetBundler
     {
         AZStd::string relFilePath = "Foo\\Foo.xml";
         AZStd::string wrongCaseRelFilePath = "Foo\\foo.xml";
-        AZ::IO::Path correctAbsoluteFilePath = (AZ::IO::Path(GetEngineRoot()) / relFilePath).LexicallyNormal();
-        AZ::IO::Path wrongCaseAbsoluteFilePath = (AZ::IO::Path(GetEngineRoot()) / wrongCaseRelFilePath).LexicallyNormal();
+        AZ::IO::Path correctAbsoluteFilePath = (AZ::IO::Path(GetTempDir()) / relFilePath).LexicallyNormal();
+        AZ::IO::Path wrongCaseAbsoluteFilePath = (AZ::IO::Path(GetTempDir()) / wrongCaseRelFilePath).LexicallyNormal();
 
         AZ::IO::HandleType fileHandle = AZ::IO::InvalidHandle;
         AZ::IO::FileIOBase::GetInstance()->Open(correctAbsoluteFilePath.c_str(), AZ::IO::OpenMode::ModeWrite | AZ::IO::OpenMode::ModeCreatePath, fileHandle);

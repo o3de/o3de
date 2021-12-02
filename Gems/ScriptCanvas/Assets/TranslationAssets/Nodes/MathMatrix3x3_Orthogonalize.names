@@ -1,38 +1,37 @@
 {
     "entries": [
         {
-            "key": "{BFC5A535-734B-54E8-BDF1-B60120D831EC}",
+            "base": "{BFC5A535-734B-54E8-BDF1-B60120D831EC}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
                 "name": "Orthogonalize",
                 "category": "Math/Matrix3x3",
-                "tooltip": "returns an orthogonal matrix from the Source matrix",
-                "subtitle": "Matrix3x3"
+                "tooltip": "Returns an orthogonal matrix from the Source matrix"
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "key": "DataInput_Matrix3x3: Source",
+                    "base": "DataInput_Source",
                     "details": {
-                        "name": "Matrix3x3: Source"
+                        "name": "Source"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Matrix3x3",
+                    "base": "DataOutput_Result",
                     "details": {
-                        "name": "Result: Matrix3x3"
+                        "name": "Result"
                     }
                 }
             ]

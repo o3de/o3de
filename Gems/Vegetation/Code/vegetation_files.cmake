@@ -46,7 +46,6 @@ set(FILES
     Include/Vegetation/Ebuses/AreaBlenderRequestBus.h
     Include/Vegetation/Ebuses/BlockerRequestBus.h
     Include/Vegetation/Ebuses/DescriptorListCombinerRequestBus.h
-    Include/Vegetation/Ebuses/ReferenceShapeRequestBus.h
     Include/Vegetation/Ebuses/MeshBlockerRequestBus.h
     Include/Vegetation/Ebuses/SpawnerRequestBus.h
     Include/Vegetation/Ebuses/DescriptorListRequestBus.h
@@ -71,8 +70,6 @@ set(FILES
     Source/Components/MeshBlockerComponent.h
     Source/Components/PositionModifierComponent.cpp
     Source/Components/PositionModifierComponent.h
-    Source/Components/ReferenceShapeComponent.cpp
-    Source/Components/ReferenceShapeComponent.h
     Source/Components/RotationModifierComponent.cpp
     Source/Components/RotationModifierComponent.h
     Source/Components/ScaleModifierComponent.cpp

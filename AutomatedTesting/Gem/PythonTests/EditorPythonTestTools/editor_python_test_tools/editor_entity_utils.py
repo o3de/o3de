@@ -132,6 +132,7 @@ class EditorEntity:
 
     def __init__(self, id: azlmbr.entity.EntityId):
         self.id: azlmbr.entity.EntityId = id
+        self.components: List[EditorComponent] = []
 
     # Creation functions
     @classmethod
@@ -279,7 +280,7 @@ class EditorEntity:
             ), f"Failure: Could not add component: '{new_comp.get_component_name()}' to entity: '{self.get_name()}'"
             new_comp.id = add_component_outcome.GetValue()[0]
             components.append(new_comp)
-
+            self.components.append(new_comp)
         return components
 
     def get_components_of_type(self, component_names: list) -> List[EditorComponent]:
@@ -458,3 +459,14 @@ class EditorEntity:
         """
         new_translation = convert_to_azvector3(new_translation)
         azlmbr.components.TransformBus(azlmbr.bus.Event, "SetLocalTranslation", self.id, new_translation)
+
+    # Use this only when prefab system is enabled as it will fail otherwise.
+    def focus_on_owning_prefab(self) -> None:
+        """
+        Focuses on the owning prefab instance of the given entity.
+        :param entity: The entity used to fetch the owning prefab to focus on.
+        """
+
+        assert self.id.isValid(), "A valid entity id is required to focus on its owning prefab."
+        focus_prefab_result = azlmbr.prefab.PrefabFocusPublicRequestBus(bus.Broadcast, "FocusOnOwningPrefab", self.id)
+        assert focus_prefab_result.IsSuccess(), f"Prefab operation 'FocusOnOwningPrefab' failed. Error: {focus_prefab_result.GetError()}"

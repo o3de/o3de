@@ -22,6 +22,7 @@ namespace AZ
     class BehaviorContext;
     class BehaviorEBus;
     class BehaviorMethod;
+    class BehaviorProperty;
     class Entity;
     class SerializeContext;
 }
@@ -121,13 +122,31 @@ namespace ScriptCanvasEditorTools
         //! Generate the translation data for on-demand reflected types
         void TranslateOnDemandReflectedTypes(TranslationFormat& translationRoot);
 
+        //! Generates the translation data for all global properties and methods in the BehaviorContext
+        void TranslateBehaviorGlobals();
+
+        //! Generates the translation data for the specified property in the BehaviorContext (global, by name)
+        void TranslateBehaviorProperty(const AZStd::string& propertyName);
+
+        //! Generates the translation data for the specified property in the BehaviorContext
+        void TranslateBehaviorProperty(const AZ::BehaviorProperty* behaviorProperty, const AZStd::string& className, const AZStd::string& context, Entry* entry = nullptr);
+
+        //! Generates a type map from reflected types that are suitable for BehaviorContext objects used by ScriptCanvas
+        void TranslateDataTypes();
+
     private:
+
+        //! Utility to populate a BehaviorMethod's translation data
+        void TranslateMethod(AZ::BehaviorMethod* behaviorMethod, Method& methodEntry);
 
         //! Generates the translation data for a BehaviorEBus that has an BehaviorEBusHandler
         bool TranslateEBusHandler(const AZ::BehaviorEBus* behaviorEbus, TranslationFormat& translationRoot);
 
         //! Utility function that saves a TranslationFormat object in the desired JSON format
         void SaveJSONData(const AZStd::string& filename, TranslationFormat& translationRoot);
+
+        //! Utility function that splits camel-case syntax string into separate words
+        void SplitCamelCase(AZStd::string&);
 
         //! Evaluates if the specified object has exclusion flags and should be skipped from generation
         template <typename T>

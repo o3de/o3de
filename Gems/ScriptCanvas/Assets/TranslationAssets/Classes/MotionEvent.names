@@ -1,12 +1,353 @@
 {
     "entries": [
         {
-            "key": "MotionEvent",
+            "base": "MotionEvent",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
-                "name": "MotionEvent"
-            }
+                "name": "Motion Event",
+                "category": "Animation"
+            },
+            "methods": [
+                {
+                    "base": "GetlocalWeight",
+                    "details": {
+                        "name": "Get Local Weight"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{0C899DAC-6B19-4BDD-AD8C-8A11EF2A6729}",
+                            "details": {
+                                "name": "Motion Event"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Local Weight"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetlocalWeight",
+                    "details": {
+                        "name": "Set Local Weight"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{0C899DAC-6B19-4BDD-AD8C-8A11EF2A6729}",
+                            "details": {
+                                "name": "Motion Event"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Local Weight"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetglobalWeight",
+                    "details": {
+                        "name": "Get Global Weight"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{0C899DAC-6B19-4BDD-AD8C-8A11EF2A6729}",
+                            "details": {
+                                "name": "Motion Event"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Global Weight"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetglobalWeight",
+                    "details": {
+                        "name": "Set Global Weight"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{0C899DAC-6B19-4BDD-AD8C-8A11EF2A6729}",
+                            "details": {
+                                "name": "Motion Event"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Global Weight"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "Gettime",
+                    "details": {
+                        "name": "Get Time"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{0C899DAC-6B19-4BDD-AD8C-8A11EF2A6729}",
+                            "details": {
+                                "name": "Motion Event"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Time"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "Settime",
+                    "details": {
+                        "name": "Set Time"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{0C899DAC-6B19-4BDD-AD8C-8A11EF2A6729}",
+                            "details": {
+                                "name": "Motion Event"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Time"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GeteventType",
+                    "details": {
+                        "name": "Get Event Type"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{0C899DAC-6B19-4BDD-AD8C-8A11EF2A6729}",
+                            "details": {
+                                "name": "Motion Event"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
+                            "details": {
+                                "name": "Event Type"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SeteventType",
+                    "details": {
+                        "name": "Set Event Type"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{0C899DAC-6B19-4BDD-AD8C-8A11EF2A6729}",
+                            "details": {
+                                "name": "Motion Event"
+                            }
+                        },
+                        {
+                            "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
+                            "details": {
+                                "name": "Event Type"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GeteventTypeName",
+                    "details": {
+                        "name": "Get Event Type Name"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{0C899DAC-6B19-4BDD-AD8C-8A11EF2A6729}",
+                            "details": {
+                                "name": "Motion Event"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "Event Type Name"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SeteventTypeName",
+                    "details": {
+                        "name": "Set Event Type Name"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{0C899DAC-6B19-4BDD-AD8C-8A11EF2A6729}",
+                            "details": {
+                                "name": "Motion Event"
+                            }
+                        },
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "Event Type Name"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetisEventStart",
+                    "details": {
+                        "name": "Get Is Event Start"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{0C899DAC-6B19-4BDD-AD8C-8A11EF2A6729}",
+                            "details": {
+                                "name": "Motion Event"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Is Event Start"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetisEventStart",
+                    "details": {
+                        "name": "Set Is Event Start"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{0C899DAC-6B19-4BDD-AD8C-8A11EF2A6729}",
+                            "details": {
+                                "name": "Motion Event"
+                            }
+                        },
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Is Event Start"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "Getparameter",
+                    "details": {
+                        "name": "Get Parameter"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{0C899DAC-6B19-4BDD-AD8C-8A11EF2A6729}",
+                            "details": {
+                                "name": "Motion Event"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "Parameter"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "Setparameter",
+                    "details": {
+                        "name": "Set Parameter"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{0C899DAC-6B19-4BDD-AD8C-8A11EF2A6729}",
+                            "details": {
+                                "name": "Motion Event"
+                            }
+                        },
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "Parameter"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetentityId",
+                    "details": {
+                        "name": "Get Entity Id"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{0C899DAC-6B19-4BDD-AD8C-8A11EF2A6729}",
+                            "details": {
+                                "name": "Motion Event"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Entity Id",
+                                "tooltip": "Entity Unique Id"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetentityId",
+                    "details": {
+                        "name": "Set Entity Id"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{0C899DAC-6B19-4BDD-AD8C-8A11EF2A6729}",
+                            "details": {
+                                "name": "Motion Event"
+                            }
+                        },
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Entity Id",
+                                "tooltip": "Entity Unique Id"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

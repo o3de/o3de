@@ -1,15 +1,16 @@
 {
     "entries": [
         {
-            "key": "AssetId",
+            "base": "AssetId",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
-                "name": "AssetId"
+                "name": "Asset Id",
+                "category": "Asset"
             },
             "methods": [
                 {
-                    "key": "CreateString",
+                    "base": "CreateString",
                     "context": "AssetId",
                     "entry": {
                         "name": "In",
@@ -20,14 +21,13 @@
                         "tooltip": "Signaled after CreateString is invoked"
                     },
                     "details": {
-                        "name": "AssetId::CreateString",
-                        "category": "Other"
+                        "name": "Create String"
                     },
                     "params": [
                         {
                             "typeid": "{7114E998-A8B4-519B-9342-A86D1587B4F7}",
                             "details": {
-                                "name": "AZStd::basic_string_view<char, AZStd::char_traits<char>>"
+                                "name": "String"
                             }
                         }
                     ],
@@ -35,13 +35,13 @@
                         {
                             "typeid": "{652ED536-3402-439B-AEBE-4A5DBC554085}",
                             "details": {
-                                "name": "AssetId"
+                                "name": "Asset Id"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "IsValid",
+                    "base": "IsValid",
                     "context": "AssetId",
                     "entry": {
                         "name": "In",
@@ -52,14 +52,13 @@
                         "tooltip": "Signaled after IsValid is invoked"
                     },
                     "details": {
-                        "name": "AssetId::IsValid",
-                        "category": "Other"
+                        "name": "Is Valid"
                     },
                     "params": [
                         {
                             "typeid": "{652ED536-3402-439B-AEBE-4A5DBC554085}",
                             "details": {
-                                "name": "AssetId*"
+                                "name": "Asset Id"
                             }
                         }
                     ],
@@ -67,13 +66,13 @@
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": "bool"
+                                "name": "Is Valid"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "ToString",
+                    "base": "ToString",
                     "context": "AssetId",
                     "entry": {
                         "name": "In",
@@ -84,14 +83,13 @@
                         "tooltip": "Signaled after ToString is invoked"
                     },
                     "details": {
-                        "name": "AssetId::ToString",
-                        "category": "Other"
+                        "name": "To String"
                     },
                     "params": [
                         {
                             "typeid": "{652ED536-3402-439B-AEBE-4A5DBC554085}",
                             "details": {
-                                "name": "const AssetId*"
+                                "name": "Asset Id"
                             }
                         }
                     ],
@@ -99,13 +97,13 @@
                         {
                             "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
                             "details": {
-                                "name": "AZStd::basic_string<char, AZStd::char_traits<char>, allocator>"
+                                "name": "String"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "IsEqual",
+                    "base": "IsEqual",
                     "context": "AssetId",
                     "entry": {
                         "name": "In",
@@ -116,20 +114,19 @@
                         "tooltip": "Signaled after IsEqual is invoked"
                     },
                     "details": {
-                        "name": "AssetId::IsEqual",
-                        "category": "Other"
+                        "name": "Is Equal"
                     },
                     "params": [
                         {
                             "typeid": "{652ED536-3402-439B-AEBE-4A5DBC554085}",
                             "details": {
-                                "name": "const AssetId&"
+                                "name": "Asset Id"
                             }
                         },
                         {
                             "typeid": "{652ED536-3402-439B-AEBE-4A5DBC554085}",
                             "details": {
-                                "name": "const AssetId&"
+                                "name": "Asset Id"
                             }
                         }
                     ],
@@ -137,7 +134,7 @@
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": "bool"
+                                "name": "Equal"
                             }
                         }
                     ]

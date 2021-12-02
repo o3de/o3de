@@ -1,0 +1,58 @@
+{
+    "entries": [
+        {
+            "base": "ForcePointRequestBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "Force Point"
+            },
+            "methods": [
+                {
+                    "base": "SetMagnitude",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Magnitude"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Magnitude is invoked"
+                    },
+                    "details": {
+                        "name": "Set Magnitude"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Magnitude"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetMagnitude",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Magnitude"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Magnitude is invoked"
+                    },
+                    "details": {
+                        "name": "Get Magnitude"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Magnitude"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

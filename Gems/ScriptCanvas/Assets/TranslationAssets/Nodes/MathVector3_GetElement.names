@@ -1,44 +1,43 @@
 {
     "entries": [
         {
-            "key": "{E009C313-15F5-5B1F-99F0-8C83555BA8E1}",
+            "base": "{E009C313-15F5-5B1F-99F0-8C83555BA8E1}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "GetElement",
+                "name": "Get Element",
                 "category": "Math/Vector3",
-                "tooltip": "returns the element corresponding to the index (0 -> x) (1 -> y) (2 -> z)",
-                "subtitle": "Vector3"
+                "tooltip": "Returns the element corresponding to the index (0 -> x) (1 -> y) (2 -> z)"
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "key": "DataInput_Vector3: Source",
+                    "base": "DataInput_Source",
                     "details": {
-                        "name": "Vector3: Source"
+                        "name": "Source"
                     }
                 },
                 {
-                    "key": "DataInput_Number: Index",
+                    "base": "DataInput_Index",
                     "details": {
-                        "name": "Number: Index"
+                        "name": "Index"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Number",
+                    "base": "DataOutput_Result",
                     "details": {
-                        "name": "Result: Number"
+                        "name": "Result"
                     }
                 }
             ]

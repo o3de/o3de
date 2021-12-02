@@ -1,44 +1,43 @@
 {
     "entries": [
         {
-            "key": "{D6B704EB-62A7-5CEB-B715-4CD402E1BAF9}",
+            "base": "{D6B704EB-62A7-5CEB-B715-4CD402E1BAF9}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "IsOrthogonal",
+                "name": "Is Orthogonal",
                 "category": "Math/Transform",
-                "tooltip": "returns true if the upper 3x3 matrix of Source is within Tolerance of orthogonal, else false",
-                "subtitle": "Transform"
+                "tooltip": "Returns true if the upper 3x3 matrix of Source is within Tolerance of orthogonal, else false"
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "key": "DataInput_Transform: Source",
+                    "base": "DataInput_Source",
                     "details": {
-                        "name": "Transform: Source"
+                        "name": "Source"
                     }
                 },
                 {
-                    "key": "DataInput_Number: Tolerance",
+                    "base": "DataInput_Tolerance",
                     "details": {
-                        "name": "Number: Tolerance"
+                        "name": "Tolerance"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Boolean",
+                    "base": "DataOutput_Result",
                     "details": {
-                        "name": "Result: Boolean"
+                        "name": "Result"
                     }
                 }
             ]

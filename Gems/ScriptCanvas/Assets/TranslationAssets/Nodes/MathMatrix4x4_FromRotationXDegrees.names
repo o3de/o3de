@@ -1,38 +1,37 @@
 {
     "entries": [
         {
-            "key": "{A50EB8F8-1BF9-5E03-9CC3-628CF58A3996}",
+            "base": "{A50EB8F8-1BF9-5E03-9CC3-628CF58A3996}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "FromRotationXDegrees",
+                "name": "From Rotation X Degrees",
                 "category": "Math/Matrix4x4",
-                "tooltip": "returns a rotation matrix representing a rotation in degrees around X-axis",
-                "subtitle": "Matrix4x4"
+                "tooltip": "Returns a rotation matrix representing a rotation in degrees around X-axis"
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "key": "DataInput_Number: Degrees",
+                    "base": "DataInput_Degrees",
                     "details": {
-                        "name": "Number: Degrees"
+                        "name": "Degrees"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Matrix4x4",
+                    "base": "DataOutput_Result",
                     "details": {
-                        "name": "Result: Matrix4x4"
+                        "name": "Result"
                     }
                 }
             ]

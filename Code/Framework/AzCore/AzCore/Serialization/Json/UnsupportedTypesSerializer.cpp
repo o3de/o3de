@@ -15,6 +15,7 @@ namespace AZ
     AZ_CLASS_ALLOCATOR_IMPL(JsonAnySerializer, SystemAllocator, 0);
     AZ_CLASS_ALLOCATOR_IMPL(JsonVariantSerializer, SystemAllocator, 0);
     AZ_CLASS_ALLOCATOR_IMPL(JsonOptionalSerializer, SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR_IMPL(JsonBitsetSerializer, SystemAllocator, 0);
 
     JsonSerializationResult::Result JsonUnsupportedTypesSerializer::Load(void*, const Uuid&, const rapidjson::Value&,
         JsonDeserializerContext& context)
@@ -48,5 +49,11 @@ namespace AZ
     {
         return "The Json Serialization doesn't support AZStd::optional by design. No JSON format has yet been found that wasn't deemed too "
                "complex or overly verbose.";
+    }
+
+    AZStd::string_view JsonBitsetSerializer::GetMessage() const
+    {
+        return "The Json Serialization doesn't support AZStd::bitset by design. No JSON format has yet been found that is content creator "
+               "friendly i.e., easy to comprehend the intent.";
     }
 } // namespace AZ

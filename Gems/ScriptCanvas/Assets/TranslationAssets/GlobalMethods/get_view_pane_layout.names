@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "get_view_pane_layout",
+            "base": "get_view_pane_layout",
             "context": "Method",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "get_view_pane_layout",
+                    "base": "get_view_pane_layout",
                     "context": "Global",
                     "entry": {
                         "name": "In",

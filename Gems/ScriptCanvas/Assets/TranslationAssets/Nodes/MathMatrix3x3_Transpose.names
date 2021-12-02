@@ -1,38 +1,37 @@
 {
     "entries": [
         {
-            "key": "{F57314B3-AFD8-5BDB-A0F0-8EAF5C13CAC9}",
+            "base": "{F57314B3-AFD8-5BDB-A0F0-8EAF5C13CAC9}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
                 "name": "Transpose",
                 "category": "Math/Matrix3x3",
-                "tooltip": "returns transpose of Matrix",
-                "subtitle": "Matrix3x3"
+                "tooltip": "returns transpose of Matrix"
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "key": "DataInput_Matrix3x3: Source",
+                    "base": "DataInput_Source",
                     "details": {
-                        "name": "Matrix3x3: Source"
+                        "name": "Source"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Matrix3x3",
+                    "base": "DataOutput_Result",
                     "details": {
-                        "name": "Result: Matrix3x3"
+                        "name": "Result"
                     }
                 }
             ]

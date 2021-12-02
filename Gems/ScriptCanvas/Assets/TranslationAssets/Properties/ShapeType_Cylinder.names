@@ -1,13 +1,30 @@
 {
     "entries": [
         {
-            "key": "ShapeType_Cylinder",
+            "base": "ShapeType_Cylinder",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "ShapeType_Cylinder::Getter",
-                "category": "Constants"
-            }
+                "name": "Get Shape Type: Cylinder",
+                "category": "Constants/Physics"
+            },
+            "methods": [
+                {
+                    "base": "ShapeType_Cylinder",
+                    "details": {
+                        "name": "Get Shape Type: Cylinder",
+                        "subtitle": "Shape Type"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "Shape Type"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

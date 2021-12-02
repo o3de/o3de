@@ -1,12 +1,59 @@
 {
     "entries": [
         {
-            "key": "PositionSplineQueryResult",
+            "base": "PositionSplineQueryResult",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
-                "name": "PositionSplineQueryResult"
-            }
+                "name": "Position Spline Query Result",
+                "category": "Physics"
+            },
+            "methods": [
+                {
+                    "base": "GetsplineAddress",
+                    "details": {
+                        "name": "Getspline Address"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{E35DCF28-1AC3-49E8-A0AB-2F6115348F45}",
+                            "details": {
+                                "name": "Position Spline Query Result"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{865BA2EC-43C5-4E1F-9B6F-2D63F6DC2E70}",
+                            "details": {
+                                "name": "Spline Address"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetdistanceSq",
+                    "details": {
+                        "name": "Getdistance Sq"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{E35DCF28-1AC3-49E8-A0AB-2F6115348F45}",
+                            "details": {
+                                "name": "Position Spline Query Result"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

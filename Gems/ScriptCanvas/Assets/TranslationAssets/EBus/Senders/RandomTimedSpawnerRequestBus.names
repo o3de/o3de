@@ -1,25 +1,26 @@
 {
     "entries": [
         {
-            "key": "RandomTimedSpawnerRequestBus",
+            "base": "RandomTimedSpawnerRequestBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "RandomTimedSpawnerRequestBus"
+                "name": "Random Timed Spawner",
+                "category": "Gameplay/Spawner"
             },
             "methods": [
                 {
-                    "key": "SetSpawnDelay",
+                    "base": "SetSpawnDelay",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetSpawnDelay"
+                        "tooltip": "When signaled, this will invoke Set Spawn Delay"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetSpawnDelay is invoked"
+                        "tooltip": "Signaled after Set Spawn Delay is invoked"
                     },
                     "details": {
-                        "name": "SetSpawnDelay"
+                        "name": "Set Spawn Delay"
                     },
                     "params": [
                         {
@@ -31,17 +32,17 @@
                     ]
                 },
                 {
-                    "key": "GetSpawnDelay",
+                    "base": "GetSpawnDelay",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetSpawnDelay"
+                        "tooltip": "When signaled, this will invoke Get Spawn Delay"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetSpawnDelay is invoked"
+                        "tooltip": "Signaled after Get Spawn Delay is invoked"
                     },
                     "details": {
-                        "name": "GetSpawnDelay"
+                        "name": "Get Spawn Delay"
                     },
                     "results": [
                         {
@@ -53,17 +54,17 @@
                     ]
                 },
                 {
-                    "key": "SetSpawnDelayVariation",
+                    "base": "SetSpawnDelayVariation",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetSpawnDelayVariation"
+                        "tooltip": "When signaled, this will invoke Set Spawn Delay Variation"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetSpawnDelayVariation is invoked"
+                        "tooltip": "Signaled after Set Spawn Delay Variation is invoked"
                     },
                     "details": {
-                        "name": "SetSpawnDelayVariation"
+                        "name": "Set Spawn Delay Variation"
                     },
                     "params": [
                         {
@@ -75,17 +76,17 @@
                     ]
                 },
                 {
-                    "key": "SetRandomDistribution",
+                    "base": "SetRandomDistribution",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetRandomDistribution"
+                        "tooltip": "When signaled, this will invoke Set Random Distribution"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetRandomDistribution is invoked"
+                        "tooltip": "Signaled after Set Random Distribution is invoked"
                     },
                     "details": {
-                        "name": "SetRandomDistribution"
+                        "name": "Set Random Distribution"
                     },
                     "params": [
                         {
@@ -97,17 +98,17 @@
                     ]
                 },
                 {
-                    "key": "IsEnabled",
+                    "base": "IsEnabled",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke IsEnabled"
+                        "tooltip": "When signaled, this will invoke Is Enabled"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after IsEnabled is invoked"
+                        "tooltip": "Signaled after Is Enabled is invoked"
                     },
                     "details": {
-                        "name": "IsEnabled"
+                        "name": "Is Enabled"
                     },
                     "results": [
                         {
@@ -119,7 +120,7 @@
                     ]
                 },
                 {
-                    "key": "Disable",
+                    "base": "Disable",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Disable"
@@ -133,7 +134,7 @@
                     }
                 },
                 {
-                    "key": "Toggle",
+                    "base": "Toggle",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Toggle"
@@ -147,17 +148,17 @@
                     }
                 },
                 {
-                    "key": "GetRandomDistribution",
+                    "base": "GetRandomDistribution",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetRandomDistribution"
+                        "tooltip": "When signaled, this will invoke Get Random Distribution"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetRandomDistribution is invoked"
+                        "tooltip": "Signaled after Get Random Distribution is invoked"
                     },
                     "details": {
-                        "name": "GetRandomDistribution"
+                        "name": "Get Random Distribution"
                     },
                     "results": [
                         {
@@ -169,7 +170,7 @@
                     ]
                 },
                 {
-                    "key": "Enable",
+                    "base": "Enable",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Enable"
@@ -183,17 +184,17 @@
                     }
                 },
                 {
-                    "key": "GetSpawnDelayVariation",
+                    "base": "GetSpawnDelayVariation",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetSpawnDelayVariation"
+                        "tooltip": "When signaled, this will invoke Get Spawn Delay Variation"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetSpawnDelayVariation is invoked"
+                        "tooltip": "Signaled after Get Spawn Delay Variation is invoked"
                     },
                     "details": {
-                        "name": "GetSpawnDelayVariation"
+                        "name": "Get Spawn Delay Variation"
                     },
                     "results": [
                         {

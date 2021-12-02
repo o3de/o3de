@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "exit_no_prompt",
+            "base": "exit_no_prompt",
             "context": "Method",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "exit_no_prompt",
+                    "base": "exit_no_prompt",
                     "context": "Global",
                     "entry": {
                         "name": "In",

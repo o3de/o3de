@@ -1,31 +1,32 @@
 {
     "entries": [
         {
-            "key": "ComponentApplicationBus",
+            "base": "ComponentApplicationBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "ComponentApplicationBus"
+                "name": "Application",
+                "category": "Components"
             },
             "methods": [
                 {
-                    "key": "GetEntityName",
+                    "base": "GetEntityName",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetEntityName"
+                        "tooltip": "When signaled, this will invoke Get Entity Name"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetEntityName is invoked"
+                        "tooltip": "Signaled after Get Entity Name is invoked"
                     },
                     "details": {
-                        "name": "GetEntityName"
+                        "name": "Get Entity Name"
                     },
                     "params": [
                         {
                             "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
                             "details": {
-                                "name": "EntityId",
+                                "name": "Entity Id",
                                 "tooltip": "Entity Unique Id"
                             }
                         }
@@ -40,30 +41,30 @@
                     ]
                 },
                 {
-                    "key": "SetEntityName",
+                    "base": "SetEntityName",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetEntityName"
+                        "tooltip": "When signaled, this will invoke Set Entity Name"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetEntityName is invoked"
+                        "tooltip": "Signaled after Set Entity Name is invoked"
                     },
                     "details": {
-                        "name": "SetEntityName"
+                        "name": "Set Entity Name"
                     },
                     "params": [
                         {
                             "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
                             "details": {
-                                "name": "EntityId",
+                                "name": "Entity Id",
                                 "tooltip": "Entity Unique Id"
                             }
                         },
                         {
                             "typeid": "{7114E998-A8B4-519B-9342-A86D1587B4F7}",
                             "details": {
-                                "name": ""
+                                "name": "Name"
                             }
                         }
                     ],
@@ -71,7 +72,7 @@
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": "bool"
+                                "name": "Succesful"
                             }
                         }
                     ]

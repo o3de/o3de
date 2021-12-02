@@ -70,10 +70,13 @@ namespace ScriptCanvasEditor
             AZ::ComponentApplicationBus::BroadcastResult(behaviorContext, &AZ::ComponentApplicationRequests::GetBehaviorContext);
 
             const char* className = m_className.toUtf8().data();
-            auto behaviorClass = behaviorContext->m_classes.find(className);
+            if (behaviorContext->m_classes.contains(className))
+            {
+                auto behaviorClass = behaviorContext->m_classes.find(className);
 
-            ScriptCanvasEditorTools::TranslationGeneration translation;
-            translation.TranslateBehaviorClass(behaviorClass->second);
+                ScriptCanvasEditorTools::TranslationGeneration translation;
+                translation.TranslateBehaviorClass(behaviorClass->second);
+            }
         }
 
     private:
@@ -120,6 +123,10 @@ namespace ScriptCanvasEditor
         GraphCanvas::GraphCanvasMimeEvent* CreateMimeEvent() const override;
 
         const AZStd::string& GetMethodName() const;
+
+        AZ::IO::Path GetTranslationDataPath() const override;
+        void GenerateTranslationData() override;
+
 
     private:
         AZStd::string m_methodName;

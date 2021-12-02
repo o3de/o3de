@@ -1,50 +1,49 @@
 {
     "entries": [
         {
-            "key": "{6FA2A21C-2189-55E4-B65E-2A961586F31E}",
+            "base": "{6FA2A21C-2189-55E4-B65E-2A961586F31E}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "GetElement",
+                "name": "Get Element",
                 "category": "Math/Matrix3x3",
-                "tooltip": "returns scalar from matrix corresponding to the (Row,Column) pair",
-                "subtitle": "Matrix3x3"
+                "tooltip": "Returns scalar from matrix corresponding to the (Row,Column) pair"
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "key": "DataInput_Matrix3x3: Source",
+                    "base": "DataInput_Source",
                     "details": {
-                        "name": "Matrix3x3: Source"
+                        "name": "Source"
                     }
                 },
                 {
-                    "key": "DataInput_Number: Row",
+                    "base": "DataInput_Row",
                     "details": {
-                        "name": "Number: Row"
+                        "name": "Row"
                     }
                 },
                 {
-                    "key": "DataInput_Number: Column",
+                    "base": "DataInput_Column",
                     "details": {
-                        "name": "Number: Column"
+                        "name": "Column"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Number",
+                    "base": "DataOutput_Result",
                     "details": {
-                        "name": "Result: Number"
+                        "name": "Result"
                     }
                 }
             ]

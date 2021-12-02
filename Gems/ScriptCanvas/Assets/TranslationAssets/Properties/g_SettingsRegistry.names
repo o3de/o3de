@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "g_SettingsRegistry",
+            "base": "g_SettingsRegistry",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "g_SettingsRegistry::Getter",
-                "category": "Constants"
-            }
+                "name": "Settings Registry",
+                "category": "Constants/Settings"
+            },
+            "methods": [
+                {
+                    "base": "Getg_SettingsRegistry",
+                    "details": {
+                        "name": "Settings Registry"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{795C80A0-D243-473B-972A-C32CA487BAA5}",
+                            "details": {
+                                "name": "Settings Registry Script Proxy"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

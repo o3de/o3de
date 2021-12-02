@@ -1,44 +1,43 @@
 {
     "entries": [
         {
-            "key": "{12C93A22-5B0B-55CC-90FC-7DB17C1C36DF}",
+            "base": "{12C93A22-5B0B-55CC-90FC-7DB17C1C36DF}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "SetZ",
+                "name": "Set Z",
                 "category": "Math/Vector3",
-                "tooltip": "returns a the vector(Source.X, Source.Y, Z)",
-                "subtitle": "Vector3"
+                "tooltip": "Returns a the vector(Source.X, Source.Y, Z)"
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "key": "DataInput_Vector3: Source",
+                    "base": "DataInput_Source",
                     "details": {
-                        "name": "Vector3: Source"
+                        "name": "Source"
                     }
                 },
                 {
-                    "key": "DataInput_Number: Z",
+                    "base": "DataInput_Z",
                     "details": {
-                        "name": "Number: Z"
+                        "name": "Z"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Vector3",
+                    "base": "DataOutput_Result",
                     "details": {
-                        "name": "Result: Vector3"
+                        "name": "Result"
                     }
                 }
             ]

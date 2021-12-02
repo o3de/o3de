@@ -1,16 +1,16 @@
 {
     "entries": [
         {
-            "key": "SphereShapeComponentRequestsBus",
+            "base": "SphereShapeComponentRequestsBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "SphereShapeComponentRequestsBus",
+                "name": "Sphere Shape Component",
                 "category": "Shape"
             },
             "methods": [
                 {
-                    "key": "GetSphereConfiguration",
+                    "base": "GetSphereConfiguration",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Configuration"
@@ -34,7 +34,7 @@
                     ]
                 },
                 {
-                    "key": "SetRadius",
+                    "base": "SetRadius",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Radius"

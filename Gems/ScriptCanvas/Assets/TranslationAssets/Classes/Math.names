@@ -1,16 +1,16 @@
 {
     "entries": [
         {
-            "key": "Math",
+            "base": "Math",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
-                "name": "Trigonometry",
+                "name": "Functions",
                 "category": "Math"
             },
             "methods": [
                 {
-                    "key": "DivideByNumber",
+                    "base": "DivideByNumber",
                     "context": "Math",
                     "entry": {
                         "name": "In",
@@ -21,20 +21,20 @@
                         "tooltip": "Signaled after DivideByNumber is invoked"
                     },
                     "details": {
-                        "name": "Math::Divide By Number",
-                        "category": "Math"
+                        "name": "Divide By Number",
+                        "category": "Other"
                     },
                     "params": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "float"
+                                "name": "X"
                             }
                         },
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "float"
+                                "name": "Y"
                             }
                         }
                     ],
@@ -42,13 +42,13 @@
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "float"
+                                "name": "Result"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "Round",
+                    "base": "Round",
                     "context": "Math",
                     "entry": {
                         "name": "In",
@@ -59,15 +59,14 @@
                         "tooltip": "Signaled after Round is invoked"
                     },
                     "details": {
-                        "name": "Math::Round",
-                        "category": "Math/Number"
+                        "name": "Round",
+                        "category": "Other"
                     },
                     "params": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Number",
-                                "tooltip": "Number to round"
+                                "name": "Value"
                             }
                         }
                     ],
@@ -75,14 +74,13 @@
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Number",
-                                "tooltip": "Rounded number"
+                                "name": "Result"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "Sqrt",
+                    "base": "Sqrt",
                     "context": "Math",
                     "entry": {
                         "name": "In",
@@ -93,15 +91,14 @@
                         "tooltip": "Signaled after Sqrt is invoked"
                     },
                     "details": {
-                        "name": "Math::Sqrt",
-                        "category": "Math/Number"
+                        "name": "Sqrt",
+                        "category": "Other"
                     },
                     "params": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Number",
-                                "tooltip": "Number to get the square root of"
+                                "name": "Value"
                             }
                         }
                     ],
@@ -109,14 +106,13 @@
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Number",
-                                "tooltip": "Square root of the number"
+                                "name": "Result"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "Mod",
+                    "base": "Mod",
                     "context": "Math",
                     "entry": {
                         "name": "In",
@@ -127,22 +123,20 @@
                         "tooltip": "Signaled after Mod is invoked"
                     },
                     "details": {
-                        "name": "Math::Mod",
-                        "category": "Math/Number"
+                        "name": "Mod",
+                        "category": "Other"
                     },
                     "params": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Dividend",
-                                "tooltip": "The number to be divided"
+                                "name": "A"
                             }
                         },
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Divisor",
-                                "tooltip": "The number to be divided by"
+                                "name": "B"
                             }
                         }
                     ],
@@ -150,14 +144,13 @@
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Remainder",
-                                "tooltip": "The remainder of the division between the two inputs"
+                                "name": "Value"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "Ceil",
+                    "base": "Ceil",
                     "context": "Math",
                     "entry": {
                         "name": "In",
@@ -168,15 +161,14 @@
                         "tooltip": "Signaled after Ceil is invoked"
                     },
                     "details": {
-                        "name": "Math::Ceil",
-                        "category": "Math/Number"
+                        "name": "Ceil",
+                        "category": "Other"
                     },
                     "params": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Number",
-                                "tooltip": "The number to be rounded up"
+                                "name": "Value"
                             }
                         }
                     ],
@@ -184,14 +176,13 @@
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Ceiling",
-                                "tooltip": "The value rounded up"
+                                "name": "Result"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "IsEven",
+                    "base": "IsEven",
                     "context": "Math",
                     "entry": {
                         "name": "In",
@@ -202,15 +193,14 @@
                         "tooltip": "Signaled after IsEven is invoked"
                     },
                     "details": {
-                        "name": "Math::IsEven",
-                        "category": "Math/Number"
+                        "name": "Is Even",
+                        "category": "Other"
                     },
                     "params": [
                         {
                             "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
                             "details": {
-                                "name": "Number",
-                                "tooltip": "Number to be checked"
+                                "name": "Value"
                             }
                         }
                     ],
@@ -218,14 +208,13 @@
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": "Boolean",
-                                "tooltip": "Returns true if the number is even; false if not"
+                                "name": "Is Event"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "IsClose",
+                    "base": "IsClose",
                     "context": "Math",
                     "entry": {
                         "name": "In",
@@ -236,29 +225,26 @@
                         "tooltip": "Signaled after IsClose is invoked"
                     },
                     "details": {
-                        "name": "Math::IsClose",
-                        "category": "Math/Number"
+                        "name": "Is Close",
+                        "category": "Other"
                     },
                     "params": [
                         {
                             "typeid": "{110C4B14-11A8-4E9D-8638-5051013A56AC}",
                             "details": {
-                                "name": "Number A",
-                                "tooltip": "Number to compare"
+                                "name": "A"
                             }
                         },
                         {
                             "typeid": "{110C4B14-11A8-4E9D-8638-5051013A56AC}",
                             "details": {
-                                "name": "Number B",
-                                "tooltip": "Number to compare"
+                                "name": "B"
                             }
                         },
                         {
                             "typeid": "{110C4B14-11A8-4E9D-8638-5051013A56AC}",
                             "details": {
-                                "name": "Tolerance",
-                                "tooltip": "The value range to check the numbers against"
+                                "name": "Tolerance"
                             }
                         }
                     ],
@@ -266,13 +252,13 @@
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": "Boolean"
+                                "name": "Is Close"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "ArcSin",
+                    "base": "ArcSin",
                     "context": "Math",
                     "entry": {
                         "name": "In",
@@ -283,15 +269,14 @@
                         "tooltip": "Signaled after ArcSin is invoked"
                     },
                     "details": {
-                        "name": "Math::ArcSin",
-                        "category": "Math"
+                        "name": "Arc Sin",
+                        "category": "Other"
                     },
                     "params": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Angle",
-                                "tooltip": "Angle as radians"
+                                "name": "Value"
                             }
                         }
                     ],
@@ -299,14 +284,13 @@
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Angle",
-                                "tooltip": "Angle as radians"
+                                "name": "Result"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "ArcTan",
+                    "base": "ArcTan",
                     "context": "Math",
                     "entry": {
                         "name": "In",
@@ -317,15 +301,14 @@
                         "tooltip": "Signaled after ArcTan is invoked"
                     },
                     "details": {
-                        "name": "Math::ArcTan",
-                        "category": "Math"
+                        "name": "Arc Tan",
+                        "category": "Other"
                     },
                     "params": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Angle",
-                                "tooltip": "Angle as radians"
+                                "name": "Value"
                             }
                         }
                     ],
@@ -333,14 +316,13 @@
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Angle",
-                                "tooltip": "Angle as radians"
+                                "name": "Result"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "Max",
+                    "base": "Max",
                     "context": "Math",
                     "entry": {
                         "name": "In",
@@ -351,22 +333,20 @@
                         "tooltip": "Signaled after Max is invoked"
                     },
                     "details": {
-                        "name": "Math::Max",
-                        "category": "Math/Number"
+                        "name": "Max",
+                        "category": "Other"
                     },
                     "params": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Number A",
-                                "tooltip": "Number to be compared"
+                                "name": "A"
                             }
                         },
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Number B",
-                                "tooltip": "Number to be compared"
+                                "name": "B"
                             }
                         }
                     ],
@@ -374,14 +354,13 @@
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Max",
-                                "tooltip": "The largest between two numbers"
+                                "name": "Result"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "Tan",
+                    "base": "Tan",
                     "context": "Math",
                     "entry": {
                         "name": "In",
@@ -392,15 +371,14 @@
                         "tooltip": "Signaled after Tan is invoked"
                     },
                     "details": {
-                        "name": "Math::Tan",
-                        "category": "Math"
+                        "name": "Tan",
+                        "category": "Other"
                     },
                     "params": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Angle",
-                                "tooltip": "Angle as radians"
+                                "name": "Value"
                             }
                         }
                     ],
@@ -408,14 +386,13 @@
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Angle",
-                                "tooltip": "Angle as radians"
+                                "name": "Result"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "ArcTan2",
+                    "base": "ArcTan2",
                     "context": "Math",
                     "entry": {
                         "name": "In",
@@ -426,22 +403,20 @@
                         "tooltip": "Signaled after ArcTan2 is invoked"
                     },
                     "details": {
-                        "name": "Math::ArcTan2",
-                        "category": "Math"
+                        "name": "Arc Tan 2",
+                        "category": "Other"
                     },
                     "params": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Angle A",
-                                "tooltip": "Angle as radians"
+                                "name": "A"
                             }
                         },
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Angle B",
-                                "tooltip": "Angle as radians"
+                                "name": "B"
                             }
                         }
                     ],
@@ -449,14 +424,13 @@
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Angle",
-                                "tooltip": "Angle as radians"
+                                "name": "Result"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "Floor",
+                    "base": "Floor",
                     "context": "Math",
                     "entry": {
                         "name": "In",
@@ -467,15 +441,14 @@
                         "tooltip": "Signaled after Floor is invoked"
                     },
                     "details": {
-                        "name": "Math::Floor",
-                        "category": "Math/Number"
+                        "name": "Floor",
+                        "category": "Other"
                     },
                     "params": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Number",
-                                "tooltip": "The number to be rounded down"
+                                "name": "Value"
                             }
                         }
                     ],
@@ -483,14 +456,13 @@
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Floor",
-                                "tooltip": "The value rounded down"
+                                "name": "Result"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "Min",
+                    "base": "Min",
                     "context": "Math",
                     "entry": {
                         "name": "In",
@@ -501,22 +473,20 @@
                         "tooltip": "Signaled after Min is invoked"
                     },
                     "details": {
-                        "name": "Math::Min",
-                        "category": "Math/Number"
+                        "name": "Min",
+                        "category": "Other"
                     },
                     "params": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Number A",
-                                "tooltip": "Number to be compared"
+                                "name": "A"
                             }
                         },
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Number B",
-                                "tooltip": "Number to be compared"
+                                "name": "B"
                             }
                         }
                     ],
@@ -524,14 +494,13 @@
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Min",
-                                "tooltip": "The smallest between two numbers"
+                                "name": "Result"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "Lerp",
+                    "base": "Lerp",
                     "context": "Math",
                     "entry": {
                         "name": "In",
@@ -542,26 +511,26 @@
                         "tooltip": "Signaled after Lerp is invoked"
                     },
                     "details": {
-                        "name": "Math::Lerp",
-                        "category": "Math/Number"
+                        "name": "Lerp",
+                        "category": "Other"
                     },
                     "params": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "a"
+                                "name": "A"
                             }
                         },
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "b"
+                                "name": "B"
                             }
                         },
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "t"
+                                "name": "Time"
                             }
                         }
                     ],
@@ -569,13 +538,13 @@
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Number"
+                                "name": "Result"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "LerpInverse",
+                    "base": "LerpInverse",
                     "context": "Math",
                     "entry": {
                         "name": "In",
@@ -586,26 +555,26 @@
                         "tooltip": "Signaled after LerpInverse is invoked"
                     },
                     "details": {
-                        "name": "Math::LerpInverse",
-                        "category": "Math/Number"
+                        "name": "LerpInverse",
+                        "category": "Other"
                     },
                     "params": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "a"
+                                "name": "A"
                             }
                         },
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "b"
+                                "name": "B"
                             }
                         },
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "value"
+                                "name": "Time"
                             }
                         }
                     ],
@@ -613,13 +582,13 @@
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Number"
+                                "name": "Result"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "IsOdd",
+                    "base": "IsOdd",
                     "context": "Math",
                     "entry": {
                         "name": "In",
@@ -630,15 +599,14 @@
                         "tooltip": "Signaled after IsOdd is invoked"
                     },
                     "details": {
-                        "name": "Math::IsOdd",
-                        "category": "Math/Number"
+                        "name": "Is Odd",
+                        "category": "Other"
                     },
                     "params": [
                         {
                             "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
                             "details": {
-                                "name": "Number",
-                                "tooltip": "Number to be checked"
+                                "name": "Value"
                             }
                         }
                     ],
@@ -646,14 +614,13 @@
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": "Boolean",
-                                "tooltip": "Returns true if the number is not even; false if it is"
+                                "name": "Is Odd"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "Abs",
+                    "base": "Abs",
                     "context": "Math",
                     "entry": {
                         "name": "In",
@@ -664,14 +631,13 @@
                         "tooltip": "Signaled after Abs is invoked"
                     },
                     "details": {
-                        "name": "Math::Abs",
-                        "category": "Math"
+                        "name": "Abs"
                     },
                     "params": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "float"
+                                "name": "Value"
                             }
                         }
                     ],
@@ -679,13 +645,13 @@
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "float"
+                                "name": "Result"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "RadToDeg",
+                    "base": "RadToDeg",
                     "context": "Math",
                     "entry": {
                         "name": "In",
@@ -696,15 +662,14 @@
                         "tooltip": "Signaled after RadToDeg is invoked"
                     },
                     "details": {
-                        "name": "Math::RadToDeg",
-                        "category": "Math"
+                        "name": "Radians To Degrees",
+                        "category": "Other"
                     },
                     "params": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Radians",
-                                "tooltip": "Radians to be converted"
+                                "name": "Radians"
                             }
                         }
                     ],
@@ -712,14 +677,13 @@
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Degrees",
-                                "tooltip": "Degrees from radians"
+                                "name": "Degrees"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "Sin",
+                    "base": "Sin",
                     "context": "Math",
                     "entry": {
                         "name": "In",
@@ -730,15 +694,14 @@
                         "tooltip": "Signaled after Sin is invoked"
                     },
                     "details": {
-                        "name": "Math::Sin",
-                        "category": "Math"
+                        "name": "Sin",
+                        "category": "Other"
                     },
                     "params": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Angle",
-                                "tooltip": "Number as radians"
+                                "name": "Value"
                             }
                         }
                     ],
@@ -746,14 +709,13 @@
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Angle",
-                                "tooltip": "Number as radians"
+                                "name": "Result"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "Cos",
+                    "base": "Cos",
                     "context": "Math",
                     "entry": {
                         "name": "In",
@@ -764,15 +726,14 @@
                         "tooltip": "Signaled after Cos is invoked"
                     },
                     "details": {
-                        "name": "Math::Cos",
-                        "category": "Math"
+                        "name": "Cos",
+                        "category": "Other"
                     },
                     "params": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Angle",
-                                "tooltip": "Angle as radians"
+                                "name": "Value"
                             }
                         }
                     ],
@@ -780,14 +741,13 @@
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Angle",
-                                "tooltip": "Angle as radians"
+                                "name": "Result"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "ArcCos",
+                    "base": "ArcCos",
                     "context": "Math",
                     "entry": {
                         "name": "In",
@@ -798,15 +758,14 @@
                         "tooltip": "Signaled after ArcCos is invoked"
                     },
                     "details": {
-                        "name": "Math::ArcCos",
-                        "category": "Math"
+                        "name": "Arc Cos",
+                        "category": "Other"
                     },
                     "params": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Angle",
-                                "tooltip": "Angle as radians"
+                                "name": "Value"
                             }
                         }
                     ],
@@ -814,14 +773,13 @@
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Angle",
-                                "tooltip": "Angle as radians"
+                                "name": "Result"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "Sign",
+                    "base": "Sign",
                     "context": "Math",
                     "entry": {
                         "name": "In",
@@ -832,15 +790,14 @@
                         "tooltip": "Signaled after Sign is invoked"
                     },
                     "details": {
-                        "name": "Math::Sign",
-                        "category": "Math/Number"
+                        "name": "Sign",
+                        "category": "Other"
                     },
                     "params": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Number",
-                                "tooltip": "Number to check"
+                                "name": "Value"
                             }
                         }
                     ],
@@ -848,14 +805,13 @@
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Sign",
-                                "tooltip": "Returns 1 if the number is positive and -1 if the number is negative"
+                                "name": "Result"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "Clamp",
+                    "base": "Clamp",
                     "context": "Math",
                     "entry": {
                         "name": "In",
@@ -866,29 +822,26 @@
                         "tooltip": "Signaled after Clamp is invoked"
                     },
                     "details": {
-                        "name": "Math::Clamp",
-                        "category": "Math/Number"
+                        "name": "Clamp",
+                        "category": "Other"
                     },
                     "params": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Number",
-                                "tooltip": "Value to be clamped"
+                                "name": "Value"
                             }
                         },
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Min",
-                                "tooltip": "The minimum value to clamp to"
+                                "name": "Minimum"
                             }
                         },
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Max",
-                                "tooltip": "The maximum value to clamp to"
+                                "name": "Maximum"
                             }
                         }
                     ],
@@ -896,14 +849,13 @@
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Number",
-                                "tooltip": "The result of the clamp"
+                                "name": "Result"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "GetSinCos",
+                    "base": "GetSinCos",
                     "context": "Math",
                     "entry": {
                         "name": "In",
@@ -914,32 +866,32 @@
                         "tooltip": "Signaled after GetSinCos is invoked"
                     },
                     "details": {
-                        "name": "Math::GetSinCos",
-                        "category": "Math"
+                        "name": "Get Sin Cos",
+                        "category": "Other"
                     },
                     "params": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "float"
+                                "name": "Value"
                             }
                         },
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "float&"
+                                "name": "Sin"
                             }
                         },
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "float&"
+                                "name": "Cos"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "DegToRad",
+                    "base": "DegToRad",
                     "context": "Math",
                     "entry": {
                         "name": "In",
@@ -950,15 +902,14 @@
                         "tooltip": "Signaled after DegToRad is invoked"
                     },
                     "details": {
-                        "name": "Math::DegToRad",
-                        "category": "Math"
+                        "name": "Degrees To Radians",
+                        "category": "Other"
                     },
                     "params": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Degrees",
-                                "tooltip": "Degrees to be converted"
+                                "name": "Degrees"
                             }
                         }
                     ],
@@ -966,14 +917,13 @@
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Radians",
-                                "tooltip": "Radians from degrees"
+                                "name": "Radians"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "Pow",
+                    "base": "Pow",
                     "context": "Math",
                     "entry": {
                         "name": "In",
@@ -984,22 +934,20 @@
                         "tooltip": "Signaled after Pow is invoked"
                     },
                     "details": {
-                        "name": "Math::Pow",
-                        "category": "Math/Number"
+                        "name": "Pow",
+                        "category": "Other"
                     },
                     "params": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Number",
-                                "tooltip": "The value to be raised"
+                                "name": "Value"
                             }
                         },
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Exponent",
-                                "tooltip": "The power exponent"
+                                "name": "Exponent"
                             }
                         }
                     ],
@@ -1007,8 +955,7 @@
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Number",
-                                "tooltip": "The result of the number raised to the power exponent"
+                                "name": "Result"
                             }
                         }
                     ]

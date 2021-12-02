@@ -59,6 +59,34 @@ R"({
     "Version": "1.0.0"
 })";
 
+static constexpr const char TEST_VALID_EMPTY_ACCOUNTID_RESOURCE_MAPPING_CONFIG_FILE[] =
+    R"({
+    "AWSResourceMappings": {
+        "TestLambda": {
+            "Type": "AWS::Lambda::Function",
+            "Name/ID": "MyTestLambda",
+            "Region": "us-east-1",
+            "AccountId": "012345678912"
+        },
+        "TestS3Bucket": {
+            "Type": "AWS::S3::Bucket",
+            "Name/ID": "MyTestS3Bucket"
+        },
+        "TestService.RESTApiId": {
+            "Type": "AWS::ApiGateway::RestApi",
+            "Name/ID": "1234567890"
+        },
+        "TestService.RESTApiStage": {
+            "Type": "AWS::ApiGateway::Stage",
+            "Name/ID": "prod",
+            "Region": "us-east-1"
+        }
+    },
+    "AccountId": "",
+    "Region": "us-west-2",
+    "Version": "1.1.0"
+})";
+
 static constexpr const char TEST_INVALID_RESOURCE_MAPPING_CONFIG_FILE[] =
 R"({
     "AWSResourceMappings": {},
@@ -93,7 +121,7 @@ public:
 
     void SetUp() override
     {
-        AWSCoreFixture::SetUp();
+        AWSCoreFixture::SetUpFixture(false);
 
         m_normalizedSourceProjectFolder = AZStd::string::format("%s/%s%s/", AZ::Test::GetCurrentExecutablePath().c_str(),
             "AWSResourceMappingManager", AZ::Uuid::CreateRandom().ToString<AZStd::string>(false, false).c_str());
@@ -114,7 +142,7 @@ public:
         m_resourceMappingManager->DeactivateManager();
         m_resourceMappingManager.reset();
 
-        AWSCoreFixture::TearDown();
+        AWSCoreFixture::TearDownFixture(false);
     }
 
     // AWSCoreInternalRequestBus interface implementation
@@ -235,6 +263,21 @@ TEST_F(AWSResourceMappingManagerTest, ActivateManager_ParseValidConfigFile_Confi
         testThread.join();
     }
     EXPECT_TRUE(actualEbusCalls == testThreadNumber);
+}
+
+TEST_F(AWSResourceMappingManagerTest, ActivateManager_ParseValidConfigFile_GlobalAccountIdEmpty)
+{
+    CreateTestConfigFile(TEST_VALID_EMPTY_ACCOUNTID_RESOURCE_MAPPING_CONFIG_FILE);
+    m_resourceMappingManager->ActivateManager();
+
+    AZStd::string actualAccountId;
+    AZStd::string actualRegion;
+    AWSResourceMappingRequestBus::BroadcastResult(actualAccountId, &AWSResourceMappingRequests::GetDefaultAccountId);
+    AWSResourceMappingRequestBus::BroadcastResult(actualRegion, &AWSResourceMappingRequests::GetDefaultRegion);
+    EXPECT_EQ(m_reloadConfigurationCounter, 0);
+    EXPECT_TRUE(actualAccountId.empty());
+    EXPECT_FALSE(actualRegion.empty());
+    EXPECT_TRUE(m_resourceMappingManager->GetStatus() == AWSResourceMappingManager::Status::Ready);
 }
 
 TEST_F(AWSResourceMappingManagerTest, DeactivateManager_AfterActivatingWithValidConfigFile_ConfigDataGetCleanedUp)

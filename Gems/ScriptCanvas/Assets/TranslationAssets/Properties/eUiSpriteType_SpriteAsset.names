@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "eUiSpriteType_SpriteAsset",
+            "base": "eUiSpriteType_SpriteAsset",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "eUiSpriteType_SpriteAsset::Getter",
-                "category": "Constants"
-            }
+                "name": "Sprite Asset",
+                "category": "Constants/UI/Sprite Type"
+            },
+            "methods": [
+                {
+                    "base": "GeteUiSpriteType_SpriteAsset",
+                    "details": {
+                        "name": "Sprite Asset"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

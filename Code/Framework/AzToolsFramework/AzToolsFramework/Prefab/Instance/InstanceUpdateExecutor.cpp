@@ -20,6 +20,7 @@
 #include <AzToolsFramework/Prefab/PrefabPublicNotificationBus.h>
 #include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
 #include <AzToolsFramework/Prefab/Template/Template.h>
+#include <AzToolsFramework/Prefab/PrefabPublicRequestBus.h>
 
 namespace AzToolsFramework
 {
@@ -244,10 +245,10 @@ namespace AzToolsFramework
                             selectedEntityIds.erase(entityIdIterator--);
                         }
                     }
-                    ToolsApplicationRequestBus::Broadcast(&ToolsApplicationRequests::SetSelectedEntities, selectedEntityIds);
 
-                    // Notify Propagation has ended
+                    // Notify Propagation has ended, then update selection (which is frozen during propagation, so this order matters)
                     PrefabPublicNotificationBus::Broadcast(&PrefabPublicNotifications::OnPrefabInstancePropagationEnd);
+                    ToolsApplicationRequestBus::Broadcast(&ToolsApplicationRequests::SetSelectedEntities, selectedEntityIds);
                 }
 
                 m_updatingTemplateInstancesInQueue = false;

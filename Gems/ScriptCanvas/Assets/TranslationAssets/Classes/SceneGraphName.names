@@ -1,33 +1,33 @@
 {
     "entries": [
         {
-            "key": "SceneGraphName",
+            "base": "SceneGraphName",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
-                "name": "SceneGraphName"
+                "name": "Scene Graph Name",
+                "category": "Scene Graph"
             },
             "methods": [
                 {
-                    "key": "GetPath",
+                    "base": "GetPath",
                     "context": "SceneGraphName",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetPath"
+                        "tooltip": "When signaled, this will invoke Get Path"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetPath is invoked"
+                        "tooltip": "Signaled after Get Path is invoked"
                     },
                     "details": {
-                        "name": "SceneGraphName::GetPath",
-                        "category": "Other"
+                        "name": "Get Path"
                     },
                     "params": [
                         {
                             "typeid": "{4077AC3C-B301-4F5A-BEA7-54D6511AEC2E}",
                             "details": {
-                                "name": "AZ::SceneAPI::Containers::SceneGraph::Name*"
+                                "name": "Scene Graph Name"
                             }
                         }
                     ],
@@ -35,31 +35,30 @@
                         {
                             "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
                             "details": {
-                                "name": "const char*"
+                                "name": "Path"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "GetName",
+                    "base": "GetName",
                     "context": "SceneGraphName",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetName"
+                        "tooltip": "When signaled, this will invoke Get Name"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetName is invoked"
+                        "tooltip": "Signaled after Get Name is invoked"
                     },
                     "details": {
-                        "name": "SceneGraphName::GetName",
-                        "category": "Other"
+                        "name": "Get Name"
                     },
                     "params": [
                         {
                             "typeid": "{4077AC3C-B301-4F5A-BEA7-54D6511AEC2E}",
                             "details": {
-                                "name": "AZ::SceneAPI::Containers::SceneGraph::Name*"
+                                "name": "Scene Graph Name"
                             }
                         }
                     ],
@@ -67,31 +66,30 @@
                         {
                             "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
                             "details": {
-                                "name": "const char*"
+                                "name": "Name"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "ToString",
+                    "base": "ToString",
                     "context": "SceneGraphName",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke ToString"
+                        "tooltip": "When signaled, this will invoke To String"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after ToString is invoked"
+                        "tooltip": "Signaled after To String is invoked"
                     },
                     "details": {
-                        "name": "SceneGraphName::ToString",
-                        "category": "Other"
+                        "name": "To String"
                     },
                     "params": [
                         {
                             "typeid": "{4077AC3C-B301-4F5A-BEA7-54D6511AEC2E}",
                             "details": {
-                                "name": "const AZ::SceneAPI::Containers::SceneGraph::Name&"
+                                "name": "Scene Graph Name"
                             }
                         }
                     ],
@@ -99,7 +97,7 @@
                         {
                             "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
                             "details": {
-                                "name": "const char*"
+                                "name": "String"
                             }
                         }
                     ]

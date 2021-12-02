@@ -1,15 +1,15 @@
 {
     "entries": [
         {
-            "key": "PolygonPrismShapeComponentRequestBus",
+            "base": "PolygonPrismShapeComponentRequestBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "PolygonPrismShapeComponentRequestBus"
+                "name": "Polygon Prism"
             },
             "methods": [
                 {
-                    "key": "ClearVertices",
+                    "base": "ClearVertices",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke ClearVertices"
@@ -19,11 +19,11 @@
                         "tooltip": "Signaled after ClearVertices is invoked"
                     },
                     "details": {
-                        "name": "ClearVertices"
+                        "name": "Clear Vertices"
                     }
                 },
                 {
-                    "key": "InsertVertex",
+                    "base": "InsertVertex",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke InsertVertex"
@@ -33,19 +33,19 @@
                         "tooltip": "Signaled after InsertVertex is invoked"
                     },
                     "details": {
-                        "name": "InsertVertex"
+                        "name": "Insert Vertex"
                     },
                     "params": [
                         {
                             "typeid": "{D6597933-47CD-4FC8-B911-63F3E2B0993A}",
                             "details": {
-                                "name": "AZ::u64"
+                                "name": "Index"
                             }
                         },
                         {
                             "typeid": "{3D80F623-C85C-4741-90D0-E4E66164E6BF}",
                             "details": {
-                                "name": "Vector2"
+                                "name": "Vertex"
                             }
                         }
                     ],
@@ -53,13 +53,13 @@
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": "bool"
+                                "name": "Inserted"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "UpdateVertex",
+                    "base": "UpdateVertex",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke UpdateVertex"
@@ -69,19 +69,19 @@
                         "tooltip": "Signaled after UpdateVertex is invoked"
                     },
                     "details": {
-                        "name": "UpdateVertex"
+                        "name": "Update Vertex"
                     },
                     "params": [
                         {
                             "typeid": "{D6597933-47CD-4FC8-B911-63F3E2B0993A}",
                             "details": {
-                                "name": "AZ::u64"
+                                "name": "Index"
                             }
                         },
                         {
                             "typeid": "{3D80F623-C85C-4741-90D0-E4E66164E6BF}",
                             "details": {
-                                "name": "Vector2"
+                                "name": "Vertex"
                             }
                         }
                     ],
@@ -89,13 +89,13 @@
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": "bool"
+                                "name": "Updated"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "AddVertex",
+                    "base": "AddVertex",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke AddVertex"
@@ -105,19 +105,19 @@
                         "tooltip": "Signaled after AddVertex is invoked"
                     },
                     "details": {
-                        "name": "AddVertex"
+                        "name": "Add Vertex"
                     },
                     "params": [
                         {
                             "typeid": "{3D80F623-C85C-4741-90D0-E4E66164E6BF}",
                             "details": {
-                                "name": "Vector2"
+                                "name": "Vertex"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "GetPolygonPrism",
+                    "base": "GetPolygonPrism",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetPolygonPrism"
@@ -127,19 +127,19 @@
                         "tooltip": "Signaled after GetPolygonPrism is invoked"
                     },
                     "details": {
-                        "name": "GetPolygonPrism"
+                        "name": "Get Polygon Prism"
                     },
                     "results": [
                         {
                             "typeid": "{2E879A16-9143-5862-A5B3-EDED931C60BC}",
                             "details": {
-                                "name": "AZStd::shared_ptr"
+                                "name": "Polygon Prism"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "SetHeight",
+                    "base": "SetHeight",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetHeight"
@@ -149,19 +149,19 @@
                         "tooltip": "Signaled after SetHeight is invoked"
                     },
                     "details": {
-                        "name": "SetHeight"
+                        "name": "Set Height"
                     },
                     "params": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "float"
+                                "name": "Height"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "RemoveVertex",
+                    "base": "RemoveVertex",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke RemoveVertex"
@@ -171,13 +171,13 @@
                         "tooltip": "Signaled after RemoveVertex is invoked"
                     },
                     "details": {
-                        "name": "RemoveVertex"
+                        "name": "Remove Vertex"
                     },
                     "params": [
                         {
                             "typeid": "{D6597933-47CD-4FC8-B911-63F3E2B0993A}",
                             "details": {
-                                "name": "AZ::u64"
+                                "name": "Index"
                             }
                         }
                     ],
@@ -185,7 +185,7 @@
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": "bool"
+                                "name": "Removed"
                             }
                         }
                     ]

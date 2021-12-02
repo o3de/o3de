@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "get_num_selected",
+            "base": "get_num_selected",
             "context": "Method",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "get_num_selected",
+                    "base": "get_num_selected",
                     "context": "Global",
                     "entry": {
                         "name": "In",

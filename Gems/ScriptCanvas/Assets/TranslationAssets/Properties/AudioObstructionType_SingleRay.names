@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "AudioObstructionType_SingleRay",
+            "base": "AudioObstructionType_SingleRay",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "AudioObstructionType_SingleRay::Getter",
-                "category": "Constants"
-            }
+                "name": "Single Ray",
+                "category": "Constants/Audio Obstruction"
+            },
+            "methods": [
+                {
+                    "base": "GetAudioObstructionType_SingleRay",
+                    "details": {
+                        "name": "Single Ray"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
+                            "details": {
+                                "name": "unsigned int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

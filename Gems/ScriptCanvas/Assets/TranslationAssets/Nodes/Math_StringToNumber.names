@@ -1,38 +1,31 @@
 {
     "entries": [
         {
-            "key": "{8A57777C-AD84-5CF4-B411-03ABF982EF55}",
+            "base": "{8A57777C-AD84-5CF4-B411-03ABF982EF55}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "StringToNumber",
+                "name": "String To Number",
                 "category": "Math",
-                "tooltip": "Converts the given string to it's numeric representation if possible.",
-                "subtitle": "Math"
+                "tooltip": "Converts the given string to it's numeric representation if possible."
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "key": "DataInput_String: ",
+                    "base": "DataOutput_Result",
                     "details": {
-                        "name": "String: "
-                    }
-                },
-                {
-                    "key": "DataOutput_Result: Number",
-                    "details": {
-                        "name": "Result: Number"
+                        "name": "Result"
                     }
                 }
             ]

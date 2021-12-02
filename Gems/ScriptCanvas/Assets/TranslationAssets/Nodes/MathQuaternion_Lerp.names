@@ -1,50 +1,49 @@
 {
     "entries": [
         {
-            "key": "{A3B1E26D-BF69-5009-A3B4-868DBE3106A3}",
+            "base": "{A3B1E26D-BF69-5009-A3B4-868DBE3106A3}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
                 "name": "Lerp",
                 "category": "Math/Quaternion",
-                "tooltip": "returns a the linear interpolation between From and To by the amount T",
-                "subtitle": "Quaternion"
+                "tooltip": "Returns a the linear interpolation between From and To by the amount T"
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "key": "DataInput_Quaternion: From",
+                    "base": "DataInput_From",
                     "details": {
-                        "name": "Quaternion: From"
+                        "name": "From"
                     }
                 },
                 {
-                    "key": "DataInput_Quaternion: To",
+                    "base": "DataInput_To",
                     "details": {
-                        "name": "Quaternion: To"
+                        "name": "To"
                     }
                 },
                 {
-                    "key": "DataInput_Number: T",
+                    "base": "DataInput_T",
                     "details": {
-                        "name": "Number: T"
+                        "name": "T"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Quaternion",
+                    "base": "DataOutput_Result",
                     "details": {
-                        "name": "Result: Quaternion"
+                        "name": "Result"
                     }
                 }
             ]

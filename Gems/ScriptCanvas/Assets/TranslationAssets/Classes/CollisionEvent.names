@@ -1,33 +1,32 @@
 {
     "entries": [
         {
-            "key": "CollisionEvent",
+            "base": "CollisionEvent",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
-                "name": "CollisionEvent"
+                "name": "Collision Event"
             },
             "methods": [
                 {
-                    "key": "GetBody1EntityId",
+                    "base": "GetBody1EntityId",
                     "context": "CollisionEvent",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetBody1EntityId"
+                        "tooltip": "When signaled, this will invoke Get Body 1 Entity Id"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetBody1EntityId is invoked"
+                        "tooltip": "Signaled after Get Body 1 Entity Id is invoked"
                     },
                     "details": {
-                        "name": "CollisionEvent::Get Body 1 EntityId",
-                        "category": "Other"
+                        "name": "Get Body 1 Entity Id"
                     },
                     "params": [
                         {
                             "typeid": "{7602AA36-792C-4BDC-BDF8-AA16792151A3}",
                             "details": {
-                                "name": "CollisionEvent*"
+                                "name": "Collision Event"
                             }
                         }
                     ],
@@ -35,32 +34,31 @@
                         {
                             "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
                             "details": {
-                                "name": "EntityId",
+                                "name": "Entity Id",
                                 "tooltip": "Entity Unique Id"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "GetBody2EntityId",
+                    "base": "GetBody2EntityId",
                     "context": "CollisionEvent",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetBody2EntityId"
+                        "tooltip": "When signaled, this will invoke Get Body 2 Entity Id"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetBody2EntityId is invoked"
+                        "tooltip": "Signaled after Get Body 2 Entity Id is invoked"
                     },
                     "details": {
-                        "name": "CollisionEvent::Get Body 2 EntityId",
-                        "category": "Other"
+                        "name": "Get Body 2 Entity Id"
                     },
                     "params": [
                         {
                             "typeid": "{7602AA36-792C-4BDC-BDF8-AA16792151A3}",
                             "details": {
-                                "name": "CollisionEvent*"
+                                "name": "Collision Event"
                             }
                         }
                     ],
@@ -68,8 +66,30 @@
                         {
                             "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
                             "details": {
-                                "name": "EntityId",
+                                "name": "Entity Id",
                                 "tooltip": "Entity Unique Id"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetContacts",
+                    "details": {
+                        "name": "Get Contacts"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{7602AA36-792C-4BDC-BDF8-AA16792151A3}",
+                            "details": {
+                                "name": "Collision Event"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{009022A1-16A5-50B0-958F-F69C729985A3}",
+                            "details": {
+                                "name": "Contacts"
                             }
                         }
                     ]

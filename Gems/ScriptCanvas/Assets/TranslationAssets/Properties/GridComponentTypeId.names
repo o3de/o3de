@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "GridComponentTypeId",
+            "base": "GridComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "GridComponentTypeId::Getter",
-                "category": "Constants"
-            }
+                "name": "Grid Component Type Id",
+                "category": "Constants/Editor"
+            },
+            "methods": [
+                {
+                    "base": "GetGridComponentTypeId",
+                    "details": {
+                        "name": "Get Grid Component Type Id"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}",
+                            "details": {
+                                "name": "AZ:: Uuid"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

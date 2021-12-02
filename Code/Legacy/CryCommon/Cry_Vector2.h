@@ -8,10 +8,6 @@
 
 
 // Description : Common matrix class
-
-
-#ifndef CRYINCLUDE_CRYCOMMON_CRY_VECTOR2_H
-#define CRYINCLUDE_CRYCOMMON_CRY_VECTOR2_H
 #pragma once
 
 #include <AzCore/RTTI/TypeInfo.h>
@@ -68,9 +64,7 @@ struct Vec2_tpl
         : x((F)v.x)
         , y((F)v.y) { assert(this->IsValid()); }
 
-    ILINE Vec2_tpl& operator=(const Vec2_tpl& src) { x = src.x; y = src.y; return *this; }
-    //template<class F1> Vec2_tpl& operator=(const Vec2_tpl<F1>& src) { x=F(src.x); y=F(src.y); return *this; }
-    //template<class F1> Vec2_tpl& operator=(const Vec3_tpl<F1>& src) { x=F(src.x); y=F(src.y); return *this; }
+    Vec2_tpl& operator=(const Vec2_tpl& src) = default;
 
     ILINE int operator!() const { return x == 0 && y == 0; }
 
@@ -372,4 +366,3 @@ namespace AZ
 {
     AZ_TYPE_INFO_SPECIALIZE(Vec2, "{844131BA-9565-42F3-8482-6F65A6D5FC59}");
 }
-#endif // CRYINCLUDE_CRYCOMMON_CRY_VECTOR2_H

@@ -1,38 +1,37 @@
 {
     "entries": [
         {
-            "key": "{5C87299A-E9AF-591D-8E20-4A1B8F4A92CD}",
+            "base": "{5C87299A-E9AF-591D-8E20-4A1B8F4A92CD}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "RandomPointInSphere",
+                "name": "Random Point In Sphere",
                 "category": "Math/Random",
-                "tooltip": "returns a random point in a sphere",
-                "subtitle": "Random"
+                "tooltip": "Returns a random point in a sphere"
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "key": "DataInput_Number: Radius",
+                    "base": "DataInput_Radius",
                     "details": {
-                        "name": "Number: Radius"
+                        "name": "Radius"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Vector3",
+                    "base": "DataOutput_Result",
                     "details": {
-                        "name": "Result: Vector3"
+                        "name": "Result"
                     }
                 }
             ]

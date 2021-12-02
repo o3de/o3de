@@ -31,12 +31,11 @@ namespace O3DE::ProjectManager
         void SetGemToDownload(const QString& gemName, bool downloadNow = true);
 
     signals:
-        void UpdateProgress(int progress);
-        void Done(QString result = "");
+        void UpdateProgress(int bytesDownloaded, int totalBytes);
+        void Done(QString result = "", QString detailedResult = "");
 
     private:
 
         QString m_gemName;
-        int m_downloadProgress;
     };
 } // namespace O3DE::ProjectManager

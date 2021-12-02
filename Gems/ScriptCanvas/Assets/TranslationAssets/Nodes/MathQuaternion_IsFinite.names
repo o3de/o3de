@@ -1,38 +1,37 @@
 {
     "entries": [
         {
-            "key": "{0FF1A082-1200-57C4-8CE6-A17844BEBD1A}",
+            "base": "{0FF1A082-1200-57C4-8CE6-A17844BEBD1A}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "IsFinite",
+                "name": "Is Finite",
                 "category": "Math/Quaternion",
-                "tooltip": "returns true if every element in Source is finite",
-                "subtitle": "Quaternion"
+                "tooltip": "Returns true if every element in Source is finite"
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "key": "DataInput_Quaternion: Source",
+                    "base": "DataInput_Source",
                     "details": {
-                        "name": "Quaternion: Source"
+                        "name": "Source"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Boolean",
+                    "base": "DataOutput_Result",
                     "details": {
-                        "name": "Result: Boolean"
+                        "name": "Result"
                     }
                 }
             ]

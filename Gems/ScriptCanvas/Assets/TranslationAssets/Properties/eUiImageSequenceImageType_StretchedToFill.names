@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "eUiImageSequenceImageType_StretchedToFill",
+            "base": "eUiImageSequenceImageType_StretchedToFill",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "eUiImageSequenceImageType_StretchedToFill::Getter",
-                "category": "Constants"
-            }
+                "name": "Image Type: Stretched To Fill",
+                "category": "Constants/UI/Image Sequence"
+            },
+            "methods": [
+                {
+                    "base": "GeteUiImageSequenceImageType_StretchedToFill",
+                    "details": {
+                        "name": "Image Type: Stretched To Fill"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

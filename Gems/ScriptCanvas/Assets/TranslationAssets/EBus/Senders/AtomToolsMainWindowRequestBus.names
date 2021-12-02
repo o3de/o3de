@@ -1,123 +1,124 @@
 {
     "entries": [
         {
-            "key": "AtomToolsMainWindowRequestBus",
+            "base": "AtomToolsMainWindowRequestBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "AtomToolsMainWindowRequestBus"
+                "name": "Main Window",
+                "category": "Atom Tools"
             },
             "methods": [
                 {
-                    "key": "UnlockViewportRenderTargetSize",
+                    "base": "UnlockViewportRenderTargetSize",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke UnlockViewportRenderTargetSize"
+                        "tooltip": "When signaled, this will invoke Unlock Viewport Render Target Size"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after UnlockViewportRenderTargetSize is invoked"
+                        "tooltip": "Signaled after Unlock Viewport Render Target Size is invoked"
                     },
                     "details": {
-                        "name": "UnlockViewportRenderTargetSize"
+                        "name": "Unlock Viewport Render Target Size"
                     }
                 },
                 {
-                    "key": "GetDockWidgetNames",
+                    "base": "GetDockWidgetNames",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetDockWidgetNames"
+                        "tooltip": "When signaled, this will invoke Get Dock Widget Names"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetDockWidgetNames is invoked"
+                        "tooltip": "Signaled after Get Dock Widget Names is invoked"
                     },
                     "details": {
-                        "name": "GetDockWidgetNames"
+                        "name": "Get Dock Widget Names"
                     },
                     "results": [
                         {
                             "typeid": "{99DAD0BC-740E-5E82-826B-8FC7968CC02C}",
                             "details": {
-                                "name": "AZStd::vector"
+                                "name": "Widget Names"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "ResizeViewportRenderTarget",
+                    "base": "ResizeViewportRenderTarget",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke ResizeViewportRenderTarget"
+                        "tooltip": "When signaled, this will invoke Resize Viewport Render Target"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after ResizeViewportRenderTarget is invoked"
+                        "tooltip": "Signaled after Resize Viewport Render Target is invoked"
                     },
                     "details": {
-                        "name": "ResizeViewportRenderTarget"
+                        "name": "Resize Viewport Render Target"
                     },
                     "params": [
                         {
                             "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
                             "details": {
-                                "name": "unsigned int"
+                                "name": "Width"
                             }
                         },
                         {
                             "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
                             "details": {
-                                "name": "unsigned int"
+                                "name": "Height"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "SetDockWidgetVisible",
+                    "base": "SetDockWidgetVisible",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetDockWidgetVisible"
+                        "tooltip": "When signaled, this will invoke Set Dock Widget Visible"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetDockWidgetVisible is invoked"
+                        "tooltip": "Signaled after Set Dock Widget Visible is invoked"
                     },
                     "details": {
-                        "name": "SetDockWidgetVisible"
+                        "name": "Set Dock Widget Visible"
                     },
                     "params": [
                         {
                             "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
                             "details": {
-                                "name": "AZStd::string"
+                                "name": "Widget Name"
                             }
                         },
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": "bool"
+                                "name": "Is Visible"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "IsDockWidgetVisible",
+                    "base": "IsDockWidgetVisible",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke IsDockWidgetVisible"
+                        "tooltip": "When signaled, this will invoke Is Dock Widget Visible"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after IsDockWidgetVisible is invoked"
+                        "tooltip": "Signaled after Is Dock Widget Visible is invoked"
                     },
                     "details": {
-                        "name": "IsDockWidgetVisible"
+                        "name": "Is Dock Widget Visible"
                     },
                     "params": [
                         {
                             "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
                             "details": {
-                                "name": "AZStd::string"
+                                "name": "Widget Name"
                             }
                         }
                     ],
@@ -125,51 +126,51 @@
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": "bool"
+                                "name": "Is Visible"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "LockViewportRenderTargetSize",
+                    "base": "LockViewportRenderTargetSize",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke LockViewportRenderTargetSize"
+                        "tooltip": "When signaled, this will invoke Lock Viewport Render Target Size"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after LockViewportRenderTargetSize is invoked"
+                        "tooltip": "Signaled after Lock Viewport Render Target Size is invoked"
                     },
                     "details": {
-                        "name": "LockViewportRenderTargetSize"
+                        "name": "Lock Viewport Render Target Size"
                     },
                     "params": [
                         {
                             "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
                             "details": {
-                                "name": "unsigned int"
+                                "name": "Width"
                             }
                         },
                         {
                             "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
                             "details": {
-                                "name": "unsigned int"
+                                "name": "Height"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "ActivateWindow",
+                    "base": "ActivateWindow",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke ActivateWindow"
+                        "tooltip": "When signaled, this will invoke Activate Window"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after ActivateWindow is invoked"
+                        "tooltip": "Signaled after Activate Window is invoked"
                     },
                     "details": {
-                        "name": "ActivateWindow"
+                        "name": "Activate Window"
                     }
                 }
             ]

@@ -1,44 +1,43 @@
 {
     "entries": [
         {
-            "key": "{2B0CF330-B397-519C-867F-800AECBB84A8}",
+            "base": "{2B0CF330-B397-519C-867F-800AECBB84A8}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "MultiplyByNumber",
+                "name": "Multiply By Number",
                 "category": "Math/Matrix3x3",
-                "tooltip": "returns matrix created from multiply the source matrix by Multiplier",
-                "subtitle": "Matrix3x3"
+                "tooltip": "Returns matrix created from multiply the source matrix by Multiplier"
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "key": "DataInput_Matrix3x3: Source",
+                    "base": "DataInput_Source",
                     "details": {
-                        "name": "Matrix3x3: Source"
+                        "name": "Source"
                     }
                 },
                 {
-                    "key": "DataInput_Number: Multiplier",
+                    "base": "DataInput_Multiplier",
                     "details": {
-                        "name": "Number: Multiplier"
+                        "name": "Multiplier"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Matrix3x3",
+                    "base": "DataOutput_Result",
                     "details": {
-                        "name": "Result: Matrix3x3"
+                        "name": "Result"
                     }
                 }
             ]

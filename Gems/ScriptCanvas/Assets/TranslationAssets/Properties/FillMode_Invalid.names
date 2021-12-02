@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "FillMode_Invalid",
+            "base": "FillMode_Invalid",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "FillMode_Invalid::Getter",
-                "category": "Constants"
-            }
+                "name": "Invalid",
+                "category": "Constants/Fill Mode"
+            },
+            "methods": [
+                {
+                    "base": "GetFillMode_Invalid",
+                    "details": {
+                        "name": "Invalid"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

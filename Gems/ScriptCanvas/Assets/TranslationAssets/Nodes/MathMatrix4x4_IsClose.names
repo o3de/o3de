@@ -1,50 +1,49 @@
 {
     "entries": [
         {
-            "key": "{52504B30-D3B4-5C09-80D6-3CAF47DAEB1E}",
+            "base": "{52504B30-D3B4-5C09-80D6-3CAF47DAEB1E}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "IsClose",
+                "name": "Is Close",
                 "category": "Math/Matrix4x4",
-                "tooltip": "returns true if each element of both Matrix are equal within some tolerance",
-                "subtitle": "Matrix4x4"
+                "tooltip": "Returns true if each element of both Matrix are equal within some tolerance"
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "key": "DataInput_Matrix4x4: A",
+                    "base": "DataInput_A",
                     "details": {
-                        "name": "Matrix4x4: A"
+                        "name": "A"
                     }
                 },
                 {
-                    "key": "DataInput_Matrix4x4: B",
+                    "base": "DataInput_B",
                     "details": {
-                        "name": "Matrix4x4: B"
+                        "name": "B"
                     }
                 },
                 {
-                    "key": "DataInput_Number: Tolerance",
+                    "base": "DataInput_Tolerance",
                     "details": {
-                        "name": "Number: Tolerance"
+                        "name": "Tolerance"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Boolean",
+                    "base": "DataOutput_Result",
                     "details": {
-                        "name": "Result: Boolean"
+                        "name": "Result"
                     }
                 }
             ]

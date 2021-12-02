@@ -1,44 +1,43 @@
 {
     "entries": [
         {
-            "key": "{56C01595-FE08-54FC-9668-D203D59F506D}",
+            "base": "{56C01595-FE08-54FC-9668-D203D59F506D}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "RotateVector3",
+                "name": "Rotate Vector3",
                 "category": "Math/Quaternion",
-                "tooltip": "Returns a new Vector3 that is the source vector3 rotated by the given Quaternion",
-                "subtitle": "Quaternion"
+                "tooltip": "Returns a new Vector3 that is the source vector3 rotated by the given Quaternion"
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "key": "DataInput_Quaternion: Quaternion",
+                    "base": "DataInput_Quaternion",
                     "details": {
-                        "name": "Quaternion: Quaternion"
+                        "name": "Quaternion"
                     }
                 },
                 {
-                    "key": "DataInput_Vector3: Vector",
+                    "base": "DataInput_Vector",
                     "details": {
-                        "name": "Vector3: Vector"
+                        "name": "Vector"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Vector3",
+                    "base": "DataOutput_Result",
                     "details": {
-                        "name": "Result: Vector3"
+                        "name": "Result"
                     }
                 }
             ]

@@ -2963,6 +2963,11 @@ namespace ScriptCanvas
         }
     }
 
+    AZStd::string Node::GetNodeTypeName() const
+    {
+        return RTTI_GetTypeName();
+    }
+
     AZStd::string Node::GetDebugName() const
     {
         if (GetEntityId().IsValid())

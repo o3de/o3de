@@ -1,13 +1,30 @@
 {
     "entries": [
         {
-            "key": "ShapeType_PhysicsAsset",
+            "base": "ShapeType_PhysicsAsset",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "ShapeType_PhysicsAsset::Getter",
-                "category": "Constants"
-            }
+                "name": "Get Shape Type: Physics Asset",
+                "category": "Constants/Physics"
+            },
+            "methods": [
+                {
+                    "base": "ShapeType_PhysicsAsset",
+                    "details": {
+                        "name": "Get Shape Type: Physics Asset",
+                        "subtitle": "Shape Type"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "Shape Type"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

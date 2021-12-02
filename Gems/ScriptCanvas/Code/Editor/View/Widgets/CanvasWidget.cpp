@@ -69,6 +69,9 @@ namespace ScriptCanvasEditor
         void CanvasWidget::ShowScene(const ScriptCanvas::ScriptCanvasId& scriptCanvasId)
         {
             EditorGraphRequests* editorGraphRequests = EditorGraphRequestBus::FindFirstHandler(scriptCanvasId);
+
+                // #sc-editor-asset check if needed: editorGraphRequests->SetAssetId(m_assetId);
+            
             editorGraphRequests->CreateGraphCanvasScene();
 
             AZ::EntityId graphCanvasSceneId = editorGraphRequests->GetGraphCanvasGraphId();
@@ -81,6 +84,13 @@ namespace ScriptCanvasEditor
         void CanvasWidget::SetAssetId(const ScriptCanvasEditor::SourceHandle& assetId)
         {
             m_assetId = assetId;
+            // #sc-editor-asset check if needed: 
+            /*
+            if (EditorGraphRequests* editorGraphRequests = EditorGraphRequestBus::FindFirstHandler(m_scriptCanvasId))
+            {
+                editorGraphRequests->SetAssetId(m_assetId);
+            }
+            */
         }
 
         const GraphCanvas::ViewId& CanvasWidget::GetViewId() const
