@@ -15,16 +15,32 @@ import physics_data
 class ActorGroup():
     """
     Configure actor data exporting.
-    
-    Attributes:
-        name: Name for the group. This name will also be used as the name for the generated file.
-        selectedRootBone: The root bone of the animation that will be exported.
-        rules: modifiers to fine-tune the export process.
+
+    Attributes
+    ----------
+    name: 
+        Name for the group. This name will also be used as the name for the generated file.
+
+    selectedRootBone: 
+        The root bone of the animation that will be exported.
+
+    rules: `list` of actor rules (derived from BaseRule)
+        modifiers to fine-tune the export process.
+
+    Methods
+    -------
+
+    to_dict()
+        Converts contents to a Python dictionary
+
+    to_json(self)
+        Converts the contents to a JSON string
+
     """
     def __init__(self):
         self.typename = 'ActorGroup'
-        self.name = '' # a name for the group
-        self.selectedRootBone = '' # the node name of the root bone
+        self.name = ''
+        self.selectedRootBone = ''
         self.id = uuid.uuid4()
         self.rules = set()
 
@@ -57,6 +73,13 @@ class ActorGroup():
 class RuleEncoder(json.JSONEncoder):
     """
     A helper class to encode the Python classes with to a Python dictionary
+
+    Methods
+    -------
+
+    encode(obj)
+        Converts contents to a Python dictionary for the JSONEncoder
+
     """
     def encode(self, obj):
         chunk = obj
@@ -73,7 +96,27 @@ class RuleEncoder(json.JSONEncoder):
 
 class BaseRule():
     """
-    Base class of the actor rules to help encode the typename of abstract rules
+    Base class of the actor rules to help encode the type name of abstract rules
+
+    Parameters
+    ----------
+    typename : str
+        A typename the $type will be in the JSON chunk object
+
+    Attributes
+    ----------
+    typename: str
+        The type name of the abstract classes to be serialized
+
+    id: UUID
+        a unique ID for the rule
+
+    Methods
+    -------
+    to_dict()
+        Converts contents to a Python dictionary
+        Adds the '$type' member
+        Adds a random 'id' member
     """
     def __init__(self, typename):
         self.typename = typename
@@ -99,10 +142,25 @@ class BaseRule():
 class SceneNodeSelectionList(BaseRule):
     """
     Contains a list of node names to include (selectedNodes) and to exclude (unselectedNodes)
-    
-    Attributes:
-        selectedNodes: [list, of, node, names]
-        unselectedNodes: [list, of, node, names]
+
+    Attributes
+    ----------
+    selectedNodes: `list` of str
+        The node names to include for this group rule
+        
+    unselectedNodes: `list` of str
+        The node names to exclude for this group rule
+
+    Methods
+    -------
+    convert_selection(self, container, key):
+        this adds its contents to an existing dictionary container at a key position
+
+    select_targets(self, selectedList, allNodesList:list)
+        helper function to include a small list of node names from list of all the node names
+
+    to_dict()
+        Converts contents to a Python dictionary
     """
     def __init__(self):
         super().__init__('SceneNodeSelectionList')
@@ -121,12 +179,23 @@ class SceneNodeSelectionList(BaseRule):
 
 class LodNodeSelectionList(SceneNodeSelectionList):
     """
-    LodNodeSelectionList:
+    Level of Detail node selection list
     
-    Attributes:
-        lodLevel: 0 # 0 to 5 for 6 LOD levels
-        selectedNodes: [list, of, node, names]
-        unselectedNodes: [list, of, node, names]
+    The selected nodes should be joints with BoneData
+    derived from SceneNodeSelectionList
+    see also LodRule
+
+    Attributes
+    ----------
+    lodLevel: int
+        the level of detail to target where 0 is nearest level of detail
+        up to 5 being the farthest level of detail range for 6 levels maximum
+
+    Methods
+    -------
+
+    to_dict()
+        Converts contents to a Python dictionary
     """
     def __init__(self):
         super().__init__()
@@ -143,12 +212,26 @@ class PhysicsAnimationConfiguration():
     Configuration for animated physics structures which are more detailed than the character controller.
     For example, ragdoll or hit detection configurations.
     See also 'class Physics::AnimationConfiguration'
-    
-    Attributes:
-        hitDetectionConfig: CharacterColliderConfiguration for hit detection
-        ragdollConfig: RagdollConfiguration to set up physics properties
-        clothConfig: CharacterColliderConfiguration for cloth physics
-        simulatedObjectColliderConfig: CharacterColliderConfiguration for simulation physics
+
+    Attributes
+    ----------
+    hitDetectionConfig: CharacterColliderConfiguration
+        for hit detection
+
+    ragdollConfig: RagdollConfiguration
+        to set up physics properties
+
+    clothConfig: CharacterColliderConfiguration
+        for cloth physics
+
+    simulatedObjectColliderConfig: CharacterColliderConfiguration
+        for simulation physics
+
+    Methods
+    -------
+
+    to_dict()
+        Converts contents to a Python dictionary
     """
     def __init__(self):
         self.hitDetectionConfig = physics_data.CharacterColliderConfiguration()
@@ -168,23 +251,54 @@ class EMotionFXPhysicsSetup():
     """
     Physics setup properties
     See also 'class EMotionFX::PhysicsSetup'
-    
-    Attributes:
-        config: Configuration to setup physics properties
+
+    Attributes
+    ----------
+    config: PhysicsAnimationConfiguration
+        Configuration to setup physics properties
+
+    Methods
+    -------
+
+    to_dict()
+        Converts contents to a Python dictionary
     """
     def __init__(self):
         self.typename = 'PhysicsSetup'
         self.config = PhysicsAnimationConfiguration()
 
     def to_dict(self):
-        return { "config" : self.config.to_dict() }
+        return { 
+            "config" : self.config.to_dict() 
+        }
 
 class ActorPhysicsSetupRule(BaseRule):
     """
     Physics setup properties
-    
-    Attributes:
-        data: Data to setup physics properties
+
+    Attributes
+    ----------
+    data: EMotionFXPhysicsSetup
+        Data to setup physics properties
+
+    Methods
+    -------
+
+    set_hit_detection_config(self, hitDetectionConfig)
+        Simple helper function to assign the hit detection configuration
+
+    set_ragdoll_config(self, ragdollConfig)
+        Simple helper function to assign the ragdoll configuration
+
+    set_cloth_config(self, clothConfig)
+        Simple helper function to assign the cloth configuration
+
+    set_simulated_object_collider_config(self, simulatedObjectColliderConfig)
+        Simple helper function to assign the assign simulated object collider configuration
+
+    to_dict()
+        Converts contents to a Python dictionary
+
     """
     def __init__(self):
         super().__init__('ActorPhysicsSetupRule')
@@ -210,9 +324,17 @@ class ActorPhysicsSetupRule(BaseRule):
 class ActorScaleRule(BaseRule):
     """
     Scale the actor
-    
-    Attributes:
-        scaleFactor: Set the multiplier to scale geometry.
+
+    Attributes
+    ----------
+    scaleFactor: float
+        Set the multiplier to scale geometry.
+
+    Methods
+    -------
+    to_dict()
+        Converts contents to a Python dictionary
+
     """
     def __init__(self):
         super().__init__('ActorScaleRule')
@@ -222,13 +344,31 @@ class CoordinateSystemRule(BaseRule):
     """
     Modify the target coordinate system, applying a transformation to all data (transforms and vertex data if it exists).
 
-    Attributes:
-        targetCoordinateSystem: Change the direction the actor/motion will face by applying a post transformation to the data.
-        useAdvancedData: If True, use advanced settings
-        originNodeName: Select a Node from the scene as the origin for this export.
-        rotation: Sets the orientation offset of the processed mesh in degrees. Rotates (yaw, pitch, roll) the group after translation.
-        translation: Moves the group along the given vector3.
-        scale: Sets the scale offset of the processed mesh.
+    Attributes
+    ----------
+    targetCoordinateSystem: int
+        Change the direction the actor/motion will face by applying a post transformation to the data.
+
+    useAdvancedData: bool
+        If True, use advanced settings
+
+    originNodeName: str
+        Select a Node from the scene as the origin for this export.
+
+    rotation: [float, float, float, float]
+        Sets the orientation offset of the processed mesh in degrees. Rotates (yaw, pitch, roll) the group after translation.
+
+    translation: [float, float, float] 
+        Moves the group along the given vector3.
+
+    scale: float
+        Sets the scale offset of the processed mesh.
+
+    Methods
+    -------
+
+    to_dict()
+        Converts contents to a Python dictionary
     """
     def __init__(self):
         super().__init__('CoordinateSystemRule')
@@ -243,10 +383,22 @@ class SkeletonOptimizationRule(BaseRule):
     """
     Advanced skeleton optimization rule.
 
-    Attributes:
-        autoSkeletonLOD: True # Client side skeleton LOD based on skinning information and critical bones list.
-        serverSkeletonOptimization: False # Server side skeleton optimization based on hit detections and critical bones list.
-        criticalBonesList (SceneNodeSelectionList): Bones in this list will not be optimized out.
+    Attributes
+    ----------
+    autoSkeletonLOD: bool
+        Client side skeleton LOD based on skinning information and critical bones list.
+
+    serverSkeletonOptimization: bool
+        Server side skeleton optimization based on hit detections and critical bones list.
+
+    criticalBonesList: `list` of SceneNodeSelectionList
+        Bones in this list will not be optimized out.
+
+    Methods
+    -------
+
+    to_dict()
+        Converts contents to a Python dictionary
     """
     def __init__(self):
         super().__init__('SkeletonOptimizationRule')
@@ -262,19 +414,32 @@ class SkeletonOptimizationRule(BaseRule):
 class LodRule(BaseRule):
     """
     Set up the level of detail for the meshes in this group.
-    
+
     The engine supports 6 total lods.
     1 for the base model then 5 more lods.  
     The rule only captures lods past level 0 so this is set to 5. 
-    
-    Attributes:
-        nodeSelectionList (LodNodeSelectionList[]): Select the meshes to assign to each level of detail.
+
+    Attributes
+    ----------
+    nodeSelectionList: `list` of LodNodeSelectionList
+        Select the meshes to assign to each level of detail.
+
+    Methods
+    -------
+
+    add_lod_level(lodLevel, selectedNodes=None, unselectedNodes=None)
+        A helper function to add selected nodes (list of node names) and unselected nodes (list of node names)
+        This creates a LodNodeSelectionList and adds it to the node selection list
+        returns the LodNodeSelectionList that was created
+
+    to_dict()
+        Converts contents to a Python dictionary
     """
     def __init__(self):
         super().__init__('{3CB103B3-CEAF-49D7-A9DC-5A31E2DF15E4} LodRule')
         self.nodeSelectionList = [] # list of LodNodeSelectionList
         
-    def add_lod_level(self, lodLevel, selectedNodes=None, unselectedNodes=None):
+    def add_lod_level(self, lodLevel, selectedNodes=None, unselectedNodes=None) -> LodNodeSelectionList:
         lodNodeSelection = LodNodeSelectionList()
         lodNodeSelection.selectedNodes = selectedNodes
         lodNodeSelection.unselectedNodes = unselectedNodes
@@ -293,9 +458,17 @@ class LodRule(BaseRule):
 class MorphTargetRule(BaseRule):
     """
     Select morph targets for actor.
-    
-    Attributes:
-        targets (SceneNodeSelectionList[]): Select 1 or more meshes to include in the actor as morph targets.
+
+    Attributes
+    ----------
+    targets: `list` of SceneNodeSelectionList
+        Select 1 or more meshes to include in the actor as morph targets.
+
+    Methods
+    -------
+
+    to_dict()
+        Converts contents to a Python dictionary
     """
     def __init__(self):
         super().__init__('MorphTargetRule')
@@ -309,15 +482,18 @@ class MorphTargetRule(BaseRule):
 class CommentRule(BaseRule):
     """
     Add an optional comment to the asset's properties.
-    
-    Attributes:
-        text: Text for the comment.
+
+    Attributes
+    ----------
+    text: str
+        Text for the comment.
+
+    Methods
+    -------
+
+    to_dict()
+        Converts contents to a Python dictionary
     """
     def __init__(self):
         super().__init__('CommentRule')
         self.text = ''
-
-
-
-
-
