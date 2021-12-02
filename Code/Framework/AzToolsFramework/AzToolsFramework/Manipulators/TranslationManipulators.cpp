@@ -19,6 +19,21 @@ namespace AzToolsFramework
     static const AZ::Color LinearManipulatorZAxisColor = AZ::Color(0.0f, 0.0f, 1.0f, 1.0f);
     static const AZ::Color SurfaceManipulatorColor = AZ::Color(1.0f, 1.0f, 0.0f, 0.5f);
 
+    static TranslationManipulatorViewCreateInfo DefaultTranslationManipulatorViewCreateInfo()
+    {
+        TranslationManipulatorViewCreateInfo createInfo;
+        createInfo.axis1Color = LinearManipulatorXAxisColor;
+        createInfo.axis2Color = LinearManipulatorYAxisColor;
+        createInfo.axis3Color = LinearManipulatorZAxisColor;
+        createInfo.surfaceColor = SurfaceManipulatorColor;
+        createInfo.linearAxisLength = LinearManipulatorAxisLength();
+        createInfo.linearConeLength = LinearManipulatorConeLength();
+        createInfo.linearConeRadius = LinearManipulatorConeRadius();
+        createInfo.planarAxisLength = PlanarManipulatorAxisLength();
+        createInfo.surfaceRadius = SurfaceManipulatorRadius();
+        return createInfo;
+    }
+
     TranslationManipulators::TranslationManipulators(
         const Dimensions dimensions, const AZ::Transform& worldFromLocal, const AZ::Vector3& nonUniformScale)
         : m_dimensions(dimensions)
@@ -231,17 +246,36 @@ namespace AzToolsFramework
         }
     }
 
+    void TranslationManipulators::ConfigureView2d(const TranslationManipulatorViewCreateInfo& translationManipulatorViewCreateInfo)
+    {
+        ConfigureLinearView(
+            translationManipulatorViewCreateInfo.linearAxisLength, translationManipulatorViewCreateInfo.linearConeLength,
+            translationManipulatorViewCreateInfo.linearConeRadius, translationManipulatorViewCreateInfo.axis1Color,
+            translationManipulatorViewCreateInfo.axis2Color, translationManipulatorViewCreateInfo.axis3Color);
+        ConfigurePlanarView(
+            translationManipulatorViewCreateInfo.planarAxisLength, translationManipulatorViewCreateInfo.linearAxisLength,
+            translationManipulatorViewCreateInfo.linearConeLength, translationManipulatorViewCreateInfo.axis1Color,
+            translationManipulatorViewCreateInfo.axis2Color, translationManipulatorViewCreateInfo.axis3Color);
+    }
+
+    void TranslationManipulators::ConfigureView3d(const TranslationManipulatorViewCreateInfo& translationManipulatorViewCreateInfo)
+    {
+        ConfigureView2d(translationManipulatorViewCreateInfo);
+        ConfigureSurfaceView(translationManipulatorViewCreateInfo.surfaceRadius, translationManipulatorViewCreateInfo.surfaceColor);
+    }
+
     void TranslationManipulators::ConfigureLinearView(
         const float axisLength,
+        const float coneLength,
+        const float coneRadius,
         const AZ::Color& axis1Color,
         const AZ::Color& axis2Color,
         const AZ::Color& axis3Color /*= AZ::Color(0.0f, 0.0f, 1.0f, 0.5f)*/)
     {
         const AZ::Color axesColor[] = { axis1Color, axis2Color, axis3Color };
 
-        const auto configureLinearView =
-            [lineBoundWidth = m_lineBoundWidth, coneLength = LinearManipulatorConeLength(), axisLength,
-             coneRadius = LinearManipulatorConeRadius()](LinearManipulator* linearManipulator, const AZ::Color& color)
+        const auto configureLinearView = [lineBoundWidth = m_lineBoundWidth, coneLength, axisLength,
+                                          coneRadius](LinearManipulator* linearManipulator, const AZ::Color& color)
         {
             const auto lineLength = axisLength - coneLength;
 
@@ -259,25 +293,21 @@ namespace AzToolsFramework
     }
 
     void TranslationManipulators::ConfigurePlanarView(
-        const float planeSize,
+        const float planarAxisLength,
+        const float linearAxisLength,
+        const float linearConeLength,
         const AZ::Color& plane1Color,
         const AZ::Color& plane2Color /*= AZ::Color(0.0f, 1.0f, 0.0f, 0.5f)*/,
         const AZ::Color& plane3Color /*= AZ::Color(0.0f, 0.0f, 1.0f, 0.5f)*/)
     {
         const AZ::Color planesColor[] = { plane1Color, plane2Color, plane3Color };
 
-        const float linearAxisLength = LinearManipulatorAxisLength();
-        const float linearConeLength = LinearManipulatorConeLength();
         for (size_t manipulatorIndex = 0; manipulatorIndex < m_planarManipulators.size(); ++manipulatorIndex)
         {
             const auto& planarManipulator = *m_planarManipulators[manipulatorIndex];
-            const AZStd::shared_ptr<ManipulatorViewQuad> manipulatorView = CreateManipulatorViewQuad(
-                *m_planarManipulators[manipulatorIndex], planesColor[manipulatorIndex], planesColor[(manipulatorIndex + 1) % 3],
-                (planarManipulator.GetAxis1() + planarManipulator.GetAxis2()) *
-                    (((linearAxisLength - linearConeLength) * 0.5f) - (planeSize * 0.5f)),
-                planeSize);
-
-            m_planarManipulators[manipulatorIndex]->SetViews(ManipulatorViews{ manipulatorView });
+            m_planarManipulators[manipulatorIndex]->SetViews(ManipulatorViews{ CreateManipulatorViewQuadForPlanarTranslationManipulator(
+                planarManipulator.GetAxis1(), planarManipulator.GetAxis2(), planesColor[manipulatorIndex],
+                planesColor[(manipulatorIndex + 1) % 3], linearAxisLength, linearConeLength, planarAxisLength) });
         }
     }
 
@@ -325,19 +355,25 @@ namespace AzToolsFramework
     void ConfigureTranslationManipulatorAppearance3d(TranslationManipulators* translationManipulators)
     {
         translationManipulators->SetAxes(AZ::Vector3::CreateAxisX(), AZ::Vector3::CreateAxisY(), AZ::Vector3::CreateAxisZ());
-        translationManipulators->ConfigurePlanarView(
-            PlanarManipulatorAxisLength(), LinearManipulatorXAxisColor, LinearManipulatorYAxisColor, LinearManipulatorZAxisColor);
-        translationManipulators->ConfigureLinearView(
-            LinearManipulatorAxisLength(), LinearManipulatorXAxisColor, LinearManipulatorYAxisColor, LinearManipulatorZAxisColor);
-        translationManipulators->ConfigureSurfaceView(SurfaceManipulatorRadius(), SurfaceManipulatorColor);
+        translationManipulators->ConfigureView3d(DefaultTranslationManipulatorViewCreateInfo());
     }
 
     void ConfigureTranslationManipulatorAppearance2d(TranslationManipulators* translationManipulators)
     {
         translationManipulators->SetAxes(AZ::Vector3::CreateAxisX(), AZ::Vector3::CreateAxisY());
-        translationManipulators->ConfigurePlanarView(
-            PlanarManipulatorAxisLength(), LinearManipulatorXAxisColor, LinearManipulatorYAxisColor);
-        translationManipulators->ConfigureLinearView(
-            LinearManipulatorAxisLength(), LinearManipulatorXAxisColor, LinearManipulatorYAxisColor);
+        translationManipulators->ConfigureView2d(DefaultTranslationManipulatorViewCreateInfo());
+    }
+
+    AZStd::shared_ptr<ManipulatorViewQuad> CreateManipulatorViewQuadForPlanarTranslationManipulator(
+        const AZ::Vector3& axis1,
+        const AZ::Vector3& axis2,
+        const AZ::Color& axis1Color,
+        const AZ::Color& axis2Color,
+        const float linearAxisLength,
+        const float linearConeLength,
+        const float planarAxisLength)
+    {
+        const AZ::Vector3 offset = (axis1 + axis2) * (((linearAxisLength - linearConeLength) * 0.5f) - (planarAxisLength * 0.5f));
+        return CreateManipulatorViewQuad(axis1, axis2, axis1Color, axis2Color, offset, planarAxisLength);
     }
 } // namespace AzToolsFramework

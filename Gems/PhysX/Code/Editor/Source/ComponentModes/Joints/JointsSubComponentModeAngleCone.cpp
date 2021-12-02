@@ -347,8 +347,9 @@ namespace PhysX
     void JointsSubComponentModeAngleCone::ConfigurePlanarView(const AZ::Color& planeColor, const AZ::Color& plane2Color)
     {
         AzToolsFramework::ManipulatorViews views;
-        views.emplace_back(CreateManipulatorViewQuad(
-            *m_yzPlanarManipulator, planeColor, plane2Color, AZ::Vector3::CreateZero(), AzToolsFramework::PlanarManipulatorAxisLength()));
+        views.emplace_back(AzToolsFramework::CreateManipulatorViewQuad(
+            m_yzPlanarManipulator->GetAxis1(), m_yzPlanarManipulator->GetAxis2(), planeColor, plane2Color, AZ::Vector3::CreateZero(),
+            AzToolsFramework::PlanarManipulatorAxisLength()));
         m_yzPlanarManipulator->SetViews(AZStd::move(views));
     }
 
