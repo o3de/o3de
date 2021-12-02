@@ -209,7 +209,6 @@ namespace ScriptCanvasEditor
     AZ::Outcome<ScriptCanvasEditor::SourceHandle, AZStd::string> LoadFromFile(AZStd::string_view path)
     {
         namespace JSRU = AZ::JsonSerializationUtils;
-        using namespace ScriptCanvas;
 
         auto fileStringOutcome = AZ::Utils::ReadFile<AZStd::string>(path);
         if (!fileStringOutcome)
@@ -218,7 +217,7 @@ namespace ScriptCanvasEditor
         }
 
         const auto& asString = fileStringOutcome.GetValue();
-        DataPtr scriptCanvasData = AZStd::make_shared<ScriptCanvas::ScriptCanvasData>();
+        ScriptCanvas::DataPtr scriptCanvasData = aznew ScriptCanvas::ScriptCanvasData();
         if (!scriptCanvasData)
         {
             return AZ::Failure(AZStd::string("failed to allocate ScriptCanvas::ScriptCanvasData after loading source file"));
@@ -314,7 +313,7 @@ namespace ScriptCanvasEditor
             listener->OnSerialize();
         }
 
-        auto saveOutcome = JSRU::SaveObjectToStream<ScriptCanvas::ScriptCanvasData>(graphData, stream, nullptr, &settings);
+        auto saveOutcome = JSRU::SaveObjectToStream<ScriptCanvas::ScriptCanvasData>(graphData.get(), stream, nullptr, &settings);
         if (!saveOutcome.IsSuccess())
         {
             return AZ::Failure(AZStd::string::format("JSON serialization failed to save source: %s", saveOutcome.GetError().c_str()));

@@ -438,10 +438,11 @@ namespace ScriptCanvasEditor
             if (nodeConfig.IsValid())
             {
                 ScriptCanvas::NodeUpdateSlotReport nodeUpdateSlotReport;
+                auto nodeEntity = node->GetEntityId();
                 auto nodeOutcome = graph->ReplaceNodeByConfig(node, nodeConfig, nodeUpdateSlotReport);
                 if (nodeOutcome.IsSuccess())
                 {
-                    ScriptCanvas::MergeUpdateSlotReport(node->GetEntityId(), sm->m_updateReport, nodeUpdateSlotReport);
+                    ScriptCanvas::MergeUpdateSlotReport(nodeEntity, sm->m_updateReport, nodeUpdateSlotReport);
 
                     sm->m_allNodes.erase(node);
                     sm->m_outOfDateNodes.erase(node);
@@ -687,7 +688,8 @@ namespace ScriptCanvasEditor
     void EditorGraphUpgradeMachine::OnComplete(IState::ExitStatus exitStatus)
     {
         UpgradeNotificationsBus::Broadcast(&UpgradeNotifications::OnGraphUpgradeComplete, m_asset, exitStatus == IState::ExitStatus::Skipped);
-        m_asset = {};
+        // releasing the asset at this stage of the system tick causes a memory crash
+        // m_asset = {};
     }
 
     //////////////////////////////////////////////////////////////////////

@@ -138,15 +138,17 @@ namespace ScriptCanvasEditor
 
         void Modifier::ModificationComplete(const ModificationResult& result)
         {
-            m_result = result;
-
-            if (result.errorMessage.empty())
+            if (!result.errorMessage.empty())
             {
-                SaveModifiedGraph(result);
+                ReportModificationError(result.errorMessage);
+            }
+            else if (m_result.asset.Describe() != result.asset.Describe())
+            {
+                ReportModificationError("Received modifiction complete notification for different result");
             }
             else
             {
-                ReportModificationError(result.errorMessage);
+                SaveModifiedGraph(result);
             }
         }
 
@@ -187,15 +189,15 @@ namespace ScriptCanvasEditor
 
         void Modifier::ReportModificationError(AZStd::string_view report)
         {
-            m_result.asset = {};
             m_result.errorMessage = report;
-            m_results.m_failures.push_back(m_result);
+            m_results.m_failures.push_back({ m_result.asset.Describe(), report });
             ModifyNextAsset();
         }
 
         void Modifier::ReportModificationSuccess()
         {
-            m_results.m_successes.push_back(m_result.asset);
+            m_result.asset = m_result.asset.Describe();
+            m_results.m_successes.push_back({ m_result.asset.Describe(), {} });
             ModifyNextAsset();
         }
 

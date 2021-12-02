@@ -1069,7 +1069,7 @@ namespace ScriptCanvasEditor
         m_owner = &owner;
     }
 
-    ScriptCanvas::ScriptCanvasData* Graph::GetOwnership() const
+    ScriptCanvas::DataPtr Graph::GetOwnership() const
     {
         return const_cast<Graph*>(this)->m_owner;
     }
@@ -1356,7 +1356,7 @@ namespace ScriptCanvasEditor
 
     void Graph::SignalDirty()
     {
-        SourceHandle handle(m_owner->shared_from_this(), {}, {});
+        SourceHandle handle(m_owner, {}, {});
         GeneralRequestBus::Broadcast(&GeneralRequests::SignalSceneDirty, handle);
     }
 
