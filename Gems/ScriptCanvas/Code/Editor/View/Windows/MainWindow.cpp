@@ -2673,10 +2673,8 @@ namespace ScriptCanvasEditor
         }
     }
 
-    void MainWindow::CopyPathToClipboard(int /*index*/)
+    void MainWindow::CopyPathToClipboard(int index)
     {
-        // #sc_editor_asset
-        /*
         QVariant tabdata = m_tabBar->tabData(index);
 
         if (tabdata.isValid())
@@ -2684,20 +2682,15 @@ namespace ScriptCanvasEditor
             QClipboard* clipBoard = QGuiApplication::clipboard();
 
             auto assetId = tabdata.value<Widget::GraphTabMetadata>();
-
-            ScriptCanvasMemoryAsset::pointer memoryAsset;
-            AssetTrackerRequestBus::BroadcastResult(memoryAsset, &AssetTrackerRequests::GetAsset, assetId);
-
-            if (memoryAsset)
+            if (!assetId.m_assetId.Path().empty())
             {
-                clipBoard->setText(memoryAsset->GetAbsolutePath().c_str());
+                clipBoard->setText(assetId.m_assetId.Path().c_str());
             }
             else
             {
                 clipBoard->setText(m_tabBar->tabText(index));
             }
         }
-        */
     }
 
     void MainWindow::OnActiveFileStateChanged()

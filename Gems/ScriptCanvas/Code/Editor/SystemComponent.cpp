@@ -212,7 +212,7 @@ namespace ScriptCanvasEditor
         if (!entitiesWithScriptCanvas.empty())
         {
             QMenu* scriptCanvasMenu = nullptr;
-            // QAction* action = nullptr;
+            QAction* action = nullptr;
 
             // For entities with script canvas component, create a context menu to open any existing script canvases within each selected entity.
             for (const AZ::EntityId& entityId : entitiesWithScriptCanvas)
@@ -245,32 +245,33 @@ namespace ScriptCanvasEditor
 
                         AZStd::unordered_set< AZ::Data::AssetId > usedIds;
 
-                        //#sc_editor_asset
-//                         for (const auto& assetId : assetIds.values)
-//                         {
-//                             if (!assetId.IsValid() || usedIds.count(assetId) != 0)
-//                             {
-//                                 continue;
-//                             }
-// 
-//                             entityMenu->setEnabled(true);
-// 
-//                             usedIds.insert(assetId);
-// 
-//                             AZStd::string rootPath;
-//                             AZ::Data::AssetInfo assetInfo = AssetHelpers::GetAssetInfo(assetId, rootPath);
-// 
-//                             AZStd::string displayName;
-//                             AZ::StringFunc::Path::GetFileName(assetInfo.m_relativePath.c_str(), displayName);
-// 
-//                             action = entityMenu->addAction(QString("%1").arg(QString(displayName.c_str())));
-// 
-//                             QObject::connect(action, &QAction::triggered, [assetId]
-//                             {
-//                                 AzToolsFramework::OpenViewPane(LyViewPane::ScriptCanvas);
-//                                 GeneralRequestBus::Broadcast(&GeneralRequests::OpenScriptCanvasAsset, assetId, -1);
-//                             });
-//                         }
+                        for (const auto& assetId : assetIds.values)
+                        {
+                            if (!assetId.IsValid() || usedIds.count(assetId) != 0)
+                            {
+                                continue;
+                            }
+ 
+                            entityMenu->setEnabled(true);
+ 
+                            usedIds.insert(assetId);
+ 
+                            AZStd::string rootPath;
+                            AZ::Data::AssetInfo assetInfo = AssetHelpers::GetAssetInfo(assetId, rootPath);
+ 
+                            AZStd::string displayName;
+                            AZ::StringFunc::Path::GetFileName(assetInfo.m_relativePath.c_str(), displayName);
+ 
+                            action = entityMenu->addAction(QString("%1").arg(QString(displayName.c_str())));
+ 
+                            QObject::connect(action, &QAction::triggered, [assetId]
+                            {
+                                AzToolsFramework::OpenViewPane(LyViewPane::ScriptCanvas);
+                                GeneralRequestBus::Broadcast(&GeneralRequests::OpenScriptCanvasAsset
+                                    , SourceHandle(nullptr, assetId.m_guid, "")
+                                    , Tracker::ScriptCanvasFileState::UNMODIFIED, -1);
+                            });
+                        }
                     }
                 }
             }
@@ -319,24 +320,26 @@ namespace ScriptCanvasEditor
         {
             isScriptCanvasAsset = true;
         }
-        // #sc_editor_asset
-//         if (isScriptCanvasAsset)
-//         {
-//             auto scriptCanvasEditorCallback = []([[maybe_unused]] const char* fullSourceFileNameInCall, const AZ::Uuid& sourceUUIDInCall)
-//             {
-//                 AZ::Outcome<int, AZStd::string> openOutcome = AZ::Failure(AZStd::string());
-//                 const SourceAssetBrowserEntry* fullDetails = SourceAssetBrowserEntry::GetSourceByUuid(sourceUUIDInCall);
-//                 if (fullDetails)
-//                 {
-//                     AzToolsFramework::OpenViewPane(LyViewPane::ScriptCanvas);
-// 
-//                     AzToolsFramework::EditorRequests::Bus::Broadcast(&AzToolsFramework::EditorRequests::OpenViewPane, "Script Canvas");
-//                     GeneralRequestBus::BroadcastResult(openOutcome, &GeneralRequests::OpenScriptCanvasAsset, sourceUUIDInCall, -1);
-//                 }
-//             };
-// 
-//             openers.push_back({ "O3DE_ScriptCanvasEditor", "Open In Script Canvas Editor...", QIcon(), scriptCanvasEditorCallback });
-//         }
+
+        if (isScriptCanvasAsset)
+        {
+            auto scriptCanvasEditorCallback = []([[maybe_unused]] const char* fullSourceFileNameInCall, const AZ::Uuid& sourceUUIDInCall)
+            {
+                AZ::Outcome<int, AZStd::string> openOutcome = AZ::Failure(AZStd::string());
+                const SourceAssetBrowserEntry* fullDetails = SourceAssetBrowserEntry::GetSourceByUuid(sourceUUIDInCall);
+                if (fullDetails)
+                {
+                    AzToolsFramework::OpenViewPane(LyViewPane::ScriptCanvas);
+ 
+                    AzToolsFramework::EditorRequests::Bus::Broadcast(&AzToolsFramework::EditorRequests::OpenViewPane, "Script Canvas");
+                    GeneralRequestBus::BroadcastResult(openOutcome
+                        , &GeneralRequests::OpenScriptCanvasAsset
+                        , SourceHandle(nullptr, sourceUUIDInCall, ""), Tracker::ScriptCanvasFileState::UNMODIFIED, -1);
+                }
+            };
+ 
+            openers.push_back({ "O3DE_ScriptCanvasEditor", "Open In Script Canvas Editor...", QIcon(), scriptCanvasEditorCallback });
+         }
     }
 
     void SystemComponent::OnUserSettingsActivated()
