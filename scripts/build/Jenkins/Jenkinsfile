@@ -576,8 +576,6 @@ def CreateSingleNode(Map pipelineConfig, def platform, def build_job, Map envVar
                 withEnv(GetEnvStringList(envVars)) {
                     def build_job_name = build_job.key
                     def params = platform.value.build_types[build_job_name].PARAMETERS
-                    def output_directory = params.OUTPUT_DIRECTORY
-                    def configuration = params.CONFIGURATION
                     try {
                         CreateSetupStage(pipelineConfig, snapshot, repositoryName, projectName, pipelineName, branchName, platform.key, build_job.key, envVars, onlyMountEBSVolume).call()
 
@@ -623,7 +621,7 @@ def CreateSingleNode(Map pipelineConfig, def platform, def build_job, Map envVar
                     finally {
 
                         if (env.MARS_REPO && params && params.containsKey('TEST_METRICS') && params.TEST_METRICS == 'True') {
-                            CreateTestMetricsStage(pipelineConfig, branchName, envVars, build_job_name, output_directory, configuration).call()
+                            CreateTestMetricsStage(pipelineConfig, branchName, envVars, build_job_name, params.OUTPUT_DIRECTORY, params.CONFIGURATION).call()
                         }
                         if (params && params.containsKey('TEST_RESULTS') && params.TEST_RESULTS == 'True') {
                             CreateExportTestResultsStage(pipelineConfig, platform.key, build_job_name, envVars, params).call()
