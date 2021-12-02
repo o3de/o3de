@@ -148,6 +148,8 @@ set(FILES
     Entity/EditorEntitySortBus.h
     Entity/EditorEntitySortComponent.cpp
     Entity/EditorEntitySortComponent.h
+    Entity/EditorEntitySortComponentSerializer.cpp
+    Entity/EditorEntitySortComponentSerializer.h
     Entity/EditorEntityTransformBus.h
     Entity/PrefabEditorEntityOwnershipInterface.h
     Entity/PrefabEditorEntityOwnershipService.h
@@ -157,6 +159,10 @@ set(FILES
     Entity/SliceEditorEntityOwnershipServiceBus.h
     Entity/EntityUtilityComponent.h
     Entity/EntityUtilityComponent.cpp
+    Entity/ReadOnly/ReadOnlyEntityInterface.h
+    Entity/ReadOnly/ReadOnlyEntityBus.h
+    Entity/ReadOnly/ReadOnlyEntitySystemComponent.cpp
+    Entity/ReadOnly/ReadOnlyEntitySystemComponent.h
     Fingerprinting/TypeFingerprinter.h
     Fingerprinting/TypeFingerprinter.cpp
     FocusMode/FocusModeInterface.h
@@ -769,8 +775,8 @@ set(FILES
     PythonTerminal/ScriptTermDialog.cpp
     PythonTerminal/ScriptTermDialog.h
     PythonTerminal/ScriptTermDialog.ui
-    Input/QtEventToAzInputManager.h
-    Input/QtEventToAzInputManager.cpp
+    Input/QtEventToAzInputMapper.h
+    Input/QtEventToAzInputMapper.cpp
     Script/LuaSymbolsReporterBus.h
     Script/LuaSymbolsReporterSystemComponent.h
     Script/LuaSymbolsReporterSystemComponent.cpp

@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "DefaultLodOverride",
+            "base": "DefaultLodOverride",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "DefaultLodOverride::Getter",
-                "category": "Constants"
-            }
+                "name": "Default Lod Override",
+                "category": "Constants/Defaults"
+            },
+            "methods": [
+                {
+                    "base": "GetDefaultLodOverride",
+                    "details": {
+                        "name": "Get Default Lod Override"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

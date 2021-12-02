@@ -6,7 +6,7 @@
  *
  */
 
-#include "ProjectManagerSettings.h"
+#include <ProjectManagerSettings.h>
 
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/IO/ByteContainerStream.h>
@@ -50,5 +50,10 @@ namespace O3DE::ProjectManager
     QString GetProjectBuiltSuccessfullyKey(const QString& projectName)
     {
         return QString("%1/Projects/%2/BuiltSuccessfully").arg(ProjectManagerKeyPrefix).arg(projectName);
+    }
+
+    QString GetExternalLinkWarningKey()
+    {
+        return QString("%1/SkipExternalLinkWarning").arg(ProjectManagerKeyPrefix);
     }
 }

@@ -1,16 +1,16 @@
 {
     "entries": [
         {
-            "key": "UiRadioButtonGroupBus",
+            "base": "UiRadioButtonGroupBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "UiRadioButtonGroupBus",
+                "name": "UI Radio Button Group",
                 "category": "UI"
             },
             "methods": [
                 {
-                    "key": "AddRadioButton",
+                    "base": "AddRadioButton",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Add Radio Button"
@@ -34,7 +34,7 @@
                     ]
                 },
                 {
-                    "key": "SetChangedActionName",
+                    "base": "SetChangedActionName",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Changed Action Name"
@@ -58,7 +58,7 @@
                     ]
                 },
                 {
-                    "key": "SetAllowUncheck",
+                    "base": "SetAllowUncheck",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Allow Uncheck"
@@ -82,7 +82,7 @@
                     ]
                 },
                 {
-                    "key": "ContainsRadioButton",
+                    "base": "ContainsRadioButton",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Contains Radio Button"
@@ -115,7 +115,7 @@
                     ]
                 },
                 {
-                    "key": "GetChangedActionName",
+                    "base": "GetChangedActionName",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Changed Action Name"
@@ -138,7 +138,7 @@
                     ]
                 },
                 {
-                    "key": "GetAllowUncheck",
+                    "base": "GetAllowUncheck",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Allow Uncheck"
@@ -161,7 +161,7 @@
                     ]
                 },
                 {
-                    "key": "RemoveRadioButton",
+                    "base": "RemoveRadioButton",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Remove Radio Button"
@@ -185,7 +185,7 @@
                     ]
                 },
                 {
-                    "key": "SetState",
+                    "base": "SetState",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set State"
@@ -216,7 +216,7 @@
                     ]
                 },
                 {
-                    "key": "GetState",
+                    "base": "GetState",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get State"

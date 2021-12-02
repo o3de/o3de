@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "SystemConfigSpec_Low",
+            "base": "SystemConfigSpec_Low",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "SystemConfigSpec_Low::Getter",
-                "category": "Constants"
-            }
+                "name": "Low",
+                "category": "Constants/System Spec"
+            },
+            "methods": [
+                {
+                    "base": "GetSystemConfigSpec_Low",
+                    "details": {
+                        "name": "Low"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

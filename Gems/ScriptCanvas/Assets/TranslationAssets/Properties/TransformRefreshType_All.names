@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "TransformRefreshType_All",
+            "base": "TransformRefreshType_All",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "TransformRefreshType_All::Getter",
-                "category": "Constants"
-            }
+                "name": "All",
+                "category": "Constants/Transform/Refresh Type"
+            },
+            "methods": [
+                {
+                    "base": "GetTransformRefreshType_All",
+                    "details": {
+                        "name": "All"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

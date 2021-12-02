@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "AudioPreloadComponentLoadType_Auto",
+            "base": "AudioPreloadComponentLoadType_Auto",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "AudioPreloadComponentLoadType_Auto::Getter",
-                "category": "Constants"
-            }
+                "name": "Load Type Auto",
+                "category": "Constants/Audio Preload"
+            },
+            "methods": [
+                {
+                    "base": "GetAudioPreloadComponentLoadType_Auto",
+                    "details": {
+                        "name": "Load Type Auto"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
+                            "details": {
+                                "name": "unsigned int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

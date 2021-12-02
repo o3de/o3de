@@ -1,25 +1,26 @@
 {
     "entries": [
         {
-            "key": "SsaoRequestBus",
+            "base": "SsaoRequestBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "SsaoRequestBus"
+                "name": "SSAO",
+                "category": "Rendering"
             },
             "methods": [
                 {
-                    "key": "SetBlurDepthFalloffStrength",
+                    "base": "SetBlurDepthFalloffStrength",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetBlurDepthFalloffStrength"
+                        "tooltip": "When signaled, this will invoke Set Blur Depth Falloff Strength"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetBlurDepthFalloffStrength is invoked"
+                        "tooltip": "Signaled after Set Blur Depth Falloff Strength is invoked"
                     },
                     "details": {
-                        "name": "SetBlurDepthFalloffStrength"
+                        "name": "Set Blur Depth Falloff Strength"
                     },
                     "params": [
                         {
@@ -31,17 +32,17 @@
                     ]
                 },
                 {
-                    "key": "SetBlurDepthFalloffThreshold",
+                    "base": "SetBlurDepthFalloffThreshold",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetBlurDepthFalloffThreshold"
+                        "tooltip": "When signaled, this will invoke Set Blur Depth Falloff Threshold"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetBlurDepthFalloffThreshold is invoked"
+                        "tooltip": "Signaled after Set Blur Depth Falloff Threshold is invoked"
                     },
                     "details": {
-                        "name": "SetBlurDepthFalloffThreshold"
+                        "name": "Set Blur Depth Falloff Threshold"
                     },
                     "params": [
                         {
@@ -53,39 +54,17 @@
                     ]
                 },
                 {
-                    "key": "SetEnableDownsampleOverride",
+                    "base": "SetEnableDownsampleOverride",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetEnableDownsampleOverride"
+                        "tooltip": "When signaled, this will invoke Set Enable Downsample Override"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetEnableDownsampleOverride is invoked"
+                        "tooltip": "Signaled after Set Enable Downsample Override is invoked"
                     },
                     "details": {
-                        "name": "SetEnableDownsampleOverride"
-                    },
-                    "params": [
-                        {
-                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
-                            "details": {
-                                "name": "bool"
-                            }
-                        }
-                    ]
-                },
-                {
-                    "key": "SetEnableBlurOverride",
-                    "entry": {
-                        "name": "In",
-                        "tooltip": "When signaled, this will invoke SetEnableBlurOverride"
-                    },
-                    "exit": {
-                        "name": "Out",
-                        "tooltip": "Signaled after SetEnableBlurOverride is invoked"
-                    },
-                    "details": {
-                        "name": "SetEnableBlurOverride"
+                        "name": "Set Enable Downsample Override"
                     },
                     "params": [
                         {
@@ -97,391 +76,17 @@
                     ]
                 },
                 {
-                    "key": "GetEnabledOverride",
+                    "base": "SetEnableBlurOverride",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetEnabledOverride"
+                        "tooltip": "When signaled, this will invoke Set Enable Blur Override"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetEnabledOverride is invoked"
+                        "tooltip": "Signaled after Set Enable Blur Override is invoked"
                     },
                     "details": {
-                        "name": "GetEnabledOverride"
-                    },
-                    "results": [
-                        {
-                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
-                            "details": {
-                                "name": "bool"
-                            }
-                        }
-                    ]
-                },
-                {
-                    "key": "GetSamplingRadius",
-                    "entry": {
-                        "name": "In",
-                        "tooltip": "When signaled, this will invoke GetSamplingRadius"
-                    },
-                    "exit": {
-                        "name": "Out",
-                        "tooltip": "Signaled after GetSamplingRadius is invoked"
-                    },
-                    "details": {
-                        "name": "GetSamplingRadius"
-                    },
-                    "results": [
-                        {
-                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
-                            "details": {
-                                "name": "float"
-                            }
-                        }
-                    ]
-                },
-                {
-                    "key": "SetBlurDepthFalloffStrengthOverride",
-                    "entry": {
-                        "name": "In",
-                        "tooltip": "When signaled, this will invoke SetBlurDepthFalloffStrengthOverride"
-                    },
-                    "exit": {
-                        "name": "Out",
-                        "tooltip": "Signaled after SetBlurDepthFalloffStrengthOverride is invoked"
-                    },
-                    "details": {
-                        "name": "SetBlurDepthFalloffStrengthOverride"
-                    },
-                    "params": [
-                        {
-                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
-                            "details": {
-                                "name": "float"
-                            }
-                        }
-                    ]
-                },
-                {
-                    "key": "GetBlurDepthFalloffThresholdOverride",
-                    "entry": {
-                        "name": "In",
-                        "tooltip": "When signaled, this will invoke GetBlurDepthFalloffThresholdOverride"
-                    },
-                    "exit": {
-                        "name": "Out",
-                        "tooltip": "Signaled after GetBlurDepthFalloffThresholdOverride is invoked"
-                    },
-                    "details": {
-                        "name": "GetBlurDepthFalloffThresholdOverride"
-                    },
-                    "results": [
-                        {
-                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
-                            "details": {
-                                "name": "float"
-                            }
-                        }
-                    ]
-                },
-                {
-                    "key": "GetBlurDepthFalloffThreshold",
-                    "entry": {
-                        "name": "In",
-                        "tooltip": "When signaled, this will invoke GetBlurDepthFalloffThreshold"
-                    },
-                    "exit": {
-                        "name": "Out",
-                        "tooltip": "Signaled after GetBlurDepthFalloffThreshold is invoked"
-                    },
-                    "details": {
-                        "name": "GetBlurDepthFalloffThreshold"
-                    },
-                    "results": [
-                        {
-                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
-                            "details": {
-                                "name": "float"
-                            }
-                        }
-                    ]
-                },
-                {
-                    "key": "GetSamplingRadiusOverride",
-                    "entry": {
-                        "name": "In",
-                        "tooltip": "When signaled, this will invoke GetSamplingRadiusOverride"
-                    },
-                    "exit": {
-                        "name": "Out",
-                        "tooltip": "Signaled after GetSamplingRadiusOverride is invoked"
-                    },
-                    "details": {
-                        "name": "GetSamplingRadiusOverride"
-                    },
-                    "results": [
-                        {
-                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
-                            "details": {
-                                "name": "float"
-                            }
-                        }
-                    ]
-                },
-                {
-                    "key": "SetStrengthOverride",
-                    "entry": {
-                        "name": "In",
-                        "tooltip": "When signaled, this will invoke SetStrengthOverride"
-                    },
-                    "exit": {
-                        "name": "Out",
-                        "tooltip": "Signaled after SetStrengthOverride is invoked"
-                    },
-                    "details": {
-                        "name": "SetStrengthOverride"
-                    },
-                    "params": [
-                        {
-                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
-                            "details": {
-                                "name": "float"
-                            }
-                        }
-                    ]
-                },
-                {
-                    "key": "GetStrength",
-                    "entry": {
-                        "name": "In",
-                        "tooltip": "When signaled, this will invoke GetStrength"
-                    },
-                    "exit": {
-                        "name": "Out",
-                        "tooltip": "Signaled after GetStrength is invoked"
-                    },
-                    "details": {
-                        "name": "GetStrength"
-                    },
-                    "results": [
-                        {
-                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
-                            "details": {
-                                "name": "float"
-                            }
-                        }
-                    ]
-                },
-                {
-                    "key": "GetEnabled",
-                    "entry": {
-                        "name": "In",
-                        "tooltip": "When signaled, this will invoke GetEnabled"
-                    },
-                    "exit": {
-                        "name": "Out",
-                        "tooltip": "Signaled after GetEnabled is invoked"
-                    },
-                    "details": {
-                        "name": "GetEnabled"
-                    },
-                    "results": [
-                        {
-                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
-                            "details": {
-                                "name": "bool"
-                            }
-                        }
-                    ]
-                },
-                {
-                    "key": "GetEnableDownsample",
-                    "entry": {
-                        "name": "In",
-                        "tooltip": "When signaled, this will invoke GetEnableDownsample"
-                    },
-                    "exit": {
-                        "name": "Out",
-                        "tooltip": "Signaled after GetEnableDownsample is invoked"
-                    },
-                    "details": {
-                        "name": "GetEnableDownsample"
-                    },
-                    "results": [
-                        {
-                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
-                            "details": {
-                                "name": "bool"
-                            }
-                        }
-                    ]
-                },
-                {
-                    "key": "GetBlurDepthFalloffStrength",
-                    "entry": {
-                        "name": "In",
-                        "tooltip": "When signaled, this will invoke GetBlurDepthFalloffStrength"
-                    },
-                    "exit": {
-                        "name": "Out",
-                        "tooltip": "Signaled after GetBlurDepthFalloffStrength is invoked"
-                    },
-                    "details": {
-                        "name": "GetBlurDepthFalloffStrength"
-                    },
-                    "results": [
-                        {
-                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
-                            "details": {
-                                "name": "float"
-                            }
-                        }
-                    ]
-                },
-                {
-                    "key": "SetBlurConstFalloff",
-                    "entry": {
-                        "name": "In",
-                        "tooltip": "When signaled, this will invoke SetBlurConstFalloff"
-                    },
-                    "exit": {
-                        "name": "Out",
-                        "tooltip": "Signaled after SetBlurConstFalloff is invoked"
-                    },
-                    "details": {
-                        "name": "SetBlurConstFalloff"
-                    },
-                    "params": [
-                        {
-                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
-                            "details": {
-                                "name": "float"
-                            }
-                        }
-                    ]
-                },
-                {
-                    "key": "GetEnableDownsampleOverride",
-                    "entry": {
-                        "name": "In",
-                        "tooltip": "When signaled, this will invoke GetEnableDownsampleOverride"
-                    },
-                    "exit": {
-                        "name": "Out",
-                        "tooltip": "Signaled after GetEnableDownsampleOverride is invoked"
-                    },
-                    "details": {
-                        "name": "GetEnableDownsampleOverride"
-                    },
-                    "results": [
-                        {
-                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
-                            "details": {
-                                "name": "bool"
-                            }
-                        }
-                    ]
-                },
-                {
-                    "key": "GetEnableBlurOverride",
-                    "entry": {
-                        "name": "In",
-                        "tooltip": "When signaled, this will invoke GetEnableBlurOverride"
-                    },
-                    "exit": {
-                        "name": "Out",
-                        "tooltip": "Signaled after GetEnableBlurOverride is invoked"
-                    },
-                    "details": {
-                        "name": "GetEnableBlurOverride"
-                    },
-                    "results": [
-                        {
-                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
-                            "details": {
-                                "name": "bool"
-                            }
-                        }
-                    ]
-                },
-                {
-                    "key": "SetSamplingRadiusOverride",
-                    "entry": {
-                        "name": "In",
-                        "tooltip": "When signaled, this will invoke SetSamplingRadiusOverride"
-                    },
-                    "exit": {
-                        "name": "Out",
-                        "tooltip": "Signaled after SetSamplingRadiusOverride is invoked"
-                    },
-                    "details": {
-                        "name": "SetSamplingRadiusOverride"
-                    },
-                    "params": [
-                        {
-                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
-                            "details": {
-                                "name": "float"
-                            }
-                        }
-                    ]
-                },
-                {
-                    "key": "SetSamplingRadius",
-                    "entry": {
-                        "name": "In",
-                        "tooltip": "When signaled, this will invoke SetSamplingRadius"
-                    },
-                    "exit": {
-                        "name": "Out",
-                        "tooltip": "Signaled after SetSamplingRadius is invoked"
-                    },
-                    "details": {
-                        "name": "SetSamplingRadius"
-                    },
-                    "params": [
-                        {
-                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
-                            "details": {
-                                "name": "float"
-                            }
-                        }
-                    ]
-                },
-                {
-                    "key": "SetStrength",
-                    "entry": {
-                        "name": "In",
-                        "tooltip": "When signaled, this will invoke SetStrength"
-                    },
-                    "exit": {
-                        "name": "Out",
-                        "tooltip": "Signaled after SetStrength is invoked"
-                    },
-                    "details": {
-                        "name": "SetStrength"
-                    },
-                    "params": [
-                        {
-                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
-                            "details": {
-                                "name": "float"
-                            }
-                        }
-                    ]
-                },
-                {
-                    "key": "SetEnabled",
-                    "entry": {
-                        "name": "In",
-                        "tooltip": "When signaled, this will invoke SetEnabled"
-                    },
-                    "exit": {
-                        "name": "Out",
-                        "tooltip": "Signaled after SetEnabled is invoked"
-                    },
-                    "details": {
-                        "name": "SetEnabled"
+                        "name": "Set Enable Blur Override"
                     },
                     "params": [
                         {
@@ -493,39 +98,17 @@
                     ]
                 },
                 {
-                    "key": "GetStrengthOverride",
+                    "base": "GetEnabledOverride",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetStrengthOverride"
+                        "tooltip": "When signaled, this will invoke Get Enabled Override"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetStrengthOverride is invoked"
+                        "tooltip": "Signaled after Get Enabled Override is invoked"
                     },
                     "details": {
-                        "name": "GetStrengthOverride"
-                    },
-                    "results": [
-                        {
-                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
-                            "details": {
-                                "name": "float"
-                            }
-                        }
-                    ]
-                },
-                {
-                    "key": "GetEnableBlur",
-                    "entry": {
-                        "name": "In",
-                        "tooltip": "When signaled, this will invoke GetEnableBlur"
-                    },
-                    "exit": {
-                        "name": "Out",
-                        "tooltip": "Signaled after GetEnableBlur is invoked"
-                    },
-                    "details": {
-                        "name": "GetEnableBlur"
+                        "name": "Get Enabled Override"
                     },
                     "results": [
                         {
@@ -537,83 +120,17 @@
                     ]
                 },
                 {
-                    "key": "SetEnableDownsample",
+                    "base": "GetSamplingRadius",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetEnableDownsample"
+                        "tooltip": "When signaled, this will invoke Get Sampling Radius"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetEnableDownsample is invoked"
+                        "tooltip": "Signaled after Get Sampling Radius is invoked"
                     },
                     "details": {
-                        "name": "SetEnableDownsample"
-                    },
-                    "params": [
-                        {
-                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
-                            "details": {
-                                "name": "bool"
-                            }
-                        }
-                    ]
-                },
-                {
-                    "key": "SetBlurDepthFalloffThresholdOverride",
-                    "entry": {
-                        "name": "In",
-                        "tooltip": "When signaled, this will invoke SetBlurDepthFalloffThresholdOverride"
-                    },
-                    "exit": {
-                        "name": "Out",
-                        "tooltip": "Signaled after SetBlurDepthFalloffThresholdOverride is invoked"
-                    },
-                    "details": {
-                        "name": "SetBlurDepthFalloffThresholdOverride"
-                    },
-                    "params": [
-                        {
-                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
-                            "details": {
-                                "name": "float"
-                            }
-                        }
-                    ]
-                },
-                {
-                    "key": "SetBlurConstFalloffOverride",
-                    "entry": {
-                        "name": "In",
-                        "tooltip": "When signaled, this will invoke SetBlurConstFalloffOverride"
-                    },
-                    "exit": {
-                        "name": "Out",
-                        "tooltip": "Signaled after SetBlurConstFalloffOverride is invoked"
-                    },
-                    "details": {
-                        "name": "SetBlurConstFalloffOverride"
-                    },
-                    "params": [
-                        {
-                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
-                            "details": {
-                                "name": "float"
-                            }
-                        }
-                    ]
-                },
-                {
-                    "key": "GetBlurConstFalloff",
-                    "entry": {
-                        "name": "In",
-                        "tooltip": "When signaled, this will invoke GetBlurConstFalloff"
-                    },
-                    "exit": {
-                        "name": "Out",
-                        "tooltip": "Signaled after GetBlurConstFalloff is invoked"
-                    },
-                    "details": {
-                        "name": "GetBlurConstFalloff"
+                        "name": "Get Sampling Radius"
                     },
                     "results": [
                         {
@@ -625,61 +142,39 @@
                     ]
                 },
                 {
-                    "key": "SetEnabledOverride",
+                    "base": "SetBlurDepthFalloffStrengthOverride",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetEnabledOverride"
+                        "tooltip": "When signaled, this will invoke Set Blur Depth Falloff Strength Override"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetEnabledOverride is invoked"
+                        "tooltip": "Signaled after Set Blur Depth Falloff Strength Override is invoked"
                     },
                     "details": {
-                        "name": "SetEnabledOverride"
+                        "name": "Set Blur Depth Falloff Strength Override"
                     },
                     "params": [
                         {
-                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "bool"
+                                "name": "float"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "SetEnableBlur",
+                    "base": "GetBlurDepthFalloffThresholdOverride",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetEnableBlur"
+                        "tooltip": "When signaled, this will invoke Get Blur Depth Falloff Threshold Override"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetEnableBlur is invoked"
+                        "tooltip": "Signaled after Get Blur Depth Falloff Threshold Override is invoked"
                     },
                     "details": {
-                        "name": "SetEnableBlur"
-                    },
-                    "params": [
-                        {
-                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
-                            "details": {
-                                "name": "bool"
-                            }
-                        }
-                    ]
-                },
-                {
-                    "key": "GetBlurConstFalloffOverride",
-                    "entry": {
-                        "name": "In",
-                        "tooltip": "When signaled, this will invoke GetBlurConstFalloffOverride"
-                    },
-                    "exit": {
-                        "name": "Out",
-                        "tooltip": "Signaled after GetBlurConstFalloffOverride is invoked"
-                    },
-                    "details": {
-                        "name": "GetBlurConstFalloffOverride"
+                        "name": "Get Blur Depth Falloff Threshold Override"
                     },
                     "results": [
                         {
@@ -691,17 +186,523 @@
                     ]
                 },
                 {
-                    "key": "GetBlurDepthFalloffStrengthOverride",
+                    "base": "GetBlurDepthFalloffThreshold",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetBlurDepthFalloffStrengthOverride"
+                        "tooltip": "When signaled, this will invoke Get Blur Depth Falloff Threshold"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetBlurDepthFalloffStrengthOverride is invoked"
+                        "tooltip": "Signaled after Get Blur Depth Falloff Threshold is invoked"
                     },
                     "details": {
-                        "name": "GetBlurDepthFalloffStrengthOverride"
+                        "name": "Get Blur Depth Falloff Threshold"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetSamplingRadiusOverride",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Sampling Radius Override"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Sampling Radius Override is invoked"
+                    },
+                    "details": {
+                        "name": "Get Sampling Radius Override"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetStrengthOverride",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Strength Override"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Strength Override is invoked"
+                    },
+                    "details": {
+                        "name": "Set Strength Override"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetStrength",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Strength"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Strength is invoked"
+                    },
+                    "details": {
+                        "name": "Get Strength"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetEnabled",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Enabled"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Enabled is invoked"
+                    },
+                    "details": {
+                        "name": "Get Enabled"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetEnableDownsample",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Enable Downsample"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Enable Downsample is invoked"
+                    },
+                    "details": {
+                        "name": "Get Enable Downsample"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetBlurDepthFalloffStrength",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Blur Depth Falloff Strength"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Blur Depth Falloff Strength is invoked"
+                    },
+                    "details": {
+                        "name": "Get Blur Depth Falloff Strength"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetBlurConstFalloff",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Blur Const Falloff"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Blur Const Falloff is invoked"
+                    },
+                    "details": {
+                        "name": "Set Blur Const Falloff"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetEnableDownsampleOverride",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Enable Downsample Override"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Enable Downsample Override is invoked"
+                    },
+                    "details": {
+                        "name": "Get Enable Downsample Override"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetEnableBlurOverride",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Enable Blur Override"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Enable Blur Override is invoked"
+                    },
+                    "details": {
+                        "name": "Get Enable Blur Override"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetSamplingRadiusOverride",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Sampling Radius Override"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Sampling Radius Override is invoked"
+                    },
+                    "details": {
+                        "name": "Set Sampling Radius Override"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetSamplingRadius",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Sampling Radius"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Sampling Radius is invoked"
+                    },
+                    "details": {
+                        "name": "Set Sampling Radius"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetStrength",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Strength"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Strength is invoked"
+                    },
+                    "details": {
+                        "name": "Set Strength"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetEnabled",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Enabled"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Enabled is invoked"
+                    },
+                    "details": {
+                        "name": "Set Enabled"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetStrengthOverride",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Strength Override"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Strength Override is invoked"
+                    },
+                    "details": {
+                        "name": "Get Strength Override"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetEnableBlur",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Enable Blur"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Enable Blur is invoked"
+                    },
+                    "details": {
+                        "name": "Get Enable Blur"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetEnableDownsample",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Enable Downsample"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Enable Downsample is invoked"
+                    },
+                    "details": {
+                        "name": "Set Enable Downsample"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetBlurDepthFalloffThresholdOverride",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Blur Depth Falloff Threshold Override"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Blur Depth Falloff Threshold Override is invoked"
+                    },
+                    "details": {
+                        "name": "Set Blur Depth Falloff Threshold Override"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetBlurConstFalloffOverride",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Blur Const Falloff Override"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Blur Const Falloff Override is invoked"
+                    },
+                    "details": {
+                        "name": "Set Blur Const Falloff Override"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetBlurConstFalloff",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Blur Const Falloff"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Blur Const Falloff is invoked"
+                    },
+                    "details": {
+                        "name": "Get Blur Const Falloff"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetEnabledOverride",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Enabled Override"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Enabled Override is invoked"
+                    },
+                    "details": {
+                        "name": "Set Enabled Override"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetEnableBlur",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Enable Blur"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Enable Blur is invoked"
+                    },
+                    "details": {
+                        "name": "Set Enable Blur"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetBlurConstFalloffOverride",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Blur Const Falloff Override"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Blur Const Falloff Override is invoked"
+                    },
+                    "details": {
+                        "name": "Get Blur Const Falloff Override"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetBlurDepthFalloffStrengthOverride",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Blur Depth Falloff Strength Override"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Blur Depth Falloff Strength Override is invoked"
+                    },
+                    "details": {
+                        "name": "Get Blur Depth Falloff Strength Override"
                     },
                     "results": [
                         {

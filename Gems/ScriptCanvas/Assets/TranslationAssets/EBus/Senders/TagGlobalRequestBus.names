@@ -1,16 +1,16 @@
 {
     "entries": [
         {
-            "key": "TagGlobalRequestBus",
+            "base": "TagGlobalRequestBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "TagGlobalRequestBus",
-                "category": "Gameplay"
+                "name": "Requests",
+                "category": "Gameplay/Tag"
             },
             "methods": [
                 {
-                    "key": "RequestTaggedEntities",
+                    "base": "RequestTaggedEntities",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Request Tagged Entities"
@@ -20,14 +20,13 @@
                         "tooltip": "Signaled after Request Tagged Entities is invoked"
                     },
                     "details": {
-                        "name": "Request Tagged Entities",
-                        "tooltip": "Returns the first responding entity that has a specified Tag"
+                        "name": "Request Tagged Entities"
                     },
                     "results": [
                         {
                             "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
                             "details": {
-                                "name": "EntityId",
+                                "name": "Entity Id",
                                 "tooltip": "Entity Unique Id"
                             }
                         }

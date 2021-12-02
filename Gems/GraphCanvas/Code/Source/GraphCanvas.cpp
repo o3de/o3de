@@ -58,7 +58,6 @@
 
 #include <GraphCanvas/Types/ConstructPresets.h>
 #include <GraphCanvas/Types/EntitySaveData.h>
-#include <GraphCanvas/Types/TranslationTypes.h>
 
 #include <GraphCanvas/Widgets/GraphCanvasEditor/GraphCanvasAssetEditorMainWindow.h>
 #include <GraphCanvas/Widgets/GraphCanvasMimeEvent.h>
@@ -384,6 +383,16 @@ namespace GraphCanvas
             }
         };
         AZ::Data::AssetCatalogRequestBus::Broadcast(&AZ::Data::AssetCatalogRequestBus::Events::EnumerateAssets, nullptr, collectAssetsCb, postEnumerateCb);
+    }
+
+    void GraphCanvasSystemComponent::OnCatalogAssetChanged(const AZ::Data::AssetId& assetId)
+    {
+        AZ::Data::AssetInfo assetInfo;
+        AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetInfo, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetInfoById, assetId);
+        if (assetInfo.m_assetType == azrtti_typeid<TranslationAsset>())
+        {
+            GraphCanvas::TranslationRequestBus::Broadcast(&GraphCanvas::TranslationRequests::Restore);
+        }
     }
 
     void GraphCanvasSystemComponent::UnregisterAssetHandler()

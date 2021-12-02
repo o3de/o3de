@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "MultiPositionBehaviorType_Blended",
+            "base": "MultiPositionBehaviorType_Blended",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "MultiPositionBehaviorType_Blended::Getter",
-                "category": "Constants"
-            }
+                "name": "Blended",
+                "category": "Constants/Multi Position Behavior Type"
+            },
+            "methods": [
+                {
+                    "base": "GetMultiPositionBehaviorType_Blended",
+                    "details": {
+                        "name": "Blended"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
+                            "details": {
+                                "name": "unsigned int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

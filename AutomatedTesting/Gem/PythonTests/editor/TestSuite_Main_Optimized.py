@@ -21,6 +21,8 @@ class TestAutomationNoAutoTestMode(EditorTestSuite):
     # Disable -autotest_mode and -BatchMode. Tests cannot run in -BatchMode due to UI interactions, and these tests
     # interact with modal dialogs
     global_extra_cmdline_args = []
+    
+    enable_prefab_system = False
 
     class test_BasicEditorWorkflows_LevelEntityComponentCRUD(EditorSingleTest):
         # Custom teardown to remove slice asset created during test
@@ -47,7 +49,6 @@ class TestAutomationNoAutoTestMode(EditorTestSuite):
         from .EditorScripts import AssetPicker_UI_UX as test_module
 
 
-@pytest.mark.xfail(reason="Optimized tests are experimental, we will enable xfail and monitor them temporarily.")
 @pytest.mark.SUITE_main
 @pytest.mark.parametrize("launcher_platform", ['windows_editor'])
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
@@ -55,6 +56,8 @@ class TestAutomationAutoTestMode(EditorTestSuite):
 
     # Enable only -autotest_mode for these tests. Tests cannot run in -BatchMode due to UI interactions
     global_extra_cmdline_args = ["-autotest_mode"]
+
+    enable_prefab_system = False
 
     class test_AssetBrowser_TreeNavigation(EditorSharedTest):
         from .EditorScripts import AssetBrowser_TreeNavigation as test_module

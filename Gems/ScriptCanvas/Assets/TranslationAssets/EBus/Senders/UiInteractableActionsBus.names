@@ -1,16 +1,16 @@
 {
     "entries": [
         {
-            "key": "UiInteractableActionsBus",
+            "base": "UiInteractableActionsBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "UiInteractableActionsBus",
+                "name": "UI Interactable Actions",
                 "category": "UI"
             },
             "methods": [
                 {
-                    "key": "SetPressedActionName",
+                    "base": "SetPressedActionName",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Pressed Action Name"
@@ -34,7 +34,7 @@
                     ]
                 },
                 {
-                    "key": "GetPressedActionName",
+                    "base": "GetPressedActionName",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Pressed Action Name"
@@ -57,7 +57,7 @@
                     ]
                 },
                 {
-                    "key": "GetHoverEndActionName",
+                    "base": "GetHoverEndActionName",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Hover End Action Name"
@@ -80,7 +80,7 @@
                     ]
                 },
                 {
-                    "key": "SetHoverStartActionName",
+                    "base": "SetHoverStartActionName",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Hover Start Action Name"
@@ -104,7 +104,7 @@
                     ]
                 },
                 {
-                    "key": "GetHoverStartActionName",
+                    "base": "GetHoverStartActionName",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Hover Start Action Name"
@@ -127,7 +127,7 @@
                     ]
                 },
                 {
-                    "key": "SetHoverEndActionName",
+                    "base": "SetHoverEndActionName",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Hover End Action Name"
@@ -151,7 +151,7 @@
                     ]
                 },
                 {
-                    "key": "GetReleasedActionName",
+                    "base": "GetReleasedActionName",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Released Action Name"
@@ -174,7 +174,7 @@
                     ]
                 },
                 {
-                    "key": "SetReleasedActionName",
+                    "base": "SetReleasedActionName",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Released Action Name"

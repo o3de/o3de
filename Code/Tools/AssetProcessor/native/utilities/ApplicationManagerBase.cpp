@@ -1173,6 +1173,7 @@ void ApplicationManagerBase::InitBuilderManager()
         {
             m_builderManager->ConnectionLost(connId);
         });
+    
 }
 
 void ApplicationManagerBase::ShutdownBuilderManager()
@@ -1481,7 +1482,7 @@ bool ApplicationManagerBase::WaitForBuilderExit(AzFramework::ProcessWatcher* pro
     AZ::u32 exitCode = 0;
     bool finishedOK = false;
     QElapsedTimer ticker;
-    CommunicatorTracePrinter tracer(processWatcher->GetCommunicator(), "AssetBuilder");
+    ProcessCommunicatorTracePrinter tracer(processWatcher->GetCommunicator(), "AssetBuilder");
 
     ticker.start();
 

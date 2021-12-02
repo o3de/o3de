@@ -1,16 +1,16 @@
 {
     "entries": [
         {
-            "key": "UiTransform2dBus",
+            "base": "UiTransform2dBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "UiTransform2dBus",
+                "name": "UI Transform 2D",
                 "category": "UI"
             },
             "methods": [
                 {
-                    "key": "GetLocalHeight",
+                    "base": "GetLocalHeight",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Local Height"
@@ -33,7 +33,7 @@
                     ]
                 },
                 {
-                    "key": "SetLocalHeight",
+                    "base": "SetLocalHeight",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Local Height"
@@ -57,7 +57,7 @@
                     ]
                 },
                 {
-                    "key": "GetLocalWidth",
+                    "base": "GetLocalWidth",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Local Width"
@@ -80,7 +80,7 @@
                     ]
                 },
                 {
-                    "key": "SetPivotAndAdjustOffsets",
+                    "base": "SetPivotAndAdjustOffsets",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Pivot And Adjust Offsets"
@@ -104,7 +104,7 @@
                     ]
                 },
                 {
-                    "key": "SetLocalWidth",
+                    "base": "SetLocalWidth",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Local Width"
@@ -128,7 +128,7 @@
                     ]
                 },
                 {
-                    "key": "GetOffsets",
+                    "base": "GetOffsets",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Offsets"
@@ -151,7 +151,7 @@
                     ]
                 },
                 {
-                    "key": "SetAnchors",
+                    "base": "SetAnchors",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Anchors"
@@ -189,7 +189,7 @@
                     ]
                 },
                 {
-                    "key": "GetAnchors",
+                    "base": "GetAnchors",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Anchors"
@@ -212,7 +212,7 @@
                     ]
                 },
                 {
-                    "key": "SetOffsets",
+                    "base": "SetOffsets",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Offsets"

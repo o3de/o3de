@@ -1,15 +1,16 @@
 {
     "entries": [
         {
-            "key": "TickRequestBus",
+            "base": "TickRequestBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "Tick"
+                "name": "Tick",
+                "category": "Timing"
             },
             "methods": [
                 {
-                    "key": "GetTickDeltaTime",
+                    "base": "GetTickDeltaTime",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Tick Delta Time"
@@ -25,13 +26,13 @@
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Delta Time"
+                                "name": "float"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "GetTimeAtCurrentTick",
+                    "base": "GetTimeAtCurrentTick",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Time At Current Tick"

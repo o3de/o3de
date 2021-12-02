@@ -77,6 +77,7 @@ namespace AZ
             void RenderImguiDrawData(const ImDrawData& drawData);
 
             // TickBus::Handler overrides...
+            int GetTickOrder() override;
             void OnTick(float deltaTime, AZ::ScriptTimePoint timePoint) override;
 
             // AzFramework::InputTextEventListener overrides...

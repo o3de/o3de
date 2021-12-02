@@ -1,15 +1,15 @@
 {
     "entries": [
         {
-            "key": "ConstantGradientRequestBus",
+            "base": "ConstantGradientRequestBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "ConstantGradientRequestBus"
+                "name": "Constant Gradient"
             },
             "methods": [
                 {
-                    "key": "GetConstantValue",
+                    "base": "GetConstantValue",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetConstantValue"
@@ -31,7 +31,7 @@
                     ]
                 },
                 {
-                    "key": "SetConstantValue",
+                    "base": "SetConstantValue",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetConstantValue"

@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "eUiFillEdgeOrigin_Left",
+            "base": "eUiFillEdgeOrigin_Left",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "eUiFillEdgeOrigin_Left::Getter",
-                "category": "Constants"
-            }
+                "name": "Left",
+                "category": "Constants/UI/Fill Edge"
+            },
+            "methods": [
+                {
+                    "base": "GeteUiFillEdgeOrigin_Left",
+                    "details": {
+                        "name": "Left"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

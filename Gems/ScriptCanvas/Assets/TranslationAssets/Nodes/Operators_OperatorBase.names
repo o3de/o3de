@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "{30FED030-71ED-4498-AB2C-F5586DFA490E}",
+            "base": "{30FED030-71ED-4498-AB2C-F5586DFA490E}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
@@ -11,14 +11,14 @@
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In",
                     "details": {
                         "name": "In",
                         "tooltip": "Input signal"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out",
                     "details": {
                         "name": "Out",
                         "tooltip": "Output signal"

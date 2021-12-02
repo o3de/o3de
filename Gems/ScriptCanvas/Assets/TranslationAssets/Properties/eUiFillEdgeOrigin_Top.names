@@ -1,13 +1,30 @@
 {
     "entries": [
         {
-            "key": "eUiFillEdgeOrigin_Top",
+            "base": "eUiFillEdgeOrigin_Top",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "eUiFillEdgeOrigin_Top::Getter",
-                "category": "Constants"
-            }
+                "name": "Top",
+                "category": "Constants/UI/Fill Edge",
+                "subtitle": "Fill Edge"
+            },
+            "methods": [
+                {
+                    "base": "GeteUiFillEdgeOrigin_Top",
+                    "details": {
+                        "name": "Top"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

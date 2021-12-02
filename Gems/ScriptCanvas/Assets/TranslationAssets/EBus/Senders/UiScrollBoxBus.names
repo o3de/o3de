@@ -1,16 +1,16 @@
 {
     "entries": [
         {
-            "key": "UiScrollBoxBus",
+            "base": "UiScrollBoxBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "UiScrollBoxBus",
+                "name": "UI Scroll Box",
                 "category": "UI"
             },
             "methods": [
                 {
-                    "key": "FindClosestContentChildElement",
+                    "base": "FindClosestContentChildElement",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Find Closest Content Child Element"
@@ -34,7 +34,7 @@
                     ]
                 },
                 {
-                    "key": "GetHorizontalScrollBarVisibility",
+                    "base": "GetHorizontalScrollBarVisibility",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Horizontal Scroll Bar Visibility"
@@ -57,7 +57,7 @@
                     ]
                 },
                 {
-                    "key": "GetVerticalScrollBarEntity",
+                    "base": "GetVerticalScrollBarEntity",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Vertical Scroll Bar Entity"
@@ -81,7 +81,7 @@
                     ]
                 },
                 {
-                    "key": "SetHorizontalScrollBarVisibility",
+                    "base": "SetHorizontalScrollBarVisibility",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Horizontal Scroll Bar Visibility"
@@ -105,7 +105,7 @@
                     ]
                 },
                 {
-                    "key": "SetScrollOffsetChangingActionName",
+                    "base": "SetScrollOffsetChangingActionName",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Scroll Offset Changing Action Name"
@@ -129,7 +129,7 @@
                     ]
                 },
                 {
-                    "key": "GetScrollOffsetChangingActionName",
+                    "base": "GetScrollOffsetChangingActionName",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Scroll Offset Changing Action Name"
@@ -152,7 +152,7 @@
                     ]
                 },
                 {
-                    "key": "GetHorizontalScrollBarEntity",
+                    "base": "GetHorizontalScrollBarEntity",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Horizontal Scroll Bar Entity"
@@ -176,7 +176,7 @@
                     ]
                 },
                 {
-                    "key": "HasHorizontalContentToScroll",
+                    "base": "HasHorizontalContentToScroll",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Has Horizontal Content To Scroll"
@@ -199,7 +199,7 @@
                     ]
                 },
                 {
-                    "key": "SetContentEntity",
+                    "base": "SetContentEntity",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Content Entity"
@@ -223,7 +223,7 @@
                     ]
                 },
                 {
-                    "key": "GetIsScrollingConstrained",
+                    "base": "GetIsScrollingConstrained",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Is Scrolling Constrained"
@@ -246,7 +246,7 @@
                     ]
                 },
                 {
-                    "key": "HasVerticalContentToScroll",
+                    "base": "HasVerticalContentToScroll",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Has Vertical Content To Scroll"
@@ -269,7 +269,7 @@
                     ]
                 },
                 {
-                    "key": "GetIsVerticalScrollingEnabled",
+                    "base": "GetIsVerticalScrollingEnabled",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Is Vertical Scrolling Enabled"
@@ -292,7 +292,7 @@
                     ]
                 },
                 {
-                    "key": "GetVerticalScrollBarVisibility",
+                    "base": "GetVerticalScrollBarVisibility",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Vertical Scroll Bar Visibility"
@@ -315,7 +315,7 @@
                     ]
                 },
                 {
-                    "key": "SetIsHorizontalScrollingEnabled",
+                    "base": "SetIsHorizontalScrollingEnabled",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Is Horizontal Scrolling Enabled"
@@ -339,7 +339,7 @@
                     ]
                 },
                 {
-                    "key": "GetNormalizedScrollValue",
+                    "base": "GetNormalizedScrollValue",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Normalized Scroll Value"
@@ -362,7 +362,7 @@
                     ]
                 },
                 {
-                    "key": "SetScrollOffset",
+                    "base": "SetScrollOffset",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Scroll Offset"
@@ -386,7 +386,7 @@
                     ]
                 },
                 {
-                    "key": "SetHorizontalScrollBarEntity",
+                    "base": "SetHorizontalScrollBarEntity",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Horizontal Scroll Bar Entity"
@@ -410,7 +410,7 @@
                     ]
                 },
                 {
-                    "key": "GetScrollOffset",
+                    "base": "GetScrollOffset",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Scroll Offset"
@@ -433,7 +433,7 @@
                     ]
                 },
                 {
-                    "key": "GetScrollOffsetChangedActionName",
+                    "base": "GetScrollOffsetChangedActionName",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Scroll Offset Changed Action Name"
@@ -456,7 +456,7 @@
                     ]
                 },
                 {
-                    "key": "SetVerticalScrollBarVisibility",
+                    "base": "SetVerticalScrollBarVisibility",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Vertical Scroll Bar Visibility"
@@ -480,7 +480,7 @@
                     ]
                 },
                 {
-                    "key": "GetIsHorizontalScrollingEnabled",
+                    "base": "GetIsHorizontalScrollingEnabled",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Is Horizontal Scrolling Enabled"
@@ -503,7 +503,7 @@
                     ]
                 },
                 {
-                    "key": "SetIsScrollingConstrained",
+                    "base": "SetIsScrollingConstrained",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Is Scrolling Constrained"
@@ -527,7 +527,7 @@
                     ]
                 },
                 {
-                    "key": "SetSnapGrid",
+                    "base": "SetSnapGrid",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Snap Grid"
@@ -551,7 +551,7 @@
                     ]
                 },
                 {
-                    "key": "SetIsVerticalScrollingEnabled",
+                    "base": "SetIsVerticalScrollingEnabled",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Is Vertical Scrolling Enabled"
@@ -575,7 +575,7 @@
                     ]
                 },
                 {
-                    "key": "GetSnapGrid",
+                    "base": "GetSnapGrid",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Snap Grid"
@@ -598,7 +598,7 @@
                     ]
                 },
                 {
-                    "key": "GetSnapMode",
+                    "base": "GetSnapMode",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Snap Mode"
@@ -621,7 +621,7 @@
                     ]
                 },
                 {
-                    "key": "SetScrollOffsetChangedActionName",
+                    "base": "SetScrollOffsetChangedActionName",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Scroll Offset Changed Action Name"
@@ -645,7 +645,7 @@
                     ]
                 },
                 {
-                    "key": "SetVerticalScrollBarEntity",
+                    "base": "SetVerticalScrollBarEntity",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Vertical Scroll Bar Entity"
@@ -669,7 +669,7 @@
                     ]
                 },
                 {
-                    "key": "GetContentEntity",
+                    "base": "GetContentEntity",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Content Entity"
@@ -693,7 +693,7 @@
                     ]
                 },
                 {
-                    "key": "SetSnapMode",
+                    "base": "SetSnapMode",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Snap Mode"

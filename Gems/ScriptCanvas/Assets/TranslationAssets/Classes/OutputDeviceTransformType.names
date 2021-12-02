@@ -1,12 +1,85 @@
 {
     "entries": [
         {
-            "key": "OutputDeviceTransformType",
+            "base": "OutputDeviceTransformType",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
-                "name": "OutputDeviceTransformType"
-            }
+                "name": "Output Device Transform Type",
+                "category": "Rendering"
+            },
+            "methods": [
+                {
+                    "base": "GetOutputDeviceTransformType_NumOutputDeviceTransformTypes",
+                    "details": {
+                        "name": "Get Output Device Transform Type_ Num Output Device Transform Types"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetOutputDeviceTransformType_4000Nits",
+                    "details": {
+                        "name": "Get Output Device Transform Type_ 4000 Nits"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetOutputDeviceTransformType_2000Nits",
+                    "details": {
+                        "name": "Get Output Device Transform Type_ 2000 Nits"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetOutputDeviceTransformType_100Nits",
+                    "details": {
+                        "name": "Get Output Device Transform Type_ 100 Nits"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetOutputDeviceTransformType_48Nits",
+                    "details": {
+                        "name": "Get Output Device Transform Type_ 48 Nits"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

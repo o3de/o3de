@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "BoxShapeComponentTypeId",
+            "base": "BoxShapeComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "BoxShapeComponentTypeId::Getter",
-                "category": "Constants"
-            }
+                "name": "Box Shape Component Type Id",
+                "category": "Constants/Editor"
+            },
+            "methods": [
+                {
+                    "base": "GetBoxShapeComponentTypeId",
+                    "details": {
+                        "name": "Get Box Shape Component Type Id"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}",
+                            "details": {
+                                "name": "AZ:: Uuid"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

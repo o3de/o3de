@@ -58,4 +58,18 @@ namespace AzToolsFramework::Prefab
         virtual const int GetPrefabFocusPathLength(AzFramework::EntityContextId entityContextId) const = 0;
     };
 
+    /**
+     * The primary purpose of this bus is to facilitate writing automated tests for prefab focus mode.
+     * If you would like to integrate prefabs focus mode into your system, please call PrefabFocusPublicInterface
+     * for better performance.
+     */
+    class PrefabFocusPublicRequests
+        : public AZ::EBusTraits
+    {
+    public:
+        static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
+    };
+
+    using PrefabFocusPublicRequestBus = AZ::EBus<PrefabFocusPublicInterface, PrefabFocusPublicRequests>;
+
 } // namespace AzToolsFramework::Prefab

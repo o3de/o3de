@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "JsonPatch",
+            "base": "JsonPatch",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "JsonPatch::Getter",
-                "category": "Constants"
-            }
+                "name": "Json Patch",
+                "category": "Constants/Json"
+            },
+            "methods": [
+                {
+                    "base": "GetJsonPatch",
+                    "details": {
+                        "name": "Get Json Patch"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

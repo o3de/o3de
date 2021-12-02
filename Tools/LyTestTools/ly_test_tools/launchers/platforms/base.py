@@ -91,7 +91,7 @@ class Launcher(object):
                         open(os.path.join(self.workspace.paths.project_log(), artifact), 'w').close() # clear it
                         log.info(f"Clearing pre-existing artifact {artifact} from calling Launcher.setup()")
                 except PermissionError:
-                    log.warn(f'Unable to remove artifact: {artifact}, skipping.')
+                    log.warning(f'Unable to remove artifact: {artifact}, skipping.')
                     pass
 
         # In case this is the first run, we will create default logs to prevent the logmonitor from not finding the file

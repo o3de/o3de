@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "TransformConfig",
+            "base": "TransformConfig",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "SetTransform",
+                    "base": "SetTransform",
                     "context": "TransformConfig",
                     "entry": {
                         "name": "In",
@@ -39,7 +39,7 @@
                     ]
                 },
                 {
-                    "key": "SetLocalAndWorldTransform",
+                    "base": "SetLocalAndWorldTransform",
                     "context": "TransformConfig",
                     "entry": {
                         "name": "In",
@@ -74,7 +74,7 @@
                     ]
                 },
                 {
-                    "key": "GetparentActivationTransformMode",
+                    "base": "GetparentActivationTransformMode",
                     "details": {
                         "name": "Get Parent Activation Transform Mode"
                     },
@@ -97,7 +97,7 @@
                     ]
                 },
                 {
-                    "key": "SetparentActivationTransformMode",
+                    "base": "SetparentActivationTransformMode",
                     "details": {
                         "name": "Set Parent Activation Transform Mode"
                     },
@@ -118,7 +118,7 @@
                     ]
                 },
                 {
-                    "key": "GetparentId",
+                    "base": "GetparentId",
                     "details": {
                         "name": "Get Parent Id"
                     },
@@ -141,7 +141,7 @@
                     ]
                 },
                 {
-                    "key": "SetparentId",
+                    "base": "SetparentId",
                     "details": {
                         "name": "Set Parent Id"
                     },
@@ -162,7 +162,7 @@
                     ]
                 },
                 {
-                    "key": "GetworldTransform",
+                    "base": "GetworldTransform",
                     "details": {
                         "name": "Get World Transform"
                     },
@@ -184,7 +184,7 @@
                     ]
                 },
                 {
-                    "key": "SetworldTransform",
+                    "base": "SetworldTransform",
                     "details": {
                         "name": "Set World Transform"
                     },
@@ -204,7 +204,7 @@
                     ]
                 },
                 {
-                    "key": "GetMaintainCurrentWorldTransform",
+                    "base": "GetMaintainCurrentWorldTransform",
                     "details": {
                         "name": "Get Maintain Current World Transform"
                     },
@@ -218,7 +218,7 @@
                     ]
                 },
                 {
-                    "key": "GetisStatic",
+                    "base": "GetisStatic",
                     "details": {
                         "name": "Get Is Static"
                     },
@@ -240,7 +240,7 @@
                     ]
                 },
                 {
-                    "key": "SetisStatic",
+                    "base": "SetisStatic",
                     "details": {
                         "name": "Set Is Static"
                     },
@@ -260,7 +260,7 @@
                     ]
                 },
                 {
-                    "key": "GetMaintainOriginalRelativeTransform",
+                    "base": "GetMaintainOriginalRelativeTransform",
                     "details": {
                         "name": "Get Maintain Original Relative Transform"
                     },
@@ -274,7 +274,7 @@
                     ]
                 },
                 {
-                    "key": "GetlocalTransform",
+                    "base": "GetlocalTransform",
                     "details": {
                         "name": "Get Local Transform"
                     },
@@ -296,7 +296,7 @@
                     ]
                 },
                 {
-                    "key": "SetlocalTransform",
+                    "base": "SetlocalTransform",
                     "details": {
                         "name": "Set Local Transform"
                     },

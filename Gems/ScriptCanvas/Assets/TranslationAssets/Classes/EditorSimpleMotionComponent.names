@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "EditorSimpleMotionComponent",
+            "base": "EditorSimpleMotionComponent",
             "context": "BehaviorClass",
             "variant": "",
             "details": {

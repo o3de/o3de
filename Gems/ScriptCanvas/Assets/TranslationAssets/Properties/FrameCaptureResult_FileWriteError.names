@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "FrameCaptureResult_FileWriteError",
+            "base": "FrameCaptureResult_FileWriteError",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "FrameCaptureResult_FileWriteError::Getter",
-                "category": "Constants"
-            }
+                "name": "File Write Error",
+                "category": "Constants/Frame Capture Result"
+            },
+            "methods": [
+                {
+                    "base": "GetFrameCaptureResult_FileWriteError",
+                    "details": {
+                        "name": "File Write Error"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

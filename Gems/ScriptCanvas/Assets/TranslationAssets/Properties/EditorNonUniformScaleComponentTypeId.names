@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "EditorNonUniformScaleComponentTypeId",
+            "base": "EditorNonUniformScaleComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "EditorNonUniformScaleComponentTypeId::Getter",
-                "category": "Constants"
-            }
+                "name": "Editor Non Uniform Scale Component Type Id",
+                "category": "Constants/Editor"
+            },
+            "methods": [
+                {
+                    "base": "GetEditorNonUniformScaleComponentTypeId",
+                    "details": {
+                        "name": "Get Editor Non Uniform Scale Component Type Id"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}",
+                            "details": {
+                                "name": "AZ:: Uuid"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

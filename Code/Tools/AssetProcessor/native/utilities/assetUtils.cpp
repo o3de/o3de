@@ -10,9 +10,10 @@
 #include <AzCore/Component/ComponentApplication.h>
 #include <AzCore/Math/Sha1.h>
 
-#include "native/utilities/PlatformConfiguration.h"
-#include "native/AssetManager/FileStateCache.h"
-#include "native/AssetDatabase/AssetDatabase.h"
+#include <native/utilities/PlatformConfiguration.h>
+#include <native/utilities/StatsCapture.h>
+#include <native/AssetManager/FileStateCache.h>
+#include <native/AssetDatabase/AssetDatabase.h>
 #include <utilities/ThreadHelper.h>
 #include <QCoreApplication>
 #include <QElapsedTimer>
@@ -1181,7 +1182,11 @@ namespace AssetUtilities
             }
         }
 
+        // keep track of how much time we spend actually hashing files.
+        AZStd::string statName = AZStd::string::format("HashFile,%s", filePath);
+        AssetProcessor::StatsCapture::BeginCaptureStat(statName.c_str());
         hash = AssetBuilderSDK::GetFileHash(filePath, bytesReadOut, hashMsDelay);
+        AssetProcessor::StatsCapture::EndCaptureStat(statName.c_str());
         return hash;
     }
 

@@ -11,17 +11,6 @@
 
 namespace GraphCanvas
 {
-    namespace Schema
-    {
-        namespace Field
-        {
-            static constexpr char key[]     = "key";
-            static constexpr char context[] = "context";
-            static constexpr char variant[] = "variant";
-            static constexpr char entries[] = "entries";
-        }
-    }
-
     AZ_CLASS_ALLOCATOR_IMPL(TranslationFormatSerializer, AZ::SystemAllocator, 0);
 
     void AddEntryToDatabase(const AZStd::string& baseKey, const AZStd::string& name, const rapidjson::Value& it, TranslationFormat* translationFormat)
@@ -76,8 +65,7 @@ namespace GraphCanvas
             const rapidjson::Value& array = it;
             for (rapidjson::SizeType i = 0; i < array.Size(); ++i)
             {
-                // so, here, I need to go in and if there is a "key" member within the object, then I need to use that,
-                // if there isn't, I can use the %d
+                // if there is a "base" member within the object, then use it, otherwise use the index
                 if (array[i].IsObject())
                 {
                     if (array[i].HasMember(Schema::Field::key))

@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "Matrix3x4",
+            "base": "Matrix3x4",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
@@ -9,7 +9,7 @@
             },
             "methods": [
                 {
-                    "key": "CreateZero",
+                    "base": "CreateZero",
                     "context": "Matrix3x4",
                     "entry": {
                         "name": "In",
@@ -33,7 +33,7 @@
                     ]
                 },
                 {
-                    "key": "SetRotationPartFromQuaternion",
+                    "base": "SetRotationPartFromQuaternion",
                     "context": "Matrix3x4",
                     "entry": {
                         "name": "In",
@@ -63,7 +63,7 @@
                     ]
                 },
                 {
-                    "key": "CreateFromColumns",
+                    "base": "CreateFromColumns",
                     "context": "Matrix3x4",
                     "entry": {
                         "name": "In",
@@ -113,7 +113,7 @@
                     ]
                 },
                 {
-                    "key": "IsClose",
+                    "base": "IsClose",
                     "context": "Matrix3x4",
                     "entry": {
                         "name": "In",
@@ -157,7 +157,7 @@
                     ]
                 },
                 {
-                    "key": "IsOrthogonal",
+                    "base": "IsOrthogonal",
                     "context": "Matrix3x4",
                     "entry": {
                         "name": "In",
@@ -195,7 +195,7 @@
                     ]
                 },
                 {
-                    "key": "Orthogonalize",
+                    "base": "Orthogonalize",
                     "context": "Matrix3x4",
                     "entry": {
                         "name": "In",
@@ -219,7 +219,7 @@
                     ]
                 },
                 {
-                    "key": "CreateFromMatrix3x3",
+                    "base": "CreateFromMatrix3x3",
                     "context": "Matrix3x4",
                     "entry": {
                         "name": "In",
@@ -251,7 +251,7 @@
                     ]
                 },
                 {
-                    "key": "RetrieveScale",
+                    "base": "RetrieveScale",
                     "context": "Matrix3x4",
                     "entry": {
                         "name": "In",
@@ -283,7 +283,7 @@
                     ]
                 },
                 {
-                    "key": "CreateRotationX",
+                    "base": "CreateRotationX",
                     "context": "Matrix3x4",
                     "entry": {
                         "name": "In",
@@ -315,7 +315,7 @@
                     ]
                 },
                 {
-                    "key": "CreateFromMatrix3x3AndTranslation",
+                    "base": "CreateFromMatrix3x3AndTranslation",
                     "context": "Matrix3x4",
                     "entry": {
                         "name": "In",
@@ -352,7 +352,7 @@
                     ]
                 },
                 {
-                    "key": "ToString",
+                    "base": "ToString",
                     "context": "Matrix3x4",
                     "entry": {
                         "name": "In",
@@ -383,7 +383,7 @@
                     ]
                 },
                 {
-                    "key": "ExtractScale",
+                    "base": "ExtractScale",
                     "context": "Matrix3x4",
                     "entry": {
                         "name": "In",
@@ -415,7 +415,7 @@
                     ]
                 },
                 {
-                    "key": "GetTranspose",
+                    "base": "GetTranspose",
                     "context": "Matrix3x4",
                     "entry": {
                         "name": "In",
@@ -446,7 +446,7 @@
                     ]
                 },
                 {
-                    "key": "InvertFast",
+                    "base": "InvertFast",
                     "context": "Matrix3x4",
                     "entry": {
                         "name": "In",
@@ -470,7 +470,7 @@
                     ]
                 },
                 {
-                    "key": "CreateFromRows",
+                    "base": "CreateFromRows",
                     "context": "Matrix3x4",
                     "entry": {
                         "name": "In",
@@ -514,7 +514,7 @@
                     ]
                 },
                 {
-                    "key": "CreateTranslation",
+                    "base": "CreateTranslation",
                     "context": "Matrix3x4",
                     "entry": {
                         "name": "In",
@@ -546,7 +546,7 @@
                     ]
                 },
                 {
-                    "key": "GetTranspose3x3",
+                    "base": "GetTranspose3x3",
                     "context": "Matrix3x4",
                     "entry": {
                         "name": "In",
@@ -578,7 +578,7 @@
                     ]
                 },
                 {
-                    "key": "SetColumn",
+                    "base": "SetColumn",
                     "context": "Matrix3x4",
                     "entry": {
                         "name": "In",
@@ -614,7 +614,7 @@
                     ]
                 },
                 {
-                    "key": "GetRow",
+                    "base": "GetRow",
                     "context": "Matrix3x4",
                     "entry": {
                         "name": "In",
@@ -652,7 +652,7 @@
                     ]
                 },
                 {
-                    "key": "GetInverseFast",
+                    "base": "GetInverseFast",
                     "context": "Matrix3x4",
                     "entry": {
                         "name": "In",
@@ -684,7 +684,7 @@
                     ]
                 },
                 {
-                    "key": "GetOrthogonalized",
+                    "base": "GetOrthogonalized",
                     "context": "Matrix3x4",
                     "entry": {
                         "name": "In",
@@ -717,7 +717,7 @@
                     ]
                 },
                 {
-                    "key": "Multiply3x3",
+                    "base": "Multiply3x3",
                     "context": "Matrix3x4",
                     "entry": {
                         "name": "In",
@@ -755,7 +755,7 @@
                     ]
                 },
                 {
-                    "key": "IsFinite",
+                    "base": "IsFinite",
                     "context": "Matrix3x4",
                     "entry": {
                         "name": "In",
@@ -787,7 +787,7 @@
                     ]
                 },
                 {
-                    "key": "CreateFromQuaternion",
+                    "base": "CreateFromQuaternion",
                     "context": "Matrix3x4",
                     "entry": {
                         "name": "In",
@@ -819,7 +819,7 @@
                     ]
                 },
                 {
-                    "key": "SetBasisAndTranslation",
+                    "base": "SetBasisAndTranslation",
                     "context": "Matrix3x4",
                     "entry": {
                         "name": "In",
@@ -867,7 +867,7 @@
                     ]
                 },
                 {
-                    "key": "MultiplyVector4",
+                    "base": "MultiplyVector4",
                     "context": "Matrix3x4",
                     "entry": {
                         "name": "In",
@@ -905,7 +905,7 @@
                     ]
                 },
                 {
-                    "key": "CreateScale",
+                    "base": "CreateScale",
                     "context": "Matrix3x4",
                     "entry": {
                         "name": "In",
@@ -937,7 +937,7 @@
                     ]
                 },
                 {
-                    "key": "CreateDiagonal",
+                    "base": "CreateDiagonal",
                     "context": "Matrix3x4",
                     "entry": {
                         "name": "In",
@@ -969,7 +969,7 @@
                     ]
                 },
                 {
-                    "key": "GetTranslation",
+                    "base": "GetTranslation",
                     "context": "Matrix3x4",
                     "entry": {
                         "name": "In",
@@ -1001,7 +1001,7 @@
                     ]
                 },
                 {
-                    "key": "InvertFull",
+                    "base": "InvertFull",
                     "context": "Matrix3x4",
                     "entry": {
                         "name": "In",
@@ -1025,7 +1025,7 @@
                     ]
                 },
                 {
-                    "key": "SetColumns",
+                    "base": "SetColumns",
                     "context": "Matrix3x4",
                     "entry": {
                         "name": "In",
@@ -1073,7 +1073,7 @@
                     ]
                 },
                 {
-                    "key": "SetElement",
+                    "base": "SetElement",
                     "context": "Matrix3x4",
                     "entry": {
                         "name": "In",
@@ -1115,7 +1115,7 @@
                     ]
                 },
                 {
-                    "key": "Equal",
+                    "base": "Equal",
                     "context": "Matrix3x4",
                     "entry": {
                         "name": "In",
@@ -1153,7 +1153,7 @@
                     ]
                 },
                 {
-                    "key": "GetDeterminant3x3",
+                    "base": "GetDeterminant3x3",
                     "context": "Matrix3x4",
                     "entry": {
                         "name": "In",
@@ -1185,7 +1185,7 @@
                     ]
                 },
                 {
-                    "key": "GetColumns",
+                    "base": "GetColumns",
                     "context": "Matrix3x4",
                     "entry": {
                         "name": "In",
@@ -1233,7 +1233,7 @@
                     ]
                 },
                 {
-                    "key": "SetRows",
+                    "base": "SetRows",
                     "context": "Matrix3x4",
                     "entry": {
                         "name": "In",
@@ -1275,7 +1275,7 @@
                     ]
                 },
                 {
-                    "key": "GetMultipliedByScale",
+                    "base": "GetMultipliedByScale",
                     "context": "Matrix3x4",
                     "entry": {
                         "name": "In",
@@ -1313,7 +1313,7 @@
                     ]
                 },
                 {
-                    "key": "CreateRotationZ",
+                    "base": "CreateRotationZ",
                     "context": "Matrix3x4",
                     "entry": {
                         "name": "In",
@@ -1345,7 +1345,7 @@
                     ]
                 },
                 {
-                    "key": "CreateFromQuaternionAndTranslation",
+                    "base": "CreateFromQuaternionAndTranslation",
                     "context": "Matrix3x4",
                     "entry": {
                         "name": "In",
@@ -1383,7 +1383,7 @@
                     ]
                 },
                 {
-                    "key": "GetRowAsVector3",
+                    "base": "GetRowAsVector3",
                     "context": "Matrix3x4",
                     "entry": {
                         "name": "In",
@@ -1421,7 +1421,7 @@
                     ]
                 },
                 {
-                    "key": "MultiplyMatrix3x4",
+                    "base": "MultiplyMatrix3x4",
                     "context": "Matrix3x4",
                     "entry": {
                         "name": "In",
@@ -1459,7 +1459,7 @@
                     ]
                 },
                 {
-                    "key": "GetRows",
+                    "base": "GetRows",
                     "context": "Matrix3x4",
                     "entry": {
                         "name": "In",
@@ -1501,7 +1501,7 @@
                     ]
                 },
                 {
-                    "key": "Clone",
+                    "base": "Clone",
                     "context": "Matrix3x4",
                     "entry": {
                         "name": "In",
@@ -1533,7 +1533,7 @@
                     ]
                 },
                 {
-                    "key": "MultiplyVector3",
+                    "base": "MultiplyVector3",
                     "context": "Matrix3x4",
                     "entry": {
                         "name": "In",
@@ -1571,7 +1571,7 @@
                     ]
                 },
                 {
-                    "key": "CreateIdentity",
+                    "base": "CreateIdentity",
                     "context": "Matrix3x4",
                     "entry": {
                         "name": "In",
@@ -1595,7 +1595,7 @@
                     ]
                 },
                 {
-                    "key": "GetBasisAndTranslation",
+                    "base": "GetBasisAndTranslation",
                     "context": "Matrix3x4",
                     "entry": {
                         "name": "In",
@@ -1643,7 +1643,7 @@
                     ]
                 },
                 {
-                    "key": "CreateFromValue",
+                    "base": "CreateFromValue",
                     "context": "Matrix3x4",
                     "entry": {
                         "name": "In",
@@ -1675,7 +1675,7 @@
                     ]
                 },
                 {
-                    "key": "GetElement",
+                    "base": "GetElement",
                     "context": "Matrix3x4",
                     "entry": {
                         "name": "In",
@@ -1719,7 +1719,7 @@
                     ]
                 },
                 {
-                    "key": "Transpose3x3",
+                    "base": "Transpose3x3",
                     "context": "Matrix3x4",
                     "entry": {
                         "name": "In",
@@ -1743,7 +1743,7 @@
                     ]
                 },
                 {
-                    "key": "Transpose",
+                    "base": "Transpose",
                     "context": "Matrix3x4",
                     "entry": {
                         "name": "In",
@@ -1767,7 +1767,7 @@
                     ]
                 },
                 {
-                    "key": "CreateRotationY",
+                    "base": "CreateRotationY",
                     "context": "Matrix3x4",
                     "entry": {
                         "name": "In",
@@ -1799,7 +1799,7 @@
                     ]
                 },
                 {
-                    "key": "SetRow",
+                    "base": "SetRow",
                     "context": "Matrix3x4",
                     "entry": {
                         "name": "In",
@@ -1835,7 +1835,7 @@
                     ]
                 },
                 {
-                    "key": "GetInverseFull",
+                    "base": "GetInverseFull",
                     "context": "Matrix3x4",
                     "entry": {
                         "name": "In",
@@ -1867,7 +1867,7 @@
                     ]
                 },
                 {
-                    "key": "GetColumn",
+                    "base": "GetColumn",
                     "context": "Matrix3x4",
                     "entry": {
                         "name": "In",
@@ -1905,7 +1905,7 @@
                     ]
                 },
                 {
-                    "key": "SetTranslation",
+                    "base": "SetTranslation",
                     "context": "Matrix3x4",
                     "entry": {
                         "name": "In",
@@ -1935,7 +1935,7 @@
                     ]
                 },
                 {
-                    "key": "basisX",
+                    "base": "basisX",
                     "context": "Getter",
                     "details": {
                         "name": "Get Basis X"
@@ -1958,7 +1958,7 @@
                     ]
                 },
                 {
-                    "key": "basisX",
+                    "base": "basisX",
                     "context": "Setter",
                     "details": {
                         "name": "Set Basis X"
@@ -1979,7 +1979,7 @@
                     ]
                 },
                 {
-                    "key": "basisY",
+                    "base": "basisY",
                     "context": "Getter",
                     "details": {
                         "name": "Get Basis Y"
@@ -2002,7 +2002,7 @@
                     ]
                 },
                 {
-                    "key": "basisY",
+                    "base": "basisY",
                     "context": "Setter",
                     "details": {
                         "name": "Set Basis Y"
@@ -2023,7 +2023,7 @@
                     ]
                 },
                 {
-                    "key": "basisZ",
+                    "base": "basisZ",
                     "context": "Getter",
                     "details": {
                         "name": "Get Basis Z"
@@ -2046,7 +2046,7 @@
                     ]
                 },
                 {
-                    "key": "basisZ",
+                    "base": "basisZ",
                     "context": "Setter",
                     "details": {
                         "name": "Set Basis Z"
@@ -2067,7 +2067,7 @@
                     ]
                 },
                 {
-                    "key": "translation",
+                    "base": "translation",
                     "context": "Getter",
                     "details": {
                         "name": "Get Translation"
@@ -2090,7 +2090,7 @@
                     ]
                 },
                 {
-                    "key": "translation",
+                    "base": "translation",
                     "context": "Setter",
                     "details": {
                         "name": "Set Translation"

@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "BlendOp_Add",
+            "base": "BlendOp_Add",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "BlendOp_Add::Getter",
-                "category": "Constants"
-            }
+                "name": "Add",
+                "category": "Constants/Blend Operation"
+            },
+            "methods": [
+                {
+                    "base": "GetBlendOp_Add",
+                    "details": {
+                        "name": "Get Add"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

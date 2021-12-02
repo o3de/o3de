@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "DebugDrawRequestBus",
+            "base": "DebugDrawRequestBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
@@ -9,7 +9,7 @@
             },
             "methods": [
                 {
-                    "key": "DrawTextOnEntity",
+                    "base": "DrawTextOnEntity",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Draw Text On Entity"
@@ -50,7 +50,7 @@
                     ]
                 },
                 {
-                    "key": "DrawRayEntityToDirection",
+                    "base": "DrawRayEntityToDirection",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Draw Ray Entity To Direction"
@@ -91,7 +91,7 @@
                     ]
                 },
                 {
-                    "key": "DrawObb",
+                    "base": "DrawObb",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Draw Oriented Bounding Box"
@@ -125,7 +125,7 @@
                     ]
                 },
                 {
-                    "key": "DrawObbOnEntity",
+                    "base": "DrawObbOnEntity",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Draw Oriented Bounding Box on Entity"
@@ -166,7 +166,7 @@
                     ]
                 },
                 {
-                    "key": "DrawRayLocationToDirection",
+                    "base": "DrawRayLocationToDirection",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Draw Ray Location To Direction"
@@ -206,7 +206,7 @@
                     ]
                 },
                 {
-                    "key": "DrawSphereOnEntity",
+                    "base": "DrawSphereOnEntity",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Draw Sphere On Entity"
@@ -247,7 +247,7 @@
                     ]
                 },
                 {
-                    "key": "DrawAabbOnEntity",
+                    "base": "DrawAabbOnEntity",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Draw Axis Aligned Bounding Box On Entity"
@@ -288,7 +288,7 @@
                     ]
                 },
                 {
-                    "key": "DrawLineEntityToEntity",
+                    "base": "DrawLineEntityToEntity",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Draw Line Entity To Entity"
@@ -330,7 +330,7 @@
                     ]
                 },
                 {
-                    "key": "DrawTextAtLocation",
+                    "base": "DrawTextAtLocation",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Draw Text At Location"
@@ -370,7 +370,7 @@
                     ]
                 },
                 {
-                    "key": "DrawTextOnScreen",
+                    "base": "DrawTextOnScreen",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Draw Text On Screen"
@@ -404,7 +404,7 @@
                     ]
                 },
                 {
-                    "key": "DrawAabb",
+                    "base": "DrawAabb",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Draw Axis Aligned Bounding Box"
@@ -438,7 +438,7 @@
                     ]
                 },
                 {
-                    "key": "DrawLineLocationToLocation",
+                    "base": "DrawLineLocationToLocation",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Draw Line Location To Location"
@@ -478,7 +478,7 @@
                     ]
                 },
                 {
-                    "key": "DrawLineEntityToLocation",
+                    "base": "DrawLineEntityToLocation",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Draw Line Entity To Location"
@@ -519,7 +519,7 @@
                     ]
                 },
                 {
-                    "key": "DrawRayEntityToEntity",
+                    "base": "DrawRayEntityToEntity",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Draw Ray Entity To Entity"
@@ -561,7 +561,7 @@
                     ]
                 },
                 {
-                    "key": "DrawSphereAtLocation",
+                    "base": "DrawSphereAtLocation",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Draw Sphere At Location"

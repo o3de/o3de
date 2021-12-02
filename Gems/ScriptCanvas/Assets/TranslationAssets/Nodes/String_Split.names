@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "{327EFC0F-F71E-4028-BAF9-C4223B933FB6}",
+            "base": "{327EFC0F-F71E-4028-BAF9-C4223B933FB6}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
@@ -12,32 +12,32 @@
             },
             "slots": [
                 {
-                    "key": "DataInput_Source",
+                    "base": "DataInput_Source",
                     "details": {
                         "name": "Source"
                     }
                 },
                 {
-                    "key": "DataInput_Delimiters",
+                    "base": "DataInput_Delimiters",
                     "details": {
                         "name": "Delimiters"
                     }
                 },
                 {
-                    "key": "DataOutput_String Array",
+                    "base": "DataOutput_String Array",
                     "details": {
                         "name": "String Array"
                     }
                 },
                 {
-                    "key": "Input_In",
+                    "base": "Input_In",
                     "details": {
                         "name": "In",
                         "tooltip": "Input signal"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out",
                     "details": {
                         "name": "Out"
                     }

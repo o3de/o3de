@@ -6,10 +6,8 @@
 #
 #
 
-# this ctest makes sure that the commit validation function
-# also runs its tests during commit validation!
 ly_add_pytest(
     NAME test_commit_validation
-    PATH ${CMAKE_CURRENT_LIST_DIR}
+    PATH ${CMAKE_CURRENT_LIST_DIR}/commit_validation/tests
+    TEST_SUITE smoke
 )
-

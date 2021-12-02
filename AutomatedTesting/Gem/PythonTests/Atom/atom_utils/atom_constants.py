@@ -149,11 +149,14 @@ class AtomComponentProperties:
     def display_mapper(property: str = 'name') -> str:
         """
         Display Mapper component properties.
+          - 'LDR color Grading LUT' is the Low Definition Range (LDR) color grading for Look-up Textures (LUT) which is
+            an Asset.id value corresponding to a lighting asset file.
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """
         properties = {
             'name': 'Display Mapper',
+            'LDR color Grading LUT': 'Controller|Configuration|LDR color Grading LUT',
         }
         return properties[property]
 
@@ -390,7 +393,7 @@ class AtomComponentProperties:
             'name': 'PostFX Shape Weight Modifier',
             'requires': [AtomComponentProperties.postfx_layer()],
             'shapes': ['Axis Aligned Box Shape', 'Box Shape', 'Capsule Shape', 'Compound Shape', 'Cylinder Shape',
-                       'Disk Shape', 'Polygon Prism Shape', 'Quad Shape', 'Sphere Shape', 'Vegetation Reference Shape'],
+                       'Disk Shape', 'Polygon Prism Shape', 'Quad Shape', 'Sphere Shape', 'Shape Reference'],
         }
         return properties[property]
 
