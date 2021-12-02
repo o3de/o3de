@@ -1,12 +1,9 @@
 {
     "description": "",
-    "materialType": "Materials/Types/StandardPBR.materialtype",
     "parentMaterial": "",
-    "propertyLayoutVersion": 3,
+    "materialType": "Materials/Types/StandardPBR.materialtype",
+    "materialTypeVersion": 4,
     "properties": {
-        "occlusion": {
-            "diffuseTextureMap": "Textures/background_1k_ao.png"
-        },
         "baseColor": {
             "color": [
                 0.800000011920929,
@@ -14,12 +11,12 @@
                 0.800000011920929,
                 1.0
             ],
-            "textureMap": "Textures/background_1k_basecolor.png"
+            "textureMap": "../Textures/background_1k_basecolor.png"
         },
         "clearCoat": {
             "enable": true,
             "factor": 0.5,
-            "normalMap": "Textures/background_1k_normal.jpg",
+            "normalMap": "../Textures/background_1k_normal.jpg",
             "roughness": 0.4000000059604645
         },
         "general": {
@@ -34,24 +31,26 @@
             ]
         },
         "metallic": {
-            "textureMap": "Textures/background_1k_metallic.png"
+            "textureMap": "../Textures/background_1k_metallic.png"
         },
         "normal": {
-            "textureMap": "Textures/background_1k_normal.jpg"
+            "textureMap": "../Textures/background_1k_normal.jpg"
+        },
+        "occlusion": {
+            "diffuseTextureMap": "../Textures/background_1k_ao.png"
         },
         "opacity": {
             "factor": 1.0
         },
         "parallax": {
-            "algorithm": "POM",
             "factor": 0.03099999949336052,
             "pdo": true,
             "quality": "High",
-            "textureMap": "Textures/background_1k_height.png",
+            "textureMap": "../Textures/background_1k_height.png",
             "useTexture": false
         },
         "roughness": {
-            "textureMap": "Textures/background_1k_roughness.png"
+            "textureMap": "../Textures/background_1k_roughness.png"
         }
     }
 }

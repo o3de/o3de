@@ -1,8 +1,8 @@
 {
     "description": "",
-    "materialType": "Materials/Types/StandardPBR.materialtype",
     "parentMaterial": "",
-    "propertyLayoutVersion": 3,
+    "materialType": "Materials/Types/StandardPBR.materialtype",
+    "materialTypeVersion": 4,
     "properties": {
         "baseColor": {
             "color": [
@@ -11,7 +11,8 @@
                 0.800000011920929,
                 1.0
             ],
-            "textureMap": "Textures/chain_basecolor.png"
+            "textureBlendMode": "Lerp",
+            "textureMap": "../Textures/chain_basecolor.png"
         },
         "emissive": {
             "color": [
@@ -21,8 +22,20 @@
                 1.0
             ]
         },
+        "general": {
+            "doubleSided": true
+        },
+        "metallic": {
+            "factor": 0.8899999856948853
+        },
+        "normal": {
+            "textureMap": "../Textures/chain_normal.jpg"
+        },
         "opacity": {
-            "factor": 1.0
+            "alphaSource": "Split",
+            "factor": 1.0,
+            "mode": "Cutout",
+            "textureMap": "../Textures/chain_alpha.png"
         }
     }
 }

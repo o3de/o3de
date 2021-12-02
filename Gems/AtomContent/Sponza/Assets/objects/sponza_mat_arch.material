@@ -1,12 +1,9 @@
 {
     "description": "",
-    "materialType": "Materials/Types/StandardPBR.materialtype",
     "parentMaterial": "",
-    "propertyLayoutVersion": 3,
+    "materialType": "Materials/Types/StandardPBR.materialtype",
+    "materialTypeVersion": 4,
     "properties": {
-        "occlusion": {
-            "diffuseTextureMap": "Textures/arch_1k_ao.png"
-        },
         "baseColor": {
             "color": [
                 0.800000011920929,
@@ -14,10 +11,50 @@
                 0.800000011920929,
                 1.0
             ],
-            "textureMap": "Textures/arch_1k_basecolor.png"
+            "factor": 1.0,
+            "textureBlendMode": "Multiply",
+            "textureMap": "../Textures/arch_1k_basecolor.png",
+            "textureMapUv": "Tiled",
+            "useTexture": true
+        },
+        "clearCoat": {
+            "enable": false,
+            "factor": 1.0,
+            "influenceMap": "",
+            "influenceMapUv": "Tiled",
+            "normalMap": "",
+            "normalMapUv": "Tiled",
+            "normalStrength": 1.0,
+            "roughness": 0.0,
+            "roughnessMap": "",
+            "roughnessMapUv": "Tiled",
+            "useInfluenceMap": true,
+            "useNormalMap": true,
+            "useRoughnessMap": true
+        },
+        "emissive": {
+            "color": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+            ],
+            "enable": false,
+            "intensity": 4.0,
+            "textureMap": "",
+            "textureMapUv": "Tiled",
+            "unit": "Ev100",
+            "useTexture": true
         },
         "general": {
-            "applySpecularAA": true
+            "applySpecularAA": true,
+            "doubleSided": false,
+            "enableAreaLights": true,
+            "enableDirectionalLights": true,
+            "enableIBL": true,
+            "enablePunctualLights": true,
+            "enableShadows": true,
+            "forwardPassIBLSpecular": false
         },
         "irradiance": {
             "color": [
@@ -25,27 +62,78 @@
                 0.885053813457489,
                 0.801281750202179,
                 1.0
-            ]
+            ],
+            "factor": 1.0
         },
         "metallic": {
-            "textureMap": "Textures/arch_1k_metallic.png"
+            "factor": 0.0,
+            "textureMap": "",
+            "textureMapUv": "Tiled",
+            "useTexture": true
         },
         "normal": {
-            "textureMap": "Textures/arch_1k_normal.jpg"
+            "factor": 1.0,
+            "flipX": false,
+            "flipY": false,
+            "textureMap": "../Textures/arch_1k_normal.jpg",
+            "textureMapUv": "Tiled",
+            "useTexture": true
+        },
+        "occlusion": {
+            "diffuseFactor": 1.0,
+            "diffuseTextureMap": "../Textures/arch_1k_ao.png",
+            "diffuseTextureMapUv": "Tiled",
+            "diffuseUseTexture": true,
+            "specularFactor": 1.0,
+            "specularTextureMap": "",
+            "specularTextureMapUv": "Tiled",
+            "specularUseTexture": true
         },
         "opacity": {
-            "factor": 1.0
+            "alphaAffectsSpecular": 0.0,
+            "alphaSource": "Packed",
+            "factor": 1.0,
+            "mode": "Opaque",
+            "textureMap": "",
+            "textureMapUv": "Tiled"
         },
         "parallax": {
             "algorithm": "POM",
-            "factor": 0.050999999046325687,
+            "factor": 0.050999999046325684,
+            "offset": 0.0,
             "pdo": true,
             "quality": "High",
-            "textureMap": "Textures/arch_1k_height.png",
+            "showClipping": false,
+            "textureMap": "../Textures/arch_1k_height.png",
+            "textureMapUv": "Tiled",
             "useTexture": false
         },
         "roughness": {
-            "textureMap": "Textures/arch_1k_roughness.png"
+            "factor": 1.0,
+            "lowerBound": 0.0,
+            "textureMap": "../Textures/arch_1k_roughness.png",
+            "textureMapUv": "Tiled",
+            "upperBound": 1.0,
+            "useTexture": true
+        },
+        "specularF0": {
+            "enableMultiScatterCompensation": false,
+            "factor": 0.5,
+            "textureMap": "",
+            "textureMapUv": "Tiled",
+            "useTexture": true
+        },
+        "uv": {
+            "center": [
+                0.5,
+                0.5
+            ],
+            "offsetU": 0.0,
+            "offsetV": 0.0,
+            "rotateDegrees": 0.0,
+            "scale": 1.0,
+            "tileU": 1.0,
+            "tileV": 1.0
         }
     }
 }
