@@ -74,7 +74,7 @@ namespace AZ
             void EstimateCompletionTimeForRequest(FileRequest* request, AZStd::chrono::system_clock::time_point& startTime,
                 const RequestPath*& activeFile, u64& activeOffset) const;
 
-            void Report(const FileRequestReportData& data) const;
+            void Report(const Requests::ReportData& data) const;
 
             TimedAverageWindow<s_statisticsWindowSize> m_fileOpenCloseTimeAverage;
             TimedAverageWindow<s_statisticsWindowSize> m_getFileExistsTimeAverage;

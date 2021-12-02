@@ -111,7 +111,7 @@ namespace AZ::IO
             CacheFull
         };
 
-        OpenFileResult OpenFile(HANDLE& fileHandle, size_t& cacheSlot, FileRequest* request, const FileRequestReadData& data);
+        OpenFileResult OpenFile(HANDLE& fileHandle, size_t& cacheSlot, FileRequest* request, const Requests::ReadData& data);
         bool ReadRequest(FileRequest* request);
         bool ReadRequest(FileRequest* request, size_t readSlot);
         bool CancelRequest(FileRequest* cancelRequest, FileRequestPtr& target);
@@ -137,7 +137,7 @@ namespace AZ::IO
         void FinalizeSingleRequest(FileReadStatus& status, size_t readSlot, DWORD numBytesTransferred,
             bool isCanceled, bool encounteredError);
 
-        void Report(const FileRequestReportData& data) const;
+        void Report(const Requests::ReportData& data) const;
 
         TimedAverageWindow<s_statisticsWindowSize> m_fileOpenCloseTimeAverage;
         TimedAverageWindow<s_statisticsWindowSize> m_getFileExistsTimeAverage;

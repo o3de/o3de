@@ -62,9 +62,9 @@ namespace AZ
             AZ_PROFILE_FUNCTION(AzCore);
             AZ_Assert(request, "PrepareRequest was provided a null request.");
 
-            if (AZStd::holds_alternative<FileRequestReadRequestData>(request->GetCommand()))
+            if (AZStd::holds_alternative<Requests::ReadRequestData>(request->GetCommand()))
             {
-                auto& readRequest = AZStd::get<FileRequestReadRequestData>(request->GetCommand());
+                auto& readRequest = AZStd::get<Requests::ReadRequestData>(request->GetCommand());
 
                 FileRequest* read = m_context->GetNewInternalRequest();
                 read->CreateRead(request, readRequest.m_output, readRequest.m_outputSize, readRequest.m_path,
@@ -81,29 +81,29 @@ namespace AZ
             AZStd::visit([this, request](auto&& args)
             {
                 using Command = AZStd::decay_t<decltype(args)>;
-                if constexpr (AZStd::is_same_v<Command, FileRequestReadData> ||
-                    AZStd::is_same_v<Command, FileRequest::FileExistsCheckData> ||
-                    AZStd::is_same_v<Command, FileRequest::FileMetaDataRetrievalData>)
+                if constexpr (AZStd::is_same_v<Command, Requests::ReadData> ||
+                    AZStd::is_same_v<Command, Requests::FileExistsCheckData> ||
+                    AZStd::is_same_v<Command, Requests::FileMetaDataRetrievalData>)
                 {
                     m_pendingRequests.push_back(request);
                     return;
                 }
-                else if constexpr (AZStd::is_same_v<Command, FileRequest::CancelData>)
+                else if constexpr (AZStd::is_same_v<Command, Requests::CancelData>)
                 {
                     CancelRequest(request, args.m_target);
                     return;
                 }
                 else
                 {
-                    if constexpr (AZStd::is_same_v<Command, FileRequest::FlushData>)
+                    if constexpr (AZStd::is_same_v<Command, Requests::FlushData>)
                     {
                         FlushCache(args.m_path);
                     }
-                    else if constexpr (AZStd::is_same_v<Command, FileRequest::FlushAllData>)
+                    else if constexpr (AZStd::is_same_v<Command, Requests::FlushAllData>)
                     {
                         FlushEntireCache();
                     }
-                    else if constexpr (AZStd::is_same_v<Command, FileRequestReportData>)
+                    else if constexpr (AZStd::is_same_v<Command, Requests::ReportData>)
                     {
                         Report(args);
                     }
@@ -120,15 +120,15 @@ namespace AZ
                 AZStd::visit([this, request](auto&& args)
                 {
                     using Command = AZStd::decay_t<decltype(args)>;
-                    if constexpr (AZStd::is_same_v<Command, FileRequestReadData>)
+                    if constexpr (AZStd::is_same_v<Command, Requests::ReadData>)
                     {
                         ReadFile(request);
                     }
-                    else if constexpr (AZStd::is_same_v<Command, FileRequest::FileExistsCheckData>)
+                    else if constexpr (AZStd::is_same_v<Command, Requests::FileExistsCheckData>)
                     {
                         FileExistsRequest(request);
                     }
-                    else if constexpr (AZStd::is_same_v<Command, FileRequest::FileMetaDataRetrievalData>)
+                    else if constexpr (AZStd::is_same_v<Command, Requests::FileMetaDataRetrievalData>)
                     {
                         FileMetaDataRetrievalRequest(request);
                     }
@@ -201,25 +201,25 @@ namespace AZ
             AZStd::visit([&](auto&& args)
             {
                 using Command = AZStd::decay_t<decltype(args)>;
-                if constexpr (AZStd::is_same_v<Command, FileRequestReadData>)
+                if constexpr (AZStd::is_same_v<Command, Requests::ReadData>)
                 {
                     targetFile = &args.m_path;
                     readSize = args.m_size;
                     offset = args.m_offset;
                 }
-                else if constexpr (AZStd::is_same_v<Command, FileRequest::CompressedReadData>)
+                else if constexpr (AZStd::is_same_v<Command, Requests::CompressedReadData>)
                 {
                     targetFile = &args.m_compressionInfo.m_archiveFilename;
                     readSize = args.m_compressionInfo.m_compressedSize;
                     offset = args.m_compressionInfo.m_offset;
                 }
-                else if constexpr (AZStd::is_same_v<Command, FileRequest::FileExistsCheckData>)
+                else if constexpr (AZStd::is_same_v<Command, Requests::FileExistsCheckData>)
                 {
                     readSize = 0;
                     AZStd::chrono::microseconds averageTime = m_getFileExistsTimeAverage.CalculateAverage();
                     startTime += averageTime;
                 }
-                else if constexpr (AZStd::is_same_v<Command, FileRequest::FileMetaDataRetrievalData>)
+                else if constexpr (AZStd::is_same_v<Command, Requests::FileMetaDataRetrievalData>)
                 {
                     readSize = 0;
                     AZStd::chrono::microseconds averageTime = m_getFileMetaDataTimeAverage.CalculateAverage();
@@ -256,7 +256,7 @@ namespace AZ
         {
             AZ_PROFILE_FUNCTION(AzCore);
 
-            auto data = AZStd::get_if<FileRequestReadData>(&request->GetCommand());
+            auto data = AZStd::get_if<Requests::ReadData>(&request->GetCommand());
             AZ_Assert(data, "FileRequest queued on StorageDrive to be read didn't contain read data.");
 
             SystemFile* file = nullptr;
@@ -344,7 +344,7 @@ namespace AZ
             AZ_PROFILE_FUNCTION(AzCore);
             TIMED_AVERAGE_WINDOW_SCOPE(m_getFileExistsTimeAverage);
 
-            auto& fileExists = AZStd::get<FileRequest::FileExistsCheckData>(request->GetCommand());
+            auto& fileExists = AZStd::get<Requests::FileExistsCheckData>(request->GetCommand());
             size_t cacheIndex = FindFileInCache(fileExists.m_path);
             if (cacheIndex != s_fileNotFound)
             {
@@ -362,7 +362,7 @@ namespace AZ
             AZ_PROFILE_FUNCTION(AzCore);
             TIMED_AVERAGE_WINDOW_SCOPE(m_getFileMetaDataTimeAverage);
 
-            auto& command = AZStd::get<FileRequest::FileMetaDataRetrievalData>(request->GetCommand());
+            auto& command = AZStd::get<Requests::FileMetaDataRetrievalData>(request->GetCommand());
             // If the file is already open, use the file handle which usually is cheaper than asking for the file by name.
             size_t cacheIndex = FindFileInCache(command.m_path);
             if (cacheIndex != s_fileNotFound)
@@ -448,11 +448,11 @@ namespace AZ
             }
         }
 
-        void StorageDrive::Report(const FileRequestReportData& data) const
+        void StorageDrive::Report(const Requests::ReportData& data) const
         {
             switch (data.m_reportType)
             {
-            case FileRequestReportData::ReportType::FileLocks:
+            case Requests::ReportData::ReportType::FileLocks:
                 for (u32 i = 0; i < m_fileHandles.size(); ++i)
                 {
                     if (m_fileHandles[i] != nullptr)

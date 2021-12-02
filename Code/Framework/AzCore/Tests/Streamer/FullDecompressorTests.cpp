@@ -145,7 +145,7 @@ namespace AZ::IO
 
         void PrepareReadRequest(FileRequest* request)
         {
-            auto data = AZStd::get_if<FileRequestReadData>(&request->GetCommand());
+            auto data = AZStd::get_if<Requests::ReadData>(&request->GetCommand());
             ASSERT_NE(nullptr, data);
 
             u64 size = data->m_size >> 2;

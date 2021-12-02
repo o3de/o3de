@@ -19,7 +19,10 @@
 namespace AZ::IO
 {
     class RequestPath;
-    struct FileRequestReportData;
+    namespace Requests
+    {
+        struct ReportData;
+    }
 }
 
 namespace AzFramework
@@ -70,7 +73,7 @@ namespace AzFramework
             const AZ::IO::RequestPath*& activeFile) const;
         void FlushCache(const AZ::IO::RequestPath& filePath);
         void FlushEntireCache();
-        void Report(const AZ::IO::FileRequestReportData& data) const;
+        void Report(const AZ::IO::Requests::ReportData& data) const;
 
         AZ::IO::RemoteFileIO m_fileIO;
         AZ::IO::TimedAverageWindow<AZ::IO::s_statisticsWindowSize> m_fileOpenCloseTimeAverage;

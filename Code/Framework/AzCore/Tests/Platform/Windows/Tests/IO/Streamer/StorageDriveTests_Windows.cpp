@@ -603,7 +603,7 @@ namespace AZ::IO
         AZ_POP_DISABLE_WARNING
         {
             EXPECT_EQ(request.GetStatus(), AZ::IO::IStreamerTypes::RequestStatus::Completed);
-            auto& readRequest = AZStd::get<AZ::IO::FileRequestReadData>(request.GetCommand());
+            auto& readRequest = AZStd::get<AZ::IO::Requests::ReadData>(request.GetCommand());
             EXPECT_EQ(readRequest.m_size, fileSize);
             EXPECT_STREQ(readRequest.m_path.GetAbsolutePath(), m_dummyFilepath.c_str());
         };
@@ -648,7 +648,7 @@ namespace AZ::IO
         AZ_POP_DISABLE_WARNING
         {
             EXPECT_EQ(request.GetStatus(), AZ::IO::IStreamerTypes::RequestStatus::Completed);
-            auto& readRequest = AZStd::get<AZ::IO::FileRequestReadData>(request.GetCommand());
+            auto& readRequest = AZStd::get<AZ::IO::Requests::ReadData>(request.GetCommand());
             EXPECT_EQ(readRequest.m_size, unalignedSize);
             EXPECT_EQ(readRequest.m_offset, unalignedOffset);
             EXPECT_STREQ(readRequest.m_path.GetAbsolutePath(), m_dummyFilepath.c_str());
@@ -796,7 +796,7 @@ namespace AZ::IO
             AZ_POP_DISABLE_WARNING
             {
                 EXPECT_EQ(request.GetStatus(), AZ::IO::IStreamerTypes::RequestStatus::Completed);
-                auto& readRequest = AZStd::get<AZ::IO::FileRequestReadData>(request.GetCommand());
+                auto& readRequest = AZStd::get<AZ::IO::Requests::ReadData>(request.GetCommand());
                 EXPECT_EQ(readRequest.m_size, chunkSize);
                 EXPECT_EQ(readRequest.m_offset, i * chunkSize);
             };

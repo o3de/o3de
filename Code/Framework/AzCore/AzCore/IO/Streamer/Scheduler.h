@@ -62,8 +62,8 @@ namespace AZ::IO
         bool Thread_ExecuteRequests();
         bool Thread_PrepareRequests(AZStd::vector<FileRequestPtr>& outstandingRequests);
         void Thread_ProcessTillIdle();
-        void Thread_ProcessCancelRequest(FileRequest* request, FileRequest::CancelData& data);
-        void Thread_ProcessRescheduleRequest(FileRequest* request, FileRequest::RescheduleData& data);
+        void Thread_ProcessCancelRequest(FileRequest* request, Requests::CancelData& data);
+        void Thread_ProcessRescheduleRequest(FileRequest* request, Requests::RescheduleData& data);
 
         enum class Order
         {

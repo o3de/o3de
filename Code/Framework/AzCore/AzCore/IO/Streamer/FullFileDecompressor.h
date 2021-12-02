@@ -19,120 +19,120 @@
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/Statistics/RunningStatistic.h>
 
-namespace AZ
+namespace AZ::IO
 {
-    namespace IO
+    namespace Requests
     {
-        struct FileRequestReadRequestData;
+        struct ReadRequestData;
+    }
 
-        struct FullFileDecompressorConfig final :
-            public IStreamerStackConfig
+    struct FullFileDecompressorConfig final :
+        public IStreamerStackConfig
+    {
+        AZ_RTTI(AZ::IO::FullFileDecompressorConfig, "{C96B7EC1-8C73-4493-A7CB-66F5D550FC3A}", IStreamerStackConfig);
+        AZ_CLASS_ALLOCATOR(FullFileDecompressorConfig, AZ::SystemAllocator, 0);
+
+        ~FullFileDecompressorConfig() override = default;
+        AZStd::shared_ptr<StreamStackEntry> AddStreamStackEntry(
+            const HardwareInformation& hardware, AZStd::shared_ptr<StreamStackEntry> parent) override;
+        static void Reflect(AZ::ReflectContext* context);
+
+        //! Maximum number of reads that are kept in flight.
+        u32 m_maxNumReads{ 2 };
+        //! Maximum number of decompression jobs that can run simultaneously.
+        u32 m_maxNumJobs{ 2 };
+    };
+
+    //! Entry in the streaming stack that decompresses files from an archive that are stored
+    //! as single files and without equally distributed seek points.
+    //! Because the target archive has compressed the entire file, it needs to be decompressed
+    //! completely, so even if the file is partially read, it needs to be fully loaded. This
+    //! also means that there's no upper limit to the memory so every decompression job will
+    //! need to allocate memory as a temporary buffer (in-place decompression is not supported).
+    //! Finally, the lack of an upper limit also means that the duration of the decompression job
+    //! can vary largely so a dedicated job system is used to decompress on to avoid blocking
+    //! the main job system from working.
+    class FullFileDecompressor
+        : public StreamStackEntry
+    {
+    public:
+        FullFileDecompressor(u32 maxNumReads, u32 maxNumJobs, u32 alignment);
+        ~FullFileDecompressor() override = default;
+
+        void PrepareRequest(FileRequest* request) override;
+        void QueueRequest(FileRequest* request) override;
+        bool ExecuteRequests() override;
+
+        void UpdateStatus(Status& status) const override;
+        void UpdateCompletionEstimates(AZStd::chrono::system_clock::time_point now, AZStd::vector<FileRequest*>& internalPending,
+            StreamerContext::PreparedQueue::iterator pendingBegin, StreamerContext::PreparedQueue::iterator pendingEnd) override;
+
+        void CollectStatistics(AZStd::vector<Statistic>& statistics) const override;
+
+    private:
+        using Buffer = u8*;
+
+        enum class ReadBufferStatus : uint8_t
         {
-            AZ_RTTI(AZ::IO::FullFileDecompressorConfig, "{C96B7EC1-8C73-4493-A7CB-66F5D550FC3A}", IStreamerStackConfig);
-            AZ_CLASS_ALLOCATOR(FullFileDecompressorConfig, AZ::SystemAllocator, 0);
-
-            ~FullFileDecompressorConfig() override = default;
-            AZStd::shared_ptr<StreamStackEntry> AddStreamStackEntry(
-                const HardwareInformation& hardware, AZStd::shared_ptr<StreamStackEntry> parent) override;
-            static void Reflect(AZ::ReflectContext* context);
-
-            //! Maximum number of reads that are kept in flight.
-            u32 m_maxNumReads{ 2 };
-            //! Maximum number of decompression jobs that can run simultaneously.
-            u32 m_maxNumJobs{ 2 };
+            Unused,
+            ReadInFlight,
+            PendingDecompression
         };
 
-        //! Entry in the streaming stack that decompresses files from an archive that are stored
-        //! as single files and without equally distributed seek points.
-        //! Because the target archive has compressed the entire file, it needs to be decompressed
-        //! completely, so even if the file is partially read, it needs to be fully loaded. This
-        //! also means that there's no upper limit to the memory so every decompression job will
-        //! need to allocate memory as a temporary buffer (in-place decompression is not supported).
-        //! Finally, the lack of an upper limit also means that the duration of the decompression job
-        //! can vary largely so a dedicated job system is used to decompress on to avoid blocking
-        //! the main job system from working.
-        class FullFileDecompressor
-            : public StreamStackEntry
+        struct DecompressionInformation
         {
-        public:
-            FullFileDecompressor(u32 maxNumReads, u32 maxNumJobs, u32 alignment);
-            ~FullFileDecompressor() override = default;
+            bool IsProcessing() const;
 
-            void PrepareRequest(FileRequest* request) override;
-            void QueueRequest(FileRequest* request) override;
-            bool ExecuteRequests() override;
+            AZStd::chrono::high_resolution_clock::time_point m_queueStartTime;
+            AZStd::chrono::high_resolution_clock::time_point m_jobStartTime;
+            Buffer m_compressedData{ nullptr };
+            FileRequest* m_waitRequest{ nullptr };
+            u32 m_alignmentOffset{ 0 };
+        };
 
-            void UpdateStatus(Status& status) const override;
-            void UpdateCompletionEstimates(AZStd::chrono::system_clock::time_point now, AZStd::vector<FileRequest*>& internalPending,
-                StreamerContext::PreparedQueue::iterator pendingBegin, StreamerContext::PreparedQueue::iterator pendingEnd) override;
+        bool IsIdle() const;
 
-            void CollectStatistics(AZStd::vector<Statistic>& statistics) const override;
+        void PrepareReadRequest(FileRequest* request, Requests::ReadRequestData& data);
+        void PrepareDedicatedCache(FileRequest* request, const RequestPath& path);
+        void FileExistsCheck(FileRequest* checkRequest);
 
-        private:
-            using Buffer = u8*;
+        void EstimateCompressedReadRequest(FileRequest* request, AZStd::chrono::microseconds& cumulativeDelay,
+            AZStd::chrono::microseconds decompressionDelay, double totalDecompressionDurationUs, double totalBytesDecompressed) const;
 
-            enum class ReadBufferStatus : uint8_t
-            {
-                Unused,
-                ReadInFlight,
-                PendingDecompression
-            };
+        void StartArchiveRead(FileRequest* compressedReadRequest);
+        void FinishArchiveRead(FileRequest* readRequest, u32 readSlot);
+        bool StartDecompressions();
+        void FinishDecompression(FileRequest* waitRequest, u32 jobSlot);
 
-            struct DecompressionInformation
-            {
-                bool IsProcessing() const;
+        static void FullDecompression(StreamerContext* context, DecompressionInformation& info);
+        static void PartialDecompression(StreamerContext* context, DecompressionInformation& info);
 
-                AZStd::chrono::high_resolution_clock::time_point m_queueStartTime;
-                AZStd::chrono::high_resolution_clock::time_point m_jobStartTime;
-                Buffer m_compressedData{ nullptr };
-                FileRequest* m_waitRequest{ nullptr };
-                u32 m_alignmentOffset{ 0 };
-            };
+        AZStd::deque<FileRequest*> m_pendingReads;
+        AZStd::deque<FileRequest*> m_pendingFileExistChecks;
 
-            bool IsIdle() const;
-
-            void PrepareReadRequest(FileRequest* request, FileRequestReadRequestData& data);
-            void PrepareDedicatedCache(FileRequest* request, const RequestPath& path);
-            void FileExistsCheck(FileRequest* checkRequest);
-
-            void EstimateCompressedReadRequest(FileRequest* request, AZStd::chrono::microseconds& cumulativeDelay,
-                AZStd::chrono::microseconds decompressionDelay, double totalDecompressionDurationUs, double totalBytesDecompressed) const;
-
-            void StartArchiveRead(FileRequest* compressedReadRequest);
-            void FinishArchiveRead(FileRequest* readRequest, u32 readSlot);
-            bool StartDecompressions();
-            void FinishDecompression(FileRequest* waitRequest, u32 jobSlot);
-
-            static void FullDecompression(StreamerContext* context, DecompressionInformation& info);
-            static void PartialDecompression(StreamerContext* context, DecompressionInformation& info);
-
-            AZStd::deque<FileRequest*> m_pendingReads;
-            AZStd::deque<FileRequest*> m_pendingFileExistChecks;
-
-            AverageWindow<size_t, double, s_statisticsWindowSize> m_decompressionJobDelayMicroSec;
-            AverageWindow<size_t, double, s_statisticsWindowSize> m_decompressionDurationMicroSec;
-            AverageWindow<size_t, double, s_statisticsWindowSize> m_bytesDecompressed;
+        AverageWindow<size_t, double, s_statisticsWindowSize> m_decompressionJobDelayMicroSec;
+        AverageWindow<size_t, double, s_statisticsWindowSize> m_decompressionDurationMicroSec;
+        AverageWindow<size_t, double, s_statisticsWindowSize> m_bytesDecompressed;
 #if AZ_STREAMER_ADD_EXTRA_PROFILING_INFO
-            AZ::Statistics::RunningStatistic m_decompressionBoundStat;
-            AZ::Statistics::RunningStatistic m_readBoundStat;
+        AZ::Statistics::RunningStatistic m_decompressionBoundStat;
+        AZ::Statistics::RunningStatistic m_readBoundStat;
 #endif
 
-            AZStd::unique_ptr<Buffer[]> m_readBuffers;
-            // Nullptr if not reading, the read request if reading the file and the wait request for decompression when waiting on decompression.
-            AZStd::unique_ptr<FileRequest*[]> m_readRequests;
-            AZStd::unique_ptr<ReadBufferStatus[]> m_readBufferStatus;
+        AZStd::unique_ptr<Buffer[]> m_readBuffers;
+        // Nullptr if not reading, the read request if reading the file and the wait request for decompression when waiting on decompression.
+        AZStd::unique_ptr<FileRequest*[]> m_readRequests;
+        AZStd::unique_ptr<ReadBufferStatus[]> m_readBufferStatus;
 
-            AZStd::unique_ptr<DecompressionInformation[]> m_processingJobs;
-            AZStd::unique_ptr<JobManager> m_decompressionJobManager;
-            AZStd::unique_ptr<JobContext> m_decompressionjobContext;
+        AZStd::unique_ptr<DecompressionInformation[]> m_processingJobs;
+        AZStd::unique_ptr<JobManager> m_decompressionJobManager;
+        AZStd::unique_ptr<JobContext> m_decompressionjobContext;
 
-            size_t m_memoryUsage{ 0 }; //!< Amount of memory used for buffers by the decompressor.
-            u32 m_maxNumReads{ 2 };
-            u32 m_numInFlightReads{ 0 };
-            u32 m_numPendingDecompression{ 0 };
-            u32 m_maxNumJobs{ 1 };
-            u32 m_numRunningJobs{ 0 };
-            u32 m_alignment{ 0 };
-        };
-    } // namespace IO
-} // namespace AZ
+        size_t m_memoryUsage{ 0 }; //!< Amount of memory used for buffers by the decompressor.
+        u32 m_maxNumReads{ 2 };
+        u32 m_numInFlightReads{ 0 };
+        u32 m_numPendingDecompression{ 0 };
+        u32 m_maxNumJobs{ 1 };
+        u32 m_numRunningJobs{ 0 };
+        u32 m_alignment{ 0 };
+    };
+} // namespace AZ::IO

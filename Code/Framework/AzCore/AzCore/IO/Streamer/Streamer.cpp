@@ -210,7 +210,7 @@ namespace AZ::IO
         IStreamerTypes::ClaimMemory claimMemory) const
     {
         AZ_Assert(request.m_request, "The request handle provided to Streamer::GetReadRequestResult is invalid.");
-        auto readRequest = AZStd::get_if<FileRequestReadRequestData>(&request.m_request->GetCommand());
+        auto readRequest = AZStd::get_if<Requests::ReadRequestData>(&request.m_request->GetCommand());
         if (readRequest != nullptr)
         {
             buffer = readRequest->m_output;
@@ -281,14 +281,14 @@ namespace AZ::IO
         }
     }
 
-    FileRequestPtr Streamer::Report(FileRequestReportData::ReportType reportType)
+    FileRequestPtr Streamer::Report(Requests::ReportData::ReportType reportType)
     {
         FileRequestPtr result = CreateRequest();
         Report(result, reportType);
         return result;
     }
 
-    FileRequestPtr& Streamer::Report(FileRequestPtr& request, FileRequestReportData::ReportType reportType)
+    FileRequestPtr& Streamer::Report(FileRequestPtr& request, Requests::ReportData::ReportType reportType)
     {
         request->m_request.CreateReport(reportType);
         return request;

@@ -86,7 +86,7 @@ namespace AZ::IO
                 .WillOnce([this](FileRequest* request)
                     {
                         AZ_Assert(m_streamerContext, "AZ::IO::Streamer is not ready to process requests.");
-                        auto readData = AZStd::get_if<FileRequestReadRequestData>(&request->GetCommand());
+                        auto readData = AZStd::get_if<Requests::ReadRequestData>(&request->GetCommand());
                         AZ_Assert(readData, "Test didn't pass in the correct request.");
                         FileRequest* read = m_streamerContext->GetNewInternalRequest();
                         read->CreateRead(request, readData->m_output, readData->m_outputSize, readData->m_path,
@@ -99,7 +99,7 @@ namespace AZ::IO
                 .WillOnce([this](FileRequest* request)
                     {
                         AZ_Assert(m_streamerContext, "AZ::IO::Streamer is not ready to process requests.");
-                        auto readData = AZStd::get_if<FileRequestReadData>(&request->GetCommand());
+                        auto readData = AZStd::get_if<Requests::ReadData>(&request->GetCommand());
                         AZ_Assert(readData, "Test didn't pass in the correct request.");
                         auto output = reinterpret_cast<uint8_t*>(readData->m_output);
                         AZ_Assert(output != nullptr, "Output buffer has not been set.");
@@ -304,7 +304,7 @@ namespace AZ::IO
         EXPECT_CALL(*m_mock, QueueRequest(_)).Times(1)
             .WillOnce(Invoke([this](FileRequest* request)
             {
-                auto* read = request->GetCommandFromChain<FileRequestReadRequestData>();
+                auto* read = request->GetCommandFromChain<Requests::ReadRequestData>();
                 ASSERT_NE(nullptr, read);
                 EXPECT_LT(read->m_deadline, FileRequest::s_noDeadlineTime);
                 EXPECT_EQ(read->m_priority, IStreamerTypes::s_priorityHighest);
