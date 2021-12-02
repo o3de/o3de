@@ -22,13 +22,6 @@
 
 #include <GridMate/Carrier/Carrier.h>
 
-#define GM_TEST_MEMORY_DRILLING 0
-//////////////////////////////////////////////////////////////////////////
-// Drillers
-#include <AzCore/Driller/Driller.h>
-
-#define AZ_ROOT_TEST_FOLDER ""
-
 #include <AzCore/AzCore_Traits_Platform.h>
 
 //////////////////////////////////////////////////////////////////////////
@@ -64,11 +57,6 @@ namespace UnitTest
             , m_drillerManager(nullptr)
         {
             GridMate::GridMateDesc desc;
-#if GM_TEST_MEMORY_DRILLING
-            m_drillerManager = AZ::Debug::DrillerManager::Create();
-
-            desc.m_allocatorDesc.m_allocationRecords = true;
-#endif
             AZ::AllocatorInstance<AZ::SystemAllocator>::Create();
 
             //desc.m_autoInitPlatformNetModules = false;
