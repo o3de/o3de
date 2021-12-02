@@ -47,6 +47,7 @@ namespace UnitTest
         void SetupAllocator(const AZ::SystemAllocator::Descriptor& allocatorDesc = {})
         {
             m_drillerManager = AZ::Debug::DrillerManager::Create();
+            AZ::AllocatorManager::Instance().EnterProfilingMode();
             AZ::AllocatorManager::Instance().SetDefaultTrackingMode(AZ::Debug::AllocationRecords::RECORD_FULL);
 
             // Only create the SystemAllocator if it s not ready
@@ -69,6 +70,7 @@ namespace UnitTest
             AZ::Debug::DrillerManager::Destroy(m_drillerManager);
 
             AZ::AllocatorManager::Instance().SetDefaultTrackingMode(AZ::Debug::AllocationRecords::RECORD_NO_RECORDS);
+            AZ::AllocatorManager::Instance().ExitProfilingMode();
         }
     };
 

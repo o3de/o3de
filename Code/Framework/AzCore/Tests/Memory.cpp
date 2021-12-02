@@ -44,10 +44,12 @@ namespace UnitTest
         {
             AZ::AllocatorManager::Instance().SetDefaultTrackingMode(AZ::Debug::AllocationRecords::RECORD_FULL);
             m_drillerManager = Debug::DrillerManager::Create();
+            AZ::AllocatorManager::Instance().EnterProfilingMode();
         }
         void TearDown() override
         {
             Debug::DrillerManager::Destroy(m_drillerManager);
+            AZ::AllocatorManager::Instance().ExitProfilingMode();
             AZ::AllocatorManager::Instance().SetDefaultTrackingMode(AZ::Debug::AllocationRecords::RECORD_NO_RECORDS);
         }
     protected:

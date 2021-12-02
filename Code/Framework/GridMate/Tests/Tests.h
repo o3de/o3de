@@ -89,6 +89,7 @@ namespace UnitTest
             if (m_drillerManager)
             {
                 AZ::Debug::DrillerManager::Destroy(m_drillerManager);
+                AZ::AllocatorManager::Instance().ExitProfilingMode();
                 m_drillerManager = nullptr;
             }
         }
