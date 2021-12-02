@@ -23,7 +23,8 @@ def CreatePrefab_WithSingleEntity():
 
     # Creates a prefab from the new entity
     Prefab.create_prefab(car_prefab_entities, CAR_PREFAB_FILE_NAME)
-
+    azlmbr.legacy.general.run_console("sys_crashtest 1")
+    
 if __name__ == "__main__":
     from editor_python_test_tools.utils import Report
     Report.start_test(CreatePrefab_WithSingleEntity)
