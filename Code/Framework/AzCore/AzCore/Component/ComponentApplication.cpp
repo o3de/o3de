@@ -486,9 +486,11 @@ namespace AZ
 
         // Merge Command Line arguments
         constexpr bool executeRegDumpCommands = false;
-        SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(*m_settingsRegistry, m_commandLine, executeRegDumpCommands);
 
+#if defined(AZ_DEBUG_BUILD) || defined(AZ_PROFILE_BUILD)
+        // Skip over merging the User Registry in non-debug and profile configurations
         SettingsRegistryMergeUtils::MergeSettingsToRegistry_O3deUserRegistry(*m_settingsRegistry, AZ_TRAIT_OS_PLATFORM_CODENAME, {});
+#endif
         SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(*m_settingsRegistry, m_commandLine, executeRegDumpCommands);
         SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(*m_settingsRegistry);
 
