@@ -151,7 +151,6 @@ namespace AZ
         void ImGuiPass::OnTick(float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint timePoint)
         {
             auto imguiContextScope = ImguiContextScope(m_imguiContext);
-            ImGui::NewFrame();
 
             auto& io = ImGui::GetIO();
             io.DeltaTime = deltaTime;
@@ -591,6 +590,7 @@ namespace AZ
             auto imguiContextScope = ImguiContextScope(m_imguiContext);
             ImGui::GetIO().MouseWheel = m_lastFrameMouseWheel;
             m_lastFrameMouseWheel = 0.0;
+            ImGui::NewFrame();
         }
 
         void ImGuiPass::BuildCommandListInternal(const RHI::FrameGraphExecuteContext& context)
