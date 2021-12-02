@@ -226,12 +226,15 @@ ShaderResourceGroup PassSrg : SRG_PerPass
 
 PSOutput MainPS(VSOutput IN)
 {
-    uint2 tileId = ComputeTileId(IN.m_position.xy);
+    const uint2 tileId = ComputeTileId(IN.m_position.xy);
     
-    // We subtract NUM_LIGHT_TYPES because it includes termination markers
-    uint lightCount = PassSrg::m_tileLightData[tileId].w - NUM_LIGHT_TYPES;
+    const uint tileLightDataW = PassSrg::m_tileLightData[tileId].w;
+    const bool overflow = (tileLightDataW >> 31);    
 
-    float3 tileColor = ComputeTileColor(IN.m_position.xy, lightCount, TileCountMax);
+    // We subtract NUM_LIGHT_TYPES because it includes termination markers
+    const uint lightCount = overflow ? NVLC_MAX_POSSIBLE_LIGHTS_PER_BIN : tileLightDataW - NUM_LIGHT_TYPES;
+
+    const float3 tileColor = ComputeTileColor(IN.m_position.xy, lightCount, TileCountMax);
                              
     PSOutput OUT;
     OUT.m_color.rgb = tileColor; 
