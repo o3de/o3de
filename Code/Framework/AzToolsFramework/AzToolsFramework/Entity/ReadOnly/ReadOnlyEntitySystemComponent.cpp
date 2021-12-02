@@ -70,7 +70,7 @@ namespace AzToolsFramework
         for (auto& elem : m_readOnlystates)
         {
             AZ::EntityId entityId = elem.first;
-            bool wasReadOnly = m_readOnlystates[entityId];
+            bool wasReadOnly = elem.second;
             QueryReadOnlyStateForEntity(entityId);
 
             if (bool isReadOnly = m_readOnlystates[entityId]; wasReadOnly != isReadOnly)
