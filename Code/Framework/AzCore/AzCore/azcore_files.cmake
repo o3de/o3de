@@ -406,7 +406,6 @@ set(FILES
     Memory/OSAllocator.h
     Memory/OverrunDetectionAllocator.cpp
     Memory/OverrunDetectionAllocator.h
-    Memory/PlatformMemoryInstrumentation.h
     Memory/PoolAllocator.h
     Memory/PoolSchema.cpp
     Memory/PoolSchema.h

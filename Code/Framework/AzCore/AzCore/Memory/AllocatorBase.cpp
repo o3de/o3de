@@ -73,30 +73,23 @@ void AllocatorBase::PostCreate()
         }
     }
 
-#if PLATFORM_MEMORY_INSTRUMENTATION_ENABLED
-    m_platformMemoryInstrumentationGroupId = AZ::PlatformMemoryInstrumentation::GetNextGroupId();
-    AZ::PlatformMemoryInstrumentation::RegisterGroup(m_platformMemoryInstrumentationGroupId, GetDescription(), AZ::PlatformMemoryInstrumentation::m_groupRoot);
-#else
     const auto debugConfig = GetDebugConfig();
     if (!debugConfig.m_excludeFromDebugging)
     {
         SetRecords(aznew Debug::AllocationRecords((unsigned char)debugConfig.m_stackRecordLevels, debugConfig.m_usesMemoryGuards, debugConfig.m_marksUnallocatedMemory, GetName()));
     }
-#endif
 
     m_isReady = true;
 }
 
 void AllocatorBase::PreDestroy()
 {
-#if !PLATFORM_MEMORY_INSTRUMENTATION_ENABLED
     Debug::AllocationRecords* allocatorRecords = GetRecords();
     if(allocatorRecords)
     {
         delete allocatorRecords;
         SetRecords(nullptr);
     }
-#endif
 
     if (m_registrationEnabled && AZ::AllocatorManager::IsReady())
     {
@@ -144,15 +137,11 @@ void AllocatorBase::ProfileAllocation(void* ptr, size_t byteSize, size_t alignme
 
     if (m_isProfilingActive)
     {
-#if PLATFORM_MEMORY_INSTRUMENTATION_ENABLED
-        AZ::PlatformMemoryInstrumentation::Alloc(ptr, byteSize, 0, m_platformMemoryInstrumentationGroupId);
-#else
         auto records = GetRecords();
         if (records)
         {
             records->RegisterAllocation(ptr, byteSize, alignment, name, fileName, lineNum, suppressStackRecord + 1);
         }
-#endif
     }
 }
 
@@ -160,39 +149,25 @@ void AllocatorBase::ProfileDeallocation(void* ptr, size_t byteSize, size_t align
 {
     if (m_isProfilingActive)
     {
-#if PLATFORM_MEMORY_INSTRUMENTATION_ENABLED
-        AZ::PlatformMemoryInstrumentation::Free(ptr);
-#else
         auto records = GetRecords();
         if (records)
         {
             records->UnregisterAllocation(ptr, byteSize, alignment, info);
         }
-#endif
     }
 }
 
 void AllocatorBase::ProfileReallocationBegin([[maybe_unused]] void* ptr, [[maybe_unused]] size_t newSize)
 {
-    if (m_isProfilingActive)
-    {
-#if PLATFORM_MEMORY_INSTRUMENTATION_ENABLED
-        AZ::PlatformMemoryInstrumentation::ReallocBegin(ptr, newSize, m_platformMemoryInstrumentationGroupId);
-#endif
-    }
 }
 
 void AllocatorBase::ProfileReallocationEnd(void* ptr, void* newPtr, size_t newSize, size_t newAlignment)
 {
     if (m_isProfilingActive)
     {
-#if PLATFORM_MEMORY_INSTRUMENTATION_ENABLED
-        AZ::PlatformMemoryInstrumentation::ReallocEnd(newPtr, newSize, 0);
-#else
         Debug::AllocationInfo info;
         ProfileDeallocation(ptr, 0, 0, &info);
         ProfileAllocation(newPtr, newSize, newAlignment, info.m_name, info.m_fileName, info.m_lineNum, 0);
-#endif
     }
 }
 
@@ -205,13 +180,11 @@ void AllocatorBase::ProfileResize(void* ptr, size_t newSize)
 {
     if (newSize && m_isProfilingActive)
     {
-#if !PLATFORM_MEMORY_INSTRUMENTATION_ENABLED
         auto records = GetRecords();
         if (records)
         {
             records->ResizeAllocation(ptr, newSize);
         }
-#endif
     }
 }
 

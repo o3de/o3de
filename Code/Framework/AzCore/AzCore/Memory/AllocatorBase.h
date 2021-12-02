@@ -8,7 +8,6 @@
 #pragma once
 
 #include <AzCore/Memory/IAllocator.h>
-#include <AzCore/Memory/PlatformMemoryInstrumentation.h>
 
 namespace AZ
 {
@@ -110,9 +109,6 @@ namespace AZ
         bool m_isReady = false;
         bool m_canBeOverridden = true;
         bool m_registrationEnabled = true;
-#if PLATFORM_MEMORY_INSTRUMENTATION_ENABLED
-        uint16_t m_platformMemoryInstrumentationGroupId = 0;
-#endif
     };
 
     namespace Internal  {
