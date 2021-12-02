@@ -17,8 +17,7 @@ class Tests:
         "Level failed to find Diffuse Global Illumination component")
     diffuse_global_illumination_quality = (
         "Quality Level set",
-        "Quality Level could not be set"
-    )
+        "Quality Level could not be set")
     enter_game_mode = (
         "Entered game mode",
         "Failed to enter game mode")
