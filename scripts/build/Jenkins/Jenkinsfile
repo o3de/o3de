@@ -469,7 +469,7 @@ def UploadTestArtifacts(String jobName, String workspace, String outputDirectory
     }
 }
 
-def PostBuildCommonSteps(String workspace, Map params, boolean mount = true) {
+def PostBuildCommonSteps(String workspace, String outputDirectory, boolean mount = true) {
     echo 'Starting post-build common steps...'
     dir([workspace, ENGINE_REPOSITORY_NAME, outputDirectory].join('/')){
         // Clean up Testing directory
@@ -555,10 +555,10 @@ def CreateUploadTestArtifactStage(String jobName, String workspace, String outpu
     }
 }
 
-def CreateTeardownStage(Map environmentVars, Map params) {
+def CreateTeardownStage(Map environmentVars, String outputDirectory) {
     return {
         stage('Teardown') {
-            PostBuildCommonSteps(environmentVars['WORKSPACE'], params, environmentVars['MOUNT_VOLUME'])
+            PostBuildCommonSteps(environmentVars['WORKSPACE'], outputDirectory, environmentVars['MOUNT_VOLUME'])
         }
     }
 }
@@ -629,7 +629,7 @@ def CreateSingleNode(Map pipelineConfig, def platform, def build_job, Map envVar
                         if (params && params.containsKey('TEST_SCREENSHOTS') && params.TEST_SCREENSHOTS == 'True' && currentResult == 'FAILURE') {
                             CreateExportTestScreenshotsStage(pipelineConfig, branchName, platform.key, build_job_name, envVars, params).call()
                         }
-                        CreateTeardownStage(envVars, params).call()
+                        CreateTeardownStage(envVars, params.OUTPUT_DIRECTORY).call()
                     }
                 }
             }
