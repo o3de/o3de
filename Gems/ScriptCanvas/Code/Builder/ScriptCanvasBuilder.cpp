@@ -27,23 +27,24 @@ namespace BuildVariableOverridesCpp
     };
 
     bool VersionConverter
-        ( [[maybe_unused]] AZ::SerializeContext& serializeContext
-        , [[maybe_unused]] AZ::SerializeContext::DataElementNode& rootElement)
+        ( AZ::SerializeContext& serializeContext
+        , AZ::SerializeContext::DataElementNode& rootElement)
     {
-        // #sc_editor_asset
-//         ScriptCanvasBuilder::BuildVariableOverrides overrides;
-//         overrides.m_source = SourceHandle(nullptr, assetHolder.GetAssetId().m_guid, {});
-// 
-//         for (auto& variable : editableData.GetVariables())
-//         {
-//             overrides.m_overrides.push_back(variable.m_graphVariable);
-//         }
-// 
-//         if (!rootElement.AddElementWithData(serializeContext, "runtimeDataOverrides", overrides))
-//         {
-//             AZ_Error("ScriptCanvas", false, "EditorScriptCanvasComponent conversion failed: failed to add 'runtimeDataOverrides'");
-//             return false;
-//         }
+         // #sc_editor_asset
+        ScriptCanvasBuilder::BuildVariableOverrides overrides;
+        overrides.m_source = SourceHandle(nullptr, assetHolder.GetAssetId().m_guid, {});
+ 
+        for (auto& variable : editableData.GetVariables())
+        {
+            overrides.m_overrides.push_back(variable.m_graphVariable);
+        }
+ 
+        if (!rootElement.AddElementWithData(serializeContext, "runtimeDataOverrides", overrides))
+        {
+            AZ_Error("ScriptCanvas", false, "EditorScriptCanvasComponent conversion failed: failed to add 'runtimeDataOverrides'");
+            return false;
+        }
+
         return true;
     }
 }

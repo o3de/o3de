@@ -110,15 +110,14 @@ namespace ScriptCanvasEditor
 
                 if (subElement)
                 {
-// #sc_editor_asset
-//                     if (subElement->GetData(assetIds))
-//                     {
-//                         assetSaveData.reserve(assetIds.size());
-//                         for (const AZ::Data::AssetId& assetId : assetIds)
-//                         {
-//                             assetSaveData.emplace_back(assetId);
-//                         }
-//                     }
+                    if (subElement->GetData(assetIds))
+                    {
+                        assetSaveData.reserve(assetIds.size());
+                        for (const AZ::Data::AssetId& assetId : assetIds)
+                        {
+                            assetSaveData.emplace_back(SourceHandle( nullptr, assetId.m_guid, "" ));
+                        }
+                    }
                 }
 
                 rootDataElementNode.RemoveElementByName(AZ_CRC_CE("ActiveAssetIds"));

@@ -257,8 +257,10 @@ namespace ScriptCanvasEditor
 
                 if (treeItem->GetAssetId().IsValid())
                 {
-                    // #sc_editor_asset
-                    // GeneralRequestBus::Broadcast(&GeneralRequests::OpenScriptCanvasAssetId, treeItem->GetAssetId());
+                    GeneralRequestBus::Broadcast
+                        ( &GeneralRequests::OpenScriptCanvasAssetId
+                        , SourceHandle(nullptr, treeItem->GetAssetId().m_guid, "")
+                        , Tracker::ScriptCanvasFileState::UNMODIFIED);
                 }
             }
         }
