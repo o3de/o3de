@@ -30,6 +30,7 @@
 #include <AzToolsFramework/ContainerEntity/ContainerEntitySystemComponent.h>
 #include <AzToolsFramework/Entity/EditorEntityContextComponent.h>
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
+#include <AzToolsFramework/Entity/ReadOnly/ReadOnlyEntitySystemComponent.h>
 #include <AzToolsFramework/FocusMode/FocusModeSystemComponent.h>
 #include <AzToolsFramework/Slice/SliceMetadataEntityContextComponent.h>
 #include <AzToolsFramework/Prefab/PrefabSystemComponent.h>
@@ -268,6 +269,7 @@ namespace AzToolsFramework
                 azrtti_typeid<Components::EditorEntityUiSystemComponent>(),
                 azrtti_typeid<FocusModeSystemComponent>(),
                 azrtti_typeid<ContainerEntitySystemComponent>(),
+                azrtti_typeid<ReadOnlyEntitySystemComponent>(),
                 azrtti_typeid<SliceMetadataEntityContextComponent>(),
                 azrtti_typeid<Prefab::PrefabSystemComponent>(),
                 azrtti_typeid<EditorEntityFixupComponent>(),

@@ -56,6 +56,7 @@ set(FILES
     include/LmbrCentral/Shape/SplineComponentBus.h
     include/LmbrCentral/Shape/PolygonPrismShapeComponentBus.h
     include/LmbrCentral/Shape/TubeShapeComponentBus.h
+    include/LmbrCentral/Shape/ReferenceShapeComponentBus.h
     include/LmbrCentral/Shape/SplineAttribute.h
     include/LmbrCentral/Shape/SplineAttribute.inl
     include/LmbrCentral/Terrain/TerrainSystemRequestBus.h
