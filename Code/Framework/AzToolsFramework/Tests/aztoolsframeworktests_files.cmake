@@ -28,6 +28,9 @@ set(FILES
     Entity/EditorEntitySearchComponentTests.cpp
     Entity/EditorEntitySelectionTests.cpp
     Entity/EntityUtilityComponentTests.cpp
+    Entity/ReadOnly/ReadOnlyEntityFixture.cpp
+    Entity/ReadOnly/ReadOnlyEntityFixture.h
+    Entity/ReadOnly/ReadOnlyEntityTests.cpp
     EntityIdQLabelTests.cpp
     EntityInspectorTests.cpp
     EntityOwnershipService/EntityOwnershipServiceTestFixture.cpp

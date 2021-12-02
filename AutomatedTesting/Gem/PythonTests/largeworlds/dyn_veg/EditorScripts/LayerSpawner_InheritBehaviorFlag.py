@@ -78,7 +78,7 @@ def LayerSpawner_InheritBehaviorFlag():
     # Create Vegetation area and assign a valid asset
     veg_1 = hydra.Entity("veg_1")
     veg_1.create_entity(
-        position, ["Vegetation Layer Spawner", "Vegetation Reference Shape", "Vegetation Asset List"]
+        position, ["Vegetation Layer Spawner", "Shape Reference", "Vegetation Asset List"]
     )
     set_dynamic_slice_asset(veg_1, 2, os.path.join("Slices", "PinkFlower.dynamicslice"))
     veg_1.get_set_test(1, "Configuration|Shape Entity Id", blender_entity.id)
@@ -86,7 +86,7 @@ def LayerSpawner_InheritBehaviorFlag():
     # Create second vegetation area and assign a valid asset
     veg_2 = hydra.Entity("veg_2")
     veg_2.create_entity(
-        position, ["Vegetation Layer Spawner", "Vegetation Reference Shape", "Vegetation Asset List"]
+        position, ["Vegetation Layer Spawner", "Shape Reference", "Vegetation Asset List"]
     )
     set_dynamic_slice_asset(veg_2, 2, os.path.join("Slices", "PurpleFlower.dynamicslice"))
     veg_2.get_set_test(1, "Configuration|Shape Entity Id", blender_entity.id)

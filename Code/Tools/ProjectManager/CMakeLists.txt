@@ -92,6 +92,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 AZ::AzTest
                 AZ::AzFramework
                 AZ::AzFrameworkTestShared
+                AZ::AzQtComponents
                 AZ::ProjectManager.Static
     )
 
