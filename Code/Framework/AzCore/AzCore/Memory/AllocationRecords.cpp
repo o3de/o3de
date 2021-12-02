@@ -9,10 +9,10 @@
 #include <AzCore/PlatformIncl.h>
 #include <AzCore/Memory/AllocationRecords.h>
 #include <AzCore/Memory/AllocatorManager.h>
-#include <AzCore/Driller/DrillerBus.h>
 
 #include <AzCore/std/time.h>
 #include <AzCore/std/parallel/mutex.h>
+#include <AzCore/std/parallel/scoped_lock.h>
 
 #include <AzCore/Debug/StackTracer.h>
 
