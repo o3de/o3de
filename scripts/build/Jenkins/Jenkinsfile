@@ -469,14 +469,16 @@ def UploadTestArtifacts(String jobName, String workspace, String outputDirectory
     }
 }
 
-def PostBuildCommonSteps(String workspace, String outputDirectory, boolean mount = true) {
+def PostBuildCommonSteps(String workspace, Map params, boolean mount = true) {
     echo 'Starting post-build common steps...'
-    dir([workspace, ENGINE_REPOSITORY_NAME, outputDirectory].join('/')){
-        // Clean up Testing directory
-        palRmDir("Testing")
-        // Recreate test runner xml directories that need to be pre generated
-        palMkdir("Testing/Pytest")
-        palMkdir("Testing/Gtest")
+    if (params.containsKey('OUTPUT_DIRECTORY')){
+        dir([workspace, ENGINE_REPOSITORY_NAME, outputDirectory].join('/')){
+            // Clean up Testing directory
+            palRmDir("Testing")
+            // Recreate test runner xml directories that need to be pre generated
+            palMkdir("Testing/Pytest")
+            palMkdir("Testing/Gtest")
+        }
     }
     
     if (mount) {
@@ -550,7 +552,7 @@ def CreateUploadAPLogsStage(String platformName, String jobName, String workspac
 def CreateUploadTestArtifactStage(String jobName, String workspace, String outputDirectory) {
     return {
         stage("${jobName}_upload_test_artifacts") {
-            UploadTestArtifacts(jobName, workspace, ouputDirectory)
+            UploadTestArtifacts(jobName, workspace, outputDirectory)
         }
     }
 }
@@ -614,7 +616,7 @@ def CreateSingleNode(Map pipelineConfig, def platform, def build_job, Map envVar
                         if (params.containsKey('CMAKE_TARGET') && params.CMAKE_TARGET.contains("TEST_SUITE")) {
                             CreateUploadTestArtifactStage(build_job_name, envVars['WORKSPACE'], params.OUTPUT_DIRECTORY).call()
                         }
-                        // All other errors will be raised outside the retry block
+                        // All other errors will be raised outside the retry blockhttps://github.com/o3de/o3de/pull/6076
                         currentResult = envVars['ON_FAILURE_MARK'] ?: 'FAILURE'
                         currentException = e.toString()
                     }
@@ -629,7 +631,7 @@ def CreateSingleNode(Map pipelineConfig, def platform, def build_job, Map envVar
                         if (params && params.containsKey('TEST_SCREENSHOTS') && params.TEST_SCREENSHOTS == 'True' && currentResult == 'FAILURE') {
                             CreateExportTestScreenshotsStage(pipelineConfig, branchName, platform.key, build_job_name, envVars, params).call()
                         }
-                        CreateTeardownStage(envVars, params.OUTPUT_DIRECTORY).call()
+                        CreateTeardownStage(envVars, params).call()
                     }
                 }
             }
