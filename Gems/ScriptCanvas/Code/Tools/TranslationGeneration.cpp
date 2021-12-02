@@ -34,6 +34,7 @@
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzQtComponents/Utilities/DesktopUtilities.h>
 #include <Source/Translation/TranslationSerializer.h>
+#include "Data/DataRegistry.h"
 
 namespace ScriptCanvasEditorTools
 {
@@ -830,6 +831,33 @@ namespace ScriptCanvasEditorTools
         AZStd::string cleanName = GraphCanvas::TranslationKey::Sanitize(behaviorProperty->m_name);
         AZStd::string fileName = AZStd::string::format("Properties/%s", cleanName.c_str());
         SaveJSONData(fileName, translationRoot);
+    }
+
+    void TranslationGeneration::TranslateDataTypes()
+    {
+        TranslationFormat translationRoot;
+
+        auto dataRegistry = ScriptCanvas::GetDataRegistry();
+        
+        for (auto& typePair : dataRegistry->m_creatableTypes)
+        {
+            if (ScriptCanvas::Data::IsContainerType(typePair.first))
+            {
+                continue;
+            }
+
+            const AZStd::string typeIDStr = typePair.first.GetAZType().ToString<AZStd::string>();
+            AZStd::string typeName = ScriptCanvas::Data::GetName(typePair.first);
+
+            Entry entry;
+            entry.m_key = typeIDStr;
+            entry.m_context = "BehaviorType";
+            entry.m_details.m_name = typeName;
+
+            translationRoot.m_entries.emplace_back(entry);
+        }
+
+        SaveJSONData("Types/BehaviorTypes", translationRoot);
     }
 
     void TranslationGeneration::TranslateMethod(AZ::BehaviorMethod* behaviorMethod, Method& methodEntry)

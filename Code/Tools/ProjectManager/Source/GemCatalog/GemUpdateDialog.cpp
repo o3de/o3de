@@ -32,7 +32,7 @@ namespace O3DE::ProjectManager
         // Body
         QLabel* subTitleLabel = new QLabel(tr("%1 to the latest version of %2?").arg(
                                            updateAvaliable ? tr("Update") : tr("Force update"), gemName));
-        subTitleLabel->setObjectName("gemCatalogDialogSubTitle");
+        subTitleLabel->setObjectName("dialogSubTitle");
         layout->addWidget(subTitleLabel);
 
         layout->addSpacing(10);
