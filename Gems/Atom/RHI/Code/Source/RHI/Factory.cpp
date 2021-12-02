@@ -15,7 +15,6 @@
 #if defined(USE_RENDERDOC) || defined(USE_PIX)
 #include <AzCore/Module/DynamicModuleHandle.h>
 #include <Atom_RHI_Traits_Platform.h>
-static bool s_pixGpuMarkersEnabled = false;
 #endif
 
 #if defined(USE_RENDERDOC)
@@ -27,6 +26,7 @@ static bool s_isRenderDocDllLoaded = false;
 #if defined(USE_PIX)
 static AZStd::unique_ptr<AZ::DynamicModuleHandle> s_pixModule;
 static bool s_isPixGpuCaptureDllLoaded = false;
+static bool s_pixGpuMarkersEnabled = false;
 #endif
 
 static bool s_usingWarpDevice = false;
@@ -63,8 +63,9 @@ namespace AZ
 #if defined(USE_RENDERDOC)
             // If RenderDoc is requested, we need to load the library as early as possible (before device queries/factories are made)
             bool enableRenderDoc = RHI::QueryCommandLineOption("enableRenderDoc");
+#if defined(USE_PIX)
             s_pixGpuMarkersEnabled = s_pixGpuMarkersEnabled || enableRenderDoc;
-
+#endif
             if (enableRenderDoc && AZ_TRAIT_RENDERDOC_MODULE && !s_renderDocModule)
             {
                 s_renderDocModule = DynamicModuleHandle::Create(AZ_TRAIT_RENDERDOC_MODULE);
@@ -208,7 +209,7 @@ namespace AZ
 
         bool Factory::PixGpuEventsEnabled()
         {
-#if defined(USE_PIX) || defined(USE_RENDERDOC)
+#if defined(USE_PIX)
             return s_pixGpuMarkersEnabled;
 #else
             return false;
