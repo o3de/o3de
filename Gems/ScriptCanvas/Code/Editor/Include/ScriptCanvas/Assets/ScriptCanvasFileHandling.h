@@ -12,7 +12,6 @@
 #include <AzCore/Asset/AssetTypeInfoBus.h>
 #include <AzCore/Serialization/ObjectStream.h>
 #include <ScriptCanvas/Assets/ScriptCanvasAsset.h>
-#include <ScriptCanvas/Assets/ScriptCanvasSourceFileHandle.h>
 
 namespace AZ
 {
