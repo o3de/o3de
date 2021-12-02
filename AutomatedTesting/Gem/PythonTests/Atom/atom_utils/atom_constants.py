@@ -257,8 +257,13 @@ class AtomComponentProperties:
             'name': 'Light',
             'Attenuation Radius Mode': 'Controller|Configuration|Attenuation radius|Mode',
             'Color': 'Controller|Configuration|Color',
+            'Enable shadow': 'Controller|Configuration|Shadows|Enable shadow',
+            'Enable shutters': 'Controller|Configuration|Shutters|Enable shutters',
+            'Inner angle': 'Controller|Configuration|Shutters|Inner angle',
             'Intensity': 'Controller|Configuration|Intensity',
             'Light type': 'Controller|Configuration|Light type',
+            'Outer angle': 'Controller|Configuration|Shutters|Outer angle',
+            'Shadowmap size': 'Controller|Configuration|Shadows|Shadowmap size',
         }
         return properties[property]
 

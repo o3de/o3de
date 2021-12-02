@@ -7,9 +7,54 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 
 
 class Tests:
-    tbd = (
-        "tbd",
-        "tbd")
+    directional_light_component_disabled = (
+        "Disabled Directional Light component",
+        "Couldn't disable Directional Light component")
+    enter_game_mode = (
+        "Entered game mode",
+        "Failed to enter game mode")
+    exit_game_mode = (
+        "Exited game mode",
+        "Couldn't exit game mode")
+    global_skylight_component_disabled = (
+        "Disabled Global Skylight (IBL) component",
+        "Couldn't disable Global Skylight (IBL) component")
+    hdri_skybox_component_disabled = (
+        "Disabled HDRi Skybox component",
+        "Couldn't disable HDRi Skybox component")
+    light_component_added = (
+        "Light component added",
+        "Couldn't add Light component")
+    light_component_color_property_set = (
+        "Color property was set",
+        "Color property was not set")
+    light_component_enable_shadow_property_set = (
+        "Enable shadow property was set",
+        "Enable shadow property was not set")
+    light_component_enable_shutters_property_set = (
+        "Enable shutters property was set",
+        "Enable shutters property was not set")
+    light_component_inner_angle_property_set = (
+        "Inner angle property was set",
+        "Inner angle property was not set")
+    light_component_intensity_property_set = (
+        "Intensity property was set",
+        "Intensity property was not set")
+    light_component_light_type_property_set = (
+        "Light type property was set",
+        "Light type property was not set")
+    light_component_outer_angle_property_set = (
+        "Outer angle property was set",
+        "Outer angle property was not set")
+    light_component_shadowmap_size_property_set = (
+        "Shadowmap size was set",
+        "Shadowmap size was not set")
+    material_component_material_asset_property_set = (
+        "Material Asset property was set",
+        "Material Asset property was not set")
+    spot_light_entity_created = (
+        "Spot Light entity created",
+        "Couldn't create Spot Light entity")
 
 
 def AtomGPU_LightComponent_SpotLightScreenshotsMatchGoldenImages():
@@ -28,17 +73,26 @@ def AtomGPU_LightComponent_SpotLightScreenshotsMatchGoldenImages():
     The test scripts sets up the scenes correctly and takes accurate screenshots.
 
     Test Steps:
-    1. Add Directional Light component to the existing Directional Light entity.
-    2.
+    1. Find the Directional Light entity then disable its Directional Light component.
+    2. Disable Global Skylight (IBL) and HDRi Skybox components on the Global Skylight entity.
+
+
     :return: None
     """
+    import os
 
     import azlmbr.legacy.general as general
     import azlmbr.paths
 
+    from editor_python_test_tools.asset_utils import Asset
+    from editor_python_test_tools.editor_entity_utils import EditorEntity
     from editor_python_test_tools.utils import Report, Tracer, TestHelper
 
+    from Atom.atom_utils.atom_constants import AtomComponentProperties, LIGHT_TYPES
     from Atom.atom_utils.atom_component_helper import initial_viewport_setup, create_basic_atom_rendering_scene
+    from Atom.atom_utils.screenshot_utils import ScreenshotHelper
+
+    DEGREE_RADIAN_FACTOR = 0.0174533
 
     with Tracer() as error_tracer:
         # Test setup begins.
@@ -56,14 +110,153 @@ def AtomGPU_LightComponent_SpotLightScreenshotsMatchGoldenImages():
         create_basic_atom_rendering_scene()
 
         # Test steps begin.
-        # 1.
+        # 1. Find the Directional Light entity then disable its Directional Light component.
+        directional_light_name = AtomComponentProperties.directional_light()
+        directional_light_entity = EditorEntity.find_editor_entity(directional_light_name)
+        directional_light_component = directional_light_entity.get_components_of_type([directional_light_name])[0]
+        directional_light_component.disable_component()
+        Report.critical_result(Tests.directional_light_component_disabled, not directional_light_component.is_enabled())
 
-    # ???. Look for errors.
-    TestHelper.wait_for_condition(lambda: error_tracer.has_errors or error_tracer.has_asserts, 1.0)
-    for error_info in error_tracer.errors:
-        Report.info(f"Error: {error_info.filename} {error_info.function} | {error_info.message}")
-    for assert_info in error_tracer.asserts:
-        Report.info(f"Assert: {assert_info.filename} {assert_info.function} | {assert_info.message}")
+        # 2. Disable Global Skylight (IBL) component on the Global Skylight (IBL) entity.
+        global_skylight_name = AtomComponentProperties.global_skylight()
+        global_skylight_entity = EditorEntity.find_editor_entity(global_skylight_name)
+        global_skylight_component = global_skylight_entity.get_components_of_type([global_skylight_name])[0]
+        global_skylight_component.disable_component()
+        Report.critical_result(Tests.global_skylight_component_disabled, not global_skylight_component.is_enabled())
+
+        # 3. Disable HDRi Skybox component on the Global Skylight (IBL) entity
+        hdri_skybox_name = AtomComponentProperties.hdri_skybox()
+        hdri_skybox_component = global_skylight_entity.get_components_of_type([hdri_skybox_name])[0]
+        hdri_skybox_component.disable_component()
+        Report.critical_result(Tests.hdri_skybox_component_disabled, not hdri_skybox_component.is_enabled())
+
+        # 4. Create a Spot Light entity and rotate it.
+        spot_light_name = "Spot Light"
+        spot_light_entity = EditorEntity.create_editor_entity_at(
+            azlmbr.math.Vector3(0.7, -2.0, 1.0), spot_light_name)
+        rotation = azlmbr.math.Vector3(DEGREE_RADIAN_FACTOR * 300.0, 0.0, 0.0)
+        spot_light_entity.set_local_rotation(rotation)
+        Report.critical_result(Tests.spot_light_entity_created, spot_light_entity.exists())
+
+        # 5. Attach a Light component to the Spot Light entity.
+        light_name = AtomComponentProperties.light()
+        light_component = spot_light_entity.add_component(light_name)
+        Report.critical_result(Tests.light_component_added, light_component.is_enabled())
+
+        # 6. Set the Light component Light Type to Spot (disk).
+        light_component.set_component_property_value(
+            AtomComponentProperties.light('Light type'), LIGHT_TYPES['spot_disk'])
+        Report.result(
+            Tests.light_component_light_type_property_set,
+            light_component.get_component_property_value(
+                AtomComponentProperties.light('Light type')) == LIGHT_TYPES['spot_disk'])
+
+        # 7. Enter game mode and take a screenshot then exit game mode.
+        TestHelper.enter_game_mode(Tests.enter_game_mode)
+        TestHelper.wait_for_condition(function=lambda: general.is_in_game_mode(), timeout_in_seconds=4.0)
+        ScreenshotHelper(general.idle_wait_frames).capture_screenshot_blocking("SpotLight_1.ppm")
+        TestHelper.exit_game_mode(Tests.exit_game_mode)
+        TestHelper.wait_for_condition(function=lambda: not general.is_in_game_mode(), timeout_in_seconds=4.0)
+
+        # 8. Change the default material asset for the Ground Plane entity.
+        ground_plane_name = "Ground Plane"
+        ground_plane_entity = EditorEntity.find_editor_entity(ground_plane_name)
+        ground_plane_material_component_name = AtomComponentProperties.material()
+        ground_plane_material_component = ground_plane_entity.get_components_of_type(
+            [ground_plane_material_component_name])[0]
+        ground_plane_material_asset_path = os.path.join(
+            "Materials", "Presets", "Macbeth", "22_neutral_5-0_0-70d.azmaterial")
+        ground_plane_material_asset = Asset.find_asset_by_path(ground_plane_material_asset_path, False)
+        ground_plane_material_component.set_component_property_value(
+            AtomComponentProperties.material('Material Asset'), ground_plane_material_asset.id)
+        Report.result(
+            Tests.material_component_material_asset_property_set,
+            light_component.get_component_property_value(AtomComponentProperties.material('Material Asset')))
+
+        # 9. Enter game mode and take a screenshot then exit game mode.
+        TestHelper.enter_game_mode(Tests.enter_game_mode)
+        TestHelper.wait_for_condition(function=lambda: general.is_in_game_mode(), timeout_in_seconds=4.0)
+        ScreenshotHelper(general.idle_wait_frames).capture_screenshot_blocking("SpotLight_2.ppm")
+        TestHelper.exit_game_mode(Tests.exit_game_mode)
+        TestHelper.wait_for_condition(function=lambda: not general.is_in_game_mode(), timeout_in_seconds=4.0)
+
+        # 10. Increase the Intensity value of the Light component.
+        light_component.set_component_property_value(AtomComponentProperties.light('Intensity'), 800.0)
+        Report.result(
+            Tests.light_component_intensity_property_set,
+            light_component.get_component_property_value(
+                AtomComponentProperties.light('Intensity')) == 800.0)
+
+        # 11. Enter game mode and take a screenshot then exit game mode.
+        TestHelper.enter_game_mode(Tests.enter_game_mode)
+        TestHelper.wait_for_condition(function=lambda: general.is_in_game_mode(), timeout_in_seconds=4.0)
+        ScreenshotHelper(general.idle_wait_frames).capture_screenshot_blocking("SpotLight_3.ppm")
+        TestHelper.exit_game_mode(Tests.exit_game_mode)
+        TestHelper.wait_for_condition(function=lambda: not general.is_in_game_mode(), timeout_in_seconds=4.0)
+
+        # 12. Change the Light component Color property value.
+        color_value = azlmbr.math.Color(47.0 / 255.0, 75.0 / 255.0, 37.0 / 255.0, 255.0 / 255.0)
+        light_component.set_component_property_value(AtomComponentProperties.light('Color'), color_value)
+        Report.result(
+            Tests.light_component_color_property_set,
+            light_component.get_component_property_value(AtomComponentProperties.light('Color')) == color_value)
+
+        # 13. Enter game mode and take a screenshot then exit game mode.
+        TestHelper.enter_game_mode(Tests.enter_game_mode)
+        TestHelper.wait_for_condition(function=lambda: general.is_in_game_mode(), timeout_in_seconds=4.0)
+        ScreenshotHelper(general.idle_wait_frames).capture_screenshot_blocking("SpotLight_4.ppm")
+        TestHelper.exit_game_mode(Tests.exit_game_mode)
+        TestHelper.wait_for_condition(function=lambda: not general.is_in_game_mode(), timeout_in_seconds=4.0)
+
+        # 14. Change the Light component Enable shutters, Inner angle, and Outer angle property values.
+        enable_shutters = True
+        inner_angle = 60.0
+        outer_angle = 75.0
+        light_component.set_component_property_value(AtomComponentProperties.light('Enable shutters'), enable_shutters)
+        light_component.set_component_property_value(AtomComponentProperties.light('Inner angle'), inner_angle)
+        light_component.set_component_property_value(AtomComponentProperties.light('Outer angle'), outer_angle)
+        Report.result(
+            Tests.light_component_enable_shutters_property_set,
+            light_component.get_component_property_value(
+                AtomComponentProperties.light('Enable shutters')) == enable_shutters)
+        Report.result(
+            Tests.light_component_inner_angle_property_set,
+            light_component.get_component_property_value(AtomComponentProperties.light('Inner angle')) == inner_angle)
+        Report.result(
+            Tests.light_component_outer_angle_property_set,
+            light_component.get_component_property_value(AtomComponentProperties.light('Outer angle')) == outer_angle)
+
+        # 15. Enter game mode and take a screenshot then exit game mode.
+        TestHelper.enter_game_mode(Tests.enter_game_mode)
+        TestHelper.wait_for_condition(function=lambda: general.is_in_game_mode(), timeout_in_seconds=4.0)
+        ScreenshotHelper(general.idle_wait_frames).capture_screenshot_blocking("SpotLight_5.ppm")
+        TestHelper.exit_game_mode(Tests.exit_game_mode)
+        TestHelper.wait_for_condition(function=lambda: not general.is_in_game_mode(), timeout_in_seconds=4.0)
+
+        # 16. Change the Light component Enable shadow and Shadowmap size property values then move Spot Light entity.
+        light_component.set_component_property_value(AtomComponentProperties.light('Enable shadow'), True)
+        light_component.set_component_property_value(AtomComponentProperties.light('Shadowmap size'), 256.0)
+        spot_light_entity.set_world_rotation(azlmbr.math.Vector3(0.7, -2.0, 1.9))
+        Report.result(
+            Tests.light_component_enable_shadow_property_set,
+            light_component.get_component_property_value(AtomComponentProperties.light('Enable shadow')) is True)
+        Report.result(
+            Tests.light_component_shadowmap_size_property_set,
+            light_component.get_component_property_value(AtomComponentProperties.light('Shadowmap size')) == 256.0)
+
+        # 17. Enter game mode and take a screenshot then exit game mode.
+        TestHelper.enter_game_mode(Tests.enter_game_mode)
+        TestHelper.wait_for_condition(function=lambda: general.is_in_game_mode(), timeout_in_seconds=4.0)
+        ScreenshotHelper(general.idle_wait_frames).capture_screenshot_blocking("SpotLight_6.ppm")
+        TestHelper.exit_game_mode(Tests.exit_game_mode)
+        TestHelper.wait_for_condition(function=lambda: not general.is_in_game_mode(), timeout_in_seconds=4.0)
+
+        # 18. Look for errors.
+        TestHelper.wait_for_condition(lambda: error_tracer.has_errors or error_tracer.has_asserts, 1.0)
+        for error_info in error_tracer.errors:
+            Report.info(f"Error: {error_info.filename} {error_info.function} | {error_info.message}")
+        for assert_info in error_tracer.asserts:
+            Report.info(f"Assert: {assert_info.filename} {assert_info.function} | {assert_info.message}")
 
 
 if __name__ == "__main__":
