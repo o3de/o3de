@@ -17,7 +17,6 @@ ly_add_target(
     AUTOUIC
     AUTORCC
     FILES_CMAKE
-        standalone_tools_files.cmake
         lua_ide_files.cmake
         Platform/${PAL_PLATFORM_NAME}/lua_ide_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
     INCLUDE_DIRECTORIES
