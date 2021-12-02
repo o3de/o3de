@@ -414,57 +414,6 @@ namespace AZ::Dom::Json
     }
 
     //
-    // struct AzStringStream
-    //
-    // rapidjson stream wrapper for AZStd::string suitable for in-situ parsing
-    AzStringStream::AzStringStream(AZStd::string& buffer)
-    {
-        m_cursor = buffer.data();
-        m_begin = m_cursor;
-    }
-
-    char AzStringStream::Peek() const
-    {
-        return *m_cursor;
-    }
-
-    char AzStringStream::Take()
-    {
-        return *m_cursor++;
-    }
-
-    size_t AzStringStream::Tell() const
-    {
-        return static_cast<size_t>(m_cursor - m_begin);
-    }
-
-    char* AzStringStream::PutBegin()
-    {
-        m_write = m_cursor;
-        return m_cursor;
-    }
-
-    void AzStringStream::Put(char c)
-    {
-        (*m_write++) = c;
-    }
-
-    void AzStringStream::Flush()
-    {
-    }
-
-    size_t AzStringStream::PutEnd(char* begin)
-    {
-        return m_write - begin;
-    }
-
-    const char* AzStringStream::Peek4() const
-    {
-        AZ_Assert(false, "Not implemented, encoding is hard-coded to UTF-8");
-        return m_cursor;
-    }
-
-    //
     // Serialized JSON util functions
     //
     AZStd::unique_ptr<Visitor> GetJsonStreamWriter(AZ::IO::GenericStream& stream, OutputFormatting format)

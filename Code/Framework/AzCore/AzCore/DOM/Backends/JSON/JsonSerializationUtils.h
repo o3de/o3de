@@ -113,19 +113,65 @@ namespace AZ::Dom::Json
     };
 
     //! rapidjson stream wrapper for AZStd::string suitable for in-situ parsing
+    //! Faster than rapidjson::MemoryStream for reading from AZStd::string / AZStd::string_view (because it requires a null terminator)
+    //! \note This needs to be inlined for performance reasons.
     struct AzStringStream
     {
         using Ch = char; //<! Denotes the string character storage type for rapidjson
 
-        AzStringStream(AZStd::string& buffer);
-        char Peek() const;
-        char Take();
-        size_t Tell() const;
-        char* PutBegin();
-        void Put(char c);
-        void Flush();
-        size_t PutEnd(char* begin);
-        const char* Peek4() const;
+        AZ_FORCE_INLINE AzStringStream(AZStd::string& buffer)
+        {
+            m_cursor = buffer.data();
+            m_begin = m_cursor;
+        }
+
+        AZ_FORCE_INLINE AzStringStream(AZStd::string_view buffer)
+        {
+            // rapidjson won't actually call PutBegin or Put unless kParseInSituFlag is set, so this is safe
+            m_cursor = const_cast<char*>(buffer.data());
+            m_begin = m_cursor;
+        }
+
+        AZ_FORCE_INLINE char Peek() const
+        {
+            return *m_cursor;
+        }
+
+        AZ_FORCE_INLINE char Take()
+        {
+            return *m_cursor++;
+        }
+
+        AZ_FORCE_INLINE size_t Tell() const
+        {
+            return static_cast<size_t>(m_cursor - m_begin);
+        }
+
+        AZ_FORCE_INLINE char* PutBegin()
+        {
+            m_write = m_cursor;
+            return m_cursor;
+        }
+
+        AZ_FORCE_INLINE void Put(char c)
+        {
+            (*m_write++) = c;
+        }
+
+        AZ_FORCE_INLINE void Flush()
+        {
+        }
+
+        AZ_FORCE_INLINE size_t PutEnd(char* begin)
+        {
+            return m_write - begin;
+        }
+
+        AZ_FORCE_INLINE const char* Peek4() const
+        {
+            AZ_Assert(false, "Not implemented, encoding is hard-coded to UTF-8");
+            return m_cursor;
+        }
 
         char* m_cursor; //!< Current read position.
         char* m_write; //!< Current write position.
@@ -180,10 +226,19 @@ namespace AZ::Dom::Json
     Visitor::Result VisitSerializedJson(AZStd::string_view buffer, Lifetime lifetime, Visitor& visitor)
     {
         rapidjson::Reader reader;
-        rapidjson::MemoryStream stream(buffer.data(), buffer.size());
         RapidJsonReadHandler handler(&visitor, lifetime);
 
-        reader.Parse<static_cast<int>(parseFlags)>(stream, handler);
+        // If the string is null terminated, we can use the faster AzStringStream path - otherwise we fall back on rapidjson::MemoryStream
+        if (buffer.data()[buffer.size()] == '\0')
+        {
+            AzStringStream stream(buffer);
+            reader.Parse<static_cast<int>(parseFlags)>(stream, handler);
+        }
+        else
+        {
+            rapidjson::MemoryStream stream(buffer.data(), buffer.size());
+            reader.Parse<static_cast<int>(parseFlags)>(stream, handler);
+        }
         return handler.TakeOutcome();
     }
 
