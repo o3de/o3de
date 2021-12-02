@@ -2815,9 +2815,10 @@ void CCryEditApp::OpenProjectManager(const AZStd::string& screen)
 #else
     const char* argumentQuoteString = R"(\")";
 #endif
-    const AZStd::string commandLineOptions = AZStd::string::format(R"( --screen %s --project-path %s%s%s)",
-        screen.c_str(),
-        argumentQuoteString, projectPath.c_str(), argumentQuoteString);
+    const AZStd::vector<AZStd::string> commandLineOptions {
+        AZStd::string::format("--screen %s", screen.c_str()),
+        AZStd::string::format("--project-path %s%s%s", argumentQuoteString, projectPath.c_str(), argumentQuoteString)
+    };
     bool launchSuccess = AzFramework::ProjectManager::LaunchProjectManager(commandLineOptions);
     if (!launchSuccess)
     {

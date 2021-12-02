@@ -9,6 +9,7 @@
 
 #include <AzCore/IO/Path/Path_fwd.h>
 #include <AzCore/std/string/string.h>
+#include <AzCore/std/containers/vector.h>
 
 namespace AzFramework::ProjectManager
 {
@@ -29,5 +30,5 @@ namespace AzFramework::ProjectManager
     //! current executable. Requires the o3de cli and python.
     //! @param commandLineArgs additional command line arguments to provide to the project manager
     //! @return true on success, false if failed to find or launch the executable
-    bool LaunchProjectManager(const AZStd::string& commandLineArgs = "");
+    bool LaunchProjectManager(const AZStd::vector<AZStd::string>& commandLineArgs = {});
 } // AzFramework::ProjectManager

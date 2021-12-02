@@ -83,7 +83,7 @@ namespace AzFramework::ProjectManager
         return ProjectPathCheckResult::ProjectManagerLaunchFailed;
     }
 
-    bool LaunchProjectManager([[maybe_unused]]const AZStd::string& commandLineArgs)
+    bool LaunchProjectManager([[maybe_unused]]const AZStd::vector<AZStd::string>& commandLineArgs)
     {
         bool launchSuccess = false;
 #if (AZ_TRAIT_AZFRAMEWORK_USE_PROJECT_MANAGER)
@@ -105,7 +105,14 @@ namespace AzFramework::ProjectManager
             }
 
             AzFramework::ProcessLauncher::ProcessLaunchInfo processLaunchInfo;
-            processLaunchInfo.m_commandlineParameters = executablePath.String() + commandLineArgs;
+
+            AZStd::vector<AZStd::string> launchCmd = {executablePath.String()};
+            for(auto& commandLineArg : commandLineArgs)
+            {
+                launchCmd.emplace_back(commandLineArg);
+            }
+            processLaunchInfo.m_commandlineParameters = launchCmd;
+
             launchSuccess = AzFramework::ProcessLauncher::LaunchUnwatchedProcess(processLaunchInfo);
         }
         if (ownsSystemAllocator)
