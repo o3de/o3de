@@ -30,6 +30,7 @@ public:
     const ECmdLineArgType GetType() const;
     const float GetFValue() const;
     const int GetIValue() const;
+    const bool GetBoolValue(bool& cmdLineValue) const;
 
 private:
 

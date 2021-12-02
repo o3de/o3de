@@ -168,6 +168,12 @@ namespace AudioControls
         m_pATLControlsTree->setModel(pProxyModel);
         m_pProxyModel = pProxyModel;
 
+        QAction* pAction = new QAction(tr("Delete"), this);
+        pAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+        pAction->setShortcut(QKeySequence::Delete);
+        connect(pAction, SIGNAL(triggered()), this, SLOT(DeleteSelectedControl()));
+        m_pATLControlsTree->addAction(pAction);
+
         connect(m_pATLControlsTree->selectionModel(), SIGNAL(selectionChanged(const QItemSelection&, const QItemSelection&)), this, SIGNAL(SelectedControlChanged()));
         connect(m_pATLControlsTree->selectionModel(), SIGNAL(currentChanged(const QModelIndex&, const QModelIndex&)), this, SLOT(StopControlExecution()));
         connect(m_pTreeModel, SIGNAL(itemChanged(QStandardItem*)), this, SLOT(ItemModified(QStandardItem*)));

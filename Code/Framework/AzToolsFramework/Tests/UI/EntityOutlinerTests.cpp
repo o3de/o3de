@@ -80,15 +80,6 @@ namespace UnitTest
         {
             return m_model->index(0, 0);
         }
-
-        // Kicks off any updates scheduled for the next tick
-        void ProcessDeferredUpdates() override
-        {
-            PrefabTestFixture::ProcessDeferredUpdates();
-
-            // Ensure the model process its entity update queue
-            m_model->ProcessEntityUpdates();
-        }
         
         AZStd::unique_ptr<AzToolsFramework::EntityOutlinerListModel> m_model;
         AZStd::unique_ptr<QAbstractItemModelTester> m_modelTester;

@@ -78,6 +78,11 @@ namespace UnitTest
         rootEntity.Activate();
     }
 
+    void PrefabTestFixture::PropagateAllTemplateChanges()
+    {
+        m_prefabSystemComponent->OnSystemTick();
+    }
+
     AZ::Entity* PrefabTestFixture::CreateEntity(const char* entityName, const bool shouldActivate)
     {
         // Circumvent the EntityContext system and generate a new entity with a transformcomponent
@@ -181,22 +186,25 @@ namespace UnitTest
             EXPECT_EQ(entityInInstance->GetState(), AZ::Entity::State::Active);
         }
     }
-
-    void PrefabTestFixture::ProcessDeferredUpdates()
-    {
-        // Force a prefab propagation for updates that are deferred to the next tick.
-        m_prefabSystemComponent->OnSystemTick();
-    }
-
+    
     void PrefabTestFixture::Undo()
     {
         m_undoStack->Undo();
-        ProcessDeferredUpdates();
+        PropagateAllTemplateChanges();
     }
 
     void PrefabTestFixture::Redo()
     {
         m_undoStack->Redo();
-        ProcessDeferredUpdates();
+        PropagateAllTemplateChanges();
+    }
+
+    void PrefabTestFixture::AddRequiredEditorComponents(AZ::Entity* entity)
+    {
+        ASSERT_TRUE(entity != nullptr);
+        entity->Deactivate();
+        AzToolsFramework::EditorEntityContextRequestBus::Broadcast(
+            &AzToolsFramework::EditorEntityContextRequests::AddRequiredComponents, *entity);
+        entity->Activate();
     }
 }

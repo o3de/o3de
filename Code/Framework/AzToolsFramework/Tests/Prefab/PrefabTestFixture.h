@@ -54,6 +54,8 @@ namespace UnitTest
         AZStd::unique_ptr<ToolsTestApplication> CreateTestApplication() override;
 
         void CreateRootPrefab();
+        void PropagateAllTemplateChanges();
+
         AZ::Entity* CreateEntity(const char* entityName, const bool shouldActivate = true);
         AZ::EntityId CreateEntityWithPrefab(const char* entityName, AZ::EntityId parentId = AZ::EntityId());
 
@@ -65,8 +67,7 @@ namespace UnitTest
         //! Validates that all entities within a prefab instance are in 'Active' state.
         void ValidateInstanceEntitiesActive(Instance& instance);
 
-        // Kicks off any updates scheduled for the next tick
-        virtual void ProcessDeferredUpdates();
+        void AddRequiredEditorComponents(AZ::Entity* entity);
 
         // Performs an undo operation and ensures the tick-scheduled updates happen
         void Undo();
