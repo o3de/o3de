@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "get_file_alias",
+            "base": "get_file_alias",
             "context": "Method",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "get_file_alias",
+                    "base": "get_file_alias",
                     "context": "Global",
                     "entry": {
                         "name": "In",

@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "MaterialPropertyVisibility_Hidden",
+            "base": "MaterialPropertyVisibility_Hidden",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "MaterialPropertyVisibility_Hidden::Getter",
-                "category": "Constants"
-            }
+                "name": "Hidden",
+                "category": "Constants/Material Property Visibility"
+            },
+            "methods": [
+                {
+                    "base": "GetMaterialPropertyVisibility_Hidden",
+                    "details": {
+                        "name": "Hidden"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

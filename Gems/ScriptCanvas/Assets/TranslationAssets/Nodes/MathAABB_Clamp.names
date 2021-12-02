@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "{A03CA593-2B2E-5BEE-9A63-118D2F1E9DED}",
+            "base": "{A03CA593-2B2E-5BEE-9A63-118D2F1E9DED}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
@@ -12,31 +12,31 @@
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "key": "DataInput_AABB: Source",
+                    "base": "DataInput_AABB: Source",
                     "details": {
                         "name": "Source"
                     }
                 },
                 {
-                    "key": "DataInput_AABB: Clamp",
+                    "base": "DataInput_AABB: Clamp",
                     "details": {
                         "name": "Clamp"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: AABB",
+                    "base": "DataOutput_Result: AABB",
                     "details": {
                         "name": "AABB"
                     }

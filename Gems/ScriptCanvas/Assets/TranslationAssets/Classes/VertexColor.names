@@ -1,12 +1,103 @@
 {
     "entries": [
         {
-            "key": "VertexColor",
+            "base": "VertexColor",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
-                "name": "VertexColor"
-            }
+                "name": "Vertex Color",
+                "category": "Rendering"
+            },
+            "methods": [
+                {
+                    "base": "Getred",
+                    "details": {
+                        "name": "Get Red"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{937E3BF8-5204-4D40-A8DA-C8F083C89F9F}",
+                            "details": {
+                                "name": "Color"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Red"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "Getgreen",
+                    "details": {
+                        "name": "Get Green"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{937E3BF8-5204-4D40-A8DA-C8F083C89F9F}",
+                            "details": {
+                                "name": "Color"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Green"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "Getblue",
+                    "details": {
+                        "name": "Get Blue"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{937E3BF8-5204-4D40-A8DA-C8F083C89F9F}",
+                            "details": {
+                                "name": "Color"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Blue"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "Getalpha",
+                    "details": {
+                        "name": "Get Alpha"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{937E3BF8-5204-4D40-A8DA-C8F083C89F9F}",
+                            "details": {
+                                "name": "Color"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Alpha"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

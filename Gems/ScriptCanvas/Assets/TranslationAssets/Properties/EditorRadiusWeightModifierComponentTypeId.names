@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "EditorRadiusWeightModifierComponentTypeId",
+            "base": "EditorRadiusWeightModifierComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "EditorRadiusWeightModifierComponentTypeId::Getter",
-                "category": "Constants"
-            }
+                "name": "Editor Radius Weight Modifier Component Type Id",
+                "category": "Constants/Editor"
+            },
+            "methods": [
+                {
+                    "base": "GetEditorRadiusWeightModifierComponentTypeId",
+                    "details": {
+                        "name": "Get Editor Radius Weight Modifier Component Type Id"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}",
+                            "details": {
+                                "name": "AZ:: Uuid"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "FrameCaptureResult_Success",
+            "base": "FrameCaptureResult_Success",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "FrameCaptureResult_Success::Getter",
-                "category": "Constants"
-            }
+                "name": "Success",
+                "category": "Constants/Frame Capture Result"
+            },
+            "methods": [
+                {
+                    "base": "GetFrameCaptureResult_Success",
+                    "details": {
+                        "name": "Success"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

@@ -1,25 +1,26 @@
 {
     "entries": [
         {
-            "key": "GradientRequestBus",
+            "base": "GradientRequestBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "GradientRequestBus"
+                "name": "Gradient",
+                "category": "Rendering"
             },
             "methods": [
                 {
-                    "key": "GetValue",
+                    "base": "GetValue",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetValue"
+                        "tooltip": "When signaled, this will invoke Get Value"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetValue is invoked"
+                        "tooltip": "Signaled after Get Value is invoked"
                     },
                     "details": {
-                        "name": "GetValue"
+                        "name": "Get Value"
                     },
                     "params": [
                         {

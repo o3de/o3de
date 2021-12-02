@@ -351,7 +351,8 @@ namespace AZ
                 ->Method("CreateFromMatrix3x3AndTranslation", &Matrix3x4::CreateFromMatrix3x3AndTranslation)
                 ->Method("CreateScale", &Matrix3x4::CreateScale)
                 ->Method("CreateDiagonal", &Matrix3x4::CreateDiagonal)
-                ->Method("CreateTranslation", &Matrix3x4::CreateTranslation);
+                ->Method("CreateTranslation", &Matrix3x4::CreateTranslation)
+                ->Method("UnsafeCreateFromMatrix4x4", &Matrix3x4::UnsafeCreateFromMatrix4x4);
         }
     }
 

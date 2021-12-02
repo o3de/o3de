@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "CullMode_Back",
+            "base": "CullMode_Back",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "CullMode_Back::Getter",
-                "category": "Constants"
-            }
+                "name": "Back",
+                "category": "Constants/Cull Mode"
+            },
+            "methods": [
+                {
+                    "base": "GetCullMode_Back",
+                    "details": {
+                        "name": "Get Back"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

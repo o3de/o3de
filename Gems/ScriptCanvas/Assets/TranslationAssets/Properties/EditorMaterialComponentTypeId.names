@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "EditorMaterialComponentTypeId",
+            "base": "EditorMaterialComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "EditorMaterialComponentTypeId::Getter",
-                "category": "Constants"
-            }
+                "name": "Editor Material Component Type Id",
+                "category": "Constants/Editor"
+            },
+            "methods": [
+                {
+                    "base": "GetEditorMaterialComponentTypeId",
+                    "details": {
+                        "name": "Get Editor Material Component Type Id"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}",
+                            "details": {
+                                "name": "AZ:: Uuid"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

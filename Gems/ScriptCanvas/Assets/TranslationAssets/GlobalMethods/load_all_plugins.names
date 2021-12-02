@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "load_all_plugins",
+            "base": "load_all_plugins",
             "context": "Method",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "load_all_plugins",
+                    "base": "load_all_plugins",
                     "context": "Global",
                     "entry": {
                         "name": "In",

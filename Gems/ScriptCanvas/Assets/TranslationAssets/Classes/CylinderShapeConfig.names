@@ -1,12 +1,103 @@
 {
     "entries": [
         {
-            "key": "CylinderShapeConfig",
+            "base": "CylinderShapeConfig",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
-                "name": "CylinderShapeConfig"
-            }
+                "name": "Cylinder Shape Config",
+                "category": "Rendering/Shapes"
+            },
+            "methods": [
+                {
+                    "base": "GetHeight",
+                    "details": {
+                        "name": "Get Height"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{53254779-82F1-441E-9116-81E1FACFECF4}",
+                            "details": {
+                                "name": "Cylinder Shape Config",
+                                "tooltip": "Cylinder shape configuration parameters"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Height"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetHeight",
+                    "details": {
+                        "name": "Set Height"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{53254779-82F1-441E-9116-81E1FACFECF4}",
+                            "details": {
+                                "name": "Cylinder Shape Config",
+                                "tooltip": "Cylinder shape configuration parameters"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Height"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetRadius",
+                    "details": {
+                        "name": "Get Radius"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{53254779-82F1-441E-9116-81E1FACFECF4}",
+                            "details": {
+                                "name": "Cylinder Shape Config",
+                                "tooltip": "Cylinder shape configuration parameters"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Radius"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetRadius",
+                    "details": {
+                        "name": "Set Radius"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{53254779-82F1-441E-9116-81E1FACFECF4}",
+                            "details": {
+                                "name": "Cylinder Shape Config",
+                                "tooltip": "Cylinder shape configuration parameters"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Radius"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

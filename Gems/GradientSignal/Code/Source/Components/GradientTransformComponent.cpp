@@ -324,8 +324,6 @@ namespace GradientSignal
 
     void GradientTransformComponent::TransformPositionToUVW(const AZ::Vector3& inPosition, AZ::Vector3& outUVW, const bool shouldNormalizeOutput, bool& wasPointRejected) const
     {
-        AZ_PROFILE_FUNCTION(Entity);
-
         AZStd::lock_guard<decltype(m_cacheMutex)> lock(m_cacheMutex);
 
         //transforming coordinate into "local" relative space of shape bounds

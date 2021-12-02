@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "ExecutionStateInterpretedPerActivation",
+            "base": "ExecutionStateInterpretedPerActivation",
             "context": "BehaviorClass",
             "variant": "",
             "details": {

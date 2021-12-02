@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "eUiEmitShape_Point",
+            "base": "eUiEmitShape_Point",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "eUiEmitShape_Point::Getter",
-                "category": "Constants"
-            }
+                "name": "Point",
+                "category": "Constants/UI/Emit Shape"
+            },
+            "methods": [
+                {
+                    "base": "GeteUiEmitShape_Point",
+                    "details": {
+                        "name": "Point"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

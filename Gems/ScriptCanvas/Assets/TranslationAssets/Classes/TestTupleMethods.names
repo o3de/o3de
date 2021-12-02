@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "TestTupleMethods",
+            "base": "TestTupleMethods",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
@@ -9,7 +9,7 @@
             },
             "methods": [
                 {
-                    "key": "Three",
+                    "base": "Three",
                     "context": "TestTupleMethods",
                     "entry": {
                         "name": "In",

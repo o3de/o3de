@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "SequenceComponent",
+            "base": "SequenceComponent",
             "context": "BehaviorClass",
             "variant": "",
             "details": {

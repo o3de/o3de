@@ -8,8 +8,10 @@
 
 #include <QToolButton>
 #include <QMenu>
+#include <QSettings>
 #include <EMStudio/AnimViewportToolBar.h>
 #include <EMStudio/AnimViewportRequestBus.h>
+#include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/EMStudioManager.h>
 #include <AzCore/std/string/string.h>
 #include <AzQtComponents/Components/Widgets/ToolBar.h>
 
@@ -46,8 +48,8 @@ namespace EMStudio
             CreateViewOptionEntry(contextMenu, "Line Skeleton", EMotionFX::ActorRenderFlag::RENDER_LINESKELETON);
             CreateViewOptionEntry(contextMenu, "Solid Skeleton", EMotionFX::ActorRenderFlag::RENDER_SKELETON);
             CreateViewOptionEntry(contextMenu, "Joint Names", EMotionFX::ActorRenderFlag::RENDER_NODENAMES);
+            CreateViewOptionEntry(contextMenu, "Joint Orientations", EMotionFX::ActorRenderFlag::RENDER_NODEORIENTATION);
             // [EMFX-TODO] Add those option once implemented.
-            // CreateViewOptionEntry(contextMenu, "Joint Orientations", EMotionFX::ActorRenderFlag::RENDER_NODEORIENTATION);
             // CreateViewOptionEntry(contextMenu, "Actor Bind Pose", EMotionFX::ActorRenderFlag::RENDER_ACTORBINDPOSE);
             contextMenu->addSeparator();
             CreateViewOptionEntry(contextMenu, "Hit Detection Colliders", EMotionFX::ActorRenderFlag::RENDER_HITDETECTION_COLLIDERS);
@@ -109,6 +111,13 @@ namespace EMStudio
             cameraButton->setIcon(QIcon(":/EMotionFXAtom/Camera_category.svg"));
             addWidget(cameraButton);
         }
+
+        LoadSettings();
+    }
+
+    AnimViewportToolBar::~AnimViewportToolBar()
+    {
+        SaveSettings();
     }
 
     void AnimViewportToolBar::CreateViewOptionEntry(
@@ -143,5 +152,24 @@ namespace EMStudio
                 action->setChecked(renderFlags[i]);
             }
         }
+    }
+
+    void AnimViewportToolBar::LoadSettings()
+    {
+        AZStd::string renderFlagsFilename(EMStudioManager::GetInstance()->GetAppDataFolder());
+        renderFlagsFilename += "AnimViewportRenderFlags.cfg";
+        QSettings settings(renderFlagsFilename.c_str(), QSettings::IniFormat, this);
+
+        const bool isChecked = settings.value("CameraFollowUp", false).toBool();
+        m_followCharacterAction->setChecked(isChecked);
+    }
+
+    void AnimViewportToolBar::SaveSettings()
+    {
+        AZStd::string renderFlagsFilename(EMStudioManager::GetInstance()->GetAppDataFolder());
+        renderFlagsFilename += "AnimViewportRenderFlags.cfg";
+        QSettings settings(renderFlagsFilename.c_str(), QSettings::IniFormat, this);
+
+        settings.setValue("CameraFollowUp", m_followCharacterAction->isChecked());
     }
 } // namespace EMStudio

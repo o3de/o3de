@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "StencilOp_Replace",
+            "base": "StencilOp_Replace",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "StencilOp_Replace::Getter",
-                "category": "Constants"
-            }
+                "name": "Replace",
+                "category": "Constants/Stencil Op"
+            },
+            "methods": [
+                {
+                    "base": "GetStencilOp_Replace",
+                    "details": {
+                        "name": "Replace"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

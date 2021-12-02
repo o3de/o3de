@@ -1,37 +1,37 @@
 {
     "entries": [
         {
-            "key": "PrefabSystemScriptingBus",
+            "base": "PrefabSystemScriptingBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "PrefabSystemScriptingBus"
+                "name": "Prefab System"
             },
             "methods": [
                 {
-                    "key": "CreatePrefab",
+                    "base": "CreatePrefab",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke CreatePrefab"
+                        "tooltip": "When signaled, this will invoke Create Prefab"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after CreatePrefab is invoked"
+                        "tooltip": "Signaled after Create Prefab is invoked"
                     },
                     "details": {
-                        "name": "CreatePrefab"
+                        "name": "Create Prefab"
                     },
                     "params": [
                         {
                             "typeid": "{4841CFF0-7A5C-519C-BD16-D3625E99605E}",
                             "details": {
-                                "name": "AZStd::vector"
+                                "name": "Entity Ids"
                             }
                         },
                         {
                             "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
                             "details": {
-                                "name": "AZStd::string"
+                                "name": "File Path"
                             }
                         }
                     ],
@@ -39,7 +39,7 @@
                         {
                             "typeid": "{D6597933-47CD-4FC8-B911-63F3E2B0993A}",
                             "details": {
-                                "name": "AZ::u64"
+                                "name": "Template Id"
                             }
                         }
                     ]

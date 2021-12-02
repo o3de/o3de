@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "eUiImageType_StretchedToFit",
+            "base": "eUiImageType_StretchedToFit",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "eUiImageType_StretchedToFit::Getter",
-                "category": "Constants"
-            }
+                "name": "Stretched To Fit",
+                "category": "Constants/UI/Image Type"
+            },
+            "methods": [
+                {
+                    "base": "GeteUiImageType_StretchedToFit",
+                    "details": {
+                        "name": "Stretched To Fit"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

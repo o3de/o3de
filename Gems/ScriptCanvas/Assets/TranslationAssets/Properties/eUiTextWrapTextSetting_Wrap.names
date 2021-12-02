@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "eUiTextWrapTextSetting_Wrap",
+            "base": "eUiTextWrapTextSetting_Wrap",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "eUiTextWrapTextSetting_Wrap::Getter",
-                "category": "Constants"
-            }
+                "name": "Wrap",
+                "category": "Constants/UI/Text Wrap"
+            },
+            "methods": [
+                {
+                    "base": "GeteUiTextWrapTextSetting_Wrap",
+                    "details": {
+                        "name": "Wrap"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

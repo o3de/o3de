@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "BlendOp_SubtractReverse",
+            "base": "BlendOp_SubtractReverse",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "BlendOp_SubtractReverse::Getter",
-                "category": "Constants"
-            }
+                "name": "Subtract Reverse",
+                "category": "Constants/Blend Operation"
+            },
+            "methods": [
+                {
+                    "base": "GetBlendOp_SubtractReverse",
+                    "details": {
+                        "name": "Get Subtract Reverse"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

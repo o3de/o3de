@@ -1,16 +1,16 @@
 {
     "entries": [
         {
-            "key": "UiInteractableStatesBus",
+            "base": "UiInteractableStatesBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "UiInteractableStatesBus",
+                "name": "UI Interactable States",
                 "category": "UI"
             },
             "methods": [
                 {
-                    "key": "SetStateFont",
+                    "base": "SetStateFont",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set State Font"
@@ -55,7 +55,7 @@
                     ]
                 },
                 {
-                    "key": "SetStateSpritePathname",
+                    "base": "SetStateSpritePathname",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set State Sprite Pathname"
@@ -93,7 +93,7 @@
                     ]
                 },
                 {
-                    "key": "GetStateFontPathname",
+                    "base": "GetStateFontPathname",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get State Font Pathname"
@@ -133,7 +133,7 @@
                     ]
                 },
                 {
-                    "key": "HasStateFont",
+                    "base": "HasStateFont",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Has State Font"
@@ -173,7 +173,7 @@
                     ]
                 },
                 {
-                    "key": "SetStateAlpha",
+                    "base": "SetStateAlpha",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set State Alpha"
@@ -211,7 +211,7 @@
                     ]
                 },
                 {
-                    "key": "GetStateAlpha",
+                    "base": "GetStateAlpha",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get State Alpha"
@@ -251,7 +251,7 @@
                     ]
                 },
                 {
-                    "key": "GetStateFontEffectIndex",
+                    "base": "GetStateFontEffectIndex",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get State Font Effect Index"
@@ -291,7 +291,7 @@
                     ]
                 },
                 {
-                    "key": "HasStateColor",
+                    "base": "HasStateColor",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Has State Color"
@@ -331,7 +331,7 @@
                     ]
                 },
                 {
-                    "key": "GetStateSpritePathname",
+                    "base": "GetStateSpritePathname",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get State Sprite Pathname"
@@ -371,7 +371,7 @@
                     ]
                 },
                 {
-                    "key": "HasStateSprite",
+                    "base": "HasStateSprite",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Has State Sprite"
@@ -411,7 +411,7 @@
                     ]
                 },
                 {
-                    "key": "SetStateColor",
+                    "base": "SetStateColor",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set State Color"
@@ -449,7 +449,7 @@
                     ]
                 },
                 {
-                    "key": "HasStateAlpha",
+                    "base": "HasStateAlpha",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Has State Alpha"
@@ -489,7 +489,7 @@
                     ]
                 },
                 {
-                    "key": "GetStateColor",
+                    "base": "GetStateColor",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get State Color"

@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "SystemConfigPlatform_Android",
+            "base": "SystemConfigPlatform_Android",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "SystemConfigPlatform_Android::Getter",
-                "category": "Constants"
-            }
+                "name": "Android",
+                "category": "Constants/System Configuration"
+            },
+            "methods": [
+                {
+                    "base": "GetSystemConfigPlatform_Android",
+                    "details": {
+                        "name": "Android"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

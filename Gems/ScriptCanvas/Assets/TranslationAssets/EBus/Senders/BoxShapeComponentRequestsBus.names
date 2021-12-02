@@ -1,16 +1,16 @@
 {
     "entries": [
         {
-            "key": "BoxShapeComponentRequestsBus",
+            "base": "BoxShapeComponentRequestsBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "BoxShapeComponentRequestsBus",
+                "name": "Box Shape Component",
                 "category": "Shape"
             },
             "methods": [
                 {
-                    "key": "GetBoxConfiguration",
+                    "base": "GetBoxConfiguration",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Configuration"
@@ -34,7 +34,7 @@
                     ]
                 },
                 {
-                    "key": "GetBoxDimensions",
+                    "base": "GetBoxDimensions",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Dimensions"
@@ -57,7 +57,7 @@
                     ]
                 },
                 {
-                    "key": "SetBoxDimensions",
+                    "base": "SetBoxDimensions",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Dimensions"

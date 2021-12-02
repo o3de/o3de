@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "eUiDynamicContentDBColorType_Free",
+            "base": "eUiDynamicContentDBColorType_Free",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "eUiDynamicContentDBColorType_Free::Getter",
-                "category": "Constants"
-            }
+                "name": "Color Type Free",
+                "category": "Constants/UI/Dynamic ContentDB"
+            },
+            "methods": [
+                {
+                    "base": "GeteUiDynamicContentDBColorType_Free",
+                    "details": {
+                        "name": "Color Type Free"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

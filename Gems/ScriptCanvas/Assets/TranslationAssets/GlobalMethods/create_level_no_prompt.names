@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "create_level_no_prompt",
+            "base": "create_level_no_prompt",
             "context": "Method",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "create_level_no_prompt",
+                    "base": "create_level_no_prompt",
                     "context": "Global",
                     "entry": {
                         "name": "In",

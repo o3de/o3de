@@ -62,13 +62,18 @@ namespace O3DE::ProjectManager
         // Gem Repos
         AZ::Outcome<void, AZStd::string> RefreshGemRepo(const QString& repoUri) override;
         bool RefreshAllGemRepos() override;
-        bool AddGemRepo(const QString& repoUri) override;
+        AZ::Outcome<void, AZStd::pair<AZStd::string, AZStd::string>> AddGemRepo(const QString& repoUri) override;
         bool RemoveGemRepo(const QString& repoUri) override;
         AZ::Outcome<QVector<GemRepoInfo>, AZStd::string> GetAllGemRepoInfos() override;
-        AZ::Outcome<QVector<GemInfo>, AZStd::string> GetAllGemRepoGemsInfos() override;
-        AZ::Outcome<void, AZStd::string> DownloadGem(const QString& gemName, std::function<void(int, int)> gemProgressCallback, bool force = false) override;
+        AZ::Outcome<QVector<GemInfo>, AZStd::string> GetGemInfosForRepo(const QString& repoUri) override;
+        AZ::Outcome<QVector<GemInfo>, AZStd::string> GetGemInfosForAllRepos() override;
+        AZ::Outcome<void, AZStd::pair<AZStd::string, AZStd::string>> DownloadGem(
+            const QString& gemName, std::function<void(int, int)> gemProgressCallback, bool force = false) override;
         void CancelDownload() override;
         bool IsGemUpdateAvaliable(const QString& gemName, const QString& lastUpdated) override;
+
+        void AddErrorString(AZStd::string errorString) override;
+        void ClearErrorStrings() override;
 
     private:
         AZ_DISABLE_COPY_MOVE(PythonBindings);
@@ -82,6 +87,7 @@ namespace O3DE::ProjectManager
         AZ::Outcome<void, AZStd::string> GemRegistration(const QString& gemPath, const QString& projectPath, bool remove = false);
         bool RegisterThisEngine();
         bool StopPython();
+        AZStd::pair<AZStd::string, AZStd::string> GetSimpleDetailedErrorPair();
 
 
         bool m_pythonStarted = false;
@@ -101,5 +107,6 @@ namespace O3DE::ProjectManager
         pybind11::handle m_pathlib;
 
         bool m_requestCancelDownload = false;
+        AZStd::vector<AZStd::string> m_pythonErrorStrings;
     };
 }

@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "eUiImageType_Tiled",
+            "base": "eUiImageType_Tiled",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "eUiImageType_Tiled::Getter",
-                "category": "Constants"
-            }
+                "name": "Tiled",
+                "category": "Constants/UI/Image Type"
+            },
+            "methods": [
+                {
+                    "base": "GeteUiImageType_Tiled",
+                    "details": {
+                        "name": "Tiled"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

@@ -1,71 +1,56 @@
 {
     "entries": [
         {
-            "key": "IAnimationData",
+            "base": "IAnimationData",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
-                "name": "IAnimationData"
+                "name": "IAnimation Data",
+                "category": "Animation"
             },
             "methods": [
                 {
-                    "key": "GetKeyFrameCount",
+                    "base": "GetKeyFrameCount",
                     "context": "IAnimationData",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetKeyFrameCount"
+                        "tooltip": "When signaled, this will invoke Get Key Frame Count"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetKeyFrameCount is invoked"
+                        "tooltip": "Signaled after Get Key Frame Count is invoked"
                     },
                     "details": {
-                        "name": "IAnimationData::GetKeyFrameCount",
-                        "category": "Other"
+                        "name": "Get Key Frame Count"
                     },
-                    "params": [
-                        {
-                            "typeid": "{62B0571C-6EFF-42FA-902A-85AC744E04F2}",
-                            "details": {
-                                "name": "IAnimationData*"
-                            }
-                        }
-                    ],
                     "results": [
                         {
                             "typeid": "{D6597933-47CD-4FC8-B911-63F3E2B0993A}",
                             "details": {
-                                "name": "AZ::u64"
+                                "name": "AZ::u 64"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "GetKeyFrame",
+                    "base": "GetKeyFrame",
                     "context": "IAnimationData",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetKeyFrame"
+                        "tooltip": "When signaled, this will invoke Get Key Frame"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetKeyFrame is invoked"
+                        "tooltip": "Signaled after Get Key Frame is invoked"
                     },
                     "details": {
-                        "name": "IAnimationData::GetKeyFrame",
-                        "category": "Other"
+                        "name": "Get Key Frame"
                     },
                     "params": [
                         {
-                            "typeid": "{62B0571C-6EFF-42FA-902A-85AC744E04F2}",
-                            "details": {
-                                "name": "IAnimationData*"
-                            }
-                        },
-                        {
                             "typeid": "{D6597933-47CD-4FC8-B911-63F3E2B0993A}",
                             "details": {
-                                "name": "AZ::u64"
+                                "name": "AZ::u 64"
                             }
                         }
                     ],
@@ -73,34 +58,25 @@
                         {
                             "typeid": "{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}",
                             "details": {
-                                "name": "const Matrix3x4&"
+                                "name": "const Matrix 3x 4&"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "GetTimeStepBetweenFrames",
+                    "base": "GetTimeStepBetweenFrames",
                     "context": "IAnimationData",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetTimeStepBetweenFrames"
+                        "tooltip": "When signaled, this will invoke Get Time Step Between Frames"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetTimeStepBetweenFrames is invoked"
+                        "tooltip": "Signaled after Get Time Step Between Frames is invoked"
                     },
                     "details": {
-                        "name": "IAnimationData::GetTimeStepBetweenFrames",
-                        "category": "Other"
+                        "name": "Get Time Step Between Frames"
                     },
-                    "params": [
-                        {
-                            "typeid": "{62B0571C-6EFF-42FA-902A-85AC744E04F2}",
-                            "details": {
-                                "name": "IAnimationData*"
-                            }
-                        }
-                    ],
                     "results": [
                         {
                             "typeid": "{110C4B14-11A8-4E9D-8638-5051013A56AC}",

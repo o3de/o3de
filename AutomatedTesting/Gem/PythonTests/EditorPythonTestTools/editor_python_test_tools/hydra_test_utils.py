@@ -29,7 +29,7 @@ def teardown_editor(editor):
 
 def launch_and_validate_results(request, test_directory, editor, editor_script, expected_lines, unexpected_lines=[],
                                 halt_on_unexpected=False, run_python="--runpythontest", auto_test_mode=True, null_renderer=True, cfg_args=[],
-                                timeout=300, log_file_name="Editor.log"):
+                                timeout=300, log_file_name="Editor.log", enable_prefab_system=True):
     """
     Runs the Editor with the specified script, and monitors for expected log lines.
     :param request: Special fixture providing information of the requesting test function.
@@ -45,17 +45,22 @@ def launch_and_validate_results(request, test_directory, editor, editor_script, 
     :param cfg_args: Additional arguments for CFG, such as LevelName.
     :param timeout: Length of time for test to run. Default is 60.
     :param log_file_name: Name of the log file created by the editor. Defaults to 'Editor.log'
+    :param enable_prefab_system: Flag to determine whether to use new prefab system or use deprecated slice system. Defaults to True.
     """
     test_case = os.path.join(test_directory, editor_script)
     request.addfinalizer(lambda: teardown_editor(editor))
     logger.debug("Running automated test: {}".format(editor_script))
     editor.args.extend(["--skipWelcomeScreenDialog", "--regset=/Amazon/Settings/EnableSourceControl=false", 
-                        "--regset=/Amazon/Preferences/EnablePrefabSystem=false", run_python, test_case,
+                        run_python, test_case,
                         f"--pythontestcase={request.node.name}", "--runpythonargs", " ".join(cfg_args)])
     if auto_test_mode:
         editor.args.extend(["--autotest_mode"])
     if null_renderer:
         editor.args.extend(["-rhi=Null"])
+    if enable_prefab_system:
+        editor.args.extend(["--regset=/Amazon/Preferences/EnablePrefabSystem=true"])
+    else:
+        editor.args.extend(["--regset=/Amazon/Preferences/EnablePrefabSystem=false"])
 
     with editor.start():
 

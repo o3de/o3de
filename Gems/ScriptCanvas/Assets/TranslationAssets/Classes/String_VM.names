@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "String_VM",
+            "base": "String_VM",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
@@ -9,7 +9,7 @@
             },
             "methods": [
                 {
-                    "key": "ToLower",
+                    "base": "ToLower",
                     "context": "String_VM",
                     "entry": {
                         "name": "In",
@@ -41,7 +41,7 @@
                     ]
                 },
                 {
-                    "key": "ToUpper",
+                    "base": "ToUpper",
                     "context": "String_VM",
                     "entry": {
                         "name": "In",
@@ -73,7 +73,7 @@
                     ]
                 },
                 {
-                    "key": "Substring",
+                    "base": "Substring",
                     "context": "String_VM",
                     "entry": {
                         "name": "In",

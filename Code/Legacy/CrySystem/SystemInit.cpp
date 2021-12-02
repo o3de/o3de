@@ -737,7 +737,17 @@ bool CSystem::Init(const SSystemInitParams& startupParams)
 
     m_pCmdLine = new CCmdLine(startupParams.szSystemCmdLine);
 
-    AZCoreLogSink::Connect();
+    // Init AZCoreLogSink. Don't suppress system output if we're running as an editor-server
+    bool suppressSystemOutput = true;
+    if (const ICmdLineArg* isEditorServerArg = m_pCmdLine->FindArg(eCLAT_Pre, "editorsv_isDedicated"))
+    {
+        bool editorsv_isDedicated = false;
+        if (isEditorServerArg->GetBoolValue(editorsv_isDedicated) && editorsv_isDedicated)
+        {
+            suppressSystemOutput = false;
+        }
+    }
+    AZCoreLogSink::Connect(suppressSystemOutput);
 
     // Registers all AZ Console Variables functors specified within CrySystem
     if (auto azConsole = AZ::Interface<AZ::IConsole>::Get(); azConsole)
@@ -1193,18 +1203,6 @@ void CSystem::CreateSystemVars()
     assert(gEnv);
     assert(gEnv->pConsole);
 
-    // Register DLL names as cvars before we load them
-    //
-    EVarFlags dllFlags = (EVarFlags)0;
-    m_sys_dll_response_system = REGISTER_STRING("sys_dll_response_system", 0, dllFlags,                 "Specifies the DLL to load for the dynamic response system");
-
-    m_sys_initpreloadpacks = REGISTER_STRING("sys_initpreloadpacks", "", 0,     "Specifies the paks for an engine initialization");
-    m_sys_menupreloadpacks = REGISTER_STRING("sys_menupreloadpacks", 0, 0,      "Specifies the paks for a main menu loading");
-
-#ifndef _RELEASE
-    m_sys_resource_cache_folder = REGISTER_STRING("sys_resource_cache_folder", "Editor\\ResourceCache", 0, "Folder for resource compiled locally. Managed by Sandbox.");
-#endif
-
 #if AZ_LOADSCREENCOMPONENT_ENABLED
     m_game_load_screen_uicanvas_path = REGISTER_STRING("game_load_screen_uicanvas_path", "", 0, "Game load screen UiCanvas path.");
     m_level_load_screen_uicanvas_path = REGISTER_STRING("level_load_screen_uicanvas_path", "", 0, "Level load screen UiCanvas path.");
@@ -1219,8 +1217,6 @@ void CSystem::CreateSystemVars()
 #endif // if AZ_LOADSCREENCOMPONENT_ENABLED
 
     REGISTER_INT("cvDoVerboseWindowTitle", 0, VF_NULL, "");
-
-    m_pCVarQuit = REGISTER_INT("ExitOnQuit", 1, VF_NULL, "");
 
     // Register an AZ Console command to quit the engine.
     // The command is available even in Release builds.
@@ -1242,51 +1238,13 @@ void CSystem::CreateSystemVars()
     REGISTER_STRING_CB("sys_version", "", VF_CHEAT, "Override system file/product version", SystemVersionChanged);
 #endif // #ifndef _RELEASE
 
-    m_cvAIUpdate = REGISTER_INT("ai_NoUpdate", 0, VF_CHEAT, "Disables AI system update when 1");
-
-    m_cvMemStats = REGISTER_INT("MemStats", 0, 0,
-            "0/x=refresh rate in milliseconds\n"
-            "Use 1000 to switch on and 0 to switch off\n"
-            "Usage: MemStats [0..]");
-    m_cvMemStatsThreshold = REGISTER_INT ("MemStatsThreshold", 32000, VF_NULL, "");
-    m_cvMemStatsMaxDepth = REGISTER_INT("MemStatsMaxDepth", 4, VF_NULL, "");
-
-    attachVariable("sys_PakReadSlice", &g_cvars.archiveVars.nReadSlice, "If non-0, means number of kilobytes to use to read files in portions. Should only be used on Win9x kernels");
-
-    attachVariable("sys_PakInMemorySizeLimit", &g_cvars.archiveVars.nInMemoryPerPakSizeLimit, "Individual pak size limit for being loaded into memory (MB)");
-    attachVariable("sys_PakTotalInMemorySizeLimit", &g_cvars.archiveVars.nTotalInMemoryPakSizeLimit, "Total limit (in MB) for all in memory paks");
-    attachVariable("sys_PakLoadCache", &g_cvars.archiveVars.nLoadCache, "Load in memory paks from _LoadCache folder");
-    attachVariable("sys_PakLoadModePaks", &g_cvars.archiveVars.nLoadModePaks, "Load mode switching paks from modes folder");
-    attachVariable("sys_PakStreamCache", &g_cvars.archiveVars.nStreamCache, "Load in memory paks for faster streaming (cgf_cache.pak,dds_cache.pak)");
-    attachVariable("sys_PakSaveTotalResourceList", &g_cvars.archiveVars.nSaveTotalResourceList, "Save resource list");
     attachVariable("sys_PakSaveLevelResourceList", &g_cvars.archiveVars.nSaveLevelResourceList, "Save resource list when loading level");
-    attachVariable("sys_PakSaveFastLoadResourceList", &g_cvars.archiveVars.nSaveFastloadResourceList, "Save resource list during initial loading");
-    attachVariable("sys_PakSaveMenuCommonResourceList", &g_cvars.archiveVars.nSaveMenuCommonResourceList, "Save resource list during front end menu flow");
-    attachVariable("sys_PakMessageInvalidFileAccess", &g_cvars.archiveVars.nMessageInvalidFileAccess, "Message Box synchronous file access when in game");
     attachVariable("sys_PakLogInvalidFileAccess", &g_cvars.archiveVars.nLogInvalidFileAccess, "Log synchronous file access when in game");
-#ifndef _RELEASE
-    attachVariable("sys_PakLogAllFileAccess", &g_cvars.archiveVars.nLogAllFileAccess, "Log all file access allowing you to easily see whether a file has been loaded directly, or which pak file.");
-#endif
-    attachVariable("sys_PakValidateFileHash", &g_cvars.archiveVars.nValidateFileHashes, "Validate file hashes in pak files for collisions");
-    attachVariable("sys_UncachedStreamReads", &g_cvars.archiveVars.nUncachedStreamReads, "Enable stream reads via an uncached file handle");
-    attachVariable("sys_PakDisableNonLevelRelatedPaks", &g_cvars.archiveVars.nDisableNonLevelRelatedPaks, "Disables all paks that are not required by specific level; This is used with per level splitted assets.");
-    attachVariable("sys_PakWarnOnPakAccessFailures", &g_cvars.archiveVars.nWarnOnPakAccessFails, "If 1, access failure for Paks is treated as a warning, if zero it is only a log message.");
-
-    static const int fileSystemCaseSensitivityDefault = 0;
-    REGISTER_CVAR2("sys_FilesystemCaseSensitivity", &g_cvars.sys_FilesystemCaseSensitivity, fileSystemCaseSensitivityDefault, VF_NULL,
-        "0 - CryPak lowercases all input file names\n"
-        "1 - CryPak preserves file name casing\n"
-        "Default is 1");
 
     m_sysNoUpdate = REGISTER_INT("sys_noupdate", 0, VF_CHEAT,
             "Toggles updating of system with sys_script_debugger.\n"
             "Usage: sys_noupdate [0/1]\n"
             "Default is 0 (system updates during debug).");
-
-    m_sysWarnings = REGISTER_INT("sys_warnings", 0, 0,
-            "Toggles printing system warnings.\n"
-            "Usage: sys_warnings [0/1]\n"
-            "Default is 0 (off).");
 
 #if defined(_RELEASE) && defined(CONSOLE) && !defined(ENABLE_LW_PROFILERS)
     enum
@@ -1299,10 +1257,6 @@ void CSystem::CreateSystemVars()
         e_sysKeyboardDefault = 1
     };
 #endif
-    m_sysKeyboard = REGISTER_INT("sys_keyboard", e_sysKeyboardDefault, 0,
-            "Enables keyboard.\n"
-            "Usage: sys_keyboard [0/1]\n"
-            "Default is 1 (on).");
 
     m_svDedicatedMaxRate = REGISTER_FLOAT("sv_DedicatedMaxRate", 30.0f, 0,
             "Sets the maximum update rate when running as a dedicated server.\n"
@@ -1318,54 +1272,13 @@ void CSystem::CreateSystemVars()
         "Usage: sv_DedicatedCPUVariance [5..50]\n"
         "Default is 10.");
 
-    m_cvSSInfo =  REGISTER_INT("sys_SSInfo", 0, 0,
-            "Show SourceSafe information (Name,Comment,Date) for file errors."
-            "Usage: sys_SSInfo [0/1]\n"
-            "Default is 0 (off)");
-
-    m_cvEntitySuppressionLevel = REGISTER_INT("e_EntitySuppressionLevel", 0, 0,
-            "Defines the level at which entities are spawned.\n"
-            "Entities marked with lower level will not be spawned - 0 means no level.\n"
-            "Usage: e_EntitySuppressionLevel [0-infinity]\n"
-            "Default is 0 (off)");
-
     m_sys_firstlaunch = REGISTER_INT("sys_firstlaunch", 0, 0,
             "Indicates that the game was run for the first time.");
-
-    m_sys_main_CPU = REGISTER_INT("sys_main_CPU", 0, 0,
-            "Specifies the physical CPU index main will run on");
-
-    m_sys_TaskThread_CPU[0] = REGISTER_INT("sys_TaskThread0_CPU", 3, 0,
-            "Specifies the physical CPU index taskthread0 will run on");
-
-    m_sys_TaskThread_CPU[1] = REGISTER_INT("sys_TaskThread1_CPU", 5, 0,
-            "Specifies the physical CPU index taskthread1 will run on");
-
-    m_sys_TaskThread_CPU[2] = REGISTER_INT("sys_TaskThread2_CPU", 4, 0,
-            "Specifies the physical CPU index taskthread2 will run on");
-
-    m_sys_TaskThread_CPU[3] = REGISTER_INT("sys_TaskThread3_CPU", 3, 0,
-            "Specifies the physical CPU index taskthread3 will run on");
-
-    m_sys_TaskThread_CPU[4] = REGISTER_INT("sys_TaskThread4_CPU", 2, 0,
-            "Specifies the physical CPU index taskthread4 will run on");
-
-    m_sys_TaskThread_CPU[5] = REGISTER_INT("sys_TaskThread5_CPU", 1, 0,
-            "Specifies the physical CPU index taskthread5 will run on");
 
 #if defined(AZ_RESTRICTED_PLATFORM)
 #define AZ_RESTRICTED_SECTION SYSTEMINIT_CPP_SECTION_12
 #include AZ_RESTRICTED_FILE(SystemInit_cpp)
 #endif
-
-    m_sys_min_step = REGISTER_FLOAT("sys_min_step", 0.01f, 0,
-            "Specifies the minimum physics step in a separate thread");
-    m_sys_max_step = REGISTER_FLOAT("sys_max_step", 0.05f, 0,
-            "Specifies the maximum physics step in a separate thread");
-
-    // used in define MEMORY_DEBUG_POINT()
-    m_sys_memory_debug = REGISTER_INT("sys_memory_debug", 0, VF_CHEAT,
-            "Enables to activate low memory situation is specific places in the code (argument defines which place), 0=off");
 
 #if defined(AZ_RESTRICTED_PLATFORM)
 #define AZ_RESTRICTED_SECTION SYSTEMINIT_CPP_SECTION_17
@@ -1377,40 +1290,7 @@ void CSystem::CreateSystemVars()
 #   define SYS_STREAMING_CPU_DEFAULT_VALUE 1
 #   define SYS_STREAMING_CPU_WORKER_DEFAULT_VALUE 5
 #endif
-    REGISTER_CVAR2("sys_streaming_CPU", &g_cvars.sys_streaming_cpu, SYS_STREAMING_CPU_DEFAULT_VALUE, VF_NULL, "Specifies the physical CPU file IO thread run on");
-    REGISTER_CVAR2("sys_streaming_CPU_worker", &g_cvars.sys_streaming_cpu_worker, SYS_STREAMING_CPU_WORKER_DEFAULT_VALUE, VF_NULL, "Specifies the physical CPU file IO worker thread/s run on");
-    REGISTER_CVAR2("sys_streaming_memory_budget", &g_cvars.sys_streaming_memory_budget, 10 * 1024, VF_NULL, "Temp memory streaming system can use in KB");
-    REGISTER_CVAR2("sys_streaming_max_finalize_per_frame", &g_cvars.sys_streaming_max_finalize_per_frame, 0, VF_NULL,
-        "Maximum stream finalizing calls per frame to reduce the CPU impact on main thread (0 to disable)");
-    REGISTER_CVAR2("sys_streaming_max_bandwidth", &g_cvars.sys_streaming_max_bandwidth, 0, VF_NULL, "Enables capping of max streaming bandwidth in MB/s");
-    REGISTER_CVAR2("sys_streaming_debug", &g_cvars.sys_streaming_debug, 0, VF_NULL, "Enable streaming debug information\n"
-        "0=off\n"
-        "1=Streaming Stats\n"
-        "2=File IO\n"
-        "3=Request Order\n"
-        "4=Write to Log\n"
-        "5=Stats per extension\n"
-        );
-    REGISTER_CVAR2("sys_streaming_requests_grouping_time_period", &g_cvars.sys_streaming_requests_grouping_time_period, 2, VF_NULL, // Vlad: 2 works better than 4 visually, should be be re-tested when streaming pak's activated
-        "Streaming requests are grouped by request time and then sorted by disk offset");
-    REGISTER_CVAR2("sys_streaming_debug_filter", &g_cvars.sys_streaming_debug_filter, 0, VF_NULL, "Set streaming debug information filter.\n"
-        "0=all\n"
-        "1=Texture\n"
-        "2=Geometry\n"
-        "3=Terrain\n"
-        "4=Animation\n"
-        "5=Music\n"
-        "6=Sound\n"
-        "7=Shader\n"
-        );
-    g_cvars.sys_streaming_debug_filter_file_name = REGISTER_STRING("sys_streaming_debug_filter_file_name", "", VF_CHEAT,
-            "Set streaming debug information filter");
-    REGISTER_CVAR2("sys_streaming_debug_filter_min_time", &g_cvars.sys_streaming_debug_filter_min_time, 0.f, VF_NULL, "Show only slow items.");
-    REGISTER_CVAR2("sys_streaming_resetstats", &g_cvars.sys_streaming_resetstats, 0, VF_NULL,
-        "Reset all the streaming stats");
 #define DEFAULT_USE_OPTICAL_DRIVE_THREAD (gEnv->IsDedicated() ? 0 : 1)
-    REGISTER_CVAR2("sys_streaming_use_optical_drive_thread", &g_cvars.sys_streaming_use_optical_drive_thread, DEFAULT_USE_OPTICAL_DRIVE_THREAD, VF_NULL,
-        "Allow usage of an extra optical drive thread for faster streaming from 2 medias");
 
     const char* localizeFolder = "Localization";
     g_cvars.sys_localization_folder = REGISTER_STRING_CB("sys_localization_folder", localizeFolder, VF_NULL,
@@ -1419,9 +1299,6 @@ void CSystem::CreateSystemVars()
             "Usage: sys_localization_folder <folder name>\n"
             "Default: Localization\n",
             CSystem::OnLocalizationFolderCVarChanged);
-
-    REGISTER_CVAR2("sys_streaming_in_blocks", &g_cvars.sys_streaming_in_blocks, 1, VF_NULL,
-        "Streaming of large files happens in blocks");
 
 #if (defined(WIN32) || defined(WIN64)) && defined(_DEBUG)
     REGISTER_CVAR2("sys_float_exceptions", &g_cvars.sys_float_exceptions, 2, 0, "Use or not use floating point exceptions.");
@@ -1441,11 +1318,6 @@ void CSystem::CreateSystemVars()
     REGISTER_CVAR2("sys_WER", &g_cvars.sys_WER, 0, 0, "Enables Windows Error Reporting");
 #endif
 
-#ifdef USE_HTTP_WEBSOCKETS
-    REGISTER_CVAR2("sys_simple_http_base_port", &g_cvars.sys_simple_http_base_port, 1880, VF_REQUIRE_APP_RESTART,
-        "sets the base port for the simple http server to run on, defaults to 1880");
-#endif
-
     const int DEFAULT_DUMP_TYPE = 2;
 
     REGISTER_CVAR2("sys_dump_type", &g_cvars.sys_dump_type, DEFAULT_DUMP_TYPE, VF_NULL,
@@ -1456,8 +1328,6 @@ void CSystem::CreateSystemVars()
         "3: Create a full minidump (+ all memory)\n"
         );
     REGISTER_CVAR2("sys_dump_aux_threads", &g_cvars.sys_dump_aux_threads, 1, VF_NULL, "Dumps callstacks of other threads in case of a crash");
-
-    REGISTER_CVAR2("sys_limit_phys_thread_count", &g_cvars.sys_limit_phys_thread_count, 1, VF_NULL, "Limits p_num_threads to physical CPU count - 1");
 
 #if (defined(WIN32) || defined(WIN64)) && defined(_RELEASE)
     const int DEFAULT_SYS_MAX_FPS = 0;
@@ -1470,11 +1340,8 @@ void CSystem::CreateSystemVars()
 
     REGISTER_CVAR2("sys_maxTimeStepForMovieSystem", &g_cvars.sys_maxTimeStepForMovieSystem, 0.1f, VF_NULL, "Caps the time step for the movie system so that a cut-scene won't be jumped in the case of an extreme stall.");
 
-    REGISTER_CVAR2("sys_force_installtohdd_mode", &g_cvars.sys_force_installtohdd_mode, 0, VF_NULL, "Forces install to HDD mode even when doing DVD emulation");
-
     REGISTER_CVAR2("sys_report_files_not_found_in_paks", &g_cvars.sys_report_files_not_found_in_paks, 0, VF_NULL, "Reports when files are searched for in paks and not found. 1 = log, 2 = warning, 3 = error");
 
-    m_sys_preload = REGISTER_INT("sys_preload", 0, 0, "Preload Game Resources");
     REGISTER_COMMAND("sys_crashtest", CmdCrashTest, VF_CHEAT, "Make the game crash\n"
         "0=off\n"
         "1=null pointer exception\n"
@@ -1513,19 +1380,10 @@ void CSystem::CreateSystemVars()
             "To speed up loading from non HD media\n"
             "0=off / 1=enabled");
     */
-    REGISTER_CVAR2("sys_AI", &g_cvars.sys_ai, 1, 0, "Enables AI Update");
-    REGISTER_CVAR2("sys_entities", &g_cvars.sys_entitysystem, 1, 0, "Enables Entities Update");
     REGISTER_CVAR2("sys_trackview", &g_cvars.sys_trackview, 1, 0, "Enables TrackView Update");
 
     //Defines selected language.
     REGISTER_STRING_CB("g_language", "", VF_NULL, "Defines which language pak is loaded", CSystem::OnLanguageCVarChanged);
-
-#if defined(WIN32)
-    REGISTER_CVAR2("sys_display_threads", &g_cvars.sys_display_threads, 0, 0, "Displays Thread info");
-#elif defined(AZ_RESTRICTED_PLATFORM)
-#define AZ_RESTRICTED_SECTION SYSTEMINIT_CPP_SECTION_13
-#include AZ_RESTRICTED_FILE(SystemInit_cpp)
-#endif
 
     // adding CVAR to toggle assert verbosity level
     const int defaultAssertValue = 1;

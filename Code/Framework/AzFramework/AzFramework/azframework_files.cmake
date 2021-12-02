@@ -79,6 +79,7 @@ set(FILES
     CommandLine/CommandLine.h
     CommandLine/CommandRegistrationBus.h
     Debug/DebugCameraBus.h
+    feature_options.cmake
     Viewport/ViewportBus.h
     Viewport/ViewportBus.cpp
     Viewport/ViewportColors.h
@@ -276,6 +277,8 @@ set(FILES
     Process/ProcessWatcher.cpp
     Process/ProcessWatcher.h
     Process/ProcessCommon_fwd.h
+    Process/ProcessCommunicatorTracePrinter.cpp
+    Process/ProcessCommunicatorTracePrinter.h
     ProjectManager/ProjectManager.h
     ProjectManager/ProjectManager.cpp
     Render/GameIntersectorComponent.h

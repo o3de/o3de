@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "start_process_detached",
+            "base": "start_process_detached",
             "context": "Method",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "start_process_detached",
+                    "base": "start_process_detached",
                     "context": "Global",
                     "entry": {
                         "name": "In",

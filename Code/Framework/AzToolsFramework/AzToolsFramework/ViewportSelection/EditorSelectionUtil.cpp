@@ -9,6 +9,7 @@
 #include "EditorSelectionUtil.h"
 
 #include <AzCore/Component/ComponentApplicationBus.h>
+#include <AzCore/Console/IConsole.h>
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Math/Aabb.h>
 #include <AzCore/Math/IntersectSegment.h>
@@ -16,10 +17,20 @@
 #include <AzToolsFramework/API/ComponentEntitySelectionBus.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 
+AZ_CVAR(
+    float,
+    ed_defaultEntityPlacementDistance,
+    10.0f,
+    nullptr,
+    AZ::ConsoleFunctorFlags::Null,
+    "The default distance to place an entity from the camera if no intersection is found");
+
 namespace AzToolsFramework
 {
-    // default ray length for picking in the viewport
-    static const float EditorPickRayLength = 1000.0f;
+    float GetDefaultEntityPlacementDistance()
+    {
+        return ed_defaultEntityPlacementDistance;
+    }
 
     AZ::Vector3 CalculateCenterOffset(const AZ::EntityId entityId, const EditorTransformComponentSelectionRequests::Pivot pivot)
     {

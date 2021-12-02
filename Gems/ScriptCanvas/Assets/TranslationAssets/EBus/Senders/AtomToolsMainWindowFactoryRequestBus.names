@@ -1,39 +1,40 @@
 {
     "entries": [
         {
-            "key": "AtomToolsMainWindowFactoryRequestBus",
+            "base": "AtomToolsMainWindowFactoryRequestBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "AtomToolsMainWindowFactoryRequestBus"
+                "name": "Main Window Factory",
+                "category": "Atom Tools"
             },
             "methods": [
                 {
-                    "key": "CreateMainWindow",
+                    "base": "CreateMainWindow",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke CreateMainWindow"
+                        "tooltip": "When signaled, this will invoke Create Main Window"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after CreateMainWindow is invoked"
+                        "tooltip": "Signaled after Create Main Window is invoked"
                     },
                     "details": {
-                        "name": "CreateMainWindow"
+                        "name": "Create Main Window"
                     }
                 },
                 {
-                    "key": "DestroyMainWindow",
+                    "base": "DestroyMainWindow",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke DestroyMainWindow"
+                        "tooltip": "When signaled, this will invoke Destroy Main Window"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after DestroyMainWindow is invoked"
+                        "tooltip": "Signaled after Destroy Main Window is invoked"
                     },
                     "details": {
-                        "name": "DestroyMainWindow"
+                        "name": "Destroy Main Window"
                     }
                 }
             ]

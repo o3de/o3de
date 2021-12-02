@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "ScriptTimePoint",
+            "base": "ScriptTimePoint",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
@@ -10,28 +10,19 @@
             },
             "methods": [
                 {
-                    "key": "ToString",
+                    "base": "ToString",
                     "context": "ScriptTimePoint",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke ToString"
+                        "tooltip": "When signaled, this will invoke To String"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after ToString is invoked"
+                        "tooltip": "Signaled after To String is invoked"
                     },
                     "details": {
-                        "name": "ScriptTimePoint::ToString",
-                        "category": "Timing"
+                        "name": "To String"
                     },
-                    "params": [
-                        {
-                            "typeid": "{4C0F6AD4-0D4F-4354-AD4A-0C01E948245C}",
-                            "details": {
-                                "name": "ScriptTimePoint*"
-                            }
-                        }
-                    ],
                     "results": [
                         {
                             "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
@@ -42,65 +33,47 @@
                     ]
                 },
                 {
-                    "key": "GetSeconds",
+                    "base": "GetSeconds",
                     "context": "ScriptTimePoint",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetSeconds"
+                        "tooltip": "When signaled, this will invoke Get Seconds"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetSeconds is invoked"
+                        "tooltip": "Signaled after Get Seconds is invoked"
                     },
                     "details": {
-                        "name": "ScriptTimePoint::GetSeconds",
-                        "category": "Timing"
+                        "name": "Get Seconds"
                     },
-                    "params": [
-                        {
-                            "typeid": "{4C0F6AD4-0D4F-4354-AD4A-0C01E948245C}",
-                            "details": {
-                                "name": "ScriptTimePoint*"
-                            }
-                        }
-                    ],
                     "results": [
                         {
                             "typeid": "{110C4B14-11A8-4E9D-8638-5051013A56AC}",
                             "details": {
-                                "name": "Number"
+                                "name": "Seconds"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "GetMilliseconds",
+                    "base": "GetMilliseconds",
                     "context": "ScriptTimePoint",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetMilliseconds"
+                        "tooltip": "When signaled, this will invoke Get Milliseconds"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetMilliseconds is invoked"
+                        "tooltip": "Signaled after Get Milliseconds is invoked"
                     },
                     "details": {
-                        "name": "ScriptTimePoint::GetMilliseconds",
-                        "category": "Timing"
+                        "name": "Get Milliseconds"
                     },
-                    "params": [
-                        {
-                            "typeid": "{4C0F6AD4-0D4F-4354-AD4A-0C01E948245C}",
-                            "details": {
-                                "name": "ScriptTimePoint*"
-                            }
-                        }
-                    ],
                     "results": [
                         {
                             "typeid": "{110C4B14-11A8-4E9D-8638-5051013A56AC}",
                             "details": {
-                                "name": "Number"
+                                "name": "Milliseconds"
                             }
                         }
                     ]

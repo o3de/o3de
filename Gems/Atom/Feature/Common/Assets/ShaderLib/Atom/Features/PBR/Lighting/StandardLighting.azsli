@@ -48,9 +48,9 @@ float3 GetSpecularLighting(Surface surface, LightingData lightingData, const flo
         // HdotV = HdotL due to the definition of half vector
         float3 clearCoatF = FresnelSchlick(HdotL, 0.04) * surface.clearCoat.factor;
         float clearCoatRoughness = max(surface.clearCoat.roughness * surface.clearCoat.roughness, 0.0005f);
-        float3 clearCoatSpecular = ClearCoatGGX(NdotH, HdotL, NdotL, surface.clearCoat.normal, clearCoatRoughness, clearCoatF );
+        float3 clearCoatSpecular = ClearCoatGGX(NdotH, HdotL, NdotL, surface.clearCoat.normal, clearCoatRoughness, clearCoatF);
 
-        specular = specular * (1.0 - clearCoatF) * (1.0 - clearCoatF) + clearCoatSpecular;
+        specular = specular * (1.0 - clearCoatF) + clearCoatSpecular;
     }
     
     specular *= lightIntensity;
@@ -95,7 +95,7 @@ PbrLightingOutput DebugOutput(float3 color)
 {
     PbrLightingOutput output = (PbrLightingOutput)0;
 
-    float defaultNormal = float3(0.0f, 0.0f, 1.0f);
+    float3 defaultNormal = float3(0.0f, 0.0f, 1.0f);
 
     output.m_diffuseColor = float4(color.rgb, 1.0f);
     output.m_normal.rgb = EncodeNormalSignedOctahedron(defaultNormal);

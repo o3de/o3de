@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "eUiVAlign_Top",
+            "base": "eUiVAlign_Top",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "eUiVAlign_Top::Getter",
-                "category": "Constants"
-            }
+                "name": "Vertical Align Top",
+                "category": "Constants/UI/Align"
+            },
+            "methods": [
+                {
+                    "base": "GeteUiVAlign_Top",
+                    "details": {
+                        "name": "Vertical Align: Top"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

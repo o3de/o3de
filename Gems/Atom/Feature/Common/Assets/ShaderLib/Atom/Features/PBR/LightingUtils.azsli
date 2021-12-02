@@ -67,6 +67,6 @@ float3 ApplyParallaxCorrectionAABB(float3 aabbMin, float3 aabbMax, float3 aabbPo
 // compute parallax corrected reflection vector, OBB version
 float3 ApplyParallaxCorrectionOBB(float4x4 obbTransformInverse, float3 obbHalfExtents, float3 positionWS, float3 reflectDir)
 {
-    float4 p = mul(obbTransformInverse, float4(positionWS, 1.0f));
+    float3 p = mul(obbTransformInverse, float4(positionWS, 1.0f)).xyz;
     return ApplyParallaxCorrectionAABB(-obbHalfExtents, obbHalfExtents, float3(0.0f, 0.0f, 0.0f), p, reflectDir);
 }
