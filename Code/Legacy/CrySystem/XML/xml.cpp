@@ -626,20 +626,6 @@ void CXmlNode::deleteChild(const char* tag)
     }
 }
 
-//////////////////////////////////////////////////////////////////////////
-void CXmlNode::deleteChildAt(int nIndex)
-{
-    if (m_pChilds)
-    {
-        XmlNodes& childs = *m_pChilds;
-        if (nIndex >= 0 && nIndex < (int)childs.size())
-        {
-            ReleaseChild(childs[nIndex]);
-            childs.erase(childs.begin() + nIndex);
-        }
-    }
-}
-
 //! Adds new child node.
 void CXmlNode::addChild(const XmlNodeRef& node)
 {
@@ -655,72 +641,10 @@ void CXmlNode::addChild(const XmlNodeRef& node)
     pNode->setParent(this);
 };
 
-void CXmlNode::shareChildren(const XmlNodeRef& inFromMe)
-{
-    int     numChildren = inFromMe->getChildCount();
-
-    removeAllChilds();
-
-    if (numChildren > 0)
-    {
-        XmlNodeRef      child;
-
-        m_pChilds = new XmlNodes;
-        m_pChilds->reserve(numChildren);
-        for (int i = 0; i < numChildren; i++)
-        {
-            child = inFromMe->getChild(i);
-
-            child->AddRef();
-            // not overwriting parent assignment of child, we share the node but do not exclusively own it
-            m_pChilds->push_back(child);
-        }
-    }
-}
-
 void CXmlNode::setParent(const XmlNodeRef& inNewParent)
 {
     // note, parent ptrs are not ref counted
     m_parent = inNewParent;
-}
-
-void CXmlNode::insertChild(int inIndex, const XmlNodeRef& inNewChild)
-{
-    assert(inIndex >= 0 && inIndex <= getChildCount());
-    assert(inNewChild != 0);
-    if (inIndex >= 0 && inIndex <= getChildCount() && inNewChild)
-    {
-        if (getChildCount() == 0)
-        {
-            addChild(inNewChild);
-        }
-        else
-        {
-            IXmlNode* pNode = ((IXmlNode*)inNewChild);
-            pNode->AddRef();
-            m_pChilds->insert(m_pChilds->begin() + inIndex, pNode);
-            pNode->setParent(this);
-        }
-    }
-}
-
-void CXmlNode::replaceChild(int inIndex, const XmlNodeRef& inNewChild)
-{
-    assert(inIndex >= 0 && inIndex < getChildCount());
-    assert(inNewChild != 0);
-    if (inIndex >= 0 && inIndex < getChildCount() && inNewChild)
-    {
-        IXmlNode* wasChild = (*m_pChilds)[inIndex];
-
-        if (wasChild->getParent() == this)
-        {
-            wasChild->setParent(XmlNodeRef());          // child is orphaned, will be freed by Release() below if this parent is last holding a reference to it
-        }
-        wasChild->Release();
-        inNewChild->AddRef();
-        (*m_pChilds)[inIndex] = inNewChild;
-        inNewChild->setParent(this);
-    }
 }
 
 XmlNodeRef CXmlNode::newChild(const char* tagName)
@@ -816,34 +740,6 @@ bool CXmlNode::getAttributeByIndex(int index, XmlString& key, XmlString& value)
         }
     }
     return false;
-}
-//////////////////////////////////////////////////////////////////////////
-XmlNodeRef CXmlNode::clone()
-{
-    CXmlNode* node = new CXmlNode;
-    XmlNodeRef  result(node);
-    node->m_pStringPool = m_pStringPool;
-    m_pStringPool->AddRef();
-    node->m_tag = m_tag;
-    node->m_content = m_content;
-    // Clone attributes.
-    CXmlNode* n = (CXmlNode*)(IXmlNode*)node;
-    n->copyAttributes(this);
-    // Clone sub nodes.
-
-    if (m_pChilds)
-    {
-        const XmlNodes& childs = *m_pChilds;
-
-        node->m_pChilds = new XmlNodes;
-        node->m_pChilds->reserve(childs.size());
-        for (int i = 0, num = static_cast<int>(childs.size()); i < num; ++i)
-        {
-            node->addChild(childs[i]->clone());
-        }
-    }
-
-    return result;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1206,16 +1102,6 @@ XmlString CXmlNode::getXML(int level) const
     return xml;
 }
 
-XmlString CXmlNode::getXMLUnsafe(int level, char* tmpBuffer, uint32 sizeOfTmpBuffer) const
-{
-    char* endPtr = tmpBuffer + sizeOfTmpBuffer - 1;
-    char* endOfBuffer = AddToXmlStringUnsafe(tmpBuffer, level, endPtr);
-    endOfBuffer[0] = '\0';
-    XmlString ret(tmpBuffer);
-    return ret;
-}
-
-
 // TODO: those 2 saving functions are a bit messy. should probably make a separate one for the use of PlatformAPI
 bool CXmlNode::saveToFile(const char* fileName)
 {
@@ -1247,9 +1133,7 @@ bool CXmlNode::saveToFile(const char* fileName)
 
 bool CXmlNode::saveToFile([[maybe_unused]] const char* fileName, size_t chunkSize, AZ::IO::HandleType fileHandle)
 {
-#ifdef WIN32
-    CrySetFileAttributes(fileName, 0x00000080);  // FILE_ATTRIBUTE_NORMAL
-#endif //WIN32
+    CrySetFileAttributes(fileName, FILE_ATTRIBUTE_NORMAL);
 
     if (chunkSize < 256 * 1024)   // make at least 256k
     {

@@ -308,7 +308,7 @@ namespace AzToolsFramework
         bool PerformGroupDitto(AZ::EntityId entityId);
         bool PerformIndividualDitto(AZ::EntityId entityId);
         void PerformManipulatorDitto(AZ::EntityId entityId);
-        void PerformSnapToTerrain(const ViewportInteraction::MouseInteractionEvent& mouseInteraction);
+        void PerformSnapToSurface(const ViewportInteraction::MouseInteractionEvent& mouseInteraction);
 
         //! Responsible for keeping the space cluster in sync with the current reference frame.
         void UpdateSpaceCluster(ReferenceFrame referenceFrame);

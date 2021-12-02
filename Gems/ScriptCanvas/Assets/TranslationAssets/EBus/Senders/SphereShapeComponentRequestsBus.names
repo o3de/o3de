@@ -5,7 +5,7 @@
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "SphereShapeComponentRequestsBus",
+                "name": "Sphere Shape Component",
                 "category": "Shape"
             },
             "methods": [

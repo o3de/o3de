@@ -102,7 +102,8 @@ namespace AudioControls
 
             for (auto it = librariesToDelete.begin(); it != librariesToDelete.end(); ++it)
             {
-                DeleteLibraryFile((*it).c_str());
+                auto newPathOpt = fileIO->ResolvePath(AZ::IO::PathView{ *it });
+                DeleteLibraryFile(newPathOpt.value().Native());
             }
 
             previousLibraryPaths = m_foundLibraryPaths;

@@ -97,6 +97,7 @@ namespace EMStudio
         m_compileDate = AZStd::string::format("%s", MCORE_DATE);
 
         EMotionFX::SkeletonOutlinerNotificationBus::Handler::BusConnect();
+        EMotionFX::JointSelectionRequestBus::Handler::BusConnect();
 
         // log some information
         LogInfo();
@@ -107,6 +108,7 @@ namespace EMStudio
     // destructor
     EMStudioManager::~EMStudioManager()
     {
+        EMotionFX::JointSelectionRequestBus::Handler::BusDisconnect();
         EMotionFX::SkeletonOutlinerNotificationBus::Handler::BusDisconnect();
 
         if (m_eventProcessingCallback)

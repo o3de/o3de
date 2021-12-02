@@ -5,7 +5,8 @@
             "context": "BehaviorClass",
             "variant": "",
             "details": {
-                "name": "Unit Testing"
+                "name": "Unit Testing",
+                "category": "Tests"
             },
             "methods": [
                 {

@@ -14,14 +14,11 @@
 // Qt
 #include <QPainter>
 
-// AzCore
-#include <AzCore/Console/IConsole.h>
-
 // AzQtComponents
 #include <AzQtComponents/DragAndDrop/ViewportDragAndDrop.h>
 
+// AzToolsFramework
 #include <AzToolsFramework/API/ComponentEntitySelectionBus.h>
-#include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
 
@@ -41,19 +38,6 @@
 #undef LoadCursor
 #endif
 
-AZ_CVAR(
-    float,
-    ed_defaultEntityPlacementDistance,
-    10.0f,
-    nullptr,
-    AZ::ConsoleFunctorFlags::Null,
-    "The default distance to place an entity from the camera if no intersection is found");
-
-float GetDefaultEntityPlacementDistance()
-{
-    return ed_defaultEntityPlacementDistance;
-}
-
 //////////////////////////////////////////////////////////////////////
 // Viewport drag and drop support
 //////////////////////////////////////////////////////////////////////
@@ -63,7 +47,7 @@ void QtViewport::BuildDragDropContext(
 {
     context.m_hitLocation = AzToolsFramework::FindClosestPickIntersection(
         viewportId, AzToolsFramework::ViewportInteraction::ScreenPointFromQPoint(point), AzToolsFramework::EditorPickRayLength,
-        GetDefaultEntityPlacementDistance());
+        AzToolsFramework::GetDefaultEntityPlacementDistance());
 }
 
 void QtViewport::dragEnterEvent(QDragEnterEvent* event)
@@ -1062,11 +1046,6 @@ Vec3 QtViewport::SnapToGrid(const Vec3& vec)
     return vec;
 }
 
-float QtViewport::GetGridStep() const
-{
-    return 0.0f;
-}
-
 //////////////////////////////////////////////////////////////////////////
 void QtViewport::BeginUndo()
 {
@@ -1119,30 +1098,6 @@ bool QtViewport::IsBoundsVisible([[maybe_unused]] const AABB& box) const
 {
     // Always visible in standard implementation.
     return true;
-}
-
-//////////////////////////////////////////////////////////////////////////
-bool QtViewport::HitTestLine(const Vec3& lineP1, const Vec3& lineP2, const QPoint& hitpoint, int pixelRadius, float* pToCameraDistance) const
-{
-    float dist = GetDistanceToLine(lineP1, lineP2, hitpoint);
-    if (dist <= pixelRadius)
-    {
-        if (pToCameraDistance)
-        {
-            Vec3 raySrc, rayDir;
-            ViewToWorldRay(hitpoint, raySrc, rayDir);
-            Vec3 rayTrg = raySrc + rayDir * 10000.0f;
-
-            Vec3 pa, pb;
-            float mua, mub;
-            LineLineIntersect(lineP1, lineP2, raySrc, rayTrg, pa, pb, mua, mub);
-            *pToCameraDistance = mub;
-        }
-
-        return true;
-    }
-
-    return false;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1349,19 +1304,13 @@ float QtViewport::GetFOV() const
 {
     return gSettings.viewports.fDefaultFov;
 }
+
 //////////////////////////////////////////////////////////////////////////
 void QtViewport::setRay(QPoint& vp, Vec3& raySrc, Vec3& rayDir)
 {
     m_vp = vp;
     m_raySrc = raySrc;
     m_rayDir = rayDir;
-}
-////////////////////////////////////////////////////////////////////////
-void QtViewport::setHitcontext(QPoint& vp, Vec3& raySrc, Vec3& rayDir)
-{
-    vp = m_vp;
-    raySrc = m_raySrc;
-    rayDir = m_rayDir;
 }
 
 #include <moc_Viewport.cpp>

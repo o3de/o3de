@@ -63,11 +63,6 @@ namespace AzToolsFramework
     AZ::Vector3 CalculateSnappedPosition(
         const AZ::Vector3& unsnappedPosition, const AZ::Vector3* snapAxes, size_t snapAxesCount, float size);
 
-    //! For a given point on the terrain, calculate the closest xy position snapped to the grid
-    //! (z position is aligned to terrain height, not snapped to z grid)
-    AZ::Vector3 CalculateSnappedTerrainPosition(
-        const AZ::Vector3& worldSurfacePosition, const AZ::Transform& worldFromLocal, int viewportId, float size);
-
     //! Wrapper for grid snapping and grid size bus calls.
     GridSnapParameters GridSnapSettings(int viewportId);
 

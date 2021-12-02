@@ -63,16 +63,6 @@ namespace ObjectManagerPythonBindingsUnitTests
         EXPECT_TRUE(behaviorContext->m_methods.find("get_selection_center") != behaviorContext->m_methods.end());
         EXPECT_TRUE(behaviorContext->m_methods.find("get_selection_aabb") != behaviorContext->m_methods.end());
 
-        EXPECT_TRUE(behaviorContext->m_methods.find("hide_object") != behaviorContext->m_methods.end());
-        EXPECT_TRUE(behaviorContext->m_methods.find("is_object_hidden") != behaviorContext->m_methods.end());
-        EXPECT_TRUE(behaviorContext->m_methods.find("unhide_object") != behaviorContext->m_methods.end());
-        EXPECT_TRUE(behaviorContext->m_methods.find("hide_all_objects") != behaviorContext->m_methods.end());
-        EXPECT_TRUE(behaviorContext->m_methods.find("unhide_all_objects") != behaviorContext->m_methods.end());
-
-        EXPECT_TRUE(behaviorContext->m_methods.find("freeze_object") != behaviorContext->m_methods.end());
-        EXPECT_TRUE(behaviorContext->m_methods.find("is_object_frozen") != behaviorContext->m_methods.end());
-        EXPECT_TRUE(behaviorContext->m_methods.find("unfreeze_object") != behaviorContext->m_methods.end());
-
         EXPECT_TRUE(behaviorContext->m_methods.find("delete_object") != behaviorContext->m_methods.end());
         EXPECT_TRUE(behaviorContext->m_methods.find("delete_selected") != behaviorContext->m_methods.end());
 

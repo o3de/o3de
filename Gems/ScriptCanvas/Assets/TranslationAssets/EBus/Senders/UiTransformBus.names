@@ -5,7 +5,8 @@
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "Ui Transform Bus"
+                "name": "UI Transform",
+                "category": "UI"
             },
             "methods": [
                 {

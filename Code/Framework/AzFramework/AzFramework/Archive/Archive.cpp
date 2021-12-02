@@ -46,11 +46,6 @@ namespace AZ::IO
         "If set to 0, tells Archive to try to open the file on the file system first othewise check mounted paks.\n"
         "If set to 1, tells Archive to try to open the file in pak first, then go to file system.\n"
         "If set to 2, tells the Archive to only open files from the pak");
-    AZ_CVAR(int, sys_PakMessageInvalidFileAccess, ArchiveVars{}.nMessageInvalidFileAccess, nullptr, AZ::ConsoleFunctorFlags::Null,
-        "Message Box synchronous file access when in game");
-
-    AZ_CVAR(int, sys_PakWarnOnPakAccessFailures, ArchiveVars{}.nWarnOnPakAccessFails, nullptr, AZ::ConsoleFunctorFlags::Null,
-        "If 1, access failure for Paks is treated as a warning, if zero it is only a log message.");
     AZ_CVAR(int, sys_report_files_not_found_in_paks, 0, nullptr, AZ::ConsoleFunctorFlags::Null,
         "Reports when files are searched for in paks and not found. 1 = log, 2 = warning, 3 = error");
     AZ_CVAR(int32_t, az_archive_verbosity, 0, nullptr, AZ::ConsoleFunctorFlags::Null,

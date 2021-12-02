@@ -5,7 +5,7 @@
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "ThresholdGradientRequestBus"
+                "name": "Threshold Gradient"
             },
             "methods": [
                 {

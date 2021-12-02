@@ -5,7 +5,7 @@
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "UiDropTargetBus",
+                "name": "UI Drop Target",
                 "category": "UI"
             },
             "methods": [
