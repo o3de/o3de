@@ -20,6 +20,7 @@ namespace BuildVariableOverridesCpp
 {
     enum Version
     {
+        Original = 1,
         EditorAssetRedux,
 
         // add description above
@@ -30,19 +31,29 @@ namespace BuildVariableOverridesCpp
         ( AZ::SerializeContext& serializeContext
         , AZ::SerializeContext::DataElementNode& rootElement)
     {
-         // #sc_editor_asset
-        ScriptCanvasBuilder::BuildVariableOverrides overrides;
-        overrides.m_source = SourceHandle(nullptr, assetHolder.GetAssetId().m_guid, {});
- 
-        for (auto& variable : editableData.GetVariables())
+        if (rootElement.GetVersion() < BuildVariableOverridesCpp::Version::EditorAssetRedux)
         {
-            overrides.m_overrides.push_back(variable.m_graphVariable);
-        }
- 
-        if (!rootElement.AddElementWithData(serializeContext, "runtimeDataOverrides", overrides))
-        {
-            AZ_Error("ScriptCanvas", false, "EditorScriptCanvasComponent conversion failed: failed to add 'runtimeDataOverrides'");
-            return false;
+            auto sourceIndex = rootElement.FindElement(AZ_CRC_CE("source"));
+            if (sourceIndex == -1)
+            {
+                AZ_Error("ScriptCanvas", false, "BuildVariableOverrides coversion failed: 'source' was missing");
+                return false;
+            }
+
+            auto& sourceElement = rootElement.GetSubElement(sourceIndex);
+            AZ::Data::Asset<ScriptCanvasEditor::ScriptCanvasAsset> asset;
+            if (!sourceElement.GetData(asset))
+            {
+                AZ_Error("ScriptCanvas", false, "BuildVariableOverrides coversion failed: could not retrieve 'source' data");
+                return false;
+            }
+
+            ScriptCanvasEditor::SourceHandle sourceHandle(nullptr, asset.GetId().m_guid, {});
+            if (!rootElement.AddElementWithData(serializeContext, "source", sourceHandle))
+            {
+                AZ_Error("ScriptCanvas", false, "BuildVariableOverrides coversion failed: could not add updated 'source' data");
+                return false;
+            }
         }
 
         return true;
@@ -136,7 +147,6 @@ namespace ScriptCanvasBuilder
         return m_variables.empty() && m_entityIds.empty() && m_dependencies.empty();
     }
 
-    // #sc_editor_asset THIS MUST GET VERSIONED!
     void BuildVariableOverrides::Reflect(AZ::ReflectContext* reflectContext)
     {
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(reflectContext))

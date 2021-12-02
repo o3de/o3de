@@ -532,8 +532,6 @@ namespace ScriptCanvasEditor
         void DisconnectEndpoints(const AZ::EntityId& sceneId, const AZStd::vector<GraphCanvas::Endpoint>& endpoints) override;
         /////////////////////////////////////////////////////////////////////////////////////////////        
 
-        void UpdateWorkspaceStatus(const ScriptCanvasMemoryAsset& scriptCanvasAsset);
-
         GraphCanvas::Endpoint HandleProposedConnection(const GraphCanvas::GraphId& graphId, const GraphCanvas::ConnectionId& connectionId, const GraphCanvas::Endpoint& endpoint, const GraphCanvas::NodeId& proposedNode, const QPoint& screenPoint);
 
         //! UndoNotificationBus
