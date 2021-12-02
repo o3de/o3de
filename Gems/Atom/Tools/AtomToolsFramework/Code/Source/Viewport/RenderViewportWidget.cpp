@@ -147,7 +147,8 @@ namespace AtomToolsFramework
         {
             m_viewportContext->SetRenderScene(*existingScene);
 
-            // return if only a render pipeline for the viewport exist. Otherwise we need to continue to ensure render pipeline installed for the scene.
+            // If we have a render pipeline, use it and ensure an AuxGeom feature processor is installed.
+            // Otherwise, fall through and ensure a render pipeline is installed for this scene.
             if (m_viewportContext->GetCurrentPipeline())
             {
                 if (auto auxGeomFP = existingScene->get()->GetFeatureProcessor<AZ::RPI::AuxGeomFeatureProcessorInterface>())
