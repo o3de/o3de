@@ -8,9 +8,9 @@
 #ifndef AZSTD_THREAD_BUS_H
 #define AZSTD_THREAD_BUS_H 1
 
-#include <AzCore/Driller/DrillerBus.h>
 #include <AzCore/std/parallel/thread.h>
 #include <AzCore/std/parallel/mutex.h>
+#include <AzCore/EBus/EBus.h>
 
 namespace AZStd
 {

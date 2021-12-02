@@ -37,7 +37,6 @@
 #include <ScriptCanvas/Libraries/Core/SendScriptEvent.h>
 #include <ScriptCanvas/Libraries/Core/Start.h>
 #include <ScriptCanvas/Libraries/Core/UnaryOperator.h>
-#include <ScriptCanvas/Profiler/Driller.h>
 #include <ScriptCanvas/Translation/Translation.h>
 #include <ScriptCanvas/Variable/VariableBus.h>
 #include <ScriptCanvas/Variable/VariableData.h>

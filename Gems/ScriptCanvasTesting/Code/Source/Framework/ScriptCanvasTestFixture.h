@@ -10,7 +10,6 @@
 
 #include <AzCore/Asset/AssetManagerComponent.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
-#include <AzCore/Driller/Driller.h>
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/Memory/MemoryComponent.h>
 #include <AzCore/Serialization/EditContext.h>
