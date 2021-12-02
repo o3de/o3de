@@ -122,7 +122,6 @@ namespace AZ
         char buffer[MaxLogBufferSize];
 
         const AZStd::size_t length = azvsnprintf(buffer, MaxLogBufferSize, format, args);
-        buffer[AZStd::min<AZStd::size_t>(length + 1, MaxLogBufferSize - 1)] = '\0';
         m_logEvent.Signal(level, buffer, file, function, line);
 
         switch (level)
