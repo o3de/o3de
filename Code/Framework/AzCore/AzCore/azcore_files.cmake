@@ -116,9 +116,6 @@ set(FILES
     Debug/Trace.cpp
     Debug/Trace.h
     Debug/TraceMessageBus.h
-    Debug/TraceMessagesDriller.cpp
-    Debug/TraceMessagesDriller.h
-    Debug/TraceMessagesDrillerBus.h
     Debug/TraceReflection.cpp
     Debug/TraceReflection.h
     DOM/DomVisitor.cpp
