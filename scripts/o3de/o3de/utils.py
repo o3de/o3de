@@ -18,8 +18,10 @@ import urllib.request
 import logging
 import zipfile
 
+LOG_FORMAT = '[%(levelname)s] %(name)s: %(message)s'
+
 logger = logging.getLogger('o3de.utils')
-logging.basicConfig()
+logging.basicConfig(format=LOG_FORMAT)
 
 COPY_BUFSIZE = 64 * 1024
 

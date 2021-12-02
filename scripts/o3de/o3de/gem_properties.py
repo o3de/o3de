@@ -16,7 +16,7 @@ import logging
 from o3de import manifest, utils
 
 logger = logging.getLogger('o3de.gem_properties')
-logging.basicConfig()
+logging.basicConfig(format=utils.LOG_FORMAT)
 
 
 def update_values_in_key_list(existing_values: list, new_values: list or str, remove_values: list or str,

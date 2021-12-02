@@ -16,7 +16,7 @@ import sys
 from o3de import utils
 
 logger = logging.getLogger('o3de.sha256')
-logging.basicConfig()
+logging.basicConfig(format=utils.LOG_FORMAT)
 
 
 def sha256(file_path: str or pathlib.Path,

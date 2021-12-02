@@ -14,10 +14,10 @@ import re
 import pathlib
 import json
 
-from o3de import manifest, validation
+from o3de import manifest, validation, utils
 
 logger = logging.getLogger('o3de.global_project')
-logging.basicConfig()
+logging.basicConfig(format=utils.LOG_FORMAT)
 
 DEFAULT_BOOTSTRAP_SETREG = pathlib.Path('~/.o3de/Registry/bootstrap.setreg').expanduser()
 PROJECT_PATH_KEY = ('Amazon', 'AzCore', 'Bootstrap', 'project_path')

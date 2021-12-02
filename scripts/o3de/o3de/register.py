@@ -24,7 +24,7 @@ import urllib.request
 from o3de import get_registration, manifest, repo, utils, validation
 
 logger = logging.getLogger('o3de.register')
-logging.basicConfig()
+logging.basicConfig(format=utils.LOG_FORMAT)
 
 
 def register_shipped_engine_o3de_objects(force: bool = False) -> int:

@@ -19,7 +19,7 @@ import hashlib
 from o3de import validation, utils
 
 logger = logging.getLogger('o3de.manifest')
-logging.basicConfig()
+logging.basicConfig(format=utils.LOG_FORMAT)
 
 # Directory methods
 override_home_folder = None

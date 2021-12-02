@@ -16,7 +16,7 @@ import logging
 from o3de import manifest, utils
 
 logger = logging.getLogger('o3de.project_properties')
-logging.basicConfig()
+logging.basicConfig(format=utils.LOG_FORMAT)
 
 
 def get_project_props(name: str = None, path: pathlib.Path = None) -> dict:

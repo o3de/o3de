@@ -25,7 +25,7 @@ from datetime import datetime
 from o3de import manifest, repo, utils, validation, register
 
 logger = logging.getLogger('o3de.download')
-logging.basicConfig()
+logging.basicConfig(format=utils.LOG_FORMAT)
 
 
 def unzip_manifest_json_data(download_zip_path: pathlib.Path, zip_file_name: str) -> dict:

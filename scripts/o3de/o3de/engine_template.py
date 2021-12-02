@@ -21,7 +21,7 @@ import re
 from o3de import manifest, register, validation, utils
 
 logger = logging.getLogger('o3de.engine_template')
-logging.basicConfig()
+logging.basicConfig(format=utils.LOG_FORMAT)
 
 binary_file_ext = {
     '.pak',

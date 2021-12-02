@@ -18,7 +18,7 @@ import sys
 from o3de import cmake, manifest, utils
 
 logger = logging.getLogger('o3de.disable_gem')
-logging.basicConfig()
+logging.basicConfig(format=utils.LOG_FORMAT)
 
 
 def disable_gem_in_project(gem_name: str = None,
