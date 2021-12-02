@@ -102,7 +102,7 @@ namespace AZ
 
         const char* m_name = nullptr;
         const char* m_desc = nullptr;
-        Debug::AllocationRecords* m_records = nullptr;  // Cached pointer to allocation records. Works together with the MemoryDriller.
+        Debug::AllocationRecords* m_records = nullptr;  // Cached pointer to allocation records
         size_t m_memoryGuardSize = 0;
         bool m_isLazilyCreated = false;
         bool m_isProfilingActive = false;

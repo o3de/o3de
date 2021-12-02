@@ -397,8 +397,6 @@ set(FILES
     Memory/Memory.h
     Memory/MemoryComponent.cpp
     Memory/MemoryComponent.h
-    Memory/MemoryDriller.cpp
-    Memory/MemoryDriller.h
     Memory/MemoryDrillerBus.h
     Memory/nedmalloc.inl
     Memory/NewAndDelete.inl

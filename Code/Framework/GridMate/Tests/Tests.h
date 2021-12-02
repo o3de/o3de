@@ -19,7 +19,6 @@
 #include <AzCore/Memory/AllocationRecords.h>
 
 #include <AzCore/Driller/Driller.h>
-#include <AzCore/Memory/MemoryDriller.h>
 
 #include <GridMate/Carrier/Carrier.h>
 
@@ -67,7 +66,6 @@ namespace UnitTest
             GridMate::GridMateDesc desc;
 #if GM_TEST_MEMORY_DRILLING
             m_drillerManager = AZ::Debug::DrillerManager::Create();
-            m_drillerManager->Register(aznew AZ::Debug::MemoryDriller);
 
             desc.m_allocatorDesc.m_allocationRecords = true;
 #endif

@@ -13,7 +13,6 @@
 #include <AzCore/Memory/HphaSchema.h>
 
 #include <AzCore/Driller/Driller.h>
-#include <AzCore/Memory/MemoryDriller.h>
 #include <AzCore/Memory/AllocationRecords.h>
 #include <AzCore/Debug/StackTracer.h>
 #include <AzCore/UnitTest/TestTypes.h>
@@ -45,7 +44,6 @@ namespace UnitTest
         {
             AZ::AllocatorManager::Instance().SetDefaultTrackingMode(AZ::Debug::AllocationRecords::RECORD_FULL);
             m_drillerManager = Debug::DrillerManager::Create();
-            m_drillerManager->Register(aznew MemoryDriller);
         }
         void TearDown() override
         {

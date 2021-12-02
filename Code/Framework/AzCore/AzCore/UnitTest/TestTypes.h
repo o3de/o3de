@@ -14,7 +14,6 @@
 #include <AzCore/Debug/BudgetTracker.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Driller/Driller.h>
-#include <AzCore/Memory/MemoryDriller.h>
 #include <AzCore/Memory/AllocationRecords.h>
 
 #if defined(HAVE_BENCHMARK)
@@ -48,7 +47,6 @@ namespace UnitTest
         void SetupAllocator(const AZ::SystemAllocator::Descriptor& allocatorDesc = {})
         {
             m_drillerManager = AZ::Debug::DrillerManager::Create();
-            m_drillerManager->Register(aznew AZ::Debug::MemoryDriller);
             AZ::AllocatorManager::Instance().SetDefaultTrackingMode(AZ::Debug::AllocationRecords::RECORD_FULL);
 
             // Only create the SystemAllocator if it s not ready

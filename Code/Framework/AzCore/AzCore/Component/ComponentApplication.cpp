@@ -49,7 +49,6 @@
 #include <AzCore/IO/SystemFile.h>
 
 #include <AzCore/Driller/Driller.h>
-#include <AzCore/Memory/MemoryDriller.h>
 #include <AzCore/Debug/TraceMessagesDriller.h>
 #include <AzCore/Debug/EventTraceDriller.h>
 #include <AzCore/Debug/Profiler.h>
