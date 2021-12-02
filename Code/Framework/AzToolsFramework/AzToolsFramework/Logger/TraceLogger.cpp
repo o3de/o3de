@@ -73,7 +73,7 @@ namespace AzToolsFramework
         AZStd::string logPath;
         StringFunc::Path::Join(logDirectory.c_str(), logFileName.c_str(), logPath);
 
-        m_logFile.reset(aznew LogFile(logPath.c_str()));
+        m_logFile.reset(aznew LogFile(logPath.c_str(), true));
         if (m_logFile)
         {
             m_logFile->SetMachineReadable(false);
@@ -81,7 +81,7 @@ namespace AzToolsFramework
             {
                 m_logFile->AppendLog(LogFile::SEV_NORMAL, message.window.c_str(), message.message.c_str());
             }
-            m_startupLogSink = {};
+            m_startupLogSink.clear();
             m_logFile->FlushLog();
         }
     }
