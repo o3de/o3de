@@ -387,7 +387,7 @@ namespace ScriptCanvasEditor
         bool m_saveFormatConverted = true;
 
         ScriptCanvasEditor::SourceHandle m_assetId;
-        // #sc_editor_asset temporary step in cleaning up the graph / asset class structure. This reference is deliberately weak.
+        // temporary step in cleaning up the graph / asset class structure. This reference is deliberately weak.
         ScriptCanvas::ScriptCanvasData* m_owner;
     };
 }
