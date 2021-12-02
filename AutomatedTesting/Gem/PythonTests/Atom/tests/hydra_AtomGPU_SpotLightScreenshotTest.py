@@ -74,8 +74,23 @@ def AtomGPU_LightComponent_SpotLightScreenshotsMatchGoldenImages():
 
     Test Steps:
     1. Find the Directional Light entity then disable its Directional Light component.
-    2. Disable Global Skylight (IBL) and HDRi Skybox components on the Global Skylight entity.
-
+    2. Disable Global Skylight (IBL) component on the Global Skylight (IBL) entity.
+    3. Disable HDRi Skybox component on the Global Skylight (IBL) entity.
+    4. Create a Spot Light entity and rotate it.
+    5. Attach a Light component to the Spot Light entity.
+    6. Set the Light component Light Type to Spot (disk).
+    7. Enter game mode and take a screenshot then exit game mode.
+    8. Change the default material asset for the Ground Plane entity.
+    9. Enter game mode and take a screenshot then exit game mode.
+    10. Increase the Intensity value of the Light component.
+    11. Enter game mode and take a screenshot then exit game mode.
+    12. Change the Light component Color property value.
+    13. Enter game mode and take a screenshot then exit game mode.
+    14. Change the Light component Enable shutters, Inner angle, and Outer angle property values.
+    15. Enter game mode and take a screenshot then exit game mode.
+    16. Change the Light component Enable shadow and Shadowmap size property values then move Spot Light entity.
+    17. Enter game mode and take a screenshot then exit game mode.
+    18. Look for errors.
 
     :return: None
     """
@@ -124,7 +139,7 @@ def AtomGPU_LightComponent_SpotLightScreenshotsMatchGoldenImages():
         global_skylight_component.disable_component()
         Report.critical_result(Tests.global_skylight_component_disabled, not global_skylight_component.is_enabled())
 
-        # 3. Disable HDRi Skybox component on the Global Skylight (IBL) entity
+        # 3. Disable HDRi Skybox component on the Global Skylight (IBL) entity.
         hdri_skybox_name = AtomComponentProperties.hdri_skybox()
         hdri_skybox_component = global_skylight_entity.get_components_of_type([hdri_skybox_name])[0]
         hdri_skybox_component.disable_component()
