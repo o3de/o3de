@@ -92,7 +92,7 @@ namespace UnitTest
         return newEntity;
     }
 
-    AZ::EntityId PrefabTestFixture::CreateNamedEntity(AZStd::string name, AZ::EntityId parentId)
+    AZ::EntityId PrefabTestFixture::CreateEntityWithPrefab(const char* entityName, AZ::EntityId parentId)
     {
         auto createResult = m_prefabPublicInterface->CreateEntity(parentId, AZ::Vector3());
         AZ_Assert(createResult.IsSuccess(), "Failed to create entity: %s", createResult.GetError().c_str());
@@ -103,7 +103,7 @@ namespace UnitTest
 
         entity->Deactivate();
 
-        entity->SetName(name);
+        entity->SetName(entityName);
 
         // Normally, in invalid parent ID should automatically parent us to the root prefab, but currently in the unit test
         // environment entities aren't created with a default transform component, so CreateEntity won't correctly parent.

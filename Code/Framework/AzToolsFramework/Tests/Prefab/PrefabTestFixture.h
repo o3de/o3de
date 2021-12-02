@@ -55,7 +55,7 @@ namespace UnitTest
 
         void CreateRootPrefab();
         AZ::Entity* CreateEntity(const char* entityName, const bool shouldActivate = true);
-        AZ::EntityId CreateNamedEntity(AZStd::string name, AZ::EntityId parentId = AZ::EntityId());
+        AZ::EntityId CreateEntityWithPrefab(const char* entityName, AZ::EntityId parentId = AZ::EntityId());
 
         void CompareInstances(const Instance& instanceA, const Instance& instanceB, bool shouldCompareLinkIds = true,
             bool shouldCompareContainerEntities = true);
