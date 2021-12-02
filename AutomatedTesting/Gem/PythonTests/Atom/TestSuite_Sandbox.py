@@ -12,6 +12,7 @@ import pytest
 import ly_test_tools.environment.file_system as file_system
 import editor_python_test_tools.hydra_test_utils as hydra
 
+from ly_test_tools.o3de.editor_test import EditorSharedTest, EditorTestSuite
 from Atom.atom_utils.atom_constants import LIGHT_TYPES
 
 logger = logging.getLogger(__name__)

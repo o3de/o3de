@@ -54,8 +54,7 @@ def AtomEditorComponents_DiffuseGlobalIllumination_AddedToEntity():
 
     from editor_python_test_tools.editor_entity_utils import EditorLevel
     from editor_python_test_tools.utils import Report, Tracer, TestHelper
-    from Atom.atom_utils.atom_constants import AtomComponentProperties
-    from Atom.atom_utils.atom_constants import GLOBAL_ILLUMINATION_QUALITY
+    from Atom.atom_utils.atom_constants import AtomComponentProperties, GLOBAL_ILLUMINATION_QUALITY
 
     with Tracer() as error_tracer:
         # Test setup begins.
