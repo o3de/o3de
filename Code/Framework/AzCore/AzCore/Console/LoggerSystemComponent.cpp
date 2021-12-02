@@ -125,8 +125,6 @@ namespace AZ
         buffer[AZStd::min<AZStd::size_t>(length + 1, MaxLogBufferSize - 1)] = '\0';
         m_logEvent.Signal(level, buffer, file, function, line);
 
-        // Force a new-line before calling the AZ::Debug::Trace functions, as they assume a newline is present
-        buffer[AZStd::min<AZStd::size_t>(length + 1, MaxLogBufferSize - 2)] = '\n';
         switch (level)
         {
         case LogLevel::Warn:
