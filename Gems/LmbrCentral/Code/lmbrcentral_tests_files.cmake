@@ -24,5 +24,6 @@ set(FILES
     Tests/SpawnerComponentTest.cpp
     Tests/SplineComponentTests.cpp
     Tests/DiskShapeTest.cpp
+    Tests/ReferenceShapeTests.cpp
     Source/LmbrCentral.cpp
 )

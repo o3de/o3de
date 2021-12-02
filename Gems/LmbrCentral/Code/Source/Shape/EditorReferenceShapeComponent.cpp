@@ -10,11 +10,12 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <LmbrCentral/Dependency/DependencyNotificationBus.h>
+#include<LmbrCentral/Component/EditorWrappedComponentBase.h>
 
-namespace Vegetation
+namespace LmbrCentral
 {
     void EditorReferenceShapeComponent::Reflect(AZ::ReflectContext* context)
     {
-        ReflectSubClass<EditorReferenceShapeComponent, BaseClassType>(context, 1, &EditorVegetationComponentBaseVersionConverter<typename BaseClassType::WrappedComponentType, typename BaseClassType::WrappedConfigType>);
+        ReflectSubClass<EditorReferenceShapeComponent, BaseClassType>(context, 1, &EditorWrappedComponentBaseVersionConverter<typename BaseClassType::WrappedComponentType, typename BaseClassType::WrappedConfigType, 1>);
     }
 }
