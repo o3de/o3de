@@ -29,6 +29,14 @@ void ApplyDirectionalLights(Surface surface, inout LightingData lightingData)
             lightingData.shadowCoords,
             surface.vertexNormal,
             debugInfo);
+
+        // Fetch shadow coords for shrinked world position (used in thin transmission materials) 
+        float3 shrinkedShadowCoords[ViewSrg::MaxCascadeCount];
+        DirectionalLightShadow::GetShadowCoords(
+            shadowIndex,
+            surface.position - lightingData.shrinkFactor * surface.normal,
+            surface.normal,
+            lightingData.shrinkedShadowCoords);
             
         if (o_transmission_mode == TransmissionMode::ThickObject)
         {

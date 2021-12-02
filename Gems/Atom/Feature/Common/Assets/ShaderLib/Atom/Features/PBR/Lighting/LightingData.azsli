@@ -33,6 +33,9 @@ class LightingData
 
     // Angle to accept below (N . L = 0) in scattering through thin objects
     float angleOffset; 
+    
+    // Shrink (absolute) offset towards the normal opposite direction to ensure correct shadow map projection
+    float shrinkFactor;
 
     // Normalized direction from surface to camera
     float3 dirToCamera;

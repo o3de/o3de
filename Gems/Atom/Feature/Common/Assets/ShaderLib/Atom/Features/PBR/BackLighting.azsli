@@ -65,7 +65,7 @@ float3 GetBackLighting(Surface surface, LightingData lightingData, float3 lightI
             {
                 // Irradiance arround surface point. 
                 // Begin the transmittance dot product slightly before it would with the regular dot(N,L)
-                float E = saturate(lightingData.angleOffset + dot(-surface.normal, dirToLight));
+                float E = max(lightingData.angleOffset + dot(-surface.normal, dirToLight),0.0);
 
                 // Transmission distance computed from shadowmaps modulated by editor-exposed parameters
                 float s = transmissionDistance * surface.transmission.thickness * (100 - transmissionParams.w) * 10;
