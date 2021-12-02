@@ -111,6 +111,7 @@ set(CPACK_STRIP_FILES TRUE) # always strip symbols on packaging
 set(CPACK_PACKAGE_CHECKSUM SHA256) # Generate checksum file
 set(CPACK_PRE_BUILD_SCRIPTS ${pal_dir}/PackagingPreBuild_${PAL_HOST_PLATFORM_NAME_LOWERCASE}.cmake)
 set(CPACK_POST_BUILD_SCRIPTS ${pal_dir}/PackagingPostBuild_${PAL_HOST_PLATFORM_NAME_LOWERCASE}.cmake)
+set(CPACK_CODESIGN_SCRIPT ${pal_dir}/PackagingCodeSign_${PAL_HOST_PLATFORM_NAME_LOWERCASE}.cmake)
 set(CPACK_LY_PYTHON_CMD ${LY_PYTHON_CMD})
 
 # IMPORTANT: required to be included AFTER setting all property overrides

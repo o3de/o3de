@@ -7,46 +7,43 @@
 #
 
 set(FILES
-    Include/Public/Authentication/AuthenticationProviderBus.h
-    Include/Public/Authentication/AuthenticationTokens.h
-    Include/Public/Authorization/AWSCognitoAuthorizationBus.h
-    Include/Public/Authorization/ClientAuthAWSCredentials.h
-    Include/Public/UserManagement/AWSCognitoUserManagementBus.h
+    Include/Authentication/AuthenticationProviderBus.h
+    Include/Authentication/AuthenticationTokens.h
+    Include/Authorization/AWSCognitoAuthorizationBus.h
+    Include/Authorization/ClientAuthAWSCredentials.h
+    Include/UserManagement/AWSCognitoUserManagementBus.h
 
-    Include/Private/AWSClientAuthSystemComponent.h
-    Include/Private/AWSClientAuthBus.h
-    Include/Private/AWSClientAuthResourceMappingConstants.h
-    Include/Private/Authentication/AuthenticationProviderTypes.h
-    Include/Private/Authentication/AuthenticationProviderScriptCanvasBus.h
-    Include/Private/Authentication/AuthenticationProviderManager.h
-    Include/Private/Authentication/AuthenticationNotificationBusBehaviorHandler.h
-
-    Include/Private/Authorization/AWSCognitoAuthorizationController.h
-    Include/Private/Authorization/AWSClientAuthPersistentCognitoIdentityProvider.h
-    Include/Private/Authorization/AWSCognitoAuthorizationNotificationBusBehaviorHandler.h
-    Include/Private/Authorization/AWSClientAuthCognitoCachingAuthenticatedCredentialsProvider.h
-
-    Include/Private/UserManagement/AWSCognitoUserManagementController.h
-    Include/Private/UserManagement/UserManagementNotificationBusBehaviorHandler.h
-    
-    Include/Private/Authentication/AuthenticationProviderInterface.h
-    Include/Private/Authentication/OAuthConstants.h
-    Include/Private/Authentication/AWSCognitoAuthenticationProvider.h
-    Include/Private/Authentication/LWAAuthenticationProvider.h
-    Include/Private/Authentication/GoogleAuthenticationProvider.h
- 
     Source/AWSClientAuthSystemComponent.cpp
-    Source/Authentication/AuthenticationTokens.cpp
-    Source/Authentication/AuthenticationProviderInterface.cpp
-    Source/Authentication/AuthenticationProviderManager.cpp
-    Source/Authentication/AWSCognitoAuthenticationProvider.cpp
-    Source/Authentication/LWAAuthenticationProvider.cpp
-    Source/Authentication/GoogleAuthenticationProvider.cpp
+    Source/AWSClientAuthSystemComponent.h
+    Source/AWSClientAuthBus.h
+    Source/AWSClientAuthResourceMappingConstants.h
 
-    Source/Authorization/ClientAuthAWSCredentials.cpp
-    Source/Authorization/AWSCognitoAuthorizationController.cpp
-    Source/Authorization/AWSClientAuthPersistentCognitoIdentityProvider.cpp
+    Source/Authentication/AuthenticationNotificationBusBehaviorHandler.h
+    Source/Authentication/AuthenticationProviderInterface.cpp
+    Source/Authentication/AuthenticationProviderInterface.h
+    Source/Authentication/AuthenticationProviderManager.cpp
+    Source/Authentication/AuthenticationProviderManager.h
+    Source/Authentication/AuthenticationProviderScriptCanvasBus.h
+    Source/Authentication/AuthenticationProviderTypes.h
+    Source/Authentication/AuthenticationTokens.cpp
+    Source/Authentication/AWSCognitoAuthenticationProvider.cpp
+    Source/Authentication/AWSCognitoAuthenticationProvider.h
+    Source/Authentication/LWAAuthenticationProvider.cpp
+    Source/Authentication/LWAAuthenticationProvider.h
+    Source/Authentication/GoogleAuthenticationProvider.cpp
+    Source/Authentication/GoogleAuthenticationProvider.h  
+    Source/Authentication/OAuthConstants.h
+
     Source/Authorization/AWSClientAuthCognitoCachingAuthenticatedCredentialsProvider.cpp
+    Source/Authorization/AWSClientAuthCognitoCachingAuthenticatedCredentialsProvider.h
+    Source/Authorization/AWSClientAuthPersistentCognitoIdentityProvider.cpp
+    Source/Authorization/AWSClientAuthPersistentCognitoIdentityProvider.h
+    Source/Authorization/AWSCognitoAuthorizationController.cpp
+    Source/Authorization/AWSCognitoAuthorizationController.h
+    Source/Authorization/AWSCognitoAuthorizationNotificationBusBehaviorHandler.h
+    Source/Authorization/ClientAuthAWSCredentials.cpp
 
     Source/UserManagement/AWSCognitoUserManagementController.cpp
+    Source/UserManagement/AWSCognitoUserManagementController.h
+    Source/UserManagement/UserManagementNotificationBusBehaviorHandler.h
 )

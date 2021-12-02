@@ -8,6 +8,7 @@
 
 file(REAL_PATH "${CPACK_SOURCE_DIR}/.." LY_ROOT_FOLDER)
 include(${LY_ROOT_FOLDER}/cmake/Platform/Common/PackagingPostBuild_common.cmake)
+include(${CPACK_CODESIGN_SCRIPT})
 
 file(${CPACK_PACKAGE_CHECKSUM} ${CPACK_TOPLEVEL_DIRECTORY}/${CPACK_PACKAGE_FILE_NAME}.deb file_checksum)
 file(WRITE ${CPACK_TOPLEVEL_DIRECTORY}/${CPACK_PACKAGE_FILE_NAME}.deb.sha256 "${file_checksum}  ${CPACK_PACKAGE_FILE_NAME}.deb")
@@ -19,6 +20,10 @@ if(CPACK_UPLOAD_URL)
         set(CPACK_UPLOAD_DIRECTORY ${CPACK_PACKAGE_DIRECTORY}/CPackUploads)
     endif()
 
+    # Sign and regenerate checksum
+    ly_sign_binaries("${CPACK_TOPLEVEL_DIRECTORY}/*.deb" "")
+    file(WRITE ${CPACK_TOPLEVEL_DIRECTORY}/${CPACK_PACKAGE_FILE_NAME}.deb.sha256 "${file_checksum}  ${CPACK_PACKAGE_FILE_NAME}.deb")
+
     # Copy the artifacts intended to be uploaded to a remote server into the folder specified
     # through CPACK_UPLOAD_DIRECTORY. This mimics the same process cpack does natively for
     # some other frameworks that have built-in online installer support.
@@ -27,13 +32,12 @@ if(CPACK_UPLOAD_URL)
     file(GLOB _artifacts 
         "${CPACK_TOPLEVEL_DIRECTORY}/*.deb" 
         "${CPACK_TOPLEVEL_DIRECTORY}/*.sha256"
+        "${LY_ROOT_FOLDER}/scripts/signer/Platform/Linux/*.gpg"
     )
     file(COPY ${_artifacts}
         DESTINATION ${CPACK_UPLOAD_DIRECTORY}
     )
     message(STATUS "Artifacts copied to ${CPACK_UPLOAD_DIRECTORY}")
-
-    # TODO: copy gpg file to CPACK_UPLOAD_DIRECTORY
 
     ly_upload_to_url(
         ${CPACK_UPLOAD_URL}
@@ -51,8 +55,6 @@ if(CPACK_UPLOAD_URL)
             ${latest_deb_package}
         )
         ly_upload_to_latest(${CPACK_UPLOAD_URL} ${latest_deb_package})
-
-        # TODO: upload gpg file to latest
         
         # Generate a checksum file for latest and upload it
         set(latest_hash_file "${CPACK_UPLOAD_DIRECTORY}/${CPACK_PACKAGE_NAME}_latest.deb.sha256")
