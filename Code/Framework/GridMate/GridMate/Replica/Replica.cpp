@@ -14,7 +14,6 @@
 #include <GridMate/Replica/Replica.h>
 #include <GridMate/Replica/ReplicaChunk.h>
 #include <GridMate/Replica/ReplicaChunkDescriptor.h>
-#include <GridMate/Replica/ReplicaDrillerEvents.h>
 #include <GridMate/Replica/ReplicaFunctions.h>
 #include <GridMate/Replica/ReplicaMgr.h>
 #include <GridMate/Replica/ReplicaStatus.h>
@@ -49,8 +48,6 @@ namespace GridMate
         replicaName = nullptr;
 #endif
         InternalCreateInitialChunks(replicaName);
-
-        EBUS_EVENT(Debug::ReplicaDrillerBus, OnCreateReplica, this);
     }
     //-----------------------------------------------------------------------------
     Replica::~Replica()
@@ -96,8 +93,6 @@ namespace GridMate
             }
         }
         m_chunks.clear();
-
-        EBUS_EVENT(Debug::ReplicaDrillerBus, OnDestroyReplica, this);
     }
     //-----------------------------------------------------------------------------
     void Replica::Destroy()
@@ -257,17 +252,12 @@ namespace GridMate
     //-----------------------------------------------------------------------------
     void Replica::OnActivate(const ReplicaContext& rc)
     {
-        EBUS_EVENT(Debug::ReplicaDrillerBus, OnActivateReplica, this);
-
         for (auto chunk : m_chunks)
         {
             if (chunk)
             {
-                {
-                    GM_PROFILE_USER_CALLBACK("OnReplicaActivate");
-                    chunk->OnReplicaActivate(rc);
-                }
-                EBUS_EVENT(Debug::ReplicaDrillerBus, OnActivateReplicaChunk, chunk.get());
+                GM_PROFILE_USER_CALLBACK("OnReplicaActivate");
+                chunk->OnReplicaActivate(rc);
             }
         }
     }
@@ -277,17 +267,13 @@ namespace GridMate
         AZ_PROFILE_FUNCTION(GridMate);
 
         EBUS_EVENT_ID(rc.m_rm->GetGridMate(), ReplicaMgrCallbackBus, OnDeactivateReplica, GetRepId(), rc.m_rm);
-        EBUS_EVENT(Debug::ReplicaDrillerBus, OnDeactivateReplica, this);
 
         for (auto chunk : m_chunks)
         {
             if (chunk)
             {
-                {
-                    GM_PROFILE_USER_CALLBACK("OnReplicaDeactivate");
-                    chunk->OnReplicaDeactivate(rc);
-                }
-                EBUS_EVENT(Debug::ReplicaDrillerBus, OnDeactivateReplicaChunk, chunk.get());
+                GM_PROFILE_USER_CALLBACK("OnReplicaDeactivate");
+                chunk->OnReplicaDeactivate(rc);
             }
         }
     }
@@ -325,8 +311,6 @@ namespace GridMate
         {
             if (IsPrimary())
             {
-                EBUS_EVENT(Debug::ReplicaDrillerBus, OnRequestReplicaChangeOwnership, this, requestor);
-
                 if (IsMigratable() && requestor != m_manager->GetLocalPeerId())
                 {
                     bool accepted;
@@ -595,7 +579,6 @@ namespace GridMate
             chunkInfo.m_payload.Init(128);
             mc.m_outBuffer = &chunkInfo.m_payload;
 
-            EBUS_EVENT(Debug::ReplicaDrillerBus, OnSendReplicaChunkBegin, chunk.get(), static_cast<AZ::u32>(iChunk), mc.m_rm->GetLocalPeerId(), mc.m_peer->GetId());
             PackedSize writeOffset = mc.m_outBuffer->GetExactSize();
             // Write the ctor data if we need to
             if (mc.m_marshalFlags & ReplicaMarshalFlags::IncludeCtorData)
@@ -606,7 +589,6 @@ namespace GridMate
 
             // Marshal the chunk data
             chunk->Marshal(mc, static_cast<AZ::u32>(iChunk));
-            EBUS_EVENT(Debug::ReplicaDrillerBus, OnSendReplicaChunkEnd, chunk.get(), static_cast<AZ::u32>(iChunk), mc.m_outBuffer->Get() + writeOffset.GetBytes(), mc.m_outBuffer->Size() - writeOffset.GetBytes());
 
             // Precompute the chunk payload length and add to overall replica payload length
             PackedSize chunkLen = chunkInfo.m_payload.GetExactSize();
@@ -696,9 +678,7 @@ namespace GridMate
 
                     if (chunk)
                     {
-                        EBUS_EVENT(Debug::ReplicaDrillerBus, OnReceiveReplicaChunkBegin, chunk.get(), static_cast<AZ::u32>(iChunk), chunkContext.m_peer->GetId(), chunkContext.m_rm->GetLocalPeerId(), innerBuffer.Get(), chunkSize.GetSizeInBytesRoundUp());
                         chunk->Unmarshal(chunkContext, static_cast<AZ::u32>(iChunk));
-                        EBUS_EVENT(Debug::ReplicaDrillerBus, OnReceiveReplicaChunkEnd, chunk.get(), static_cast<AZ::u32>(iChunk));
                     }
                     else
                     {
