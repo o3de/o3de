@@ -568,9 +568,6 @@ def CreateSingleNode(Map pipelineConfig, def platform, def build_job, Map envVar
     return {
         def currentResult = ''
         def currentException = ''
-        def params = platform.value.build_types[build_job_name].PARAMETERS
-        def output_directory = params.OUTPUT_DIRECTORY
-        def configuration = params.CONFIGURATION
         retry(PIPELINE_RETRY_ATTEMPTS) {
             node("${nodeLabel}") {
                 if(isUnix()) { // Has to happen inside a node
@@ -578,6 +575,9 @@ def CreateSingleNode(Map pipelineConfig, def platform, def build_job, Map envVar
                 }
                 withEnv(GetEnvStringList(envVars)) {
                     def build_job_name = build_job.key
+                    def params = platform.value.build_types[build_job_name].PARAMETERS
+                    def output_directory = params.OUTPUT_DIRECTORY
+                    def configuration = params.CONFIGURATION
                     try {
                         CreateSetupStage(pipelineConfig, snapshot, repositoryName, projectName, pipelineName, branchName, platform.key, build_job.key, envVars, onlyMountEBSVolume).call()
 
