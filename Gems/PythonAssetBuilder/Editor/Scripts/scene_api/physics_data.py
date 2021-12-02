@@ -10,17 +10,35 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 class ColliderConfiguration():
     """
     Configuration for a collider
-    
-    Attributes:
-        Trigger: Should this shape act as a trigger shape.
-        Simulated: Should this shape partake in collision in the physical simulation.
-        InSceneQueries: Should this shape partake in scene queries (ray casts, overlap tests, sweeps).
-        Exclusive: Can this collider be shared between multiple bodies?
-        Position: Shape offset relative to the connected rigid body.
-        Rotation: Shape rotation relative to the connected rigid body.
-        ColliderTag: Identification tag for the collider.
-        RestOffset: Bodies will come to rest separated by the sum of their rest offsets.
-        ContactOffset: Bodies will start to generate contacts when closer than the sum of their contact offsets.   
+
+    Attributes
+    ----------
+    Trigger: bool
+        Should this shape act as a trigger shape.
+
+    Simulated: bool
+        Should this shape partake in collision in the physical simulation.
+
+    InSceneQueries: bool
+        Should this shape partake in scene queries (ray casts, overlap tests, sweeps).
+
+    Exclusive: bool
+        Can this collider be shared between multiple bodies?
+
+    Position: [float, float, float] Vector3
+        Shape offset relative to the connected rigid body.
+
+    Rotation: [float, float, float, float] Quaternion
+        Shape rotation relative to the connected rigid body.
+
+    ColliderTag: str
+        Identification tag for the collider.
+
+    RestOffset: float
+        Bodies will come to rest separated by the sum of their rest offsets.
+
+    ContactOffset: float
+        Bodies will start to generate contacts when closer than the sum of their contact offsets.
     """
     def __init__(self):
         self.Trigger = True
@@ -41,10 +59,23 @@ class ColliderConfiguration():
 class CharacterColliderNodeConfiguration():
     """
     Shapes to define the animation's to model of physics
-    
-    Attributes:
-        name: debug name of the node
-        shapes: a list of pairs of collider and shape configuration
+
+    Attributes
+    ----------
+    name : str
+        debug name of the node
+
+    shapes : `list` of `tuple` of (ColliderConfiguration, ShapeConfiguration) 
+        a list of pairs of collider and shape configuration
+
+    Methods
+    -------
+    add_collider_shape_pair(colliderConfiguration, shapeConfiguration)
+        Helper function to add a collider and shape configuration at the same time
+
+    to_dict()
+        Converts contents to a Python dictionary
+
     """
     def __init__(self):
         self.name = ''
@@ -59,7 +90,7 @@ class CharacterColliderNodeConfiguration():
         shapeList = []
         for index, shape in enumerate(self.shapes):
             tupleValue = (shape[0].to_dict(),  # ColliderConfiguration
-                          shape[1].to_dict()); # ShapeConfiguration
+                          shape[1].to_dict())  # ShapeConfiguration
             shapeList.append(tupleValue)
         data['name'] = self.name
         data['shapes'] = shapeList
@@ -68,9 +99,25 @@ class CharacterColliderNodeConfiguration():
 class CharacterColliderConfiguration():
     """
     Information required to create the basic physics representation of a character.
-    
-    Attributes:
-        nodes: a list of CharacterColliderNodeConfiguration nodes
+
+    Attributes
+    ----------
+    nodes : `list` of CharacterColliderNodeConfiguration
+        a list of CharacterColliderNodeConfiguration nodes
+
+    Methods
+    -------
+    add_character_collider_node_configuration(colliderConfiguration, shapeConfiguration)
+        Helper function to add a character collider node configuration into the nodes
+
+    add_character_collider_node_configuration_node(name, colliderConfiguration, shapeConfiguration)
+        Helper function to add a character collider node configuration into the nodes 
+
+        **Returns**: CharacterColliderNodeConfiguration
+
+    to_dict()
+        Converts contents to a Python dictionary
+
     """
     def __init__(self):
         self.nodes = [] # list of CharacterColliderNodeConfiguration
@@ -98,9 +145,16 @@ class CharacterColliderConfiguration():
 class ShapeConfiguration():
     """
     Base class for all the shape collider configurations
-    
-    Attributes:
-        scale: a 3-element list to describe the scale along the X, Y, and Z axises such as [1.0, 1.0, 1.0]
+
+    Attributes
+    ----------
+    scale : [float, float, float]
+        a 3-element list to describe the scale along the X, Y, and Z axises such as [1.0, 1.0, 1.0]
+
+    Methods
+    -------
+    to_dict()
+        Converts contents to a Python dictionary
     """
     def __init__(self, shapeType):
         self._shapeType = shapeType
@@ -108,16 +162,23 @@ class ShapeConfiguration():
 
     def to_dict(self):
         return {
-            "$type" : self._shapeType,
-            "Scale" : self.scale
+            "$type": self._shapeType,
+            "Scale": self.scale
         }
     
 class SphereShapeConfiguration(ShapeConfiguration):
     """
     The configuration for a Sphere collider
-    
-    Attributes:
-        radius: a scalar value to define the radius of the sphere
+
+    Attributes
+    ----------
+    radius: float
+        a scalar value to define the radius of the sphere
+
+    Methods
+    -------
+    to_dict()
+        Converts contents to a Python dictionary
     """
     def __init__(self):
         super().__init__('SphereShapeConfiguration')
@@ -131,9 +192,16 @@ class SphereShapeConfiguration(ShapeConfiguration):
 class BoxShapeConfiguration(ShapeConfiguration):
     """
     The configuration for a Box collider
-    
-    Attributes:
-        dimensions: The width, height, and depth dimensions of the Box collider
+
+    Attributes
+    ----------
+    dimensions: [float, float, float]
+        The width, height, and depth dimensions of the Box collider
+
+    Methods
+    -------
+    to_dict()
+        Converts contents to a Python dictionary
     """
     def __init__(self):
         super().__init__('BoxShapeConfiguration')
@@ -147,10 +215,19 @@ class BoxShapeConfiguration(ShapeConfiguration):
 class CapsuleShapeConfiguration(ShapeConfiguration):
     """
     The configuration for a Capsule collider
-    
-    Attributes:
-        height: The height of the Capsule
-        radius: The radius of the Capsule
+
+    Attributes
+    ----------
+    height: float
+        The height of the Capsule
+
+    radius: float
+        The radius of the Capsule
+
+    Methods
+    -------
+    to_dict()
+        Converts contents to a Python dictionary
     """
     def __init__(self):
         super().__init__('CapsuleShapeConfiguration')
@@ -166,12 +243,28 @@ class CapsuleShapeConfiguration(ShapeConfiguration):
 class PhysicsAssetShapeConfiguration(ShapeConfiguration):
     """
     The configuration for a Asset collider using a mesh asset for collision
-    
-    Attributes:
-        asset: the name of the asset to load for collision information
-        assetScale: The scale of the asset shape such as [1.0, 1.0, 1.0]
-        useMaterialsFromAsset: Auto-set physics materials using asset's physics material names
-        subdivisionLevel: The level of subdivision if a primitive shape is replaced with a convex mesh due to scaling.
+
+    Attributes
+    ----------
+    asset: { "assetHint": assetReference }
+        the name of the asset to load for collision information
+
+    assetScale: [float, float, float]
+        The scale of the asset shape such as [1.0, 1.0, 1.0]
+
+    useMaterialsFromAsset: bool
+        Auto-set physics materials using asset's physics material names
+
+    subdivisionLevel: int
+        The level of subdivision if a primitive shape is replaced with a convex mesh due to scaling.
+
+    Methods
+    -------
+    set_asset_reference(self, assetReference: str)
+        Helper function to set the asset reference to the collision mesh such as 'my/folder/my_mesh.azmodel'
+
+    to_dict()
+        Converts contents to a Python dictionary
     """
     def __init__(self):
         super().__init__('PhysicsAssetShapeConfiguration')
@@ -196,16 +289,33 @@ class PhysicsAssetShapeConfiguration(ShapeConfiguration):
 class JointConfiguration():
     """
     The joint configuration
-    
-    Attributes:
-        Name: For debugging/tracking purposes only.
-        ParentLocalRotation: Parent joint frame relative to parent body.
-        ParentLocalPosition: Joint position relative to parent body.
-        ChildLocalRotation: Child joint frame relative to child body.
-        ChildLocalPosition: Joint position relative to child body.
-        StartSimulationEnabled: When active, the joint will be enabled when the simulation begins.
 
     see also: class AzPhysics::JointConfiguration
+
+    Attributes
+    ----------
+    Name: str
+        For debugging/tracking purposes only.
+
+    ParentLocalRotation: [float, float, float, float]
+        Parent joint frame relative to parent body.
+
+    ParentLocalPosition: [float, float, float]
+        Joint position relative to parent body.
+
+    ChildLocalRotation: [float, float, float, float]
+        Child joint frame relative to child body.
+
+    ChildLocalPosition: [float, float, float]
+        Joint position relative to child body.
+
+    StartSimulationEnabled: bool 
+        When active, the joint will be enabled when the simulation begins.
+
+    Methods
+    -------
+    to_dict()
+        Converts contents to a Python dictionary
     """
     def __init__(self):
         self.Name = ''
@@ -223,14 +333,27 @@ class JointConfiguration():
 class SimulatedBodyConfiguration():
     """
     Base Class of all Physics Bodies that will be simulated.
-    
-    Attributes:
-        name: For debugging/tracking purposes only.
-        position: starting position offset
-        orientation(Quaternion): starting rotation
-        startSimulationEnabled: to start when simulation engine starts
 
     see also: class AzPhysics::SimulatedBodyConfiguration
+
+    Attributes
+    ----------
+    name: str
+        For debugging/tracking purposes only.
+
+    position: [float, float, float]
+        starting position offset
+
+    orientation: [float, float, float, float]
+        starting rotation (Quaternion)
+
+    startSimulationEnabled: bool
+        to start when simulation engine starts
+
+    Methods
+    -------
+    to_dict()
+        Converts contents to a Python dictionary
     """
     def __init__(self):
         self.name = ''
@@ -251,15 +374,78 @@ class SimulatedBodyConfiguration():
 
 class RigidBodyConfiguration(SimulatedBodyConfiguration):
     """
-    desc
-    
-    Attributes:
-        JointConfiguration: desc
+    PhysX Rigid Body Configuration
 
     see also: class AzPhysics::RigidBodyConfiguration
+
+    Attributes
+    ----------
+    initialLinearVelocity: [float, float, float]
+        Linear velocity applied when the rigid body is activated.
+
+    initialAngularVelocity: [float, float, float]
+        Angular velocity applied when the rigid body is activated (limited by maximum angular velocity)
+
+    centerOfMassOffset: [float, float, float]
+        Local space offset for the center of mass (COM).
+
+    mass: float
+        The mass of the rigid body in kilograms. 
+        A value of 0 is treated as infinite.
+        The trajectory of infinite mass bodies cannot be affected by any collisions or forces other than gravity.
+
+    linearDamping: float
+        The rate of decay over time for linear velocity even if no forces are acting on the rigid body.
+
+    angularDamping: float
+        The rate of decay over time for angular velocity even if no forces are acting on the rigid body.
+
+    sleepMinEnergy: float
+        The rigid body can go to sleep (settle) when kinetic energy per unit mass is persistently below this value.
+
+    maxAngularVelocity: float
+        Clamp angular velocities to this maximum value.
+
+    startAsleep: bool
+        When active, the rigid body will be asleep when spawned, and wake when the body is disturbed.
+
+    interpolateMotion: bool
+        When active, simulation results are interpolated resulting in smoother motion.
+
+    gravityEnabled: bool
+        When active, global gravity affects this rigid body.
+
+    kinematic: bool
+        When active, the rigid body is not affected by gravity or other forces and is moved by script.
+
+    ccdEnabled: bool
+        When active, the rigid body has continuous collision detection (CCD). 
+        Use this to ensure accurate collision detection, particularly for fast moving rigid bodies. 
+        CCD must be activated in the global PhysX preferences.
+
+    ccdMinAdvanceCoefficient: float
+        Coefficient affecting how granularly time is subdivided in CCD.
+
+    ccdFrictionEnabled: bool
+        Whether friction is applied when resolving CCD collisions.
+
+    computeCenterOfMass: bool
+        Compute the center of mass (COM) for this rigid body.
+
+    computeInertiaTensor: bool
+        When active, inertia is computed based on the mass and shape of the rigid body.
+
+    computeMass: bool
+        When active, the mass of the rigid body is computed based on the volume and density values of its colliders.
+
+    Methods
+    -------
+    to_dict()
+        Converts contents to a Python dictionary
     """
     def __init__(self):
         super().__init__()
+
         # Basic initial settings.
         self.initialLinearVelocity = [0.0, 0.0, 0.0]
         self.initialAngularVelocity = [0.0, 0.0, 0.0]
@@ -275,9 +461,9 @@ class RigidBodyConfiguration(SimulatedBodyConfiguration):
         self.interpolateMotion = False
         self.gravityEnabled = True
         self.kinematic = False
-        self.ccdEnabled = False # Whether continuous collision detection is enabled.
-        self.ccdMinAdvanceCoefficient = 0.15 # Coefficient affecting how granularly time is subdivided in CCD.
-        self.ccdFrictionEnabled = False # Whether friction is applied when resolving CCD collisions.
+        self.ccdEnabled = False
+        self.ccdMinAdvanceCoefficient = 0.15
+        self.ccdFrictionEnabled = False
         self.computeCenterOfMass = True
         self.computeInertiaTensor = True
         self.computeMass = True
@@ -329,11 +515,18 @@ class RigidBodyConfiguration(SimulatedBodyConfiguration):
 class RagdollNodeConfiguration(RigidBodyConfiguration):
     """
     Ragdoll node Configuration
-    
-    Attributes:
-        JointConfiguration: Joint configuration.
-    
+
     see also: class Physics::RagdollConfiguration
+
+    Attributes
+    ----------
+    JointConfig: JointConfiguration
+        Ragdoll joint node configuration
+
+    Methods
+    -------
+    to_dict()
+        Converts contents to a Python dictionary
     """
     def __init__(self):
         super().__init__()
@@ -346,14 +539,25 @@ class RagdollNodeConfiguration(RigidBodyConfiguration):
 
 class RagdollConfiguration():
     """
-    Configurationforacollider
-    
-    Attributes:
-        nodes: A list of RagdollNodeConfiguration entries
-        colliders: A CharacterColliderConfiguration
-    
+    A configuration of join nodes and a character collider configuration for a ragdoll
+
     see also: class Physics::RagdollConfiguration
 
+    Attributes
+    ----------
+    nodes: `list` of  RagdollNodeConfiguration
+        A list of RagdollNodeConfiguration entries
+
+    colliders: CharacterColliderConfiguration
+        A CharacterColliderConfiguration
+
+    Methods
+    -------
+    add_ragdoll_node_configuration(ragdollNodeConfiguration)
+        Helper function to add a single ragdoll node configuration (normally for each joint/bone node)
+
+    to_dict()
+        Converts contents to a Python dictionary
     """
     def __init__(self):
         self.nodes = [] # list of RagdollNodeConfiguration
