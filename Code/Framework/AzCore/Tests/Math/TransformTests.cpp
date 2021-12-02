@@ -402,7 +402,6 @@ namespace UnitTest
             AllocatorsFixture::SetUp();
             AZ::ComponentApplication::Descriptor desc;
             desc.m_useExistingAllocator = true;
-            desc.m_enableDrilling = false; // we already created a memory driller for the test (AllocatorsFixture)
             m_app.Create(desc);
         }
 

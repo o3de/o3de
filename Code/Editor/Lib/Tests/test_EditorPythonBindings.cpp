@@ -87,7 +87,6 @@ namespace EditorPythonBindingsUnitTests
         void SetUp() override
         {
             AzFramework::Application::Descriptor appDesc;
-            appDesc.m_enableDrilling = false;
 
             m_app.Start(appDesc);
             // Without this, the user settings component would attempt to save on finalize/shutdown. Since the file is

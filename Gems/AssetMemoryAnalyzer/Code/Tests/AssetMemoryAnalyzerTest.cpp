@@ -27,7 +27,6 @@ protected:
         testalloc = &AZ::AllocatorInstance<AZ::SystemAllocator>::GetAllocator();
         AZ::ComponentApplication::Descriptor desc;
         desc.m_useExistingAllocator = true;
-        desc.m_enableDrilling = false;
         m_app = new (&m_appStorage) AZ::ComponentApplication;
         m_systemEntity = m_app->Create(desc);
         m_app->RegisterComponentDescriptor(AssetMemoryAnalyzerSystemComponent::CreateDescriptor());

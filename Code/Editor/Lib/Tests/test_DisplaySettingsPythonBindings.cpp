@@ -30,7 +30,6 @@ namespace DisplaySettingsPythonBindingsUnitTests
         void SetUp() override
         {
             AzFramework::Application::Descriptor appDesc;
-            appDesc.m_enableDrilling = false;
 
             m_app.Start(appDesc);
             m_app.RegisterComponentDescriptor(AzToolsFramework::DisplaySettingsPythonFuncsHandler::CreateDescriptor());
@@ -60,7 +59,6 @@ namespace DisplaySettingsPythonBindingsUnitTests
         void SetUp() override
         {
             AzFramework::Application::Descriptor appDesc;
-            appDesc.m_enableDrilling = false;
 
             m_app.Start(appDesc);
             m_app.RegisterComponentDescriptor(AzToolsFramework::DisplaySettingsComponent::CreateDescriptor());
