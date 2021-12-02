@@ -46,9 +46,6 @@ class Tests:
     light_component_outer_angle_property_set = (
         "Outer angle property was set",
         "Outer angle property was not set")
-    light_component_shadowmap_size_property_set = (
-        "Shadowmap size was set",
-        "Shadowmap size was not set")
     material_component_material_asset_property_set = (
         "Material Asset property was set",
         "Material Asset property was not set")
@@ -186,7 +183,8 @@ def AtomGPU_LightComponent_SpotLightScreenshotsMatchGoldenImages():
             AtomComponentProperties.material('Material Asset'), ground_plane_material_asset.id)
         Report.result(
             Tests.material_component_material_asset_property_set,
-            light_component.get_component_property_value(AtomComponentProperties.material('Material Asset')))
+            ground_plane_material_component.get_component_property_value(
+                AtomComponentProperties.material('Material Asset')) == ground_plane_material_asset.id)
 
         # 9. Enter game mode and take a screenshot then exit game mode.
         TestHelper.enter_game_mode(Tests.enter_game_mode)
@@ -248,16 +246,12 @@ def AtomGPU_LightComponent_SpotLightScreenshotsMatchGoldenImages():
         TestHelper.exit_game_mode(Tests.exit_game_mode)
         TestHelper.wait_for_condition(function=lambda: not general.is_in_game_mode(), timeout_in_seconds=4.0)
 
-        # 16. Change the Light component Enable shadow and Shadowmap size property values then move Spot Light entity.
+        # 16. Change the Light component Enable shadow and slightly move Spot Light entity.
         light_component.set_component_property_value(AtomComponentProperties.light('Enable shadow'), True)
-        light_component.set_component_property_value(AtomComponentProperties.light('Shadowmap size'), 256.0)
-        spot_light_entity.set_world_rotation(azlmbr.math.Vector3(0.7, -2.0, 1.9))
         Report.result(
             Tests.light_component_enable_shadow_property_set,
             light_component.get_component_property_value(AtomComponentProperties.light('Enable shadow')) is True)
-        Report.result(
-            Tests.light_component_shadowmap_size_property_set,
-            light_component.get_component_property_value(AtomComponentProperties.light('Shadowmap size')) == 256.0)
+        spot_light_entity.set_world_rotation(azlmbr.math.Vector3(0.7, -2.0, 1.9))
 
         # 17. Enter game mode and take a screenshot then exit game mode.
         TestHelper.enter_game_mode(Tests.enter_game_mode)

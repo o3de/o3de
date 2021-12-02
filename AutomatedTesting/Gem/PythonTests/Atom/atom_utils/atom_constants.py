@@ -263,7 +263,6 @@ class AtomComponentProperties:
             'Intensity': 'Controller|Configuration|Intensity',
             'Light type': 'Controller|Configuration|Light type',
             'Outer angle': 'Controller|Configuration|Shutters|Outer angle',
-            'Shadowmap size': 'Controller|Configuration|Shadows|Shadowmap size',
         }
         return properties[property]
 
