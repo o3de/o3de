@@ -571,7 +571,7 @@ namespace AudioControls
         case eACET_RTPC:
             return eWCT_WWISE_RTPC;
         case eACET_SWITCH:
-            return AUDIO_IMPL_INVALID_TYPE;
+            return (eWCT_WWISE_SWITCH | eWCT_WWISE_GAME_STATE);
         case eACET_SWITCH_STATE:
             return (eWCT_WWISE_SWITCH | eWCT_WWISE_GAME_STATE | eWCT_WWISE_RTPC);
         case eACET_ENVIRONMENT:
