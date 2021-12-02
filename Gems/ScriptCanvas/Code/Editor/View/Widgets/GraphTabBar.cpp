@@ -175,6 +175,7 @@ namespace ScriptCanvasEditor
                 setCurrentIndex(tabIndex);
                 return true;
             }
+
             return false;
         }
 
@@ -192,6 +193,43 @@ namespace ScriptCanvasEditor
                     }
                 }
             }
+
+            return -1;
+        }
+
+        int GraphTabBar::FindTab(ScriptCanvasEditor::GraphPtrConst graph) const
+        {
+            for (int tabIndex = 0; tabIndex < count(); ++tabIndex)
+            {
+                QVariant tabDataVariant = tabData(tabIndex);
+                if (tabDataVariant.isValid())
+                {
+                    auto tabAssetId = tabDataVariant.value<GraphTabMetadata>();
+                    if (tabAssetId.m_assetId.Get() == graph)
+                    {
+                        return tabIndex;
+                    }
+                }
+            }
+
+            return -1;
+        }
+
+        int GraphTabBar::FindSaveOverMatch(ScriptCanvasEditor::SourceHandle assetId) const
+        {
+            for (int tabIndex = 0; tabIndex < count(); ++tabIndex)
+            {
+                QVariant tabDataVariant = tabData(tabIndex);
+                if (tabDataVariant.isValid())
+                {
+                    auto tabAssetId = tabDataVariant.value<GraphTabMetadata>();
+                    if (tabAssetId.m_assetId.Get() != assetId.Get() && tabAssetId.m_assetId.PathEquals(assetId))
+                    {
+                        return tabIndex;
+                    }
+                }
+            }
+
             return -1;
         }
 

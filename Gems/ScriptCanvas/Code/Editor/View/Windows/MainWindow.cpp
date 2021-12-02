@@ -910,18 +910,9 @@ namespace ScriptCanvasEditor
             return;
         }
 
-        AssetTrackerRequests::AssetList unsavedAssets;
-        AssetTrackerRequestBus::BroadcastResult(unsavedAssets, &AssetTrackerRequests::GetUnsavedAssets);
-
         for (int tabCounter = 0; tabCounter < m_tabBar->count(); ++tabCounter)
         {
             ScriptCanvasEditor::SourceHandle assetId = m_tabBar->FindAssetId(tabCounter);
-
-            auto resultIterator = m_processedClosedAssetIds.insert(assetId);
-            if (!resultIterator.second)
-            {
-                continue;
-            }
 
             const Tracker::ScriptCanvasFileState& fileState = GetAssetFileState(assetId);
 
@@ -938,30 +929,13 @@ namespace ScriptCanvasEditor
 
             if (shouldSaveResults == UnsavedChangesOptions::SAVE)
             {
-                    // #sc_editor_asset
-//                 Callbacks::OnSave saveCB = [this](bool isSuccessful, AZ::Data::AssetPtr, ScriptCanvasEditor::SourceHandle)
-//                 {
-//                     if (isSuccessful)
-//                     {
-//                         // Continue closing.
-//                         qobject_cast<QWidget*>(parent())->close();
-//                     }
-//                     else
-//                     {
-//                         // Abort closing.
-//                         QMessageBox::critical(this, QString(), QObject::tr("Failed to save."));
-//                         m_processedClosedAssetIds.clear();
-//                     }
-//                 };
-//                 ActivateAndSaveAsset(assetId, saveCB);
+                SaveAssetImpl(assetId, Save::InPlace);
                 event->ignore();
                 return;
             }
             else if (shouldSaveResults == UnsavedChangesOptions::CANCEL_WITHOUT_SAVING)
             {
-                m_processedClosedAssetIds.clear();
                 event->ignore();
-
                 return;
             }
             else if (shouldSaveResults == UnsavedChangesOptions::CONTINUE_WITHOUT_SAVING &&
@@ -973,20 +947,6 @@ namespace ScriptCanvasEditor
         }
 
         m_workspace->Save();
-
-        // Close all files.
-// 
-//         AssetTrackerRequests::AssetList allAssets;
-//         AssetTrackerRequestBus::BroadcastResult(allAssets, &AssetTrackerRequests::GetAssets);
-// 
-//         for (auto trackedAsset : allAssets)
-//         {
-//             const ScriptCanvasEditor::SourceHandle& assetId = trackedAsset->GetAsset().GetId();
-//             CloseScriptCanvasAsset(assetId);
-//         }
-
-        m_processedClosedAssetIds.clear();
-
         event->accept();
     }
 
@@ -1366,10 +1326,9 @@ namespace ScriptCanvasEditor
         return createdNewAsset;
     }
 
-    bool MainWindow::IsScriptCanvasAssetOpen(const ScriptCanvasEditor::SourceHandle& /*assetId*/) const
+    bool MainWindow::IsScriptCanvasAssetOpen(const ScriptCanvasEditor::SourceHandle& assetId) const
     {
-        // #sc_editor_asset
-        return false;
+        return m_tabBar->FindTab(assetId) >= 0;
     }
 
     const CategoryInformation* MainWindow::FindNodePaletteCategoryInformation(AZStd::string_view categoryPath) const
@@ -1537,7 +1496,7 @@ namespace ScriptCanvasEditor
 
     void MainWindow::OnFileNew()
     {
-        int scriptCanvasEditorDefaultNewNameCount = 0;
+        static int scriptCanvasEditorDefaultNewNameCount = 0;
 
         AZStd::string assetPath;
 
@@ -1785,8 +1744,6 @@ namespace ScriptCanvasEditor
 
         if (saveSuccess)
         {
-            // #sc_editor_asset find a tab with the same path name and close non focused old ones with the same name
-            // Update the editor with the new information about this asset.
             ScriptCanvasEditor::SourceHandle& fileAssetId = memoryAsset;
             int currentTabIndex = m_tabBar->currentIndex();
 
@@ -1799,13 +1756,26 @@ namespace ScriptCanvasEditor
             const bool assetIdHasChanged = assetInfo.m_assetId.m_guid != fileAssetId.Id();
             fileAssetId = SourceHandle(fileAssetId, assetInfo.m_assetId.m_guid, fileAssetId.Path());
 
-            // #sc_editor_asset
             // check for saving a graph over another graph with an open tab
+            for (;;)
             {
-                // find the saved tab by graph*
-                // find all tabs that match old path, and close them
-                // update the save tab index
-                // and the current index
+                auto graph = fileAssetId.Get();
+                int tabIndexByGraph = m_tabBar->FindTab(graph);
+                if (tabIndexByGraph == -1)
+                {
+                    AZ_Warning("ScriptCanvas", false, "unable to find graph just saved");
+                    break;
+                }
+
+                int saveOverMatch = m_tabBar->FindSaveOverMatch(fileAssetId);
+                if (saveOverMatch < 0)
+                {
+                    saveTabIndex = tabIndexByGraph;
+                    currentTabIndex = m_tabBar->currentIndex();
+                    break;
+                }
+
+                m_tabBar->CloseTab(saveOverMatch);
             }
 
             // this path is questionable, this is a save request that is not the current graph
@@ -1818,22 +1788,7 @@ namespace ScriptCanvasEditor
                 saveTabIndex = -1;
             }
 
-            // #sc_editor_asset clean up these actions as well, save and close, save as and close, just save, etc
-            if (saveTabIndex < 0)
-            {
-                // This asset had not been saved yet, we will need to use the in memory asset Id to get the index.
-                // saveTabIndex = m_tabBar->FindTab(memoryAsset->GetId());
-
-                if (saveTabIndex < 0)
-                {
-                    // Finally, we may have Saved-As and we need the previous file asset Id to find the tab
-                    //saveTabIndex = m_tabBar->FindTab(previousFileAssetId);
-                }
-            }
-
             AzFramework::StringFunc::Path::GetFileName(memoryAsset.Path().c_str(), tabName);
-            // Update the tab's assetId to the file asset Id (necessary when saving a new asset)
-            // #sc_editor_asset used to be configure tab...sets the name and file state
 
             if (assetIdHasChanged)
             {
@@ -2316,34 +2271,6 @@ namespace ScriptCanvasEditor
         GraphCanvas::SceneRequestBus::EventResult(viewId, graphCanvasGraphId, &GraphCanvas::SceneRequests::GetViewId);
 
         GraphCanvas::ViewRequestBus::Event(viewId, &GraphCanvas::ViewRequests::CenterOnEndOfChain);
-    }
-
-    // #sc_editor_asset
-    void MainWindow::UpdateWorkspaceStatus(const ScriptCanvasMemoryAsset& /*memoryAsset*/)
-    {
-        // only occurs on file open, do it there, if necessary
-        /*
-        ScriptCanvasEditor::SourceHandle fileAssetId = memoryAsset.GetFileAssetId();
-
-        size_t eraseCount = m_loadingAssets.erase(fileAssetId);
-
-        if (eraseCount > 0)
-        {
-            AZStd::string rootFilePath;
-            AZ::Data::AssetInfo assetInfo = AssetHelpers::GetAssetInfo(fileAssetId, rootFilePath);
-
-            // Don't want to use the join since I don't want the normalized path
-            if (!rootFilePath.empty() && !assetInfo.m_relativePath.empty())
-            {
-                eraseCount = m_loadingWorkspaceAssets.erase(fileAssetId);
-
-                if (eraseCount == 0)
-                {
-                    AZStd::string fullPath = AZStd::string::format("%s/%s", rootFilePath.c_str(), assetInfo.m_relativePath.c_str());
-                }
-            }
-        }
-        */
     }
 
     void MainWindow::OnCanUndoChanged(bool canUndo)
@@ -3602,25 +3529,24 @@ namespace ScriptCanvasEditor
         return findChild<QObject*>(elementName);
     }
 
-    AZ::EntityId MainWindow::FindEditorNodeIdByAssetNodeId(const ScriptCanvasEditor::SourceHandle& /*assetId*/, AZ::EntityId /*assetNodeId*/) const
+    AZ::EntityId MainWindow::FindEditorNodeIdByAssetNodeId(const ScriptCanvasEditor::SourceHandle& assetId, AZ::EntityId assetNodeId) const
     {
-        // #sc_editor_asset
-        return AZ::EntityId{};
-        // AZ::EntityId editorEntityId;
-        // AssetTrackerRequestBus::BroadcastResult(editorEntityId, &AssetTrackerRequests::GetEditorEntityIdFromSceneEntityId, assetId, assetNodeId);
-        //return AZ::EntityId{};//  editorEntityId;
+        AZ::EntityId editorEntityId;
+        AssetTrackerRequestBus::BroadcastResult
+            ( editorEntityId, &AssetTrackerRequests::GetEditorEntityIdFromSceneEntityId, assetId.Id(), assetNodeId);
+        return editorEntityId;
     }
 
-    AZ::EntityId MainWindow::FindAssetNodeIdByEditorNodeId(const ScriptCanvasEditor::SourceHandle& /*assetId*/, AZ::EntityId /*editorNodeId*/) const
+    AZ::EntityId MainWindow::FindAssetNodeIdByEditorNodeId(const ScriptCanvasEditor::SourceHandle& assetId, AZ::EntityId editorNodeId) const
     {
-        // #sc_editor_asset
-        return AZ::EntityId{};
-        // AZ::EntityId sceneEntityId;
-        // AssetTrackerRequestBus::BroadcastResult(sceneEntityId, &AssetTrackerRequests::GetSceneEntityIdFromEditorEntityId, assetId, editorNodeId);
-        // return sceneEntityId;
+        AZ::EntityId sceneEntityId;
+        AssetTrackerRequestBus::BroadcastResult
+            ( sceneEntityId, &AssetTrackerRequests::GetSceneEntityIdFromEditorEntityId, assetId.Id(), editorNodeId);
+        return sceneEntityId;
     }
 
-    GraphCanvas::Endpoint MainWindow::CreateNodeForProposalWithGroup(const AZ::EntityId& connectionId, const GraphCanvas::Endpoint& endpoint, const QPointF& scenePoint, const QPoint& screenPoint, AZ::EntityId groupTarget)
+    GraphCanvas::Endpoint MainWindow::CreateNodeForProposalWithGroup(const AZ::EntityId& connectionId
+        , const GraphCanvas::Endpoint& endpoint, const QPointF& scenePoint, const QPoint& screenPoint, AZ::EntityId groupTarget)
     {
         PushPreventUndoStateUpdate();
 
@@ -4072,65 +3998,63 @@ namespace ScriptCanvasEditor
 
     void MainWindow::OnAssignToSelectedEntities()
     {
-        // #sc_editor_asset consider cutting
-//         Tracker::ScriptCanvasFileState fileState;
-//         AssetTrackerRequestBus::BroadcastResult(fileState, &AssetTrackerRequests::GetFileState, m_activeGraph);
-// 
-//         bool isDocumentOpen = false;
-//         AzToolsFramework::EditorRequests::Bus::BroadcastResult(isDocumentOpen, &AzToolsFramework::EditorRequests::IsLevelDocumentOpen);
-// 
-//         if (fileState == Tracker::ScriptCanvasFileState::NEW || fileState == Tracker::ScriptCanvasFileState::SOURCE_REMOVED || !isDocumentOpen)
-//         {
-//             return;
-//         }
-// 
-//         AzToolsFramework::EntityIdList selectedEntityIds;
-//         AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(selectedEntityIds, &AzToolsFramework::ToolsApplicationRequests::GetSelectedEntities);
-// 
-//         auto selectedEntityIdIter = selectedEntityIds.begin();
-// 
-//         bool isLayerAmbiguous = false;
-//         AZ::EntityId targetLayer;
-// 
-//         while (selectedEntityIdIter != selectedEntityIds.end())
-//         {
-//             bool isLayerEntity = false;
-//             AzToolsFramework::Layers::EditorLayerComponentRequestBus::EventResult(isLayerEntity, (*selectedEntityIdIter), &AzToolsFramework::Layers::EditorLayerComponentRequestBus::Events::HasLayer);
-// 
-//             if (isLayerEntity)
-//             {
-//                 if (targetLayer.IsValid())
-//                 {
-//                     isLayerAmbiguous = true;
-//                 }
-// 
-//                 targetLayer = (*selectedEntityIdIter);
-// 
-//                 selectedEntityIdIter = selectedEntityIds.erase(selectedEntityIdIter);
-//             }
-//             else
-//             {
-//                 ++selectedEntityIdIter;
-//             }
-//         }
-// 
-//         if (selectedEntityIds.empty())
-//         {
-//             AZ::EntityId createdId;
-//             AzToolsFramework::EditorRequests::Bus::BroadcastResult(createdId, &AzToolsFramework::EditorRequests::CreateNewEntity, AZ::EntityId());
-// 
-//             selectedEntityIds.emplace_back(createdId);
-// 
-//             if (targetLayer.IsValid() && !isLayerAmbiguous)
-//             {
-//                 AZ::TransformBus::Event(createdId, &AZ::TransformBus::Events::SetParent, targetLayer);
-//             }
-//         }
-// 
-//         for (const AZ::EntityId& entityId : selectedEntityIds)
-//         {
-//             AssignGraphToEntityImpl(entityId);
-//         }
+        Tracker::ScriptCanvasFileState fileState = GetAssetFileState(m_activeGraph);;
+        
+        bool isDocumentOpen = false;
+        AzToolsFramework::EditorRequests::Bus::BroadcastResult(isDocumentOpen, &AzToolsFramework::EditorRequests::IsLevelDocumentOpen);
+ 
+        if (fileState == Tracker::ScriptCanvasFileState::NEW || fileState == Tracker::ScriptCanvasFileState::SOURCE_REMOVED || !isDocumentOpen)
+        {
+            return;
+        }
+ 
+        AzToolsFramework::EntityIdList selectedEntityIds;
+        AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(selectedEntityIds, &AzToolsFramework::ToolsApplicationRequests::GetSelectedEntities);
+ 
+        auto selectedEntityIdIter = selectedEntityIds.begin();
+ 
+        bool isLayerAmbiguous = false;
+        AZ::EntityId targetLayer;
+ 
+        while (selectedEntityIdIter != selectedEntityIds.end())
+        {
+            bool isLayerEntity = false;
+            AzToolsFramework::Layers::EditorLayerComponentRequestBus::EventResult(isLayerEntity, (*selectedEntityIdIter), &AzToolsFramework::Layers::EditorLayerComponentRequestBus::Events::HasLayer);
+ 
+            if (isLayerEntity)
+            {
+                if (targetLayer.IsValid())
+                {
+                    isLayerAmbiguous = true;
+                }
+ 
+                targetLayer = (*selectedEntityIdIter);
+ 
+                selectedEntityIdIter = selectedEntityIds.erase(selectedEntityIdIter);
+            }
+            else
+            {
+                ++selectedEntityIdIter;
+            }
+        }
+ 
+        if (selectedEntityIds.empty())
+        {
+            AZ::EntityId createdId;
+            AzToolsFramework::EditorRequests::Bus::BroadcastResult(createdId, &AzToolsFramework::EditorRequests::CreateNewEntity, AZ::EntityId());
+ 
+            selectedEntityIds.emplace_back(createdId);
+ 
+            if (targetLayer.IsValid() && !isLayerAmbiguous)
+            {
+                AZ::TransformBus::Event(createdId, &AZ::TransformBus::Events::SetParent, targetLayer);
+            }
+        }
+ 
+        for (const AZ::EntityId& entityId : selectedEntityIds)
+        {
+            AssignGraphToEntityImpl(entityId);
+        }
     }
 
     void MainWindow::OnAssignToEntity(const AZ::EntityId& entityId)

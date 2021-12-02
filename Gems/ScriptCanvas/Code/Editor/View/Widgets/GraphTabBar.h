@@ -62,6 +62,8 @@ namespace ScriptCanvasEditor
             bool SelectTab(ScriptCanvasEditor::SourceHandle assetId);
 
             int FindTab(ScriptCanvasEditor::SourceHandle assetId) const;
+            int FindTab(ScriptCanvasEditor::GraphPtrConst graph) const;
+            int FindSaveOverMatch(ScriptCanvasEditor::SourceHandle assetId) const;
             ScriptCanvasEditor::SourceHandle FindTabByPath(AZStd::string_view path) const;
             ScriptCanvasEditor::SourceHandle FindAssetId(int tabIndex);
             ScriptCanvas::ScriptCanvasId FindScriptCanvasIdFromGraphCanvasId(const GraphCanvas::GraphId& graphCanvasGraphId) const;
