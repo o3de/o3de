@@ -351,6 +351,9 @@ PbrLightingOutput SkinPS_Common(VSOutput IN)
     lightingData.specularResponse = FresnelSchlickWithRoughness(lightingData.NdotV, surface.specularF0, surface.roughnessLinear);
     lightingData.diffuseResponse = 1.0 - lightingData.specularResponse;
 
+    // Angle offset for subsurface scattering through thin objects
+    lightingData.angleOffset = MaterialSrg::m_angleOffset;
+
     // ------- Occlusion -------
     
     lightingData.diffuseAmbientOcclusion = GetOcclusionInput(MaterialSrg::m_diffuseOcclusionMap, MaterialSrg::m_sampler, IN.m_uv[MaterialSrg::m_diffuseOcclusionMapUvIndex], MaterialSrg::m_diffuseOcclusionFactor, o_diffuseOcclusion_useTexture);

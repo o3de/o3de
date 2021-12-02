@@ -65,10 +65,10 @@ float3 GetBackLighting(Surface surface, LightingData lightingData, float3 lightI
             {
                 // Irradiance arround surface point. 
                 // Begin the transmittance dot product slightly before it would with the regular dot(N,L)
-                float E = max(0.30 + dot(-surface.normal, dirToLight), 0.0);
+                float E = saturate(lightingData.angleOffset + dot(-surface.normal, dirToLight));
 
                 // Transmission distance computed from shadowmaps modulated by editor-exposed parameters
-                float s = transmissionDistance * surface.transmission.thickness * (50 - transmissionParams.w) * 10;
+                float s = transmissionDistance * surface.transmission.thickness * (100 - transmissionParams.w) * 10;
                 
                 // Albedo at front (surface point) is used to approximate irradiance at the back of the object
                 // See observation 4 in [Jimenez J. et al, 2010] 
