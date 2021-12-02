@@ -17,6 +17,10 @@ void OnDebugEntities_ShowBandwidth_Changed(const bool& showBandwidth);
 
 AZ_CVAR(bool, net_DebugEntities_ShowBandwidth, false, &OnDebugEntities_ShowBandwidth_Changed, AZ::ConsoleFunctorFlags::Null,
     "If true, prints bandwidth values over entities that use a considerable amount of network traffic");
+AZ_CVAR(bool, net_DebugEntities_AuditInputs, false, nullptr, AZ::ConsoleFunctorFlags::Null,
+    "If true, adds inputs to audit trail");
+AZ_CVAR(bool, net_DebugEntities_AuditEvents, true, nullptr, AZ::ConsoleFunctorFlags::Null,
+    "If true, adds events to audit trail");
 AZ_CVAR(uint16_t, net_DebutAuditTrail_HistorySize, 20, nullptr, AZ::ConsoleFunctorFlags::Null,
     "Length of networking debug Audit Trail");
 
@@ -71,24 +75,37 @@ namespace Multiplayer
     }
 
     void MultiplayerDebugSystemComponent::AddAuditEntry(
+            const MultiplayerAuditCategory category,
             const ClientInputId inputId,
             const HostFrameId frameId,
             const AZStd::string& name,
             AZStd::vector<MultiplayerAuditingElement>&& entryDetails)
     {
+        if ((!net_DebugEntities_AuditInputs && category == MultiplayerAuditCategory::MP_AUDIT_INPUT)
+            || (!net_DebugEntities_AuditEvents && category == MultiplayerAuditCategory::MP_AUDIT_EVENT))
+        {
+            return;
+        }
+
         while (m_auditTrailElems.size() >= net_DebutAuditTrail_HistorySize)
         {
             m_auditTrailElems.pop_back();
         }
 
-        m_auditTrailElems.emplace_front(inputId, frameId, name, AZStd::move(entryDetails));
-    }
+        m_auditTrailElems.emplace_front(category, inputId, frameId, name, AZStd::move(entryDetails));
 
-    void MultiplayerDebugSystemComponent::CommitAuditTrail()
-    {
-        if (m_auditTrail == nullptr)
+        if (m_auditTrail == nullptr && category == MultiplayerAuditCategory::MP_AUDIT_DESYNC)
         {
-            m_committedAuditTrail = m_auditTrailElems;
+            while (m_auditTrailElems.size() > 0)
+            {
+                m_committedAuditTrail.push_front(AZStd::move(m_auditTrailElems.back()));
+                m_auditTrailElems.pop_back();
+            }
+
+            while (m_committedAuditTrail.size() >= net_DebutAuditTrail_HistorySize)
+            {
+                m_committedAuditTrail.pop_back();
+            }
         }
     }
 

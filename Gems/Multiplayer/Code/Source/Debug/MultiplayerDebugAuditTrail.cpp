@@ -21,6 +21,10 @@
 
 namespace Multiplayer
 {
+    constexpr char DESYNC_TITLE[] = "Desync on %s";
+    constexpr char INPUT_TITLE[] = "%s Inputs";
+    constexpr char EVENT_TITLE[] = "Developer Event: %s";
+
     MultiplayerDebugAuditTrail::MultiplayerDebugAuditTrail()
         : m_updateDebugOverlay([this]() { UpdateDebugOverlay(); }, AZ::Name("UpdateAuditTrail"))
     {
@@ -42,63 +46,114 @@ namespace Multiplayer
             | ImGuiTableFlags_Resizable
             | ImGuiTableFlags_RowBg
             | ImGuiTableFlags_NoBordersInBody;
-        const ImGuiTreeNodeFlags treeFlags = ImGuiTreeNodeFlags_SpanFullWidth;
 
-        if (ImGui::BeginTable("", 4, flags))
+        if (ImGui::BeginTable("", 5, flags))
         {
             ImGui::TableSetupColumn("Name", ImGuiTableColumnFlags_WidthStretch);
-            ImGui::TableSetupColumn("Value", ImGuiTableColumnFlags_WidthFixed, TEXT_BASE_WIDTH * 60.0f);
+            ImGui::TableSetupColumn("Client Value", ImGuiTableColumnFlags_WidthFixed, TEXT_BASE_WIDTH * 60.0f);
+            ImGui::TableSetupColumn("Server Value", ImGuiTableColumnFlags_WidthFixed, TEXT_BASE_WIDTH * 60.0f);
             ImGui::TableSetupColumn("Input ID", ImGuiTableColumnFlags_WidthFixed, TEXT_BASE_WIDTH * 12.0f);
             ImGui::TableSetupColumn("HostFrame", ImGuiTableColumnFlags_WidthFixed, TEXT_BASE_WIDTH * 12.0f);
             ImGui::TableHeadersRow();
 
-            for (auto elem = auditTrailElems.rbegin(); elem != auditTrailElems.rend(); ++elem)
-            {
-                ImGui::TableNextRow();
-                ImGui::TableNextColumn();
-                if (ImGui::TreeNodeEx(elem->m_name.c_str(), treeFlags))
-                {
-                    ImGui::TableNextColumn();
-                    ImGui::TableNextColumn();
-                    ImGui::Text("%d", elem->m_inputId);
-                    ImGui::TableNextColumn();
-                    ImGui::Text("%d", elem->m_hostFrameId);
+            bool atRootLevel = true;
 
-                    for (const auto& child : elem->m_children)
+            for (auto elem = auditTrailElems.begin(); elem != auditTrailElems.end(); ++elem)
+            {
+                if (elem == auditTrailElems.begin() && elem->m_category != MultiplayerAuditCategory::MP_AUDIT_DESYNC)
+                {
+                    ImGui::TableNextRow();
+                    ImGui::TableNextColumn();
+                    atRootLevel = !ImGui::TreeNodeEx("HEAD", ImGuiTreeNodeFlags_SpanFullWidth);
+                    ImGui::TableNextColumn();
+                    ImGui::TableNextColumn();
+                    ImGui::TableNextColumn();
+                    ImGui::TableNextColumn();
+                }
+                else if (!atRootLevel && elem != auditTrailElems.begin() && elem->m_category == MultiplayerAuditCategory::MP_AUDIT_DESYNC)
+                {
+                    atRootLevel = true;
+                    ImGui::TreePop();
+                }
+
+                if (!atRootLevel || elem->m_category == MultiplayerAuditCategory::MP_AUDIT_DESYNC)
+                {
+                    ImGui::TableNextRow();
+                    ImGui::TableNextColumn();
+
+                    const char* nodeTitle = elem->m_category == MultiplayerAuditCategory::MP_AUDIT_DESYNC
+                        ? DESYNC_TITLE
+                        : (elem->m_category == MultiplayerAuditCategory::MP_AUDIT_INPUT ? INPUT_TITLE : EVENT_TITLE);
+                    if (ImGui::TreeNodeEx(
+                            AZStd::string::format(nodeTitle, elem->m_name.c_str()).c_str(),
+                            ImGuiTreeNodeFlags_SpanFullWidth))
                     {
-                        ImGui::TableNextRow();
+                        atRootLevel = false;
                         ImGui::TableNextColumn();
-                        if (child.elements.size() > 0)
+                        ImGui::TableNextColumn();
+                        ImGui::TableNextColumn();
+                        ImGui::Text("%d", elem->m_inputId);
+                        ImGui::TableNextColumn();
+                        ImGui::Text("%d", elem->m_hostFrameId);
+
+                        for (const auto& child : elem->m_children)
                         {
-                            if (ImGui::TreeNodeEx(child.name.c_str(), treeFlags))
+                            ImGui::TableNextRow();
+                            ImGui::TableNextColumn();
+                            if (child.elements.size() > 0)
                             {
-                                ImGui::TableNextColumn();
-                                ImGui::TableNextColumn();
-                                ImGui::TableNextColumn();
-                                for (const auto& childElem : child.elements)
+                                const ImGuiTableFlags childFlags = elem->m_category == MultiplayerAuditCategory::MP_AUDIT_DESYNC
+                                    ? ImGuiTreeNodeFlags_SpanFullWidth | ImGuiTreeNodeFlags_DefaultOpen
+                                    : ImGuiTreeNodeFlags_SpanFullWidth;
+                                if (ImGui::TreeNodeEx(child.name.c_str(), childFlags))
                                 {
-                                    ImGui::TableNextRow();
-                                    ImGui::TableNextColumn();
-                                    ImGui::TreeNodeEx(
-                                        childElem.first.c_str(),
-                                        (ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen | ImGuiTreeNodeFlags_SpanFullWidth));
-                                    ImGui::TableNextColumn();
-                                    ImGui::Text("%s", childElem.second.c_str());
                                     ImGui::TableNextColumn();
                                     ImGui::TableNextColumn();
+                                    ImGui::TableNextColumn();
+                                    ImGui::TableNextColumn();
+                                    for (const auto& childElem : child.elements)
+                                    {
+                                        AZStd::pair<AZStd::string, AZStd::string> cliServValues = childElem->GetClientServerValues();
+                                        ImGui::TableNextRow();
+                                        ImGui::TableNextColumn();
+                                        ImGui::TreeNodeEx(
+                                            childElem->GetName().c_str(),
+                                            (ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen |
+                                             ImGuiTreeNodeFlags_SpanFullWidth));
+                                        ImGui::TableNextColumn();
+                                        ImGui::Text("%s", cliServValues.first.c_str());
+                                        ImGui::TableNextColumn();
+                                        ImGui::Text("%s", cliServValues.second.c_str());
+                                        ImGui::TableNextColumn();
+                                        ImGui::TableNextColumn();
+                                    }
+                                    ImGui::TreePop();
                                 }
-                                ImGui::TreePop();
+                            }
+                            else
+                            {
+                                ImGui::Text(child.name.c_str());
+                                ImGui::TableNextColumn();
+                                ImGui::TableNextColumn();
+                                ImGui::TableNextColumn();
+                                ImGui::TableNextColumn();
                             }
                         }
-                        else
+                        if (elem->m_category != MultiplayerAuditCategory::MP_AUDIT_DESYNC)
                         {
-                            ImGui::Text(child.name.c_str());
-                            ImGui::TableNextColumn();
-                            ImGui::TableNextColumn();
-                            ImGui::TableNextColumn();
+                            ImGui::TreePop();
                         }
                     }
-                    ImGui::TreePop();
+                    else
+                    {
+                        ImGui::TableNextColumn();
+                        ImGui::TableNextColumn();
+                        ImGui::TableNextColumn();
+                        ImGui::Text("%d", elem->m_inputId);
+                        ImGui::TableNextColumn();
+                        ImGui::Text("%d", elem->m_hostFrameId);
+                        ImGui::TableNextRow();
+                    }
                 }
             }
 

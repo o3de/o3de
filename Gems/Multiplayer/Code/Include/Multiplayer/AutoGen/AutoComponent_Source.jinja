@@ -1383,11 +1383,10 @@ namespace {{ Component.attrib['Namespace'] }}
 {% call(Input) AutoComponentMacros.ParseNetworkInputs(Component) %}
         if (m_{{ LowerFirst(Input.attrib['Name']) }} != {{ Input.attrib['Type'] }}({{ Input.attrib['Init'] }}))
         {
-
 {% if Input.attrib['Init'] != '' %}
-            output.elements.emplace_back("{{ LowerFirst(Input.attrib['Name']) }}", AZStd::to_string(m_{{ LowerFirst(Input.attrib['Name']) }}));
+            output.elements.emplace_back(AZStd::make_unique<Multiplayer::MultiplayerAuditingDatum<{{ Input.attrib['Type'] }}>>("{{ LowerFirst(Input.attrib['Name']) }}", m_{{ LowerFirst(Input.attrib['Name']) }}, m_{{ LowerFirst(Input.attrib['Name']) }}));         
 {% else %}
-            output.elements.emplace_back("{{ LowerFirst(Input.attrib['Name']) }}", "");
+            output.elements.emplace_back(AZStd::make_unique<Multiplayer::MultiplayerAuditingDatum<AZStd::string>>("{{ LowerFirst(Input.attrib['Name']) }}"));
 {% endif %}
         }
 {% endcall %}

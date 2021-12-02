@@ -51,11 +51,11 @@ namespace Multiplayer
         void ShowEntityBandwidthDebugOverlay() override;
         void HideEntityBandwidthDebugOverlay() override;
         void AddAuditEntry(
+            const MultiplayerAuditCategory category,
             const ClientInputId inputId,
             const HostFrameId frameId,
             const AZStd::string& name,
             AZStd::vector<MultiplayerAuditingElement>&& entryDetails) override;
-        void CommitAuditTrail() override;
         //! @}
 
 #ifdef IMGUI_ENABLED
