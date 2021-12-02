@@ -974,4 +974,22 @@ namespace AZStd
     {
         return !operator<(a, b);
     }
+
+    // C++20 erase free functions
+    template<class T, size_t Capacity, class U>
+    constexpr decltype(auto) erase(fixed_vector<T, Capacity>& container, const U& value)
+    {
+        auto iter = AZStd::remove(container.begin(), container.end(), value);
+        auto removedCount = AZStd::distance(iter, container.end());
+        container.erase(iter, container.end());
+        return removedCount;
+    }
+    template<class T, size_t Capacity, class Predicate>
+    constexpr decltype(auto) erase_if(fixed_vector<T, Capacity>& container, Predicate predicate)
+    {
+        auto iter = AZStd::remove_if(container.begin(), container.end(), predicate);
+        auto removedCount = AZStd::distance(iter, container.end());
+        container.erase(iter, container.end());
+        return removedCount;
+    }
 }

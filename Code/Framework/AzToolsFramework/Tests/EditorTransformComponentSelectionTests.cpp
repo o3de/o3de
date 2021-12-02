@@ -1663,7 +1663,7 @@ namespace UnitTest
         const AZ::Transform finalEntityTransform = AzToolsFramework::GetWorldTransform(m_entityId1);
 
         // ensure final world positions match
-        EXPECT_TRUE(finalEntityTransform.IsClose(finalTransformWorld, 0.01f));
+        EXPECT_THAT(finalEntityTransform, IsCloseTolerance(finalTransformWorld, 0.01f));
     }
 
     TEST_F(EditorTransformComponentSelectionManipulatorTestFixture, TranslatingEntityWithLinearManipulatorNotifiesOnEntityTransformChanged)
@@ -2972,5 +2972,177 @@ namespace UnitTest
         EXPECT_THAT(currentEntityIdAccentAdded, IsTrue());
         EXPECT_THAT(hoveredEntityIdAccentRemoved, IsTrue());
         EXPECT_THAT(hoveredEntityEntityId, Eq(AZ::EntityId(12345)));
+    }
+
+    class EditorTransformComponentSelectionRenderGeometryIntersectionFixture : public ToolsApplicationFixture
+    {
+    public:
+        void SetUpEditorFixtureImpl() override
+        {
+            auto* app = GetApplication();
+            // register a simple component implementing BoundsRequestBus and EditorComponentSelectionRequestsBus
+            app->RegisterComponentDescriptor(BoundsTestComponent::CreateDescriptor());
+            // register a component implementing RenderGeometry::IntersectionRequestBus
+            app->RegisterComponentDescriptor(RenderGeometryIntersectionTestComponent::CreateDescriptor());
+
+            auto createEntityWithGeometryIntersectionFn = [](const char* entityName)
+            {
+                AZ::Entity* entity = nullptr;
+                AZ::EntityId entityId = CreateDefaultEditorEntity(entityName, &entity);
+
+                entity->Deactivate();
+                entity->CreateComponent<RenderGeometryIntersectionTestComponent>();
+                entity->Activate();
+
+                return entityId;
+            };
+
+            m_entityIdGround = createEntityWithGeometryIntersectionFn("Entity1");
+            m_entityIdBox = createEntityWithGeometryIntersectionFn("Entity2");
+
+            if (auto* ground = AzToolsFramework::GetEntityById(m_entityIdGround)->FindComponent<RenderGeometryIntersectionTestComponent>())
+            {
+                ground->m_localBounds = AZ::Aabb::CreateFromMinMax(AZ::Vector3(-10.0f, -10.0f, -0.5f), AZ::Vector3(10.0f, 10.0f, 0.5f));
+            }
+
+            AzToolsFramework::SetWorldTransform(m_entityIdGround, AZ::Transform::CreateTranslation(AZ::Vector3(0.0f, 10.0f, 5.0f)));
+
+            if (auto* box = AzToolsFramework::GetEntityById(m_entityIdBox)->FindComponent<RenderGeometryIntersectionTestComponent>())
+            {
+                box->m_localBounds = AZ::Aabb::CreateFromMinMax(AZ::Vector3(-0.5f), AZ::Vector3(0.5f));
+            }
+
+            AzToolsFramework::SetWorldTransform(
+                m_entityIdBox,
+                AZ::Transform::CreateFromMatrix3x3AndTranslation(
+                    AZ::Matrix3x3::CreateRotationZ(AZ::DegToRad(45.0f)), AZ::Vector3(0.0f, 10.0f, 7.0f)));
+        }
+
+        AZ::EntityId m_entityIdGround;
+        AZ::EntityId m_entityIdBox;
+    };
+
+    using EditorTransformComponentSelectionRenderGeometryIntersectionManipulatorFixture =
+        IndirectCallManipulatorViewportInteractionFixtureMixin<EditorTransformComponentSelectionRenderGeometryIntersectionFixture>;
+
+    TEST_F(
+        EditorTransformComponentSelectionRenderGeometryIntersectionManipulatorFixture, BoxCanBePlacedOnMeshSurfaceUsingSurfaceManipulator)
+    {
+        // camera (go to position format) - 0.00, 20.00, 12.00, -35.00, -180.00
+        m_cameraState.m_viewportSize = AZ::Vector2(1280.0f, 720.0f);
+        AzFramework::SetCameraTransform(
+            m_cameraState,
+            AZ::Transform::CreateFromMatrix3x3AndTranslation(
+                AZ::Matrix3x3::CreateRotationZ(AZ::DegToRad(-180.0f)) * AZ::Matrix3x3::CreateRotationX(AZ::DegToRad(-35.0f)),
+                AZ::Vector3(0.0f, 20.0f, 12.0f)));
+
+        // the initial starting position of the entity
+        const auto initialTransformWorld = AzToolsFramework::GetWorldTransform(m_entityIdBox);
+        // where the entity should end up (snapped to the larger ground surface)
+        const auto finalTransformWorld =
+            AZ::Transform::CreateFromQuaternionAndTranslation(initialTransformWorld.GetRotation(), AZ::Vector3(2.5f, 12.5f, 5.5f));
+
+        // calculate the position in screen space of the initial position of the entity
+        const auto initialPositionScreen = AzFramework::WorldToScreen(initialTransformWorld.GetTranslation(), m_cameraState);
+        // calculate the position in screen space of the final position of the entity
+        const auto finalPositionScreen = AzFramework::WorldToScreen(finalTransformWorld.GetTranslation(), m_cameraState);
+
+        // select the entity (this will cause the manipulators to appear in EditorTransformComponentSelection)
+        AzToolsFramework::SelectEntity(m_entityIdBox);
+
+        // press and drag the mouse (starting where the surface manipulator is)
+        m_actionDispatcher->CameraState(m_cameraState)
+            ->MousePosition(initialPositionScreen)
+            ->MouseLButtonDown()
+            ->MousePosition(finalPositionScreen)
+            ->MouseLButtonUp();
+
+        // read back the position of the entity now
+        const AZ::Transform finalEntityTransform = AzToolsFramework::GetWorldTransform(m_entityIdBox);
+
+        // ensure final world positions match
+        EXPECT_THAT(finalEntityTransform, IsCloseTolerance(finalTransformWorld, 0.01f));
+    }
+
+    TEST_F(
+        EditorTransformComponentSelectionRenderGeometryIntersectionManipulatorFixture,
+        SurfaceManipulatorFollowsMouseAtDefaultEditorDistanceFromCameraWhenNoMeshIntersection)
+    {
+        // camera (go to position format) - 0.00, 25.00, 12.00, 0.00, -180.00
+        m_cameraState.m_viewportSize = AZ::Vector2(1280.0f, 720.0f);
+        AzFramework::SetCameraTransform(
+            m_cameraState,
+            AZ::Transform::CreateFromMatrix3x3AndTranslation(
+                AZ::Matrix3x3::CreateRotationZ(AZ::DegToRad(-180.0f)), AZ::Vector3(0.0f, 25.0f, 12.0f)));
+
+        // the initial starting position of the entity
+        const auto initialTransformWorld = AzToolsFramework::GetWorldTransform(m_entityIdBox);
+        // where the entity should end up (default distance away from the camera/near clip under where the mouse is)
+        const auto finalTransformWorld =
+            AZ::Transform::CreateFromQuaternionAndTranslation(initialTransformWorld.GetRotation(), AZ::Vector3(0.0f, 14.9f, 12.0f));
+
+        // calculate the position in screen space of the initial position of the entity
+        const auto initialPositionScreen = AzFramework::WorldToScreen(initialTransformWorld.GetTranslation(), m_cameraState);
+        // calculate the position in screen space of the final position of the entity
+        const auto finalPositionScreen = AzFramework::WorldToScreen(finalTransformWorld.GetTranslation(), m_cameraState);
+
+        // select the entity (this will cause the manipulators to appear in EditorTransformComponentSelection)
+        AzToolsFramework::SelectEntity(m_entityIdBox);
+
+        // press and drag the mouse (starting where the surface manipulator is)
+        m_actionDispatcher->CameraState(m_cameraState)
+            ->MousePosition(initialPositionScreen)
+            ->MouseLButtonDown()
+            ->MousePosition(finalPositionScreen)
+            ->MouseLButtonUp();
+
+        // read back the position of the entity now
+        const AZ::Transform finalEntityTransform = AzToolsFramework::GetWorldTransform(m_entityIdBox);
+
+        const auto viewportRay = AzToolsFramework::ViewportInteraction::ViewportScreenToWorldRay(m_cameraState, initialPositionScreen);
+        const auto distanceAway = (finalEntityTransform.GetTranslation() - viewportRay.origin).GetLength();
+
+        // ensure final world positions match
+        EXPECT_THAT(finalEntityTransform, IsCloseTolerance(finalTransformWorld, 0.01f));
+        // ensure distance away is what we expect
+        EXPECT_NEAR(distanceAway, AzToolsFramework::GetDefaultEntityPlacementDistance(), 0.001f);
+    }
+
+    TEST_F(
+        EditorTransformComponentSelectionRenderGeometryIntersectionManipulatorFixture,
+        MiddleMouseButtonWithShiftAndCtrlHeldOnMeshSurfaceWillSnapSelectedEntityToIntersectionPoint)
+    {
+        // camera (go to position format) - 21.00, 8.00, 11.00, -22.00, 150.00
+        m_cameraState.m_viewportSize = AZ::Vector2(1280.0f, 720.0f);
+        AzFramework::SetCameraTransform(
+            m_cameraState,
+            AZ::Transform::CreateFromMatrix3x3AndTranslation(
+                AZ::Matrix3x3::CreateRotationZ(AZ::DegToRad(150.0f)) * AZ::Matrix3x3::CreateRotationX(AZ::DegToRad(-22.0f)),
+                AZ::Vector3(21.0f, 8.0f, 11.0f)));
+
+        // position the ground entity
+        AzToolsFramework::SetWorldTransform(
+            m_entityIdGround,
+            AZ::Transform::CreateFromMatrix3x3AndTranslation(
+                AZ::Matrix3x3::CreateRotationY(AZ::DegToRad(40.0f)) * AZ::Matrix3x3::CreateRotationZ(AZ::DegToRad(60.0f)),
+                AZ::Vector3(14.0f, -6.0f, 5.0f)));
+
+        // select the other entity (a 1x1x1 box)
+        AzToolsFramework::SelectEntity(m_entityIdBox);
+
+        // expected world position (value taken from editor scenario)
+        const auto expectedWorldPosition = AZ::Vector3(13.606657f, -2.6753534f, 5.9827675f);
+        const auto screenPosition = AzFramework::WorldToScreen(expectedWorldPosition, m_cameraState);
+
+        // perform snap action
+        m_actionDispatcher->CameraState(m_cameraState)
+            ->MousePosition(screenPosition)
+            ->KeyboardModifierDown(AzToolsFramework::ViewportInteraction::KeyboardModifier::Control)
+            ->KeyboardModifierDown(AzToolsFramework::ViewportInteraction::KeyboardModifier::Shift)
+            ->MouseMButtonDown();
+
+        // read back the current entity transform after placement
+        const AZ::Transform finalEntityTransform = AzToolsFramework::GetWorldTransform(m_entityIdBox);
+        EXPECT_THAT(finalEntityTransform.GetTranslation(), IsCloseTolerance(expectedWorldPosition, 0.01f));
     }
 } // namespace UnitTest

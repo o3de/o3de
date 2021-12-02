@@ -30,7 +30,7 @@ namespace AzManipulatorTestFramework
 
     private:
         AZStd::shared_ptr<CustomManipulatorManager> m_customManager;
-        std::unique_ptr<ViewportInteraction> m_viewportInteraction;
-        std::unique_ptr<DirectCallManipulatorManager> m_manipulatorManager;
+        AZStd::unique_ptr<ViewportInteraction> m_viewportInteraction;
+        AZStd::unique_ptr<DirectCallManipulatorManager> m_manipulatorManager;
     };
 } // namespace AzManipulatorTestFramework

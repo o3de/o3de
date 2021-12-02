@@ -532,7 +532,7 @@ if __name__ == '__main__':
     parser.add_argument('-bf', '--build-folder',
                         type=str,
                         required=False,
-                        help='The name (tag) of the o3de build folder, example build or windows_vs2019.')
+                        help='The name (tag) of the o3de build folder, example build or windows.')
     parser.add_argument('-pp', '--project-path',
                         type=pathlib.Path,
                         required=False,

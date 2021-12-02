@@ -2152,13 +2152,6 @@ namespace EMStudio
             float startTime = copyElement.m_startTime + offset;
             float endTime   = copyElement.m_endTime + offset;
 
-            // calculate the duration of the motion event
-            float duration  = 0.0f;
-            if (MCore::Compare<float>::CheckIfIsClose(startTime, endTime, MCore::Math::epsilon) == false)
-            {
-                duration = endTime - startTime;
-            }
-
             CommandSystem::CommandHelperAddMotionEvent(trackName.c_str(), startTime, endTime, copyElement.m_eventDatas, &commandGroup);
         }
 

@@ -160,7 +160,7 @@ namespace EMStudio
         renderFlagsFilename += "AnimViewportRenderFlags.cfg";
         QSettings settings(renderFlagsFilename.c_str(), QSettings::IniFormat, this);
 
-        const bool isChecked = settings.value("CameraFollowUp").toBool();
+        const bool isChecked = settings.value("CameraFollowUp", false).toBool();
         m_followCharacterAction->setChecked(isChecked);
     }
 

@@ -1387,6 +1387,14 @@ namespace AZStd
     }
     //#pragma endregion
 
+    template<class T, class Allocator, class U>
+    decltype(auto) erase(vector<T, Allocator>& container, const U& value)
+    {
+        auto iter = AZStd::remove(container.begin(), container.end(), value);
+        auto removedCount = AZStd::distance(iter, container.end());
+        container.erase(iter, container.end());
+        return removedCount;
+    }
     template<class T, class Allocator, class Predicate>
     decltype(auto) erase_if(vector<T, Allocator>& container, Predicate predicate)
     {

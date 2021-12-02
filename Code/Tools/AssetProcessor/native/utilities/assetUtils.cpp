@@ -1182,7 +1182,11 @@ namespace AssetUtilities
             }
         }
 
+        // keep track of how much time we spend actually hashing files.
+        AZStd::string statName = AZStd::string::format("HashFile,%s", filePath);
+        AssetProcessor::StatsCapture::BeginCaptureStat(statName.c_str());
         hash = AssetBuilderSDK::GetFileHash(filePath, bytesReadOut, hashMsDelay);
+        AssetProcessor::StatsCapture::EndCaptureStat(statName.c_str());
         return hash;
     }
 
