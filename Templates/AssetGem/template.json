@@ -2,7 +2,8 @@
     "template_name": "AssetGem",
     "template_restricted_platform_relative_path": "Templates/AssetGem",
     "origin": "https://github.com/o3de/o3de",
-    "license": "https://opensource.org/licenses/Apache-2.0 Or https://opensource.org/licenses/MIT",
+    "license": "Apache-2.0 or MIT",
+    "license_url": "https://opensource.org/licenses/Apache-2.0 Or https://opensource.org/licenses/MIT",
     "display_name": "Asset Gem Template",
     "summary": "Use this gem template to create the minimal gem needed for adding asset(s).",
     "canonical_tags": [

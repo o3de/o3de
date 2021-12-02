@@ -4,7 +4,8 @@
     "restricted_name": "o3de",
     "restricted_platform_relative_path": "Templates/MinimalProject",
     "origin": "https://github.com/o3de/o3de",
-    "license": "https://opensource.org/licenses/Apache-2.0 Or https://opensource.org/licenses/MIT",
+    "license": "Apache-2.0 or MIT",
+    "license_url": "https://opensource.org/licenses/Apache-2.0 Or https://opensource.org/licenses/MIT",
     "display_name": "Minimal Project Template",
     "summary": "Use this project template to create project that is the absolute minimum needed to get started in O3DE.",
     "canonical_tags": [
@@ -23,6 +24,22 @@
         {
             "file": "CMakeLists.txt",
             "isTemplated": true
+        },
+        {
+            "file": "cmake/EngineFinder.cmake",
+            "isTemplated": false
+        },
+        {
+            "file": "cmake/CompilerSettings.cmake",
+            "isTemplated": false
+        },
+        {
+            "file": "cmake/Platform/Linux/CompilerSettings_linux.cmake",
+            "isTemplated": false
+        },
+        {
+            "file": "Config/shader_global_build_options.json",
+            "isTemplated": false
         },
         {
             "file": "Gem/${NameLower}_files.cmake",
@@ -119,14 +136,6 @@
         {
             "file": "Gem/gem.json",
             "isTemplated": true
-        },
-        {
-            "file": "Config/shader_global_build_options.json",
-            "isTemplated": false
-        },
-        {
-            "file": "EngineFinder.cmake",
-            "isTemplated": false
         },
         {
             "file": "Platform/Android/android_project.cmake",
@@ -326,7 +335,8 @@
         },
         {
             "file": "ShaderLib/README.md",
-            "isTemplated": false        },
+            "isTemplated": false
+        },
         {
             "file": "ShaderLib/scenesrg.srgi",
             "isTemplated": true
@@ -355,6 +365,18 @@
     "createDirectories": [
         {
             "dir": "Assets"
+        },
+        {
+            "dir": "cmake"
+        },
+        {
+            "dir": "cmake/Platform"
+        },
+        {
+            "dir": "cmake/Platform/Linux"
+        },
+        {
+            "dir": "Config"
         },
         {
             "dir": "Gem"

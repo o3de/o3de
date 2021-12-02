@@ -3,8 +3,8 @@
     "template_restricted_platform_relative_path": "Templates/DefaultGem",
     "restricted_name": "o3de",
     "restricted_platform_relative_path": "Templates/DefaultGem",
-    "origin": "https://github.com/o3de/o3de",
-        "license": "https://opensource.org/licenses/Apache-2.0 Or https://opensource.org/licenses/MIT",
+    "license": "Apache-2.0 or MIT",
+    "license_url": "https://opensource.org/licenses/Apache-2.0 Or https://opensource.org/licenses/MIT",
     "display_name": "Default Gem Template",
     "summary": "This is the gem template that will be used if no gem template is specified during gem creation.",
     "canonical_tags": [
