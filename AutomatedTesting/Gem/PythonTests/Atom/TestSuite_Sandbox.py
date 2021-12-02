@@ -159,3 +159,17 @@ class TestMaterialEditorBasicTests(object):
             enable_prefab_system=False,
         )
 
+
+@pytest.mark.parametrize("project", ["AutomatedTesting"])
+@pytest.mark.parametrize("launcher_platform", ['windows_editor'])
+class TestAutomation(EditorTestSuite):
+
+    enable_prefab_system = False
+
+    @pytest.mark.test_case_id("C36529666")
+    class AtomEditorComponents_DiffuseGlobalIlluminationAdded(EditorSharedTest):
+        from Atom.tests import hydra_AtomEditorComponents_DiffuseGlobalIlluminationAdded as test_module
+
+    @pytest.mark.test_case_id("C36525660")
+    class AtomEditorComponents_DisplayMapperAdded(EditorSharedTest):
+        from Atom.tests import hydra_AtomEditorComponents_DisplayMapperAdded as test_module
