@@ -37,8 +37,6 @@ set(FILES
     Carrier/Utils.h
     Containers/list.h
     Containers/queue.h
-    Containers/set.h
-    Containers/slist.h
     Containers/unordered_map.h
     Containers/unordered_set.h
     Containers/vector.h
