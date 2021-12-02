@@ -60,11 +60,6 @@ namespace AZ::Dom
         return AZ::Failure(VisitorError(code));
     }
 
-    Visitor::Result Visitor::VisitorFailure(VisitorErrorCode code, AZStd::string additionalInfo)
-    {
-        return AZ::Failure(VisitorError(code, AZStd::move(additionalInfo)));
-    }
-
     Visitor::Result Visitor::VisitorFailure(VisitorError error)
     {
         return AZ::Failure(error);

@@ -70,11 +70,11 @@ namespace AZ::Dom::Json
     {
         if (lifetime == Lifetime::Temporary)
         {
-            CurrentValue().SetString(value.data(), static_cast<rapidjson::SizeType>(value.length()), m_allocator);
+            CurrentValue().SetString(value.data(), aznumeric_cast<rapidjson::SizeType>(value.length()), m_allocator);
         }
         else
         {
-            CurrentValue().SetString(value.data(), static_cast<rapidjson::SizeType>(value.length()));
+            CurrentValue().SetString(value.data(), aznumeric_cast<rapidjson::SizeType>(value.length()));
         }
         return FinishWrite();
     }
@@ -102,7 +102,7 @@ namespace AZ::Dom::Json
 
         if (m_entryStack.front().m_entryCount != attributeCount)
         {
-            return FormatVisitorFailure(
+            return VisitorFailure(
                 VisitorErrorCode::InternalError, "EndObject: Expected %lu attributes but received %lu attributes instead", attributeCount,
                 m_entryStack.front().m_entryCount);
         }
@@ -122,11 +122,11 @@ namespace AZ::Dom::Json
         AZ_Assert(m_entryStack.front().m_isObject, "Attempted to push a key to an array");
         if (lifetime == Lifetime::Persistent)
         {
-            m_entryStack.front().m_key.SetString(key.data(), static_cast<rapidjson::SizeType>(key.size()));
+            m_entryStack.front().m_key.SetString(key.data(), aznumeric_cast<rapidjson::SizeType>(key.size()));
         }
         else
         {
-            m_entryStack.front().m_key.SetString(key.data(), static_cast<rapidjson::SizeType>(key.size()), m_allocator);
+            m_entryStack.front().m_key.SetString(key.data(), aznumeric_cast<rapidjson::SizeType>(key.size()), m_allocator);
         }
         return VisitorSuccess();
     }
@@ -154,7 +154,7 @@ namespace AZ::Dom::Json
 
         if (m_entryStack.front().m_entryCount != elementCount)
         {
-            return FormatVisitorFailure(
+            return VisitorFailure(
                 VisitorErrorCode::InternalError, "EndArray: Expected %lu elements but received %lu elements instead", elementCount,
                 m_entryStack.front().m_entryCount);
         }
@@ -250,7 +250,7 @@ namespace AZ::Dom::Json
         Result String(AZStd::string_view value, Lifetime lifetime) override
         {
             const bool shouldCopy = lifetime == Lifetime::Temporary;
-            return CheckWrite(m_writer.String(value.data(), static_cast<rapidjson::SizeType>(value.size()), shouldCopy));
+            return CheckWrite(m_writer.String(value.data(), aznumeric_cast<rapidjson::SizeType>(value.size()), shouldCopy));
         }
 
         Result StartObject() override
@@ -260,7 +260,7 @@ namespace AZ::Dom::Json
 
         Result EndObject(AZ::u64 attributeCount) override
         {
-            return CheckWrite(m_writer.EndObject(static_cast<rapidjson::SizeType>(attributeCount)));
+            return CheckWrite(m_writer.EndObject(aznumeric_cast<rapidjson::SizeType>(attributeCount)));
         }
 
         Result Key(AZ::Name key) override
@@ -271,7 +271,7 @@ namespace AZ::Dom::Json
         Result RawKey(AZStd::string_view key, Lifetime lifetime) override
         {
             const bool shouldCopy = lifetime == Lifetime::Temporary;
-            return CheckWrite(m_writer.Key(key.data(), static_cast<rapidjson::SizeType>(key.size()), shouldCopy));
+            return CheckWrite(m_writer.Key(key.data(), aznumeric_cast<rapidjson::SizeType>(key.size()), shouldCopy));
         }
 
         Result StartArray() override
@@ -281,7 +281,7 @@ namespace AZ::Dom::Json
 
         Result EndArray(AZ::u64 elementCount) override
         {
-            return CheckWrite(m_writer.EndArray(static_cast<rapidjson::SizeType>(elementCount)));
+            return CheckWrite(m_writer.EndArray(aznumeric_cast<rapidjson::SizeType>(elementCount)));
         }
 
     private:
@@ -323,12 +323,12 @@ namespace AZ::Dom::Json
 
     bool RapidJsonReadHandler::Int(int i)
     {
-        return CheckResult(m_visitor->Int64(static_cast<AZ::s64>(i)));
+        return CheckResult(m_visitor->Int64(aznumeric_cast<AZ::s64>(i)));
     }
 
     bool RapidJsonReadHandler::Uint(unsigned i)
     {
-        return CheckResult(m_visitor->Uint64(static_cast<AZ::u64>(i)));
+        return CheckResult(m_visitor->Uint64(aznumeric_cast<AZ::u64>(i)));
     }
 
     bool RapidJsonReadHandler::Int64(int64_t i)
@@ -472,7 +472,7 @@ namespace AZ::Dom::Json
 
         while (!entryStack.empty())
         {
-            const auto currentEntry = entryStack.top();
+            const Entry currentEntry = entryStack.top();
             entryStack.pop();
 
             Visitor::Result result = AZ::Success();
@@ -507,7 +507,7 @@ namespace AZ::Dom::Json
                             for (auto it = currentValue.MemberEnd(); it != currentValue.MemberBegin(); --it)
                             {
                                 auto entry = (it - 1);
-                                const AZStd::string_view key(entry->name.GetString(), static_cast<size_t>(entry->name.GetStringLength()));
+                                const AZStd::string_view key(entry->name.GetString(), aznumeric_cast<size_t>(entry->name.GetStringLength()));
                                 entryStack.push(&entry->value);
                                 entryStack.push(key);
                             }
@@ -524,7 +524,7 @@ namespace AZ::Dom::Json
                             break;
                         case rapidjson::kStringType:
                             result = visitor.String(
-                                AZStd::string_view(currentValue.GetString(), static_cast<size_t>(currentValue.GetStringLength())),
+                                AZStd::string_view(currentValue.GetString(), aznumeric_cast<size_t>(currentValue.GetStringLength())),
                                 lifetime);
                             break;
                         case rapidjson::kNumberType:
