@@ -239,7 +239,7 @@ float ProjectedShadow::GetVisibilityEsmPcf()
         static const float pcfFallbackThreshold = 1.04;
         if (ratio > pcfFallbackThreshold)
         {
-            ratio = PCFFallbackForESM(shadowmap, uv, depth, rcp(invAtlasSize), invAtlasSize, esmExponent);
+            ratio = PCFFallbackForESM(shadowmap, uv, depth, esmExponent);
         }
         else
         {
