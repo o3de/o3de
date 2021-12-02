@@ -23,7 +23,7 @@
 //! The CDraw2d class implements the IDraw2d interface for drawing 2D images, shapes and text.
 //! Positions and sizes are specified in pixels in the associated 2D viewport.
 class CDraw2d
-    : public IDraw2d // LYSHINE_ATOM_TODO - keep around until gEnv->pLyShine is replaced by bus interface
+    : public IDraw2d // [LYSHINE_ATOM_TODO][Issue #3573] Make Draw2d work better as an API
     , public AZ::Render::Bootstrap::NotificationBus::Handler
 {
 public: // types
@@ -582,7 +582,7 @@ public: // static member functions
     //! Helper to get the default IDraw2d interface
     static CDraw2d* GetDefaultDraw2d()
     {
-        if (gEnv && gEnv->pLyShine) // LYSHINE_ATOM_TODO - remove pLyShine and use bus interface
+        if (gEnv && gEnv->pLyShine) // [LYSHINE_ATOM_TODO][LYN-8716] Remove LyShine global interface pointer from legacy global environment
         {
             IDraw2d* draw2d = gEnv->pLyShine->GetDraw2d();
             return reinterpret_cast<CDraw2d*>(draw2d);

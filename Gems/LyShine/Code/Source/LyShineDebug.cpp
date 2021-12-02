@@ -101,7 +101,7 @@ static const int g_numDstBlendModes = 10;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 #if !defined(_RELEASE)
-#ifdef LYSHINE_ATOM_TODO
+#ifdef LYSHINE_ATOM_TODO // [LYN-3359] Support RTT using Atom
 static int Create2DTexture(int width, int height, byte* data, ETEX_Format format)
 {
     IRenderer* renderer = gEnv->pRenderer;
@@ -120,7 +120,7 @@ static AZ::Vector2 GetTextureSize(AZ::Data::Instance<AZ::RPI::Image> image)
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 #if !defined(_RELEASE)
-#ifdef LYSHINE_ATOM_TODO
+#ifdef LYSHINE_ATOM_TODO // [LYN-3359] Support RTT using Atom
 static void FillTextureRectWithCheckerboard(uint32* data, int textureWidth, int textureHeight,
     int minX, int minY, [[maybe_unused]] int rectWidth, int rectHeight,
     int tileWidth, int tileHeight, uint32* colors, bool varyAlpha)
@@ -152,7 +152,7 @@ static void FillTextureRectWithCheckerboard(uint32* data, int textureWidth, int 
 #if !defined(_RELEASE)
 static AZ::Data::Instance<AZ::RPI::Image> CreateMonoTestTexture()
 {
-#ifdef LYSHINE_ATOM_TODO
+#ifdef LYSHINE_ATOM_TODO // [LYN-3359] Support RTT using Atom
     const int width = 32;
     const int height = 32;
     uint32 data[width * height];
@@ -192,7 +192,7 @@ static AZ::Data::Instance<AZ::RPI::Image> CreateMonoTestTexture()
 #if !defined(_RELEASE)
 static AZ::Data::Instance<AZ::RPI::Image> CreateColorTestTexture()
 {
-#ifdef LYSHINE_ATOM_TODO
+#ifdef LYSHINE_ATOM_TODO // [LYN-3359] Support RTT using Atom
     const int width = 32;
     const int height = 32;
     uint32 data[width * height];
@@ -232,7 +232,7 @@ static AZ::Data::Instance<AZ::RPI::Image> CreateColorTestTexture()
 #if !defined(_RELEASE)
 static AZ::Data::Instance<AZ::RPI::Image> CreateMonoAlphaTestTexture()
 {
-#ifdef LYSHINE_ATOM_TODO
+#ifdef LYSHINE_ATOM_TODO // [LYN-3359] Support RTT using Atom
     const int width = 32;
     const int height = 32;
     uint32 data[width * height];
@@ -272,7 +272,7 @@ static AZ::Data::Instance<AZ::RPI::Image> CreateMonoAlphaTestTexture()
 #if !defined(_RELEASE)
 static AZ::Data::Instance<AZ::RPI::Image> CreateColorAlphaTestTexture()
 {
-#ifdef LYSHINE_ATOM_TODO
+#ifdef LYSHINE_ATOM_TODO // [LYN-3359] Support RTT using Atom
     const int width = 32;
     const int height = 32;
     uint32 data[width * height];

@@ -557,7 +557,7 @@ void UiMaskComponent::CreateOrResizeRenderTarget(const AZ::Vector2& pixelAligned
     m_viewportTopLeft = pixelAlignedTopLeft;
     m_viewportSize = renderTargetSize;
 
-    // LYSHINE_ATOM_TODO: optimize by reusing/resizing targets
+    // [LYSHINE_ATOM_TODO][LYN-8718] Optimize by reusing existing render targets
     DestroyRenderTarget();
 
     // Create a render target that this element and its children will be rendered to
@@ -721,8 +721,7 @@ void UiMaskComponent::RenderUsingGradientMask(LyShine::IRenderGraph* renderGraph
     // mask render target
     {
         // Start building the render to texture node in the render graph
-        LyShine::RenderGraph* lyRenderGraph = static_cast<LyShine::RenderGraph*>(renderGraph); // LYSHINE_ATOM_TODO - find a different solution from downcasting - GHI #3570
-        lyRenderGraph->BeginRenderToTexture(maskAttachmentImage, m_viewportTopLeft, m_viewportSize, clearColor);
+        renderGraph->BeginRenderToTexture(maskAttachmentImage, m_viewportTopLeft, m_viewportSize, clearColor);
 
         // Render the visual component for this element (if there is one) plus the child mask element (if there is one)
         RenderMaskPrimitives(renderGraph, renderInterface, childMaskElementInterface, isInGame);
@@ -734,8 +733,7 @@ void UiMaskComponent::RenderUsingGradientMask(LyShine::IRenderGraph* renderGraph
     // content render target
     {
         // Start building the render to texture node for the content render target in the render graph
-        LyShine::RenderGraph* lyRenderGraph = static_cast<LyShine::RenderGraph*>(renderGraph); // LYSHINE_ATOM_TODO - find a different solution from downcasting - GHI #3570
-        lyRenderGraph->BeginRenderToTexture(contentAttachmentImage, m_viewportTopLeft, m_viewportSize, clearColor);
+        renderGraph->BeginRenderToTexture(contentAttachmentImage, m_viewportTopLeft, m_viewportSize, clearColor);
 
         // Render the "content" - the child elements excluding the child mask element (if any)
         RenderContentPrimitives(renderGraph, elementInterface, childMaskElementInterface, numChildren, isInGame);
@@ -771,26 +769,22 @@ void UiMaskComponent::RenderUsingGradientMask(LyShine::IRenderGraph* renderGraph
 
         // Add a primitive to do the alpha mask
         {
-            LyShine::RenderGraph* lyRenderGraph = static_cast<LyShine::RenderGraph*>(renderGraph); // LYSHINE_ATOM_TODO - find a different solution from downcasting - GHI #3570
-            if (lyRenderGraph)
-            {
-                // Set the texture and other render state required
-                AZ::Data::Instance<AZ::RPI::Image> contentImage = contentAttachmentImage;
-                AZ::Data::Instance<AZ::RPI::Image> maskImage = maskAttachmentImage;
-                bool isClampTextureMode = true;
-                bool isTextureSRGB = true;
-                bool isTexturePremultipliedAlpha = false;
-                LyShine::BlendMode blendMode = LyShine::BlendMode::Normal;
+            // Set the texture and other render state required
+            AZ::Data::Instance<AZ::RPI::Image> contentImage = contentAttachmentImage;
+            AZ::Data::Instance<AZ::RPI::Image> maskImage = maskAttachmentImage;
+            bool isClampTextureMode = true;
+            bool isTextureSRGB = true;
+            bool isTexturePremultipliedAlpha = false;
+            LyShine::BlendMode blendMode = LyShine::BlendMode::Normal;
 
-                // add a render node to render using the two render targets, one as an alpha mask of the other
-                lyRenderGraph->AddAlphaMaskPrimitiveAtom(&m_cachedPrimitive,
-                    contentAttachmentImage,
-                    maskAttachmentImage,
-                    isClampTextureMode,
-                    isTextureSRGB,
-                    isTexturePremultipliedAlpha,
-                    blendMode);
-            }
+            // add a render node to render using the two render targets, one as an alpha mask of the other
+            renderGraph->AddAlphaMaskPrimitive(&m_cachedPrimitive,
+                contentAttachmentImage,
+                maskAttachmentImage,
+                isClampTextureMode,
+                isTextureSRGB,
+                isTexturePremultipliedAlpha,
+                blendMode);
         }
     }
 }
