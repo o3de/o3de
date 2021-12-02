@@ -78,6 +78,8 @@ set(FILES
     Source/TagWidget.cpp
     Source/TemplateButtonWidget.h
     Source/TemplateButtonWidget.cpp
+    Source/ExternalLinkDialog.h
+    Source/ExternalLinkDialog.cpp
     Source/GemCatalog/GemCatalogHeaderWidget.h
     Source/GemCatalog/GemCatalogHeaderWidget.cpp
     Source/GemCatalog/GemCatalogScreen.h
