@@ -807,11 +807,11 @@ namespace AudioControls
                                     if (!pATLParent->SwitchStateConnectionCheck(pAudioSystemControl))
                                     {
                                         QMessageBox messageBox(this);
-                                        messageBox.setStandardButtons(QMessageBox::Yes);
-                                        messageBox.setDefaultButton(QMessageBox::Yes);
+                                        messageBox.setStandardButtons(QMessageBox::Ok);
+                                        messageBox.setDefaultButton(QMessageBox::Ok);
                                         messageBox.setWindowTitle("Audio Controls Editor");
                                         messageBox.setText("Not in the same switch group, connection failed.");
-                                        if (messageBox.exec() == QMessageBox::Yes)
+                                        if (messageBox.exec() == QMessageBox::Ok)
                                         {
                                             return;
                                         }
