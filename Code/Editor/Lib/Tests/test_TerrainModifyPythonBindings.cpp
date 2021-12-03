@@ -22,7 +22,7 @@ namespace TerrainModifyPythonBindingsUnitTests
 {
 
     class TerrainModifyPythonBindingsFixture
-        : public testing::Test
+        : public UnitTest::ScopedAllocatorSetupFixture
     {
     public:
         AzToolsFramework::ToolsApplication m_app;

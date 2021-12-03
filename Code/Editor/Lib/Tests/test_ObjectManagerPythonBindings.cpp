@@ -12,6 +12,7 @@
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Debug/TraceMessageBus.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
+#include <AzCore/UnitTest/TestTypes.h>
 #include <AzCore/UserSettings/UserSettingsComponent.h>
 
 #include <AzToolsFramework/Application/ToolsApplication.h>
@@ -22,7 +23,7 @@ namespace ObjectManagerPythonBindingsUnitTests
 {
 
     class ObjectManagerPythonBindingsFixture
-        : public testing::Test
+        : public ::UnitTest::ScopedAllocatorSetupFixture
     {
     public:
         AzToolsFramework::ToolsApplication m_app;

@@ -22,7 +22,7 @@ namespace DisplaySettingsPythonBindingsUnitTests
 {
 
     class DisplaySettingsPythonBindingsFixture
-        : public testing::Test
+        : public UnitTest::ScopedAllocatorSetupFixture
     {
     public:
         AzToolsFramework::ToolsApplication m_app;
@@ -51,7 +51,7 @@ namespace DisplaySettingsPythonBindingsUnitTests
     }
 
     class DisplaySettingsComponentFixture
-        : public testing::Test
+        : public UnitTest::ScopedAllocatorSetupFixture
     {
     public:
         AzToolsFramework::ToolsApplication m_app;
