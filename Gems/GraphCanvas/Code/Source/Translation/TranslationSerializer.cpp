@@ -146,7 +146,7 @@ namespace GraphCanvas
                 AZStd::string baseKey = contextStr;
                 if (keyStr.empty())
                 {
-                    AZ_Error("TranslationDatabase", false, "Every entry in the Translation data must have a key: %s", baseKey.c_str());
+                    AZ_Warning("TranslationDatabase", false, "Every entry in the Translation data must have a key: %s", baseKey.c_str());
                     return context.Report(JSR::Tasks::ReadField, JSR::Outcomes::Unsupported, "Every entry in the Translation data must have a key");
                 }
 
