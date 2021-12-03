@@ -62,6 +62,7 @@ namespace AzToolsFramework
     class ComponentPaletteWidget;
     class ComponentModeCollectionInterface;
     struct SourceControlFileInfo;
+    class ReadOnlyEntityPublicInterface;
 
     namespace AssetBrowser
     {
@@ -622,6 +623,9 @@ namespace AzToolsFramework
 
         Prefab::PrefabPublicInterface* m_prefabPublicInterface = nullptr;
         bool m_prefabsAreEnabled = false;
+
+        ReadOnlyEntityPublicInterface* m_readOnlyEntityPublicInterface = nullptr;
+        bool m_entityIsReadOnly = false;
 
         // Reordering row widgets within the RPE.
         static constexpr float MoveFadeSeconds = 0.5f;
