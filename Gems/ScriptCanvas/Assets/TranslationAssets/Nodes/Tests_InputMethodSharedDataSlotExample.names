@@ -5,74 +5,73 @@
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "InputMethodSharedDataSlotExample",
+                "name": "Input Method Shared Data Slot Example",
                 "category": "Tests",
-                "tooltip": "Input Method Shared Data",
-                "subtitle": "Tests"
+                "tooltip": "Input Method Shared Data"
             },
             "slots": [
                 {
-                    "base": "Input_Append Hello",
+                    "base": "Input_Append Hello_0",
                     "details": {
                         "name": "Append Hello"
                     }
                 },
                 {
-                    "base": "DataInput_str",
+                    "base": "DataInput_str_0",
                     "details": {
                         "name": "str"
                     }
                 },
                 {
-                    "base": "Output_On Append Hello",
+                    "base": "Output_On Append Hello_0",
                     "details": {
                         "name": "On Append Hello"
                     }
                 },
                 {
-                    "base": "DataOutput_Output",
+                    "base": "DataOutput_Output_0",
                     "details": {
                         "name": "Output"
                     }
                 },
                 {
-                    "base": "Input_Concatenate Two",
+                    "base": "Input_Concatenate Two_1",
                     "details": {
                         "name": "Concatenate Two"
                     }
                 },
                 {
-                    "base": "DataInput_a",
+                    "base": "DataInput_a_1",
                     "details": {
                         "name": "a"
                     }
                 },
                 {
-                    "base": "DataInput_b",
+                    "base": "DataInput_b_2",
                     "details": {
                         "name": "b"
                     }
                 },
                 {
-                    "base": "Output_On Concatenate Two",
+                    "base": "Output_On Concatenate Two_1",
                     "details": {
                         "name": "On Concatenate Two"
                     }
                 },
                 {
-                    "base": "Input_Concatenate Three",
+                    "base": "Input_Concatenate Three_2",
                     "details": {
                         "name": "Concatenate Three"
                     }
                 },
                 {
-                    "base": "DataInput_c",
+                    "base": "DataInput_c_3",
                     "details": {
                         "name": "c"
                     }
                 },
                 {
-                    "base": "Output_On Concatenate Three",
+                    "base": "Output_On Concatenate Three_2",
                     "details": {
                         "name": "On Concatenate Three"
                     }

@@ -207,7 +207,7 @@ namespace AzToolsFramework
             ? AZ::Transform::CreateFromQuaternionAndTranslation(m_visualOrientationOverride, GetLocalPosition())
             : GetLocalTransform();
 
-        if (cl_manipulatorDrawDebug)
+        if (ed_manipulatorDrawDebug)
         {
             if (PerformingAction())
             {

@@ -6,83 +6,82 @@
             "variant": "",
             "details": {
                 "name": "Lerp Between",
-                "category": "Math",
-                "subtitle": "Math"
+                "category": "Math"
             },
             "slots": [
                 {
-                    "base": "Input_In",
+                    "base": "Input_In_0",
                     "details": {
                         "name": "In",
                         "tooltip": "Starts the lerp action from the beginning."
                     }
                 },
                 {
-                    "base": "DataInput_Start",
+                    "base": "DataInput_Start_0",
                     "details": {
                         "name": "Start"
                     }
                 },
                 {
-                    "base": "DataInput_Stop",
+                    "base": "DataInput_Stop_1",
                     "details": {
                         "name": "Stop"
                     }
                 },
                 {
-                    "base": "DataInput_Speed",
+                    "base": "DataInput_Speed_2",
                     "details": {
                         "name": "Speed"
                     }
                 },
                 {
-                    "base": "DataInput_Maximum Duration",
+                    "base": "DataInput_Maximum Duration_3",
                     "details": {
                         "name": "Maximum Duration"
                     }
                 },
                 {
-                    "base": "Output_Out",
+                    "base": "Output_Out_0",
                     "details": {
                         "name": "Out",
                         "tooltip": "Executes immediately after the lerp action is started."
                     }
                 },
                 {
-                    "base": "Input_Cancel",
+                    "base": "Input_Cancel_1",
                     "details": {
                         "name": "Cancel",
                         "tooltip": "Stops the lerp action immediately."
                     }
                 },
                 {
-                    "base": "Output_Canceled",
+                    "base": "Output_Canceled_1",
                     "details": {
                         "name": "Canceled",
                         "tooltip": "Executes immediately after the operation is canceled."
                     }
                 },
                 {
-                    "base": "Output_Tick",
+                    "base": "Output_Tick_2",
                     "details": {
                         "name": "Tick",
                         "tooltip": "Signaled at each step of the lerp."
                     }
                 },
                 {
-                    "base": "DataOutput_Step",
+                    "base": "DataOutput_Step_0",
                     "details": {
                         "name": "Step"
                     }
                 },
                 {
-                    "base": "DataOutput_Percent",
+                    "base": "DataOutput_Percent_1",
                     "details": {
                         "name": "Percent"
                     }
                 },
                 {
-                    "base": "Output_Lerp Complete",
+                    "base": "Output_Lerp Complete_3",
                     "details": {
                         "name": "Lerp Complete",
                         "tooltip": "Signaled after the last Tick, when the lerp is complete"
