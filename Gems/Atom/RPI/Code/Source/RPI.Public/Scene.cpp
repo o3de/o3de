@@ -18,7 +18,6 @@
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
 #include <Atom/RPI.Public/View.h>
 
-#include <AzCore/Debug/EventTrace.h>
 #include <AzCore/Debug/Profiler.h>
 #include <AzCore/Jobs/JobFunction.h>
 #include <AzCore/Jobs/JobEmpty.h>

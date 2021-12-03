@@ -16,7 +16,6 @@
 #include <Atom/RHI/RayTracingPipelineState.h>
 #include <Atom/RHI/RayTracingShaderTable.h>
 #include <Atom/RHI.Reflect/Metal/Base.h>
-#include <AzCore/Debug/EventTrace.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <RHI/BufferPool.h>
 #include <RHI/BufferView.h>

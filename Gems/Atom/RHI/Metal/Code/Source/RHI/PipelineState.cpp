@@ -10,7 +10,6 @@
 #include <Atom/RHI.Reflect/Metal/PipelineLayoutDescriptor.h>
 #include <Atom/RHI.Reflect/Metal/ShaderStageFunction.h>
 #include <Atom/RHI.Reflect/ShaderStageFunction.h>
-#include <AzCore/Debug/EventTrace.h>
 #include <RHI/Conversions.h>
 #include <RHI/Device.h>
 #include <RHI/PipelineState.h>

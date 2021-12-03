@@ -26,6 +26,7 @@
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Module/ModuleManagerBus.h>
+#include <AzCore/PlatformId/PlatformId.h>
 
 #include <TestFramework/AWSCoreFixture.h>
 #include <QSysInfo>

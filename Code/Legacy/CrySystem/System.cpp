@@ -16,6 +16,7 @@
 #include <AzCore/Console/Console.h>
 #include <AzCore/IO/IStreamer.h>
 #include <AzCore/IO/SystemFile.h>
+#include <AzCore/Debug/Budget.h>
 #include <CryPath.h>
 #include <CrySystemBus.h>
 #include <CryCommon/IFont.h>
@@ -24,7 +25,6 @@
 #include <AzFramework/API/ApplicationAPI_Platform.h>
 #include <AzFramework/Input/Devices/Keyboard/InputDeviceKeyboard.h>
 #include <AzCore/Debug/Profiler.h>
-#include <AzCore/Debug/EventTrace.h>
 #include <AzCore/Debug/Trace.h>
 #include <AzCore/Debug/IEventLogger.h>
 #include <AzCore/Interface/Interface.h>
@@ -34,6 +34,7 @@
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
 #include <AzCore/Interface/Interface.h>
 
+AZ_DEFINE_BUDGET(CrySystem);
 
 #if defined(AZ_RESTRICTED_PLATFORM)
 #undef AZ_RESTRICTED_SECTION
@@ -525,7 +526,7 @@ void CSystem::SleepIfNeeded()
     int sleepMS = (int)(1000.0f * sleepTime + 0.5f);
     if (sleepMS > 0)
     {
-        AZ_PROFILE_FUNCTION(System);
+        AZ_PROFILE_FUNCTION(CrySystem);
         Sleep(sleepMS);
     }
 
@@ -564,7 +565,7 @@ bool CSystem::UpdatePreTickBus(int updateFlags, int nPauseMode)
     _mm_setcsr(_mm_getcsr() & ~0x280 | (g_cvars.sys_float_exceptions > 0 ? 0 : 0x280));
 #endif //WIN32
 
-    AZ_TRACE_METHOD();
+    AZ_PROFILE_FUNCTION(CrySystem);
 
 #ifndef EXCLUDE_UPDATE_ON_CONSOLE
     if (m_pUserCallback)

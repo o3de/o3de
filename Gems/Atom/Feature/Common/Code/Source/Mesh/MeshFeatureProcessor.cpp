@@ -24,7 +24,6 @@
 #include <AtomCore/Instance/InstanceDatabase.h>
 
 #include <AzCore/Console/IConsole.h>
-#include <AzCore/Debug/EventTrace.h>
 #include <AzCore/Jobs/Algorithms.h>
 #include <AzCore/Jobs/JobCompletion.h>
 #include <AzCore/Jobs/JobFunction.h>

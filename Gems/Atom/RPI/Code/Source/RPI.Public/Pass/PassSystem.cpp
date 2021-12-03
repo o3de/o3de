@@ -9,7 +9,6 @@
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/Asset/AssetManagerBus.h>
 #include <AzCore/Component/Entity.h>
-#include <AzCore/Debug/EventTrace.h>
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/Serialization/Utils.h>

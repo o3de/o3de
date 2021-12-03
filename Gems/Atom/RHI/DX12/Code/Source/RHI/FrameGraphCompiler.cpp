@@ -19,8 +19,6 @@
 #include <Atom/RHI/ImageScopeAttachment.h>
 #include <Atom/RHI/ScopeAttachment.h>
 #include <Atom/RHI/SwapChainFrameAttachment.h>
-#include <AzCore/Debug/EventTrace.h>
-
 // #define AZ_DX12_FRAMESCHEDULER_LOG_TRANSITIONS
 
 namespace AZ
@@ -695,7 +693,7 @@ namespace AZ
         {
             Device& device = static_cast<Device&>(GetDevice());
 
-            AZ_TRACE_METHOD();
+            AZ_PROFILE_FUNCTION(RHI);
             CommandQueueContext& context = device.GetCommandQueueContext();
 
             for (RHI::Scope* scopeBase : frameGraph.GetScopes())

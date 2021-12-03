@@ -29,8 +29,6 @@
 
 #include <Atom/Feature/ImGui/SystemBus.h>
 
-#include <AzCore/Debug/EventTrace.h>
-
 namespace AZ
 {
     namespace Render

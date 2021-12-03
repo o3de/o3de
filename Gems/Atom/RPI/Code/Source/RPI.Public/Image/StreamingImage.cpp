@@ -16,7 +16,6 @@
 
 #include <Atom/RHI/Factory.h>
 
-#include <AzCore/Debug/EventTrace.h>
 #include <AtomCore/Instance/InstanceDatabase.h>
 
 // Enable this define to debug output streaming image initialization and expanding process.
@@ -111,7 +110,7 @@ namespace AZ
 
         RHI::ResultCode StreamingImage::Init(StreamingImageAsset& imageAsset)
         {
-            AZ_TRACE_METHOD();
+            AZ_PROFILE_FUNCTION(RPI);
 
             Data::Instance<StreamingImagePool> pool;
             if (imageAsset.GetPoolAssetId().IsValid())

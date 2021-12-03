@@ -10,6 +10,7 @@
 
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/IO/Streamer/Streamer.h>
+#include <AzCore/IO/SystemFile.h>
 #include <AzCore/Serialization/Json/JsonSerialization.h>
 #include <AzCore/Serialization/Json/JsonSystemComponent.h>
 #include <AzCore/Serialization/Json/RegistrationContext.h>
