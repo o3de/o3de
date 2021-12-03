@@ -557,10 +557,10 @@ def CreateUploadTestArtifactStage(String jobName, String workspace, String outpu
     }
 }
 
-def CreateTeardownStage(Map environmentVars, String outputDirectory) {
+def CreateTeardownStage(Map environmentVars, Map params) {
     return {
         stage('Teardown') {
-            PostBuildCommonSteps(environmentVars['WORKSPACE'], outputDirectory, environmentVars['MOUNT_VOLUME'])
+            PostBuildCommonSteps(environmentVars['WORKSPACE'], params, environmentVars['MOUNT_VOLUME'])
         }
     }
 }
