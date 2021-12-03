@@ -13,10 +13,11 @@
         "irradiance": {
             "color": [
                 0.0,
-                1.0,
-                0.15378041565418243,
+                0.15292592346668243,
+                0.0012207217514514923,
                 1.0
-            ]
+            ],
+            "factor": 0.30000001192092896
         },
         "metallic": {
             "textureMap": "../Textures/fabric_metallic.png"

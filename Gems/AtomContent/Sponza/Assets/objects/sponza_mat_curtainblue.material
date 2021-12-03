@@ -5,15 +5,29 @@
     "materialTypeVersion": 4,
     "properties": {
         "baseColor": {
+            "color": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+            ],
             "textureMap": "../Textures/curtainBlue_1k_basecolor.png"
+        },
+        "emissive": {
+            "color": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+            ]
         },
         "general": {
             "applySpecularAA": true
         },
         "irradiance": {
             "color": [
-                0.06195162981748581,
-                0.2056153267621994,
+                0.0,
+                0.14901961386203766,
                 1.0,
                 1.0
             ]
@@ -27,9 +41,6 @@
         },
         "occlusion": {
             "diffuseTextureMap": "../Textures/curtain_ao.png"
-        },
-        "opacity": {
-            "factor": 1.0
         },
         "roughness": {
             "textureMap": "../Textures/curtain_roughness.png"
