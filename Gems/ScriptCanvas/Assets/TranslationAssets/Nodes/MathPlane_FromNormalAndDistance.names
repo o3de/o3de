@@ -7,35 +7,35 @@
             "details": {
                 "name": "From Normal And Distance",
                 "category": "Math/Plane",
-                "tooltip": "Returns the plane with the specified Normal and Distance from the origin"
+                "tooltip": "returns the plane with the specified Normal and Distance from the origin"
             },
             "slots": [
                 {
-                    "base": "Input_In",
+                    "base": "Input_In_0",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "base": "Output_Out",
+                    "base": "Output_Out_0",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "base": "DataInput_Normal",
+                    "base": "DataInput_Normal_0",
                     "details": {
                         "name": "Normal"
                     }
                 },
                 {
-                    "base": "DataInput_Distance",
+                    "base": "DataInput_Distance_1",
                     "details": {
                         "name": "Distance"
                     }
                 },
                 {
-                    "base": "DataOutput_Result",
+                    "base": "DataOutput_Result_0",
                     "details": {
                         "name": "Result"
                     }

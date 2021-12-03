@@ -128,6 +128,22 @@ namespace AudioControls
             }
             else
             {
+                if (m_control->GetType() == EACEControlType::eACET_SWITCH_STATE)
+                {
+                    if (!m_control->GetParent()->SwitchStateConnectionCheck(middlewareControl))
+                    {
+                        QMessageBox messageBox(this);
+                        messageBox.setStandardButtons(QMessageBox::Ok);
+                        messageBox.setDefaultButton(QMessageBox::Ok);
+                        messageBox.setWindowTitle("Audio Controls Editor");
+                        messageBox.setText("Not in the same switch group, connection failed.");
+                        if (messageBox.exec() == QMessageBox::Ok)
+                        {
+                            return;
+                        }
+                    }
+                }
+
                 connection = audioSystemImpl->CreateConnectionToControl(m_control->GetType(), middlewareControl);
                 if (connection)
                 {

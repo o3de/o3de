@@ -7,31 +7,30 @@
             "details": {
                 "name": "Add Element at End",
                 "category": "Containers",
-                "tooltip": "Adds the provided element at the end of the container",
-                "subtitle": "Containers"
+                "tooltip": "Adds the provided element at the end of the container"
             },
             "slots": [
                 {
-                    "base": "DataInput_Source",
+                    "base": "DataInput_Source_0",
                     "details": {
                         "name": "Source"
                     }
                 },
                 {
-                    "base": "DataOutput_Container",
+                    "base": "DataOutput_Container_0",
                     "details": {
                         "name": "Container"
                     }
                 },
                 {
-                    "base": "Input_In",
+                    "base": "Input_In_0",
                     "details": {
                         "name": "In",
                         "tooltip": "Input signal"
                     }
                 },
                 {
-                    "base": "Output_Out",
+                    "base": "Output_Out_0",
                     "details": {
                         "name": "Out",
                         "tooltip": "Output signal"

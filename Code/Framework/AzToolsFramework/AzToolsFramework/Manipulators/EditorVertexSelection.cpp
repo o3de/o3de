@@ -84,12 +84,12 @@ namespace AzToolsFramework
             break;
         case State::Translating:
             {
-                if (mouseInteraction.m_mouseInteraction.m_mouseButtons.Left() &&
+                if (mouseInteraction.m_mouseInteraction.m_mouseButtons.Middle() &&
                     mouseInteraction.m_mouseEvent == ViewportInteraction::MouseEvent::Down &&
                     mouseInteraction.m_mouseInteraction.m_keyboardModifiers.Shift() &&
                     mouseInteraction.m_mouseInteraction.m_keyboardModifiers.Ctrl())
                 {
-                    SnapVerticesToTerrain(mouseInteraction);
+                    SnapVerticesToSurface(mouseInteraction);
                     return true;
                 }
 
@@ -109,29 +109,23 @@ namespace AzToolsFramework
     }
 
     template<typename Vertex>
-    void EditorVertexSelectionBase<Vertex>::SnapVerticesToTerrain(const ViewportInteraction::MouseInteractionEvent& mouseInteraction)
+    void EditorVertexSelectionBase<Vertex>::SnapVerticesToSurface(const ViewportInteraction::MouseInteractionEvent& mouseInteraction)
     {
         ScopedUndoBatch surfaceSnapUndo("Snap to Surface");
         ScopedUndoBatch::MarkEntityDirty(GetEntityId());
 
         const int viewportId = mouseInteraction.m_mouseInteraction.m_interactionId.m_viewportId;
-        // get unsnapped terrain position (world space)
-        AZ::Vector3 worldSurfacePosition = AZ::Vector3::CreateZero();
-        ;
-        ViewportInteraction::MainEditorViewportInteractionRequestBus::EventResult(
-            worldSurfacePosition, viewportId, &ViewportInteraction::MainEditorViewportInteractionRequestBus::Events::PickTerrain,
-            mouseInteraction.m_mouseInteraction.m_mousePick.m_screenCoordinates);
+        // get unsnapped surface position (world space)
+        const AZ::Vector3 worldSurfacePosition = FindClosestPickIntersection(
+            viewportId, mouseInteraction.m_mouseInteraction.m_mousePick.m_screenCoordinates, EditorPickRayLength,
+            GetDefaultEntityPlacementDistance());
 
         AZ::Transform worldFromLocal;
         AZ::TransformBus::EventResult(worldFromLocal, GetEntityId(), &AZ::TransformBus::Events::GetWorldTM);
         const AZ::Transform localFromWorld = worldFromLocal.GetInverse();
 
-        // convert to local space - snap if enabled
-        const GridSnapParameters gridSnapParams = GridSnapSettings(viewportId);
-        const AZ::Vector3 localFinalSurfacePosition = gridSnapParams.m_gridSnap
-            ? CalculateSnappedTerrainPosition(worldSurfacePosition, worldFromLocal, viewportId, gridSnapParams.m_gridSize)
-            : localFromWorld.TransformPoint(worldSurfacePosition);
-
+        // convert to local space
+        const AZ::Vector3 localFinalSurfacePosition = localFromWorld.TransformPoint(worldSurfacePosition);
         SetSelectedPosition(localFinalSurfacePosition);
 
         OnEntityComponentPropertyChanged(GetEntityComponentIdPair());

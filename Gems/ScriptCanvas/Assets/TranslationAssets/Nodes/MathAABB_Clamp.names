@@ -6,39 +6,38 @@
             "variant": "",
             "details": {
                 "name": "Clamp",
-                "category": "Math/Axis Aligned Bounding Box",
-                "tooltip": "returns the largest version of Source that can fit entirely within Clamp",
-                "subtitle": "Axis Aligned Bounding Box"
+                "category": "Math/AABB",
+                "tooltip": "returns the largest version of Source that can fit entirely within Clamp"
             },
             "slots": [
                 {
-                    "base": "Input_In",
+                    "base": "Input_In_0",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "base": "Output_Out",
+                    "base": "Output_Out_0",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "base": "DataInput_AABB: Source",
+                    "base": "DataInput_Source_0",
                     "details": {
                         "name": "Source"
                     }
                 },
                 {
-                    "base": "DataInput_AABB: Clamp",
+                    "base": "DataInput_Clamp_1",
                     "details": {
                         "name": "Clamp"
                     }
                 },
                 {
-                    "base": "DataOutput_Result: AABB",
+                    "base": "DataOutput_Result_0",
                     "details": {
-                        "name": "AABB"
+                        "name": "Result"
                     }
                 }
             ]

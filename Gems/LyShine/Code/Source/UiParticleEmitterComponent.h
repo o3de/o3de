@@ -25,8 +25,6 @@
 
 #include <Particle/UiParticle.h>
 
-#include <VertexFormats.h>
-
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 class UiParticleEmitterComponent
     : public AZ::Component
@@ -349,5 +347,5 @@ protected: // data
     AZStd::vector<UiParticle> m_particleContainer;
 
     AZ::u32 m_particleBufferSize                    = 0;
-    DynUiPrimitive m_cachedPrimitive;
+    LyShine::UiPrimitive m_cachedPrimitive;
 };
