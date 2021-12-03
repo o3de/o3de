@@ -119,22 +119,21 @@ namespace AZ
     void LoggerSystemComponent::LogInternalV(LogLevel level, const char* format, const char* file, const char* function, int32_t line, va_list args)
     {
         constexpr AZStd::size_t MaxLogBufferSize = 1000;
-        char buffer[MaxLogBufferSize];
+        auto buffer = AZStd::fixed_string<MaxLogBufferSize>::format_arg(format, args);
 
-        const AZStd::size_t length = azvsnprintf(buffer, MaxLogBufferSize, format, args);
-        m_logEvent.Signal(level, buffer, file, function, line);
+        m_logEvent.Signal(level, buffer.c_str(), file, function, line);
 
         switch (level)
         {
         case LogLevel::Warn:
-            AZ_Warning("Logger", true, buffer);
+            AZ_Warning("Logger", true, buffer.c_str());
             break;
         case LogLevel::Error:
-            AZ_Error("Logger", true, buffer);
+            AZ_Error("Logger", true, buffer.c_str());
             break;
         default:
             // Catch all else with trace
-            AZ::Debug::Trace::Output("Logger", buffer);
+            AZ::Debug::Trace::Output("Logger", buffer.c_str());
             break;
         }
     }
