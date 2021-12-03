@@ -294,7 +294,7 @@ namespace O3DE::ProjectManager
             }
             else if (numChangedDependencies > 1)
             {
-                notification += tr("%1 Gem %2").arg(QString(numChangedDependencies), tr("dependencies"));
+                notification += tr("%1 Gem %2").arg(numChangedDependencies).arg(tr("dependencies"));
             }
             notification += (added ? tr(" activated") : tr(" deactivated"));
 
