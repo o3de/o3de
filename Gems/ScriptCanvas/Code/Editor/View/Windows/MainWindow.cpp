@@ -256,7 +256,6 @@ namespace ScriptCanvasEditor
                             EditorSettings::EditorWorkspace::WorkspaceAssetSaveData assetSaveData;
                             assetSaveData.m_assetId = sourceId;
 
-                            ScriptCanvas::ScriptCanvasId scriptCanvasId = m_mainWindow->FindScriptCanvasIdByAssetId(assetId);
                             activeAssets.push_back(assetSaveData);
                         }
                     }
