@@ -1101,9 +1101,9 @@ R"DELIMITER(<ObjectStream version="1">
         bool m_transformUpdated = false;
     };
     
-    TEST_F(TransformComponentActivationTest, TransformChanged_OnUndoRedo)
+    TEST_F(TransformComponentActivationTest, TransformChangedEventIsSentWhenEntityIsActivatedViaUndoRedo)
     {
-        AZ::EntityId entityId = CreateEntityWithPrefab("Entity");
+        AZ::EntityId entityId = CreateEntityUnderRootPrefab("Entity");
         MoveEntity(entityId);
         BusConnect(entityId);
 
@@ -1115,6 +1115,12 @@ R"DELIMITER(<ObjectStream version="1">
         Redo();
         EXPECT_TRUE(m_transformUpdated);
         m_transformUpdated = false;
+    }
+    
+    TEST_F(TransformComponentActivationTest, TransformChangedEventIsNotSentWhenEntityIsDeactivatedAndActivated)
+    {
+        AZ::EntityId entityId = CreateEntityUnderRootPrefab("Entity");
+        BusConnect(entityId);
 
         // verify that simply activating/deactivating an entity does not fire TransformChanged event
         Entity* entity = nullptr;

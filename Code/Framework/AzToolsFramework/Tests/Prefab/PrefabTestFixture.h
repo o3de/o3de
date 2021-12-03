@@ -56,8 +56,8 @@ namespace UnitTest
         void CreateRootPrefab();
         virtual void PropagateAllTemplateChanges();
 
-        AZ::Entity* CreateEntity(const char* entityName, const bool shouldActivate = true);
-        AZ::EntityId CreateEntityWithPrefab(const char* entityName, AZ::EntityId parentId = AZ::EntityId());
+        AZ::Entity* CreateEntity(AZStd::string entityName, const bool shouldActivate = true);
+        AZ::EntityId CreateEntityUnderRootPrefab(AZStd::string entityName, AZ::EntityId parentId = AZ::EntityId());
 
         void CompareInstances(const Instance& instanceA, const Instance& instanceB, bool shouldCompareLinkIds = true,
             bool shouldCompareContainerEntities = true);
