@@ -56,15 +56,13 @@ set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Installation Tool")
 string(TOLOWER "${CPACK_PACKAGE_NAME}_${CPACK_PACKAGE_VERSION}" CPACK_PACKAGE_FILE_NAME)
 
 set(DEFAULT_LICENSE_NAME "Apache-2.0")
-<<<<<<< HEAD
-set(DEFAULT_LICENSE_FILE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE.txt")
-set(CPACK_RESOURCE_FILE_LICENSE ${DEFAULT_LICENSE_FILE})
-=======
 
 set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE.txt")
 set(CPACK_RESOURCE_FILE_README "${CMAKE_CURRENT_SOURCE_DIR}/README.md")
->>>>>>> development
 set(CPACK_LICENSE_URL ${LY_INSTALLER_LICENSE_URL})
+
+set(CPACK_3P_LICENSE_FILE "${CPACK_BINARY_DIR}/NOTICES.txt")
+set(CPACK_3P_MANIFEST_FILE "${CPACK_BINARY_DIR}/SPDX-License.json")
 
 set(CPACK_PACKAGE_INSTALL_DIRECTORY "${CPACK_PACKAGE_NAME}/${CPACK_PACKAGE_VERSION}")
 
@@ -99,6 +97,16 @@ endif()
 # cpack generation. CPACK_BINARY_DIR persists across cpack invocations
 set(LY_CMAKE_PACKAGE_DOWNLOAD_PATH ${CPACK_BINARY_DIR}/${CPACK_CMAKE_PACKAGE_FILE})
 
+# Scan the source and packages for licenses, then add it to the 
+
+configure_file(${LY_ROOT_FOLDER}/cmake/LicenseScan.cmake.in
+    ${CPACK_BINARY_DIR}/LicenseScan.cmake
+    @ONLY
+)
+ly_install(SCRIPT ${CPACK_BINARY_DIR}/LicenseScan.cmake
+    COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
+)
+
 configure_file(${LY_ROOT_FOLDER}/cmake/Packaging/CMakeDownload.cmake.in
     ${CPACK_BINARY_DIR}/CMakeDownload.cmake
     @ONLY
@@ -111,118 +119,12 @@ ly_install(FILES ${LY_CMAKE_PACKAGE_DOWNLOAD_PATH}
     COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
 )
 
-<<<<<<< HEAD
-# Do inital check on workspace path in the event that LY_3RDPARTY_PATH is misconfigured
-file(REAL_PATH "${CMAKE_CURRENT_SOURCE_DIR}/.." _root_path)
-if (EXISTS "${_root_path}/3rdParty/packages")
-    set(CPACK_LY_3P_PACKAGE_DIRECTORY "${_root_path}/3rdParty/packages")
-else()
-    set(CPACK_LY_3P_PACKAGE_DIRECTORY ${LY_3RDPARTY_PATH}/packages)
-endif()
-
-# Scan the engine and 3rd Party folders for licenses
-file(TO_NATIVE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/python/python.cmd" _python_cmd)
-file(TO_NATIVE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/scripts/license_scanner" _license_script_path)
-
-set(_license_script "${_license_script_path}/license_scanner.py")
-set(_license_config "${_license_script_path}/scanner_config.json")
-
-set(_license_scan_path "${CMAKE_CURRENT_SOURCE_DIR}" "${CPACK_LY_3P_PACKAGE_DIRECTORY}")
-set(CPACK_3P_LICENSE_FILE "${CPACK_BINARY_DIR}/NOTICES.txt")
-set(CPACK_3P_MANIFEST_FILE "${CPACK_BINARY_DIR}/SPDX-License.json")
-
-set(_license_command
-    ${_python_cmd} -s
-    -u ${_license_script}
-    --config-file ${_license_config}
-    --license-file-path ${CPACK_3P_LICENSE_FILE}
-    --package-file-path ${CPACK_3P_MANIFEST_FILE}
-)
-
-message(STATUS "Scanning for license files in ${_license_scan_path}")
-execute_process(
-    COMMAND ${_license_command} --scan-path ${_license_scan_path}
-    RESULT_VARIABLE _license_result
-    ERROR_VARIABLE _license_errors
-    OUTPUT_VARIABLE _license_output
-    ECHO_OUTPUT_VARIABLE
-)
-
-if(NOT ${_license_result} EQUAL 0)
-    message(FATAL_ERROR "An error occurred during license scan.  ${_license_errors}")
-else()
-    set(CPACK_RESOURCE_FILE_LICENSE ${CPACK_3P_LICENSE_FILE})
-endif()
-
-# the version string and git tags are intended to be synchronized so it should be safe to use that instead
-# of directly calling into git which could get messy in certain scenarios
-if(${CPACK_PACKAGE_VERSION} VERSION_GREATER "0.0.0.0")
-    set(_3rd_party_license_filename NOTICES.txt)
-
-    set(_3rd_party_license_url "https://raw.githubusercontent.com/o3de/3p-package-source/${CPACK_PACKAGE_VERSION}/${_3rd_party_license_filename}")
-    set(_3rd_party_license_dest ${CPACK_BINARY_DIR}/${_3rd_party_license_filename})
-
-    # use the plain file downloader as we don't have the file hash available and using a dummy will
-    # delete the file once it fails hash verification
-    file(DOWNLOAD
-        ${_3rd_party_license_url}
-        ${_3rd_party_license_dest}
-        STATUS _status
-        TLS_VERIFY ON
-    )
-    list(POP_FRONT _status _status_code)
-
-    if (${_status_code} EQUAL 0 AND EXISTS ${_3rd_party_license_dest})
-        ly_install(FILES ${_3rd_party_license_dest}
-            DESTINATION .
-            COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
-        )
-    else()
-        file(REMOVE ${_3rd_party_license_dest})
-        message(FATAL_ERROR "Failed to acquire the 3rd Party license manifest file at ${_3rd_party_license_url}.  Error: ${_status}")
-    endif()
-endif()
-
-# checks for and removes trailing slash
-function(strip_trailing_slash in_url out_url)
-    string(LENGTH ${in_url} _url_length)
-    MATH(EXPR _url_length "${_url_length}-1")
-
-    string(SUBSTRING ${in_url} 0 ${_url_length} _clean_url)
-    if("${in_url}" STREQUAL "${_clean_url}/")
-        set(${out_url} ${_clean_url} PARENT_SCOPE)
-    else()
-        set(${out_url} ${in_url} PARENT_SCOPE)
-    endif()
-endfunction()
-
-if(NOT LY_INSTALLER_UPLOAD_URL AND DEFINED ENV{LY_INSTALLER_UPLOAD_URL})
-    set(LY_INSTALLER_UPLOAD_URL $ENV{LY_INSTALLER_UPLOAD_URL})
-endif()
-
-if(LY_INSTALLER_UPLOAD_URL)
-    ly_is_s3_url(${LY_INSTALLER_UPLOAD_URL} _is_s3_bucket)
-    if(NOT _is_s3_bucket)
-        message(FATAL_ERROR "Only S3 installer uploading is supported at this time")
-    endif()
-
-    if (LY_INSTALLER_AWS_PROFILE)
-        set(CPACK_AWS_PROFILE ${LY_INSTALLER_AWS_PROFILE})
-    elseif (DEFINED ENV{LY_INSTALLER_AWS_PROFILE})
-        set(CPACK_AWS_PROFILE $ENV{LY_INSTALLER_AWS_PROFILE})
-    endif()
-
-    strip_trailing_slash(${LY_INSTALLER_UPLOAD_URL} LY_INSTALLER_UPLOAD_URL)
-    set(CPACK_UPLOAD_URL ${LY_INSTALLER_UPLOAD_URL})
-endif()
-=======
 # Set common CPACK variables to all platforms/generators
 set(CPACK_STRIP_FILES TRUE) # always strip symbols on packaging
 set(CPACK_PACKAGE_CHECKSUM SHA256) # Generate checksum file
 set(CPACK_PRE_BUILD_SCRIPTS ${pal_dir}/PackagingPreBuild_${PAL_HOST_PLATFORM_NAME_LOWERCASE}.cmake)
 set(CPACK_POST_BUILD_SCRIPTS ${pal_dir}/PackagingPostBuild_${PAL_HOST_PLATFORM_NAME_LOWERCASE}.cmake)
 set(CPACK_LY_PYTHON_CMD ${LY_PYTHON_CMD})
->>>>>>> development
 
 # IMPORTANT: required to be included AFTER setting all property overrides
 include(CPack REQUIRED)
