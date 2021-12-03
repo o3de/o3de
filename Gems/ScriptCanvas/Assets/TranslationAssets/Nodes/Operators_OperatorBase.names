@@ -5,20 +5,19 @@
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "OperatorBase",
-                "category": "Operators",
-                "subtitle": "Operators"
+                "name": "Operator Base",
+                "category": "Operators"
             },
             "slots": [
                 {
-                    "base": "Input_In",
+                    "base": "Input_In_0",
                     "details": {
                         "name": "In",
                         "tooltip": "Input signal"
                     }
                 },
                 {
-                    "base": "Output_Out",
+                    "base": "Output_Out_0",
                     "details": {
                         "name": "Out",
                         "tooltip": "Output signal"
