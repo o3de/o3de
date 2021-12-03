@@ -471,7 +471,7 @@ def UploadTestArtifacts(String jobName, String workspace, String outputDirectory
 
 def PostBuildCommonSteps(String workspace, Map params, boolean mount = true) {
     echo 'Starting post-build common steps...'
-    if (params.containsKey('OUTPUT_DIRECTORY')){
+    if (if params && params.containsKey('OUTPUT_DIRECTORY')){
         dir([workspace, ENGINE_REPOSITORY_NAME, outputDirectory].join('/')){
             // Clean up Testing directory
             palRmDir("Testing")
@@ -585,6 +585,7 @@ def CreateSingleNode(Map pipelineConfig, def platform, def build_job, Map envVar
                             pipelineEnvVars = GetBuildEnvVars(platform.value.PIPELINE_ENV ?: EMPTY_JSON, build_job.value.PIPELINE_ENV ?: EMPTY_JSON, pipelineName)
                             build_job.value.steps.each { build_step ->
                                 build_job_name = build_step
+                                params = platform.value.build_types[build_job_name].PARAMETERS
                                 // This addition of maps makes it that the right operand will override entries if they overlap with the left operand
                                 envVars = pipelineEnvVars + GetBuildEnvVars(platform.value.PIPELINE_ENV ?: EMPTY_JSON, platform.value.build_types[build_step].PIPELINE_ENV ?: EMPTY_JSON, pipelineName)
                                 try {
@@ -613,7 +614,11 @@ def CreateSingleNode(Map pipelineConfig, def platform, def build_job, Map envVar
                             CreateUploadAPLogsStage(platform.key, build_job_name, envVars['WORKSPACE'], platform.value.build_types[build_job_name].PARAMETERS).call()
                         }
                         // Upload test artifacts only on builds that failed and ran test suites
+                        echo "==DEBUG== DO NOT SUBMIT"
+                        echo "${params.containsKey('CMAKE_TARGET')}"
+                        echo "${params.CMAKE_TARGET.contains("TEST_SUITE")}"
                         if (params.containsKey('CMAKE_TARGET') && params.CMAKE_TARGET.contains("TEST_SUITE")) {
+                            echo "Starting Upload Test Artifact Stage"
                             CreateUploadTestArtifactStage(build_job_name, envVars['WORKSPACE'], params.OUTPUT_DIRECTORY).call()
                         }
                         // All other errors will be raised outside the retry blockhttps://github.com/o3de/o3de/pull/6076
