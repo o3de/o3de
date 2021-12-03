@@ -6,6 +6,9 @@
  *
  */
 
+#include "Entity/PrefabEditorEntityOwnershipInterface.h"
+#include "Prefab/PrefabTestFixture.h"
+
 #include <AzCore/Component/ComponentApplication.h>
 #include <AzCore/Math/MathUtils.h>
 #include <AzCore/Math/Matrix3x3.h>
@@ -18,6 +21,7 @@
 #include <AzFramework/Components/TransformComponent.h>
 
 #include <AzToolsFramework/Application/ToolsApplication.h>
+#include <AzToolsFramework/UnitTest/AzToolsFrameworkTestHelpers.h>
 #include <AzToolsFramework/ToolsComponents/TransformComponent.h>
 
 #include <AZTestShared/Math/MathTestHelpers.h>
@@ -1062,5 +1066,54 @@ R"DELIMITER(<ObjectStream version="1">
                 }
             }
         }
+    }
+
+    // Fixture provides TransformComponent that is static (or not static) on an entity that has been activated.
+    class TransformComponentActivationTest
+        : public PrefabTestFixture
+        , public TransformNotificationBus::Handler
+    {
+    protected:
+        void SetUpEditorFixtureImpl() override
+        {
+            PrefabTestFixture::SetUpEditorFixtureImpl();
+
+            CreateRootPrefab();
+        }
+
+        void TearDownEditorFixtureImpl() override
+        {
+            BusDisconnect();
+            
+            PrefabTestFixture::TearDownEditorFixtureImpl();
+        }
+
+        //! TransformNotificationBus::Handler implementation ...
+        void OnTransformChanged(const Transform& /*local*/, const Transform& /*world*/) override
+        {
+            m_transformUpdated = true;
+        }
+
+        void MoveEntity(AZ::EntityId entityId)
+        {
+            AzToolsFramework::ScopedUndoBatch undoBatch("Move Entity");
+            TransformBus::Event(entityId, &TransformInterface::SetWorldTranslation, Vector3(1.f, 0.f, 0.f));
+        }
+        
+        bool m_transformUpdated = false;
+    };
+    
+    TEST_F(TransformComponentActivationTest, OnTransformChanged_OnEntityActivated)
+    {
+        AZ::EntityId entityId = CreateNamedEntity("Entity");
+        MoveEntity(entityId);
+        BusConnect(entityId);
+
+        Undo();
+        EXPECT_TRUE(m_transformUpdated);
+        m_transformUpdated = false;
+
+        Redo();
+        EXPECT_TRUE(m_transformUpdated);
     }
 } // namespace UnitTest
